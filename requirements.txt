@@ -1,0 +1,6 @@
+torch
+torchvision
+sam2
+opencv-python
+numpy
+PyYAML

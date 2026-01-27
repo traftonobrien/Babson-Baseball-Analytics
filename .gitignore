@@ -1,0 +1,30 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Models
+models/*.pth
+models/*.pt
+models/*.ckpt
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Output files
+output/*
+!output/.gitkeep

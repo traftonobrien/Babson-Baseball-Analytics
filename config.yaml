@@ -1,0 +1,29 @@
+model:
+  checkpoint: models/sam2.1_hiera_large.pt
+  config: sam2.1_hiera_l
+
+paths:
+  input_video: input/pitch.mov
+  frames_dir: frames/
+  output_dir: output/
+
+video:
+  fps: 30
+
+tracking:
+  ball:
+    object_id: 1
+  glove:
+    object_id: 2
+
+ball_detection:
+  hsv_lower: [0, 0, 200]
+  hsv_upper: [180, 60, 255]
+  min_radius: 5
+  max_radius: 40
+  min_circularity: 0.4
+  motion_threshold: 25
+
+calibration:
+  plate_width_inches: 17
+  pixels_per_inch: null  # Set after calibration
