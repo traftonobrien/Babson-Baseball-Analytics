@@ -1,0 +1,20 @@
+players:
+  SLangan1:
+    name: Shane Langan
+    hand: R
+    team: ''
+    position: ''
+    notes: ''
+    arsenal:
+    - pitch_type: Fastball
+      abbreviation: FF
+      avg_velo: ''
+      usage_pct: ''
+    - pitch_type: Changeup
+      abbreviation: CH
+      avg_velo: ''
+      usage_pct: ''
+    - pitch_type: Slider
+      abbreviation: SL
+      avg_velo: ''
+      usage_pct: ''

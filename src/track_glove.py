@@ -50,8 +50,9 @@ def interactive_select(frame, mode="point"):
     else:
         print("Click and drag to draw a box around the glove, then press any key.")
 
-    cv2.imshow("Select glove", _clone)
+    cv2.namedWindow("Select glove", cv2.WINDOW_NORMAL)
     cv2.setMouseCallback("Select glove", _mouse_callback)
+    cv2.imshow("Select glove", _clone)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 

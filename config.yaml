@@ -1,6 +1,6 @@
 model:
   checkpoint: models/sam2.1_hiera_large.pt
-  config: sam2.1_hiera_l
+  config: configs/sam2.1/sam2.1_hiera_l.yaml
 
 paths:
   input_video: input/pitch.mov
@@ -26,4 +26,11 @@ ball_detection:
 
 calibration:
   plate_width_inches: 17
-  pixels_per_inch: null  # Set after calibration
+  pixels_per_inch: 5.8247
+  plate_center_x: 936.5
+
+detection_roi:
+  x: 374
+  y: 343
+  width: 353
+  height: 343

@@ -1,0 +1,4 @@
+player_id,player_name,pitcher_hand,pitch_type,abbreviation
+TOBrien1,Trafton OBrien,R,Fastball,FF
+TOBrien1,Trafton OBrien,R,Curveball,CB
+TOBrien1,Trafton OBrien,R,Splitter,FS

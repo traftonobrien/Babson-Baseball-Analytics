@@ -1,6 +1,7 @@
 """Extract frames from input video for SAM 2 processing."""
 
 import argparse
+import glob
 import os
 import cv2
 import yaml
@@ -15,6 +16,9 @@ def extract_frames(config, video_override=None):
     video_path = video_override or config["paths"]["input_video"]
     output_dir = config["paths"]["frames_dir"]
     os.makedirs(output_dir, exist_ok=True)
+    # Remove old frames to avoid size mismatches across runs
+    for old in glob.glob(os.path.join(output_dir, "*.jpg")):
+        os.remove(old)
 
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():

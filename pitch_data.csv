@@ -1,0 +1,3 @@
+pitch_number,pitcher_name,pitcher_hand,pitch_type,target_frame,arrival_frame,target_x,target_y,ball_x,ball_y,total_miss_px,total_miss_inches,h_miss_px,h_miss_inches,h_direction,v_miss_px,v_miss_inches,v_direction,target_quadrant,result_quadrant,timestamp
+1,Shane K,R,Fastball,60,115,968.3,827.4,867.5,862.0,106.6,18.30,100.8,17.31,glove-side,34.6,5.94,low,DM,,3.833
+2,Shane K,R,Fastball,60,115,968.3,827.4,867.5,862.0,106.6,18.30,100.8,17.31,glove-side,34.6,5.94,low,DM,,3.833

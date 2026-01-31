@@ -1,4 +1,25 @@
-# Virtual Environment
+
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+.next/
+out/
+
+# OS
+.DS_Store
+
+# Large raw videos (optional later)
+frames/
+sourcevideo/
+
+# Secrets
+credentials.json
+.env# Virtual Environment
 venv/
 env/
 ENV/
@@ -28,3 +49,8 @@ Thumbs.db
 # Output files
 output/*
 !output/.gitkeep
+
+# Local processing outputs (do not commit)
+outings/
+*.npy
+*.npz
