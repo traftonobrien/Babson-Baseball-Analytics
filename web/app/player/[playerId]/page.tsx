@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { getPlayer } from "@/lib/dataIndex";
 import { usePitchData } from "../../hooks/usePitchData";
 import { applyFilters } from "../../utils";
 import type { Pitch, Filters } from "../../types";
+import type { Lane } from "../../components/LaneReport";
 import FilterPanel from "../../components/FilterPanel";
 import PitchTable from "../../components/PitchTable";
 import VideoPlayer from "../../components/VideoPlayer";
@@ -20,6 +21,14 @@ const EMPTY_FILTERS: Filters = {
   maxMiss: null,
 };
 
+function laneOf(pitch: Pitch): Lane {
+  const h = pitch.h_miss_signed;
+  if (h == null || isNaN(h)) return "middle";
+  if (h <= -4) return "outside";
+  if (h >= 4) return "inside";
+  return "middle";
+}
+
 export default function PlayerDashboard() {
   const { playerId } = useParams<{ playerId: string }>();
   const player = getPlayer(playerId);
@@ -28,6 +37,23 @@ export default function PlayerDashboard() {
   const { pitches, loading, error } = usePitchData(outing?.csvPath ?? "");
   const [selected, setSelected] = useState<Pitch | null>(null);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
+  const [activeLane, setActiveLane] = useState<Lane | null>(null);
+
+  const filtered = applyFilters(pitches, filters);
+  const laneFiltered = activeLane
+    ? filtered.filter((p) => laneOf(p) === activeLane)
+    : filtered;
+
+  // Keep selected pitch valid when the visible list changes
+  useEffect(() => {
+    if (selected && !laneFiltered.some((p) => p.pitch_number === selected.pitch_number)) {
+      setSelected(laneFiltered.length > 0 ? laneFiltered[0] : null);
+    }
+  }, [laneFiltered, selected]);
+
+  const toggleLane = (lane: Lane) => {
+    setActiveLane((prev) => (prev === lane ? null : lane));
+  };
 
   if (!player || !outing) {
     return (
@@ -53,8 +79,6 @@ export default function PlayerDashboard() {
     );
   }
 
-  const filtered = applyFilters(pitches, filters);
-
   return (
     <div className="h-screen flex flex-col bg-zinc-950 text-zinc-100">
       {/* Header */}
@@ -68,7 +92,7 @@ export default function PlayerDashboard() {
           </span>
         </div>
         <span className="text-xs text-zinc-500">
-          {filtered.length} / {pitches.length} pitches
+          {laneFiltered.length} / {pitches.length} pitches
         </span>
       </header>
 
@@ -84,7 +108,7 @@ export default function PlayerDashboard() {
             />
           </div>
           <PitchTable
-            pitches={filtered}
+            pitches={laneFiltered}
             selected={selected}
             onSelect={setSelected}
           />
@@ -100,7 +124,7 @@ export default function PlayerDashboard() {
               clipsDir={outing.clipsDir}
             />
             <StrikeZoneScatter
-              pitches={filtered}
+              pitches={laneFiltered}
               selected={selected}
               onSelect={setSelected}
             />
@@ -110,12 +134,18 @@ export default function PlayerDashboard() {
           <MLBAveragesBar />
 
           {/* Per-pitch-type summary */}
-          {filtered.length > 0 && (
-            <PitchTypeSummaryCards pitches={filtered} />
+          {laneFiltered.length > 0 && (
+            <PitchTypeSummaryCards pitches={laneFiltered} />
           )}
 
-          {/* Lane Report */}
-          {filtered.length > 0 && <LaneReport pitches={filtered} />}
+          {/* Lane Report — receives un-lane-filtered list so counts don't disappear */}
+          {filtered.length > 0 && (
+            <LaneReport
+              pitches={filtered}
+              activeLane={activeLane}
+              onSelectLane={toggleLane}
+            />
+          )}
         </main>
       </div>
     </div>
