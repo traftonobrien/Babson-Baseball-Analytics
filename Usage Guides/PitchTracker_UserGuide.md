@@ -37,27 +37,42 @@ mkdir -p "outings/$OUTING"
 
 ### A) Cut one game video into pitch clips
 
-python3 src/segment_pitches.py \
+python3 -m src.segment_pitches \
   --manual \
   --video "outings/yyyy_mm_dd_LASTNAME/inning1.mp4" \
   --output-dir "outings/yyyy_mm_dd_LASTNAME/clips" \
   --player-id "InitialLastName1" \
   --pad-before 10 \
   --pad-after 10
+  
 
 	
 ###  B) Add inning 2 into the same outing (continues numbering)
 
-python3 src/segment_pitches.py \
+python3 -m src.segment_pitches \
   --manual \
   --video "outings/yyyy_mm_dd_LASTNAME/inning2.mp4" \
-  --output-dir "outings/yyyy_mm_dd_LASTNAME/clips" \
+  --output-dir "outings/yyyy_mm_dd_LASTNAME/" \
   --player-id "InitialLastName1" \
   --pad-before 10 \
   --pad-after 10
 
 
 ## STEP 2: Process All Pitch Clips (Main Command)
+
+# IF NOT PROMPTING ROI SELECTION
+rm -f outings/yyyy_mm_dd_LASTNAME/roi.json
+
+python3 - <<'PY'
+import json
+p="outings/yyyy_mm_dd_LASTNAME/clips/pitch_log.json"
+d=json.load(open(p))
+d.pop("roi", None)
+json.dump(d, open(p,"w"), indent=2)
+print("removed roi from pitch_log")
+PY
+
+# PROCESS
 
 python3 src/batch_process.py \
   --clips-dir "outings/yyyy_mm_dd_LASTNAME/clips" \
@@ -70,11 +85,51 @@ python3 src/batch_process.py \
 
 ## STEP 3: Add To Web App
 
+# Copy outing data:
+cp outings/yyyy_mm_dd_LASTNAME/pitch_data_overlay_lite.csv \
+   web/public/data/yyyy_mm_dd_LASTNAME/
 
-  
-  
-  
-  
+cp outings/yyyy_mm_dd_LASTNAME/results/*.mp4 \
+   web/public/data/yyyy_mm_dd_LASTNAME/results/
+   
+# Then update:
+web/lib/dataIndex.ts
+
+# Add new outing entry:
+{
+  playerId: "InitialLastName1",
+  playerName: "Full Name",
+  date: "yyyy-mm-dd",
+  csvPath: "/data/yyyy_mm_dd_LASTNAME/pitch_data_overlay_lite.csv",
+  overlayDir: "/data/yyyy_mm_dd_LASTNAME/results",
+  clipsDir: "/data/yyyy_mm_dd_LASTNAME/clips"
+}
+
+# Restart Web App
+cd web
+npm run dev
+
+## STEP 4: Publish to GitHub (so Vercel deploys)
+
+# A) Go to repo root (pitch-tracker)
+cd /Users/traftonobrien/Desktop/pitch-tracker
+
+# B) Run publisher
+./publish_outing.sh yyyy_mm_dd_LASTNAME
+
+
+## UPDATE ARSENALS: Publish to GitHub (so Vercel deploys)
+
+# Copy to Web App
+cd /Users/traftonobrien/Desktop/pitch-tracker
+cp data/Arsenals.csv web/public/data/Arsenals.csv
+
+# Commit and Push
+git add data/Arsenals.csv web/public/data/Arsenals.csv
+git commit -m "Update arsenals CSV"
+git push
+
+
   
   
   

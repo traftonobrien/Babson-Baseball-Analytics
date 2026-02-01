@@ -26,6 +26,19 @@ export const players: Player[] = [
       },
     ],
   },
+  {
+    id: "JFinkelstein1",
+    name: "Jason Finkelstein",
+    outings: [
+      {
+        id: "2024_04_27_Finkelstein",
+        label: "Apr 27, 2024 – Finkelstein (63 pitches)",
+        csvPath: "/data/2024_04_27_Finkelstein/pitch_data_overlay_lite.csv",
+        overlayDir: "/data/2024_04_27_Finkelstein/results",
+        clipsDir: "/data/2024_04_27_Finkelstein/clips",
+      },
+    ],
+  },
 ];
 
 export function getPlayer(id: string): Player | undefined {

@@ -192,6 +192,129 @@ def _load_detection_roi(config):
     return (roi_cfg["x"], roi_cfg["y"], roi_cfg["width"], roi_cfg["height"])
 
 
+def _parse_roi_dict(d):
+    """Extract (x, y, w, h) from a dict with various key conventions."""
+    x = d.get("x")
+    y = d.get("y")
+    w = d.get("w", d.get("width"))
+    h = d.get("h", d.get("height"))
+    if any(v is None for v in (x, y, w, h)):
+        return None
+    return (int(x), int(y), int(w), int(h))
+
+
+def _persist_roi(roi_xywh, outing_dir, pitch_log_path=None):
+    """Save ROI to <outing_dir>/roi.json and optionally into pitch_log.json."""
+    x, y, w, h = roi_xywh
+    roi_dict = {"x": x, "y": y, "width": w, "height": h}
+
+    # Write roi.json
+    roi_json_path = os.path.join(outing_dir, "roi.json")
+    with open(roi_json_path, "w") as f:
+        json.dump(roi_dict, f, indent=2)
+    print(f"  Saved ROI to {roi_json_path}")
+
+    # Update pitch_log.json with top-level "roi" key
+    if pitch_log_path and os.path.exists(pitch_log_path):
+        with open(pitch_log_path) as f:
+            log_data = json.load(f)
+        if isinstance(log_data, dict):
+            log_data["roi"] = roi_dict
+            with open(pitch_log_path, "w") as f:
+                json.dump(log_data, f, indent=2)
+            print(f"  Updated ROI in {pitch_log_path}")
+
+
+def _resolve_roi(args, clips, outing_dir, pitch_log_path):
+    """Resolve detection ROI from per-outing sources only (in priority order):
+    1. --roi CLI flag (explicit)
+    2. --roi-file CLI flag (explicit)
+    3. <outing_dir>/roi.json (per-outing)
+    4. pitch_log.json top-level "roi" key (per-outing)
+    5. Interactive selection (always the final fallback)
+
+    config.yaml is intentionally NOT consulted — ROI is strictly per-outing.
+
+    Returns (x, y, w, h) or None.
+    """
+    roi = None
+    source = None
+
+    # 1. --roi "x,y,w,h"
+    if args.roi:
+        parts = [int(v.strip()) for v in args.roi.split(",")]
+        if len(parts) == 4:
+            roi = tuple(parts)
+            source = "ROI provided via --roi"
+        else:
+            print(f"ERROR: --roi must be 4 comma-separated ints, got: {args.roi}")
+            return None
+
+    # 2. --roi-file
+    if roi is None and args.roi_file:
+        if not os.path.exists(args.roi_file):
+            print(f"ERROR: --roi-file not found: {args.roi_file}")
+            return None
+        with open(args.roi_file) as f:
+            roi = _parse_roi_dict(json.load(f))
+        if roi is None:
+            print(f"ERROR: --roi-file missing x/y/w/h keys: {args.roi_file}")
+            return None
+        source = f"ROI provided via --roi-file"
+
+    # 3. <outing_dir>/roi.json
+    if roi is None:
+        roi_json = os.path.join(outing_dir, "roi.json")
+        if os.path.exists(roi_json):
+            with open(roi_json) as f:
+                roi = _parse_roi_dict(json.load(f))
+            if roi:
+                source = "ROI loaded from outing roi.json"
+
+    # 4. pitch_log.json top-level "roi"
+    if roi is None and pitch_log_path and os.path.exists(pitch_log_path):
+        with open(pitch_log_path) as f:
+            log_data = json.load(f)
+        if isinstance(log_data, dict) and "roi" in log_data:
+            roi = _parse_roi_dict(log_data["roi"])
+            if roi:
+                source = "ROI loaded from pitch_log.json"
+
+    # 5. Interactive selection (final fallback)
+    if roi is None:
+        require = args.require_roi and not args.no_require_roi
+        if not require:
+            print("WARNING: No per-outing ROI found. Processing without crop (--no-require-roi).")
+            return None
+        if not clips:
+            print("ERROR: No clips found, cannot open interactive ROI selector.")
+            return None
+        print("No per-outing ROI found. Opening interactive selector on first clip...")
+        first_clip = os.path.join(args.clips_dir, clips[0])
+        cap = cv2.VideoCapture(first_clip)
+        ret, frame = cap.read()
+        cap.release()
+        if not ret:
+            print("ERROR: Cannot read first clip frame for ROI selection.")
+            return None
+        from src.calibrate import interactive_set_roi
+        x, y, w, h = interactive_set_roi(frame)
+        roi = (x, y, w, h)
+        source = "ROI selected interactively (saved to outing)"
+
+    print(f"  {source}")
+    print(f"  Using ROI: x={roi[0]}, y={roi[1]}, w={roi[2]}, h={roi[3]}")
+
+    # Persist to outing if not already saved there
+    roi_json_expected = os.path.join(outing_dir, "roi.json")
+    already_on_disk = source in ("ROI loaded from outing roi.json",
+                                 "ROI loaded from pitch_log.json")
+    if not already_on_disk:
+        _persist_roi(roi, outing_dir, pitch_log_path)
+
+    return roi
+
+
 def _catcher_roi(frame_h, frame_w, detection_roi=None):
     """Return (x1, y1, x2, y2) for the catcher-only sub-region."""
     if detection_roi is not None:
@@ -1261,6 +1384,22 @@ def render_overlay_lite(clip_path, target_frame, arrival_frame,
 # Per-pitch processing: FAST mode (image predictor only, no overlay)
 # ---------------------------------------------------------------------------
 
+
+def _get_target_arrival(log_entry):
+    """Extract (target_frame, arrival_frame) from a pitch_log entry.
+
+    Prefers 'target_frame'/'arrival_frame' keys, falls back to legacy 'T'/'A'.
+    Returns (None, None) if log_entry is None or keys are missing.
+    """
+    if log_entry is None:
+        return None, None
+    t = log_entry.get("target_frame", log_entry.get("T"))
+    a = log_entry.get("arrival_frame", log_entry.get("A"))
+    return t, a
+
+
+# ---------------------------------------------------------------------------
+
 def process_single_pitch_fast(clip_path, base_config, pitch_number,
                               player_id, pitcher_hand, csv_path, zone_height,
                               output_dir, image_predictor,
@@ -1805,6 +1944,15 @@ def main():
                         help="After preview, activate Terminal/iTerm (default: ON on macOS)")
     parser.add_argument("--no-focus-terminal", action="store_true",
                         help="Disable auto-focus of Terminal after preview")
+    # ROI arguments
+    parser.add_argument("--roi", type=str, default=None,
+                        help='Detection ROI as "x,y,w,h" (e.g. "374,343,353,343")')
+    parser.add_argument("--roi-file", type=str, default=None,
+                        help="Path to JSON file with keys x, y, w/width, h/height")
+    parser.add_argument("--require-roi", action="store_true", default=True,
+                        help="Require ROI before processing (default: True)")
+    parser.add_argument("--no-require-roi", action="store_true",
+                        help="Allow processing without ROI (skip interactive prompt)")
     args = parser.parse_args()
 
     # Apply focus-terminal setting to module-level flag
@@ -1911,8 +2059,11 @@ def main():
         return
 
     # Load pitch_log.json if it exists (from segment_pitches.py --manual or mark_pitches.py)
+    # Check both parent dir (standard) and clips dir itself (some workflows put it there)
     parent_dir = os.path.dirname(args.clips_dir.rstrip("/"))
     pitch_log_path = os.path.join(parent_dir, "pitch_log.json")
+    if not os.path.exists(pitch_log_path):
+        pitch_log_path = os.path.join(args.clips_dir, "pitch_log.json")
     pitch_log_by_clip = {}
     if os.path.exists(pitch_log_path):
         with open(pitch_log_path) as f:
@@ -1947,6 +2098,24 @@ def main():
     if args.start_at > 1:
         print(f"Starting at pitch #{args.start_at}")
 
+    # --- Resolve ROI before any processing ---
+    outing_dir = parent_dir
+    resolved_roi = _resolve_roi(
+        args, clips, outing_dir,
+        pitch_log_path if os.path.exists(pitch_log_path) else None,
+    )
+    if resolved_roi is not None:
+        # Inject into base_config so _load_detection_roi() returns it
+        base_config["detection_roi"] = {
+            "x": resolved_roi[0], "y": resolved_roi[1],
+            "width": resolved_roi[2], "height": resolved_roi[3],
+        }
+    else:
+        require = args.require_roi and not args.no_require_roi
+        if require:
+            print("ERROR: ROI is required but could not be resolved. Aborting.")
+            return
+
     results_dir = os.path.join(parent_dir, "results")
 
     processed = []
@@ -1962,13 +2131,8 @@ def main():
 
         # Look up pre-marked frames from pitch_log.json by clip filename
         log_entry = pitch_log_by_clip.get(clip_name)
-        known_target = None
-        known_arrival = None
-        known_pitch_type = None
-        if log_entry is not None:
-            known_target = log_entry["target_frame"]
-            known_arrival = log_entry["arrival_frame"]
-            known_pitch_type = log_entry.get("pitch_type", "")
+        known_target, known_arrival = _get_target_arrival(log_entry)
+        known_pitch_type = log_entry.get("pitch_type", "") if log_entry else None
 
         if debug_mode:
             result, pitch_timer = process_single_pitch_debug(
@@ -2067,13 +2231,8 @@ def main():
                 for p in low_conf:
                     clip_path = os.path.join(args.clips_dir, p["clip"])
                     log_entry = pitch_log_by_clip.get(p["clip"])
-                    kt = None
-                    ka = None
-                    kpt = None
-                    if log_entry is not None:
-                        kt = log_entry["target_frame"]
-                        ka = log_entry["arrival_frame"]
-                        kpt = log_entry.get("pitch_type", "")
+                    kt, ka = _get_target_arrival(log_entry)
+                    kpt = log_entry.get("pitch_type", "") if log_entry else None
                     if debug_mode:
                         process_single_pitch_debug(
                             clip_path=clip_path,

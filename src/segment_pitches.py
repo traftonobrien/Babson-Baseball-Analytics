@@ -593,6 +593,12 @@ def manual_segment(video_path, output_dir, pad_before=10, pad_after=10, player_m
         )),
         "pitches": all_pitches,
     }
+    # Preserve existing ROI if present
+    if os.path.exists(log_path):
+        with open(log_path) as f:
+            _existing = json.load(f)
+        if isinstance(_existing, dict) and "roi" in _existing:
+            log["roi"] = _existing["roi"]
     # Embed player metadata if provided
     if player_meta:
         log.update(player_meta)
@@ -677,6 +683,8 @@ if __name__ == "__main__":
             "min_gap_seconds": args.min_gap,
             "pitches": pitches,
         }
+        if roi is not None:
+            log["roi"] = {"x": roi[0], "y": roi[1], "width": roi[2], "height": roi[3]}
         if _player_meta:
             log.update(_player_meta)
         log_path = os.path.join(args.output_dir, "pitch_log.json")
