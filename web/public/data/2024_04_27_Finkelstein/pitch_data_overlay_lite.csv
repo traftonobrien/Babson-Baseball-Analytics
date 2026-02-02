@@ -8,7 +8,7 @@ pitch_number,pitcher_name,pitcher_hand,pitch_type,target_frame,arrival_frame,tar
 7,JFinkelstein1,R,FF,10,88,709.4,364.0,727.0,404.8,44.4,7.63,17.6,3.02,arm-side,-3.02,40.8,7.00,low,7.00,DM,DA,inside,2.933
 8,JFinkelstein1,R,SL,10,49,693.8,355.2,678.7,422.1,68.6,11.77,15.0,2.58,glove-side,2.58,66.9,11.48,low,11.48,DM,,inside,1.633
 9,JFinkelstein1,R,FF,10,98,741.0,382.4,710.3,250.9,135.0,23.18,30.7,5.27,glove-side,5.27,131.5,22.58,high,-22.58,DM,,inside,3.267
-10,JFinkelstein1,R,CH,10,70,692.6,362.6,699.0,372.2,11.6,2.00,6.5,1.11,arm-side,-1.11,9.7,1.66,low,1.66,DM,DM,inside,2.333
+10,JFinkelstein1,R,SL,10,70,692.6,362.6,699.0,372.2,11.6,2.00,6.5,1.11,arm-side,-1.11,9.7,1.66,low,1.66,DM,DM,inside,2.333
 11,JFinkelstein1,R,FF,10,62,690.2,353.5,683.9,325.7,28.5,4.89,6.3,1.08,glove-side,1.08,27.8,4.77,high,-4.77,DM,MM,inside,2.067
 12,JFinkelstein1,R,FF,10,63,692.8,365.1,671.9,335.4,36.3,6.23,20.9,3.58,glove-side,3.58,29.7,5.10,high,-5.10,DM,MI,inside,2.100
 13,JFinkelstein1,R,SL,10,51,668.8,367.7,645.6,357.2,25.5,4.38,23.2,3.98,glove-side,3.98,10.6,1.81,high,-1.81,DM,MI,inside,1.700
