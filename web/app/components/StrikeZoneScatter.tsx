@@ -2,7 +2,7 @@
 
 import type { Pitch } from "../types";
 import { pitchColor } from "../utils";
-import ZoneOverlay, { PAD, SIZE, toSvg } from "./ZoneOverlay";
+import { ScatterOverlay, PAD, SIZE, toSvg } from "./ZoneOverlay";
 
 interface Props {
   pitches: Pitch[];
@@ -21,11 +21,11 @@ export default function StrikeZoneScatter({
         Miss Scatter (inches from target)
       </h3>
       <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="w-full max-w-xs mx-auto">
-        <ZoneOverlay />
+        <ScatterOverlay />
 
         {/* Pitch dots */}
         {pitches.map((p) => {
-          const px = toSvg(p.h_miss_signed);
+          const px = toSvg(-p.h_miss_signed);
           const py = toSvg(p.v_miss_signed);
           const isSel = selected?.pitch_number === p.pitch_number;
           return (

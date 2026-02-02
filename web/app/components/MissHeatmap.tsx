@@ -3,7 +3,7 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import type { Pitch } from "../types";
 import { config } from "@/lib/config";
-import ZoneOverlay, { PAD, SIZE, INNER } from "./ZoneOverlay";
+import { CatcherZoneOverlay, PAD, SIZE, INNER } from "./ZoneOverlay";
 
 /* ------------------------------------------------------------------ */
 /*  Props                                                              */
@@ -58,7 +58,7 @@ function buildFields(pitches: Pitch[], sigma: number): Fields {
   const radiusCells = Math.ceil((3 * sigma) / step);
 
   for (const p of pitches) {
-    const hVal = p.h_miss_signed;
+    const hVal = -p.h_miss_signed;
     const vVal = p.v_miss_signed;
     if (hVal == null || vVal == null || isNaN(hVal) || isNaN(vVal)) continue;
 
@@ -258,7 +258,7 @@ export default function MissHeatmap({ pitches }: Props) {
           viewBox={`0 0 ${SIZE} ${SIZE}`}
           className="absolute inset-0 w-full h-full pointer-events-none"
         >
-          <ZoneOverlay />
+          <CatcherZoneOverlay />
         </svg>
 
         {/* Tooltip */}
