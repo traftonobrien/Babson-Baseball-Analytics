@@ -3,6 +3,9 @@ import type { Pitch } from "@/app/types";
 /** Minimum pitch count to qualify for best/worst/tendency analysis. */
 const MIN_SAMPLE = 5;
 
+/** Distance threshold (inches) for "on target". */
+export const ON_TARGET_THRESHOLD_IN = 8;
+
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
@@ -127,11 +130,10 @@ function stdDev(vals: number[]): number {
   return Math.sqrt(sqDiffs.reduce((a, b) => a + b, 0) / (vals.length - 1));
 }
 
-const HIT_QUADRANTS = new Set(["DI", "DM", "MI", "MM"]);
-
-function isHitSpot(p: Pitch): boolean {
-  const q = (p.result_quadrant ?? "").trim().toUpperCase();
-  return HIT_QUADRANTS.has(q);
+function isOnTarget(p: Pitch): boolean {
+  const miss = p.total_miss_inches;
+  if (miss == null || isNaN(miss)) return false;
+  return miss <= ON_TARGET_THRESHOLD_IN;
 }
 
 function laneOf(p: Pitch): string {
@@ -172,7 +174,7 @@ function buildHorizontalThirds(
   const lanes: HorizontalThirdSummary[] = ["Inside", "Middle", "Outside"].map(
     (lane) => {
       const group = laneMap.get(lane) ?? [];
-      const hits = group.filter(isHitSpot).length;
+      const hits = group.filter(isOnTarget).length;
       return {
         lane,
         count: group.length,
@@ -229,7 +231,7 @@ export function buildReport(
   const medianMiss = median(misses);
   const missStdDev = stdDev(misses);
 
-  const hitCount = pitches.filter(isHitSpot).length;
+  const hitCount = pitches.filter(isOnTarget).length;
   const hitSpotPct = totalPitches > 0 ? (hitCount / totalPitches) * 100 : 0;
 
   const pitcherHand = pitches[0]?.pitcher_hand ?? "R";
@@ -246,7 +248,7 @@ export function buildReport(
     .sort((a, b) => b[1].length - a[1].length)
     .map(([pitchType, group]) => {
       const m = group.map((p) => p.total_miss_inches);
-      const hits = group.filter(isHitSpot).length;
+      const hits = group.filter(isOnTarget).length;
       return {
         pitchType,
         count: group.length,
@@ -291,7 +293,7 @@ export function buildReport(
   const lanesDetailed: LaneDetailed[] = ["Inside", "Middle", "Outside"].map(
     (lane) => {
       const group = laneMap.get(lane) ?? [];
-      const hits = group.filter(isHitSpot).length;
+      const hits = group.filter(isOnTarget).length;
       return {
         lane,
         count: group.length,

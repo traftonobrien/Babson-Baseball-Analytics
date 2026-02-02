@@ -7,6 +7,7 @@ import { usePitchData } from "@/app/hooks/usePitchData";
 import { pitchColor } from "@/lib/pitchColors";
 import {
   buildReport,
+  ON_TARGET_THRESHOLD_IN,
   type Insight,
   type LaneDetailed,
   type PitchTypeSummary,
@@ -121,6 +122,7 @@ function ReportInner() {
           label="On Target"
           value={report.kpis.hitSpotPct.toFixed(0)}
           unit="%"
+          subtitle={`≤ ${ON_TARGET_THRESHOLD_IN}″ from target`}
           highlight={
             report.kpis.hitSpotPct >= 50
               ? "good"
@@ -320,7 +322,7 @@ function PitchMixTable({ data }: { data: PitchTypeSummary[] }) {
           <th className="py-[3px] pr-1.5 text-right font-semibold">Avg V</th>
           <th className="py-[3px] pr-1.5 text-right font-semibold text-zinc-600 print:text-zinc-500">Med</th>
           <th className="py-[3px] pr-1.5 text-right font-semibold text-zinc-600 print:text-zinc-500">SD</th>
-          <th className="py-[3px] text-right font-semibold">On Tgt</th>
+          <th className="py-[3px] text-right font-semibold" title={`≤ ${ON_TARGET_THRESHOLD_IN}″`}>On Tgt</th>
         </tr>
       </thead>
       <tbody>
