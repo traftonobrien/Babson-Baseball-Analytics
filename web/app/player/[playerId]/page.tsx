@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { getPlayer } from "@/lib/dataIndex";
 import { usePitchData } from "../../hooks/usePitchData";
@@ -14,6 +14,9 @@ import StrikeZoneScatter from "../../components/StrikeZoneScatter";
 import LaneReport from "../../components/LaneReport";
 import PitchTypeSummaryCards from "../../components/PitchTypeSummaryCards";
 import MLBAveragesBar from "../../components/MLBAveragesBar";
+import MissHeatmap from "../../components/MissHeatmap";
+
+type VizMode = "scatter" | "heatmap";
 
 const EMPTY_FILTERS: Filters = {
   pitchTypes: new Set(),
@@ -29,20 +32,140 @@ function laneOf(pitch: Pitch): Lane {
   return "middle";
 }
 
+/* ------------------------------------------------------------------ */
+/*  Pitch-type override helpers (localStorage)                         */
+/* ------------------------------------------------------------------ */
+
+type Overrides = Record<number, string>; // pitch_number → new pitch_type
+
+function storageKey(outingId: string): string {
+  return `pitchTypeOverrides:${outingId}`;
+}
+
+function loadOverrides(outingId: string): Overrides {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = localStorage.getItem(storageKey(outingId));
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveOverrides(outingId: string, overrides: Overrides): void {
+  if (typeof window === "undefined") return;
+  if (Object.keys(overrides).length === 0) {
+    localStorage.removeItem(storageKey(outingId));
+  } else {
+    localStorage.setItem(storageKey(outingId), JSON.stringify(overrides));
+  }
+}
+
+function applyOverrides(pitches: Pitch[], overrides: Overrides): Pitch[] {
+  if (Object.keys(overrides).length === 0) return pitches;
+  return pitches.map((p) => {
+    const newType = overrides[p.pitch_number];
+    if (newType && newType !== p.pitch_type) {
+      return { ...p, pitch_type: newType };
+    }
+    return p;
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/*  Component                                                          */
+/* ------------------------------------------------------------------ */
+
 export default function PlayerDashboard() {
   const { playerId } = useParams<{ playerId: string }>();
   const player = getPlayer(playerId);
   const outing = player?.outings[0];
 
-  const { pitches, loading, error } = usePitchData(outing?.csvPath ?? "");
+  const { pitches: rawPitches, loading, error } = usePitchData(outing?.csvPath ?? "");
+  const [overrides, setOverrides] = useState<Overrides>({});
   const [selected, setSelected] = useState<Pitch | null>(null);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [activeLane, setActiveLane] = useState<Lane | null>(null);
+  const [vizMode, setVizMode] = useState<VizMode>("scatter");
+  const [heatmapPitchType, setHeatmapPitchType] = useState("All");
+
+  // Load overrides from localStorage on mount / outing change
+  useEffect(() => {
+    if (outing) setOverrides(loadOverrides(outing.id));
+  }, [outing?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Pitches with overrides applied — used everywhere downstream
+  const pitches = useMemo(
+    () => applyOverrides(rawPitches, overrides),
+    [rawPitches, overrides],
+  );
+
+  // Set of edited pitch numbers (for UI badge)
+  const editedPitches = useMemo(
+    () => new Set(Object.keys(overrides).map(Number)),
+    [overrides],
+  );
+
+  // Available pitch type options: union of original types + any override values
+  const pitchTypeOptions = useMemo(() => {
+    const types = new Set<string>();
+    for (const p of rawPitches) {
+      if (p.pitch_type) types.add(p.pitch_type);
+    }
+    for (const v of Object.values(overrides)) {
+      if (v) types.add(v);
+    }
+    return Array.from(types).sort();
+  }, [rawPitches, overrides]);
+
+  const handleEditPitchType = useCallback(
+    (pitchNumber: number, newType: string) => {
+      if (!outing) return;
+      setOverrides((prev) => {
+        // Find original type — if the edit returns it to original, remove the override
+        const original = rawPitches.find((p) => p.pitch_number === pitchNumber);
+        const next = { ...prev };
+        if (original && original.pitch_type === newType) {
+          delete next[pitchNumber];
+        } else {
+          next[pitchNumber] = newType;
+        }
+        saveOverrides(outing.id, next);
+        return next;
+      });
+    },
+    [outing, rawPitches],
+  );
+
+  const handleResetEdits = useCallback(() => {
+    if (!outing) return;
+    setOverrides({});
+    saveOverrides(outing.id, {});
+  }, [outing]);
 
   const filtered = applyFilters(pitches, filters);
   const laneFiltered = activeLane
     ? filtered.filter((p) => laneOf(p) === activeLane)
     : filtered;
+
+  // Unique pitch types present in the filtered data (for heatmap selector)
+  const heatmapPitchTypes = useMemo(() => {
+    const types = new Set(laneFiltered.map((p) => p.pitch_type).filter(Boolean));
+    return ["All", ...Array.from(types).sort()];
+  }, [laneFiltered]);
+
+  // Heatmap data filtered by local pitch type selector
+  const heatmapData = useMemo(() => {
+    if (heatmapPitchType === "All") return laneFiltered;
+    return laneFiltered.filter((p) => p.pitch_type === heatmapPitchType);
+  }, [laneFiltered, heatmapPitchType]);
+
+  // Reset heatmap pitch type when it's no longer available
+  useEffect(() => {
+    if (!heatmapPitchTypes.includes(heatmapPitchType)) {
+      setHeatmapPitchType("All");
+    }
+  }, [heatmapPitchTypes, heatmapPitchType]);
 
   // Keep selected pitch valid when the visible list changes
   useEffect(() => {
@@ -79,6 +202,8 @@ export default function PlayerDashboard() {
     );
   }
 
+  const hasEdits = editedPitches.size > 0;
+
   return (
     <div className="h-screen flex flex-col bg-zinc-950 text-zinc-100">
       {/* Header */}
@@ -107,27 +232,90 @@ export default function PlayerDashboard() {
               onChange={setFilters}
             />
           </div>
+          {/* Reset edits button */}
+          {hasEdits && (
+            <div className="px-3 py-1.5 border-b border-zinc-800 flex items-center justify-between">
+              <span className="text-[10px] text-amber-400">
+                {editedPitches.size} pitch type{editedPitches.size !== 1 ? "s" : ""} edited
+              </span>
+              <button
+                type="button"
+                onClick={handleResetEdits}
+                className="text-[10px] text-zinc-400 hover:text-zinc-200 underline transition-colors"
+              >
+                Reset edits
+              </button>
+            </div>
+          )}
           <PitchTable
             pitches={laneFiltered}
             selected={selected}
             onSelect={setSelected}
+            editedPitches={editedPitches}
+            onEditPitchType={handleEditPitchType}
+            pitchTypeOptions={pitchTypeOptions}
           />
         </aside>
 
         {/* Main content */}
         <main className="flex-1 flex flex-col overflow-y-auto p-4 gap-4">
-          {/* Video + Scatter */}
+          {/* Video + Chart */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <VideoPlayer
               pitch={selected}
               overlayDir={outing.overlayDir}
               clipsDir={outing.clipsDir}
             />
-            <StrikeZoneScatter
-              pitches={laneFiltered}
-              selected={selected}
-              onSelect={setSelected}
-            />
+            <div>
+              {/* Viz toggle + heatmap pitch type selector */}
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <div className="flex gap-1">
+                  {(["scatter", "heatmap"] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => setVizMode(mode)}
+                      className={[
+                        "px-3 py-1 text-xs rounded-md capitalize transition-colors",
+                        vizMode === mode
+                          ? "bg-zinc-700 text-zinc-100"
+                          : "bg-zinc-900 text-zinc-500 hover:text-zinc-300",
+                      ].join(" ")}
+                    >
+                      {mode}
+                    </button>
+                  ))}
+                </div>
+                {vizMode === "heatmap" && heatmapPitchTypes.length > 2 && (
+                  <div className="flex gap-1 ml-2 border-l border-zinc-800 pl-2">
+                    {heatmapPitchTypes.map((pt) => (
+                      <button
+                        key={pt}
+                        type="button"
+                        onClick={() => setHeatmapPitchType(pt)}
+                        className={[
+                          "px-2 py-0.5 text-xs rounded transition-colors",
+                          heatmapPitchType === pt
+                            ? "bg-zinc-600 text-zinc-100"
+                            : "bg-zinc-900 text-zinc-500 hover:text-zinc-300",
+                        ].join(" ")}
+                      >
+                        {pt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {vizMode === "scatter" ? (
+                <StrikeZoneScatter
+                  pitches={laneFiltered}
+                  selected={selected}
+                  onSelect={setSelected}
+                />
+              ) : (
+                <MissHeatmap pitches={heatmapData} />
+              )}
+            </div>
           </div>
 
           {/* MLB averages bar */}
