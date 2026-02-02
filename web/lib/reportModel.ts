@@ -1,0 +1,444 @@
+import type { Pitch } from "@/app/types";
+
+/** Minimum pitch count to qualify for best/worst/tendency analysis. */
+const MIN_SAMPLE = 5;
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
+
+export type ReportScope = "outing" | "overall";
+
+export interface ReportMeta {
+  scope: ReportScope;
+  playerName: string;
+  pitcherHand: string;
+  outingLabel: string;
+  totalPitches: number;
+  generatedAt: string;
+}
+
+export interface KPIs {
+  avgMiss: number;
+  medianMiss: number;
+  stdDev: number;
+  hitSpotPct: number;
+  bestPitchType: string | null;
+  bestPitchAvgMiss: number;
+  worstPitchType: string | null;
+  worstPitchAvgMiss: number;
+}
+
+export interface PitchTypeSummary {
+  pitchType: string;
+  count: number;
+  pct: number;
+  avgMiss: number;
+  medianMiss: number;
+  stdDev: number;
+  avgH: number;
+  avgV: number;
+  avgHAbs: number;
+  avgVAbs: number;
+  hitSpotPct: number;
+  lowSample: boolean;
+}
+
+export interface LaneDetailed {
+  lane: string;
+  count: number;
+  usagePct: number;
+  onTargetPct: number;
+  avgMiss: number;
+  avgHAbs: number;
+  avgVAbs: number;
+  avgHSigned: number;
+  avgVSigned: number;
+}
+
+export interface HorizontalThirdSummary {
+  lane: string; // "Inside" | "Middle" | "Outside"
+  count: number;
+  pct: number;
+  avgMiss: number;
+  onTargetPct: number;
+  avgHAbs: number;
+  avgVAbs: number;
+  avgHSigned: number;
+  avgVSigned: number;
+}
+
+export interface PitchGroupHorizontalCommand {
+  label: string; // "Fastball" | "Breaking Ball"
+  totalPitches: number;
+  lanes: HorizontalThirdSummary[];
+  takeaway: string | null;
+}
+
+/** Per-pitch-type directional tendency for the "Miss Tendency" section. */
+export interface MissTendency {
+  pitchType: string;
+  count: number;
+  avgH: number;
+  avgV: number;
+  hLabel: string; // e.g. "2.1\" arm-side"
+  vLabel: string; // e.g. "1.4\" high"
+  lowSample: boolean;
+}
+
+export interface Insight {
+  text: string;
+  type: "positive" | "negative" | "neutral";
+}
+
+export interface Report {
+  meta: ReportMeta;
+  kpis: KPIs;
+  perPitchType: PitchTypeSummary[];
+  lanesDetailed: LaneDetailed[];
+  laneTakeaways: string[];
+  fastballHorizontalThirds: PitchGroupHorizontalCommand;
+  breakingHorizontalThirds: PitchGroupHorizontalCommand;
+  missTendency: MissTendency[];
+  trendDirection: string | null;
+  insights: Insight[];
+}
+
+/* ------------------------------------------------------------------ */
+/*  Helpers                                                            */
+/* ------------------------------------------------------------------ */
+
+function median(vals: number[]): number {
+  if (vals.length === 0) return 0;
+  const s = [...vals].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 === 0 ? (s[mid - 1] + s[mid]) / 2 : s[mid];
+}
+
+function avg(vals: number[]): number {
+  if (vals.length === 0) return 0;
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
+}
+
+function stdDev(vals: number[]): number {
+  if (vals.length < 2) return 0;
+  const m = avg(vals);
+  const sqDiffs = vals.map((v) => (v - m) ** 2);
+  return Math.sqrt(sqDiffs.reduce((a, b) => a + b, 0) / (vals.length - 1));
+}
+
+const HIT_QUADRANTS = new Set(["DI", "DM", "MI", "MM"]);
+
+function isHitSpot(p: Pitch): boolean {
+  const q = (p.result_quadrant ?? "").trim().toUpperCase();
+  return HIT_QUADRANTS.has(q);
+}
+
+function laneOf(p: Pitch): string {
+  const h = p.h_miss_signed;
+  if (h == null || isNaN(h)) return "Middle";
+  if (h <= -4) return "Outside";
+  if (h >= 4) return "Inside";
+  return "Middle";
+}
+
+function hLabel(v: number): string {
+  if (Math.abs(v) < 0.5) return "centered";
+  const dir = v < 0 ? "arm-side" : "glove-side";
+  return `${Math.abs(v).toFixed(1)}" ${dir}`;
+}
+
+function vLabel(v: number): string {
+  if (Math.abs(v) < 0.5) return "centered";
+  const dir = v < 0 ? "high" : "low";
+  return `${Math.abs(v).toFixed(1)}" ${dir}`;
+}
+
+const FASTBALL_TYPES = new Set(["FF", "SI", "FC", "FS", "FT"]);
+const BREAKING_TYPES = new Set(["SL", "CU", "KC", "SV", "CB"]);
+
+function buildHorizontalThirds(
+  pitches: Pitch[],
+  label: string,
+): PitchGroupHorizontalCommand {
+  const totalPitches = pitches.length;
+  const laneMap = new Map<string, Pitch[]>();
+  for (const p of pitches) {
+    const l = laneOf(p);
+    if (!laneMap.has(l)) laneMap.set(l, []);
+    laneMap.get(l)!.push(p);
+  }
+
+  const lanes: HorizontalThirdSummary[] = ["Inside", "Middle", "Outside"].map(
+    (lane) => {
+      const group = laneMap.get(lane) ?? [];
+      const hits = group.filter(isHitSpot).length;
+      return {
+        lane,
+        count: group.length,
+        pct: totalPitches > 0 ? (group.length / totalPitches) * 100 : 0,
+        avgMiss: avg(group.map((p) => p.total_miss_inches)),
+        onTargetPct: group.length > 0 ? (hits / group.length) * 100 : 0,
+        avgHAbs: avg(group.map((p) => Math.abs(p.h_miss_signed))),
+        avgVAbs: avg(group.map((p) => Math.abs(p.v_miss_signed))),
+        avgHSigned: avg(group.map((p) => p.h_miss_signed)),
+        avgVSigned: avg(group.map((p) => p.v_miss_signed)),
+      };
+    },
+  );
+
+  // Takeaway: best/worst by on-target%, tie-break avgMiss; require n>=3
+  let takeaway: string | null = null;
+  const qual = lanes.filter((l) => l.count >= 3);
+  if (qual.length >= 2) {
+    const best = [...qual].sort(
+      (a, b) => b.onTargetPct - a.onTargetPct || a.avgMiss - b.avgMiss,
+    )[0];
+    const worst = [...qual].sort(
+      (a, b) => a.onTargetPct - b.onTargetPct || b.avgMiss - a.avgMiss,
+    )[0];
+    if (best.lane !== worst.lane) {
+      const wParts: string[] = [];
+      if (Math.abs(worst.avgHSigned) > 1.0)
+        wParts.push(worst.avgHSigned < 0 ? "arm-side" : "glove-side");
+      if (Math.abs(worst.avgVSigned) > 1.0)
+        wParts.push(worst.avgVSigned < 0 ? "high" : "low");
+      const trendNote = wParts.length > 0
+        ? ` Misses trend ${wParts.join(" and ")} when targeting ${worst.lane.toLowerCase()}.`
+        : "";
+      takeaway = `Best ${label.toLowerCase()} command: ${best.lane.toLowerCase()} (${best.avgMiss.toFixed(1)}″, ${best.onTargetPct.toFixed(0)}% on target). Worst: ${worst.lane.toLowerCase()} (${worst.avgMiss.toFixed(1)}″, ${worst.onTargetPct.toFixed(0)}%).${trendNote}`;
+    }
+  }
+
+  return { label, totalPitches, lanes, takeaway };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Main builder                                                       */
+/* ------------------------------------------------------------------ */
+
+export function buildReport(
+  pitches: Pitch[],
+  playerName: string,
+  outingLabel: string,
+  scope: ReportScope = "outing",
+): Report {
+  const totalPitches = pitches.length;
+  const misses = pitches.map((p) => p.total_miss_inches);
+  const avgMiss = avg(misses);
+  const medianMiss = median(misses);
+  const missStdDev = stdDev(misses);
+
+  const hitCount = pitches.filter(isHitSpot).length;
+  const hitSpotPct = totalPitches > 0 ? (hitCount / totalPitches) * 100 : 0;
+
+  const pitcherHand = pitches[0]?.pitcher_hand ?? "R";
+
+  /* ---- Per pitch type ---- */
+  const typeMap = new Map<string, Pitch[]>();
+  for (const p of pitches) {
+    const t = p.pitch_type || "Unknown";
+    if (!typeMap.has(t)) typeMap.set(t, []);
+    typeMap.get(t)!.push(p);
+  }
+
+  const perPitchType: PitchTypeSummary[] = [...typeMap.entries()]
+    .sort((a, b) => b[1].length - a[1].length)
+    .map(([pitchType, group]) => {
+      const m = group.map((p) => p.total_miss_inches);
+      const hits = group.filter(isHitSpot).length;
+      return {
+        pitchType,
+        count: group.length,
+        pct: totalPitches > 0 ? (group.length / totalPitches) * 100 : 0,
+        avgMiss: avg(m),
+        medianMiss: median(m),
+        stdDev: stdDev(m),
+        avgH: avg(group.map((p) => p.h_miss_signed)),
+        avgV: avg(group.map((p) => p.v_miss_signed)),
+        avgHAbs: avg(group.map((p) => Math.abs(p.h_miss_signed))),
+        avgVAbs: avg(group.map((p) => Math.abs(p.v_miss_signed))),
+        hitSpotPct: group.length > 0 ? (hits / group.length) * 100 : 0,
+        lowSample: group.length < MIN_SAMPLE,
+      };
+    });
+
+  // Best/worst by avg miss (need >= MIN_SAMPLE)
+  const qualified = perPitchType.filter((pt) => !pt.lowSample);
+  const sorted = [...qualified].sort((a, b) => a.avgMiss - b.avgMiss);
+  const bestPt = sorted[0] ?? null;
+  const worstPt = sorted.length > 1 ? sorted[sorted.length - 1] : null;
+
+  /* ---- Miss tendency per pitch type ---- */
+  const missTendency: MissTendency[] = perPitchType.map((pt) => ({
+    pitchType: pt.pitchType,
+    count: pt.count,
+    avgH: pt.avgH,
+    avgV: pt.avgV,
+    hLabel: hLabel(pt.avgH),
+    vLabel: vLabel(pt.avgV),
+    lowSample: pt.lowSample,
+  }));
+
+  /* ---- Lanes (detailed) ---- */
+  const laneMap = new Map<string, Pitch[]>();
+  for (const p of pitches) {
+    const l = laneOf(p);
+    if (!laneMap.has(l)) laneMap.set(l, []);
+    laneMap.get(l)!.push(p);
+  }
+
+  const lanesDetailed: LaneDetailed[] = ["Inside", "Middle", "Outside"].map(
+    (lane) => {
+      const group = laneMap.get(lane) ?? [];
+      const hits = group.filter(isHitSpot).length;
+      return {
+        lane,
+        count: group.length,
+        usagePct: totalPitches > 0 ? (group.length / totalPitches) * 100 : 0,
+        onTargetPct: group.length > 0 ? (hits / group.length) * 100 : 0,
+        avgMiss: avg(group.map((p) => p.total_miss_inches)),
+        avgHAbs: avg(group.map((p) => Math.abs(p.h_miss_signed))),
+        avgVAbs: avg(group.map((p) => Math.abs(p.v_miss_signed))),
+        avgHSigned: avg(group.map((p) => p.h_miss_signed)),
+        avgVSigned: avg(group.map((p) => p.v_miss_signed)),
+      };
+    },
+  );
+
+  // Lane takeaways — coaching language with signed averages
+  const laneTakeaways: string[] = [];
+
+  const overallHSigned = avg(pitches.map((p) => p.h_miss_signed));
+  const overallVSigned = avg(pitches.map((p) => p.v_miss_signed));
+
+  // Best/worst lane: prioritize low avgMiss, then high onTarget; require n>=5
+  const qualifiedLanes = lanesDetailed.filter((l) => l.count >= MIN_SAMPLE);
+  if (qualifiedLanes.length >= 2) {
+    const bestLane = [...qualifiedLanes].sort(
+      (a, b) => a.avgMiss - b.avgMiss || b.onTargetPct - a.onTargetPct,
+    )[0];
+    const worstLane = [...qualifiedLanes].sort(
+      (a, b) => b.avgMiss - a.avgMiss || a.onTargetPct - b.onTargetPct,
+    )[0];
+    if (bestLane.lane !== worstLane.lane) {
+      laneTakeaways.push(
+        `Best command occurs in the ${bestLane.lane.toLowerCase()} lane (${bestLane.avgMiss.toFixed(1)}″ avg miss, ${bestLane.onTargetPct.toFixed(0)}% on target). Significant command loss when working ${worstLane.lane.toLowerCase()} (${worstLane.avgMiss.toFixed(1)}″ avg miss, ${worstLane.onTargetPct.toFixed(0)}% on target).`,
+      );
+      // Add directional tendency for worst lane
+      const wH = worstLane.avgHSigned;
+      const wV = worstLane.avgVSigned;
+      const wParts: string[] = [];
+      if (Math.abs(wH) > 1.0) wParts.push(wH < 0 ? "arm-side" : "glove-side");
+      if (Math.abs(wV) > 1.0) wParts.push(wV < 0 ? "high" : "low");
+      if (wParts.length > 0) {
+        laneTakeaways.push(
+          `Misses trend ${wParts.join(" and ")} when targeting ${worstLane.lane.toLowerCase()}.`,
+        );
+      }
+    }
+  }
+
+  /* ---- Fastball / Breaking ball horizontal thirds ---- */
+  const fastballs = pitches.filter((p) => FASTBALL_TYPES.has((p.pitch_type ?? "").toUpperCase()));
+  const breakingBalls = pitches.filter((p) => BREAKING_TYPES.has((p.pitch_type ?? "").toUpperCase()));
+
+  const fastballHorizontalThirds = buildHorizontalThirds(fastballs, "Fastball");
+  const breakingHorizontalThirds = buildHorizontalThirds(breakingBalls, "Breaking Ball");
+
+  /* ---- Trend direction ---- */
+  let trendDirection: string | null = null;
+  if (totalPitches >= 5) {
+    const parts: string[] = [];
+    if (Math.abs(overallHSigned) > 1.0) parts.push(overallHSigned < 0 ? "arm-side" : "glove-side");
+    if (Math.abs(overallVSigned) > 1.0) parts.push(overallVSigned < 0 ? "high" : "low");
+    if (parts.length > 0) trendDirection = parts.join(" ");
+  }
+
+  /* ---- Insights (coaching language) ---- */
+  const insights: Insight[] = [];
+
+  if (hitSpotPct >= 60) {
+    insights.push({
+      text: `Hitting the catcher's target ${hitSpotPct.toFixed(0)}% of the time — above-average command this outing.`,
+      type: "positive",
+    });
+  } else if (hitSpotPct < 40 && totalPitches >= 5) {
+    insights.push({
+      text: `Only ${hitSpotPct.toFixed(0)}% of pitches reached the intended target — significant command issues overall.`,
+      type: "negative",
+    });
+  }
+
+  if (bestPt) {
+    insights.push({
+      text: `Sharpest pitch: ${bestPt.pitchType} at ${bestPt.avgMiss.toFixed(1)}″ avg miss (${bestPt.hitSpotPct.toFixed(0)}% on target). Most reliable offering.`,
+      type: "positive",
+    });
+  }
+  if (worstPt && worstPt.pitchType !== bestPt?.pitchType) {
+    const wParts: string[] = [];
+    if (Math.abs(worstPt.avgH) > 1.5) wParts.push(worstPt.avgH < 0 ? "arm-side" : "glove-side");
+    if (Math.abs(worstPt.avgV) > 1.5) wParts.push(worstPt.avgV < 0 ? "high" : "low");
+    const dirNote = wParts.length > 0 ? ` Tends to miss ${wParts.join(" and ")}.` : "";
+    insights.push({
+      text: `Least accurate pitch: ${worstPt.pitchType} at ${worstPt.avgMiss.toFixed(1)}″ avg miss (${worstPt.hitSpotPct.toFixed(0)}% on target).${dirNote}`,
+      type: "negative",
+    });
+  }
+
+  // Per-pitch-type directional tendencies
+  for (const pt of perPitchType) {
+    if (pt.lowSample) continue;
+    const parts: string[] = [];
+    if (Math.abs(pt.avgH) > 1.5) parts.push(pt.avgH < 0 ? "arm-side" : "glove-side");
+    if (Math.abs(pt.avgV) > 1.5) parts.push(pt.avgV < 0 ? "high" : "low");
+    if (parts.length > 0) {
+      insights.push({
+        text: `${pt.pitchType} consistently misses ${parts.join(" and ")} (avg H: ${pt.avgH.toFixed(1)}″, avg V: ${pt.avgV.toFixed(1)}″). Consider mechanical adjustment.`,
+        type: "neutral",
+      });
+    }
+  }
+
+  if (missStdDev < 3 && totalPitches >= 10) {
+    insights.push({
+      text: `Tight shot grouping (${missStdDev.toFixed(1)}″ std dev) — repeatable release point and delivery.`,
+      type: "positive",
+    });
+  } else if (missStdDev > 6 && totalPitches >= 10) {
+    insights.push({
+      text: `Wide scatter (${missStdDev.toFixed(1)}″ std dev) — inconsistent release point. Likely mechanical variance.`,
+      type: "negative",
+    });
+  }
+
+  return {
+    meta: {
+      scope,
+      playerName,
+      pitcherHand,
+      outingLabel,
+      totalPitches,
+      generatedAt: new Date().toISOString(),
+    },
+    kpis: {
+      avgMiss,
+      medianMiss,
+      stdDev: missStdDev,
+      hitSpotPct,
+      bestPitchType: bestPt?.pitchType ?? null,
+      bestPitchAvgMiss: bestPt?.avgMiss ?? 0,
+      worstPitchType: worstPt?.pitchType ?? null,
+      worstPitchAvgMiss: worstPt?.avgMiss ?? 0,
+    },
+    perPitchType,
+    lanesDetailed,
+    laneTakeaways,
+    fastballHorizontalThirds,
+    breakingHorizontalThirds,
+    missTendency,
+    trendDirection,
+    insights,
+  };
+}

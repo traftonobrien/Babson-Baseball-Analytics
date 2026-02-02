@@ -216,9 +216,23 @@ export default function PlayerDashboard() {
             {player.name} &middot; {outing.label}
           </span>
         </div>
-        <span className="text-xs text-zinc-500">
-          {laneFiltered.length} / {pitches.length} pitches
-        </span>
+        <div className="flex items-center gap-3">
+          <a
+            href={`/player/${playerId}/report?outingId=${outing.id}`}
+            className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+          >
+            Outing Report
+          </a>
+          <a
+            href={`/player/${playerId}/report?mode=overall`}
+            className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+          >
+            Overall Report
+          </a>
+          <span className="text-xs text-zinc-500">
+            {laneFiltered.length} / {pitches.length} pitches
+          </span>
+        </div>
       </header>
 
       {/* Body */}
