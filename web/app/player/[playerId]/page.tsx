@@ -15,6 +15,7 @@ import LaneReport from "../../components/LaneReport";
 import PitchTypeSummaryCards from "../../components/PitchTypeSummaryCards";
 import MLBAveragesBar from "../../components/MLBAveragesBar";
 import MissHeatmap from "../../components/MissHeatmap";
+import LogoutButton from "../../components/LogoutButton";
 
 type VizMode = "scatter" | "heatmap";
 
@@ -232,6 +233,7 @@ export default function PlayerDashboard() {
           <span className="text-xs text-zinc-500">
             {laneFiltered.length} / {pitches.length} pitches
           </span>
+          <LogoutButton />
         </div>
       </header>
 

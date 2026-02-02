@@ -12,6 +12,7 @@ import {
   type PitchTypeSummary,
   type PitchGroupHorizontalCommand,
 } from "@/lib/reportModel";
+import LogoutButton from "@/app/components/LogoutButton";
 
 /* ================================================================== */
 /*  Inner component                                                    */
@@ -95,9 +96,12 @@ function ReportInner() {
               {report.meta.outingLabel}
             </p>
           </div>
-          <div className="text-right shrink-0 pl-4">
+          <div className="text-right shrink-0 pl-4 flex items-start gap-3">
             <div className="text-[11px] font-extrabold uppercase tracking-[0.15em] print:text-black">
               Command Report
+            </div>
+            <div className="print:hidden">
+              <LogoutButton />
             </div>
           </div>
         </div>

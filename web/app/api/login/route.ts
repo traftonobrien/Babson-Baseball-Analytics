@@ -1,0 +1,24 @@
+import { NextRequest, NextResponse } from "next/server";
+
+const PASSWORD = process.env.PT_PASSWORD || "govoni2026";
+
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+
+  if (body.password !== PASSWORD) {
+    return NextResponse.json({ error: "Wrong password" }, { status: 401 });
+  }
+
+  const isProduction = process.env.NODE_ENV === "production";
+
+  const response = NextResponse.json({ ok: true });
+  response.cookies.set("pt_auth", "authenticated", {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 604800, // 7 days
+  });
+
+  return response;
+}
