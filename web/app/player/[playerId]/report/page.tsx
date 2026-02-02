@@ -8,10 +8,8 @@ import { pitchColor } from "@/lib/pitchColors";
 import {
   buildReport,
   ON_TARGET_THRESHOLD_IN,
-  type Insight,
   type LaneDetailed,
   type PitchTypeSummary,
-  type MissTendency,
   type PitchGroupHorizontalCommand,
 } from "@/lib/reportModel";
 
@@ -184,24 +182,6 @@ function ReportInner() {
       <div className="report-pitch-groups grid grid-cols-2 gap-4 mb-3">
         <PitchGroupCommandSection data={report.fastballHorizontalThirds} />
         <PitchGroupCommandSection data={report.breakingHorizontalThirds} />
-      </div>
-
-      {/* ============================================================ */}
-      {/*  TENDENCY + NOTES                                             */}
-      {/* ============================================================ */}
-      <div className="report-bottom grid grid-cols-2 gap-4 mb-2">
-        <ReportSection title="Miss Tendency by Pitch" compact>
-          <TendencyTable data={report.missTendency} />
-        </ReportSection>
-        {report.insights.length > 0 && (
-          <ReportSection title="Scouting Notes" compact>
-            <ul className="space-y-0.5">
-              {report.insights.map((ins, i) => (
-                <InsightRow key={i} insight={ins} />
-              ))}
-            </ul>
-          </ReportSection>
-        )}
       </div>
 
       {/* ---- Footer ---- */}
@@ -598,87 +578,6 @@ function PitchGroupCommandSection({ data }: { data: PitchGroupHorizontalCommand 
   );
 }
 
-/* ================================================================== */
-/*  Miss Tendency Table                                                */
-/* ================================================================== */
-
-function TendencyTable({ data }: { data: MissTendency[] }) {
-  return (
-    <table className="w-full text-[10px] border-collapse">
-      <thead>
-        <tr className="text-left text-zinc-500 print:text-zinc-600 border-b border-zinc-600 print:border-zinc-400">
-          <th className="py-[2px] pr-2 font-semibold">Pitch</th>
-          <th className="py-[2px] pr-2 font-semibold">Horizontal Tendency</th>
-          <th className="py-[2px] font-semibold">Vertical Tendency</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.map((t, i) => {
-          const stripe = i % 2 === 1 ? "bg-zinc-900/30 print:bg-zinc-50" : "";
-          return (
-            <tr
-              key={t.pitchType}
-              className={`border-b border-zinc-800/40 print:border-zinc-200 ${stripe}`}
-            >
-              <td className="py-[3px] pr-2">
-                <span className="flex items-center gap-1">
-                  <span
-                    className="inline-block w-[6px] h-[6px] rounded-full shrink-0"
-                    style={{ backgroundColor: pitchColor(t.pitchType) }}
-                  />
-                  <span className="font-mono font-bold">{t.pitchType}</span>
-                  {t.lowSample && (
-                    <span className="text-[7px] text-zinc-500 italic">n&lt;5</span>
-                  )}
-                </span>
-              </td>
-              <td className="py-[3px] pr-2 font-mono">
-                <TendencyCell value={t.avgH} label={t.hLabel} />
-              </td>
-              <td className="py-[3px] font-mono">
-                <TendencyCell value={t.avgV} label={t.vLabel} />
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
-  );
-}
-
-function TendencyCell({ value, label }: { value: number; label: string }) {
-  if (label === "centered") {
-    return <span className="text-zinc-500 print:text-zinc-500">centered</span>;
-  }
-  const strong = Math.abs(value) > 2;
-  const color = strong
-    ? "text-amber-400 print:text-amber-900 font-semibold"
-    : "text-zinc-300 print:text-zinc-700";
-  return <span className={color}>{label}</span>;
-}
-
-/* ================================================================== */
-/*  Insight Row                                                        */
-/* ================================================================== */
-
-function InsightRow({ insight }: { insight: Insight }) {
-  const styles: Record<string, string> = {
-    positive: "text-green-500 print:text-green-800",
-    negative: "text-red-400 print:text-red-800",
-    neutral: "text-zinc-400 print:text-zinc-600",
-  };
-  const markers: Record<string, string> = {
-    positive: "+",
-    negative: "!",
-    neutral: "\u2022",
-  };
-  return (
-    <li className={`text-[9px] leading-snug ${styles[insight.type]}`}>
-      <span className="font-mono font-bold mr-1 text-[8px]">{markers[insight.type]}</span>
-      {insight.text}
-    </li>
-  );
-}
 
 /* ================================================================== */
 /*  Page export                                                        */

@@ -78,22 +78,6 @@ export interface PitchGroupHorizontalCommand {
   takeaway: string | null;
 }
 
-/** Per-pitch-type directional tendency for the "Miss Tendency" section. */
-export interface MissTendency {
-  pitchType: string;
-  count: number;
-  avgH: number;
-  avgV: number;
-  hLabel: string; // e.g. "2.1\" arm-side"
-  vLabel: string; // e.g. "1.4\" high"
-  lowSample: boolean;
-}
-
-export interface Insight {
-  text: string;
-  type: "positive" | "negative" | "neutral";
-}
-
 export interface Report {
   meta: ReportMeta;
   kpis: KPIs;
@@ -102,9 +86,7 @@ export interface Report {
   laneTakeaways: string[];
   fastballHorizontalThirds: PitchGroupHorizontalCommand;
   breakingHorizontalThirds: PitchGroupHorizontalCommand;
-  missTendency: MissTendency[];
   trendDirection: string | null;
-  insights: Insight[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -142,18 +124,6 @@ function laneOf(p: Pitch): string {
   if (h <= -4) return "Outside";
   if (h >= 4) return "Inside";
   return "Middle";
-}
-
-function hLabel(v: number): string {
-  if (Math.abs(v) < 0.5) return "centered";
-  const dir = v < 0 ? "arm-side" : "glove-side";
-  return `${Math.abs(v).toFixed(1)}" ${dir}`;
-}
-
-function vLabel(v: number): string {
-  if (Math.abs(v) < 0.5) return "centered";
-  const dir = v < 0 ? "high" : "low";
-  return `${Math.abs(v).toFixed(1)}" ${dir}`;
 }
 
 const FASTBALL_TYPES = new Set(["FF", "SI", "FC", "FS", "FT"]);
@@ -271,17 +241,6 @@ export function buildReport(
   const bestPt = sorted[0] ?? null;
   const worstPt = sorted.length > 1 ? sorted[sorted.length - 1] : null;
 
-  /* ---- Miss tendency per pitch type ---- */
-  const missTendency: MissTendency[] = perPitchType.map((pt) => ({
-    pitchType: pt.pitchType,
-    count: pt.count,
-    avgH: pt.avgH,
-    avgV: pt.avgV,
-    hLabel: hLabel(pt.avgH),
-    vLabel: vLabel(pt.avgV),
-    lowSample: pt.lowSample,
-  }));
-
   /* ---- Lanes (detailed) ---- */
   const laneMap = new Map<string, Pitch[]>();
   for (const p of pitches) {
@@ -357,64 +316,6 @@ export function buildReport(
     if (parts.length > 0) trendDirection = parts.join(" ");
   }
 
-  /* ---- Insights (coaching language) ---- */
-  const insights: Insight[] = [];
-
-  if (hitSpotPct >= 60) {
-    insights.push({
-      text: `Hitting the catcher's target ${hitSpotPct.toFixed(0)}% of the time — above-average command this outing.`,
-      type: "positive",
-    });
-  } else if (hitSpotPct < 40 && totalPitches >= 5) {
-    insights.push({
-      text: `Only ${hitSpotPct.toFixed(0)}% of pitches reached the intended target — significant command issues overall.`,
-      type: "negative",
-    });
-  }
-
-  if (bestPt) {
-    insights.push({
-      text: `Sharpest pitch: ${bestPt.pitchType} at ${bestPt.avgMiss.toFixed(1)}″ avg miss (${bestPt.hitSpotPct.toFixed(0)}% on target). Most reliable offering.`,
-      type: "positive",
-    });
-  }
-  if (worstPt && worstPt.pitchType !== bestPt?.pitchType) {
-    const wParts: string[] = [];
-    if (Math.abs(worstPt.avgH) > 1.5) wParts.push(worstPt.avgH < 0 ? "arm-side" : "glove-side");
-    if (Math.abs(worstPt.avgV) > 1.5) wParts.push(worstPt.avgV < 0 ? "high" : "low");
-    const dirNote = wParts.length > 0 ? ` Tends to miss ${wParts.join(" and ")}.` : "";
-    insights.push({
-      text: `Least accurate pitch: ${worstPt.pitchType} at ${worstPt.avgMiss.toFixed(1)}″ avg miss (${worstPt.hitSpotPct.toFixed(0)}% on target).${dirNote}`,
-      type: "negative",
-    });
-  }
-
-  // Per-pitch-type directional tendencies
-  for (const pt of perPitchType) {
-    if (pt.lowSample) continue;
-    const parts: string[] = [];
-    if (Math.abs(pt.avgH) > 1.5) parts.push(pt.avgH < 0 ? "arm-side" : "glove-side");
-    if (Math.abs(pt.avgV) > 1.5) parts.push(pt.avgV < 0 ? "high" : "low");
-    if (parts.length > 0) {
-      insights.push({
-        text: `${pt.pitchType} consistently misses ${parts.join(" and ")} (avg H: ${pt.avgH.toFixed(1)}″, avg V: ${pt.avgV.toFixed(1)}″). Consider mechanical adjustment.`,
-        type: "neutral",
-      });
-    }
-  }
-
-  if (missStdDev < 3 && totalPitches >= 10) {
-    insights.push({
-      text: `Tight shot grouping (${missStdDev.toFixed(1)}″ std dev) — repeatable release point and delivery.`,
-      type: "positive",
-    });
-  } else if (missStdDev > 6 && totalPitches >= 10) {
-    insights.push({
-      text: `Wide scatter (${missStdDev.toFixed(1)}″ std dev) — inconsistent release point. Likely mechanical variance.`,
-      type: "negative",
-    });
-  }
-
   return {
     meta: {
       scope,
@@ -439,8 +340,6 @@ export function buildReport(
     laneTakeaways,
     fastballHorizontalThirds,
     breakingHorizontalThirds,
-    missTendency,
     trendDirection,
-    insights,
   };
 }
