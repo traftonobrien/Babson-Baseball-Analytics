@@ -39,6 +39,13 @@ export const players: Player[] = [
       },
     ],
   },
+{
+  id: "2024_04_14_Finkelstein",
+  label: "Apr 14, 2024 – Finkelstein (91 pitches)",
+  csvPath: "/data/2024_04_14_Finkelstein/pitch_data_overlay_lite.csv",
+  overlayDir: "/data/2024_04_14_Finkelstein/results",
+  clipsDir: "/data/2024_04_14_Finkelstein/clips",
+},
 ];
 
 export function getPlayer(id: string): Player | undefined {
