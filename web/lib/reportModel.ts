@@ -129,9 +129,20 @@ function laneOf(p: Pitch): string {
 const FASTBALL_TYPES = new Set(["FF", "SI", "FC", "FS", "FT"]);
 const BREAKING_TYPES = new Set(["SL", "CU", "KC", "SV", "CB"]);
 
+/** Map internal lane key to arm-side/glove-side display name by pitcher hand. */
+export function laneDisplayName(lane: string, pitcherHand: string): string {
+  if (lane === "Middle") return "Middle";
+  if (pitcherHand === "L") {
+    return lane === "Inside" ? "Glove-side" : "Arm-side";
+  }
+  // RHP (default)
+  return lane === "Inside" ? "Arm-side" : "Glove-side";
+}
+
 function buildHorizontalThirds(
   pitches: Pitch[],
   label: string,
+  pitcherHand: string = "R",
 ): PitchGroupHorizontalCommand {
   const totalPitches = pitches.length;
   const laneMap = new Map<string, Pitch[]>();
@@ -175,10 +186,12 @@ function buildHorizontalThirds(
         wParts.push(worst.avgHSigned < 0 ? "arm-side" : "glove-side");
       if (Math.abs(worst.avgVSigned) > 1.0)
         wParts.push(worst.avgVSigned < 0 ? "high" : "low");
+      const bestDisplay = laneDisplayName(best.lane, pitcherHand).toLowerCase();
+      const worstDisplay = laneDisplayName(worst.lane, pitcherHand).toLowerCase();
       const trendNote = wParts.length > 0
-        ? ` Misses trend ${wParts.join(" and ")} when targeting ${worst.lane.toLowerCase()}.`
+        ? ` Misses trend ${wParts.join(" and ")} when targeting ${worstDisplay}.`
         : "";
-      takeaway = `Best ${label.toLowerCase()} command: ${best.lane.toLowerCase()} (${best.avgMiss.toFixed(1)}″, ${best.onTargetPct.toFixed(0)}% on target). Worst: ${worst.lane.toLowerCase()} (${worst.avgMiss.toFixed(1)}″, ${worst.onTargetPct.toFixed(0)}%).${trendNote}`;
+      takeaway = `Best ${label.toLowerCase()} command: ${bestDisplay} (${best.avgMiss.toFixed(1)}″, ${best.onTargetPct.toFixed(0)}% on target). Worst: ${worstDisplay} (${worst.avgMiss.toFixed(1)}″, ${worst.onTargetPct.toFixed(0)}%).${trendNote}`;
     }
   }
 
@@ -283,8 +296,10 @@ export function buildReport(
       (a, b) => b.avgMiss - a.avgMiss || a.onTargetPct - b.onTargetPct,
     )[0];
     if (bestLane.lane !== worstLane.lane) {
+      const bestLaneDisplay = laneDisplayName(bestLane.lane, pitcherHand).toLowerCase();
+      const worstLaneDisplay = laneDisplayName(worstLane.lane, pitcherHand).toLowerCase();
       laneTakeaways.push(
-        `Best command occurs in the ${bestLane.lane.toLowerCase()} lane (${bestLane.avgMiss.toFixed(1)}″ avg miss, ${bestLane.onTargetPct.toFixed(0)}% on target). Significant command loss when working ${worstLane.lane.toLowerCase()} (${worstLane.avgMiss.toFixed(1)}″ avg miss, ${worstLane.onTargetPct.toFixed(0)}% on target).`,
+        `Best command occurs in the ${bestLaneDisplay} lane (${bestLane.avgMiss.toFixed(1)}″ avg miss, ${bestLane.onTargetPct.toFixed(0)}% on target). Significant command loss when working ${worstLaneDisplay} (${worstLane.avgMiss.toFixed(1)}″ avg miss, ${worstLane.onTargetPct.toFixed(0)}% on target).`,
       );
       // Add directional tendency for worst lane
       const wH = worstLane.avgHSigned;
@@ -294,7 +309,7 @@ export function buildReport(
       if (Math.abs(wV) > 1.0) wParts.push(wV < 0 ? "high" : "low");
       if (wParts.length > 0) {
         laneTakeaways.push(
-          `Misses trend ${wParts.join(" and ")} when targeting ${worstLane.lane.toLowerCase()}.`,
+          `Misses trend ${wParts.join(" and ")} when targeting ${worstLaneDisplay}.`,
         );
       }
     }
@@ -304,8 +319,8 @@ export function buildReport(
   const fastballs = pitches.filter((p) => FASTBALL_TYPES.has((p.pitch_type ?? "").toUpperCase()));
   const breakingBalls = pitches.filter((p) => BREAKING_TYPES.has((p.pitch_type ?? "").toUpperCase()));
 
-  const fastballHorizontalThirds = buildHorizontalThirds(fastballs, "Fastball");
-  const breakingHorizontalThirds = buildHorizontalThirds(breakingBalls, "Breaking Ball");
+  const fastballHorizontalThirds = buildHorizontalThirds(fastballs, "Fastball", pitcherHand);
+  const breakingHorizontalThirds = buildHorizontalThirds(breakingBalls, "Breaking Ball", pitcherHand);
 
   /* ---- Trend direction ---- */
   let trendDirection: string | null = null;

@@ -1,18 +1,88 @@
 "use client";
 
 import { useParams, useSearchParams } from "next/navigation";
-import { Suspense, useMemo } from "react";
+import { Suspense, useMemo, useEffect, useState } from "react";
 import { getPlayer } from "@/lib/dataIndex";
 import { usePitchData } from "@/app/hooks/usePitchData";
 import { pitchColor } from "@/lib/pitchColors";
 import {
   buildReport,
+  laneDisplayName,
   ON_TARGET_THRESHOLD_IN,
   type LaneDetailed,
   type PitchTypeSummary,
   type PitchGroupHorizontalCommand,
 } from "@/lib/reportModel";
 import LogoutButton from "@/app/components/LogoutButton";
+import Papa from "papaparse";
+import type { Pitch } from "@/app/types";
+
+/* ================================================================== */
+/*  CSV loader (shared with usePitchData)                              */
+/* ================================================================== */
+
+const NUM_FIELDS = new Set([
+  "pitch_number", "target_frame", "arrival_frame",
+  "target_x", "target_y", "ball_x", "ball_y",
+  "total_miss_px", "total_miss_inches",
+  "h_miss_px", "h_miss_inches", "h_miss_signed",
+  "v_miss_px", "v_miss_inches", "v_miss_signed",
+  "timestamp",
+]);
+
+function parseCsvText(text: string): Pitch[] {
+  const result = Papa.parse<Record<string, string>>(text, {
+    header: true,
+    skipEmptyLines: true,
+  });
+  return result.data.map((row) => {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(row)) {
+      out[k] = NUM_FIELDS.has(k) ? parseFloat(v) : v;
+    }
+    return out as unknown as Pitch;
+  });
+}
+
+function useAllPitchData(csvPaths: string[]) {
+  const [pitches, setPitches] = useState<Pitch[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Stable key for the effect
+  const key = csvPaths.join("\n");
+
+  useEffect(() => {
+    if (csvPaths.length === 0) {
+      setPitches([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+
+    Promise.all(
+      csvPaths.map((p) =>
+        fetch(p)
+          .then((r) => {
+            if (!r.ok) throw new Error(`Failed to load CSV: ${r.status} (${p})`);
+            return r.text();
+          })
+          .then((text) => parseCsvText(text)),
+      ),
+    )
+      .then((arrays) => {
+        setPitches(arrays.flat());
+        setLoading(false);
+      })
+      .catch((e) => {
+        setError(e.message);
+        setLoading(false);
+      });
+  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return { pitches, loading, error };
+}
 
 /* ================================================================== */
 /*  Inner component                                                    */
@@ -22,31 +92,40 @@ function ReportInner() {
   const { playerId } = useParams<{ playerId: string }>();
   const searchParams = useSearchParams();
   const outingId = searchParams.get("outingId");
-  const mode = searchParams.get("mode");
+  const scope = searchParams.get("scope") === "overall" ? "overall" : "outing";
 
   const player = getPlayer(playerId);
-  const isOverall = mode === "overall";
 
   const outing = outingId
     ? player?.outings.find((o) => o.id === outingId)
     : player?.outings[0];
 
-  const { pitches, loading, error } = usePitchData(outing?.csvPath ?? "");
+  // Determine which CSVs to load
+  const csvPaths = useMemo(() => {
+    if (!player) return [];
+    if (scope === "overall") {
+      return player.outings.map((o) => o.csvPath);
+    }
+    return outing ? [outing.csvPath] : [];
+  }, [player, outing, scope]);
+
+  const { pitches, loading, error } = useAllPitchData(csvPaths);
 
   const report = useMemo(() => {
     if (pitches.length === 0) return null;
-    const label = isOverall
-      ? `Overall (${player?.outings.length ?? 1} outing${(player?.outings.length ?? 1) > 1 ? "s" : ""})`
-      : outing?.label ?? "";
+    const label =
+      scope === "overall"
+        ? `Overall (${player?.outings.length ?? 1} outing${(player?.outings.length ?? 1) > 1 ? "s" : ""})`
+        : outing?.label ?? "";
     return buildReport(
       pitches,
       player?.name ?? "",
       label,
-      isOverall ? "overall" : "outing",
+      scope,
     );
-  }, [pitches, player, outing, isOverall]);
+  }, [pitches, player, outing, scope]);
 
-  if (!player || !outing) return <Msg text="Player or outing not found." error />;
+  if (!player || (!outing && scope === "outing")) return <Msg text="Player or outing not found." error />;
   if (loading) return <Msg text="Loading pitch data..." />;
   if (error) return <Msg text={`Error: ${error}`} error />;
   if (!report) return <Msg text="No pitches found." />;
@@ -54,7 +133,7 @@ function ReportInner() {
   const handlePrint = () => {
     const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     const safeName = report.meta.playerName.replace(/[^a-zA-Z0-9]/g, "");
-    const safeOuting = isOverall ? "Overall" : (outingId ?? date);
+    const safeOuting = scope === "overall" ? "Overall" : (outingId ?? date);
     document.title = `${safeName}_Report_${safeOuting}_${date}`;
     window.print();
   };
@@ -64,12 +143,18 @@ function ReportInner() {
     { month: "short", day: "numeric", year: "numeric" },
   );
 
+  // Back link preserves outingId for outing scope
+  const backHref =
+    scope === "outing" && outingId
+      ? `/player/${playerId}?outingId=${outingId}`
+      : `/player/${playerId}`;
+
   return (
     <div className="report-root max-w-[740px] mx-auto px-6 py-5 print:max-w-none print:px-0 print:py-0">
       {/* ---- Toolbar (screen only) ---- */}
       <div className="flex items-center justify-between mb-4 print:hidden">
         <a
-          href={`/player/${playerId}`}
+          href={backHref}
           className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
         >
           &larr; Dashboard
@@ -174,9 +259,9 @@ function ReportInner() {
       <div className="report-zone-lane mb-3">
         <ReportSection title="Horizontal Command Lanes (Catcher View)" compact>
           <p className="text-[8px] text-zinc-500 print:text-zinc-500 mb-1 leading-tight">
-            Lateral miss relative to the catcher&apos;s target (inside = toward batter, outside = away). Catcher looking at pitcher.
+            Lateral miss relative to the catcher&apos;s target. Catcher view. Lanes labeled by arm-side vs glove-side{report.meta.pitcherHand === "L" ? " (flipped for LHP)" : ""}.
           </p>
-          <HorizontalLanesSection data={report.lanesDetailed} takeaways={report.laneTakeaways} />
+          <HorizontalLanesSection data={report.lanesDetailed} takeaways={report.laneTakeaways} pitcherHand={report.meta.pitcherHand} />
         </ReportSection>
       </div>
 
@@ -184,8 +269,8 @@ function ReportInner() {
       {/*  FASTBALL + BREAKING BALL HORIZONTAL COMMAND                   */}
       {/* ============================================================ */}
       <div className="report-pitch-groups grid grid-cols-2 gap-4 mb-3">
-        <PitchGroupCommandSection data={report.fastballHorizontalThirds} />
-        <PitchGroupCommandSection data={report.breakingHorizontalThirds} />
+        <PitchGroupCommandSection data={report.fastballHorizontalThirds} pitcherHand={report.meta.pitcherHand} />
+        <PitchGroupCommandSection data={report.breakingHorizontalThirds} pitcherHand={report.meta.pitcherHand} />
       </div>
 
       {/* ---- Footer ---- */}
@@ -390,9 +475,11 @@ function vDir(v: number): string {
 function HorizontalLanesSection({
   data,
   takeaways,
+  pitcherHand,
 }: {
   data: LaneDetailed[];
   takeaways: string[];
+  pitcherHand: string;
 }) {
   const total = data.reduce((s, l) => s + l.count, 0) || 1;
 
@@ -414,7 +501,7 @@ function HorizontalLanesSection({
                 color: l.lane === "Middle" ? "#fff" : "#1a1a1a",
               }}
             >
-              {w > 15 ? `${l.lane} ${l.usagePct.toFixed(0)}%` : w > 8 ? `${l.usagePct.toFixed(0)}%` : ""}
+              {w > 15 ? `${laneDisplayName(l.lane, pitcherHand)} ${l.usagePct.toFixed(0)}%` : w > 8 ? `${l.usagePct.toFixed(0)}%` : ""}
             </div>
           );
         })}
@@ -425,6 +512,7 @@ function HorizontalLanesSection({
         {data.map((l) => {
           const hD = hDir(l.avgHSigned);
           const vD = vDir(l.avgVSigned);
+          const displayName = laneDisplayName(l.lane, pitcherHand);
           return (
             <div
               key={l.lane}
@@ -432,7 +520,7 @@ function HorizontalLanesSection({
             >
               <div className="flex items-baseline justify-between">
                 <span className="text-[8px] font-bold text-zinc-400 print:text-zinc-700 uppercase tracking-wider">
-                  {l.lane}
+                  {displayName}
                 </span>
                 <span className="text-[7px] text-zinc-600 print:text-zinc-500">
                   {LANE_SUBTITLE[l.lane]}
@@ -487,7 +575,7 @@ function HorizontalLanesSection({
 /*  Pitch Group Horizontal Command (Fastball / Breaking Ball)          */
 /* ================================================================== */
 
-function PitchGroupCommandSection({ data }: { data: PitchGroupHorizontalCommand }) {
+function PitchGroupCommandSection({ data, pitcherHand }: { data: PitchGroupHorizontalCommand; pitcherHand: string }) {
   const total = data.lanes.reduce((s, l) => s + l.count, 0) || 1;
 
   if (data.totalPitches === 0) {
@@ -501,7 +589,7 @@ function PitchGroupCommandSection({ data }: { data: PitchGroupHorizontalCommand 
   return (
     <ReportSection title={`${data.label} Horizontal Command (Catcher View)`} compact>
       <p className="text-[8px] text-zinc-500 print:text-zinc-500 mb-1 leading-tight">
-        Inside = toward batter, Outside = away from batter. Based on catcher target miss. n={data.totalPitches}
+        Catcher view. Lanes labeled by arm-side vs glove-side{pitcherHand === "L" ? " (flipped for LHP)" : ""}. Based on catcher target miss. n={data.totalPitches}.
       </p>
 
       {/* Stacked horizontal bar */}
@@ -520,7 +608,7 @@ function PitchGroupCommandSection({ data }: { data: PitchGroupHorizontalCommand 
                 color: l.lane === "Middle" ? "#fff" : "#1a1a1a",
               }}
             >
-              {w > 15 ? `${l.lane} ${l.pct.toFixed(0)}%` : w > 8 ? `${l.pct.toFixed(0)}%` : ""}
+              {w > 15 ? `${laneDisplayName(l.lane, pitcherHand)} ${l.pct.toFixed(0)}%` : w > 8 ? `${l.pct.toFixed(0)}%` : ""}
             </div>
           );
         })}
@@ -531,6 +619,7 @@ function PitchGroupCommandSection({ data }: { data: PitchGroupHorizontalCommand 
         {data.lanes.map((l) => {
           const hD = hDir(l.avgHSigned);
           const vD = vDir(l.avgVSigned);
+          const displayName = laneDisplayName(l.lane, pitcherHand);
           return (
             <div
               key={l.lane}
@@ -538,7 +627,7 @@ function PitchGroupCommandSection({ data }: { data: PitchGroupHorizontalCommand 
             >
               <div className="flex items-baseline justify-between">
                 <span className="text-[8px] font-bold text-zinc-400 print:text-zinc-700 uppercase tracking-wider">
-                  {l.lane}
+                  {displayName}
                 </span>
                 <span className="text-[7px] font-mono text-zinc-500 print:text-zinc-600">
                   n={l.count}
