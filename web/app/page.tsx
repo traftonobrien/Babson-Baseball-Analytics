@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { players } from "@/lib/dataIndex";
+import { players, type Outing } from "@/lib/dataIndex";
 import LogoutButton from "./components/LogoutButton";
 
 export default function Home() {
@@ -21,7 +21,7 @@ export default function Home() {
               {player.outings.length} outing{player.outings.length !== 1 ? "s" : ""}
             </div>
             <ul className="mt-2 text-xs text-zinc-500">
-              {player.outings.map((o) => (
+              {player.outings.map((o: Outing) => (
                 <li key={o.id}>{o.label}</li>
               ))}
             </ul>

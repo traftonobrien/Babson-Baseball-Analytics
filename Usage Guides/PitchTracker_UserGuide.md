@@ -37,6 +37,9 @@ mkdir -p "outings/$OUTING"
 
 ### A) Cut one game video into pitch clips
 
+# GO TO ROUTE!!!!
+cd /Users/traftonobrien/Desktop/pitch-tracker
+
 python3 -m src.segment_pitches \
   --manual \
   --video "outings/yyyy_mm_dd_LASTNAME/inning1.mp4" \
@@ -46,7 +49,6 @@ python3 -m src.segment_pitches \
   --pad-after 10
   
 
-	
 ###  B) Add inning 2 into the same outing (continues numbering)
 
 python3 -m src.segment_pitches \
@@ -72,6 +74,7 @@ json.dump(d, open(p,"w"), indent=2)
 print("removed roi from pitch_log")
 PY
 
+
 # PROCESS
 
 python3 src/batch_process.py \
@@ -82,6 +85,7 @@ python3 src/batch_process.py \
   --no-result-png \
   --glove-crop-size 256 \
   --ball-crop-size 256
+
 
 ## STEP 3: Add To Web App
 
