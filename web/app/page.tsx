@@ -11,21 +11,29 @@ export default function Home() {
       <h1 className="text-2xl font-semibold mb-8">Pitch Tracker</h1>
       <div className="grid gap-4 w-full max-w-md">
         {players.map((player) => (
-          <Link
+          <div
             key={player.id}
-            href={`/player/${player.id}`}
             className="block bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-colors"
           >
-            <div className="font-medium">{player.name}</div>
-            <div className="text-sm text-zinc-400 mt-1">
-              {player.outings.length} outing{player.outings.length !== 1 ? "s" : ""}
-            </div>
-            <ul className="mt-2 text-xs text-zinc-500">
+            <Link href={`/player/${player.id}`} className="block">
+              <div className="font-medium">{player.name}</div>
+              <div className="text-sm text-zinc-400 mt-1">
+                {player.outings.length} outing{player.outings.length !== 1 ? "s" : ""}
+              </div>
+            </Link>
+            <ul className="mt-2 text-xs text-zinc-500 space-y-1">
               {player.outings.map((o: Outing) => (
-                <li key={o.id}>{o.label}</li>
+                <li key={o.id}>
+                  <Link
+                    href={`/player/${player.id}?outingId=${o.id}`}
+                    className="hover:text-zinc-300 transition-colors"
+                  >
+                    {o.label}
+                  </Link>
+                </li>
               ))}
             </ul>
-          </Link>
+          </div>
         ))}
       </div>
     </div>
