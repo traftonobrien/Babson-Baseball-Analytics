@@ -46,6 +46,20 @@ export const players: Player[] = [
       },
     ],
   },
+ {
+  id: "JClark1",
+  name: "James Clark",
+  outings: [
+    {
+      id: "2024_04_09_Clark",
+      label: "Apr 9, 2024 – Clark (62 pitches)",
+      csvPath: "/data/2024_04_09_Clark/pitch_data_overlay_lite.csv",
+      overlayDir: "/data/2024_04_09_Clark/results",
+      clipsDir: "/data/2024_04_09_Clark/clips",
+    },
+  ],
+},
+
 ];
 
 export function getPlayer(id: string): Player | undefined {
