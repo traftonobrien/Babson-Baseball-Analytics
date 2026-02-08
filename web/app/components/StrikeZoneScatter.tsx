@@ -3,6 +3,11 @@
 import type { Pitch } from "../types";
 import { pitchColor } from "../utils";
 import { ScatterOverlay, PAD, SIZE, toSvg } from "./ZoneOverlay";
+import { OUTLIER_MISS_THRESHOLD_IN } from "@/lib/reportModel";
+
+const isOutlierPitch = (p: Pitch) =>
+  Number.isFinite(p.total_miss_inches) &&
+  p.total_miss_inches > OUTLIER_MISS_THRESHOLD_IN;
 
 interface Props {
   pitches: Pitch[];
@@ -28,14 +33,15 @@ export default function StrikeZoneScatter({
           const px = toSvg(-p.h_miss_signed);
           const py = toSvg(p.v_miss_signed);
           const isSel = selected?.pitch_number === p.pitch_number;
+          const isOutlier = isOutlierPitch(p);
           return (
             <circle
               key={p.pitch_number}
               cx={px}
               cy={py}
               r={isSel ? 6 : 4}
-              fill={pitchColor(p.pitch_type)}
-              fillOpacity={isSel ? 1 : 0.7}
+              fill={isOutlier && !isSel ? "#71717a" : pitchColor(p.pitch_type)}
+              fillOpacity={isOutlier && !isSel ? 0.35 : isSel ? 1 : 0.7}
               stroke={isSel ? "#fff" : "none"}
               strokeWidth={isSel ? 1.5 : 0}
               className="cursor-pointer transition-all"

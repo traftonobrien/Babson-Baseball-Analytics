@@ -3,6 +3,11 @@
 import { useState } from "react";
 import type { Pitch } from "../types";
 import { pitchColor } from "../utils";
+import { OUTLIER_MISS_THRESHOLD_IN } from "@/lib/reportModel";
+
+const isOutlierPitch = (p: Pitch) =>
+  Number.isFinite(p.total_miss_inches) &&
+  p.total_miss_inches > OUTLIER_MISS_THRESHOLD_IN;
 
 interface Props {
   pitches: Pitch[];
@@ -44,6 +49,7 @@ export default function PitchTable({
             const isSelected = selected?.pitch_number === p.pitch_number;
             const isEdited = editedPitches?.has(p.pitch_number);
             const isEditing = editingPitch === p.pitch_number;
+            const isOutlier = isOutlierPitch(p);
 
             return (
               <tr
@@ -51,7 +57,7 @@ export default function PitchTable({
                 onClick={() => onSelect(p)}
                 className={`cursor-pointer border-b border-zinc-800 transition-colors ${
                   isSelected ? "bg-zinc-700" : "hover:bg-zinc-800"
-                }`}
+                } ${isOutlier ? "opacity-50 grayscale hover:opacity-70" : ""}`}
               >
                 <td className="px-2 py-1.5 font-mono">{p.pitch_number}</td>
                 <td className="px-2 py-1.5">
@@ -83,6 +89,17 @@ export default function PitchTable({
                       {isEdited && (
                         <span className="ml-1 px-1 py-0 rounded text-[9px] bg-amber-500/20 text-amber-400 leading-tight">
                           edited
+                        </span>
+                      )}
+                      {isOutlier && (
+                        <span
+                          className="ml-1 inline-flex items-center gap-0.5 rounded-full border border-zinc-700 bg-zinc-900 px-1.5 py-0 text-[9px] font-semibold text-amber-300 print:border-zinc-400 print:bg-white print:text-black"
+                          title={`Outlier: miss > ${OUTLIER_MISS_THRESHOLD_IN}\u2033`}
+                        >
+                          OUTLIER
+                          <span className="text-[8px] font-normal text-zinc-400 print:text-black">
+                            &gt;{OUTLIER_MISS_THRESHOLD_IN}&Prime;
+                          </span>
                         </span>
                       )}
                     </span>
