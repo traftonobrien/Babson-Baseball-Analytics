@@ -2,12 +2,12 @@
 
 Condensed reference for Claude Code sessions. Use this after batch_process.py finishes.
 
-Example outing: `2024_04_27_Doan`. Example player: `CDoan1` (Connor Doan).
+Example outing: `CDoan1/2024_04_27`. Example player: `CDoan1` (Connor Doan).
 
 ## 1. Verify source files exist
 
 ```
-outings/YYYY_MM_DD_LASTNAME/
+outings/<playerId>/<dateId>/
   clips/pitch_001.mp4 ... pitch_NNN.mp4
   results/pitch_001_overlay.mp4 ... pitch_NNN_overlay.mp4
   pitch_data_overlay_lite.csv
@@ -18,17 +18,17 @@ outings/YYYY_MM_DD_LASTNAME/
 ## 2. Create destination and copy
 
 ```bash
-mkdir -p web/public/data/YYYY_MM_DD_LASTNAME/clips
-mkdir -p web/public/data/YYYY_MM_DD_LASTNAME/results
+mkdir -p web/public/data/<playerId>/<dateId>/clips
+mkdir -p web/public/data/<playerId>/<dateId>/results
 
-cp outings/YYYY_MM_DD_LASTNAME/clips/pitch_*.mp4 \
-   web/public/data/YYYY_MM_DD_LASTNAME/clips/
+cp outings/<playerId>/<dateId>/clips/pitch_*.mp4 \
+   web/public/data/<playerId>/<dateId>/clips/
 
-cp outings/YYYY_MM_DD_LASTNAME/results/pitch_*_overlay.mp4 \
-   web/public/data/YYYY_MM_DD_LASTNAME/results/
+cp outings/<playerId>/<dateId>/results/pitch_*_overlay.mp4 \
+   web/public/data/<playerId>/<dateId>/results/
 
-cp outings/YYYY_MM_DD_LASTNAME/pitch_data_overlay_lite.csv \
-   web/public/data/YYYY_MM_DD_LASTNAME/
+cp outings/<playerId>/<dateId>/pitch_data_overlay_lite.csv \
+   web/public/data/<playerId>/<dateId>/
 ```
 
 ## 3. Validate counts
@@ -36,9 +36,9 @@ cp outings/YYYY_MM_DD_LASTNAME/pitch_data_overlay_lite.csv \
 All three must match. Stop if they differ.
 
 ```bash
-ls web/public/data/YYYY_MM_DD_LASTNAME/clips/pitch_*.mp4 | wc -l
-ls web/public/data/YYYY_MM_DD_LASTNAME/results/pitch_*_overlay.mp4 | wc -l
-tail -n +2 web/public/data/YYYY_MM_DD_LASTNAME/pitch_data_overlay_lite.csv | wc -l
+ls web/public/data/<playerId>/<dateId>/clips/pitch_*.mp4 | wc -l
+ls web/public/data/<playerId>/<dateId>/results/pitch_*_overlay.mp4 | wc -l
+tail -n +2 web/public/data/<playerId>/<dateId>/pitch_data_overlay_lite.csv | wc -l
 ```
 
 ## 4. Update web/lib/dataIndex.ts
@@ -49,17 +49,15 @@ Required outing shape:
 
 ```ts
 {
-  id: "2024_04_27_Doan",
+  id: "CDoan1/2024_04_27",
   label: "Apr 27, 2024 – Doan (10 pitches)",
-  csvPath: "/data/2024_04_27_Doan/pitch_data_overlay_lite.csv",
-  overlayDir: "/data/2024_04_27_Doan/results",
-  clipsDir: "/data/2024_04_27_Doan/clips",
+  ...buildDataPaths("CDoan1", "2024_04_27"),
 }
 ```
 
 The pitch count in `label` must match CSV row count.
 
-Paths start with `/data/` (relative to `web/public`).
+`buildDataPaths()` generates `csvPath`, `overlayDir`, and `clipsDir` from `playerId` and `dateId`.
 
 Do not modify other player entries.
 
@@ -74,8 +72,8 @@ Fix any TypeScript errors before committing.
 ## 6. Git
 
 ```bash
-git add web/public/data/YYYY_MM_DD_LASTNAME web/lib/dataIndex.ts
-git commit -m "Add LASTNAME YYYY-MM-DD outing"
+git add web/public/data/<playerId>/<dateId> web/lib/dataIndex.ts
+git commit -m "Add <playerId>/<dateId> outing"
 git push
 ```
 
@@ -84,8 +82,8 @@ Vercel deploys automatically on push to main.
 ## 7. Verify in the app
 
 • Player dashboard: `/player/CDoan1`
-• Specific outing: `/player/CDoan1?outingId=2024_04_27_Doan`
-• Outing report: `/player/CDoan1/report?outingId=2024_04_27_Doan`
+• Specific outing: `/player/CDoan1?outingId=CDoan1/2024_04_27`
+• Outing report: `/player/CDoan1/report?outingId=CDoan1/2024_04_27`
 • Overall report: `/player/CDoan1/report?scope=overall`
 
 Overall report aggregates all outings for that player. Pitch count in header should equal sum of all outing counts.

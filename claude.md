@@ -34,19 +34,19 @@ Baseball pitch command tracking system. Uses SAM 2 (Segment Anything Model 2) to
 
 ```bash
 # 1. Mark pitches in full inning video (scrubber UI)
-python3 src/mark_pitches.py --video sourcevideo/inning.mov --output-dir outings/2024-01-15 --player-id SLangan1
+python3 src/mark_pitches.py --video sourcevideo/inning.mov --output-dir outings/SLangan1/2024_01_15 --player-id SLangan1
 
 # 2. Process all marked pitches — FAST mode (default, no overlay)
-python3 src/batch_process.py --clips-dir outings/2024-01-15/clips --player-id SLangan1 --pitcher-hand R --output-csv outings/2024-01-15/pitch_data.csv
+python3 src/batch_process.py --clips-dir outings/SLangan1/2024_01_15/clips --player-id SLangan1 --pitcher-hand R --output-csv outings/SLangan1/2024_01_15/pitch_data.csv
 
 # 2b. With review overlay videos — OVERLAY-LITE mode (recommended for game review)
-python3 src/batch_process.py --clips-dir outings/2024-01-15/clips --player-id SLangan1 --pitcher-hand R --output-csv outings/2024-01-15/pitch_data.csv --overlay-lite
+python3 src/batch_process.py --clips-dir outings/SLangan1/2024_01_15/clips --player-id SLangan1 --pitcher-hand R --output-csv outings/SLangan1/2024_01_15/pitch_data.csv --overlay-lite
 
 # 2c. Deep debugging a single pitch — DEBUG mode (slow, full SAM2 propagation)
-python3 src/batch_process.py --clips-dir outings/2024-01-15/clips --player-id SLangan1 --pitcher-hand R --output-csv outings/2024-01-15/pitch_data.csv --debug
+python3 src/batch_process.py --clips-dir outings/SLangan1/2024_01_15/clips --player-id SLangan1 --pitcher-hand R --output-csv outings/SLangan1/2024_01_15/pitch_data.csv --debug
 
 # 3. Generate scouting report
-python3 src/generate_report.py --csv outings/2024-01-15/pitch_data.csv
+python3 src/generate_report.py --csv outings/SLangan1/2024_01_15/pitch_data.csv
 ```
 
 ## Repo Structure
@@ -88,7 +88,7 @@ pitch-tracker/
 ├── input/                    # Default input video directory (standalone workflow)
 ├── frames/                   # Extracted JPEG frames (standalone workflow)
 ├── output/                   # Standalone workflow outputs
-├── outings/                  # Per-outing directories (batch workflow)
+├── outings/                  # Per-outing directories: outings/<playerId>/<dateId>/
 ├── sourcevideo/              # Raw inning videos
 └── venv/                     # Python virtual environment
 ```
@@ -369,13 +369,13 @@ python3 -c "from src.sheets_sync import get_player, get_default_sheet_id; print(
 python3 src/sheets_sync.py --list
 
 # Preview detection ROI
-python3 src/batch_process.py --clips-dir outings/<DATE>/clips --player-id SLangan1 --output-csv /dev/null --show-roi
+python3 src/batch_process.py --clips-dir outings/<playerId>/<dateId>/clips --player-id SLangan1 --output-csv /dev/null --show-roi
 ```
 
 ### Expected outputs per outing
 
 ```
-outings/<date>/
+outings/<playerId>/<dateId>/
 ├── clips/
 │   ├── pitch_001.mp4
 │   ├── pitch_002.mp4
@@ -444,10 +444,10 @@ All inch-based measurements depend on `pixels_per_inch`. If this is wrong, all m
 
 ### Required Folder Structure
 
-Each outing must be published to `web/public/data/<outing_id>/` with the following structure:
+Each outing must be published to `web/public/data/<playerId>/<dateId>/` with the following structure:
 
 ```
-web/public/data/<outing_id>/
+web/public/data/<playerId>/<dateId>/
 ├── pitch_data_overlay_lite.csv    # Source of truth for pitch count
 ├── clips/
 │   ├── pitch_001.mp4
@@ -487,31 +487,34 @@ If CSV row count doesn't match file count, or if `pitch_number` doesn't match fi
 
 ### Checklist
 
-1. Verify source files exist in `outings/<outing_id>/`:
+1. Verify source files exist in `outings/<playerId>/<dateId>/`:
    - `clips/pitch_*.mp4`
    - `results/pitch_*_overlay.mp4`
    - `pitch_data_overlay_lite.csv`
 
 2. Create destination directories:
    ```bash
-   mkdir -p web/public/data/<outing_id>/clips
-   mkdir -p web/public/data/<outing_id>/results
+   mkdir -p web/public/data/<playerId>/<dateId>/clips
+   mkdir -p web/public/data/<playerId>/<dateId>/results
    ```
 
 3. Copy files:
    ```bash
+   cp outings/<playerId>/<dateId>/pitch_data_overlay_lite.csv web/public/data/<playerId>/<dateId>/
+   cp outings/<playerId>/<dateId>/clips/pitch_*.mp4 web/public/data/<playerId>/<dateId>/clips/
+   cp outings/<playerId>/<dateId>/results/pitch_*_overlay.mp4 web/public/data/<playerId>/<dateId>/results/
    ```
 
 4. Validate counts match:
    ```bash
-   ls web/public/data/<outing_id>/clips/pitch_*.mp4 | wc -l
-   ls web/public/data/<outing_id>/results/pitch_*_overlay.mp4 | wc -l
-   tail -n +2 web/public/data/<outing_id>/pitch_data_overlay_lite.csv | wc -l
+   ls web/public/data/<playerId>/<dateId>/clips/pitch_*.mp4 | wc -l
+   ls web/public/data/<playerId>/<dateId>/results/pitch_*_overlay.mp4 | wc -l
+   tail -n +2 web/public/data/<playerId>/<dateId>/pitch_data_overlay_lite.csv | wc -l
    ```
 
 5. Update `web/lib/dataIndex.ts`:
    - Add new player entry or append to existing player's `outings` array
-   - Format: `{ id: "<outing_id>", label: "<date> – <name> (<count> pitches)", csvPath: "/data/<outing_id>/pitch_data_overlay_lite.csv", overlayDir: "/data/<outing_id>/results", clipsDir: "/data/<outing_id>/clips" }`
+   - Format: `{ id: "<playerId>/<dateId>", label: "<date> – <name> (<count> pitches)", ...buildDataPaths("<playerId>", "<dateId>") }`
    - Pitch count in label must match CSV row count
 
 6. Build check:
@@ -521,8 +524,8 @@ If CSV row count doesn't match file count, or if `pitch_number` doesn't match fi
 
 7. Git commit and push:
    ```bash
-   git add web/public/data/<outing_id> web/lib/dataIndex.ts
-   git commit -m "Add outing <outing_id>"
+   git add web/public/data/<playerId>/<dateId> web/lib/dataIndex.ts
+   git commit -m "Add outing <playerId>/<dateId>"
    git push
    ```
 
@@ -550,9 +553,9 @@ Outing selection follows this priority:
 
 ### Query String Propagation
 
-The `outingId` is passed via query string:
-- Player dashboard: `/player/<playerId>?outingId=<outing_id>`
-- Report page: `/player/<playerId>/report?outingId=<outing_id>`
+The `outingId` is passed via query string (format: `<playerId>/<dateId>`):
+- Player dashboard: `/player/<playerId>?outingId=<playerId>/<dateId>`
+- Report page: `/player/<playerId>/report?outingId=<playerId>/<dateId>`
 
 The `OutingSelect` component updates the URL when the dropdown changes:
 
