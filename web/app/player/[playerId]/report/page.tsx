@@ -3,7 +3,6 @@
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useEffect, useState } from "react";
 import { getPlayer } from "@/lib/dataIndex";
-import { usePitchData } from "@/app/hooks/usePitchData";
 import { pitchColor } from "@/lib/pitchColors";
 import {
   buildReport,
@@ -14,76 +13,8 @@ import {
   type PitchTypeSummary,
   type PitchGroupHorizontalCommand,
 } from "@/lib/reportModel";
+import { useAllPitchData } from "@/app/hooks/useAllPitchData";
 import LogoutButton from "@/app/components/LogoutButton";
-import Papa from "papaparse";
-import type { Pitch } from "@/app/types";
-
-/* ================================================================== */
-/*  CSV loader (shared with usePitchData)                              */
-/* ================================================================== */
-
-const NUM_FIELDS = new Set([
-  "pitch_number", "target_frame", "arrival_frame",
-  "target_x", "target_y", "ball_x", "ball_y",
-  "total_miss_px", "total_miss_inches",
-  "h_miss_px", "h_miss_inches", "h_miss_signed",
-  "v_miss_px", "v_miss_inches", "v_miss_signed",
-  "timestamp",
-]);
-
-function parseCsvText(text: string): Pitch[] {
-  const result = Papa.parse<Record<string, string>>(text, {
-    header: true,
-    skipEmptyLines: true,
-  });
-  return result.data.map((row) => {
-    const out: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(row)) {
-      out[k] = NUM_FIELDS.has(k) ? parseFloat(v) : v;
-    }
-    return out as unknown as Pitch;
-  });
-}
-
-function useAllPitchData(csvPaths: string[]) {
-  const [pitches, setPitches] = useState<Pitch[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Stable key for the effect
-  const key = csvPaths.join("\n");
-
-  useEffect(() => {
-    if (csvPaths.length === 0) {
-      setPitches([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-
-    Promise.all(
-      csvPaths.map((p) =>
-        fetch(p)
-          .then((r) => {
-            if (!r.ok) throw new Error(`Failed to load CSV: ${r.status} (${p})`);
-            return r.text();
-          })
-          .then((text) => parseCsvText(text)),
-      ),
-    )
-      .then((arrays) => {
-        setPitches(arrays.flat());
-        setLoading(false);
-      })
-      .catch((e) => {
-        setError(e.message);
-        setLoading(false);
-      });
-  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return { pitches, loading, error };
-}
 
 /* ================================================================== */
 /*  Inner component                                                    */
@@ -179,13 +110,21 @@ function ReportInner() {
         >
           &larr; Dashboard
         </a>
-        <button
-          type="button"
-          onClick={handlePrint}
-          className="px-4 py-1.5 text-sm rounded-md bg-zinc-700 text-zinc-100 hover:bg-zinc-600 transition-colors font-medium"
-        >
-          Export PDF
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href={`/player/${playerId}/compare${outingId ? `?outingA=${outingId}` : ""}`}
+            className="px-4 py-1.5 text-sm rounded-md bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors font-medium"
+          >
+            Compare
+          </a>
+          <button
+            type="button"
+            onClick={handlePrint}
+            className="px-4 py-1.5 text-sm rounded-md bg-zinc-700 text-zinc-100 hover:bg-zinc-600 transition-colors font-medium"
+          >
+            Export PDF
+          </button>
+        </div>
       </div>
 
       {/* ============================================================ */}

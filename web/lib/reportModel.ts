@@ -9,7 +9,7 @@ export const ON_TARGET_THRESHOLD_IN = 8;
 /** Pitches with total_miss_inches above this are considered outliers. */
 export const OUTLIER_MISS_THRESHOLD_IN = 20;
 
-function isOutlier(p: Pitch): boolean {
+export function isOutlier(p: Pitch): boolean {
   return Number.isFinite(p.total_miss_inches) && p.total_miss_inches > OUTLIER_MISS_THRESHOLD_IN;
 }
 
@@ -122,13 +122,13 @@ function stdDev(vals: number[]): number {
   return Math.sqrt(sqDiffs.reduce((a, b) => a + b, 0) / (vals.length - 1));
 }
 
-function isOnTarget(p: Pitch): boolean {
+export function isOnTarget(p: Pitch): boolean {
   const miss = p.total_miss_inches;
   if (miss == null || isNaN(miss)) return false;
   return miss <= ON_TARGET_THRESHOLD_IN;
 }
 
-function laneOf(p: Pitch): string {
+export function laneOf(p: Pitch): string {
   const h = p.h_miss_signed;
   if (h == null || isNaN(h)) return "Middle";
   // h_miss_signed: negative = arm-side, positive = glove-side
