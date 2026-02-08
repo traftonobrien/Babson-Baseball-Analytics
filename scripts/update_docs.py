@@ -22,7 +22,6 @@ SECTION_MARKERS = {
     "on-target": ("On Target Definition", "web/lib/reportModel.ts"),
     "outlier-system": ("Outlier System", "web/lib/reportModel.ts", "web/app/components/PitchTable.tsx", "web/app/components/StrikeZoneScatter.tsx"),
     "cli-args": ("CLI Arguments", "src/batch_process.py", "src/mark_pitches.py", "src/generate_report.py"),
-    "function-tables": ("File Reference", "src/batch_process.py", "src/calibrate.py", "src/export_csv.py"),
 }
 
 REPO_ROOT = Path(__file__).parent.parent
@@ -56,9 +55,13 @@ def should_update_section(section_id: str, changed_files: set) -> bool:
     if section_id not in SECTION_MARKERS:
         return False
     _, *watch_files = SECTION_MARKERS[section_id]
-    # Normalize paths (remove brackets for Next.js dynamic routes)
-    normalized_changed = {f.replace("[", "").replace("]", "") for f in changed_files}
-    normalized_watch = {f.replace("[", "").replace("]", "") for f in watch_files}
+    
+    def normalize_path(p: str) -> str:
+        """Normalize path by removing brackets for Next.js dynamic routes."""
+        return p.replace("[", "").replace("]", "") if p else ""
+    
+    normalized_changed = {normalize_path(f) for f in changed_files if f}
+    normalized_watch = {normalize_path(f) for f in watch_files}
     return bool(normalized_changed & normalized_watch)
 
 
@@ -492,38 +495,52 @@ def generate_cli_args_section() -> str:
 
 
 def parse_claude_md() -> Tuple[str, Dict[str, Tuple[int, int]]]:
-    """Parse claude.md and return content and section positions."""
+    """Parse claude.md and return content and section positions.
+    
+    Finds paired AUTO-UPDATE-START/END markers for each section.
+    Warns and skips sections with missing or mismatched markers.
+    """
     claude_path = REPO_ROOT / "claude.md"
     with open(claude_path, "r") as f:
         content = f.read()
     
     sections = {}
     for section_id, (title, *_) in SECTION_MARKERS.items():
-        # Look for section markers or headings
         start_marker = f"<!-- AUTO-UPDATE-START: {section_id} -->"
         end_marker = "<!-- AUTO-UPDATE-END -->"
         
-        start_pos = content.find(start_marker)
-        if start_pos == -1:
-            # Try finding by heading
-            heading_pattern = f"## {re.escape(title)}"
-            match = re.search(heading_pattern, content)
-            if match:
-                start_pos = match.start()
-        else:
-            start_pos += len(start_marker)
+        # Find all START markers for this section_id
+        start_positions = []
+        pos = 0
+        while True:
+            pos = content.find(start_marker, pos)
+            if pos == -1:
+                break
+            start_positions.append(pos)
+            pos += len(start_marker)
         
+        if not start_positions:
+            # No markers found - skip (do not inject)
+            print(f"Warning: No AUTO-UPDATE-START marker found for section '{section_id}' ({title}). Skipping.", file=sys.stderr)
+            continue
+        
+        if len(start_positions) > 1:
+            # Multiple START markers - warn and use first
+            print(f"Warning: Multiple AUTO-UPDATE-START markers found for section '{section_id}'. Using first occurrence.", file=sys.stderr)
+        
+        # Use first START position, content starts after the marker
+        start_pos = start_positions[0] + len(start_marker)
+        
+        # Find matching END marker (first END after this START)
         end_pos = content.find(end_marker, start_pos)
         if end_pos == -1:
-            # Find next ## heading or end of file
-            next_heading = re.search(r'\n## ', content[start_pos:])
-            if next_heading:
-                end_pos = start_pos + next_heading.start()
-            else:
-                end_pos = len(content)
+            # No END marker found - warn and skip
+            print(f"Warning: No AUTO-UPDATE-END marker found after START for section '{section_id}' ({title}). Skipping.", file=sys.stderr)
+            continue
         
-        if start_pos != -1:
-            sections[section_id] = (start_pos, end_pos)
+        # Store position after END marker for replacement
+        end_pos_after = end_pos + len(end_marker)
+        sections[section_id] = (start_pos, end_pos_after)
     
     return content, sections
 
@@ -574,22 +591,17 @@ def generate_proposed_content(
     # Apply updates (reverse order to preserve positions)
     new_content = content
     for section_id, new_text in sorted(updates.items(), key=lambda x: sections.get(x[0], (0, 0))[0], reverse=True):
-        if section_id in sections:
-            start, end = sections[section_id]
-            # Find the actual section start (heading)
-            before = new_content[:start]
-            after = new_content[end:]
-            
-            # Insert markers if not present
-            if "<!-- AUTO-UPDATE-START" not in before[-200:]:
-                # Find the heading
-                heading_match = re.search(r'\n## [^\n]+\n', before[-200:])
-                if heading_match:
-                    heading_start = len(before) - 200 + heading_match.start()
-                    before = new_content[:heading_start] + heading_match.group(0) + f"<!-- AUTO-UPDATE-START: {section_id} -->\n"
-                    start = len(before)
-            
-            new_content = before + new_text.rstrip() + "\n\n<!-- AUTO-UPDATE-END -->\n" + after
+        if section_id not in sections:
+            # Section not found - skip and warn (do not inject markers)
+            print(f"Warning: Section '{section_id}' not found in claude.md. Skipping update.", file=sys.stderr)
+            continue
+        
+        start, end = sections[section_id]
+        before = new_content[:start]
+        after = new_content[end:]
+        
+        # Replace content between markers (END marker is already in 'after', don't add another)
+        new_content = before + new_text.rstrip() + "\n" + after
     
     # Write or return content
     if output_path is not None:
