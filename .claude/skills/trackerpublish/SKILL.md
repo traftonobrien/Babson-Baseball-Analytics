@@ -11,16 +11,18 @@ Publish verified outing data to the Pitch Tracker web app. This skill executes a
 
 Collect these from the user before starting:
 
-1. **Outing folder name** (e.g. `2024_04_09_Clark`)
-2. **Player ID** (e.g. `JClark1`)
+1. **Player ID** (e.g. `JClark1`)
+2. **Date ID** (e.g. `2024_04_09`)
 3. **Label text** (e.g. `Apr 9, 2024 – Clark (55 pitches)`)
+
+The outing ID is `<playerId>/<dateId>` (e.g. `JClark1/2024_04_09`).
 
 ## Step 1: Verify source files
 
-Confirm these exist in `outings/<outing>/`:
+Confirm these exist in `outings/<playerId>/<dateId>/`:
 
 ```
-outings/<outing>/
+outings/<playerId>/<dateId>/
   pitch_data_overlay_lite.csv
   clips/pitch_001.mp4 ... pitch_NNN.mp4
   results/pitch_001_overlay.mp4 ... pitch_NNN_overlay.mp4
@@ -30,9 +32,9 @@ outings/<outing>/
 Count all three. All must match:
 
 ```bash
-ls outings/<outing>/clips/pitch_*.mp4 | wc -l
-ls outings/<outing>/results/pitch_*_overlay.mp4 | wc -l
-tail -n +2 outings/<outing>/pitch_data_overlay_lite.csv | wc -l
+ls outings/<playerId>/<dateId>/clips/pitch_*.mp4 | wc -l
+ls outings/<playerId>/<dateId>/results/pitch_*_overlay.mp4 | wc -l
+tail -n +2 outings/<playerId>/<dateId>/pitch_data_overlay_lite.csv | wc -l
 ```
 
 If counts mismatch: STOP. Report the mismatch and do not continue.
@@ -40,17 +42,17 @@ If counts mismatch: STOP. Report the mismatch and do not continue.
 ## Step 2: Copy into web app
 
 ```bash
-mkdir -p web/public/data/<outing>/clips
-mkdir -p web/public/data/<outing>/results
+mkdir -p web/public/data/<playerId>/<dateId>/clips
+mkdir -p web/public/data/<playerId>/<dateId>/results
 
-cp outings/<outing>/clips/pitch_*.mp4 \
-   web/public/data/<outing>/clips/
+cp outings/<playerId>/<dateId>/clips/pitch_*.mp4 \
+   web/public/data/<playerId>/<dateId>/clips/
 
-cp outings/<outing>/results/pitch_*_overlay.mp4 \
-   web/public/data/<outing>/results/
+cp outings/<playerId>/<dateId>/results/pitch_*_overlay.mp4 \
+   web/public/data/<playerId>/<dateId>/results/
 
-cp outings/<outing>/pitch_data_overlay_lite.csv \
-   web/public/data/<outing>/
+cp outings/<playerId>/<dateId>/pitch_data_overlay_lite.csv \
+   web/public/data/<playerId>/<dateId>/
 ```
 
 ## Step 3: Verify post copy counts
@@ -58,9 +60,9 @@ cp outings/<outing>/pitch_data_overlay_lite.csv \
 Recount at the destination. All three must match:
 
 ```bash
-ls web/public/data/<outing>/clips/pitch_*.mp4 | wc -l
-ls web/public/data/<outing>/results/pitch_*_overlay.mp4 | wc -l
-tail -n +2 web/public/data/<outing>/pitch_data_overlay_lite.csv | wc -l
+ls web/public/data/<playerId>/<dateId>/clips/pitch_*.mp4 | wc -l
+ls web/public/data/<playerId>/<dateId>/results/pitch_*_overlay.mp4 | wc -l
+tail -n +2 web/public/data/<playerId>/<dateId>/pitch_data_overlay_lite.csv | wc -l
 ```
 
 If mismatch: STOP. Report and do not continue.
@@ -69,7 +71,7 @@ If mismatch: STOP. Report and do not continue.
 
 Open `web/lib/dataIndex.ts`.
 
-Find the player by `id` matching `<player_id>`.
+Find the player by `id` matching `<playerId>`.
 
 If the player exists, append to their `outings` array. If the player does not exist, look up the player name and hand from `data/Arsenals.csv` using the player ID, then add a new player entry to the `players` array.
 
@@ -79,15 +81,15 @@ Outing object shape:
 
 ```ts
 {
-  id: "<outing>",
+  id: "<playerId>/<dateId>",
   label: "<label>",
-  csvPath: "/data/<outing>/pitch_data_overlay_lite.csv",
-  overlayDir: "/data/<outing>/results",
-  clipsDir: "/data/<outing>/clips",
+  ...buildDataPaths("<playerId>", "<dateId>"),
 }
 ```
 
-The pitch count in the label must match the CSV row count. Paths start with `/data/`.
+The `buildDataPaths()` function generates `csvPath`, `overlayDir`, and `clipsDir`. It is defined in `dataIndex.ts`.
+
+The pitch count in the label must match the CSV row count.
 
 Do not modify any other player or outing entries.
 
@@ -102,13 +104,13 @@ If TypeScript or build fails: report the error. Do not commit broken code.
 ## Step 6: Stage
 
 ```bash
-git add web/public/data/<outing> web/lib/dataIndex.ts
+git add web/public/data/<playerId>/<dateId> web/lib/dataIndex.ts
 ```
 
 ## Step 7: Commit
 
 ```bash
-git commit -m "Add <player_id> <outing> outing"
+git commit -m "Add <playerId>/<dateId> outing"
 ```
 
 ## Step 8: Push
