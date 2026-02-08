@@ -67,6 +67,19 @@ export const players: Player[] = [
  ],
 },
   {
+    id: "ZTeator1",
+    name: "Zander Teator",
+    outings: [
+      {
+        id: "2024_04_27_Teator",
+        label: "Apr 27, 2024 – Teator (17 pitches)",
+        csvPath: "/data/2024_04_27_Teator/pitch_data_overlay_lite.csv",
+        overlayDir: "/data/2024_04_27_Teator/results",
+        clipsDir: "/data/2024_04_27_Teator/clips",
+      },
+    ],
+  },
+  {
     id: "CDoan1",
     name: "Connor Doan",
     outings: [
