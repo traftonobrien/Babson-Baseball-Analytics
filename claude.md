@@ -438,6 +438,304 @@ If the ROI doesn't cover the catcher area, mini-clips will miss the glove/ball. 
 ### Calibration (pixels_per_inch) is wrong
 All inch-based measurements depend on `pixels_per_inch`. If this is wrong, all miss distances in inches will be scaled incorrectly (px values remain accurate). Re-calibrate by clicking the two edges of home plate: `python3 src/calibrate.py`.
 
+## Maintenance and Publishing
+
+<!-- AUTO-UPDATE-START: web-app-contract -->## Web Application Data Contract
+
+### Required Folder Structure
+
+Each outing must be published to `web/public/data/<outing_id>/` with the following structure:
+
+```
+web/public/data/<outing_id>/
+├── pitch_data_overlay_lite.csv    # Source of truth for pitch count
+├── clips/
+│   ├── pitch_001.mp4
+│   ├── pitch_002.mp4
+│   └── ...
+└── results/
+    ├── pitch_001_overlay.mp4
+    ├── pitch_002_overlay.mp4
+    └── ...
+```
+
+### File Mapping
+
+- **Overlay videos:** `${overlayDir}/pitch_${id}_overlay.mp4`
+- **Clips:** `${clipsDir}/pitch_${id}.mp4`
+
+The CSV `pitch_number` column is used to construct filenames:
+- `pitch_001.mp4` → pitch_number = 1
+- `pitch_001_overlay.mp4` → pitch_number = 1
+
+### Pitch Count Source of Truth
+
+The CSV file (`pitch_data_overlay_lite.csv`) is the source of truth for pitch count.
+The `dataIndex.ts` label must match the CSV row count (excluding header).
+
+### Mismatch Behavior
+
+If CSV row count doesn't match file count, or if `pitch_number` doesn't match filename:
+- Wrong videos may play when clicking pitches in the table
+- Video player may show 404 errors
+- Report aggregations may be incorrect
+
+<!-- AUTO-UPDATE-END -->
+<!-- AUTO-UPDATE-END -->
+
+<!-- AUTO-UPDATE-START: publishing-workflow -->## Publishing a Completed Outing
+
+### Checklist
+
+1. Verify source files exist in `outings/<outing_id>/`:
+   - `clips/pitch_*.mp4`
+   - `results/pitch_*_overlay.mp4`
+   - `pitch_data_overlay_lite.csv`
+
+2. Create destination directories:
+   ```bash
+   mkdir -p web/public/data/<outing_id>/clips
+   mkdir -p web/public/data/<outing_id>/results
+   ```
+
+3. Copy files:
+   ```bash
+   ```
+
+4. Validate counts match:
+   ```bash
+   ls web/public/data/<outing_id>/clips/pitch_*.mp4 | wc -l
+   ls web/public/data/<outing_id>/results/pitch_*_overlay.mp4 | wc -l
+   tail -n +2 web/public/data/<outing_id>/pitch_data_overlay_lite.csv | wc -l
+   ```
+
+5. Update `web/lib/dataIndex.ts`:
+   - Add new player entry or append to existing player's `outings` array
+   - Format: `{ id: "<outing_id>", label: "<date> – <name> (<count> pitches)", csvPath: "/data/<outing_id>/pitch_data_overlay_lite.csv", overlayDir: "/data/<outing_id>/results", clipsDir: "/data/<outing_id>/clips" }`
+   - Pitch count in label must match CSV row count
+
+6. Build check:
+   ```bash
+   npm --prefix web run build
+   ```
+
+7. Git commit and push:
+   ```bash
+   git add web/public/data/<outing_id> web/lib/dataIndex.ts
+   git commit -m "Add outing <outing_id>"
+   git push
+   ```
+
+Vercel will redeploy automatically on push to main.
+
+<!-- AUTO-UPDATE-END -->
+<!-- AUTO-UPDATE-END -->
+
+<!-- AUTO-UPDATE-START: outing-selection -->## Outing Selection Logic
+
+### Player Selection
+
+The UI loads player data from `web/lib/dataIndex.ts` using the `playerId` from the URL path:
+
+```typescript
+const player = getPlayer(playerId);
+```
+
+### Outing Selection
+
+Outing selection follows this priority:
+
+1. If `outingId` query parameter is present, use that outing
+2. Otherwise, use the first outing in the player's `outings` array
+
+### Query String Propagation
+
+The `outingId` is passed via query string:
+- Player dashboard: `/player/<playerId>?outingId=<outing_id>`
+- Report page: `/player/<playerId>/report?outingId=<outing_id>`
+
+The `OutingSelect` component updates the URL when the dropdown changes:
+
+```typescript
+router.push(`/player/${playerId}?outingId=${event.target.value}`)
+```
+
+### Fallback Behavior
+
+If `outingId` is missing or invalid:
+- The first outing in the player's `outings` array is used
+- If no outings exist, the page returns 404
+
+<!-- AUTO-UPDATE-END -->
+<!-- AUTO-UPDATE-END -->
+
+<!-- AUTO-UPDATE-START: perspective-lanes -->## Perspective and Lane Definitions
+
+### Catcher View
+
+All analysis uses the center-field camera perspective: viewing from behind the pitcher toward home plate.
+
+### Lane Definitions
+
+Lanes are determined by `h_miss_signed` (horizontal miss, signed):
+
+- **Arm side:** `h_miss_signed <= -4` inches
+- **Glove side:** `h_miss_signed >= 4` inches
+- **Middle:** `-4 < h_miss_signed < 4` inches
+
+### Lane Labels
+
+Lane labels adapt to pitcher hand:
+
+- **RHP:** Arm side = first base side (right in image), Glove side = third base side (left in image)
+- **LHP:** Arm side = third base side (left in image), Glove side = first base side (right in image)
+
+The `laneDisplayName()` function in `reportModel.ts` handles label formatting.
+
+<!-- AUTO-UPDATE-END -->
+<!-- AUTO-UPDATE-END -->
+
+<!-- AUTO-UPDATE-START: on-target -->## On Target Definition
+
+The `ON_TARGET_THRESHOLD_IN` constant is set to **8 inches**.
+
+A pitch is considered "on target" if `total_miss_inches <= ON_TARGET_THRESHOLD_IN`.
+
+This threshold is used in:
+- Report generation (`buildReport()` in `reportModel.ts`)
+- KPI calculations (hit spot percentage)
+- Per-pitch-type and per-lane on-target percentages
+
+<!-- AUTO-UPDATE-END -->
+<!-- AUTO-UPDATE-END -->
+
+<!-- AUTO-UPDATE-START: outlier-system -->## Outlier System
+
+The `OUTLIER_MISS_THRESHOLD_IN` constant is set to **20 inches**.
+
+A pitch is considered an outlier if `total_miss_inches > OUTLIER_MISS_THRESHOLD_IN`.
+
+### Exclude Outliers Option
+
+The `buildReport()` function accepts an `excludeOutliers` option:
+
+```typescript
+buildReport(pitches, playerName, outingLabel, scope, { excludeOutliers: true })
+```
+
+When `excludeOutliers` is true:
+- Outliers are filtered from all aggregations (KPIs, per-pitch-type, lanes)
+- `meta.outlierCount` reports how many were excluded
+- `meta.includedPitchCount` is the count after filtering
+
+### Visual Behavior
+
+Outliers are visually distinguished:
+
+- **PitchTable:** Outliers are greyed out (50% opacity, grayscale)
+- **PitchTable:** Outliers show an "OUTLIER" badge with threshold value
+- **StrikeZoneScatter:** Outliers may be filtered or visually distinct
+
+<!-- AUTO-UPDATE-END -->
+<!-- AUTO-UPDATE-END -->
+
+<!-- AUTO-UPDATE-START: cli-args -->## CLI Arguments
+
+### `src/batch_process.py`
+
+- `--arsenals-csv`: Path to Arsenals.csv for pitch type menu (default: data/Arsenals.csv) (default: data/Arsenals.csv)
+- `--ball-crop-size`: Override SAM crop size for ball segmentation (0=use --sam-crop-size)
+- `--batch`: Fully automatic batch mode (no user input, review low-confidence after) (flag)
+- `--clips-dir`: Directory containing pitch_NNN.mp4 clips
+- `--debug`: Enable debug mode: full SAM 2 video propagation + overlay video + result PNG (flag)
+- `--focus-terminal`: After preview, activate Terminal/iTerm (default: ON on macOS) (flag)
+- `--glove-crop-size`: Override SAM crop size for glove segmentation (0=use --sam-crop-size)
+- `--no-focus-terminal`: Disable auto-focus of Terminal after preview (flag)
+- `--no-overlay`: Alias for fast mode (default). Skips overlay video rendering. (flag)
+- `--no-require-roi`: Allow processing without ROI (skip interactive prompt) (flag)
+- `--no-result-png`: Skip result PNG generation (only applies with --overlay-lite) (flag)
+- `--output-csv`: CSV output path
+- `--overlay-lite`: Render overlay MP4 using markers only (no SAM2 video propagation) (flag)
+- `--pitcher-hand` (default: R) (choices: R, L)
+- `--player-id`: Pitcher identifier (e.g. SLangan1)
+- `--require-roi`: Require ROI before processing (default: True) (default: True) (flag)
+- `--roi`: Detection ROI as "x,y,w,h" (e.g. "374,343,353,343")
+- `--roi-file`: Path to JSON file with keys x, y, w/width, h/height
+- `--sam-crop-size`: Crop square around click point before SAM 2 (0=off, recommended: 384)
+- `--sam-max-width`: Downscale frames to this width before SAM 2 inference (0=off, recommended: 800)
+- `--sheet-id`: Google Sheet ID for player data (or use default from config)
+- `--show-roi`: Preview the configured detection ROI and exit (flag)
+- `--start-at`: Start at pitch N (for resuming, default: 1) (default: 1)
+- `--zone-height` (default: 23)
+
+### `src/mark_pitches.py`
+
+- `--output-dir`: Output directory for clips and pitch_log.json
+- `--pad`: Frames to pad before T and after A (default: 5) (default: 5)
+- `--player-id`: Player ID for arsenal-based pitch type selection
+- `--sheet-id`: Google Sheet ID for player data
+- `--video`: Single video file
+- `--videos`: Multiple video files (processed in order)
+
+### `src/generate_report.py`
+
+- `--csv`: Path to pitch_data.csv
+- `--pitcher-hand`: Override pitcher hand (choices: R, L)
+- `--pitcher-name`: Override pitcher name
+
+<!-- AUTO-UPDATE-END -->
+<!-- AUTO-UPDATE-END -->
+
+### Docs Update Workflow
+
+The documentation update system automatically proposes changes when relevant code files are modified.
+
+#### Automatic Proposal on Commit
+
+When you commit code changes, the pre-commit hook:
+
+1. Detects if any files that affect documentation have changed
+2. Generates a proposed update in `claude.md.proposed`
+3. Shows a summary and diff preview of proposed changes
+4. In interactive mode (terminal), prompts for approval:
+   • Type `y` or `yes` to apply and stage changes
+   • Type `n` or press Enter to skip (commit proceeds without changes)
+5. In non-interactive mode (CI), leaves the proposal file for manual review
+
+#### Manual Review and Application
+
+To review proposed changes:
+
+```bash
+# View the diff
+python3 scripts/update_docs.py --diff
+
+# Apply the changes
+python3 scripts/update_docs.py --apply
+```
+
+#### Manual Proposal Generation
+
+To generate a proposal without committing:
+
+```bash
+# Generate proposal (default mode)
+python3 scripts/update_docs.py --propose
+
+# Force full update (ignore git diff)
+python3 scripts/update_docs.py --propose --full
+```
+
+#### Checking for Changes
+
+To check if documentation updates are available:
+
+```bash
+python3 scripts/update_docs.py --check
+```
+
+This prints "Changes exist" or "No changes" and always exits successfully.
+
 ## Known Issues / Mismatches
 
 1. **`get_zone_bounds()` is duplicated** across `calculate_miss.py`, `visualize.py`, and `export_csv.py` with slightly different implementations. The `visualize.py` version accepts a `zone_center_x` parameter; the others do not. `batch_process.py` imports from `visualize.py`.

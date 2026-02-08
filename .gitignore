@@ -54,3 +54,6 @@ output/*
 outings/
 *.npy
 *.npz
+
+# Documentation proposals
+claude.md.proposed
