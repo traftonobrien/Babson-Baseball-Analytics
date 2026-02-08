@@ -57,7 +57,14 @@ export const players: Player[] = [
       overlayDir: "/data/2024_04_09_Clark/results",
       clipsDir: "/data/2024_04_09_Clark/clips",
     },
-  ],
+  {
+  id: "2024_04_27_Clark",
+  label: "Apr 27, 2024 – Clark (13 pitches)",
+  csvPath: "/data/2024_04_27_Clark/pitch_data_overlay_lite.csv",
+  overlayDir: "/data/2024_04_27_Clark/results",
+  clipsDir: "/data/2024_04_27_Clark/clips",
+}, 
+ ],
 },
 
 ];
