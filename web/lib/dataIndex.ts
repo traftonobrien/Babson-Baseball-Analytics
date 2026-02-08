@@ -52,7 +52,7 @@ export const players: Player[] = [
   outings: [
     {
       id: "2024_04_09_Clark",
-      label: "Apr 9, 2024 – Clark (62 pitches)",
+      label: "Apr 9, 2024 – Clark (55 pitches)",
       csvPath: "/data/2024_04_09_Clark/pitch_data_overlay_lite.csv",
       overlayDir: "/data/2024_04_09_Clark/results",
       clipsDir: "/data/2024_04_09_Clark/clips",
