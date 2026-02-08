@@ -18,11 +18,9 @@ export const players: Player[] = [
     name: "Trafton O'Brien",
     outings: [
       {
-        id: "2025_10_04_OBrien",
+        id: "TOBrien1/2025_10_04",
         label: "Oct 4, 2025 – O'Brien (27 pitches)",
-        csvPath: "/data/2025_10_04_OBrien/pitch_data_overlay_lite.csv",
-        overlayDir: "/data/2025_10_04_OBrien/results",
-        clipsDir: "/data/2025_10_04_OBrien/clips",
+        ...buildDataPaths("TOBrien1", "2025_10_04"),
       },
     ],
   },
@@ -31,18 +29,14 @@ export const players: Player[] = [
     name: "Jason Finkelstein",
     outings: [
       {
-        id: "2024_04_27_Finkelstein",
+        id: "JFinkelstein1/2024_04_27",
         label: "Apr 27, 2024 – Finkelstein (63 pitches)",
-        csvPath: "/data/2024_04_27_Finkelstein/pitch_data_overlay_lite.csv",
-        overlayDir: "/data/2024_04_27_Finkelstein/results",
-        clipsDir: "/data/2024_04_27_Finkelstein/clips",
+        ...buildDataPaths("JFinkelstein1", "2024_04_27"),
       },
       {
-        id: "2024_04_14_Finkelstein",
+        id: "JFinkelstein1/2024_04_14",
         label: "Apr 14, 2024 – Finkelstein (91 pitches)",
-        csvPath: "/data/2024_04_14_Finkelstein/pitch_data_overlay_lite.csv",
-        overlayDir: "/data/2024_04_14_Finkelstein/results",
-        clipsDir: "/data/2024_04_14_Finkelstein/clips",
+        ...buildDataPaths("JFinkelstein1", "2024_04_14"),
       },
     ],
   },
@@ -51,19 +45,15 @@ export const players: Player[] = [
   name: "James Clark",
   outings: [
     {
-      id: "2024_04_09_Clark",
-      label: "Apr 9, 2024 – Clark (55 pitches)",
-      csvPath: "/data/2024_04_09_Clark/pitch_data_overlay_lite.csv",
-      overlayDir: "/data/2024_04_09_Clark/results",
-      clipsDir: "/data/2024_04_09_Clark/clips",
-    },
+        id: "JClark1/2024_04_09",
+        label: "Apr 9, 2024 – Clark (55 pitches)",
+        ...buildDataPaths("JClark1", "2024_04_09"),
+      },
   {
-  id: "2024_04_27_Clark",
-  label: "Apr 27, 2024 – Clark (13 pitches)",
-  csvPath: "/data/2024_04_27_Clark/pitch_data_overlay_lite.csv",
-  overlayDir: "/data/2024_04_27_Clark/results",
-  clipsDir: "/data/2024_04_27_Clark/clips",
-}, 
+        id: "JClark1/2024_04_27",
+        label: "Apr 27, 2024 – Clark (13 pitches)",
+        ...buildDataPaths("JClark1", "2024_04_27"),
+      }, 
  ],
 },
   {
@@ -71,11 +61,9 @@ export const players: Player[] = [
     name: "Zander Teator",
     outings: [
       {
-        id: "2024_04_27_Teator",
+        id: "ZTeator1/2024_04_27",
         label: "Apr 27, 2024 – Teator (17 pitches)",
-        csvPath: "/data/2024_04_27_Teator/pitch_data_overlay_lite.csv",
-        overlayDir: "/data/2024_04_27_Teator/results",
-        clipsDir: "/data/2024_04_27_Teator/clips",
+        ...buildDataPaths("ZTeator1", "2024_04_27"),
       },
     ],
   },
@@ -84,11 +72,9 @@ export const players: Player[] = [
     name: "Connor Doan",
     outings: [
       {
-        id: "2024_04_27_Doan",
+        id: "CDoan1/2024_04_27",
         label: "Apr 27, 2024 – Doan (10 pitches)",
-        csvPath: "/data/2024_04_27_Doan/pitch_data_overlay_lite.csv",
-        overlayDir: "/data/2024_04_27_Doan/results",
-        clipsDir: "/data/2024_04_27_Doan/clips",
+        ...buildDataPaths("CDoan1", "2024_04_27"),
       },
     ],
   },
@@ -97,3 +83,12 @@ export const players: Player[] = [
 export function getPlayer(id: string): Player | undefined {
   return players.find((p) => p.id === id);
 }
+
+export function buildDataPaths(playerId: string, dateId: string) {
+  return {
+    csvPath: `/data/${playerId}/${dateId}/pitch_data_overlay_lite.csv`,
+    overlayDir: `/data/${playerId}/${dateId}/results`,
+    clipsDir: `/data/${playerId}/${dateId}/clips`,
+  };
+}
+
