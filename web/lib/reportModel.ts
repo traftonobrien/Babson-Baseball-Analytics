@@ -6,6 +6,13 @@ const MIN_SAMPLE = 5;
 /** Distance threshold (inches) for "on target". */
 export const ON_TARGET_THRESHOLD_IN = 8;
 
+/** Pitches with total_miss_inches above this are considered outliers. */
+export const OUTLIER_MISS_THRESHOLD_IN = 20;
+
+function isOutlier(p: Pitch): boolean {
+  return Number.isFinite(p.total_miss_inches) && p.total_miss_inches > OUTLIER_MISS_THRESHOLD_IN;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
@@ -18,6 +25,9 @@ export interface ReportMeta {
   pitcherHand: string;
   outingLabel: string;
   totalPitches: number;
+  allPitchCount: number;
+  includedPitchCount: number;
+  outlierCount: number;
   generatedAt: string;
 }
 
@@ -202,26 +212,42 @@ function buildHorizontalThirds(
 /*  Main builder                                                       */
 /* ------------------------------------------------------------------ */
 
+export interface BuildReportOptions {
+  excludeOutliers?: boolean;
+}
+
 export function buildReport(
   pitches: Pitch[],
   playerName: string,
   outingLabel: string,
   scope: ReportScope = "outing",
+  options?: BuildReportOptions,
 ): Report {
-  const totalPitches = pitches.length;
-  const misses = pitches.map((p) => p.total_miss_inches);
+  const allPitches = pitches;
+  const allPitchCount = allPitches.length;
+  const excludeOutliers = options?.excludeOutliers ?? false;
+  const includedPitches = excludeOutliers
+    ? allPitches.filter((p) => !isOutlier(p))
+    : allPitches;
+  const includedPitchCount = includedPitches.length;
+  const outlierCount = allPitchCount - includedPitchCount;
+
+  // All downstream computations use includedPitches
+  const pitchesForCalc = includedPitches;
+  const totalPitches = pitchesForCalc.length;
+  const misses = pitchesForCalc.map((p) => p.total_miss_inches);
   const avgMiss = avg(misses);
   const medianMiss = median(misses);
   const missStdDev = stdDev(misses);
 
-  const hitCount = pitches.filter(isOnTarget).length;
+  const hitCount = pitchesForCalc.filter(isOnTarget).length;
   const hitSpotPct = totalPitches > 0 ? (hitCount / totalPitches) * 100 : 0;
 
-  const pitcherHand = pitches[0]?.pitcher_hand ?? "R";
+  const pitcherHand = allPitches[0]?.pitcher_hand ?? "R";
 
   /* ---- Per pitch type ---- */
   const typeMap = new Map<string, Pitch[]>();
-  for (const p of pitches) {
+  for (const p of pitchesForCalc) {
     const t = p.pitch_type || "Unknown";
     if (!typeMap.has(t)) typeMap.set(t, []);
     typeMap.get(t)!.push(p);
@@ -256,7 +282,7 @@ export function buildReport(
 
   /* ---- Lanes (detailed) ---- */
   const laneMap = new Map<string, Pitch[]>();
-  for (const p of pitches) {
+  for (const p of pitchesForCalc) {
     const l = laneOf(p);
     if (!laneMap.has(l)) laneMap.set(l, []);
     laneMap.get(l)!.push(p);
@@ -283,8 +309,8 @@ export function buildReport(
   // Lane takeaways — coaching language with signed averages
   const laneTakeaways: string[] = [];
 
-  const overallHSigned = avg(pitches.map((p) => p.h_miss_signed));
-  const overallVSigned = avg(pitches.map((p) => p.v_miss_signed));
+  const overallHSigned = avg(pitchesForCalc.map((p) => p.h_miss_signed));
+  const overallVSigned = avg(pitchesForCalc.map((p) => p.v_miss_signed));
 
   // Best/worst lane: prioritize low avgMiss, then high onTarget; require n>=5
   const qualifiedLanes = lanesDetailed.filter((l) => l.count >= MIN_SAMPLE);
@@ -316,8 +342,8 @@ export function buildReport(
   }
 
   /* ---- Fastball / Breaking ball horizontal thirds ---- */
-  const fastballs = pitches.filter((p) => FASTBALL_TYPES.has((p.pitch_type ?? "").toUpperCase()));
-  const breakingBalls = pitches.filter((p) => BREAKING_TYPES.has((p.pitch_type ?? "").toUpperCase()));
+  const fastballs = pitchesForCalc.filter((p) => FASTBALL_TYPES.has((p.pitch_type ?? "").toUpperCase()));
+  const breakingBalls = pitchesForCalc.filter((p) => BREAKING_TYPES.has((p.pitch_type ?? "").toUpperCase()));
 
   const fastballHorizontalThirds = buildHorizontalThirds(fastballs, "Fastball", pitcherHand);
   const breakingHorizontalThirds = buildHorizontalThirds(breakingBalls, "Breaking Ball", pitcherHand);
@@ -338,6 +364,9 @@ export function buildReport(
       pitcherHand,
       outingLabel,
       totalPitches,
+      allPitchCount,
+      includedPitchCount,
+      outlierCount,
       generatedAt: new Date().toISOString(),
     },
     kpis: {

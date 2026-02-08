@@ -9,6 +9,7 @@ import {
   buildReport,
   laneDisplayName,
   ON_TARGET_THRESHOLD_IN,
+  OUTLIER_MISS_THRESHOLD_IN,
   type LaneDetailed,
   type PitchTypeSummary,
   type PitchGroupHorizontalCommand,
@@ -111,6 +112,24 @@ function ReportInner() {
 
   const { pitches, loading, error } = useAllPitchData(csvPaths);
 
+  /* ---- Exclude outliers toggle (persisted per player+scope) ---- */
+  const lsKey = `reportExcludeOutliers:${playerId}:${scope}`;
+  const [excludeOutliers, setExcludeOutliers] = useState(false);
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(lsKey);
+      if (stored === "true") setExcludeOutliers(true);
+      else if (stored === "false") setExcludeOutliers(false);
+    } catch { /* localStorage unavailable */ }
+  }, [lsKey]);
+  const toggleExcludeOutliers = () => {
+    setExcludeOutliers((prev) => {
+      const next = !prev;
+      try { localStorage.setItem(lsKey, String(next)); } catch { /* noop */ }
+      return next;
+    });
+  };
+
   const report = useMemo(() => {
     if (pitches.length === 0) return null;
     const label =
@@ -122,8 +141,9 @@ function ReportInner() {
       player?.name ?? "",
       label,
       scope,
+      { excludeOutliers },
     );
-  }, [pitches, player, outing, scope]);
+  }, [pitches, player, outing, scope, excludeOutliers]);
 
   if (!player || (!outing && scope === "outing")) return <Msg text="Player or outing not found." error />;
   if (loading) return <Msg text="Loading pitch data..." />;
@@ -196,6 +216,21 @@ function ReportInner() {
           <Pill>{report.meta.totalPitches} pitches</Pill>
           <Pill>Throws {report.meta.pitcherHand === "L" ? "LHP" : "RHP"}</Pill>
           <Pill>{generatedDate}</Pill>
+          {/* Outlier toggle */}
+          <label className="inline-flex items-center gap-1 cursor-pointer select-none print:hidden">
+            <input
+              type="checkbox"
+              checked={excludeOutliers}
+              onChange={toggleExcludeOutliers}
+              className="accent-zinc-400 w-3 h-3"
+            />
+            <span className="text-[9px] font-medium text-zinc-400">Exclude outliers</span>
+          </label>
+          {excludeOutliers && report.meta.outlierCount > 0 && (
+            <span className="text-[9px] text-zinc-500 print:text-zinc-600">
+              Outliers excluded: {report.meta.outlierCount} of {report.meta.allPitchCount} over {OUTLIER_MISS_THRESHOLD_IN} inches
+            </span>
+          )}
         </div>
       </header>
 
