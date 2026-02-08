@@ -486,15 +486,15 @@ function PitchMixTable({ data }: { data: PitchTypeSummary[] }) {
 /* ================================================================== */
 
 const LANE_BAR_COLORS: Record<string, { screen: string; print: string }> = {
-  Inside: { screen: "rgb(96, 165, 250)", print: "rgb(147, 197, 253)" },
+  Glove: { screen: "rgb(96, 165, 250)", print: "rgb(147, 197, 253)" },
   Middle: { screen: "rgb(161, 161, 170)", print: "rgb(161, 161, 170)" },
-  Outside: { screen: "rgb(251, 191, 36)", print: "rgb(252, 211, 77)" },
+  Arm: { screen: "rgb(251, 191, 36)", print: "rgb(252, 211, 77)" },
 };
 
 const LANE_SUBTITLE: Record<string, string> = {
-  Inside: "toward batter",
+  Glove: "glove side",
   Middle: "center",
-  Outside: "away from batter",
+  Arm: "arm side",
 };
 
 function hDir(v: number): string {

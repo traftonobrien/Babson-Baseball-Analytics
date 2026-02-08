@@ -70,7 +70,7 @@ export interface LaneDetailed {
 }
 
 export interface HorizontalThirdSummary {
-  lane: string; // "Inside" | "Middle" | "Outside"
+  lane: string; // "Glove" | "Middle" | "Arm"
   count: number;
   pct: number;
   avgMiss: number;
@@ -131,22 +131,20 @@ function isOnTarget(p: Pitch): boolean {
 function laneOf(p: Pitch): string {
   const h = p.h_miss_signed;
   if (h == null || isNaN(h)) return "Middle";
-  if (h <= -4) return "Outside";
-  if (h >= 4) return "Inside";
+  // h_miss_signed: negative = arm-side, positive = glove-side
+  if (h <= -4) return "Arm";
+  if (h >= 4) return "Glove";
   return "Middle";
 }
 
 const FASTBALL_TYPES = new Set(["FF", "SI", "FC", "FS", "FT"]);
 const BREAKING_TYPES = new Set(["SL", "CU", "KC", "SV", "CB"]);
 
-/** Map internal lane key to arm-side/glove-side display name by pitcher hand. */
-export function laneDisplayName(lane: string, pitcherHand: string): string {
-  if (lane === "Middle") return "Middle";
-  if (pitcherHand === "L") {
-    return lane === "Inside" ? "Glove-side" : "Arm-side";
-  }
-  // RHP (default)
-  return lane === "Inside" ? "Arm-side" : "Glove-side";
+/** Map internal lane key to display name. h_miss_signed is already hand-normalized. */
+export function laneDisplayName(lane: string, _pitcherHand?: string): string {
+  if (lane === "Glove") return "Glove side";
+  if (lane === "Arm") return "Arm side";
+  return "Middle";
 }
 
 function buildHorizontalThirds(
@@ -162,7 +160,7 @@ function buildHorizontalThirds(
     laneMap.get(l)!.push(p);
   }
 
-  const lanes: HorizontalThirdSummary[] = ["Inside", "Middle", "Outside"].map(
+  const lanes: HorizontalThirdSummary[] = ["Glove", "Middle", "Arm"].map(
     (lane) => {
       const group = laneMap.get(lane) ?? [];
       const hits = group.filter(isOnTarget).length;
@@ -288,7 +286,7 @@ export function buildReport(
     laneMap.get(l)!.push(p);
   }
 
-  const lanesDetailed: LaneDetailed[] = ["Inside", "Middle", "Outside"].map(
+  const lanesDetailed: LaneDetailed[] = ["Glove", "Middle", "Arm"].map(
     (lane) => {
       const group = laneMap.get(lane) ?? [];
       const hits = group.filter(isOnTarget).length;

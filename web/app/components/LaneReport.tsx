@@ -3,7 +3,7 @@
 import type { Pitch } from "../types";
 import { pitchColor } from "../utils";
 
-export type Lane = "outside" | "middle" | "inside";
+export type Lane = "glove" | "middle" | "arm";
 
 interface LaneReportProps {
   pitches: Pitch[];
@@ -37,21 +37,22 @@ function vLabel(v: number): string {
 }
 
 function buildBuckets(pitches: Pitch[]): LaneBucket[] {
-  const inside: Pitch[] = [];
+  const glove: Pitch[] = [];
   const middle: Pitch[] = [];
-  const outside: Pitch[] = [];
+  const arm: Pitch[] = [];
 
   for (const p of pitches) {
     const h = p.h_miss_signed;
-    if (h >= 4) inside.push(p);
-    else if (h <= -4) outside.push(p);
+    // h_miss_signed: negative = arm-side, positive = glove-side
+    if (h <= -4) arm.push(p);
+    else if (h >= 4) glove.push(p);
     else middle.push(p);
   }
 
   return [
-    { key: "outside" as Lane, label: "Outside", pitches: outside },
+    { key: "glove" as Lane, label: "Glove side", pitches: glove },
     { key: "middle" as Lane, label: "Middle", pitches: middle },
-    { key: "inside" as Lane, label: "Inside", pitches: inside },
+    { key: "arm" as Lane, label: "Arm side", pitches: arm },
   ].map((b) => ({
     ...b,
     avgTotal: avg(b.pitches, (p) => p.total_miss_inches),

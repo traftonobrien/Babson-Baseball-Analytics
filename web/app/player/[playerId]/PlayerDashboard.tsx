@@ -28,8 +28,9 @@ const EMPTY_FILTERS: Filters = {
 function laneOf(pitch: Pitch): Lane {
   const h = pitch.h_miss_signed;
   if (h == null || isNaN(h)) return "middle";
-  if (h <= -4) return "outside";
-  if (h >= 4) return "inside";
+  // h_miss_signed: negative = arm-side, positive = glove-side
+  if (h <= -4) return "arm";
+  if (h >= 4) return "glove";
   return "middle";
 }
 
