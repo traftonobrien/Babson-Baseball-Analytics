@@ -66,7 +66,19 @@ export const players: Player[] = [
 }, 
  ],
 },
-
+  {
+    id: "CDoan1",
+    name: "Connor Doan",
+    outings: [
+      {
+        id: "2024_04_27_Doan",
+        label: "Apr 27, 2024 – Doan (10 pitches)",
+        csvPath: "/data/2024_04_27_Doan/pitch_data_overlay_lite.csv",
+        overlayDir: "/data/2024_04_27_Doan/results",
+        clipsDir: "/data/2024_04_27_Doan/clips",
+      },
+    ],
+  },
 ];
 
 export function getPlayer(id: string): Player | undefined {
