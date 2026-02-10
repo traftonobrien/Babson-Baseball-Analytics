@@ -89,6 +89,17 @@ export const players: Player[] = [
       },
     ],
   },
+  {
+    id: "CBurrows1",
+    name: "Chase Burrows",
+    outings: [
+      {
+        id: "CBurrows1/03_26_25",
+        label: "Mar 26, 2025 – Burrows (25 pitches)",
+        ...buildDataPaths("CBurrows1", "03_26_25"),
+      },
+    ],
+  },
 ];
 
 export function getPlayer(id: string): Player | undefined {
