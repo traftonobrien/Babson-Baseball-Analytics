@@ -4,6 +4,7 @@ import type { Pitch } from "../types";
 import { pitchColor } from "../utils";
 import { ScatterOverlay, PAD, SIZE, toSvg } from "./ZoneOverlay";
 import { OUTLIER_MISS_THRESHOLD_IN } from "@/lib/reportModel";
+import { toArmSideX } from "@/lib/handedness";
 
 const isOutlierPitch = (p: Pitch) =>
   Number.isFinite(p.total_miss_inches) &&
@@ -13,12 +14,14 @@ interface Props {
   pitches: Pitch[];
   selected: Pitch | null;
   onSelect: (p: Pitch) => void;
+  throwsHand: "R" | "L";
 }
 
 export default function StrikeZoneScatter({
   pitches,
   selected,
   onSelect,
+  throwsHand,
 }: Props) {
   return (
     <div className="bg-zinc-900 rounded-lg p-3">
@@ -30,7 +33,7 @@ export default function StrikeZoneScatter({
 
         {/* Pitch dots */}
         {pitches.map((p) => {
-          const px = toSvg(-p.h_miss_signed);
+          const px = toSvg(toArmSideX(p.h_miss_signed, throwsHand));
           const py = toSvg(p.v_miss_signed);
           const isSel = selected?.pitch_number === p.pitch_number;
           const isOutlier = isOutlierPitch(p);

@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import type { Pitch } from "../types";
 import { overlayUrl, clipUrl } from "../utils";
+
+const DEBUG_HOTKEYS = false;
+const VIDEO_FPS = 30;
 
 interface Props {
   pitch: Pitch | null;
@@ -27,6 +30,38 @@ export default function VideoPlayer({ pitch, overlayDir, clipsDir }: Props) {
     setErrored(false);
     setSrc(overlayUrl(pitch, overlayDir));
   }, [pitch, overlayDir]);
+
+  /* ---- Global J/L frame-stepping hotkeys ---- */
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Ignore when typing in form elements
+    const tag = (e.target as HTMLElement)?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+    // Ignore when modifier keys are held
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+    const video = videoRef.current;
+    if (!video) return;
+
+    const frameDuration = 1 / VIDEO_FPS;
+
+    if (e.key === "j") {
+      e.preventDefault();
+      video.pause();
+      video.currentTime = Math.max(0, video.currentTime - frameDuration);
+      if (DEBUG_HOTKEYS) console.log(`[hotkey] J: step back to ${video.currentTime.toFixed(4)}s`);
+    } else if (e.key === "l") {
+      e.preventDefault();
+      video.pause();
+      video.currentTime = Math.min(video.duration, video.currentTime + frameDuration);
+      if (DEBUG_HOTKEYS) console.log(`[hotkey] L: step forward to ${video.currentTime.toFixed(4)}s`);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 
   const handleLoadedData = () => setLoading(false);
 

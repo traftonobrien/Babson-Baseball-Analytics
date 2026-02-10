@@ -24,9 +24,9 @@ Baseball pitch command tracking system. Uses SAM 2 (Segment Anything Model 2) to
 ## Current Development Focus
 
 - Stabilizing the `batch_process.py` pipeline end-to-end
-- Ensuring direction labeling (arm-side/glove-side, high/low) is correct and consistent across all output files
-- Preparing for batch CSV export and miss heatmap visualization
-- **Not in scope:** SAM 3 migration, web UI, fully automatic ball detection, multi-camera support
+- Web app: player dashboards, scouting reports, outing comparison, heatmaps
+- Centralized arm-side/glove-side logic via `web/lib/handedness.ts` (single source of truth for the web app)
+- **Not in scope:** SAM 3 migration, fully automatic ball detection, multi-camera support
 
 ## Quick Start
 
@@ -68,7 +68,7 @@ pitch-tracker/
 │   ├── track_ball.py         # Standalone classical CV ball detection (legacy/debug)
 │   ├── calculate_miss.py     # Standalone miss calculation from .npy files (legacy/debug)
 │   ├── visualize.py          # Standalone overlay video renderer (legacy/debug; also imported by batch_process.py)
-│   ├── segment_pitches.py    # Auto-segment pitches from inning video via motion detection (experimental)
+│   ├── segment_pitches.py    # Segment pitches from inning video (manual scrubber default, --auto for motion detection)
 │   ├── export_csv.py         # CSV row builder and writer (used by batch_process.py)
 │   ├── sheets_sync.py        # Google Sheets player database sync
 │   └── generate_report.py    # Scouting command report from CSV
@@ -90,7 +90,19 @@ pitch-tracker/
 ├── output/                   # Standalone workflow outputs
 ├── outings/                  # Per-outing directories: outings/<playerId>/<dateId>/
 ├── sourcevideo/              # Raw inning videos
-└── venv/                     # Python virtual environment
+├── venv/                     # Python virtual environment
+│
+└── web/                      # Next.js web application
+    ├── lib/
+    │   ├── dataIndex.ts      # Player/outing registry (Player model includes throws hand)
+    │   ├── handedness.ts     # Centralized arm-side/glove-side logic (toArmSideX, laneOf, laneDisplayName)
+    │   ├── reportModel.ts    # Report builder (imports from handedness.ts for lane/direction logic)
+    │   ├── comparisonModel.ts # Outing comparison model
+    │   └── config.ts         # Plot config
+    ├── app/
+    │   ├── components/       # Shared UI components (StrikeZoneScatter, MissHeatmap, LaneReport, VideoPlayer, etc.)
+    │   └── player/[playerId]/ # Player dashboard, report, and compare pages
+    └── public/data/          # Published outing data (clips, overlays, CSVs)
 ```
 
 ## Two Workflows
@@ -221,6 +233,15 @@ Google Sheets structure:
 
 Auth: service account credentials at `data/credentials.json`. Synced data cached at `data/players.yaml`.
 
+### `src/segment_pitches.py` (pitch segmentation)
+
+Segments full inning video(s) into individual pitch clips. Two modes:
+
+- **Manual mode (default):** Opens a scrubber UI per video. User marks target/arrival frames manually. Same UI as `mark_pitches.py`.
+- **Auto mode (`--auto`):** Detects pitches via motion analysis (frame differencing). `--review` implies `--auto` and opens a review scrubber after detection.
+
+Supports `--video` (single) or `--videos` (multiple, continuous numbering across videos). Outputs `clips/` directory and `pitch_log.json` with `clip`, `source_video`, and `pitch` keys compatible with `batch_process.py`.
+
 ### `src/arsenals.py` (shared arsenal loader)
 
 Loads `data/Arsenals.csv` and provides cached lookups:
@@ -303,6 +324,25 @@ This logic is implemented identically in: `batch_process.py:calculate_miss_simpl
 - `v_miss_signed`: **negative = high**, positive = low
 
 This convention is set in `export_csv.py:build_row()`.
+
+### Web App Convention (arm-side-positive)
+
+The web app uses the **opposite** sign convention from the CSV for plotting and lane classification:
+
+- **positive = arm-side**, negative = glove-side
+
+This conversion is handled by a single function: `toArmSideX(hMissSigned, throwsHand)` in `web/lib/handedness.ts`. Since the CSV data is pre-normalized by the Python backend, `toArmSideX` simply negates the value. The `throwsHand` parameter is accepted for future-proofing but not currently used in the computation.
+
+All web app consumers (scatter plots, heatmaps, lane classification, direction labels) import from `handedness.ts`. No component contains inline arm/glove logic.
+
+| Function | Purpose |
+|---|---|
+| `toArmSideX(hMissSigned, throwsHand)` | Convert CSV h_miss_signed to arm-side-positive |
+| `laneOf(armSideX)` | Classify into "Arm" / "Middle" / "Glove" (threshold: 4 inches) |
+| `laneDisplayName(lane, throwsHand)` | Human label with base side, e.g. "Arm (1B)" for RHP |
+| `hDirectionLabel(armSideX)` | "arm-side" / "glove-side" / "middle" |
+
+The `Player` model in `dataIndex.ts` includes a `throws: "R" | "L"` property sourced from `Arsenals.csv`. Components receive `throwsHand` as a prop from the dashboard/page level.
 
 ### Strike Zone Quadrant Codes
 
@@ -514,6 +554,7 @@ If CSV row count doesn't match file count, or if `pitch_number` doesn't match fi
 
 5. Update `web/lib/dataIndex.ts`:
    - Add new player entry or append to existing player's `outings` array
+   - New players must include `throws: "R" | "L"` (from `Arsenals.csv` pitcher_hand column)
    - Format: `{ id: "<playerId>/<dateId>", label: "<date> – <name> (<count> pitches)", ...buildDataPaths("<playerId>", "<dateId>") }`
    - Pitch count in label must match CSV row count
 
@@ -530,6 +571,24 @@ If CSV row count doesn't match file count, or if `pitch_number` doesn't match fi
    ```
 
 Vercel will redeploy automatically on push to main.
+
+<!-- AUTO-UPDATE-END -->
+<!-- AUTO-UPDATE-END -->
+
+<!-- AUTO-UPDATE-START: video-player -->## Web App Video Player
+
+The `VideoPlayer` component (`web/app/components/VideoPlayer.tsx`) plays overlay videos for selected pitches.
+
+### Keyboard Shortcuts
+
+- **J** — Step back one frame (1/30s)
+- **L** — Step forward one frame (1/30s)
+
+These are global hotkeys (attached to `window`). They are disabled when focus is on input/textarea/select elements or when modifier keys are held. Controlled by `DEBUG_HOTKEYS` and `VIDEO_FPS` constants.
+
+### Fallback Behavior
+
+If the overlay video fails to load, the player falls back to the raw clip video.
 
 <!-- AUTO-UPDATE-END -->
 <!-- AUTO-UPDATE-END -->
@@ -580,20 +639,22 @@ All analysis uses the center-field camera perspective: viewing from behind the p
 
 ### Lane Definitions
 
-Lanes are determined by `h_miss_signed` (horizontal miss, signed):
+Lanes are classified using the arm-side-positive value (output of `toArmSideX()` from `web/lib/handedness.ts`):
 
-- **Arm side:** `h_miss_signed <= -4` inches
-- **Glove side:** `h_miss_signed >= 4` inches
-- **Middle:** `-4 < h_miss_signed < 4` inches
+- **Arm side:** `armSideX >= 4` inches
+- **Glove side:** `armSideX <= -4` inches
+- **Middle:** `-4 < armSideX < 4` inches
+
+The threshold (4 inches) is defined as `LANE_THRESHOLD` in `handedness.ts`.
+
+In `reportModel.ts`, the convenience wrapper `laneOf(pitch)` converts from raw `h_miss_signed` to arm-side-positive internally before classifying.
 
 ### Lane Labels
 
-Lane labels adapt to pitcher hand:
+Lane labels adapt to pitcher hand via `laneDisplayName(lane, throwsHand)` in `handedness.ts`:
 
-- **RHP:** Arm side = first base side (right in image), Glove side = third base side (left in image)
-- **LHP:** Arm side = third base side (left in image), Glove side = first base side (right in image)
-
-The `laneDisplayName()` function in `reportModel.ts` handles label formatting.
+- **RHP:** Arm (1B), Glove (3B)
+- **LHP:** Arm (3B), Glove (1B)
 
 <!-- AUTO-UPDATE-END -->
 <!-- AUTO-UPDATE-END -->
@@ -680,6 +741,17 @@ Outliers are visually distinguished:
 - `--video`: Single video file
 - `--videos`: Multiple video files (processed in order)
 
+### `src/segment_pitches.py`
+
+- `--video`: Single video file (mutually exclusive with `--videos`)
+- `--videos`: Multiple video files, processed in order with continuous numbering (mutually exclusive with `--video`)
+- `--output-dir`: Output directory for clips and pitch_log.json
+- `--player-id`: Player ID for arsenal-based pitch type selection
+- `--auto`: Use automatic motion-based pitch detection (default: manual scrubber)
+- `--review`: Auto-detect then open review scrubber (implies `--auto`)
+- `--min-gap`: Minimum frames between pitches in auto mode (default: 30)
+- `--motion-threshold`: Motion signal threshold for auto detection
+
 ### `src/generate_report.py`
 
 - `--csv`: Path to pitch_data.csv
@@ -747,7 +819,7 @@ This prints "Changes exist" or "No changes" and always exits successfully.
 
 3. **`track_ball.py` standalone uses `config["ball_detection"]` HSV thresholds** (`[0, 0, 200]` to `[180, 60, 255]`), but `batch_process.py` does not use `track_ball.py` at all — ball detection in the batch pipeline is user-click + SAM 2. The `ball_detection` config section is only relevant to the standalone workflow.
 
-4. **`segment_pitches.py` produces a different `pitch_log.json` format** than `mark_pitches.py`. The auto-segmenter includes `delivery_frame`, `start_frame`, `end_frame`, `timestamp`, `motion_peak`. The manual marker includes `pitch`, `video_index`, `target_frame`, `arrival_frame`, `pitch_type`. `batch_process.py` expects the `mark_pitches.py` format only.
+4. **`segment_pitches.py` auto mode produces a different `pitch_log.json` format** than `mark_pitches.py`. The auto-segmenter includes `delivery_frame`, `start_frame`, `end_frame`, `timestamp`, `motion_peak`, plus `clip` and `source_video` keys for batch_process compatibility. The manual mode produces the same format as `mark_pitches.py` (`pitch`, `video_index`, `target_frame`, `arrival_frame`, `pitch_type`). `batch_process.py` expects the `mark_pitches.py` format; auto-mode entries have `clip` keys but lack `target_frame`/`arrival_frame`.
 
 5. **`batch_process.py` `--batch` mode still requires user click for ball.** The `--batch` flag auto-detects glove only. Ball detection always requires a manual click + SAM 2 segmentation. Fully automatic batch processing is not implemented.
 
@@ -757,7 +829,7 @@ This prints "Changes exist" or "No changes" and always exits successfully.
 
 ## Next Features (Roadmap)
 
-- **Heatmaps / aggregation:** Scatter plot of miss vectors across an outing, overlaid on a strike zone. Group by pitch type, zone, count.
+- ~~**Heatmaps / aggregation:**~~ Implemented. Web app includes miss scatter plot, KDE heatmap, per-pitch-type lane breakdown, and scouting reports.
 - **Auto ball detection:** Re-introduce ball detection that doesn't require user click. Previous attempts (HSV + motion + SAM refinement) were removed for reliability. A trained ball detector or frame-differencing approach could work.
 - **Auto target/arrival frame detection:** Detect when the glove stops moving (target) and when the ball enters the catcher region (arrival). Would reduce reliance on `mark_pitches.py` scrubber.
 - **60fps support:** Higher frame rate reduces positional uncertainty. The pipeline already supports arbitrary FPS via `config.yaml`.

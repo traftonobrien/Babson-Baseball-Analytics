@@ -4,8 +4,9 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { usePitchData } from "../../hooks/usePitchData";
 import { applyFilters } from "../../utils";
 import type { Pitch, Filters } from "../../types";
-import type { Lane } from "../../components/LaneReport";
+import type { Lane } from "@/lib/handedness";
 import type { Player, Outing } from "@/lib/dataIndex";
+import { laneOf } from "@/lib/reportModel";
 import FilterPanel from "../../components/FilterPanel";
 import PitchTable from "../../components/PitchTable";
 import VideoPlayer from "../../components/VideoPlayer";
@@ -24,15 +25,6 @@ const EMPTY_FILTERS: Filters = {
   quadrants: new Set(),
   maxMiss: null,
 };
-
-function laneOf(pitch: Pitch): Lane {
-  const h = pitch.h_miss_signed;
-  if (h == null || isNaN(h)) return "middle";
-  // h_miss_signed: negative = arm-side, positive = glove-side
-  if (h <= -4) return "arm";
-  if (h >= 4) return "glove";
-  return "middle";
-}
 
 /* ------------------------------------------------------------------ */
 /*  Pitch-type override helpers (localStorage)                         */
@@ -147,7 +139,7 @@ export default function PlayerDashboard({
 
   const filtered = applyFilters(pitches, filters);
   const laneFiltered = activeLane
-    ? filtered.filter((p) => laneOf(p) === activeLane)
+    ? filtered.filter((p) => laneOf(p) === (activeLane as string))
     : filtered;
 
   // Unique pitch types present in the filtered data (for heatmap selector)
@@ -327,9 +319,10 @@ export default function PlayerDashboard({
                   pitches={laneFiltered}
                   selected={selected}
                   onSelect={setSelected}
+                  throwsHand={player.throws}
                 />
               ) : (
-                <MissHeatmap pitches={heatmapData} />
+                <MissHeatmap pitches={heatmapData} throwsHand={player.throws} />
               )}
             </div>
           </div>
@@ -346,6 +339,7 @@ export default function PlayerDashboard({
           {filtered.length > 0 && (
             <LaneReport
               pitches={filtered}
+              throwsHand={player.throws}
               activeLane={activeLane}
               onSelectLane={toggleLane}
             />

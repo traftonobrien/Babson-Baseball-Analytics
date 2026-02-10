@@ -1,3 +1,5 @@
+# cd ~/Desktop/pitch-tracker
+
 # Pitch Tracker – User Guide
 
 This tool processes baseball pitch video clips to measure miss distance (inches), generate overlay videos for every pitch, and produce CSV outing summaries.

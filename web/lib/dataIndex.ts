@@ -9,6 +9,7 @@ export interface Outing {
 export interface Player {
   id: string;
   name: string;
+  throws: "R" | "L";
   outings: Outing[];
 }
 
@@ -16,6 +17,7 @@ export const players: Player[] = [
   {
     id: "TOBrien1",
     name: "Trafton O'Brien",
+    throws: "R",
     outings: [
       {
         id: "TOBrien1/2025_10_04",
@@ -27,6 +29,7 @@ export const players: Player[] = [
   {
     id: "JFinkelstein1",
     name: "Jason Finkelstein",
+    throws: "R",
     outings: [
       {
         id: "JFinkelstein1/2024_04_27",
@@ -43,6 +46,7 @@ export const players: Player[] = [
  {
   id: "JClark1",
   name: "James Clark",
+  throws: "R",
   outings: [
     {
         id: "JClark1/2024_04_09",
@@ -59,6 +63,7 @@ export const players: Player[] = [
   {
     id: "ZTeator1",
     name: "Zander Teator",
+    throws: "R",
     outings: [
       {
         id: "ZTeator1/2024_04_27",
@@ -70,6 +75,7 @@ export const players: Player[] = [
   {
     id: "CDoan1",
     name: "Connor Doan",
+    throws: "R",
     outings: [
       {
         id: "CDoan1/2024_04_27",
@@ -81,6 +87,7 @@ export const players: Player[] = [
   {
     id: "DJames1",
     name: "Dillon James",
+    throws: "R",
     outings: [
       {
         id: "DJames1/03_26_25",
@@ -92,6 +99,7 @@ export const players: Player[] = [
   {
     id: "CBurrows1",
     name: "Chase Burrows",
+    throws: "L",
     outings: [
       {
         id: "CBurrows1/03_26_25",

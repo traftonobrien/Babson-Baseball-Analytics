@@ -1,9 +1,10 @@
 """Segment pitches from a full inning video.
 
 Modes:
-  --manual   Interactive scrubber: mark Target (T) and Arrival (A) per pitch,
+  (default)  Interactive scrubber: mark Target (T) and Arrival (A) per pitch,
              export padded clips via ffmpeg, write pitch_log.json.
-  (default)  Auto-detect pitches via motion analysis in a mound ROI.
+  --auto     Auto-detect pitches via motion analysis in a mound ROI.
+  --review   Auto-detect + interactively approve each candidate (y/n).
 
 Manual mode hotkeys:
   Space       pause / play
@@ -18,20 +19,25 @@ Manual mode hotkeys:
   q           quit and write outputs
 
 Example commands:
-  # Manual: single inning
-  python3 src/segment_pitches.py --manual --video sourcevideo/inning1.mp4 \\
-      --output-dir outings/2024-01-15
-
-  # Manual: multi-inning (run once per video, same output dir;
-  #   pitch numbering auto-continues from existing clips)
-  python3 src/segment_pitches.py --manual --video sourcevideo/inning1.mp4 \\
-      --output-dir outings/2024-01-15
-  python3 src/segment_pitches.py --manual --video sourcevideo/inning2.mp4 \\
-      --output-dir outings/2024-01-15
-
-  # Auto mode (unchanged)
+  # Manual scrubber (default): single inning
   python3 src/segment_pitches.py --video sourcevideo/inning1.mp4 \\
-      --output-dir outings/2024-01-15
+      --output-dir outings/SLangan1/2024_01_15
+
+  # Manual scrubber: multiple innings in one command
+  python3 src/segment_pitches.py \\
+      --videos outings/DJames1/03_26_25/inning*.mp4 \\
+      --output-dir outings/DJames1/03_26_25 \\
+      --player-id DJames1
+
+  # Auto detection: single inning
+  python3 src/segment_pitches.py --auto --video sourcevideo/inning1.mp4 \\
+      --output-dir outings/SLangan1/2024_01_15
+
+  # Auto detection with review
+  python3 src/segment_pitches.py --review \\
+      --videos outings/DJames1/03_26_25/inning*.mp4 \\
+      --output-dir outings/DJames1/03_26_25 \\
+      --player-id DJames1
 """
 
 import argparse
@@ -168,8 +174,14 @@ def detect_pitches(video_path, roi=None, min_gap=3.0,
     return pitches, fps, (w, h), motion_signal, smoothed
 
 
-def save_clips(video_path, pitches, output_dir, fps, frame_size):
-    """Extract individual pitch clips from the video."""
+def save_clips(video_path, pitches, output_dir, fps, frame_size,
+               pitch_num_offset=0):
+    """Extract individual pitch clips from the video.
+
+    Args:
+        pitch_num_offset: Starting offset for clip numbering. The first clip
+            will be numbered pitch_num_offset + 1.
+    """
     clips_dir = os.path.join(output_dir, "clips")
     os.makedirs(clips_dir, exist_ok=True)
 
@@ -178,7 +190,9 @@ def save_clips(video_path, pitches, output_dir, fps, frame_size):
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
 
     for idx, pitch in enumerate(pitches):
-        clip_path = os.path.join(clips_dir, f"pitch_{idx+1:03d}.mp4")
+        num = pitch_num_offset + idx + 1
+        clip_name = f"pitch_{num:03d}.mp4"
+        clip_path = os.path.join(clips_dir, clip_name)
         writer = cv2.VideoWriter(clip_path, fourcc, fps, (w, h))
 
         cap.set(cv2.CAP_PROP_POS_FRAMES, pitch["start_frame"])
@@ -189,14 +203,19 @@ def save_clips(video_path, pitches, output_dir, fps, frame_size):
             writer.write(frame)
 
         writer.release()
-        print(f"  pitch_{idx+1:03d}.mp4  (frames {pitch['start_frame']}-{pitch['end_frame']}, "
+        print(f"  {clip_name}  (frames {pitch['start_frame']}-{pitch['end_frame']}, "
               f"delivery @ {pitch['delivery_frame']}, t={pitch['timestamp']:.1f}s)")
 
     cap.release()
 
 
-def save_motion_plot(motion_signal, smoothed, pitches, fps, output_dir):
-    """Save the motion signal as a PNG plot using OpenCV drawing."""
+def save_motion_plot(motion_signal, smoothed, pitches, fps, output_dir,
+                     suffix=""):
+    """Save the motion signal as a PNG plot using OpenCV drawing.
+
+    Args:
+        suffix: Optional suffix for the filename (e.g. "_inning1").
+    """
     plot_w, plot_h = 1600, 400
     img = np.zeros((plot_h, plot_w, 3), dtype=np.uint8)
     img[:] = (30, 30, 30)
@@ -234,7 +253,7 @@ def save_motion_plot(motion_signal, smoothed, pitches, fps, output_dir):
     cv2.putText(img, "Motion Signal (yellow=smoothed, gray=raw, red=detected pitches)",
                 (10, plot_h - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (180, 180, 180), 1)
 
-    plot_path = os.path.join(output_dir, "motion_signal.png")
+    plot_path = os.path.join(output_dir, f"motion_signal{suffix}.png")
     cv2.imwrite(plot_path, img)
     print(f"Saved motion plot to {plot_path}")
 
@@ -612,14 +631,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Segment pitches from inning video (manual or auto mode)",
         formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--video", required=True, help="Path to full inning video")
+    video_group = parser.add_mutually_exclusive_group(required=True)
+    video_group.add_argument("--video", help="Path to a single inning video")
+    video_group.add_argument("--videos", nargs="+",
+                             help="Paths to multiple inning videos (processed in order)")
     parser.add_argument("--output-dir", required=True, help="Output directory for clips and log")
-    parser.add_argument("--manual", action="store_true",
-                        help="Manual mode: scrub video and mark Target/Arrival per pitch")
+    parser.add_argument("--auto", action="store_true",
+                        help="Auto-detect pitches via motion analysis (default is manual scrubber)")
     parser.add_argument("--pad-before", type=int, default=10,
-                        help="[manual] Frames to pad before target frame (default: 10)")
+                        help="Frames to pad before target frame (default: 10)")
     parser.add_argument("--pad-after", type=int, default=10,
-                        help="[manual] Frames to pad after arrival frame (default: 10)")
+                        help="Frames to pad after arrival frame (default: 10)")
     # Auto mode flags
     parser.add_argument("--min-gap", type=float, default=3.0,
                         help="[auto] Minimum seconds between pitches (default: 3.0)")
@@ -630,7 +652,7 @@ if __name__ == "__main__":
     parser.add_argument("--no-clips", action="store_true",
                         help="[auto] Skip clip extraction (just detect and log)")
     parser.add_argument("--review", action="store_true",
-                        help="[auto] Interactively review each candidate pitch (y/n)")
+                        help="[auto] Auto-detect + interactively review each candidate (y/n)")
     parser.add_argument("--player-id", type=str, default=None,
                         help="Player ID for metadata in pitch_log.json")
     parser.add_argument("--pitcher-hand", choices=["R", "L"], default=None,
@@ -638,6 +660,9 @@ if __name__ == "__main__":
     parser.add_argument("--arsenals-csv", type=str, default="data/Arsenals.csv",
                         help="Path to Arsenals.csv (default: data/Arsenals.csv)")
     args = parser.parse_args()
+
+    # Build video list (single or multiple)
+    video_list = args.videos if args.videos else [args.video]
 
     # Resolve player metadata from arsenals
     _player_meta = {}
@@ -653,35 +678,74 @@ if __name__ == "__main__":
     elif args.pitcher_hand:
         _player_meta["pitcher_hand"] = args.pitcher_hand
 
-    if args.manual:
-        manual_segment(
-            video_path=args.video,
-            output_dir=args.output_dir,
-            pad_before=args.pad_before,
-            pad_after=args.pad_after,
-            player_meta=_player_meta,
-        )
+    use_auto = args.auto or args.review
+
+    if not use_auto:
+        # Manual mode (default): open each video sequentially, numbering auto-continues
+        for vid_path in video_list:
+            print(f"\n{'='*60}")
+            print(f"Manual segmentation: {os.path.basename(vid_path)}")
+            print(f"{'='*60}")
+            manual_segment(
+                video_path=vid_path,
+                output_dir=args.output_dir,
+                pad_before=args.pad_before,
+                pad_after=args.pad_after,
+                player_meta=_player_meta,
+            )
     else:
         roi = tuple(args.roi) if args.roi else None
-
-        pitches, fps, frame_size, motion_raw, motion_smooth = detect_pitches(
-            args.video, roi=roi, min_gap=args.min_gap,
-            delivery_threshold_pct=args.threshold_pct,
-        )
-
-        # Interactive review
-        if args.review and pitches:
-            pitches = review_pitches(args.video, pitches, fps, frame_size)
-
         os.makedirs(args.output_dir, exist_ok=True)
 
-        # Save pitch log
+        all_pitches = []
+        pitch_offset = 0
+        all_fps = None
+
+        for vid_idx, vid_path in enumerate(video_list):
+            vid_name = os.path.basename(vid_path)
+            print(f"\n{'='*60}")
+            print(f"Processing video {vid_idx+1}/{len(video_list)}: {vid_name}")
+            print(f"{'='*60}")
+
+            pitches, fps, frame_size, motion_raw, motion_smooth = detect_pitches(
+                vid_path, roi=roi, min_gap=args.min_gap,
+                delivery_threshold_pct=args.threshold_pct,
+            )
+            if all_fps is None:
+                all_fps = fps
+
+            # Interactive review
+            if args.review and pitches:
+                pitches = review_pitches(vid_path, pitches, fps, frame_size)
+
+            # Add clip/source_video/pitch keys for batch_process compatibility
+            for i, p in enumerate(pitches):
+                num = pitch_offset + i + 1
+                p["pitch"] = num
+                p["clip"] = f"pitch_{num:03d}.mp4"
+                p["source_video"] = vid_name
+
+            # Save per-video motion plot
+            suffix = f"_{os.path.splitext(vid_name)[0]}" if len(video_list) > 1 else ""
+            save_motion_plot(motion_raw, motion_smooth, pitches, fps,
+                             args.output_dir, suffix=suffix)
+
+            # Extract clips
+            if not args.no_clips:
+                print(f"Saving clips to {args.output_dir}/clips/")
+                save_clips(vid_path, pitches, args.output_dir, fps, frame_size,
+                           pitch_num_offset=pitch_offset)
+
+            all_pitches.extend(pitches)
+            pitch_offset += len(pitches)
+
+        # Save combined pitch log
         log = {
-            "video": args.video,
-            "fps": round(fps, 2),
-            "total_pitches": len(pitches),
+            "videos": [os.path.basename(v) for v in video_list],
+            "fps": round(all_fps or 30, 2),
+            "total_pitches": len(all_pitches),
             "min_gap_seconds": args.min_gap,
-            "pitches": pitches,
+            "pitches": all_pitches,
         }
         if roi is not None:
             log["roi"] = {"x": roi[0], "y": roi[1], "width": roi[2], "height": roi[3]}
@@ -690,14 +754,19 @@ if __name__ == "__main__":
         log_path = os.path.join(args.output_dir, "pitch_log.json")
         with open(log_path, "w") as f:
             json.dump(log, f, indent=2)
-        print(f"Saved pitch log to {log_path}")
+        print(f"\nSaved pitch log to {log_path}")
 
-        # Save motion plot
-        save_motion_plot(motion_raw, motion_smooth, pitches, fps, args.output_dir)
-
-        # Extract clips
+        # Validation summary
         if not args.no_clips:
-            print(f"Saving clips to {args.output_dir}/clips/")
-            save_clips(args.video, pitches, args.output_dir, fps, frame_size)
+            clips_dir = os.path.join(args.output_dir, "clips")
+            clip_files = [f for f in os.listdir(clips_dir)
+                          if f.startswith("pitch_") and f.endswith(".mp4")]
+            if len(clip_files) != len(all_pitches):
+                print(f"WARNING: clip count ({len(clip_files)}) != "
+                      f"detected pitches ({len(all_pitches)})")
+            else:
+                print(f"Validation OK: {len(clip_files)} clips match "
+                      f"{len(all_pitches)} detected pitches")
 
-        print(f"\nDone. Detected {len(pitches)} pitches.")
+        print(f"\nDone. Detected {len(all_pitches)} pitches across "
+              f"{len(video_list)} video(s).")

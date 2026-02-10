@@ -285,6 +285,7 @@ function CompareInner() {
                       pitches={scatterPitchesA}
                       selected={null}
                       onSelect={() => {}}
+                      throwsHand={player?.throws ?? "R"}
                     />
                   </div>
                   <div>
@@ -295,6 +296,7 @@ function CompareInner() {
                       pitches={scatterPitchesB}
                       selected={null}
                       onSelect={() => {}}
+                      throwsHand={player?.throws ?? "R"}
                     />
                   </div>
                 </div>

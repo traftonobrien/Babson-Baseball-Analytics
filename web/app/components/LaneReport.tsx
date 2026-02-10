@@ -2,12 +2,13 @@
 
 import type { Pitch } from "../types";
 import { pitchColor } from "../utils";
+import { toArmSideX, laneOf as classifyLane, laneDisplayName, hDirectionLabel, type Lane } from "@/lib/handedness";
 
-export type Lane = "glove" | "middle" | "arm";
+export type { Lane } from "@/lib/handedness";
 
 interface LaneReportProps {
   pitches: Pitch[];
-  pitcherHand?: "R" | "L";
+  throwsHand: "R" | "L";
   activeLane?: Lane | null;
   onSelectLane?: (lane: Lane) => void;
 }
@@ -26,9 +27,9 @@ function avg(arr: Pitch[], fn: (p: Pitch) => number): number {
   return arr.reduce((s, p) => s + fn(p), 0) / arr.length;
 }
 
-function hLabel(v: number): string {
+function hLabel(v: number, throwsHand: "R" | "L"): string {
   if (Math.abs(v) < 0.05) return "";
-  return v < 0 ? "arm-side" : "glove-side";
+  return hDirectionLabel(toArmSideX(v, throwsHand));
 }
 
 function vLabel(v: number): string {
@@ -36,23 +37,22 @@ function vLabel(v: number): string {
   return v < 0 ? "high" : "low";
 }
 
-function buildBuckets(pitches: Pitch[]): LaneBucket[] {
+function buildBuckets(pitches: Pitch[], throwsHand: "R" | "L"): LaneBucket[] {
   const glove: Pitch[] = [];
   const middle: Pitch[] = [];
   const arm: Pitch[] = [];
 
   for (const p of pitches) {
-    const h = p.h_miss_signed;
-    // h_miss_signed: negative = arm-side, positive = glove-side
-    if (h <= -4) arm.push(p);
-    else if (h >= 4) glove.push(p);
+    const lane = classifyLane(toArmSideX(p.h_miss_signed, throwsHand));
+    if (lane === "Arm") arm.push(p);
+    else if (lane === "Glove") glove.push(p);
     else middle.push(p);
   }
 
   return [
-    { key: "glove" as Lane, label: "Glove side", pitches: glove },
-    { key: "middle" as Lane, label: "Middle", pitches: middle },
-    { key: "arm" as Lane, label: "Arm side", pitches: arm },
+    { key: "Glove" as Lane, label: laneDisplayName("Glove", throwsHand), pitches: glove },
+    { key: "Middle" as Lane, label: "Middle", pitches: middle },
+    { key: "Arm" as Lane, label: laneDisplayName("Arm", throwsHand), pitches: arm },
   ].map((b) => ({
     ...b,
     avgTotal: avg(b.pitches, (p) => p.total_miss_inches),
@@ -84,11 +84,13 @@ function LanePanel({
   maxAvgTotal,
   activeLane,
   onSelectLane,
+  throwsHand,
 }: {
   buckets: LaneBucket[];
   maxAvgTotal: number;
   activeLane?: Lane | null;
   onSelectLane?: (lane: Lane) => void;
+  throwsHand: "R" | "L";
 }) {
   return (
     <div className="grid grid-cols-3 gap-4">
@@ -137,7 +139,7 @@ function LanePanel({
                   <span className="font-mono text-zinc-100">
                     {Math.abs(b.avgH).toFixed(1)}&quot;
                   </span>{" "}
-                  <span className="text-zinc-500">{hLabel(b.avgH)}</span>
+                  <span className="text-zinc-500">{hLabel(b.avgH, throwsHand)}</span>
                 </div>
                 <div className="text-xs text-zinc-400">
                   V{" "}
@@ -155,13 +157,13 @@ function LanePanel({
   );
 }
 
-export default function LaneReport({ pitches, activeLane, onSelectLane }: LaneReportProps) {
+export default function LaneReport({ pitches, throwsHand, activeLane, onSelectLane }: LaneReportProps) {
   if (pitches.length === 0) return null;
 
   const groups = groupByType(pitches);
 
   // Global max for consistent bar scaling across all panels
-  const allBuckets = groups.map((g) => buildBuckets(g.pitches));
+  const allBuckets = groups.map((g) => buildBuckets(g.pitches, throwsHand));
   const maxAvgTotal = Math.max(
     ...allBuckets.flatMap((bs) => bs.map((b) => b.avgTotal)),
     1,
@@ -203,6 +205,7 @@ export default function LaneReport({ pitches, activeLane, onSelectLane }: LaneRe
                 maxAvgTotal={maxAvgTotal}
                 activeLane={activeLane}
                 onSelectLane={onSelectLane}
+                throwsHand={throwsHand}
               />
             </div>
           );

@@ -13,6 +13,7 @@ import {
   type PitchTypeSummary,
   type PitchGroupHorizontalCommand,
 } from "@/lib/reportModel";
+import { toArmSideX, hDirectionLabel } from "@/lib/handedness";
 import { useAllPitchData } from "@/app/hooks/useAllPitchData";
 import LogoutButton from "@/app/components/LogoutButton";
 
@@ -233,7 +234,7 @@ function ReportInner() {
       <div className="report-zone-lane mb-3">
         <ReportSection title="Horizontal Command Lanes (Catcher View)" compact>
           <p className="text-[8px] text-zinc-500 print:text-zinc-500 mb-1 leading-tight">
-            Lateral miss relative to the catcher&apos;s target. Catcher view. Lanes labeled by arm-side vs glove-side{report.meta.pitcherHand === "L" ? " (flipped for LHP)" : ""}.
+            Lateral miss relative to the catcher&apos;s target. Catcher view. Lanes labeled by arm-side vs glove-side.
           </p>
           <HorizontalLanesSection data={report.lanesDetailed} takeaways={report.laneTakeaways} pitcherHand={report.meta.pitcherHand} />
         </ReportSection>
@@ -436,9 +437,9 @@ const LANE_SUBTITLE: Record<string, string> = {
   Arm: "arm side",
 };
 
-function hDir(v: number): string {
+function hDir(v: number, throwsHand: string): string {
   if (Math.abs(v) < 0.5) return "";
-  return v < 0 ? "arm-side" : "glove-side";
+  return hDirectionLabel(toArmSideX(v, throwsHand as "R" | "L"));
 }
 
 function vDir(v: number): string {
@@ -484,7 +485,7 @@ function HorizontalLanesSection({
       {/* Per-lane stat cards */}
       <div className="grid grid-cols-3 gap-1">
         {data.map((l) => {
-          const hD = hDir(l.avgHSigned);
+          const hD = hDir(l.avgHSigned, pitcherHand);
           const vD = vDir(l.avgVSigned);
           const displayName = laneDisplayName(l.lane, pitcherHand);
           return (
@@ -563,7 +564,7 @@ function PitchGroupCommandSection({ data, pitcherHand }: { data: PitchGroupHoriz
   return (
     <ReportSection title={`${data.label} Horizontal Command (Catcher View)`} compact>
       <p className="text-[8px] text-zinc-500 print:text-zinc-500 mb-1 leading-tight">
-        Catcher view. Lanes labeled by arm-side vs glove-side{pitcherHand === "L" ? " (flipped for LHP)" : ""}. Based on catcher target miss. n={data.totalPitches}.
+        Catcher view. Lanes labeled by arm-side vs glove-side. Based on catcher target miss. n={data.totalPitches}.
       </p>
 
       {/* Stacked horizontal bar */}
@@ -591,7 +592,7 @@ function PitchGroupCommandSection({ data, pitcherHand }: { data: PitchGroupHoriz
       {/* Per-lane stat cards */}
       <div className="grid grid-cols-3 gap-1">
         {data.lanes.map((l) => {
-          const hD = hDir(l.avgHSigned);
+          const hD = hDir(l.avgHSigned, pitcherHand);
           const vD = vDir(l.avgVSigned);
           const displayName = laneDisplayName(l.lane, pitcherHand);
           return (

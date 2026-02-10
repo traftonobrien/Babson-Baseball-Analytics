@@ -4,6 +4,7 @@ import { useRef, useEffect, useCallback, useState } from "react";
 import type { Pitch } from "../types";
 import { config } from "@/lib/config";
 import { CatcherZoneOverlay, PAD, SIZE, INNER } from "./ZoneOverlay";
+import { toArmSideX } from "@/lib/handedness";
 
 /* ------------------------------------------------------------------ */
 /*  Props                                                              */
@@ -11,6 +12,7 @@ import { CatcherZoneOverlay, PAD, SIZE, INNER } from "./ZoneOverlay";
 
 interface Props {
   pitches: Pitch[];
+  throwsHand: "R" | "L";
 }
 
 /** Resolution of the KDE grid (canvas pixels for the plot area). */
@@ -46,7 +48,7 @@ interface Fields {
   maxDensity: number;
 }
 
-function buildFields(pitches: Pitch[], sigma: number): Fields {
+function buildFields(pitches: Pitch[], sigma: number, throwsHand: "R" | "L"): Fields {
   const n = RES;
   const hitField = new Float32Array(n * n);
   const missField = new Float32Array(n * n);
@@ -58,7 +60,7 @@ function buildFields(pitches: Pitch[], sigma: number): Fields {
   const radiusCells = Math.ceil((3 * sigma) / step);
 
   for (const p of pitches) {
-    const hVal = -p.h_miss_signed;
+    const hVal = toArmSideX(p.h_miss_signed, throwsHand);
     const vVal = p.v_miss_signed;
     if (hVal == null || vVal == null || isNaN(hVal) || isNaN(vVal)) continue;
 
@@ -126,7 +128,7 @@ function valueToRgb(value: number): [number, number, number] {
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export default function MissHeatmap({ pitches }: Props) {
+export default function MissHeatmap({ pitches, throwsHand }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fieldsRef = useRef<Fields | null>(null);
   const [tooltip, setTooltip] = useState<{
@@ -146,7 +148,7 @@ export default function MissHeatmap({ pitches }: Props) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const fields = buildFields(pitches, sigma);
+    const fields = buildFields(pitches, sigma, throwsHand);
     fieldsRef.current = fields;
     const { hitField, missField, densityField, maxDensity } = fields;
     const n = RES;
@@ -178,7 +180,7 @@ export default function MissHeatmap({ pitches }: Props) {
 
     ctx.clearRect(0, 0, n, n);
     ctx.putImageData(imgData, 0, 0);
-  }, [pitches]);
+  }, [pitches, throwsHand]);
 
   useEffect(() => {
     draw();
