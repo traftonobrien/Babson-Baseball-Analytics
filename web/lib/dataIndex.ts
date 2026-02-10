@@ -78,6 +78,17 @@ export const players: Player[] = [
       },
     ],
   },
+  {
+    id: "DJames1",
+    name: "Dillon James",
+    outings: [
+      {
+        id: "DJames1/03_26_25",
+        label: "Mar 26, 2025 – James (54 pitches)",
+        ...buildDataPaths("DJames1", "03_26_25"),
+      },
+    ],
+  },
 ];
 
 export function getPlayer(id: string): Player | undefined {
