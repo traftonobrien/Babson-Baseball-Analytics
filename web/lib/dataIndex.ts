@@ -90,9 +90,9 @@ export const players: Player[] = [
     throws: "R",
     outings: [
       {
-        id: "DJames1/03_26_25",
+        id: "DJames1/2025_03_26",
         label: "Mar 26, 2025 – James (54 pitches)",
-        ...buildDataPaths("DJames1", "03_26_25"),
+        ...buildDataPaths("DJames1", "2025_03_26"),
       },
     ],
   },
@@ -102,9 +102,9 @@ export const players: Player[] = [
     throws: "L",
     outings: [
       {
-        id: "CBurrows1/03_26_25",
+        id: "CBurrows1/2025_03_26",
         label: "Mar 26, 2025 – Burrows (25 pitches)",
-        ...buildDataPaths("CBurrows1", "03_26_25"),
+        ...buildDataPaths("CBurrows1", "2025_03_26"),
       },
     ],
   },
