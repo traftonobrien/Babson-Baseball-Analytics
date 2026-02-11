@@ -1,70 +1,41 @@
 #!/bin/bash
 # Pre-commit hook to propose documentation updates
+# Generates docs/generated/* — never touches CLAUDE.md
 
 # DO NOT use set -e - we want to continue on errors
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 SCRIPT="$REPO_ROOT/scripts/update_docs.py"
-PROPOSED="$REPO_ROOT/claude.md.proposed"
-CURRENT="$REPO_ROOT/claude.md"
 
-# Step 1: Generate proposal (suppress errors, never block)
+# Step 1: Generate/check for changes (suppress errors, never block)
 if [ -f "$SCRIPT" ]; then
-    python3 "$SCRIPT" --propose --no-build 2>/dev/null || true
-fi
+    OUTPUT=$(python3 "$SCRIPT" --propose --no-build 2>/dev/null) || true
 
-# Defensively unstage proposal file if it was accidentally staged
-git restore --staged "$PROPOSED" 2>/dev/null || true
-
-# Step 2: Check if proposal exists and differs from current
-if [ -f "$PROPOSED" ]; then
-    # Use cmp -s to check if files are identical
-    # cmp -s returns 0 if files are identical, 1 if different
-    if ! cmp -s "$CURRENT" "$PROPOSED" 2>/dev/null; then
-        # Files differ - changes exist
-        
-        # Print header
+    if echo "$OUTPUT" | grep -q "updates available"; then
         echo ""
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "📝 Documentation updates available"
+        echo "Documentation updates available (docs/generated/)"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        
-        # Print short diff preview (~60 lines)
-        python3 "$SCRIPT" --diff 2>/dev/null | head -60 || true
-        
+        echo "$OUTPUT"
         echo ""
-        echo "Full diff: python3 scripts/update_docs.py --diff"
-        echo "Proposed file: claude.md.proposed"
-        echo ""
-        
-        # Step 3: Interactive vs non-interactive
+
+        # Step 2: Interactive vs non-interactive
         if [ -t 0 ] && [ -t 1 ]; then
-            # INTERACTIVE PATH (TTY present)
             echo "Apply these documentation changes? [y/N]: "
             read -r response
             case "$response" in
                 [yY][eE][sS]|[yY])
-                    # User approved
                     python3 "$SCRIPT" --apply --no-build 2>/dev/null || true
-                    git add "$CURRENT" 2>/dev/null || true
-                    rm -f "$PROPOSED"
-                    echo "✓ Documentation changes applied and staged"
+                    git add "$REPO_ROOT/docs/generated/" 2>/dev/null || true
+                    echo "Documentation changes applied and staged"
                     ;;
                 *)
-                    # User declined or no input
-                    echo "Documentation changes not applied. Review claude.md.proposed manually."
+                    echo "Documentation changes not applied. Run: python3 scripts/update_docs.py --apply"
                     ;;
             esac
         else
-            # NON-INTERACTIVE PATH (no TTY)
-            echo "Non-interactive mode: Documentation changes proposed but not applied."
-            echo "Review: python3 scripts/update_docs.py --diff"
-            echo "Apply: python3 scripts/update_docs.py --apply"
-            # Leave proposal file for manual review
+            echo "Non-interactive mode: Run python3 scripts/update_docs.py --apply to update."
         fi
-    else
-        # Proposal exists but matches current - clean up
-        rm -f "$PROPOSED"
     fi
 fi
 

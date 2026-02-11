@@ -5,6 +5,8 @@ description: Publish a completed Pitch Tracker outing to the web app. Use when t
 
 # Publish Outing to Web App
 
+Canonical workflow: `docs/runbooks/publish_outing.md`
+
 Publish verified outing data to the Pitch Tracker web app. This skill executes an 8 step sequential workflow. Do not skip steps. Stop immediately if any validation fails.
 
 ## Required inputs
