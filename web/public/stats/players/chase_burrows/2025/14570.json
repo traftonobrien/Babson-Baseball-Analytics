@@ -1,0 +1,39 @@
+{
+  "batting": {
+    "ab": 0,
+    "avg": null,
+    "bb": 0,
+    "h": 0,
+    "hbp": null,
+    "hr": null,
+    "name": "Chase Burrows",
+    "pos": "p",
+    "r": 0,
+    "rbi": 0,
+    "sb": null,
+    "so": 0
+  },
+  "gameId": "14570",
+  "pitching": {
+    "bb": 0,
+    "bf": 15,
+    "er": 0,
+    "era": null,
+    "h": 1,
+    "hr": null,
+    "ip": "5.0",
+    "name": "Chase Burrows",
+    "pitches": 45,
+    "r": 0,
+    "so": 2,
+    "strikes": null
+  },
+  "playerDisplay": "Chase Burrows",
+  "playerKey": "chase_burrows",
+  "season": 2025,
+  "source": {
+    "importedAt": "2026-02-12T22:15:31Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2025/suffolk/boxscore/14570"
+  },
+  "team": "babson"
+}

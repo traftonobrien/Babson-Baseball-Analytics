@@ -38,8 +38,8 @@ def _warn_uncommitted_stats(stats_dir: str) -> None:
         )
         if result.returncode == 0 and result.stdout.strip():
             print(
-                "Warning: Generated stats outputs are untracked by default; "
-                "do not commit web/public/stats/.",
+                "Note: web/public/stats/ has uncommitted changes. "
+                "Use the post-game-stats-importer skill to commit and deploy.",
                 file=sys.stderr,
             )
     except (FileNotFoundError, subprocess.TimeoutExpired):
