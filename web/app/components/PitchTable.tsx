@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Pitch } from "../types";
 import { pitchColor } from "../utils";
 import { OUTLIER_MISS_THRESHOLD_IN } from "@/lib/reportModel";
+import { pitchArmSideX, hDirectionLabel } from "@/lib/handedness";
 
 const isOutlierPitch = (p: Pitch) =>
   Number.isFinite(p.total_miss_inches) &&
@@ -13,6 +14,8 @@ interface Props {
   pitches: Pitch[];
   selected: Pitch | null;
   onSelect: (p: Pitch) => void;
+  /** Pitcher hand resolved from Arsenals.csv — used for arm/glove labels. */
+  pitcherHand: "R" | "L";
   /** Set of pitch_number values that have been edited. */
   editedPitches?: Set<number>;
   /** Callback to change a pitch's type. */
@@ -25,6 +28,7 @@ export default function PitchTable({
   pitches,
   selected,
   onSelect,
+  pitcherHand,
   editedPitches,
   onEditPitchType,
   pitchTypeOptions,
@@ -109,7 +113,7 @@ export default function PitchTable({
                   {p.total_miss_inches.toFixed(1)}&quot;
                 </td>
                 <td className="px-2 py-1.5 text-zinc-400">
-                  {p.h_miss_inches.toFixed(1)}&quot; {p.h_direction}
+                  {p.h_miss_inches.toFixed(1)}&quot; {hDirectionLabel(pitchArmSideX(p, pitcherHand))}
                 </td>
                 <td className="px-2 py-1.5 text-zinc-400">
                   {p.v_miss_inches.toFixed(1)}&quot; {p.v_direction}

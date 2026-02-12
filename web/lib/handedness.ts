@@ -32,19 +32,6 @@ export function pitchArmSideX(p: Pitch, pitcherHand: "R" | "L"): number {
   return Math.sign(dx) * Math.abs(mag) * armSign;
 }
 
-/**
- * @deprecated Use `pitchArmSideX` for per-pitch conversion.  This
- * legacy helper remains only for converting pre-aggregated values
- * that are already in the CSV h_miss_signed convention (negative =
- * arm-side).
- */
-export function toArmSideX(
-  hMissSigned: number,
-  _throwsHand: "R" | "L",
-): number {
-  return -hMissSigned;
-}
-
 /** Lane thresholds in inches */
 const LANE_THRESHOLD = 4;
 
@@ -52,8 +39,7 @@ export type Lane = "Arm" | "Middle" | "Glove";
 
 /**
  * Classify a pitch into a horizontal lane using the arm-side-positive
- * convention. Accepts the ALREADY-CONVERTED arm-side-positive value
- * (i.e. the output of toArmSideX, or -h_miss_signed).
+ * convention. Accepts the output of pitchArmSideX().
  */
 export function laneOf(armSideX: number): Lane {
   if (armSideX >= LANE_THRESHOLD) return "Arm";

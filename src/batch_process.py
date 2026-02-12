@@ -2004,8 +2004,17 @@ def main():
 
     # Load player arsenal for pitch type selection
     # Try Arsenals.csv first (shared loader), fall back to sheets_sync
-    from src.arsenals import get_player_arsenal as _get_arsenal_csv
+    from src.arsenals import get_player_arsenal as _get_arsenal_csv, get_player_hand as _get_hand_csv
     arsenal = _get_arsenal_csv(args.player_id, csv_path=args.arsenals_csv)
+
+    # Auto-resolve pitcher hand from Arsenals.csv when CLI left at default
+    if args.pitcher_hand == "R":
+        resolved_hand = _get_hand_csv(args.player_id, csv_path=args.arsenals_csv)
+        if resolved_hand in ("R", "L"):
+            if resolved_hand != args.pitcher_hand:
+                print(f"[Arsenals] Overriding --pitcher-hand={args.pitcher_hand} "
+                      f"with {resolved_hand} from Arsenals.csv")
+            args.pitcher_hand = resolved_hand
     if not arsenal:
         # Fall back to Google Sheets / players.yaml
         sheet_id = args.sheet_id or get_default_sheet_id()

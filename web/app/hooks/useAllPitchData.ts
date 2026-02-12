@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Papa from "papaparse";
 import type { Pitch } from "../types";
 import { getPlayerMeta } from "@/lib/arsenals";
+import { updateDebug } from "@/lib/debug";
 
 const NUM_FIELDS = new Set([
   "pitch_number", "target_frame", "arrival_frame",
@@ -62,8 +63,11 @@ export function useAllPitchData(csvPaths: string[], playerId: string) {
     ])
       .then(([arrays, meta]) => {
         if (cancelled) return;
-        setPitches(arrays.flat());
-        setPitcherHand(meta.pitcherHand === "L" ? "L" : "R");
+        const hand = meta.pitcherHand === "L" ? "L" : "R";
+        const allRows = arrays.flat();
+        setPitches(allRows);
+        setPitcherHand(hand);
+        updateDebug(playerId, hand, allRows);
         setLoading(false);
       })
       .catch((e) => {

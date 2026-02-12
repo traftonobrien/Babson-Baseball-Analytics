@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import type { Pitch } from "../types";
 import { overlayUrl, clipUrl } from "../utils";
+import { pitchArmSideX, hDirectionLabel } from "@/lib/handedness";
 
 const DEBUG_HOTKEYS = false;
 const VIDEO_FPS = 30;
@@ -11,9 +12,10 @@ interface Props {
   pitch: Pitch | null;
   overlayDir: string;
   clipsDir: string;
+  pitcherHand: "R" | "L";
 }
 
-export default function VideoPlayer({ pitch, overlayDir, clipsDir }: Props) {
+export default function VideoPlayer({ pitch, overlayDir, clipsDir, pitcherHand }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [src, setSrc] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -95,7 +97,7 @@ export default function VideoPlayer({ pitch, overlayDir, clipsDir }: Props) {
           {pitch.total_miss_inches.toFixed(1)}&quot; miss
         </span>
         <span>
-          {pitch.h_miss_inches.toFixed(1)}&quot; {pitch.h_direction},{" "}
+          {pitch.h_miss_inches.toFixed(1)}&quot; {hDirectionLabel(pitchArmSideX(pitch, pitcherHand))},{" "}
           {pitch.v_miss_inches.toFixed(1)}&quot; {pitch.v_direction}
         </span>
       </div>

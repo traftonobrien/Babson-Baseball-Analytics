@@ -259,6 +259,7 @@ export default function PlayerDashboard({
             pitches={laneFiltered}
             selected={selected}
             onSelect={setSelected}
+            pitcherHand={pitcherHand}
             editedPitches={editedPitches}
             onEditPitchType={handleEditPitchType}
             pitchTypeOptions={pitchTypeOptions}
@@ -273,6 +274,7 @@ export default function PlayerDashboard({
               pitch={selected}
               overlayDir={outing.overlayDir}
               clipsDir={outing.clipsDir}
+              pitcherHand={pitcherHand}
             />
             <div>
               {/* Viz toggle + heatmap pitch type selector */}

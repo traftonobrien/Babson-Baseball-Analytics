@@ -164,3 +164,55 @@ describe("hDirectionLabel", () => {
     expect(hDirectionLabel(0)).toBe("middle");
   });
 });
+
+/* ------------------------------------------------------------------ */
+/*  CBurrows1 real-data regression tests                               */
+/* ------------------------------------------------------------------ */
+
+describe("CBurrows1 (LHP) regression: CSV h_direction is wrong, computed is correct", () => {
+  // Pitch #5 from CBurrows1 2025_03_26 CSV:
+  //   ball_x=642.2, target_x=689.7 → dx = -47.5 (ball LEFT of target)
+  //   h_miss_inches=8.17
+  //   CSV says h_direction="glove-side" (computed assuming RHP — WRONG)
+  //   Arsenals says CBurrows1 is LHP
+  //   For LHP: dx<0 → arm-side (correct label)
+  const pitch5 = makePitch({
+    pitch_number: 5,
+    pitcher_hand: "R", // CSV lie — ignored by pitchArmSideX
+    ball_x: 642.2,
+    target_x: 689.7,
+    h_miss_inches: 8.17,
+    h_direction: "glove-side", // wrong (from CSV)
+  });
+
+  it("pitchArmSideX with hand=L returns positive (arm-side)", () => {
+    const armSideX = pitchArmSideX(pitch5, "L");
+    expect(armSideX).toBeGreaterThan(0); // positive = arm-side
+    expect(armSideX).toBeCloseTo(8.17);
+  });
+
+  it("hDirectionLabel returns arm-side (not the CSV glove-side)", () => {
+    const label = hDirectionLabel(pitchArmSideX(pitch5, "L"));
+    expect(label).toBe("arm-side");
+    expect(label).not.toBe(pitch5.h_direction); // proves CSV is wrong
+  });
+
+  it("lane is Arm for LHP with dx<0 and 8+ inches", () => {
+    expect(laneOf(pitchArmSideX(pitch5, "L"))).toBe("Arm");
+  });
+
+  // Pitch #1: ball_x=672.1, target_x=671.7 → dx = +0.4 (ball RIGHT)
+  //   CSV says arm-side (assuming RHP), but for LHP dx>0 → glove-side
+  const pitch1 = makePitch({
+    pitch_number: 1,
+    ball_x: 672.1,
+    target_x: 671.7,
+    h_miss_inches: 0.07,
+    h_direction: "arm-side", // wrong for LHP
+  });
+
+  it("pitch #1 with dx>0 and hand=L => glove-side", () => {
+    const label = hDirectionLabel(pitchArmSideX(pitch1, "L"));
+    expect(label).toBe("glove-side");
+  });
+});
