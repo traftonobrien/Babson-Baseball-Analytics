@@ -32,14 +32,14 @@ export const players: Player[] = [
     throws: "R",
     outings: [
       {
-        id: "JFinkelstein1/2024_04_27",
-        label: "Apr 27, 2024 – Finkelstein (63 pitches)",
-        ...buildDataPaths("JFinkelstein1", "2024_04_27"),
+        id: "JFinkelstein1/2025_04_27",
+        label: "Apr 27, 2025 – Finkelstein (63 pitches)",
+        ...buildDataPaths("JFinkelstein1", "2025_04_27"),
       },
       {
-        id: "JFinkelstein1/2024_04_14",
-        label: "Apr 14, 2024 – Finkelstein (91 pitches)",
-        ...buildDataPaths("JFinkelstein1", "2024_04_14"),
+        id: "JFinkelstein1/2025_04_14",
+        label: "Apr 14, 2025 – Finkelstein (91 pitches)",
+        ...buildDataPaths("JFinkelstein1", "2025_04_14"),
       },
     ],
   },
@@ -49,14 +49,14 @@ export const players: Player[] = [
   throws: "R",
   outings: [
     {
-        id: "JClark1/2024_04_09",
-        label: "Apr 9, 2024 – Clark (55 pitches)",
-        ...buildDataPaths("JClark1", "2024_04_09"),
+        id: "JClark1/2025_04_09",
+        label: "Apr 9, 2025 – Clark (55 pitches)",
+        ...buildDataPaths("JClark1", "2025_04_09"),
       },
   {
-        id: "JClark1/2024_04_27",
-        label: "Apr 27, 2024 – Clark (13 pitches)",
-        ...buildDataPaths("JClark1", "2024_04_27"),
+        id: "JClark1/2025_04_27",
+        label: "Apr 27, 2025 – Clark (13 pitches)",
+        ...buildDataPaths("JClark1", "2025_04_27"),
       }, 
  ],
 },
@@ -66,9 +66,9 @@ export const players: Player[] = [
     throws: "R",
     outings: [
       {
-        id: "ZTeator1/2024_04_27",
-        label: "Apr 27, 2024 – Teator (17 pitches)",
-        ...buildDataPaths("ZTeator1", "2024_04_27"),
+        id: "ZTeator1/2025_04_27",
+        label: "Apr 27, 2025 – Teator (17 pitches)",
+        ...buildDataPaths("ZTeator1", "2025_04_27"),
       },
     ],
   },
@@ -78,9 +78,9 @@ export const players: Player[] = [
     throws: "R",
     outings: [
       {
-        id: "CDoan1/2024_04_27",
-        label: "Apr 27, 2024 – Doan (10 pitches)",
-        ...buildDataPaths("CDoan1", "2024_04_27"),
+        id: "CDoan1/2025_04_27",
+        label: "Apr 27, 2025 – Doan (10 pitches)",
+        ...buildDataPaths("CDoan1", "2025_04_27"),
       },
     ],
   },
