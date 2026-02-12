@@ -1,0 +1,39 @@
+{
+  "batting": {
+    "ab": 0,
+    "avg": null,
+    "bb": 0,
+    "h": 0,
+    "hbp": null,
+    "hr": null,
+    "name": "Dillon James",
+    "pos": "p",
+    "r": 0,
+    "rbi": 0,
+    "sb": null,
+    "so": 0
+  },
+  "gameId": "14570",
+  "pitching": {
+    "bb": 3,
+    "bf": 19,
+    "er": 3,
+    "era": null,
+    "h": 7,
+    "hr": null,
+    "ip": "3.0",
+    "name": "Dillon James",
+    "pitches": 59,
+    "r": 3,
+    "so": 1,
+    "strikes": null
+  },
+  "playerDisplay": "Dillon James",
+  "playerKey": "dillon_james",
+  "season": 2025,
+  "source": {
+    "importedAt": "2026-02-12T22:55:33Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2025/suffolk/boxscore/14570"
+  },
+  "team": "babson"
+}
