@@ -46,7 +46,8 @@ describe("GameStatsSection", () => {
     );
     expect(html).toContain("Game Stats");
     expect(html).toContain("Suffolk");
-    expect(html).toContain("Pitching");
+    expect(html).toContain("5.0"); // IP value rendered in pitching grid
+    expect(html).toContain("ip");  // stat label
   });
 
   it("renders fallback when stats missing", () => {

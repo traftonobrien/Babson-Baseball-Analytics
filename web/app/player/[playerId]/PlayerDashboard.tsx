@@ -385,12 +385,13 @@ export default function PlayerDashboard({
             </div>
           </div>
 
-          {/* MLB averages bar */}
-          <MLBAveragesBar />
-
+          {/* Game stats (linked boxscore) */}
           {outingMeta && (
             <GameStatsSection meta={outingMeta} statsByGame={statsByGame} />
           )}
+
+          {/* MLB averages bar */}
+          <MLBAveragesBar />
 
           {/* Per-pitch-type summary */}
           {laneFiltered.length > 0 && (
