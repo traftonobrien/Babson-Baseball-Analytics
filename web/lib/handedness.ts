@@ -32,6 +32,19 @@ export function pitchArmSideX(p: Pitch, pitcherHand: "R" | "L"): number {
   return Math.sign(dx) * Math.abs(mag) * armSign;
 }
 
+/**
+ * Physical signed horizontal miss in inches.
+ * Preserves the image-space dx sign: positive = toward 1B, negative = toward 3B.
+ * Use this for plotting dots in physical left/right space (scatter charts).
+ * Handedness-agnostic — does NOT flip for LHP.
+ */
+export function pitchPhysicalX(p: Pitch): number {
+  const dx = p.ball_x - p.target_x;
+  if (!Number.isFinite(dx) || dx === 0) return 0;
+  const mag = Number.isFinite(p.h_miss_inches) ? Math.abs(p.h_miss_inches) : 0;
+  return Math.sign(dx) * mag;
+}
+
 /** Lane thresholds in inches */
 const LANE_THRESHOLD = 4;
 

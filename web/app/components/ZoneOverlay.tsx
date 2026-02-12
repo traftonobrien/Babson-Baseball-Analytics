@@ -33,10 +33,13 @@ export function ScatterOverlay({ throwsHand = "R" }: { throwsHand?: "R" | "L" } 
   const cx = toSvg(0);
   const cy = toSvg(0);
 
-  // Positive arm-side-X plots right. For RHP arm-side is 1B (right);
-  // for LHP arm-side is 3B (left) — so labels swap.
-  const rightLabel = laneDisplayName("Arm", throwsHand);
-  const leftLabel = laneDisplayName("Glove", throwsHand);
+  // Physical space: right = toward 1B, left = toward 3B.
+  // RHP: 1B = arm-side, 3B = glove-side.
+  // LHP: 1B = glove-side, 3B = arm-side.
+  const rightLane = throwsHand === "R" ? "Arm" : "Glove";
+  const leftLane = throwsHand === "R" ? "Glove" : "Arm";
+  const rightLabel = laneDisplayName(rightLane, throwsHand);
+  const leftLabel = laneDisplayName(leftLane, throwsHand);
 
   return (
     <g>

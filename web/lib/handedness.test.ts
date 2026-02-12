@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   pitchArmSideX,
+  pitchPhysicalX,
   laneOf,
   laneDisplayName,
   hDirectionLabel,
@@ -214,5 +215,36 @@ describe("CBurrows1 (LHP) regression: CSV h_direction is wrong, computed is corr
   it("pitch #1 with dx>0 and hand=L => glove-side", () => {
     const label = hDirectionLabel(pitchArmSideX(pitch1, "L"));
     expect(label).toBe("glove-side");
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/*  pitchPhysicalX (physical signed inches, handedness-agnostic)       */
+/* ------------------------------------------------------------------ */
+
+describe("pitchPhysicalX", () => {
+  it("ball right of target (dx > 0) => positive regardless of hand", () => {
+    const p = makePitch({ ball_x: 520, target_x: 500, h_miss_inches: 5 });
+    expect(pitchPhysicalX(p)).toBeCloseTo(5);
+  });
+
+  it("ball left of target (dx < 0) => negative regardless of hand", () => {
+    const p = makePitch({ ball_x: 480, target_x: 500, h_miss_inches: 5 });
+    expect(pitchPhysicalX(p)).toBeCloseTo(-5);
+  });
+
+  it("dx = 0 => 0", () => {
+    const p = makePitch({ ball_x: 500, target_x: 500, h_miss_inches: 5 });
+    expect(pitchPhysicalX(p)).toBe(0);
+  });
+
+  it("CBurrows1 pitch #5 (dx<0) plots on the LEFT in physical space", () => {
+    const p = makePitch({ ball_x: 642.2, target_x: 689.7, h_miss_inches: 8.17 });
+    expect(pitchPhysicalX(p)).toBeCloseTo(-8.17);
+  });
+
+  it("CBurrows1 pitch #1 (dx>0) plots on the RIGHT in physical space", () => {
+    const p = makePitch({ ball_x: 672.1, target_x: 671.7, h_miss_inches: 0.07 });
+    expect(pitchPhysicalX(p)).toBeCloseTo(0.07);
   });
 });
