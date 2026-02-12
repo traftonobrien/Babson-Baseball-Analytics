@@ -46,12 +46,21 @@ def normalize_header(text: str) -> str:
     return re.sub(r"[^a-z0-9-]+", "", text)
 
 
+def strip_parentheticals(text: str) -> str:
+    return re.sub(r"\s*\([^)]*\)", "", text)
+
+
+def clean_name_cell(text: str) -> str:
+    text = normalize_whitespace(text)
+    text = strip_parentheticals(text)
+    text = re.sub(r"[#*]+$", "", text)
+    return normalize_whitespace(text)
+
+
 def normalize_name(raw: str) -> str:
     if raw is None:
         return ""
-    text = normalize_whitespace(raw)
-    text = re.sub(r"\s*\([^)]*\)", "", text)
-    text = re.sub(r"[#*]+$", "", text)
+    text = clean_name_cell(raw)
     text = re.sub(r"\s+\d+$", "", text)
     tokens = text.split()
     pos_tokens = {
@@ -77,6 +86,12 @@ def normalize_name(raw: str) -> str:
         if len(parts) == 2 and parts[1]:
             text = f"{parts[1]} {parts[0]}"
     return normalize_whitespace(text)
+
+
+def normalize_player_name(text: str) -> str:
+    normalized = normalize_name(text).lower()
+    normalized = re.sub(r"[^a-z0-9]+", " ", normalized)
+    return normalize_whitespace(normalized)
 
 
 def normalize_team_name(name: str) -> str:
@@ -181,6 +196,7 @@ def clean_team_label(text: str) -> Optional[str]:
     cleaned = re.sub(r"(batting|pitching|statistics|stats)", "", text, flags=re.I)
     cleaned = re.sub(r"[-–|]+", " ", cleaned)
     cleaned = normalize_whitespace(cleaned)
+    cleaned = re.sub(r"\s+\d+$", "", cleaned)
     return cleaned or None
 
 
@@ -305,10 +321,10 @@ def parse_pitching_rows(table) -> List[Dict[str, Optional[object]]]:
     return rows
 
 
-def parse_all_teams(html: str) -> Dict[str, Dict[str, List[Dict[str, Optional[object]]]]]:
+def parse_all_teams(html: str, debug: bool = False) -> Dict[str, Dict[str, List[Dict[str, Optional[object]]]]]:
     soup = BeautifulSoup(html, "html.parser")
     teams: Dict[str, Dict[str, List[Dict[str, Optional[object]]]]] = {}
-    for table in soup.find_all("table"):
+    for idx, table in enumerate(soup.find_all("table")):
         headers = parse_table_headers(table)
         table_type = classify_table(headers)
         if not table_type:
@@ -316,6 +332,8 @@ def parse_all_teams(html: str) -> Dict[str, Dict[str, List[Dict[str, Optional[ob
         team_name = infer_team_name(table)
         if not team_name:
             continue
+        if debug:
+            print(f"[debug] table={idx} type={table_type} team={team_name} headers={headers}")
         if team_name not in teams:
             teams[team_name] = {"batting": [], "pitching": []}
         if table_type == "batting":
@@ -325,14 +343,45 @@ def parse_all_teams(html: str) -> Dict[str, Dict[str, List[Dict[str, Optional[ob
     return teams
 
 
-def parse_game_meta(html: str) -> Dict[str, Optional[object]]:
+def _strip_score_suffix(name: Optional[str]) -> Optional[str]:
+    if not name:
+        return None
+    return re.sub(r"\s+\d+$", "", name).strip() or None
+
+
+def _extract_opponent_from_title(title: str) -> Optional[str]:
+    if not title:
+        return None
+    title = normalize_whitespace(title)
+    match = re.search(r"\bvs\s+(.+?)\s+on\b", title, flags=re.I)
+    if match:
+        return _strip_score_suffix(clean_team_label(match.group(1)) or match.group(1))
+    match = re.search(r"(.+?)\s+-vs-\s+(.+?)\b", title, flags=re.I)
+    if match:
+        left = clean_team_label(match.group(1)) or match.group(1)
+        right = clean_team_label(match.group(2)) or match.group(2)
+        if normalize_team_name(left) == "babson":
+            return _strip_score_suffix(right)
+        if normalize_team_name(right) == "babson":
+            return _strip_score_suffix(left)
+    return None
+
+
+def parse_game_meta(html: str, debug: bool = False) -> Dict[str, Optional[object]]:
     soup = BeautifulSoup(html, "html.parser")
     text = soup.get_text(" ", strip=True)
     date = extract_date_from_text(text)
-    teams = list(parse_all_teams(html).keys())
-    opponent = None
-    if len(teams) == 2:
-        opponent = teams[1]
+    teams = list(parse_all_teams(html, debug=debug).keys())
+    opponent = _extract_opponent_from_title(soup.title.get_text(" ", strip=True) if soup.title else "")
+    if not opponent:
+        if len(teams) == 2:
+            opponent = teams[1]
+        elif teams:
+            for name in teams:
+                if normalize_team_name(name) != "babson":
+                    opponent = name
+                    break
+    opponent = _strip_score_suffix(opponent)
     return {"opponent": opponent, "date": date, "teams": teams}
 
 

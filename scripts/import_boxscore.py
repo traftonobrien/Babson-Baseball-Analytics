@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
@@ -11,6 +11,7 @@ import requests
 try:
     from sidearm_parser import (
         normalize_name,
+        normalize_player_name,
         normalize_team_name,
         parse_all_teams,
         parse_game_meta,
@@ -18,6 +19,7 @@ try:
 except ImportError:  # pragma: no cover - support module imports
     from scripts.sidearm_parser import (  # type: ignore
         normalize_name,
+        normalize_player_name,
         normalize_team_name,
         parse_all_teams,
         parse_game_meta,
@@ -41,7 +43,7 @@ def fetch_html(url: str) -> str:
 
 
 def iso_timestamp() -> str:
-    return datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def player_key(display: str) -> str:
@@ -51,12 +53,19 @@ def player_key(display: str) -> str:
 
 def find_player(rows: List[Dict[str, Optional[object]]], target_norm: str) -> Optional[Dict[str, Optional[object]]]:
     for row in rows:
-        name = normalize_name(str(row.get("name", "")))
+        name = normalize_player_name(str(row.get("name", "")))
         if not name:
             continue
-        if normalize_name(name).lower() == target_norm:
+        if name == target_norm:
             return row
     return None
+
+
+def strip_score_suffix(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return value
+    cleaned = re.sub(r"\s+\d+$", "", value).strip()
+    return cleaned or value
 
 
 def ensure_dir(path: str) -> None:
@@ -118,13 +127,14 @@ def main() -> None:
     parser.add_argument("--player", required=True, help="Target player name, e.g. 'First Last'")
     parser.add_argument("--team", default="Babson", help="Team name to disambiguate (default: Babson)")
     parser.add_argument("--dry-run", action="store_true", help="Parse and print output without writing files")
+    parser.add_argument("--debug", action="store_true", help="Print table classification debug output")
     args = parser.parse_args()
 
     season, game_id = parse_url_metadata(args.url)
     html = fetch_html(args.url)
 
-    meta = parse_game_meta(html)
-    teams = parse_all_teams(html)
+    meta = parse_game_meta(html, debug=args.debug)
+    teams = parse_all_teams(html, debug=args.debug)
     babson_name, opponent_name = map_teams(teams, args.team)
 
     babson_batting = teams.get(babson_name, {}).get("batting", [])
@@ -132,9 +142,8 @@ def main() -> None:
     opponent_batting = teams.get(opponent_name, {}).get("batting", []) if opponent_name else []
     opponent_pitching = teams.get(opponent_name, {}).get("pitching", []) if opponent_name else []
 
-    opponent_display = meta.get("opponent")
-    if opponent_name:
-        opponent_display = opponent_name
+    opponent_display = meta.get("opponent") or opponent_name
+    opponent_display = strip_score_suffix(opponent_display)
 
     imported_at = iso_timestamp()
 
@@ -151,7 +160,7 @@ def main() -> None:
         "importedAt": imported_at,
     }
 
-    target_norm = normalize_name(args.player).lower()
+    target_norm = normalize_player_name(args.player)
     player_team_key = "babson"
     batting_row = find_player(babson_batting, target_norm)
     pitching_row = find_player(babson_pitching, target_norm)

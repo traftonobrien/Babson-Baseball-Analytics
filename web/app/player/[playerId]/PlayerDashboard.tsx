@@ -17,6 +17,14 @@ import MLBAveragesBar from "../../components/MLBAveragesBar";
 import MissHeatmap from "../../components/MissHeatmap";
 import LogoutButton from "../../components/LogoutButton";
 import OutingSelect from "./OutingSelect";
+import GameStatsSection from "@/lib/stats/GameStatsSection";
+import {
+  loadOutingMeta,
+  loadPlayerGameStats,
+  loadPlayerSlugIndex,
+  type OutingMeta,
+  type PlayerGameStats,
+} from "@/lib/stats";
 
 type VizMode = "scatter" | "heatmap";
 
@@ -84,10 +92,58 @@ export default function PlayerDashboard({
   const [activeLane, setActiveLane] = useState<Lane | null>(null);
   const [vizMode, setVizMode] = useState<VizMode>("scatter");
   const [heatmapPitchType, setHeatmapPitchType] = useState("All");
+  const [outingMeta, setOutingMeta] = useState<OutingMeta | null>(null);
+  const [statsByGame, setStatsByGame] = useState<Record<string, PlayerGameStats | null>>({});
 
   // Load overrides from localStorage on mount / outing change
   useEffect(() => {
     setOverrides(loadOverrides(outing.id));
+  }, [outing.id]);
+
+  useEffect(() => {
+    let active = true;
+    setOutingMeta(null);
+    setStatsByGame({});
+    const [outingPlayerId, dateId] = outing.id.split("/");
+    if (!outingPlayerId || !dateId) {
+      return () => {
+        active = false;
+      };
+    }
+    const loadStats = async () => {
+      const meta = await loadOutingMeta(outingPlayerId, dateId);
+      if (!active || !meta) {
+        if (active) setOutingMeta(null);
+        return;
+      }
+      setOutingMeta(meta);
+      const slugIndex = await loadPlayerSlugIndex();
+      const slug = slugIndex?.[outingPlayerId];
+      const initialMap: Record<string, PlayerGameStats | null> = {};
+      for (const game of meta.linkedGames) {
+        initialMap[game.gameId] = null;
+      }
+      if (!slug) {
+        setStatsByGame(initialMap);
+        return;
+      }
+      const entries = await Promise.all(
+        meta.linkedGames.map(async (game) => [
+          game.gameId,
+          await loadPlayerGameStats(slug, game.season, game.gameId),
+        ] as const),
+      );
+      if (!active) return;
+      const map: Record<string, PlayerGameStats | null> = { ...initialMap };
+      for (const [gameId, stats] of entries) {
+        map[gameId] = stats;
+      }
+      setStatsByGame(map);
+    };
+    void loadStats();
+    return () => {
+      active = false;
+    };
   }, [outing.id]);
 
   // Pitches with overrides applied — used everywhere downstream
@@ -331,6 +387,10 @@ export default function PlayerDashboard({
 
           {/* MLB averages bar */}
           <MLBAveragesBar />
+
+          {outingMeta && (
+            <GameStatsSection meta={outingMeta} statsByGame={statsByGame} />
+          )}
 
           {/* Per-pitch-type summary */}
           {laneFiltered.length > 0 && (
