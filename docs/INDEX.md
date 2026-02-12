@@ -32,6 +32,7 @@ Start here to find any doc. For task-based lookup, see `docs/ROUTING.md`.
 - `docs/web/data_indexing.md` — dataIndex.ts conventions and player model
 - `docs/web/video_player.md` — Video player component and keyboard shortcuts
 - `docs/web/reports_kpis_outliers.md` — Report thresholds, KPIs, outlier system
+- `docs/web/leaderboards.md` — Team Leaderboards: modes, filters, KPIs, pitch groups
 
 ### Troubleshooting
 

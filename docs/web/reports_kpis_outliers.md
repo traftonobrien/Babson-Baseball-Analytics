@@ -41,12 +41,4 @@ Lane labels via `laneDisplayName()`:
 
 ### Team Leaderboards
 
-Route: `/leaderboards`. Ranks outings by command KPIs across the full roster.
-
-Primary KPI: **On-target %** (same `<= 8″` threshold as reports).
-
-Secondary KPIs: Avg Miss, Avg H (absolute arm-side), Avg V (absolute vertical), Outlier %, Consistency (stddev). All computed directly from pitch data using `isOnTarget`, `isOutlier`, and `pitchArmSideX` — does **not** call `buildReport()`.
-
-Season filter: 2025 / 2026 / Both. Minimum 5 pitches per outing.
-
-Canonical doc: `docs/web/leaderboards.md`.
+See `docs/web/leaderboards.md` for full documentation. Uses the same on-target and outlier thresholds defined above.

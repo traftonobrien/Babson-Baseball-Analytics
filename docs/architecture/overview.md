@@ -19,7 +19,7 @@ flowchart TD
 1. **Mark pitches** (`mark_pitches.py`): User scrubs through full inning video, marks target frame (glove set) and arrival frame (ball reaches catcher) for each pitch. Outputs clips and `pitch_log.json`.
 2. **Process pitches** (`batch_process.py`): For each clip, runs SAM 2 segmentation on glove (target frame) and ball (arrival frame), computes miss distance, writes CSV row and overlay video.
 3. **Publish**: Copy clips, overlays, and CSV into `web/public/data/<playerId>/<dateId>/`. Update `web/lib/dataIndex.ts`.
-4. **Display** (Next.js UI): Player dashboards, scouting reports, scatter plots, heatmaps, and video playback.
+4. **Display** (Next.js UI): Player dashboards, scouting reports, scatter plots, heatmaps, video playback, and team leaderboards.
 
 ### Key Components
 
