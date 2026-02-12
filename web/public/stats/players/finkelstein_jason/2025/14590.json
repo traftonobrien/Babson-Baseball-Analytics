@@ -1,0 +1,39 @@
+{
+  "batting": {
+    "ab": 0,
+    "avg": null,
+    "bb": 0,
+    "h": 0,
+    "hbp": null,
+    "hr": null,
+    "name": "Jason Finkelstein",
+    "pos": "p",
+    "r": 0,
+    "rbi": 0,
+    "sb": null,
+    "so": 0
+  },
+  "gameId": "14590",
+  "pitching": {
+    "bb": 2,
+    "bf": 22,
+    "er": 3,
+    "era": null,
+    "h": 7,
+    "hr": null,
+    "ip": "5.0",
+    "name": "Jason Finkelstein",
+    "pitches": 85,
+    "r": 4,
+    "so": 3,
+    "strikes": null
+  },
+  "playerDisplay": "Jason Finkelstein",
+  "playerKey": "finkelstein_jason",
+  "season": 2025,
+  "source": {
+    "importedAt": "2026-02-12T23:18:35Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2025/coast-guard/boxscore/14590"
+  },
+  "team": "babson"
+}
