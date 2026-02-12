@@ -44,3 +44,17 @@ See `docs/runbooks/publish_outing.md` for the full workflow.
 Query string format: `/player/<playerId>?outingId=<playerId>/<dateId>`
 
 The `OutingSelect` component updates the URL on dropdown change.
+
+### Importing boxscore stats
+
+Use the Sidearm boxscore importer to write static JSON game logs into `web/public/stats/` so the web app can read them.
+
+```bash
+python3 scripts/import_boxscore.py --url "https://babsonathletics.com/sports/baseball/stats/2025/suffolk/boxscore/14570" --player "Chase Burrows" --team babson
+```
+
+Run tests locally:
+
+```bash
+pytest -q
+```
