@@ -3,7 +3,8 @@
  *
  * Fetches CSV data for all outings with:
  *   - Concurrency-limited fetching (max 6 parallel)
- *   - In-memory cache by outingId
+ *   - In-memory cache by outingId (raw pitches + hand)
+ *   - Compute step separated from load (filters applied without refetch)
  *   - Progressive callback for streaming results to UI
  *   - Arsenals-based handedness with "R" fallback + warning
  */
@@ -13,8 +14,9 @@ import type { Pitch } from "@/app/types";
 import { players } from "@/lib/dataIndex";
 import { getPlayerMeta } from "@/lib/arsenals";
 import { seasonFromDateId } from "@/lib/season";
-import { computeOutingKpis } from "./metrics";
+import { computeOutingKpis, type ComputeOptions } from "./metrics";
 import type { OutingLeaderboardRow, SeasonFilter } from "./types";
+import type { PitchGroup } from "./pitchGroups";
 
 /* ------------------------------------------------------------------ */
 /*  CSV parser (reuses pattern from useAllPitchData)                   */
@@ -47,13 +49,23 @@ function parseCsvText(text: string): Pitch[] {
 /*  In-memory cache                                                    */
 /* ------------------------------------------------------------------ */
 
-interface CachedOuting {
+export interface CachedOuting {
   pitches: Pitch[];
   pitcherHand: "R" | "L";
   handUnknown: boolean;
 }
 
+interface CachedOutingTask {
+  playerId: string;
+  playerName: string;
+  outingId: string;
+  dateId: string;
+  season: number | null;
+  label: string;
+}
+
 const outingCache = new Map<string, CachedOuting>();
+let loadedTasks: CachedOutingTask[] | null = null;
 
 /* ------------------------------------------------------------------ */
 /*  Concurrency limiter                                                */
@@ -116,7 +128,7 @@ async function loadSingleOuting(
   } else {
     handUnknown = true;
     console.warn(
-      `[Leaderboards] No pitcher hand in Arsenals for ${playerId}. Falling back to "R".`,
+      `[Leaderboards] Hand unknown for playerId=${playerId}. Falling back to "R".`,
     );
   }
 
@@ -141,31 +153,31 @@ function matchesSeason(
 /*  Public API                                                         */
 /* ------------------------------------------------------------------ */
 
+export type HandFilter = "ALL" | "R" | "L";
+
 export interface LoadOptions {
   seasonFilter: SeasonFilter;
   minPitches?: number;
   onProgress?: (loaded: number, total: number) => void;
 }
 
+export interface ComputeFilters {
+  seasonFilter: SeasonFilter;
+  handFilter?: HandFilter;
+  pitchGroup?: PitchGroup;
+  minPitches?: number;
+}
+
 /**
- * Load all outing leaderboard rows. Fetches CSVs with concurrency limit,
- * caches results, and calls onProgress as each outing completes.
+ * Load raw pitch data for all outings matching the season filter.
+ * Caches raw data so subsequent computeLeaderboardRows calls are instant.
  */
-export async function loadAllLeaderboardData(
+export async function loadAllOutingData(
   opts: LoadOptions,
-): Promise<OutingLeaderboardRow[]> {
-  const { seasonFilter, minPitches = 5, onProgress } = opts;
+): Promise<void> {
+  const { seasonFilter, onProgress } = opts;
 
-  // Collect all outings across all players
-  interface OutingTask {
-    playerId: string;
-    playerName: string;
-    outing: { id: string; label: string; csvPath: string };
-    dateId: string;
-    season: number | null;
-  }
-
-  const tasks: OutingTask[] = [];
+  const tasks: CachedOutingTask[] = [];
   for (const player of players) {
     for (const outing of player.outings) {
       const dateId = outing.id.split("/")[1];
@@ -174,9 +186,10 @@ export async function loadAllLeaderboardData(
       tasks.push({
         playerId: player.id,
         playerName: player.name,
-        outing,
+        outingId: outing.id,
         dateId,
         season,
+        label: outing.label,
       });
     }
   }
@@ -184,50 +197,102 @@ export async function loadAllLeaderboardData(
   let loaded = 0;
   const total = tasks.length;
 
-  const rows = await mapWithLimit(tasks, MAX_CONCURRENT, async (task) => {
-    try {
-      const cached = await loadSingleOuting(
-        task.outing.id,
-        task.outing.csvPath,
-        task.playerId,
-      );
-      const kpis = computeOutingKpis(cached.pitches, cached.pitcherHand);
-
-      loaded++;
-      onProgress?.(loaded, total);
-
-      if (kpis.pitchCount < minPitches) return null;
-
-      const row: OutingLeaderboardRow = {
-        playerId: task.playerId,
-        playerName: task.playerName,
-        outingId: task.outing.id,
-        dateId: task.dateId,
-        season: task.season,
-        label: task.outing.label,
-        pitcherHand: cached.pitcherHand,
-        handUnknown: cached.handUnknown,
-        pitchCount: kpis.pitchCount,
-        onTargetPct: kpis.onTargetPct,
-        outlierPct: kpis.outlierPct,
-        avgMissIn: kpis.avgMissIn,
-        avgVAbsIn: kpis.avgVAbsIn,
-        avgHAbsIn: kpis.avgHAbsIn,
-        consistencyStdIn: kpis.consistencyStdIn,
-      };
-      return row;
-    } catch (err) {
-      loaded++;
-      onProgress?.(loaded, total);
-      console.warn(`[Leaderboards] Failed to load ${task.outing.id}:`, err);
-      return null;
-    }
+  // Find the csvPath from dataIndex for each task
+  const taskWithCsv = tasks.map((t) => {
+    const player = players.find((p) => p.id === t.playerId)!;
+    const outing = player.outings.find((o) => o.id === t.outingId)!;
+    return { ...t, csvPath: outing.csvPath };
   });
 
-  return rows.filter((r): r is OutingLeaderboardRow => r !== null);
+  await mapWithLimit(taskWithCsv, MAX_CONCURRENT, async (task) => {
+    try {
+      await loadSingleOuting(task.outingId, task.csvPath, task.playerId);
+    } catch (err) {
+      console.warn(`[Leaderboards] Failed to load ${task.outingId}:`, err);
+    }
+    loaded++;
+    onProgress?.(loaded, total);
+  });
+
+  loadedTasks = tasks;
+}
+
+/**
+ * Compute leaderboard rows from cached data.
+ * Applies filters (hand, pitch group, min pitches) at compute time
+ * without refetching CSVs.
+ */
+export function computeLeaderboardRows(
+  filters: ComputeFilters,
+): OutingLeaderboardRow[] {
+  if (!loadedTasks) return [];
+
+  const {
+    seasonFilter,
+    handFilter = "ALL",
+    pitchGroup = "ALL",
+    minPitches = 5,
+  } = filters;
+
+  const computeOpts: ComputeOptions | undefined =
+    pitchGroup !== "ALL" ? { pitchGroup } : undefined;
+
+  const rows: OutingLeaderboardRow[] = [];
+
+  for (const task of loadedTasks) {
+    if (!matchesSeason(task.season, seasonFilter)) continue;
+
+    const cached = outingCache.get(task.outingId);
+    if (!cached) continue;
+
+    // Hand filter
+    if (handFilter !== "ALL") {
+      if (cached.handUnknown) continue; // exclude unknown when filtering by hand
+      if (cached.pitcherHand !== handFilter) continue;
+    }
+
+    const kpis = computeOutingKpis(cached.pitches, cached.pitcherHand, computeOpts);
+
+    if (kpis.pitchCount < minPitches) continue;
+
+    rows.push({
+      playerId: task.playerId,
+      playerName: task.playerName,
+      outingId: task.outingId,
+      dateId: task.dateId,
+      season: task.season,
+      label: task.label,
+      pitcherHand: cached.pitcherHand,
+      handUnknown: cached.handUnknown,
+      pitchCount: kpis.pitchCount,
+      onTargetPct: kpis.onTargetPct,
+      outlierPct: kpis.outlierPct,
+      avgMissIn: kpis.avgMissIn,
+      avgVAbsIn: kpis.avgVAbsIn,
+      avgHAbsIn: kpis.avgHAbsIn,
+      consistencyStdIn: kpis.consistencyStdIn,
+    });
+  }
+
+  return rows;
+}
+
+/**
+ * Legacy convenience: load + compute in one call.
+ * Used for backward compat; prefer loadAllOutingData + computeLeaderboardRows.
+ */
+export async function loadAllLeaderboardData(
+  opts: LoadOptions,
+): Promise<OutingLeaderboardRow[]> {
+  await loadAllOutingData(opts);
+  return computeLeaderboardRows({
+    seasonFilter: opts.seasonFilter,
+    minPitches: opts.minPitches,
+  });
 }
 
 /** Clear the outing cache (useful for testing or forced refresh). */
 export function clearCache(): void {
   outingCache.clear();
+  loadedTasks = null;
 }

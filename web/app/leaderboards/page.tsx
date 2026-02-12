@@ -1,15 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  loadAllLeaderboardData,
+  loadAllOutingData,
+  computeLeaderboardRows,
+  type HandFilter,
   type LoadOptions,
 } from "@/lib/leaderboards/load";
 import type {
   OutingLeaderboardRow,
   SeasonFilter,
 } from "@/lib/leaderboards/types";
+import type { PitchGroup } from "@/lib/leaderboards/pitchGroups";
 import LogoutButton from "@/app/components/LogoutButton";
 
 /* ------------------------------------------------------------------ */
@@ -34,6 +37,11 @@ interface SortState {
 }
 
 const DEFAULT_SORT: SortState = { key: "onTargetPct", desc: true };
+
+/** Lower-is-better metrics: default sort ascending when first clicked. */
+const ASC_DEFAULT_KEYS = new Set<SortKey>([
+  "avgMissIn", "avgHAbsIn", "avgVAbsIn", "consistencyStdIn", "outlierPct",
+]);
 
 function compare(a: OutingLeaderboardRow, b: OutingLeaderboardRow, s: SortState): number {
   const av = a[s.key];
@@ -112,33 +120,77 @@ function Col({ label, sortKey, sort, onSort, title }: ColProps) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Segmented control                                                  */
+/* ------------------------------------------------------------------ */
+
+interface SegmentProps<T extends string> {
+  label: string;
+  options: { value: T; display: string }[];
+  selected: T;
+  onChange: (v: T) => void;
+}
+
+function Segment<T extends string>({ label, options, selected, onChange }: SegmentProps<T>) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-zinc-400 uppercase tracking-wider">{label}</span>
+      <div className="flex rounded-md overflow-hidden border border-zinc-700">
+        {options.map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
+            className={`px-3 py-1 text-sm transition-colors ${
+              selected === opt.value
+                ? "bg-zinc-700 text-zinc-100"
+                : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800"
+            }`}
+          >
+            {opt.display}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  Main page                                                          */
 /* ------------------------------------------------------------------ */
 
 export default function LeaderboardsPage() {
   const [seasonFilter, setSeasonFilter] = useState<SeasonFilter>("both");
+  const [handFilter, setHandFilter] = useState<HandFilter>("ALL");
+  const [pitchGroup, setPitchGroup] = useState<PitchGroup>("ALL");
   const [rows, setRows] = useState<OutingLeaderboardRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState({ loaded: 0, total: 0 });
   const [sort, setSort] = useState<SortState>(DEFAULT_SORT);
   const [search, setSearch] = useState("");
+  const dataLoaded = useRef(false);
 
-  // Load data
-  const load = useCallback(
+  // Load raw data when season changes
+  const loadData = useCallback(
     (filter: SeasonFilter) => {
       setLoading(true);
       setRows([]);
       setProgress({ loaded: 0, total: 0 });
+      dataLoaded.current = false;
 
       const opts: LoadOptions = {
         seasonFilter: filter,
-        minPitches: 5,
         onProgress: (loaded, total) => setProgress({ loaded, total }),
       };
 
-      loadAllLeaderboardData(opts)
-        .then((data) => {
-          setRows(data);
+      loadAllOutingData(opts)
+        .then(() => {
+          dataLoaded.current = true;
+          const computed = computeLeaderboardRows({
+            seasonFilter: filter,
+            handFilter,
+            pitchGroup,
+            minPitches: 5,
+          });
+          setRows(computed);
           setLoading(false);
         })
         .catch((err) => {
@@ -146,18 +198,32 @@ export default function LeaderboardsPage() {
           setLoading(false);
         });
     },
-    [],
+    [handFilter, pitchGroup],
   );
 
   useEffect(() => {
-    load(seasonFilter);
-  }, [seasonFilter, load]);
+    loadData(seasonFilter);
+  }, [seasonFilter, loadData]);
+
+  // Recompute from cache when filters change (no refetch)
+  useEffect(() => {
+    if (!dataLoaded.current) return;
+    const computed = computeLeaderboardRows({
+      seasonFilter,
+      handFilter,
+      pitchGroup,
+      minPitches: 5,
+    });
+    setRows(computed);
+  }, [handFilter, pitchGroup, seasonFilter]);
 
   // Sort toggle
   const handleSort = useCallback(
     (key: SortKey) => {
       setSort((prev) =>
-        prev.key === key ? { key, desc: !prev.desc } : { key, desc: key !== "playerName" && key !== "avgMissIn" && key !== "avgHAbsIn" && key !== "avgVAbsIn" && key !== "consistencyStdIn" && key !== "outlierPct" },
+        prev.key === key
+          ? { key, desc: !prev.desc }
+          : { key, desc: !ASC_DEFAULT_KEYS.has(key) },
       );
     },
     [],
@@ -193,25 +259,38 @@ export default function LeaderboardsPage() {
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-4 mb-6">
-          {/* Season filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-400 uppercase tracking-wider">Season</span>
-            <div className="flex rounded-md overflow-hidden border border-zinc-700">
-              {([2025, 2026, "both"] as const).map((val) => (
-                <button
-                  key={val}
-                  onClick={() => setSeasonFilter(val)}
-                  className={`px-3 py-1 text-sm transition-colors ${
-                    seasonFilter === val
-                      ? "bg-zinc-700 text-zinc-100"
-                      : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800"
-                  }`}
-                >
-                  {val === "both" ? "Both" : val}
-                </button>
-              ))}
-            </div>
-          </div>
+          <Segment
+            label="Season"
+            options={[
+              { value: "2025" as unknown as SeasonFilter, display: "2025" },
+              { value: "2026" as unknown as SeasonFilter, display: "2026" },
+              { value: "both", display: "Both" },
+            ].map((o) => ({ value: String(o.value), display: o.display }))}
+            selected={String(seasonFilter)}
+            onChange={(v) => setSeasonFilter(v === "both" ? "both" : (Number(v) as SeasonFilter))}
+          />
+
+          <Segment
+            label="Hand"
+            options={[
+              { value: "ALL", display: "All" },
+              { value: "R", display: "RHP" },
+              { value: "L", display: "LHP" },
+            ]}
+            selected={handFilter}
+            onChange={setHandFilter}
+          />
+
+          <Segment
+            label="Pitches"
+            options={[
+              { value: "ALL", display: "Overall" },
+              { value: "FASTBALL", display: "Fastballs" },
+              { value: "BREAKING", display: "Breaking Balls" },
+            ]}
+            selected={pitchGroup}
+            onChange={setPitchGroup}
+          />
 
           {/* Search */}
           <input
@@ -284,12 +363,22 @@ export default function LeaderboardsPage() {
                       >
                         {row.playerName}
                       </Link>
-                      {row.handUnknown && (
+                      {row.handUnknown ? (
                         <span
                           className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-amber-900/40 text-amber-400 font-normal"
                           title="Pitcher hand not found in Arsenals.csv; defaulted to R"
                         >
                           Hand unknown
+                        </span>
+                      ) : (
+                        <span
+                          className={`ml-2 text-[10px] px-1.5 py-0.5 rounded font-normal ${
+                            row.pitcherHand === "L"
+                              ? "bg-blue-900/40 text-blue-400"
+                              : "bg-zinc-800 text-zinc-400"
+                          }`}
+                        >
+                          {row.pitcherHand === "L" ? "LHP" : "RHP"}
                         </span>
                       )}
                     </td>

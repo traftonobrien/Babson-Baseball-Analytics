@@ -132,6 +132,54 @@ describe("computeOutingKpis", () => {
   });
 });
 
+describe("computeOutingKpis with pitchGroup filter", () => {
+  const mixed = [
+    makePitch({ pitch_type: "FF", total_miss_inches: 4 }),
+    makePitch({ pitch_type: "FF", total_miss_inches: 6 }),
+    makePitch({ pitch_type: "SL", total_miss_inches: 10 }),
+    makePitch({ pitch_type: "SL", total_miss_inches: 12 }),
+    makePitch({ pitch_type: "CH", total_miss_inches: 8 }),
+  ];
+
+  it("ALL includes every pitch", () => {
+    const kpis = computeOutingKpis(mixed, "R", { pitchGroup: "ALL" });
+    expect(kpis.pitchCount).toBe(5);
+  });
+
+  it("FASTBALL filters to only fastball types", () => {
+    const kpis = computeOutingKpis(mixed, "R", { pitchGroup: "FASTBALL" });
+    expect(kpis.pitchCount).toBe(2);
+    // avg miss = (4+6)/2 = 5
+    expect(kpis.avgMissIn).toBeCloseTo(5, 1);
+  });
+
+  it("BREAKING filters to only breaking types", () => {
+    const kpis = computeOutingKpis(mixed, "R", { pitchGroup: "BREAKING" });
+    expect(kpis.pitchCount).toBe(2);
+    // avg miss = (10+12)/2 = 11
+    expect(kpis.avgMissIn).toBeCloseTo(11, 1);
+  });
+
+  it("unknown pitch types excluded from FASTBALL and BREAKING", () => {
+    const kpisF = computeOutingKpis(mixed, "R", { pitchGroup: "FASTBALL" });
+    const kpisB = computeOutingKpis(mixed, "R", { pitchGroup: "BREAKING" });
+    // CH is in neither group, so total = 2+2 = 4, not 5
+    expect(kpisF.pitchCount + kpisB.pitchCount).toBe(4);
+  });
+
+  it("returns zeros when no pitches match group", () => {
+    const allFF = [makePitch({ pitch_type: "FF", total_miss_inches: 5 })];
+    const kpis = computeOutingKpis(allFF, "R", { pitchGroup: "BREAKING" });
+    expect(kpis.pitchCount).toBe(0);
+    expect(kpis.onTargetPct).toBe(0);
+  });
+
+  it("no options defaults to ALL", () => {
+    const kpis = computeOutingKpis(mixed, "R");
+    expect(kpis.pitchCount).toBe(5);
+  });
+});
+
 describe("mergeKpis", () => {
   it("returns zeros for empty list", () => {
     const merged = mergeKpis([]);

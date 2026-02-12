@@ -13,6 +13,8 @@ import {
 } from "@/lib/reportModel";
 import { pitchArmSideX } from "@/lib/handedness";
 import type { OutingKpis } from "./types";
+import type { PitchGroup } from "./pitchGroups";
+import { pitchMatchesGroup } from "./pitchGroups";
 
 function stdDev(vals: number[]): number {
   if (vals.length < 2) return 0;
@@ -21,15 +23,26 @@ function stdDev(vals: number[]): number {
   return Math.sqrt(sqDiffs.reduce((a, b) => a + b, 0) / (vals.length - 1));
 }
 
+export interface ComputeOptions {
+  pitchGroup?: PitchGroup;
+}
+
 /**
  * Compute leaderboard KPIs for a set of pitches.
+ * Optionally filters by pitch group before computing.
  * Includes ALL pitches (outliers are counted, not excluded).
  */
 export function computeOutingKpis(
   pitches: Pitch[],
   pitcherHand: "R" | "L",
+  options?: ComputeOptions,
 ): OutingKpis {
-  const n = pitches.length;
+  const group = options?.pitchGroup ?? "ALL";
+  const filtered = group === "ALL"
+    ? pitches
+    : pitches.filter((p) => pitchMatchesGroup(p.pitch_type, group));
+
+  const n = filtered.length;
   if (n === 0) {
     return {
       pitchCount: 0,
@@ -55,7 +68,7 @@ export function computeOutingKpis(
   let totalHAbsSum = 0;
   const misses: number[] = [];
 
-  for (const p of pitches) {
+  for (const p of filtered) {
     const miss = p.total_miss_inches;
     misses.push(miss);
     totalMissSum += miss;
