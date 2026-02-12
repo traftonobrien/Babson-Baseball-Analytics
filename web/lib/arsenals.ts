@@ -19,52 +19,56 @@ interface PlayerRecord {
   arsenal: ArsenalEntry[];
 }
 
-let cache: Map<string, PlayerRecord> | null = null;
+let loadPromise: Promise<Map<string, PlayerRecord>> | null = null;
 
-async function load(): Promise<Map<string, PlayerRecord>> {
-  if (cache) return cache;
+function load(): Promise<Map<string, PlayerRecord>> {
+  if (loadPromise) return loadPromise;
 
-  cache = new Map();
-  try {
-    const res = await fetch("/data/Arsenals.csv");
-    if (!res.ok) return cache;
-    const text = await res.text();
-    const lines = text.trim().split("\n");
-    if (lines.length < 2) return cache;
+  loadPromise = (async () => {
+    const map = new Map<string, PlayerRecord>();
+    try {
+      const res = await fetch("/data/Arsenals.csv");
+      if (!res.ok) return map;
+      const text = await res.text();
+      const lines = text.trim().split("\n");
+      if (lines.length < 2) return map;
 
-    const header = lines[0].split(",").map((h) => h.trim());
-    const idx = {
-      player_id: header.indexOf("player_id"),
-      player_name: header.indexOf("player_name"),
-      pitcher_hand: header.indexOf("pitcher_hand"),
-      pitch_type: header.indexOf("pitch_type"),
-      abbreviation: header.indexOf("abbreviation"),
-    };
+      const header = lines[0].split(",").map((h) => h.trim());
+      const idx = {
+        player_id: header.indexOf("player_id"),
+        player_name: header.indexOf("player_name"),
+        pitcher_hand: header.indexOf("pitcher_hand"),
+        pitch_type: header.indexOf("pitch_type"),
+        abbreviation: header.indexOf("abbreviation"),
+      };
 
-    for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(",").map((c) => c.trim());
-      const pid = cols[idx.player_id] ?? "";
-      if (!pid) continue;
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(",").map((c) => c.trim());
+        const pid = cols[idx.player_id] ?? "";
+        if (!pid) continue;
 
-      if (!cache.has(pid)) {
-        cache.set(pid, {
-          playerName: cols[idx.player_name] || undefined,
-          pitcherHand: cols[idx.pitcher_hand] || undefined,
-          arsenal: [],
-        });
+        if (!map.has(pid)) {
+          map.set(pid, {
+            playerName: cols[idx.player_name] || undefined,
+            pitcherHand: cols[idx.pitcher_hand] || undefined,
+            arsenal: [],
+          });
+        }
+        const abbrev = cols[idx.abbreviation] ?? "";
+        if (abbrev) {
+          map.get(pid)!.arsenal.push({
+            abbrev,
+            pitchName: cols[idx.pitch_type] ?? "",
+          });
+        }
       }
-      const abbrev = cols[idx.abbreviation] ?? "";
-      if (abbrev) {
-        cache.get(pid)!.arsenal.push({
-          abbrev,
-          pitchName: cols[idx.pitch_type] ?? "",
-        });
-      }
+    } catch {
+      // Arsenals.csv missing or unparseable — degrade gracefully
     }
-  } catch {
-    // Arsenals.csv missing or unparseable — degrade gracefully
-  }
-  return cache;
+    return map;
+  })();
+
+  return loadPromise;
 }
 
 export async function getPlayerMeta(
