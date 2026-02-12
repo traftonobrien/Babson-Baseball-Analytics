@@ -14,8 +14,8 @@ import type { Pitch } from "@/app/types";
 import { players } from "@/lib/dataIndex";
 import { getPlayerMeta } from "@/lib/arsenals";
 import { seasonFromDateId } from "@/lib/season";
-import { computeOutingKpis, type ComputeOptions } from "./metrics";
-import type { OutingLeaderboardRow, SeasonFilter } from "./types";
+import { computeOutingKpis, mergeKpis, type ComputeOptions } from "./metrics";
+import type { OutingLeaderboardRow, PlayerAggregateRow, SeasonFilter } from "./types";
 import type { PitchGroup } from "./pitchGroups";
 
 /* ------------------------------------------------------------------ */
@@ -278,17 +278,95 @@ export function computeLeaderboardRows(
 }
 
 /**
- * Legacy convenience: load + compute in one call.
- * Used for backward compat; prefer loadAllOutingData + computeLeaderboardRows.
+ * Compute player aggregate rows from cached data.
+ * Groups outings by player, recomputes KPIs from raw cached pitches
+ * using mergeKpis for exact stddev, applies filters.
  */
-export async function loadAllLeaderboardData(
-  opts: LoadOptions,
-): Promise<OutingLeaderboardRow[]> {
-  await loadAllOutingData(opts);
-  return computeLeaderboardRows({
-    seasonFilter: opts.seasonFilter,
-    minPitches: opts.minPitches,
-  });
+export function computePlayerAggregateRows(
+  filters: ComputeFilters,
+): PlayerAggregateRow[] {
+  if (!loadedTasks) return [];
+
+  const {
+    seasonFilter,
+    handFilter = "ALL",
+    pitchGroup = "ALL",
+    minPitches = 5,
+  } = filters;
+
+  const computeOpts: ComputeOptions | undefined =
+    pitchGroup !== "ALL" ? { pitchGroup } : undefined;
+
+  // Group tasks by player
+  const playerGroups = new Map<string, {
+    playerName: string;
+    pitcherHand: "R" | "L";
+    handUnknown: boolean;
+    outingIds: string[];
+  }>();
+
+  for (const task of loadedTasks) {
+    if (!matchesSeason(task.season, seasonFilter)) continue;
+
+    const cached = outingCache.get(task.outingId);
+    if (!cached) continue;
+
+    // Hand filter at player level
+    if (handFilter !== "ALL") {
+      if (cached.handUnknown) continue;
+      if (cached.pitcherHand !== handFilter) continue;
+    }
+
+    let group = playerGroups.get(task.playerId);
+    if (!group) {
+      group = {
+        playerName: task.playerName,
+        pitcherHand: cached.pitcherHand,
+        handUnknown: cached.handUnknown,
+        outingIds: [],
+      };
+      playerGroups.set(task.playerId, group);
+    }
+    group.outingIds.push(task.outingId);
+  }
+
+  const rows: PlayerAggregateRow[] = [];
+
+  for (const [playerId, group] of playerGroups) {
+    // Compute KPIs per outing then merge for exact stddev
+    const kpisList = [];
+    let qualifiedOutings = 0;
+
+    for (const outingId of group.outingIds) {
+      const cached = outingCache.get(outingId);
+      if (!cached) continue;
+      const kpis = computeOutingKpis(cached.pitches, cached.pitcherHand, computeOpts);
+      if (kpis.pitchCount >= minPitches) qualifiedOutings++;
+      if (kpis.pitchCount > 0) kpisList.push(kpis);
+    }
+
+    if (kpisList.length === 0) continue;
+
+    const merged = mergeKpis(kpisList);
+    if (merged.pitchCount < minPitches) continue;
+
+    rows.push({
+      playerId,
+      playerName: group.playerName,
+      pitcherHand: group.pitcherHand,
+      handUnknown: group.handUnknown,
+      outingCount: qualifiedOutings,
+      pitchCount: merged.pitchCount,
+      onTargetPct: merged.onTargetPct,
+      outlierPct: merged.outlierPct,
+      avgMissIn: merged.avgMissIn,
+      avgVAbsIn: merged.avgVAbsIn,
+      avgHAbsIn: merged.avgHAbsIn,
+      consistencyStdIn: merged.consistencyStdIn,
+    });
+  }
+
+  return rows;
 }
 
 /** Clear the outing cache (useful for testing or forced refresh). */

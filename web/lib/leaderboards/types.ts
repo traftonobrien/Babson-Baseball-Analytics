@@ -52,4 +52,21 @@ export interface OutingKpis {
   consistencyStdIn: number;
 }
 
+export interface PlayerAggregateRow {
+  playerId: string;
+  playerName: string;
+  pitcherHand: "R" | "L";
+  handUnknown: boolean;
+  outingCount: number;
+  pitchCount: number;
+  onTargetPct: number;
+  outlierPct: number;
+  avgMissIn: number;
+  avgVAbsIn: number;
+  avgHAbsIn: number;
+  consistencyStdIn: number;
+}
+
+export type LeaderboardMode = "outings" | "players";
+
 export type SeasonFilter = 2025 | 2026 | "both";

@@ -5,12 +5,15 @@ import Link from "next/link";
 import {
   loadAllOutingData,
   computeLeaderboardRows,
+  computePlayerAggregateRows,
   type HandFilter,
   type LoadOptions,
 } from "@/lib/leaderboards/load";
 import type {
   OutingLeaderboardRow,
+  PlayerAggregateRow,
   SeasonFilter,
+  LeaderboardMode,
 } from "@/lib/leaderboards/types";
 import type { PitchGroup } from "@/lib/leaderboards/pitchGroups";
 import LogoutButton from "@/app/components/LogoutButton";
@@ -19,8 +22,8 @@ import LogoutButton from "@/app/components/LogoutButton";
 /*  Sort helpers                                                       */
 /* ------------------------------------------------------------------ */
 
-type SortKey = keyof Pick<
-  OutingLeaderboardRow,
+/** Fields common to both row types that are sortable. */
+type CommonSortKey =
   | "onTargetPct"
   | "avgMissIn"
   | "avgHAbsIn"
@@ -28,24 +31,33 @@ type SortKey = keyof Pick<
   | "outlierPct"
   | "consistencyStdIn"
   | "pitchCount"
-  | "playerName"
->;
+  | "playerName";
 
 interface SortState {
-  key: SortKey;
+  key: CommonSortKey;
   desc: boolean;
 }
 
 const DEFAULT_SORT: SortState = { key: "onTargetPct", desc: true };
 
 /** Lower-is-better metrics: default sort ascending when first clicked. */
-const ASC_DEFAULT_KEYS = new Set<SortKey>([
+const ASC_DEFAULT_KEYS = new Set<CommonSortKey>([
   "avgMissIn", "avgHAbsIn", "avgVAbsIn", "consistencyStdIn", "outlierPct",
 ]);
 
-function compare(a: OutingLeaderboardRow, b: OutingLeaderboardRow, s: SortState): number {
-  const av = a[s.key];
-  const bv = b[s.key];
+function compareOutings(a: OutingLeaderboardRow, b: OutingLeaderboardRow, s: SortState): number {
+  const av = a[s.key as keyof OutingLeaderboardRow];
+  const bv = b[s.key as keyof OutingLeaderboardRow];
+  if (typeof av === "string" && typeof bv === "string") {
+    return s.desc ? bv.localeCompare(av) : av.localeCompare(bv);
+  }
+  const diff = (av as number) - (bv as number);
+  return s.desc ? -diff : diff;
+}
+
+function comparePlayers(a: PlayerAggregateRow, b: PlayerAggregateRow, s: SortState): number {
+  const av = a[s.key as keyof PlayerAggregateRow];
+  const bv = b[s.key as keyof PlayerAggregateRow];
   if (typeof av === "string" && typeof bv === "string") {
     return s.desc ? bv.localeCompare(av) : av.localeCompare(bv);
   }
@@ -73,14 +85,42 @@ function dateLabel(dateId: string): string {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Hand badge                                                         */
+/* ------------------------------------------------------------------ */
+
+function HandBadge({ hand, unknown }: { hand: "R" | "L"; unknown: boolean }) {
+  if (unknown) {
+    return (
+      <span
+        className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-amber-900/40 text-amber-400 font-normal"
+        title="Pitcher hand not found in Arsenals.csv; defaulted to R"
+      >
+        Hand unknown
+      </span>
+    );
+  }
+  return (
+    <span
+      className={`ml-2 text-[10px] px-1.5 py-0.5 rounded font-normal ${
+        hand === "L"
+          ? "bg-blue-900/40 text-blue-400"
+          : "bg-zinc-800 text-zinc-400"
+      }`}
+    >
+      {hand === "L" ? "LHP" : "RHP"}
+    </span>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  Skeleton row                                                       */
 /* ------------------------------------------------------------------ */
 
-function SkeletonRow({ i }: { i: number }) {
+function SkeletonRow({ i, cols }: { i: number; cols: number }) {
   return (
     <tr className="border-b border-zinc-800 animate-pulse">
       <td className="px-3 py-2 text-zinc-600">{i + 1}</td>
-      {Array.from({ length: 9 }, (_, j) => (
+      {Array.from({ length: cols }, (_, j) => (
         <td key={j} className="px-3 py-2">
           <div className="h-4 bg-zinc-800 rounded w-16" />
         </td>
@@ -95,9 +135,9 @@ function SkeletonRow({ i }: { i: number }) {
 
 interface ColProps {
   label: string;
-  sortKey: SortKey;
+  sortKey: CommonSortKey;
   sort: SortState;
-  onSort: (key: SortKey) => void;
+  onSort: (key: CommonSortKey) => void;
   title?: string;
 }
 
@@ -154,25 +194,54 @@ function Segment<T extends string>({ label, options, selected, onChange }: Segme
 }
 
 /* ------------------------------------------------------------------ */
+/*  KPI columns (shared between both modes)                            */
+/* ------------------------------------------------------------------ */
+
+function KpiCells({ row }: { row: { pitchCount: number; onTargetPct: number; avgMissIn: number; avgHAbsIn: number; avgVAbsIn: number; outlierPct: number; consistencyStdIn: number } }) {
+  return (
+    <>
+      <td className="px-3 py-2 text-zinc-300 font-mono">{row.pitchCount}</td>
+      <td className="px-3 py-2 font-mono font-semibold text-emerald-400">{fmtPct(row.onTargetPct)}</td>
+      <td className="px-3 py-2 font-mono text-zinc-300">{fmtIn(row.avgMissIn)}</td>
+      <td className="px-3 py-2 font-mono text-zinc-300">{fmtIn(row.avgHAbsIn)}</td>
+      <td className="px-3 py-2 font-mono text-zinc-300">{fmtIn(row.avgVAbsIn)}</td>
+      <td className="px-3 py-2 font-mono text-zinc-400">{fmtPct(row.outlierPct)}</td>
+      <td className="px-3 py-2 font-mono text-zinc-400">{fmtIn(row.consistencyStdIn)}</td>
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  Main page                                                          */
 /* ------------------------------------------------------------------ */
 
 export default function LeaderboardsPage() {
+  const [mode, setMode] = useState<LeaderboardMode>("outings");
   const [seasonFilter, setSeasonFilter] = useState<SeasonFilter>("both");
   const [handFilter, setHandFilter] = useState<HandFilter>("ALL");
   const [pitchGroup, setPitchGroup] = useState<PitchGroup>("ALL");
-  const [rows, setRows] = useState<OutingLeaderboardRow[]>([]);
+  const [outingRows, setOutingRows] = useState<OutingLeaderboardRow[]>([]);
+  const [playerRows, setPlayerRows] = useState<PlayerAggregateRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState({ loaded: 0, total: 0 });
   const [sort, setSort] = useState<SortState>(DEFAULT_SORT);
   const [search, setSearch] = useState("");
   const dataLoaded = useRef(false);
 
+  // Recompute both view types from cache
+  const recompute = useCallback(() => {
+    if (!dataLoaded.current) return;
+    const filters = { seasonFilter, handFilter, pitchGroup, minPitches: 5 };
+    setOutingRows(computeLeaderboardRows(filters));
+    setPlayerRows(computePlayerAggregateRows(filters));
+  }, [seasonFilter, handFilter, pitchGroup]);
+
   // Load raw data when season changes
   const loadData = useCallback(
     (filter: SeasonFilter) => {
       setLoading(true);
-      setRows([]);
+      setOutingRows([]);
+      setPlayerRows([]);
       setProgress({ loaded: 0, total: 0 });
       dataLoaded.current = false;
 
@@ -184,13 +253,7 @@ export default function LeaderboardsPage() {
       loadAllOutingData(opts)
         .then(() => {
           dataLoaded.current = true;
-          const computed = computeLeaderboardRows({
-            seasonFilter: filter,
-            handFilter,
-            pitchGroup,
-            minPitches: 5,
-          });
-          setRows(computed);
+          recompute();
           setLoading(false);
         })
         .catch((err) => {
@@ -198,7 +261,7 @@ export default function LeaderboardsPage() {
           setLoading(false);
         });
     },
-    [handFilter, pitchGroup],
+    [recompute],
   );
 
   useEffect(() => {
@@ -207,19 +270,12 @@ export default function LeaderboardsPage() {
 
   // Recompute from cache when filters change (no refetch)
   useEffect(() => {
-    if (!dataLoaded.current) return;
-    const computed = computeLeaderboardRows({
-      seasonFilter,
-      handFilter,
-      pitchGroup,
-      minPitches: 5,
-    });
-    setRows(computed);
-  }, [handFilter, pitchGroup, seasonFilter]);
+    recompute();
+  }, [recompute]);
 
   // Sort toggle
   const handleSort = useCallback(
-    (key: SortKey) => {
+    (key: CommonSortKey) => {
       setSort((prev) =>
         prev.key === key
           ? { key, desc: !prev.desc }
@@ -229,15 +285,27 @@ export default function LeaderboardsPage() {
     [],
   );
 
-  // Filter + sort
-  const displayed = useMemo(() => {
-    let filtered = rows;
+  // Filter + sort for outings mode
+  const displayedOutings = useMemo(() => {
+    let filtered: OutingLeaderboardRow[] = outingRows;
     if (search.trim()) {
       const q = search.trim().toLowerCase();
-      filtered = rows.filter((r) => r.playerName.toLowerCase().includes(q));
+      filtered = outingRows.filter((r) => r.playerName.toLowerCase().includes(q));
     }
-    return [...filtered].sort((a, b) => compare(a, b, sort));
-  }, [rows, search, sort]);
+    return [...filtered].sort((a, b) => compareOutings(a, b, sort));
+  }, [outingRows, search, sort]);
+
+  // Filter + sort for players mode
+  const displayedPlayers = useMemo(() => {
+    let filtered: PlayerAggregateRow[] = playerRows;
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      filtered = playerRows.filter((r) => r.playerName.toLowerCase().includes(q));
+    }
+    return [...filtered].sort((a, b) => comparePlayers(a, b, sort));
+  }, [playerRows, search, sort]);
+
+  const rowCount = mode === "outings" ? displayedOutings.length : displayedPlayers.length;
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6 relative">
@@ -245,8 +313,8 @@ export default function LeaderboardsPage() {
         <LogoutButton />
       </div>
 
-      {/* Header */}
       <div className="max-w-6xl mx-auto">
+        {/* Header */}
         <div className="mb-6 flex items-center gap-4">
           <Link
             href="/"
@@ -259,13 +327,23 @@ export default function LeaderboardsPage() {
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-4 mb-6">
+          <Segment<LeaderboardMode>
+            label="Mode"
+            options={[
+              { value: "outings", display: "Outings" },
+              { value: "players", display: "Players" },
+            ]}
+            selected={mode}
+            onChange={setMode}
+          />
+
           <Segment
             label="Season"
             options={[
-              { value: "2025" as unknown as SeasonFilter, display: "2025" },
-              { value: "2026" as unknown as SeasonFilter, display: "2026" },
+              { value: "2025", display: "2025" },
+              { value: "2026", display: "2026" },
               { value: "both", display: "Both" },
-            ].map((o) => ({ value: String(o.value), display: o.display }))}
+            ]}
             selected={String(seasonFilter)}
             onChange={(v) => setSeasonFilter(v === "both" ? "both" : (Number(v) as SeasonFilter))}
           />
@@ -292,7 +370,6 @@ export default function LeaderboardsPage() {
             onChange={setPitchGroup}
           />
 
-          {/* Search */}
           <input
             type="text"
             value={search}
@@ -301,7 +378,6 @@ export default function LeaderboardsPage() {
             className="bg-zinc-900 border border-zinc-700 rounded-md px-3 py-1 text-sm text-zinc-100 placeholder-zinc-500 w-48 focus:outline-none focus:border-zinc-500"
           />
 
-          {/* Progress */}
           {loading && progress.total > 0 && (
             <span className="text-xs text-zinc-500">
               Loading {progress.loaded}/{progress.total} outings...
@@ -309,7 +385,7 @@ export default function LeaderboardsPage() {
           )}
           {!loading && (
             <span className="text-xs text-zinc-500">
-              {displayed.length} outing{displayed.length !== 1 ? "s" : ""}
+              {rowCount} {mode === "outings" ? "outing" : "player"}{rowCount !== 1 ? "s" : ""}
             </span>
           )}
         </div>
@@ -323,9 +399,15 @@ export default function LeaderboardsPage() {
                   #
                 </th>
                 <Col label="Player" sortKey="playerName" sort={sort} onSort={handleSort} />
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                  Date
-                </th>
+                {mode === "outings" ? (
+                  <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                    Date
+                  </th>
+                ) : (
+                  <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                    Outings
+                  </th>
+                )}
                 <Col label="Pitches" sortKey="pitchCount" sort={sort} onSort={handleSort} />
                 <Col label="On-target %" sortKey="onTargetPct" sort={sort} onSort={handleSort} title="Pitches within 8 inches" />
                 <Col label="Avg Miss" sortKey="avgMissIn" sort={sort} onSort={handleSort} title="Average total miss (inches)" />
@@ -338,24 +420,24 @@ export default function LeaderboardsPage() {
             <tbody>
               {loading &&
                 Array.from({ length: 8 }, (_, i) => (
-                  <SkeletonRow key={i} i={i} />
+                  <SkeletonRow key={i} i={i} cols={9} />
                 ))}
-              {!loading && displayed.length === 0 && (
+              {!loading && rowCount === 0 && (
                 <tr>
                   <td colSpan={10} className="px-3 py-8 text-center text-zinc-500">
-                    No outings found for the selected filters.
+                    No {mode === "outings" ? "outings" : "players"} found for the selected filters.
                   </td>
                 </tr>
               )}
-              {!loading &&
-                displayed.map((row, i) => (
+
+              {/* Outings mode */}
+              {!loading && mode === "outings" &&
+                displayedOutings.map((row, i) => (
                   <tr
                     key={row.outingId}
                     className="border-b border-zinc-800 hover:bg-zinc-900/60 transition-colors cursor-pointer"
                   >
-                    <td className="px-3 py-2 text-zinc-500 font-mono text-xs">
-                      {i + 1}
-                    </td>
+                    <td className="px-3 py-2 text-zinc-500 font-mono text-xs">{i + 1}</td>
                     <td className="px-3 py-2 font-medium whitespace-nowrap">
                       <Link
                         href={`/player/${row.playerId}/report?outingId=${row.outingId}`}
@@ -363,24 +445,7 @@ export default function LeaderboardsPage() {
                       >
                         {row.playerName}
                       </Link>
-                      {row.handUnknown ? (
-                        <span
-                          className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-amber-900/40 text-amber-400 font-normal"
-                          title="Pitcher hand not found in Arsenals.csv; defaulted to R"
-                        >
-                          Hand unknown
-                        </span>
-                      ) : (
-                        <span
-                          className={`ml-2 text-[10px] px-1.5 py-0.5 rounded font-normal ${
-                            row.pitcherHand === "L"
-                              ? "bg-blue-900/40 text-blue-400"
-                              : "bg-zinc-800 text-zinc-400"
-                          }`}
-                        >
-                          {row.pitcherHand === "L" ? "LHP" : "RHP"}
-                        </span>
-                      )}
+                      <HandBadge hand={row.pitcherHand} unknown={row.handUnknown} />
                     </td>
                     <td className="px-3 py-2 text-zinc-400 whitespace-nowrap">
                       <Link
@@ -390,20 +455,43 @@ export default function LeaderboardsPage() {
                         {dateLabel(row.dateId)}
                       </Link>
                     </td>
-                    <td className="px-3 py-2 text-zinc-300 font-mono">{row.pitchCount}</td>
-                    <td className="px-3 py-2 font-mono font-semibold text-emerald-400">
-                      {fmtPct(row.onTargetPct)}
+                    <KpiCells row={row} />
+                  </tr>
+                ))}
+
+              {/* Players mode */}
+              {!loading && mode === "players" &&
+                displayedPlayers.map((row, i) => (
+                  <tr
+                    key={row.playerId}
+                    className="border-b border-zinc-800 hover:bg-zinc-900/60 transition-colors cursor-pointer"
+                  >
+                    <td className="px-3 py-2 text-zinc-500 font-mono text-xs">{i + 1}</td>
+                    <td className="px-3 py-2 font-medium whitespace-nowrap">
+                      <Link
+                        href={`/player/${row.playerId}`}
+                        className="hover:text-blue-400 transition-colors"
+                      >
+                        {row.playerName}
+                      </Link>
+                      <HandBadge hand={row.pitcherHand} unknown={row.handUnknown} />
                     </td>
-                    <td className="px-3 py-2 font-mono text-zinc-300">{fmtIn(row.avgMissIn)}</td>
-                    <td className="px-3 py-2 font-mono text-zinc-300">{fmtIn(row.avgHAbsIn)}</td>
-                    <td className="px-3 py-2 font-mono text-zinc-300">{fmtIn(row.avgVAbsIn)}</td>
-                    <td className="px-3 py-2 font-mono text-zinc-400">{fmtPct(row.outlierPct)}</td>
-                    <td className="px-3 py-2 font-mono text-zinc-400">{fmtIn(row.consistencyStdIn)}</td>
+                    <td className="px-3 py-2 text-zinc-400 font-mono">
+                      {row.outingCount}
+                    </td>
+                    <KpiCells row={row} />
                   </tr>
                 ))}
             </tbody>
           </table>
         </div>
+
+        {/* Aggregate subtext */}
+        {!loading && mode === "players" && displayedPlayers.length > 0 && (
+          <p className="mt-3 text-xs text-zinc-500">
+            Aggregated across all outings matching filters. Consistency is exact standard deviation across all pitches.
+          </p>
+        )}
       </div>
     </div>
   );

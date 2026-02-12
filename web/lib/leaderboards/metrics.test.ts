@@ -221,3 +221,63 @@ describe("mergeKpis", () => {
     expect(merged.consistencyStdIn).toBeCloseTo(kpi.consistencyStdIn, 5);
   });
 });
+
+describe("mergeKpis for player aggregation", () => {
+  it("aggregates two outings with different sizes into correct weighted averages", () => {
+    // Outing A: 3 pitches, 2 on-target, 0 outliers
+    const pitchesA = [
+      makePitch({ total_miss_inches: 5 }),
+      makePitch({ total_miss_inches: 7 }),
+      makePitch({ total_miss_inches: 10 }),
+    ];
+    // Outing B: 2 pitches, 1 on-target, 0 outliers
+    const pitchesB = [
+      makePitch({ total_miss_inches: 6 }),
+      makePitch({ total_miss_inches: 12 }),
+    ];
+
+    const kpiA = computeOutingKpis(pitchesA, "R");
+    const kpiB = computeOutingKpis(pitchesB, "R");
+    const merged = mergeKpis([kpiA, kpiB]);
+
+    // Total pitches
+    expect(merged.pitchCount).toBe(5);
+
+    // On-target: A has 5,7 on-target (<=8), B has 6 on-target → 3/5 = 60%
+    expect(merged.onTargetCount).toBe(3);
+    expect(merged.onTargetPct).toBeCloseTo(60, 1);
+
+    // Avg miss: (5+7+10+6+12)/5 = 8.0
+    expect(merged.avgMissIn).toBeCloseTo(8.0, 2);
+
+    // Consistency: exact stddev of [5,7,10,6,12]
+    // mean=8, diffs=[-3,-1,2,-2,4], sq=[9,1,4,4,16]=34, var=34/4=8.5, sd=2.915
+    expect(merged.consistencyStdIn).toBeCloseTo(2.915, 2);
+  });
+
+  it("produces exact stddev, not weighted approximation of per-outing stddevs", () => {
+    // Two outings with very different distributions
+    const tight = [
+      makePitch({ total_miss_inches: 5 }),
+      makePitch({ total_miss_inches: 5 }),
+    ];
+    const spread = [
+      makePitch({ total_miss_inches: 2 }),
+      makePitch({ total_miss_inches: 14 }),
+    ];
+
+    const kpiTight = computeOutingKpis(tight, "R");
+    const kpiSpread = computeOutingKpis(spread, "R");
+    const merged = mergeKpis([kpiTight, kpiSpread]);
+
+    // Exact stddev of [5,5,2,14]
+    // mean = 6.5, diffs=[-1.5,-1.5,-4.5,7.5], sq=[2.25,2.25,20.25,56.25]=81
+    // var = 81/3 = 27, sd = 5.196
+    expect(merged.consistencyStdIn).toBeCloseTo(5.196, 2);
+
+    // A naive weighted average of stddevs would give (0 + 8.485)/2 = 4.243
+    // which is wrong - verify our result is different
+    const naiveAvg = (kpiTight.consistencyStdIn + kpiSpread.consistencyStdIn) / 2;
+    expect(merged.consistencyStdIn).not.toBeCloseTo(naiveAvg, 1);
+  });
+});
