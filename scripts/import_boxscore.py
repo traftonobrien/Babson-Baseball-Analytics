@@ -71,6 +71,45 @@ def player_key(display: str) -> str:
     return key.strip("_")
 
 
+def canonical_slug(display: str) -> str:
+    """Derive slug as last_first from a 'First Last' display name."""
+    parts = re.sub(r"[^a-z0-9 ]+", "", display.lower()).split()
+    if len(parts) >= 2:
+        return "_".join([parts[-1]] + parts[:-1])
+    return "_".join(parts) if parts else ""
+
+
+def load_slug_index(index_path: str) -> Dict[str, str]:
+    """Load the playerId -> slug mapping from index.json."""
+    if not os.path.exists(index_path):
+        return {}
+    with open(index_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return data if isinstance(data, dict) else {}
+
+
+def resolve_slug(
+    display: str,
+    slug_index: Dict[str, str],
+    player_id: Optional[str] = None,
+) -> str:
+    """Resolve canonical slug for a player.
+
+    Priority:
+    1. Direct playerId lookup in index
+    2. Match display name forms against index values
+    3. Derive using last_first rule
+    """
+    if player_id and player_id in slug_index:
+        return slug_index[player_id]
+    naive = player_key(display)
+    canon = canonical_slug(display)
+    for slug in slug_index.values():
+        if slug in (naive, canon):
+            return slug
+    return canon
+
+
 def find_player(rows: List[Dict[str, Optional[object]]], target_norm: str) -> Optional[Dict[str, Optional[object]]]:
     for row in rows:
         name = normalize_player_name(str(row.get("name", "")))
@@ -195,14 +234,18 @@ def main() -> None:
             batting_row = opponent_batting_match
             pitching_row = opponent_pitching_match
 
+    slug_index_path = os.path.join("web", "public", "stats", "players", "index.json")
+    slug_index = load_slug_index(slug_index_path)
+
     player_payload = None
     player_display = None
     if batting_row or pitching_row:
         player_display = (batting_row or pitching_row).get("name")
+        resolved = resolve_slug(player_display, slug_index)
         player_payload = {
             "season": season,
             "gameId": str(game_id),
-            "playerKey": player_key(player_display),
+            "playerKey": resolved,
             "playerDisplay": player_display,
             "team": player_team_key,
             "batting": batting_row,
@@ -239,10 +282,12 @@ def main() -> None:
         if player_payload:
             print(json.dumps(player_payload, indent=2, sort_keys=True))
     else:
-        # TODO: later compute season totals by reading all player game JSON files for that season.
         write_json(game_path, game_payload)
         if player_payload and player_path:
             write_json(player_path, player_payload)
+            if not os.path.exists(player_path):
+                print(f"ERROR: player file missing after write: {player_path}", file=sys.stderr)
+                sys.exit(1)
         update_index(season_index_path, index_entry)
 
     print("Import summary")

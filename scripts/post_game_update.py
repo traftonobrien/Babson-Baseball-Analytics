@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -8,23 +9,29 @@ from typing import Dict, List, Optional, Tuple
 
 try:
     from import_boxscore import (
+        canonical_slug,
         fetch_html,
         find_player,
         iso_timestamp,
+        load_slug_index,
         map_teams,
         parse_url_metadata,
         player_key,
+        resolve_slug,
         update_index,
         write_json,
     )
 except ImportError:  # pragma: no cover
     from scripts.import_boxscore import (  # type: ignore
+        canonical_slug,
         fetch_html,
         find_player,
         iso_timestamp,
+        load_slug_index,
         map_teams,
         parse_url_metadata,
         player_key,
+        resolve_slug,
         update_index,
         write_json,
     )
@@ -134,16 +141,18 @@ def build_player_payload(
     batting_row: Optional[Dict[str, Optional[object]]],
     pitching_row: Optional[Dict[str, Optional[object]]],
     imported_at: str,
+    resolved_slug: Optional[str] = None,
 ) -> Dict[str, object]:
     player_display = None
     if batting_row or pitching_row:
         player_display = (batting_row or pitching_row).get("name")
     if not player_display:
         player_display = player_name
+    slug = resolved_slug if resolved_slug else player_key(player_display)
     return {
         "season": season,
         "gameId": str(game_id),
-        "playerKey": player_key(player_display),
+        "playerKey": slug,
         "playerDisplay": player_display,
         "team": team_key,
         "batting": batting_row,
@@ -166,10 +175,10 @@ def choose_slug_for_player_id(player_id: str, players: List[str]) -> Optional[st
     if not candidates:
         return None
     if len(candidates) == 1:
-        return player_key(candidates[0][2])
+        return canonical_slug(candidates[0][2])
     for last, first_initial, name in candidates:
         if cleaned_id.startswith(first_initial + last):
-            return player_key(name)
+            return canonical_slug(name)
     return None
 
 
@@ -238,6 +247,48 @@ def update_outing_meta(
     return planned, warnings
 
 
+def migrate_wrong_slug_paths(players_dir: Path, slug_index: Dict[str, str]) -> List[str]:
+    """Move files from wrong-slug directories to canonical paths.
+
+    Detects directories whose name parts match a canonical slug but are in
+    the wrong order (e.g. connor_doan vs doan_connor) and moves all files
+    to the canonical location.  Attempts ``git add``/``git rm`` to stage the
+    result but silently ignores git failures.
+    """
+    actions: List[str] = []
+    canonical_slugs = set(slug_index.values())
+    if not players_dir.is_dir():
+        return actions
+    for child in sorted(players_dir.iterdir()):
+        if not child.is_dir() or child.name in canonical_slugs:
+            continue
+        child_parts = set(child.name.split("_"))
+        for canon in canonical_slugs:
+            canon_parts = set(canon.split("_"))
+            if child_parts == canon_parts and child.name != canon:
+                canon_dir = players_dir / canon
+                for src in sorted(child.rglob("*.json")):
+                    rel = src.relative_to(child)
+                    dst = canon_dir / rel
+                    dst.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.move(str(src), str(dst))
+                # Remove empty tree
+                shutil.rmtree(str(child), ignore_errors=True)
+                actions.append(f"Migrated {child.name}/ -> {canon}/")
+                try:
+                    subprocess.run(
+                        ["git", "add", str(canon_dir)],
+                        capture_output=True, timeout=5,
+                    )
+                except (FileNotFoundError, subprocess.TimeoutExpired):
+                    pass
+                break
+    if actions:
+        for action in actions:
+            print(f"Migration: {action}")
+    return actions
+
+
 def run(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Post-game workflow orchestrator.")
     parser.add_argument("--boxscore-url", required=True, help="Sidearm boxscore URL")
@@ -276,6 +327,8 @@ def run(argv: Optional[List[str]] = None) -> int:
     public_root = Path(args.output_root)
     game_path = public_root / "stats" / "games" / str(season) / f"{game_id}.json"
     season_index_path = public_root / "stats" / "seasons" / str(season) / "games.json"
+    slug_index_path = public_root / "stats" / "players" / "index.json"
+    slug_index = load_slug_index(str(slug_index_path))
 
     player_payloads: List[Dict[str, object]] = []
     planned_player_paths: List[Path] = []
@@ -299,6 +352,14 @@ def run(argv: Optional[List[str]] = None) -> int:
             print(f"Warning: player not found in boxscore: {player_name}")
             continue
 
+        # Resolve display name from the boxscore row
+        player_display = None
+        if batting_row or pitching_row:
+            player_display = (batting_row or pitching_row).get("name")
+        if not player_display:
+            player_display = player_name
+        resolved = resolve_slug(player_display, slug_index)
+
         payload = build_player_payload(
             season,
             game_id,
@@ -308,6 +369,7 @@ def run(argv: Optional[List[str]] = None) -> int:
             batting_row,
             pitching_row,
             imported_at,
+            resolved_slug=resolved,
         )
         player_payloads.append(payload)
         player_path = public_root / "stats" / "players" / payload["playerKey"] / str(season) / f"{game_id}.json"
@@ -337,7 +399,15 @@ def run(argv: Optional[List[str]] = None) -> int:
         write_json(str(game_path), game_payload)
         for payload, player_path in zip(player_payloads, planned_player_paths):
             write_json(str(player_path), payload)
+            if not player_path.exists():
+                print(f"ERROR: player file missing after write: {player_path}", file=sys.stderr)
+                return 1
         update_index(str(season_index_path), index_entry)
+
+    # Migrate any files under wrong slug paths before updating the index
+    if not args.dry_run:
+        players_dir = public_root / "stats" / "players"
+        migrate_wrong_slug_paths(players_dir, slug_index)
 
     outing_map = parse_outing_map(args.outing_map)
     if outing_map:
@@ -360,7 +430,6 @@ def run(argv: Optional[List[str]] = None) -> int:
             for path in planned_meta_paths:
                 print(f"- outing meta: {path}")
 
-        slug_index_path = public_root / "stats" / "players" / "index.json"
         warnings = update_slug_index(slug_index_path, outing_map, args.players, args.dry_run)
         for warning in warnings:
             print(f"Warning: {warning}")
