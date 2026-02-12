@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -32,6 +33,25 @@ try:
     from sidearm_parser import normalize_player_name, parse_all_teams, parse_game_meta
 except ImportError:  # pragma: no cover
     from scripts.sidearm_parser import normalize_player_name, parse_all_teams, parse_game_meta  # type: ignore
+
+
+def _warn_uncommitted_stats(output_root: str) -> None:
+    stats_dir = os.path.join(output_root, "stats")
+    if not os.path.isdir(stats_dir):
+        return
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain", stats_dir],
+            capture_output=True, text=True, timeout=5,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            print(
+                "Warning: Generated stats outputs are untracked by default; "
+                "do not commit web/public/stats/.",
+                file=sys.stderr,
+            )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        pass
 
 
 def strip_score_suffix(value: Optional[str]) -> Optional[str]:
@@ -230,6 +250,9 @@ def run(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--timestamp", help="Override importedAt/updatedAt timestamp (ISO Z)")
     parser.add_argument("--debug", action="store_true", help="Print table classification debug output")
     args = parser.parse_args(argv)
+
+    if not args.dry_run:
+        _warn_uncommitted_stats(args.output_root)
 
     season, game_id = parse_url_metadata(args.boxscore_url)
     html = read_fixture(args.fixture) if args.fixture else fetch_html(args.boxscore_url)

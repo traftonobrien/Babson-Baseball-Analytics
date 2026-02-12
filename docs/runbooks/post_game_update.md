@@ -39,6 +39,10 @@ python3 scripts/post_game_update.py \
   --dry-run
 ```
 
+### Generated outputs
+
+Everything under `web/public/stats/` is generated output. These files are gitignored and should not be committed. To regenerate, re-run `scripts/post_game_update.py` (or `scripts/import_boxscore.py` for a single game). Outing-linked `outing_meta.json` files are also generated and gitignored.
+
 ### Common failures
 
 - **Player not found in boxscore**: name mismatch (try exact display name). The script continues with other players.

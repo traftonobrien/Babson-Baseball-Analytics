@@ -2,6 +2,8 @@ import argparse
 import json
 import os
 import re
+import subprocess
+import sys
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlparse
@@ -24,6 +26,24 @@ except ImportError:  # pragma: no cover - support module imports
         parse_all_teams,
         parse_game_meta,
     )
+
+
+def _warn_uncommitted_stats(stats_dir: str) -> None:
+    if not os.path.isdir(stats_dir):
+        return
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain", stats_dir],
+            capture_output=True, text=True, timeout=5,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            print(
+                "Warning: Generated stats outputs are untracked by default; "
+                "do not commit web/public/stats/.",
+                file=sys.stderr,
+            )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        pass
 
 
 def parse_url_metadata(url: str) -> Tuple[int, str]:
@@ -129,6 +149,9 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true", help="Parse and print output without writing files")
     parser.add_argument("--debug", action="store_true", help="Print table classification debug output")
     args = parser.parse_args()
+
+    if not args.dry_run:
+        _warn_uncommitted_stats(os.path.join("web", "public", "stats"))
 
     season, game_id = parse_url_metadata(args.url)
     html = fetch_html(args.url)
