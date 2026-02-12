@@ -1,17 +1,42 @@
+import type { Pitch } from "@/app/types";
+
 /**
- * Centralized arm-side / glove-side helper.
+ * Centralized arm-side / glove-side helpers.
  *
  * Convention (after conversion):
  *   positive  = arm-side
  *   negative  = glove-side
  *   zero      = middle
+ */
+
+/**
+ * Compute arm-side-positive horizontal miss in inches from raw pitch
+ * coordinates.  Uses ball_x / target_x for direction and h_miss_inches
+ * for calibrated magnitude.  Never reads h_miss_signed or pitcher_hand
+ * from the pitch row — handedness is an explicit param resolved from
+ * Arsenals.csv.
  *
- * The CSV `h_miss_signed` is pre-normalized by the Python backend:
- *   negative = arm-side, positive = glove-side
- * so this function simply negates the value.
+ * Formula:
+ *   dx = ball_x - target_x   (positive = toward 1B)
+ *   arm_sign = 1 (RHP) | -1 (LHP)
+ *   result = sign(dx) * |h_miss_inches| * arm_sign
  *
- * If we later discover the sign is reversed in our dataset, change it
- * ONLY here — every consumer imports this function.
+ * Positive result = arm-side miss, negative = glove-side miss.
+ */
+export function pitchArmSideX(p: Pitch, pitcherHand: "R" | "L"): number {
+  const dx = p.ball_x - p.target_x;
+  if (!Number.isFinite(dx) || dx === 0) return 0;
+  const mag = p.h_miss_inches;
+  if (!Number.isFinite(mag)) return 0;
+  const armSign = pitcherHand === "R" ? 1 : -1;
+  return Math.sign(dx) * Math.abs(mag) * armSign;
+}
+
+/**
+ * @deprecated Use `pitchArmSideX` for per-pitch conversion.  This
+ * legacy helper remains only for converting pre-aggregated values
+ * that are already in the CSV h_miss_signed convention (negative =
+ * arm-side).
  */
 export function toArmSideX(
   hMissSigned: number,

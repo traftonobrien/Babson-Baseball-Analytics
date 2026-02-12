@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Papa from "papaparse";
 import type { Pitch } from "../types";
+import { getPlayerMeta } from "@/lib/arsenals";
 
 const NUM_FIELDS = new Set([
   "pitch_number", "target_frame", "arrival_frame",
@@ -27,8 +28,9 @@ function parseCsvText(text: string): Pitch[] {
   });
 }
 
-export function useAllPitchData(csvPaths: string[]) {
+export function useAllPitchData(csvPaths: string[], playerId: string) {
   const [pitches, setPitches] = useState<Pitch[]>([]);
+  const [pitcherHand, setPitcherHand] = useState<"R" | "L">("R");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,28 +43,37 @@ export function useAllPitchData(csvPaths: string[]) {
       setLoading(false);
       return;
     }
+    let cancelled = false;
     setLoading(true);
     setError(null);
 
-    Promise.all(
-      csvPaths.map((p) =>
-        fetch(p)
-          .then((r) => {
-            if (!r.ok) throw new Error(`Failed to load CSV: ${r.status} (${p})`);
-            return r.text();
-          })
-          .then((text) => parseCsvText(text)),
+    Promise.all([
+      Promise.all(
+        csvPaths.map((p) =>
+          fetch(p)
+            .then((r) => {
+              if (!r.ok) throw new Error(`Failed to load CSV: ${r.status} (${p})`);
+              return r.text();
+            })
+            .then((text) => parseCsvText(text)),
+        ),
       ),
-    )
-      .then((arrays) => {
+      getPlayerMeta(playerId),
+    ])
+      .then(([arrays, meta]) => {
+        if (cancelled) return;
         setPitches(arrays.flat());
+        setPitcherHand(meta.pitcherHand === "L" ? "L" : "R");
         setLoading(false);
       })
       .catch((e) => {
+        if (cancelled) return;
         setError(e.message);
         setLoading(false);
       });
-  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { pitches, loading, error };
+    return () => { cancelled = true; };
+  }, [key, playerId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return { pitches, pitcherHand, loading, error };
 }

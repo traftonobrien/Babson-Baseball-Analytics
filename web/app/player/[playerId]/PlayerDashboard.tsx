@@ -77,7 +77,7 @@ export default function PlayerDashboard({
   player: Player;
   outing: Outing;
 }) {
-  const { pitches: rawPitches, loading, error } = usePitchData(outing.csvPath);
+  const { pitches: rawPitches, pitcherHand, loading, error } = usePitchData(outing.csvPath, player.id);
   const [overrides, setOverrides] = useState<Overrides>({});
   const [selected, setSelected] = useState<Pitch | null>(null);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
@@ -139,7 +139,7 @@ export default function PlayerDashboard({
 
   const filtered = applyFilters(pitches, filters);
   const laneFiltered = activeLane
-    ? filtered.filter((p) => laneOf(p) === (activeLane as string))
+    ? filtered.filter((p) => laneOf(p, pitcherHand) === (activeLane as string))
     : filtered;
 
   // Unique pitch types present in the filtered data (for heatmap selector)
@@ -319,10 +319,10 @@ export default function PlayerDashboard({
                   pitches={laneFiltered}
                   selected={selected}
                   onSelect={setSelected}
-                  throwsHand={player.throws}
+                  throwsHand={pitcherHand}
                 />
               ) : (
-                <MissHeatmap pitches={heatmapData} throwsHand={player.throws} />
+                <MissHeatmap pitches={heatmapData} throwsHand={pitcherHand} />
               )}
             </div>
           </div>
@@ -339,7 +339,7 @@ export default function PlayerDashboard({
           {filtered.length > 0 && (
             <LaneReport
               pitches={filtered}
-              throwsHand={player.throws}
+              throwsHand={pitcherHand}
               activeLane={activeLane}
               onSelectLane={toggleLane}
             />

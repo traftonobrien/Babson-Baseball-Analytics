@@ -2,7 +2,7 @@
 
 import type { Pitch } from "../types";
 import { pitchColor } from "../utils";
-import { toArmSideX, laneOf as classifyLane, laneDisplayName, hDirectionLabel, type Lane } from "@/lib/handedness";
+import { pitchArmSideX, laneOf as classifyLane, laneDisplayName, hDirectionLabel, type Lane } from "@/lib/handedness";
 
 export type { Lane } from "@/lib/handedness";
 
@@ -27,9 +27,9 @@ function avg(arr: Pitch[], fn: (p: Pitch) => number): number {
   return arr.reduce((s, p) => s + fn(p), 0) / arr.length;
 }
 
-function hLabel(v: number, throwsHand: "R" | "L"): string {
-  if (Math.abs(v) < 0.05) return "";
-  return hDirectionLabel(toArmSideX(v, throwsHand));
+function hLabel(armSideX: number): string {
+  if (Math.abs(armSideX) < 0.05) return "";
+  return hDirectionLabel(armSideX);
 }
 
 function vLabel(v: number): string {
@@ -43,7 +43,7 @@ function buildBuckets(pitches: Pitch[], throwsHand: "R" | "L"): LaneBucket[] {
   const arm: Pitch[] = [];
 
   for (const p of pitches) {
-    const lane = classifyLane(toArmSideX(p.h_miss_signed, throwsHand));
+    const lane = classifyLane(pitchArmSideX(p, throwsHand));
     if (lane === "Arm") arm.push(p);
     else if (lane === "Glove") glove.push(p);
     else middle.push(p);
@@ -56,7 +56,7 @@ function buildBuckets(pitches: Pitch[], throwsHand: "R" | "L"): LaneBucket[] {
   ].map((b) => ({
     ...b,
     avgTotal: avg(b.pitches, (p) => p.total_miss_inches),
-    avgH: avg(b.pitches, (p) => p.h_miss_signed),
+    avgH: avg(b.pitches, (p) => pitchArmSideX(p, throwsHand)),
     avgV: avg(b.pitches, (p) => p.v_miss_signed),
   }));
 }
@@ -139,7 +139,7 @@ function LanePanel({
                   <span className="font-mono text-zinc-100">
                     {Math.abs(b.avgH).toFixed(1)}&quot;
                   </span>{" "}
-                  <span className="text-zinc-500">{hLabel(b.avgH, throwsHand)}</span>
+                  <span className="text-zinc-500">{hLabel(b.avgH)}</span>
                 </div>
                 <div className="text-xs text-zinc-400">
                   V{" "}

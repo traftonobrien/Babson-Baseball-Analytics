@@ -4,7 +4,7 @@ import { useRef, useEffect, useCallback, useState } from "react";
 import type { Pitch } from "../types";
 import { config } from "@/lib/config";
 import { CatcherZoneOverlay, PAD, SIZE, INNER } from "./ZoneOverlay";
-import { toArmSideX } from "@/lib/handedness";
+import { pitchArmSideX } from "@/lib/handedness";
 
 /* ------------------------------------------------------------------ */
 /*  Props                                                              */
@@ -60,7 +60,7 @@ function buildFields(pitches: Pitch[], sigma: number, throwsHand: "R" | "L"): Fi
   const radiusCells = Math.ceil((3 * sigma) / step);
 
   for (const p of pitches) {
-    const hVal = toArmSideX(p.h_miss_signed, throwsHand);
+    const hVal = pitchArmSideX(p, throwsHand);
     const vVal = p.v_miss_signed;
     if (hVal == null || vVal == null || isNaN(hVal) || isNaN(vVal)) continue;
 

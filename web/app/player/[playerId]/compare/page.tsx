@@ -114,8 +114,8 @@ function CompareInner() {
   const csvPathsA = useMemo(() => (outingA ? [outingA.csvPath] : []), [outingA]);
   const csvPathsB = useMemo(() => (outingB ? [outingB.csvPath] : []), [outingB]);
 
-  const { pitches: pitchesA, loading: loadingA, error: errorA } = useAllPitchData(csvPathsA);
-  const { pitches: pitchesB, loading: loadingB, error: errorB } = useAllPitchData(csvPathsB);
+  const { pitches: pitchesA, pitcherHand, loading: loadingA, error: errorA } = useAllPitchData(csvPathsA, playerId);
+  const { pitches: pitchesB, loading: loadingB, error: errorB } = useAllPitchData(csvPathsB, playerId);
 
   // Build reports
   const reportA = useMemo(() => {
@@ -124,10 +124,11 @@ function CompareInner() {
       pitchesA,
       player?.name ?? "",
       outingA?.label ?? "",
+      pitcherHand,
       "outing",
       { excludeOutliers },
     );
-  }, [pitchesA, player, outingA, excludeOutliers]);
+  }, [pitchesA, player, outingA, excludeOutliers, pitcherHand]);
 
   const reportB = useMemo(() => {
     if (pitchesB.length === 0) return null;
@@ -135,10 +136,11 @@ function CompareInner() {
       pitchesB,
       player?.name ?? "",
       outingB?.label ?? "",
+      pitcherHand,
       "outing",
       { excludeOutliers },
     );
-  }, [pitchesB, player, outingB, excludeOutliers]);
+  }, [pitchesB, player, outingB, excludeOutliers, pitcherHand]);
 
   // Filtered pitches for scatter plots (match what buildReport uses)
   const scatterPitchesA = useMemo(
@@ -285,7 +287,7 @@ function CompareInner() {
                       pitches={scatterPitchesA}
                       selected={null}
                       onSelect={() => {}}
-                      throwsHand={player?.throws ?? "R"}
+                      throwsHand={pitcherHand}
                     />
                   </div>
                   <div>
@@ -296,7 +298,7 @@ function CompareInner() {
                       pitches={scatterPitchesB}
                       selected={null}
                       onSelect={() => {}}
-                      throwsHand={player?.throws ?? "R"}
+                      throwsHand={pitcherHand}
                     />
                   </div>
                 </div>

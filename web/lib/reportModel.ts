@@ -1,5 +1,5 @@
 import type { Pitch } from "@/app/types";
-import { toArmSideX, laneOf as classifyLane, laneDisplayName, hDirectionLabel } from "./handedness";
+import { pitchArmSideX, laneOf as classifyLane, laneDisplayName, hDirectionLabel } from "./handedness";
 
 /** Minimum pitch count to qualify for best/worst/tendency analysis. */
 const MIN_SAMPLE = 5;
@@ -129,11 +129,13 @@ export function isOnTarget(p: Pitch): boolean {
   return miss <= ON_TARGET_THRESHOLD_IN;
 }
 
-export function laneOf(p: Pitch): string {
-  const h = p.h_miss_signed;
-  if (h == null || isNaN(h)) return "Middle";
-  const hand = (p.pitcher_hand ?? "R") as "R" | "L";
-  return classifyLane(toArmSideX(h, hand));
+/**
+ * Classify a pitch into a horizontal lane using Arsenals-resolved hand.
+ * Derives arm-side-positive value from dx (ball_x - target_x) and
+ * pitcherHand. Never reads pitch CSV pitcher_hand.
+ */
+export function laneOf(p: Pitch, pitcherHand: "R" | "L"): string {
+  return classifyLane(pitchArmSideX(p, pitcherHand));
 }
 
 const FASTBALL_TYPES = new Set(["FF", "SI", "FC", "FS", "FT"]);
@@ -144,12 +146,12 @@ export { laneDisplayName } from "./handedness";
 function buildHorizontalThirds(
   pitches: Pitch[],
   label: string,
-  pitcherHand: "R" | "L" = "R",
+  pitcherHand: "R" | "L",
 ): PitchGroupHorizontalCommand {
   const totalPitches = pitches.length;
   const laneMap = new Map<string, Pitch[]>();
   for (const p of pitches) {
-    const l = laneOf(p);
+    const l = laneOf(p, pitcherHand);
     if (!laneMap.has(l)) laneMap.set(l, []);
     laneMap.get(l)!.push(p);
   }
@@ -164,9 +166,9 @@ function buildHorizontalThirds(
         pct: totalPitches > 0 ? (group.length / totalPitches) * 100 : 0,
         avgMiss: avg(group.map((p) => p.total_miss_inches)),
         onTargetPct: group.length > 0 ? (hits / group.length) * 100 : 0,
-        avgHAbs: avg(group.map((p) => Math.abs(p.h_miss_signed))),
+        avgHAbs: avg(group.map((p) => Math.abs(pitchArmSideX(p, pitcherHand)))),
         avgVAbs: avg(group.map((p) => Math.abs(p.v_miss_signed))),
-        avgHSigned: avg(group.map((p) => p.h_miss_signed)),
+        avgHSigned: avg(group.map((p) => pitchArmSideX(p, pitcherHand))),
         avgVSigned: avg(group.map((p) => p.v_miss_signed)),
       };
     },
@@ -185,7 +187,7 @@ function buildHorizontalThirds(
     if (best.lane !== worst.lane) {
       const wParts: string[] = [];
       if (Math.abs(worst.avgHSigned) > 1.0)
-        wParts.push(hDirectionLabel(toArmSideX(worst.avgHSigned, pitcherHand)));
+        wParts.push(hDirectionLabel(worst.avgHSigned));
       if (Math.abs(worst.avgVSigned) > 1.0)
         wParts.push(worst.avgVSigned < 0 ? "high" : "low");
       const bestDisplay = laneDisplayName(best.lane, pitcherHand).toLowerCase();
@@ -212,6 +214,7 @@ export function buildReport(
   pitches: Pitch[],
   playerName: string,
   outingLabel: string,
+  pitcherHand: "R" | "L",
   scope: ReportScope = "outing",
   options?: BuildReportOptions,
 ): Report {
@@ -235,8 +238,6 @@ export function buildReport(
   const hitCount = pitchesForCalc.filter(isOnTarget).length;
   const hitSpotPct = totalPitches > 0 ? (hitCount / totalPitches) * 100 : 0;
 
-  const pitcherHand = (allPitches[0]?.pitcher_hand ?? "R") as "R" | "L";
-
   /* ---- Per pitch type ---- */
   const typeMap = new Map<string, Pitch[]>();
   for (const p of pitchesForCalc) {
@@ -257,9 +258,9 @@ export function buildReport(
         avgMiss: avg(m),
         medianMiss: median(m),
         stdDev: stdDev(m),
-        avgH: avg(group.map((p) => p.h_miss_signed)),
+        avgH: avg(group.map((p) => pitchArmSideX(p, pitcherHand))),
         avgV: avg(group.map((p) => p.v_miss_signed)),
-        avgHAbs: avg(group.map((p) => Math.abs(p.h_miss_signed))),
+        avgHAbs: avg(group.map((p) => Math.abs(pitchArmSideX(p, pitcherHand)))),
         avgVAbs: avg(group.map((p) => Math.abs(p.v_miss_signed))),
         hitSpotPct: group.length > 0 ? (hits / group.length) * 100 : 0,
         lowSample: group.length < MIN_SAMPLE,
@@ -275,7 +276,7 @@ export function buildReport(
   /* ---- Lanes (detailed) ---- */
   const laneMap = new Map<string, Pitch[]>();
   for (const p of pitchesForCalc) {
-    const l = laneOf(p);
+    const l = laneOf(p, pitcherHand);
     if (!laneMap.has(l)) laneMap.set(l, []);
     laneMap.get(l)!.push(p);
   }
@@ -290,18 +291,18 @@ export function buildReport(
         usagePct: totalPitches > 0 ? (group.length / totalPitches) * 100 : 0,
         onTargetPct: group.length > 0 ? (hits / group.length) * 100 : 0,
         avgMiss: avg(group.map((p) => p.total_miss_inches)),
-        avgHAbs: avg(group.map((p) => Math.abs(p.h_miss_signed))),
+        avgHAbs: avg(group.map((p) => Math.abs(pitchArmSideX(p, pitcherHand)))),
         avgVAbs: avg(group.map((p) => Math.abs(p.v_miss_signed))),
-        avgHSigned: avg(group.map((p) => p.h_miss_signed)),
+        avgHSigned: avg(group.map((p) => pitchArmSideX(p, pitcherHand))),
         avgVSigned: avg(group.map((p) => p.v_miss_signed)),
       };
     },
   );
 
-  // Lane takeaways — coaching language with signed averages
+  // Lane takeaways — coaching language with arm-side-positive averages
   const laneTakeaways: string[] = [];
 
-  const overallHSigned = avg(pitchesForCalc.map((p) => p.h_miss_signed));
+  const overallHArmSide = avg(pitchesForCalc.map((p) => pitchArmSideX(p, pitcherHand)));
   const overallVSigned = avg(pitchesForCalc.map((p) => p.v_miss_signed));
 
   // Best/worst lane: prioritize low avgMiss, then high onTarget; require n>=5
@@ -319,11 +320,11 @@ export function buildReport(
       laneTakeaways.push(
         `Best command occurs in the ${bestLaneDisplay} lane (${bestLane.avgMiss.toFixed(1)}″ avg miss, ${bestLane.onTargetPct.toFixed(0)}% on target). Significant command loss when working ${worstLaneDisplay} (${worstLane.avgMiss.toFixed(1)}″ avg miss, ${worstLane.onTargetPct.toFixed(0)}% on target).`,
       );
-      // Add directional tendency for worst lane
+      // Add directional tendency for worst lane (avgHSigned is arm-side-positive)
       const wH = worstLane.avgHSigned;
       const wV = worstLane.avgVSigned;
       const wParts: string[] = [];
-      if (Math.abs(wH) > 1.0) wParts.push(hDirectionLabel(toArmSideX(wH, pitcherHand)));
+      if (Math.abs(wH) > 1.0) wParts.push(hDirectionLabel(wH));
       if (Math.abs(wV) > 1.0) wParts.push(wV < 0 ? "high" : "low");
       if (wParts.length > 0) {
         laneTakeaways.push(
@@ -344,7 +345,7 @@ export function buildReport(
   let trendDirection: string | null = null;
   if (totalPitches >= 5) {
     const parts: string[] = [];
-    if (Math.abs(overallHSigned) > 1.0) parts.push(hDirectionLabel(toArmSideX(overallHSigned, pitcherHand)));
+    if (Math.abs(overallHArmSide) > 1.0) parts.push(hDirectionLabel(overallHArmSide));
     if (Math.abs(overallVSigned) > 1.0) parts.push(overallVSigned < 0 ? "high" : "low");
     if (parts.length > 0) trendDirection = parts.join(" ");
   }

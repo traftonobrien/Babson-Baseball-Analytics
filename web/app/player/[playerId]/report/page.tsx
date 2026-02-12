@@ -13,7 +13,7 @@ import {
   type PitchTypeSummary,
   type PitchGroupHorizontalCommand,
 } from "@/lib/reportModel";
-import { toArmSideX, hDirectionLabel } from "@/lib/handedness";
+import { hDirectionLabel } from "@/lib/handedness";
 import { useAllPitchData } from "@/app/hooks/useAllPitchData";
 import LogoutButton from "@/app/components/LogoutButton";
 
@@ -42,7 +42,7 @@ function ReportInner() {
     return outing ? [outing.csvPath] : [];
   }, [player, outing, scope]);
 
-  const { pitches, loading, error } = useAllPitchData(csvPaths);
+  const { pitches, pitcherHand, loading, error } = useAllPitchData(csvPaths, playerId);
 
   /* ---- Exclude outliers toggle (persisted per player+scope) ---- */
   const lsKey = `reportExcludeOutliers:${playerId}:${scope}`;
@@ -72,10 +72,11 @@ function ReportInner() {
       pitches,
       player?.name ?? "",
       label,
+      pitcherHand,
       scope,
       { excludeOutliers },
     );
-  }, [pitches, player, outing, scope, excludeOutliers]);
+  }, [pitches, player, outing, scope, excludeOutliers, pitcherHand]);
 
   if (!player || (!outing && scope === "outing")) return <Msg text="Player or outing not found." error />;
   if (loading) return <Msg text="Loading pitch data..." />;
@@ -437,9 +438,9 @@ const LANE_SUBTITLE: Record<string, string> = {
   Arm: "arm side",
 };
 
-function hDir(v: number, throwsHand: string): string {
-  if (Math.abs(v) < 0.5) return "";
-  return hDirectionLabel(toArmSideX(v, throwsHand as "R" | "L"));
+function hDir(armSideX: number): string {
+  if (Math.abs(armSideX) < 0.5) return "";
+  return hDirectionLabel(armSideX);
 }
 
 function vDir(v: number): string {
@@ -485,7 +486,7 @@ function HorizontalLanesSection({
       {/* Per-lane stat cards */}
       <div className="grid grid-cols-3 gap-1">
         {data.map((l) => {
-          const hD = hDir(l.avgHSigned, pitcherHand);
+          const hD = hDir(l.avgHSigned);
           const vD = vDir(l.avgVSigned);
           const displayName = laneDisplayName(l.lane, pitcherHand);
           return (
@@ -592,7 +593,7 @@ function PitchGroupCommandSection({ data, pitcherHand }: { data: PitchGroupHoriz
       {/* Per-lane stat cards */}
       <div className="grid grid-cols-3 gap-1">
         {data.lanes.map((l) => {
-          const hD = hDir(l.avgHSigned, pitcherHand);
+          const hD = hDir(l.avgHSigned);
           const vD = vDir(l.avgVSigned);
           const displayName = laneDisplayName(l.lane, pitcherHand);
           return (

@@ -53,14 +53,23 @@ Set in `src/export_csv.py:build_row()`:
 
 The web app uses the opposite sign: **positive = arm-side**, negative = glove-side.
 
-Conversion via `toArmSideX(hMissSigned, throwsHand)` in `web/lib/handedness.ts`. Simply negates the value. All web consumers import from `handedness.ts`.
+Conversion via `pitchArmSideX(pitch, pitcherHand)` in `web/lib/handedness.ts`. Derives direction from raw pixel positions (`ball_x - target_x`) and uses calibrated `h_miss_inches` for magnitude. Never reads `h_miss_signed` or `pitcher_hand` from the pitch CSV row. Pitcher handedness is resolved from `web/public/data/Arsenals.csv` by `playerId` (via `web/lib/arsenals.ts`).
+
+```
+dx = ball_x - target_x
+arm_sign = 1 (RHP) | -1 (LHP)
+arm_side_x = sign(dx) * |h_miss_inches| * arm_sign
+```
+
+**Fallback**: if the player is not found in Arsenals.csv, defaults to "R".
 
 | Function | Purpose |
 |---|---|
-| `toArmSideX(hMissSigned, throwsHand)` | Convert CSV h_miss_signed to arm-side-positive |
+| `pitchArmSideX(pitch, pitcherHand)` | Derive arm-side-positive value from raw dx + hand |
 | `laneOf(armSideX)` | Classify into "Arm" / "Middle" / "Glove" |
 | `laneDisplayName(lane, throwsHand)` | Human label with base side |
 | `hDirectionLabel(armSideX)` | "arm-side" / "glove-side" / "middle" |
+| `toArmSideX(hMissSigned, throwsHand)` | **Deprecated.** Legacy negate helper for pre-aggregated values |
 
 ### Lane Definitions
 
