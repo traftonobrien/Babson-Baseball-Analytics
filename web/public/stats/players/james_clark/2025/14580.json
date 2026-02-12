@@ -1,0 +1,39 @@
+{
+  "batting": {
+    "ab": 0,
+    "avg": null,
+    "bb": 0,
+    "h": 0,
+    "hbp": null,
+    "hr": null,
+    "name": "James Clark",
+    "pos": "p",
+    "r": 0,
+    "rbi": 0,
+    "sb": null,
+    "so": 0
+  },
+  "gameId": "14580",
+  "pitching": {
+    "bb": 5,
+    "bf": 16,
+    "er": 3,
+    "era": null,
+    "h": 3,
+    "hr": null,
+    "ip": "3.0",
+    "name": "James Clark",
+    "pitches": 66,
+    "r": 3,
+    "so": 1,
+    "strikes": null
+  },
+  "playerDisplay": "James Clark",
+  "playerKey": "james_clark",
+  "season": 2025,
+  "source": {
+    "importedAt": "2026-02-12T23:39:54Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2025/suffolk/boxscore/14580"
+  },
+  "team": "babson"
+}
