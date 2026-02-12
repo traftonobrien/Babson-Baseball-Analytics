@@ -8,6 +8,7 @@
  */
 
 import { config } from "@/lib/config";
+import { laneDisplayName } from "@/lib/handedness";
 
 const PAD = 40;
 const SIZE = 320;
@@ -24,13 +25,18 @@ export function toSvg(inches: number): number {
 /*  ScatterOverlay — for StrikeZoneScatter                             */
 /* ------------------------------------------------------------------ */
 
-export function ScatterOverlay() {
+export function ScatterOverlay({ throwsHand = "R" }: { throwsHand?: "R" | "L" } = {}) {
   const zx1 = toSvg(-config.zoneWidth);
   const zx2 = toSvg(config.zoneWidth);
   const zy1 = toSvg(-config.zoneHeight);
   const zy2 = toSvg(config.zoneHeight);
   const cx = toSvg(0);
   const cy = toSvg(0);
+
+  // Positive arm-side-X plots right. For RHP arm-side is 1B (right);
+  // for LHP arm-side is 3B (left) — so labels swap.
+  const rightLabel = laneDisplayName("Arm", throwsHand);
+  const leftLabel = laneDisplayName("Glove", throwsHand);
 
   return (
     <g>
@@ -46,8 +52,8 @@ export function ScatterOverlay() {
       <line x1={cx} x2={cx} y1={PAD} y2={SIZE - PAD} stroke="#27272a" strokeWidth={0.5} />
 
       {/* Axis labels */}
-      <text x={SIZE - PAD + 4} y={cy + 3} fill="#71717a" fontSize={8}>Arm</text>
-      <text x={PAD - 4} y={cy + 3} fill="#71717a" fontSize={8} textAnchor="end">Glove</text>
+      <text x={SIZE - PAD + 4} y={cy + 3} fill="#71717a" fontSize={8}>{rightLabel}</text>
+      <text x={PAD - 4} y={cy + 3} fill="#71717a" fontSize={8} textAnchor="end">{leftLabel}</text>
       <text x={cx} y={PAD - 6} fill="#71717a" fontSize={8} textAnchor="middle">High</text>
       <text x={cx} y={SIZE - PAD + 12} fill="#71717a" fontSize={8} textAnchor="middle">Low</text>
 

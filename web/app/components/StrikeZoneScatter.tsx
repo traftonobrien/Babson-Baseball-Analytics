@@ -29,7 +29,7 @@ export default function StrikeZoneScatter({
         Miss Scatter (inches from target)
       </h3>
       <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="w-full max-w-xs mx-auto">
-        <ScatterOverlay />
+        <ScatterOverlay throwsHand={throwsHand} />
 
         {/* Pitch dots */}
         {pitches.map((p) => {
