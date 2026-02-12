@@ -1,0 +1,39 @@
+{
+  "batting": {
+    "ab": 0,
+    "avg": null,
+    "bb": 0,
+    "h": 0,
+    "hbp": null,
+    "hr": null,
+    "name": "Connor Doan",
+    "pos": "p",
+    "r": 0,
+    "rbi": 0,
+    "sb": null,
+    "so": 0
+  },
+  "gameId": "14590",
+  "pitching": {
+    "bb": 0,
+    "bf": 3,
+    "er": 0,
+    "era": null,
+    "h": 0,
+    "hr": null,
+    "ip": "1.0",
+    "name": "Connor Doan",
+    "pitches": 10,
+    "r": 0,
+    "so": 0,
+    "strikes": null
+  },
+  "playerDisplay": "Connor Doan",
+  "playerKey": "connor_doan",
+  "season": 2025,
+  "source": {
+    "importedAt": "2026-02-12T22:59:44Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2025/coast-guard/boxscore/14590"
+  },
+  "team": "babson"
+}
