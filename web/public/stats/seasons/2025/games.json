@@ -10,16 +10,6 @@
     "url": "https://babsonathletics.com/sports/baseball/stats/2025/suffolk/boxscore/14570"
   },
   {
-    "date": "2025-04-27",
-    "gameId": "14590",
-    "importedAt": "2026-02-12T23:18:52Z",
-    "opponent": "Coast Guard",
-    "playersIncluded": [
-      "jason_finkelstein"
-    ],
-    "url": "https://babsonathletics.com/sports/baseball/stats/2025/coast-guard/boxscore/14590"
-  },
-  {
     "date": "2025-04-14",
     "gameId": "14582",
     "importedAt": "2026-02-12T23:37:57Z",
@@ -38,5 +28,15 @@
       "james_clark"
     ],
     "url": "https://babsonathletics.com/sports/baseball/stats/2025/suffolk/boxscore/14580"
+  },
+  {
+    "date": "2025-04-27",
+    "gameId": "14590",
+    "importedAt": "2026-02-12T23:41:07Z",
+    "opponent": "Coast Guard",
+    "playersIncluded": [
+      "teator_zander"
+    ],
+    "url": "https://babsonathletics.com/sports/baseball/stats/2025/coast-guard/boxscore/14590"
   }
 ]
