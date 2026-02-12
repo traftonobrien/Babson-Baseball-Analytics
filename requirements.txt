@@ -2,5 +2,8 @@ torch
 torchvision
 sam2
 opencv-python
-numpy
+numpy==1.26.4
 PyYAML
+requests
+beautifulsoup4
+pytest
