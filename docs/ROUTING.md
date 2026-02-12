@@ -21,6 +21,7 @@ Single lookup table: task → canonical doc. When in doubt, start here.
 | Doc automation / drift checks | `docs/runbooks/doc_maintenance.md` | `scripts/update_docs.py` |
 | Web app data contract | `docs/generated/web_app_data_contract.md` | auto-generated |
 | Outing selection logic | `docs/generated/outing_selection_logic.md` | auto-generated |
+| Team Leaderboards | `docs/web/leaderboards.md` | `web/app/leaderboards/page.tsx` |
 | Troubleshooting | `docs/troubleshooting/common_failures.md` | — |
 
 ### Rules

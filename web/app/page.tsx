@@ -9,6 +9,12 @@ export default function Home() {
         <LogoutButton />
       </div>
       <h1 className="text-2xl font-semibold mb-8">Pitch Tracker</h1>
+      <Link
+        href="/leaderboards"
+        className="mb-6 inline-block bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2 text-sm text-zinc-300 hover:border-zinc-600 hover:text-zinc-100 transition-colors"
+      >
+        Team Leaderboards &rarr;
+      </Link>
       <div className="grid gap-4 w-full max-w-md">
         {players.map((player) => (
           <div
