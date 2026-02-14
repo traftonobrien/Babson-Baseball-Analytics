@@ -9,24 +9,58 @@ interface IndexEntry {
   playerSlug: string;
   date: string;
   sessionType?: string;
-  pitchCount: number;
+  pitchCount: number | null;
   pitchTypes?: string[];
-  veloRange?: [number, number] | null;
+  weightedAvgVelo: number | null;
+  maxVelo: number | null;
   pitchesPath?: string;
+  pitchTypesPath?: string;
   summaryPath?: string;
   handedness?: string;
   team?: string;
 }
 
 interface Summary {
-  pitch_count: number;
-  pitch_types: string[];
-  velo?: { avg: number; min: number; max: number } | null;
-  spin?: { avg: number; min: number; max: number } | null;
-  movement?: {
-    ivb?: { avg: number; min: number; max: number } | null;
-    hb?: { avg: number; min: number; max: number } | null;
+  total_pitches?: number | null;
+  pitch_types?: string[];
+  pitch_mix_pct?: Record<string, number> | null;
+  weighted_avg_velocity_mph?: number | null;
+  max_velocity_mph?: number | null;
+  weighted_avg_spin_rpm?: number | null;
+}
+
+function normalizeEntry(raw: Record<string, unknown>): IndexEntry {
+  return {
+    playerName: (raw.playerName as string) ?? "Unknown",
+    playerSlug: (raw.playerSlug as string) ?? "",
+    date: (raw.date as string) ?? "",
+    sessionType: (raw.sessionType as string) ?? undefined,
+    pitchCount: (raw.pitchCount as number) ?? (raw.totalPitches as number) ?? null,
+    pitchTypes: Array.isArray(raw.pitchTypes) ? raw.pitchTypes as string[] : undefined,
+    weightedAvgVelo: (raw.weightedAvgVelo as number) ?? null,
+    maxVelo: (raw.maxVelo as number) ?? null,
+    pitchesPath: (raw.pitchesPath as string) ?? undefined,
+    pitchTypesPath: (raw.pitchTypesPath as string) ?? undefined,
+    summaryPath: (raw.summaryPath as string) ?? undefined,
+    handedness: (raw.handedness as string) ?? undefined,
+    team: (raw.team as string) ?? undefined,
   };
+}
+
+function extractDateSlug(path?: string): string | null {
+  if (!path) return null;
+  const match = path.match(/\/trackman\/sessions\/[^/]+\/([^/]+)\//);
+  return match?.[1] ?? null;
+}
+
+function formatDateLabel(raw: string): string {
+  if (raw.includes("__")) {
+    const [start, end] = raw.split("__");
+    const startLabel = start.replace(/_/g, "/").replace(/-/g, "/");
+    const endLabel = end.replace(/_/g, "/").replace(/-/g, "/");
+    return `${startLabel} \u2014 ${endLabel}`;
+  }
+  return raw.replace(/_/g, "/").replace(/-/g, "/");
 }
 
 const TREND_W = 600;
@@ -136,10 +170,10 @@ export default function TrackmanPlayerPage({
     fetch("/trackman/index.json")
       .then((r) => (r.ok ? r.json() : []))
       .catch(() => [])
-      .then((all: IndexEntry[]) => {
-        const mine = (Array.isArray(all) ? all : []).filter(
-          (e) => e.playerSlug === slug,
-        );
+      .then((all: unknown) => {
+        const mine = (Array.isArray(all) ? all : [])
+          .map((e) => normalizeEntry(e as Record<string, unknown>))
+          .filter((e) => e.playerSlug === slug);
         mine.sort((a, b) => a.date.localeCompare(b.date));
         setEntries(mine);
 
@@ -173,7 +207,7 @@ export default function TrackmanPlayerPage({
     const points: { date: string; value: number }[] = [];
     for (const e of entries) {
       const s = summaries.get(e.date);
-      if (s?.velo?.avg) points.push({ date: e.date, value: s.velo.avg });
+      if (s?.weighted_avg_velocity_mph) points.push({ date: e.date, value: s.weighted_avg_velocity_mph });
     }
     return points;
   }, [entries, summaries]);
@@ -182,7 +216,7 @@ export default function TrackmanPlayerPage({
     const points: { date: string; value: number }[] = [];
     for (const e of entries) {
       const s = summaries.get(e.date);
-      if (s?.spin?.avg) points.push({ date: e.date, value: s.spin.avg });
+      if (s?.weighted_avg_spin_rpm) points.push({ date: e.date, value: s.weighted_avg_spin_rpm });
     }
     return points;
   }, [entries, summaries]);
@@ -228,7 +262,11 @@ export default function TrackmanPlayerPage({
               </h3>
               <div className="space-y-2">
                 {entries.map((e, i) => {
-                  const dateSlug = e.date.replace(/-/g, "_");
+                  const dateSlug =
+                    extractDateSlug(e.pitchesPath) ??
+                    extractDateSlug(e.pitchTypesPath) ??
+                    e.date.replace(/-/g, "_");
+                  const dateLabel = formatDateLabel(dateSlug);
                   return (
                     <Link
                       key={`${e.date}-${i}`}
@@ -237,11 +275,13 @@ export default function TrackmanPlayerPage({
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-mono text-zinc-300">
-                          {e.date.replace(/-/g, "/").replace(/_/g, "/")}
+                          {dateLabel}
                         </span>
-                        <span className="text-xs text-zinc-500 font-mono">
-                          {e.pitchCount} pitches
-                        </span>
+                        {e.pitchCount !== null && (
+                          <span className="text-xs text-zinc-500 font-mono">
+                            {e.pitchCount} pitches
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         {e.sessionType && (
@@ -254,12 +294,17 @@ export default function TrackmanPlayerPage({
                             {e.pitchTypes.join(", ")}
                           </span>
                         )}
-                        {e.veloRange && (
+                        {e.weightedAvgVelo !== null && e.maxVelo !== null && (
                           <span className="text-[10px] text-zinc-600 font-mono">
-                            {e.veloRange[0].toFixed(0)}&ndash;{e.veloRange[1].toFixed(0)} mph
+                            Avg {e.weightedAvgVelo.toFixed(1)} mph &middot; Max {e.maxVelo.toFixed(1)} mph
                           </span>
                         )}
                       </div>
+                      {summaries.get(e.date)?.total_pitches == null && (
+                        <div className="text-[10px] text-zinc-600 mt-1">
+                          Pitch counts not provided in this PDF export.
+                        </div>
+                      )}
                     </Link>
                   );
                 })}

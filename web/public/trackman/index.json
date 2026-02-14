@@ -1,31 +1,29 @@
 [
   {
-    "date": "2026-02-14",
+    "playerName": "Burk, Bobby",
+    "playerSlug": "burk_bobby",
+    "team": "Babson College",
     "handedness": "RHP",
-    "metaPath": "/trackman/sessions/burk_bobby/2026_02_14/liveab/meta.json",
-    "pitchCount": 4,
+    "date": "2026-02-14",
+    "sessionType": null,
+    "pitchCount": null,
     "pitchTypes": [
       "Fastball",
       "Other",
       "Sinker",
       "Slider"
     ],
-    "pitchesPath": "/trackman/sessions/burk_bobby/2026_02_14/liveab/pitches.json",
-    "playerName": "Burk, Bobby",
-    "playerSlug": "burk_bobby",
-    "sessionType": "LiveAB",
+    "weightedAvgVelo": 80.97,
+    "maxVelo": 84.96,
+    "pitchTypesPath": "/trackman/sessions/burk_bobby/2026_01_01__2026_02_14/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/burk_bobby/2026_01_01__2026_02_14/session/meta.json",
+    "summaryPath": "/trackman/sessions/burk_bobby/2026_01_01__2026_02_14/session/session_summary.json",
     "source": {
+      "type": "pdf_export",
       "filename": "Baseball Team Portal Export.pdf",
-      "imported_at": "2026-02-14T21:13:12Z",
       "sha256": "61140f1a8215c682e11fa6f8e953d7a4df834f968af884ef0520f5a16030d4fb",
-      "type": "pdf_export"
+      "imported_at": "2026-02-14T22:25:39Z"
     },
-    "summaryPath": "/trackman/sessions/burk_bobby/2026_02_14/liveab/summary.json",
-    "team": "Babson College",
-    "updatedAt": "2026-02-14T21:13:12Z",
-    "veloRange": [
-      74.72,
-      579.59
-    ]
+    "updatedAt": "2026-02-14T22:25:39Z"
   }
 ]

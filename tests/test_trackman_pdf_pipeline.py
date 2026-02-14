@@ -14,9 +14,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from trackman_pdf.extract import extract_pdf
 from trackman_pdf.meta import PdfMeta, parse_meta, slugify
-from trackman_pdf.table import find_table
-from trackman_pdf.rows import parse_rows
-from trackman.summary import build_summary
+from trackman_pdf.table import find_table, extract_table_from_pdf
+from trackman_pdf.rows import parse_rows, parse_rows_from_cells
+from trackman.summary import build_session_summary
 
 
 PDF_PATH = os.path.join(os.path.dirname(__file__), "..", "Baseball Team Portal Export.pdf")
@@ -141,24 +141,39 @@ class TestRowParsing:
 
     def test_velocity(self):
         rows = parse_rows(self.HEADERS, self.LINES, "per_type")
-        assert rows[0]["velocity_mph"] == 84.61
+        assert rows[0]["avg_velocity_mph"] == 84.61
 
     def test_comma_removal(self):
         rows = parse_rows(self.HEADERS, self.LINES, "per_type")
-        assert rows[0]["spin_rpm"] == 1721.60
+        assert rows[0]["avg_spin_rpm"] == 1721.60
 
     def test_negative_values(self):
         rows = parse_rows(self.HEADERS, self.LINES, "per_type")
-        assert rows[1]["ivb_in"] == -0.19
-        assert rows[1]["hb_in"] == -12.81
+        assert rows[1]["avg_ivb_in"] == -0.19
+        assert rows[1]["avg_hb_in"] == -12.81
 
     def test_extension(self):
         rows = parse_rows(self.HEADERS, self.LINES, "per_type")
-        assert rows[0]["extension_ft"] == 6.94
+        assert rows[0]["avg_extension_ft"] == 6.94
+
+    def test_row_metadata(self):
+        rows = parse_rows(self.HEADERS, self.LINES, "per_type")
+        assert rows[0]["is_valid"] is True
+        assert "raw_columns" in rows[0]
+        assert "parse_warnings" in rows[0]
 
     def test_empty_lines(self):
         rows = parse_rows(self.HEADERS, [], "per_type")
         assert rows == []
+
+
+class TestCellParsing:
+    def test_trimmed_velocity(self):
+        headers = ["Pitch Type", "MPH", "RPM"]
+        cells = [["Other", "579.59", "1718.28"]]
+        rows = parse_rows_from_cells(headers, cells, "per_type")
+        assert rows[0]["avg_velocity_mph"] == 79.59
+        assert "TRIMMED_NUMERIC_AVG_VELOCITY_MPH" in rows[0]["parse_warnings"]
 
 
 # ---------------------------------------------------------------------------
@@ -183,6 +198,12 @@ class TestNumericCleaning:
         from trackman_pdf.rows import _clean_number
         assert _clean_number("1,234.56") == 1234.56
 
+    def test_multi_number_prefers_decimal(self):
+        from trackman_pdf.rows import _parse_number
+        value, warnings, chosen = _parse_number("IVB 12 9.15", expect_decimal=True)
+        assert value == 9.15
+        assert "MULTI_NUMBER" in warnings
+
 
 # ---------------------------------------------------------------------------
 # Summary accuracy
@@ -190,39 +211,39 @@ class TestNumericCleaning:
 
 class TestSummary:
     ROWS = [
-        {"pitch_type": "Fastball", "velocity_mph": 84.0, "spin_rpm": 1700, "ivb_in": 9.0, "hb_in": 8.0, "extension_ft": 6.9},
-        {"pitch_type": "Fastball", "velocity_mph": 86.0, "spin_rpm": 1800, "ivb_in": 10.0, "hb_in": 9.0, "extension_ft": 7.1},
-        {"pitch_type": "Slider", "velocity_mph": 74.0, "spin_rpm": 1730, "ivb_in": -0.5, "hb_in": -13.0, "extension_ft": 6.3},
+        {"pitch_type": "Fastball", "count": 10, "avg_velocity_mph": 84.0, "avg_spin_rpm": 1700, "avg_ivb_in": 9.0, "avg_hb_in": 8.0, "avg_extension_ft": 6.9},
+        {"pitch_type": "Fastball", "count": 5, "avg_velocity_mph": 86.0, "avg_spin_rpm": 1800, "avg_ivb_in": 10.0, "avg_hb_in": 9.0, "avg_extension_ft": 7.1},
+        {"pitch_type": "Slider", "count": 8, "avg_velocity_mph": 74.0, "avg_spin_rpm": 1730, "avg_ivb_in": -0.5, "avg_hb_in": -13.0, "avg_extension_ft": 6.3},
     ]
 
     def test_pitch_count(self):
-        s = build_summary(self.ROWS)
-        assert s["pitch_count"] == 3
+        s = build_session_summary(self.ROWS)
+        assert s["total_pitches"] == 23
 
     def test_pitch_types(self):
-        s = build_summary(self.ROWS)
+        s = build_session_summary(self.ROWS)
         assert "Fastball" in s["pitch_types"]
         assert "Slider" in s["pitch_types"]
 
     def test_velo_avg(self):
-        s = build_summary(self.ROWS)
-        # avg of 84, 86, 74 = 81.33
-        assert abs(s["velo"]["avg"] - 81.33) < 0.01
+        s = build_session_summary(self.ROWS)
+        # weighted avg = (84*10 + 86*5 + 74*8) / 23
+        assert abs(s["weighted_avg_velocity_mph"] - 80.96) < 0.01
 
     def test_velo_max(self):
-        s = build_summary(self.ROWS)
-        assert s["velo"]["max"] == 86.0
+        s = build_session_summary(self.ROWS)
+        assert s["max_velocity_mph"] == 86.0
 
     def test_per_type_breakdown(self):
-        s = build_summary(self.ROWS)
+        s = build_session_summary(self.ROWS)
         per_type = {pt["pitch_type"]: pt for pt in s["per_type"]}
-        assert per_type["Fastball"]["count"] == 2
-        assert per_type["Slider"]["count"] == 1
+        assert per_type["Fastball"]["count"] == 15
+        assert per_type["Slider"]["count"] == 8
 
     def test_empty_summary(self):
-        s = build_summary([])
-        assert s["pitch_count"] == 0
-        assert s["velo"] is None
+        s = build_session_summary([])
+        assert s["total_pitches"] is None
+        assert s["weighted_avg_velocity_mph"] is None
 
 
 # ---------------------------------------------------------------------------
@@ -255,9 +276,11 @@ class TestIndexUpdate:
             copy_pdf=False,
         )
 
-        assert "pitches" in result
-        assert len(result["pitches"]) > 0
+        assert "pitch_types" in result
+        assert len(result["pitch_types"]) > 0
         assert result["meta"]["player_name"] == "Burk, Bobby"
+        assert os.path.exists(os.path.join(result["session_dir"], "pitch_types.json"))
+        assert os.path.exists(os.path.join(result["session_dir"], "session_summary.json"))
         assert os.path.exists(tmp_path / "index.json")
 
 
@@ -296,9 +319,19 @@ class TestFullPdfPipeline:
 
         rows = parse_rows(table.headers, table.data_lines, table.table_type)
         assert len(rows) > 0
-        assert all(r.get("velocity_mph") is not None for r in rows)
+        assert all(r.get("avg_velocity_mph") is not None for r in rows)
         assert all(r.get("pitch_type") is not None for r in rows)
 
-        summary = build_summary(rows)
-        assert summary["pitch_count"] == len(rows)
-        assert summary["velo"] is not None
+        summary = build_session_summary(rows)
+        if summary.get("total_pitches") is not None:
+            assert summary["total_pitches"] >= 0
+        assert summary["weighted_avg_velocity_mph"] is not None
+
+    def test_char_based_extraction(self):
+        if not os.path.exists(PDF_PATH):
+            pytest.skip("Sample PDF not found")
+
+        extraction, _ = extract_table_from_pdf(PDF_PATH, debug=False)
+        assert extraction is not None
+        total_rows = sum(len(p.rows) for p in extraction.pages)
+        assert total_rows > 0

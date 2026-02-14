@@ -1,6 +1,6 @@
 """Build team leaderboards from all Trackman session summaries.
 
-Loads every summary.json under web/public/trackman/sessions/,
+Loads every session_summary.json under web/public/trackman/sessions/,
 computes rankings, and writes web/public/trackman/leaderboards.json.
 
 Usage:
@@ -71,9 +71,20 @@ def _load_all_sessions(
             except Exception:
                 pass
 
+        pitch_types = None
+        pitch_types_path = entry.get("pitchTypesPath", "")
+        if pitch_types_path.startswith("/"):
+            pitch_types_path = os.path.join("web", "public", pitch_types_path.lstrip("/"))
+        if pitch_types_path and os.path.exists(pitch_types_path):
+            try:
+                pitch_types = load_json(pitch_types_path)
+            except Exception:
+                pass
+
         sessions.append({
             "entry": entry,
             "summary": summary,
+            "pitch_types": pitch_types,
         })
 
     return sessions
@@ -82,7 +93,7 @@ def _load_all_sessions(
 def _rank_by(
     sessions: List[Dict[str, Any]],
     key_path: str,
-    stat: str = "max",
+    stat: Optional[str] = None,
     descending: bool = True,
     min_pitches: int = 1,
 ) -> List[Dict[str, Any]]:
@@ -97,7 +108,8 @@ def _rank_by(
         entry = s.get("entry", {})
         if not summary:
             continue
-        if summary.get("pitch_count", 0) < min_pitches:
+        total_pitches = summary.get("total_pitches")
+        if total_pitches is not None and total_pitches < min_pitches:
             continue
 
         # Navigate key path
@@ -114,7 +126,7 @@ def _rank_by(
             continue
 
         # Get specific stat
-        if isinstance(obj, dict):
+        if isinstance(obj, dict) and stat:
             val = obj.get(stat)
         elif isinstance(obj, (int, float)):
             val = obj
@@ -131,7 +143,7 @@ def _rank_by(
             "date": entry.get("date"),
             "sessionType": entry.get("sessionType"),
             "value": val,
-            "pitchCount": summary.get("pitch_count"),
+            "pitchCount": total_pitches,
         })
 
     values.sort(key=lambda x: x["value"], reverse=descending)
@@ -148,11 +160,13 @@ def _pitch_mix(sessions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     type_counts: Dict[str, int] = defaultdict(int)
     total = 0
     for s in sessions:
-        summary = s.get("summary")
-        if not summary:
+        pitch_types = s.get("pitch_types")
+        if not pitch_types:
             continue
-        for pt_data in summary.get("per_type", []):
-            count = pt_data.get("count", 0)
+        for pt_data in pitch_types:
+            count = pt_data.get("count")
+            if count is None:
+                continue
             type_counts[pt_data["pitch_type"]] += count
             total += count
 
@@ -189,11 +203,11 @@ def build_leaderboards(
         "date_to": date_to,
         "session_count": len(sessions),
         "leaderboards": {
-            "max_velo": _rank_by(sessions, "velo", stat="max", descending=True),
-            "avg_velo": _rank_by(sessions, "velo", stat="avg", descending=True),
-            "avg_spin": _rank_by(sessions, "spin", stat="avg", descending=True),
-            "best_ivb": _rank_by(sessions, "movement.ivb", stat="max", descending=True),
-            "best_extension": _rank_by(sessions, "extension", stat="avg", descending=True),
+            "max_velo": _rank_by(sessions, "max_velocity_mph", descending=True),
+            "avg_velo": _rank_by(sessions, "weighted_avg_velocity_mph", descending=True),
+            "avg_spin": _rank_by(sessions, "weighted_avg_spin_rpm", descending=True),
+            "best_ivb": _rank_by(sessions, "weighted_avg_ivb_in", descending=True),
+            "best_extension": _rank_by(sessions, "weighted_avg_extension_ft", descending=True),
         },
         "pitch_mix": _pitch_mix(sessions),
     }

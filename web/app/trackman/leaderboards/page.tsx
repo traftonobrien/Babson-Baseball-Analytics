@@ -76,6 +76,11 @@ export default function TrackmanLeaderboardsPage() {
     return data.leaderboards[activeCategory];
   }, [data, activeCategory]);
 
+  const showPitchCount = useMemo(
+    () => entries.some((e) => e.pitchCount != null),
+    [entries],
+  );
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <header className="flex items-center gap-3 px-4 py-3 bg-zinc-900 border-b border-zinc-800">
@@ -141,7 +146,7 @@ export default function TrackmanLeaderboardsPage() {
                     <th className="px-3 py-2 text-right">
                       {CATEGORY_LABELS[activeCategory] ?? activeCategory}
                     </th>
-                    <th className="px-3 py-2 text-right">Pitches</th>
+                    {showPitchCount && <th className="px-3 py-2 text-right">Pitches</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -164,14 +169,22 @@ export default function TrackmanLeaderboardsPage() {
                           {CATEGORY_UNITS[activeCategory] ?? ""}
                         </span>
                       </td>
-                      <td className="px-3 py-2 text-right text-zinc-500 font-mono">
-                        {e.pitchCount ?? "\u2014"}
-                      </td>
+                      {showPitchCount && (
+                        <td className="px-3 py-2 text-right text-zinc-500 font-mono">
+                          {e.pitchCount ?? "\u2014"}
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+
+            {!showPitchCount && (
+              <div className="text-[11px] text-zinc-600 mt-2">
+                Pitch counts not provided in these PDF exports.
+              </div>
+            )}
 
             {/* Pitch mix */}
             {data.pitch_mix && data.pitch_mix.length > 0 && (

@@ -10,11 +10,14 @@ interface Session {
   playerSlug?: string;
   date: string;
   sessionType?: string;
-  pitchCount: number;
+  pitchCount: number | null;
   pitchTypes?: string[];
-  veloRange?: [number, number] | null;
+  weightedAvgVelo: number | null;
+  maxVelo: number | null;
   path?: string;
   pitchesPath?: string;
+  pitchTypesPath?: string;
+  summaryPath?: string;
   team?: string;
   handedness?: string;
   updatedAt?: string;
@@ -27,22 +30,44 @@ function normalizeSession(raw: Record<string, unknown>): Session {
     playerSlug: (raw.playerSlug as string) ?? "",
     date: (raw.date as string) ?? "",
     sessionType: (raw.sessionType as string) ?? undefined,
-    pitchCount: (raw.pitchCount as number) ?? 0,
+    pitchCount: (raw.pitchCount as number) ?? (raw.totalPitches as number) ?? null,
     pitchTypes: Array.isArray(raw.pitchTypes) ? raw.pitchTypes : undefined,
-    veloRange: Array.isArray(raw.veloRange) ? raw.veloRange as [number, number] : null,
+    weightedAvgVelo: (raw.weightedAvgVelo as number) ?? null,
+    maxVelo: (raw.maxVelo as number) ?? null,
     path: (raw.path as string) ?? undefined,
     pitchesPath: (raw.pitchesPath as string) ?? undefined,
+    pitchTypesPath: (raw.pitchTypesPath as string) ?? undefined,
+    summaryPath: (raw.summaryPath as string) ?? undefined,
     team: (raw.team as string) ?? undefined,
     handedness: (raw.handedness as string) ?? undefined,
     updatedAt: (raw.updatedAt as string) ?? undefined,
   };
 }
 
+function extractDateSlug(path?: string): string | null {
+  if (!path) return null;
+  const match = path.match(/\/trackman\/sessions\/[^/]+\/([^/]+)\//);
+  return match?.[1] ?? null;
+}
+
+function formatDateLabel(raw: string): string {
+  if (raw.includes("__")) {
+    const [start, end] = raw.split("__");
+    const startLabel = start.replace(/_/g, "/").replace(/-/g, "/");
+    const endLabel = end.replace(/_/g, "/").replace(/-/g, "/");
+    return `${startLabel} \u2014 ${endLabel}`;
+  }
+  return raw.replace(/_/g, "/").replace(/-/g, "/");
+}
+
 function sessionHref(s: Session): string {
   // If there's a pitchesPath from the PDF pipeline, build a route that can load it
-  if (s.pitchesPath) {
+  if (s.pitchesPath || s.pitchTypesPath) {
     const slug = s.playerSlug || s.playerId || "unknown";
-    const dateSlug = s.date.replace(/-/g, "_");
+    const dateSlug =
+      extractDateSlug(s.pitchesPath) ??
+      extractDateSlug(s.pitchTypesPath) ??
+      s.date.replace(/-/g, "_");
     return `/trackman/session/${slug}/${dateSlug}`;
   }
   // Legacy: direct player/date route
@@ -154,47 +179,59 @@ export default function TrackmanSessionsPage() {
 
             {/* Session list */}
             <div className="space-y-2">
-              {filtered.map((s, i) => (
-                <Link
-                  key={`${s.playerSlug || s.playerId}-${s.date}-${i}`}
-                  href={sessionHref(s)}
-                  className="block bg-zinc-900 border border-zinc-800 rounded-lg p-3 hover:border-zinc-600 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm">{s.playerName}</span>
-                      {s.handedness && (
-                        <span className="text-[10px] bg-zinc-800 text-zinc-500 px-1 py-0.5 rounded">
-                          {s.handedness}
+              {filtered.map((s, i) => {
+                const dateSlug =
+                  extractDateSlug(s.pitchesPath) ??
+                  extractDateSlug(s.pitchTypesPath) ??
+                  s.date;
+                const dateLabel = formatDateLabel(dateSlug);
+                return (
+                  <Link
+                    key={`${s.playerSlug || s.playerId}-${s.date}-${i}`}
+                    href={sessionHref(s)}
+                    className="block bg-zinc-900 border border-zinc-800 rounded-lg p-3 hover:border-zinc-600 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">{s.playerName}</span>
+                        {s.handedness && (
+                          <span className="text-[10px] bg-zinc-800 text-zinc-500 px-1 py-0.5 rounded">
+                            {s.handedness}
+                          </span>
+                        )}
+                      </div>
+                      {s.pitchCount !== null && (
+                        <span className="text-xs text-zinc-500 font-mono">
+                          {s.pitchCount} pitches
                         </span>
                       )}
                     </div>
-                    <span className="text-xs text-zinc-500 font-mono">
-                      {s.pitchCount} pitches
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-zinc-400">
-                      {s.date.replace(/_/g, "/").replace(/-/g, "/")}
-                    </span>
-                    {s.sessionType && (
-                      <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded">
-                        {s.sessionType}
-                      </span>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-zinc-400">{dateLabel}</span>
+                      {s.sessionType && (
+                        <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded">
+                          {s.sessionType}
+                        </span>
+                      )}
+                      {s.weightedAvgVelo != null && s.maxVelo != null && (
+                        <span className="text-[10px] text-zinc-600 font-mono">
+                          Avg {s.weightedAvgVelo.toFixed(1)} mph &middot; Max {s.maxVelo.toFixed(1)} mph
+                        </span>
+                      )}
+                      {s.pitchTypes && s.pitchTypes.length > 0 && (
+                        <span className="text-[10px] text-zinc-600">
+                          {s.pitchTypes.join(", ")}
+                        </span>
+                      )}
+                    </div>
+                    {s.pitchCount === null && (
+                      <div className="text-[10px] text-zinc-600 mt-1">
+                        Pitch counts not provided in this PDF export.
+                      </div>
                     )}
-                    {s.veloRange && (
-                      <span className="text-[10px] text-zinc-600 font-mono">
-                        {s.veloRange[0].toFixed(0)}&ndash;{s.veloRange[1].toFixed(0)} mph
-                      </span>
-                    )}
-                    {s.pitchTypes && s.pitchTypes.length > 0 && (
-                      <span className="text-[10px] text-zinc-600">
-                        {s.pitchTypes.join(", ")}
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
               {filtered.length === 0 && (
                 <p className="text-zinc-500 text-sm text-center py-4">No sessions match your search.</p>
               )}
