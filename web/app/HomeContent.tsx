@@ -14,6 +14,7 @@ import {
   ChevronDown,
   X,
   ArrowUpRight,
+  Radio,
 } from "lucide-react";
 import { players, type Player, type Outing } from "@/lib/dataIndex";
 import LogoutButton from "./components/LogoutButton";
@@ -270,7 +271,7 @@ export default function HomeContent() {
 
         {/* ---- Quick Actions ---- */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-6"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.05 }}
@@ -284,6 +285,19 @@ export default function HomeContent() {
               </div>
               <p className="text-xs text-zinc-500 mt-1">
                 Compare stats across all pitchers
+              </p>
+            </div>
+          </Link>
+
+          <Link href="/trackman">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-colors group">
+              <div className="flex items-center gap-2">
+                <Radio className="w-4 h-4 text-emerald-400" />
+                <span className="font-medium text-sm">Trackman Sessions</span>
+                <ArrowUpRight className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-zinc-300 transition-colors" />
+              </div>
+              <p className="text-xs text-zinc-500 mt-1">
+                View imported Trackman data
               </p>
             </div>
           </Link>

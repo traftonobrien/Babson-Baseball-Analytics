@@ -267,6 +267,12 @@ export default function PlayerDashboard({
         </div>
         <div className="flex items-center gap-3">
           <a
+            href={`/trackman/session/${player.id}/${outing.id.split("/")[1] ?? ""}`}
+            className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+          >
+            Trackman
+          </a>
+          <a
             href={`/player/${player.id}/report?scope=outing&outingId=${outing.id}`}
             className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
           >
