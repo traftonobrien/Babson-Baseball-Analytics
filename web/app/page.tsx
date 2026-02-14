@@ -1,48 +1,5 @@
-import Link from "next/link";
-import { players, type Outing } from "@/lib/dataIndex";
-import LogoutButton from "./components/LogoutButton";
+import HomeContent from "./HomeContent";
 
 export default function Home() {
-  return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col items-center justify-center p-8 relative">
-      <div className="absolute top-4 right-4">
-        <LogoutButton />
-      </div>
-      <h1 className="text-2xl font-semibold mb-8">Pitch Tracker</h1>
-      <Link
-        href="/leaderboards"
-        className="mb-6 inline-block bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2 text-sm text-zinc-300 hover:border-zinc-600 hover:text-zinc-100 transition-colors"
-      >
-        Team Leaderboards &rarr;
-      </Link>
-      <div className="grid gap-4 w-full max-w-md">
-        {players.map((player) => (
-          <div
-            key={player.id}
-            className="block bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-colors"
-          >
-            <Link href={`/player/${player.id}`} className="block">
-              <div className="font-medium">{player.name}</div>
-              <div className="text-sm text-zinc-400 mt-1">
-                {player.outings.length} outing{player.outings.length !== 1 ? "s" : ""}
-              </div>
-            </Link>
-            <ul className="mt-2 text-xs text-zinc-500 space-y-1">
-              {player.outings.map((o: Outing) => (
-                <li key={o.id}>
-                  <Link
-                    href={`/player/${player.id}?outingId=${o.id}`}
-                    className="hover:text-zinc-300 transition-colors"
-                  >
-                    {o.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  return <HomeContent />;
 }
-// deploy bump
