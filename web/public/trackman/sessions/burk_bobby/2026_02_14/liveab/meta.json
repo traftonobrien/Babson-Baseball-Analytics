@@ -1,0 +1,14 @@
+{
+  "handedness": "RHP",
+  "player_name": "Burk, Bobby",
+  "player_slug": "burk_bobby",
+  "session_date": "2026-02-14",
+  "session_label": "LiveAB",
+  "source": {
+    "filename": "Baseball Team Portal Export.pdf",
+    "imported_at": "2026-02-14T21:13:12Z",
+    "sha256": "61140f1a8215c682e11fa6f8e953d7a4df834f968af884ef0520f5a16030d4fb",
+    "type": "pdf_export"
+  },
+  "team": "Babson College"
+}

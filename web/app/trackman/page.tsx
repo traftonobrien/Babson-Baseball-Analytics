@@ -1,35 +1,106 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeft, Radio } from "lucide-react";
+import { ArrowLeft, Radio, Trophy, Search } from "lucide-react";
 
 interface Session {
-  playerId: string;
+  playerId?: string;
   playerName: string;
+  playerSlug?: string;
   date: string;
   sessionType?: string;
   pitchCount: number;
-  path: string;
+  pitchTypes?: string[];
+  veloRange?: [number, number] | null;
+  path?: string;
+  pitchesPath?: string;
+  team?: string;
+  handedness?: string;
   updatedAt?: string;
+}
+
+function normalizeSession(raw: Record<string, unknown>): Session {
+  return {
+    playerId: (raw.playerId as string) ?? (raw.playerSlug as string) ?? "",
+    playerName: (raw.playerName as string) ?? "Unknown",
+    playerSlug: (raw.playerSlug as string) ?? "",
+    date: (raw.date as string) ?? "",
+    sessionType: (raw.sessionType as string) ?? undefined,
+    pitchCount: (raw.pitchCount as number) ?? 0,
+    pitchTypes: Array.isArray(raw.pitchTypes) ? raw.pitchTypes : undefined,
+    veloRange: Array.isArray(raw.veloRange) ? raw.veloRange as [number, number] : null,
+    path: (raw.path as string) ?? undefined,
+    pitchesPath: (raw.pitchesPath as string) ?? undefined,
+    team: (raw.team as string) ?? undefined,
+    handedness: (raw.handedness as string) ?? undefined,
+    updatedAt: (raw.updatedAt as string) ?? undefined,
+  };
+}
+
+function sessionHref(s: Session): string {
+  // If there's a pitchesPath from the PDF pipeline, build a route that can load it
+  if (s.pitchesPath) {
+    const slug = s.playerSlug || s.playerId || "unknown";
+    const dateSlug = s.date.replace(/-/g, "_");
+    return `/trackman/session/${slug}/${dateSlug}`;
+  }
+  // Legacy: direct player/date route
+  return `/trackman/session/${s.playerId}/${s.date}`;
 }
 
 export default function TrackmanSessionsPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetch("/stats/trackman/sessions.json")
-      .then((res) => {
-        if (!res.ok) return [];
-        return res.json();
-      })
-      .then((data) => {
-        setSessions(Array.isArray(data) ? data : []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    // Load from both index sources
+    const legacyFetch = fetch("/stats/trackman/sessions.json")
+      .then((r) => (r.ok ? r.json() : []))
+      .catch(() => []);
+    const pdfFetch = fetch("/trackman/index.json")
+      .then((r) => (r.ok ? r.json() : []))
+      .catch(() => []);
+
+    Promise.all([legacyFetch, pdfFetch]).then(([legacy, pdf]) => {
+      const all = [
+        ...(Array.isArray(legacy) ? legacy : []),
+        ...(Array.isArray(pdf) ? pdf : []),
+      ].map((raw) => normalizeSession(raw));
+
+      // Deduplicate by playerSlug + date
+      const seen = new Map<string, Session>();
+      for (const s of all) {
+        const key = `${s.playerSlug || s.playerId}-${s.date}`;
+        if (!seen.has(key) || (s.updatedAt ?? "") > (seen.get(key)!.updatedAt ?? "")) {
+          seen.set(key, s);
+        }
+      }
+
+      // Sort by date descending
+      const merged = Array.from(seen.values()).sort((a, b) => b.date.localeCompare(a.date));
+      setSessions(merged);
+      setLoading(false);
+    });
   }, []);
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return sessions;
+    const q = search.toLowerCase();
+    return sessions.filter(
+      (s) =>
+        s.playerName.toLowerCase().includes(q) ||
+        (s.sessionType ?? "").toLowerCase().includes(q) ||
+        s.date.includes(q),
+    );
+  }, [sessions, search]);
+
+  // Unique players for quick stats
+  const playerCount = useMemo(
+    () => new Set(sessions.map((s) => s.playerSlug || s.playerId)).size,
+    [sessions],
+  );
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -37,10 +108,17 @@ export default function TrackmanSessionsPage() {
         <Link href="/" className="text-zinc-400 hover:text-zinc-200 transition-colors">
           <ArrowLeft className="w-4 h-4" />
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-1">
           <Radio className="w-4 h-4 text-emerald-400" />
           <h1 className="text-sm font-semibold">Trackman Sessions</h1>
         </div>
+        <Link
+          href="/trackman/leaderboards"
+          className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+        >
+          <Trophy className="w-3.5 h-3.5" />
+          Leaderboards
+        </Link>
       </header>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
@@ -51,39 +129,77 @@ export default function TrackmanSessionsPage() {
             <Radio className="w-8 h-8 text-zinc-600 mx-auto mb-3" />
             <p className="text-zinc-400 text-sm">No Trackman sessions imported yet.</p>
             <p className="text-zinc-600 text-xs mt-2">
-              Run <code className="bg-zinc-800 px-1 py-0.5 rounded">scripts/import_trackman_session.py</code> to import sessions.
+              Run <code className="bg-zinc-800 px-1 py-0.5 rounded">scripts/import_trackman_pdf.py</code> to import a PDF export.
             </p>
           </div>
         ) : (
-          <div className="space-y-2">
-            <div className="text-xs text-zinc-500 uppercase tracking-wider mb-2">
-              {sessions.length} session{sessions.length !== 1 ? "s" : ""}
+          <>
+            {/* Stats strip */}
+            <div className="flex items-center gap-4 mb-4 text-xs text-zinc-500">
+              <span>{sessions.length} session{sessions.length !== 1 ? "s" : ""}</span>
+              <span>{playerCount} player{playerCount !== 1 ? "s" : ""}</span>
             </div>
-            {sessions.map((s) => (
-              <Link
-                key={`${s.playerId}-${s.date}`}
-                href={`/trackman/session/${s.playerId}/${s.date}`}
-                className="block bg-zinc-900 border border-zinc-800 rounded-lg p-3 hover:border-zinc-600 transition-colors"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-sm">{s.playerName}</span>
-                  <span className="text-xs text-zinc-500 font-mono">
-                    {s.pitchCount} pitches
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-zinc-400">
-                    {s.date.replace(/_/g, "/")}
-                  </span>
-                  {s.sessionType && (
-                    <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded">
-                      {s.sessionType}
+
+            {/* Search */}
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
+              <input
+                type="text"
+                placeholder="Search by player, date, or session type..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-md pl-9 pr-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-600"
+              />
+            </div>
+
+            {/* Session list */}
+            <div className="space-y-2">
+              {filtered.map((s, i) => (
+                <Link
+                  key={`${s.playerSlug || s.playerId}-${s.date}-${i}`}
+                  href={sessionHref(s)}
+                  className="block bg-zinc-900 border border-zinc-800 rounded-lg p-3 hover:border-zinc-600 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">{s.playerName}</span>
+                      {s.handedness && (
+                        <span className="text-[10px] bg-zinc-800 text-zinc-500 px-1 py-0.5 rounded">
+                          {s.handedness}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-zinc-500 font-mono">
+                      {s.pitchCount} pitches
                     </span>
-                  )}
-                </div>
-              </Link>
-            ))}
-          </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs text-zinc-400">
+                      {s.date.replace(/_/g, "/").replace(/-/g, "/")}
+                    </span>
+                    {s.sessionType && (
+                      <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded">
+                        {s.sessionType}
+                      </span>
+                    )}
+                    {s.veloRange && (
+                      <span className="text-[10px] text-zinc-600 font-mono">
+                        {s.veloRange[0].toFixed(0)}&ndash;{s.veloRange[1].toFixed(0)} mph
+                      </span>
+                    )}
+                    {s.pitchTypes && s.pitchTypes.length > 0 && (
+                      <span className="text-[10px] text-zinc-600">
+                        {s.pitchTypes.join(", ")}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              ))}
+              {filtered.length === 0 && (
+                <p className="text-zinc-500 text-sm text-center py-4">No sessions match your search.</p>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>

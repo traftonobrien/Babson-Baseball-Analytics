@@ -1,0 +1,69 @@
+{
+  "date_from": null,
+  "date_to": null,
+  "generated_at": "2026-02-14T21:13:16Z",
+  "leaderboards": {
+    "avg_spin": [
+      {
+        "date": "2026-02-14",
+        "pitchCount": 4,
+        "playerName": "Burk, Bobby",
+        "playerSlug": "burk_bobby",
+        "rank": 1,
+        "sessionType": "LiveAB",
+        "team": "Babson College",
+        "value": 1726.9
+      }
+    ],
+    "avg_velo": [
+      {
+        "date": "2026-02-14",
+        "pitchCount": 4,
+        "playerName": "Burk, Bobby",
+        "playerSlug": "burk_bobby",
+        "rank": 1,
+        "sessionType": "LiveAB",
+        "team": "Babson College",
+        "value": 205.97
+      }
+    ],
+    "best_extension": [
+      {
+        "date": "2026-02-14",
+        "pitchCount": 4,
+        "playerName": "Burk, Bobby",
+        "playerSlug": "burk_bobby",
+        "rank": 1,
+        "sessionType": "LiveAB",
+        "team": "Babson College",
+        "value": 6.59
+      }
+    ],
+    "best_ivb": [
+      {
+        "date": "2026-02-14",
+        "pitchCount": 4,
+        "playerName": "Burk, Bobby",
+        "playerSlug": "burk_bobby",
+        "rank": 1,
+        "sessionType": "LiveAB",
+        "team": "Babson College",
+        "value": 9.15
+      }
+    ],
+    "max_velo": [
+      {
+        "date": "2026-02-14",
+        "pitchCount": 4,
+        "playerName": "Burk, Bobby",
+        "playerSlug": "burk_bobby",
+        "rank": 1,
+        "sessionType": "LiveAB",
+        "team": "Babson College",
+        "value": 579.59
+      }
+    ]
+  },
+  "pitch_mix": [],
+  "session_count": 1
+}

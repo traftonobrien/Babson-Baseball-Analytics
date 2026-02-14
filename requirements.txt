@@ -7,3 +7,6 @@ PyYAML
 requests
 beautifulsoup4
 pytest
+playwright
+pdfplumber
+pypdf

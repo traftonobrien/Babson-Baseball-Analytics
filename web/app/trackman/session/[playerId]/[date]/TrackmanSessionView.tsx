@@ -10,6 +10,8 @@ import {
 } from "@/lib/trackman/metrics";
 import KpiCards from "./KpiCards";
 import MovementScatter from "./MovementScatter";
+import VeloByPitch from "./VeloByPitch";
+import SpinByPitch from "./SpinByPitch";
 import TrackmanPitchTable from "./TrackmanPitchTable";
 import PitchTypeFilter from "./PitchTypeFilter";
 
@@ -17,6 +19,52 @@ interface RawPayload {
   meta?: Record<string, unknown>;
   pitches?: Record<string, unknown>[];
   rows?: Record<string, unknown>[];
+}
+
+/** Try multiple paths to find the session data. */
+async function fetchSessionData(playerId: string, date: string): Promise<RawPayload> {
+  // Candidate paths: legacy canonical, PDF pipeline (with various session slugs)
+  const candidates = [
+    `/data/${playerId}/${date}/trackman/pitches.json`,
+    `/trackman/sessions/${playerId}/${date}/session/pitches.json`,
+    `/trackman/sessions/${playerId}/${date}/live_ab/pitches.json`,
+    `/trackman/sessions/${playerId}/${date}/bullpen/pitches.json`,
+  ];
+
+  // Also try looking up the index to find the exact path
+  try {
+    const indexRes = await fetch("/trackman/index.json");
+    if (indexRes.ok) {
+      const index = await indexRes.json();
+      if (Array.isArray(index)) {
+        const match = index.find(
+          (e: Record<string, unknown>) =>
+            ((e.playerSlug as string) === playerId || (e.playerId as string) === playerId) &&
+            ((e.date as string) === date ||
+              (e.date as string)?.replace(/-/g, "_") === date ||
+              date.replace(/_/g, "-") === (e.date as string)),
+        );
+        if (match?.pitchesPath) {
+          candidates.unshift(match.pitchesPath as string);
+        }
+      }
+    }
+  } catch {
+    // Index lookup failed, continue with candidates
+  }
+
+  for (const path of candidates) {
+    try {
+      const res = await fetch(path);
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  throw new Error(`No session data found for ${playerId}/${date}. Tried ${candidates.length} paths.`);
 }
 
 export default function TrackmanSessionView({
@@ -36,30 +84,24 @@ export default function TrackmanSessionView({
   const [veloMin, setVeloMin] = useState<number | null>(null);
   const [veloMax, setVeloMax] = useState<number | null>(null);
 
-  const dataPath = `/data/${playerId}/${date}/trackman/pitches.json`;
-
   useEffect(() => {
     let active = true;
     setLoading(true);
     setError(null);
 
-    fetch(dataPath)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(
-            res.status === 404
-              ? `No data found. Expected file at ${dataPath}`
-              : `Failed to load: ${res.status}`,
-          );
-        }
-        return res.json() as Promise<RawPayload>;
-      })
+    fetchSessionData(playerId, date)
       .then((data) => {
         if (!active) return;
-        const rawRows = data.pitches ?? data.rows ?? [];
+        // Handle both array (PDF pipeline) and object (legacy) formats
+        let rawRows: Record<string, unknown>[];
+        if (Array.isArray(data)) {
+          rawRows = data;
+        } else {
+          rawRows = data.pitches ?? data.rows ?? [];
+          setMeta(data.meta ?? null);
+        }
         const normalized = rawRows.map((row, i) => normalizePitch(row, i));
         setPitches(normalized);
-        setMeta(data.meta ?? null);
         setLoading(false);
       })
       .catch((err) => {
@@ -71,7 +113,7 @@ export default function TrackmanSessionView({
     return () => {
       active = false;
     };
-  }, [dataPath]);
+  }, [playerId, date]);
 
   // All pitch types
   const allTypes = useMemo(() => uniquePitchTypes(pitches), [pitches]);
@@ -172,8 +214,17 @@ export default function TrackmanSessionView({
         {/* Per pitch type averages */}
         <KpiCards pitches={filtered} />
 
-        {/* Movement profile */}
-        <MovementScatter pitches={filtered} />
+        {/* Charts row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Movement profile */}
+          <MovementScatter pitches={filtered} />
+
+          {/* Velo by pitch number */}
+          <VeloByPitch pitches={filtered} />
+        </div>
+
+        {/* Spin by pitch number */}
+        <SpinByPitch pitches={filtered} />
 
         {/* Pitch table */}
         <TrackmanPitchTable pitches={filtered} />
