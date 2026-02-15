@@ -1,0 +1,17 @@
+{
+  "player_name": "Rhodes, Pat",
+  "player_slug": "rhodes_pat",
+  "team": null,
+  "handedness": null,
+  "session_date": "2026-02-05",
+  "date_from": "2026-01-01",
+  "date_to": "2026-02-15",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Pat Rhodes 2:5.pdf",
+    "sha256": "a99f5a8e512fac244345ce7eaaa003ef5497ffb028589f12d37edfba647fb2df",
+    "imported_at": "2026-02-15T19:17:59Z"
+  }
+}

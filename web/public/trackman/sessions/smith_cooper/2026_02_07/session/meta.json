@@ -1,0 +1,17 @@
+{
+  "player_name": "Smith, Cooper",
+  "player_slug": "smith_cooper",
+  "team": "See Pitches by:",
+  "handedness": "LHP",
+  "session_date": "2026-02-07",
+  "date_from": "2026-01-01",
+  "date_to": "2026-02-15",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Cooper Smith 2:7.pdf",
+    "sha256": "acb2fe352155c2c174a87b33e50d9af75fbbf8b7a593ab0738e607e019339820",
+    "imported_at": "2026-02-15T19:18:00Z"
+  }
+}

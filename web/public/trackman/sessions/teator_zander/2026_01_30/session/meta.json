@@ -1,0 +1,17 @@
+{
+  "player_name": "Teator, Zander",
+  "player_slug": "teator_zander",
+  "team": "Babson College",
+  "handedness": "RHP",
+  "session_date": "2026-01-30",
+  "date_from": "2026-01-01",
+  "date_to": "2026-02-15",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Zander Teator 1:30.pdf",
+    "sha256": "fed6610a6aadeada23f95bc3c6ef29780a72252ed918b1089c3d3d944858ad2b",
+    "imported_at": "2026-02-15T19:18:02Z"
+  }
+}

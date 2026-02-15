@@ -1,0 +1,17 @@
+{
+  "player_name": "Snyder, Drew",
+  "player_slug": "snyder_drew",
+  "team": null,
+  "handedness": null,
+  "session_date": "2026-02-10",
+  "date_from": "2026-01-01",
+  "date_to": "2026-02-15",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Drew Snyder 2:10.pdf",
+    "sha256": "5bae8e89c9e0cd54a3e16d49574a328c4da859fd39d479f65b468c0d12b52dcc",
+    "imported_at": "2026-02-15T19:18:02Z"
+  }
+}

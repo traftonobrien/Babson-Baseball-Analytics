@@ -1,0 +1,17 @@
+{
+  "player_name": "Valente, Ben",
+  "player_slug": "valente_ben",
+  "team": "Babson College",
+  "handedness": "RHP",
+  "session_date": "2026-02-09",
+  "date_from": "2026-01-01",
+  "date_to": "2026-02-15",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Ben Valente 2:9.pdf",
+    "sha256": "45daae204db0cebb53bea2e10662019cf35e3fc8fb675a5593abb3743ea92769",
+    "imported_at": "2026-02-15T19:18:05Z"
+  }
+}

@@ -126,6 +126,31 @@
     "updatedAt": "2026-02-15T18:57:43Z"
   },
   {
+    "playerName": "Teator, Zander",
+    "playerSlug": "teator_zander",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-01-30",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 85.85,
+    "pitchTypesPath": "/trackman/sessions/teator_zander/2026_01_30/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/teator_zander/2026_01_30/session/meta.json",
+    "summaryPath": "/trackman/sessions/teator_zander/2026_01_30/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Zander Teator 1:30.pdf",
+      "sha256": "fed6610a6aadeada23f95bc3c6ef29780a72252ed918b1089c3d3d944858ad2b",
+      "imported_at": "2026-02-15T19:18:02Z"
+    },
+    "updatedAt": "2026-02-15T19:18:02Z"
+  },
+  {
     "playerName": "Carrea, Joe",
     "playerSlug": "carrea_joe",
     "team": null,
@@ -200,6 +225,55 @@
       "imported_at": "2026-02-15T18:57:40Z"
     },
     "updatedAt": "2026-02-15T18:57:40Z"
+  },
+  {
+    "playerName": "Purpura, Vinny",
+    "playerSlug": "purpura_vinny",
+    "team": "Babson College",
+    "handedness": "LHP",
+    "date": "2026-01-31",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other"
+    ],
+    "weightedAvgVelo": 79.81,
+    "pitchTypesPath": "/trackman/sessions/purpura_vinny/2026_01_31/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/purpura_vinny/2026_01_31/session/meta.json",
+    "summaryPath": "/trackman/sessions/purpura_vinny/2026_01_31/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Vinny Purpura 1:31.pdf",
+      "sha256": "ff57112fb945bb18a030e9fa95b54dc802caefefb6939a8ae25d883bec7cafdd",
+      "imported_at": "2026-02-15T19:17:58Z"
+    },
+    "updatedAt": "2026-02-15T19:17:58Z"
+  },
+  {
+    "playerName": "Valente, Ben",
+    "playerSlug": "valente_ben",
+    "team": "See Pitches by:",
+    "handedness": "RHP",
+    "date": "2026-01-31",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 78.0,
+    "pitchTypesPath": "/trackman/sessions/valente_ben/2026_01_31/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/valente_ben/2026_01_31/session/meta.json",
+    "summaryPath": "/trackman/sessions/valente_ben/2026_01_31/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Ben Valente 1:31.pdf",
+      "sha256": "5deeaded8d2cb15171c148ab19abe3e85e2374cda116737cfab661ba01edf3f6",
+      "imported_at": "2026-02-15T19:18:05Z"
+    },
+    "updatedAt": "2026-02-15T19:18:05Z"
   },
   {
     "playerName": "Getchell, Jacob",
@@ -278,6 +352,107 @@
     "updatedAt": "2026-02-15T18:57:44Z"
   },
   {
+    "playerName": "Shapiro, Brennan",
+    "playerSlug": "shapiro_brennan",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-02",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Splitter"
+    ],
+    "weightedAvgVelo": 77.13,
+    "pitchTypesPath": "/trackman/sessions/shapiro_brennan/2026_02_02/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/shapiro_brennan/2026_02_02/session/meta.json",
+    "summaryPath": "/trackman/sessions/shapiro_brennan/2026_02_02/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Brennan Shapiro 2:2.pdf",
+      "sha256": "7f99ee1dd67d50d2be9293b3d08854ccaf97bfefe3196cb3c3f4734439136b23",
+      "imported_at": "2026-02-15T19:18:00Z"
+    },
+    "updatedAt": "2026-02-15T19:18:00Z"
+  },
+  {
+    "playerName": "Snyder, Drew",
+    "playerSlug": "snyder_drew",
+    "team": "Babson College",
+    "handedness": "LHP",
+    "date": "2026-02-02",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 79.52,
+    "pitchTypesPath": "/trackman/sessions/snyder_drew/2026_02_02/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/snyder_drew/2026_02_02/session/meta.json",
+    "summaryPath": "/trackman/sessions/snyder_drew/2026_02_02/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Drew Snyder 2:2.pdf",
+      "sha256": "a6dd486047f99686fb5adf7f48e1b9bffc488376c1944ec6a7ce3c692ed0c4f7",
+      "imported_at": "2026-02-15T19:18:01Z"
+    },
+    "updatedAt": "2026-02-15T19:18:01Z"
+  },
+  {
+    "playerName": "Teator, Zander",
+    "playerSlug": "teator_zander",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-02",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider",
+      "Splitter"
+    ],
+    "weightedAvgVelo": 83.43,
+    "pitchTypesPath": "/trackman/sessions/teator_zander/2026_02_02/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/teator_zander/2026_02_02/session/meta.json",
+    "summaryPath": "/trackman/sessions/teator_zander/2026_02_02/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Zander Teator 2:2.pdf",
+      "sha256": "58512b8460ab8b68832cdb712e0e2acc46b8bf6aad68e9426e0e000995776001",
+      "imported_at": "2026-02-15T19:18:03Z"
+    },
+    "updatedAt": "2026-02-15T19:18:03Z"
+  },
+  {
+    "playerName": "Vyse, Graydon",
+    "playerSlug": "vyse_graydon",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-02",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 82.71,
+    "pitchTypesPath": "/trackman/sessions/vyse_graydon/2026_02_02/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/vyse_graydon/2026_02_02/session/meta.json",
+    "summaryPath": "/trackman/sessions/vyse_graydon/2026_02_02/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Graydon Vyse 2:2.pdf",
+      "sha256": "e53e0a21eb532e0e72e37275d2f93a5db99749efa30b482a11f14efd8a1678f7",
+      "imported_at": "2026-02-15T19:18:06Z"
+    },
+    "updatedAt": "2026-02-15T19:18:06Z"
+  },
+  {
     "playerName": "OKeefe, Quinn",
     "playerSlug": "okeefe_quinn",
     "team": null,
@@ -301,6 +476,31 @@
       "imported_at": "2026-02-15T18:57:41Z"
     },
     "updatedAt": "2026-02-15T18:57:41Z"
+  },
+  {
+    "playerName": "Rhodes, Pat",
+    "playerSlug": "rhodes_pat",
+    "team": null,
+    "handedness": null,
+    "date": "2026-02-05",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 74.72,
+    "pitchTypesPath": "/trackman/sessions/rhodes_pat/2026_02_05/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/rhodes_pat/2026_02_05/session/meta.json",
+    "summaryPath": "/trackman/sessions/rhodes_pat/2026_02_05/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Pat Rhodes 2:5.pdf",
+      "sha256": "a99f5a8e512fac244345ce7eaaa003ef5497ffb028589f12d37edfba647fb2df",
+      "imported_at": "2026-02-15T19:17:59Z"
+    },
+    "updatedAt": "2026-02-15T19:17:59Z"
   },
   {
     "playerName": "Burrows, Chase",
@@ -381,6 +581,31 @@
     "updatedAt": "2026-02-15T18:57:37Z"
   },
   {
+    "playerName": "Teator, Zander",
+    "playerSlug": "teator_zander",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-06",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 83.02,
+    "pitchTypesPath": "/trackman/sessions/teator_zander/2026_02_06/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/teator_zander/2026_02_06/session/meta.json",
+    "summaryPath": "/trackman/sessions/teator_zander/2026_02_06/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Zander Teator 2:6.pdf",
+      "sha256": "d83daa3c41dfb78f08d448bb85fc5fecfecd62474218eb34e6ab8f0ef12e1639",
+      "imported_at": "2026-02-15T19:18:03Z"
+    },
+    "updatedAt": "2026-02-15T19:18:03Z"
+  },
+  {
     "playerName": "Carrea, Joe",
     "playerSlug": "carrea_joe",
     "team": "Babson College",
@@ -432,6 +657,33 @@
     "updatedAt": "2026-02-15T18:57:42Z"
   },
   {
+    "playerName": "Smith, Cooper",
+    "playerSlug": "smith_cooper",
+    "team": "See Pitches by:",
+    "handedness": "LHP",
+    "date": "2026-02-07",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Curveball",
+      "Fastball",
+      "Other",
+      "Slider",
+      "Splitter"
+    ],
+    "weightedAvgVelo": 74.65,
+    "pitchTypesPath": "/trackman/sessions/smith_cooper/2026_02_07/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/smith_cooper/2026_02_07/session/meta.json",
+    "summaryPath": "/trackman/sessions/smith_cooper/2026_02_07/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Cooper Smith 2:7.pdf",
+      "sha256": "acb2fe352155c2c174a87b33e50d9af75fbbf8b7a593ab0738e607e019339820",
+      "imported_at": "2026-02-15T19:18:00Z"
+    },
+    "updatedAt": "2026-02-15T19:18:00Z"
+  },
+  {
     "playerName": "James, Dillon",
     "playerSlug": "james_dillon",
     "team": "Babson College",
@@ -480,6 +732,55 @@
       "imported_at": "2026-02-15T18:57:39Z"
     },
     "updatedAt": "2026-02-15T18:57:39Z"
+  },
+  {
+    "playerName": "Purpura, Vinny",
+    "playerSlug": "purpura_vinny",
+    "team": "Babson College",
+    "handedness": "LHP",
+    "date": "2026-02-09",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other"
+    ],
+    "weightedAvgVelo": 78.08,
+    "pitchTypesPath": "/trackman/sessions/purpura_vinny/2026_02_09/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/purpura_vinny/2026_02_09/session/meta.json",
+    "summaryPath": "/trackman/sessions/purpura_vinny/2026_02_09/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Vinny Purpura 2:9.pdf",
+      "sha256": "ee8059ff3d1633679dc78daafe440c920890d9de1cd9ae06669ca0b60a441c9e",
+      "imported_at": "2026-02-15T19:17:59Z"
+    },
+    "updatedAt": "2026-02-15T19:17:59Z"
+  },
+  {
+    "playerName": "Valente, Ben",
+    "playerSlug": "valente_ben",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-09",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 76.99,
+    "pitchTypesPath": "/trackman/sessions/valente_ben/2026_02_09/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/valente_ben/2026_02_09/session/meta.json",
+    "summaryPath": "/trackman/sessions/valente_ben/2026_02_09/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Ben Valente 2:9.pdf",
+      "sha256": "45daae204db0cebb53bea2e10662019cf35e3fc8fb675a5593abb3743ea92769",
+      "imported_at": "2026-02-15T19:18:05Z"
+    },
+    "updatedAt": "2026-02-15T19:18:05Z"
   },
   {
     "playerName": "OBrien, Trafton",
@@ -558,6 +859,82 @@
       "imported_at": "2026-02-15T18:57:44Z"
     },
     "updatedAt": "2026-02-15T18:57:44Z"
+  },
+  {
+    "playerName": "Snyder, Drew",
+    "playerSlug": "snyder_drew",
+    "team": null,
+    "handedness": null,
+    "date": "2026-02-10",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 81.01,
+    "pitchTypesPath": "/trackman/sessions/snyder_drew/2026_02_10/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/snyder_drew/2026_02_10/session/meta.json",
+    "summaryPath": "/trackman/sessions/snyder_drew/2026_02_10/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Drew Snyder 2:10.pdf",
+      "sha256": "5bae8e89c9e0cd54a3e16d49574a328c4da859fd39d479f65b468c0d12b52dcc",
+      "imported_at": "2026-02-15T19:18:02Z"
+    },
+    "updatedAt": "2026-02-15T19:18:02Z"
+  },
+  {
+    "playerName": "Teator, Zander",
+    "playerSlug": "teator_zander",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-10",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "ChangeUp",
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 84.58,
+    "pitchTypesPath": "/trackman/sessions/teator_zander/2026_02_10/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/teator_zander/2026_02_10/session/meta.json",
+    "summaryPath": "/trackman/sessions/teator_zander/2026_02_10/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Zander Teator 2:10.pdf",
+      "sha256": "9b8d404296e95c74754214d9a75460c62ebb2f4f3e9d68516bf1f5792a8177a0",
+      "imported_at": "2026-02-15T19:18:04Z"
+    },
+    "updatedAt": "2026-02-15T19:18:04Z"
+  },
+  {
+    "playerName": "Vyse, Graydon",
+    "playerSlug": "vyse_graydon",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-10",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 82.38,
+    "pitchTypesPath": "/trackman/sessions/vyse_graydon/2026_02_10/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/vyse_graydon/2026_02_10/session/meta.json",
+    "summaryPath": "/trackman/sessions/vyse_graydon/2026_02_10/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Graydon Vyse 2:10.pdf",
+      "sha256": "7ce3a9b2235c400cc23b399ba8d957c0302b63ffd924b1550babd7b4425f35c7",
+      "imported_at": "2026-02-15T19:18:06Z"
+    },
+    "updatedAt": "2026-02-15T19:18:06Z"
   },
   {
     "playerName": "Burk, Bobby",
@@ -737,6 +1114,58 @@
       "imported_at": "2026-02-15T18:57:45Z"
     },
     "updatedAt": "2026-02-15T18:57:45Z"
+  },
+  {
+    "playerName": "Smith, Cooper",
+    "playerSlug": "smith_cooper",
+    "team": "See Pitches by:",
+    "handedness": "LHP",
+    "date": "2026-02-14",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Curveball",
+      "Fastball",
+      "Other",
+      "Slider",
+      "Splitter"
+    ],
+    "weightedAvgVelo": 73.24,
+    "pitchTypesPath": "/trackman/sessions/smith_cooper/2026_02_14/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/smith_cooper/2026_02_14/session/meta.json",
+    "summaryPath": "/trackman/sessions/smith_cooper/2026_02_14/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Cooper Smith 2:14.pdf",
+      "sha256": "4bcdf150560a1fa5529d1d07d6a614c39ed8cd26267999e6b85425d6c749a71c",
+      "imported_at": "2026-02-15T19:18:01Z"
+    },
+    "updatedAt": "2026-02-15T19:18:01Z"
+  },
+  {
+    "playerName": "Teator, Zander",
+    "playerSlug": "teator_zander",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-14",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 80.11,
+    "pitchTypesPath": "/trackman/sessions/teator_zander/2026_02_14/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/teator_zander/2026_02_14/session/meta.json",
+    "summaryPath": "/trackman/sessions/teator_zander/2026_02_14/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Zander Teator 2:14.pdf",
+      "sha256": "64956388d838a36064e8b404905d59297ecc2ffebe5ee134dce7857d9608c165",
+      "imported_at": "2026-02-15T19:18:04Z"
+    },
+    "updatedAt": "2026-02-15T19:18:04Z"
   },
   {
     "playerName": "Clark, James",
