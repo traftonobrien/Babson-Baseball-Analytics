@@ -3,30 +3,25 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { ArrowLeft, Radio } from "lucide-react";
+import {
+  normalizePitchTypeRow,
+  type TrackmanPitchTypeSummary,
+} from "@/lib/trackman/metrics";
+import PitchTypeFilter from "../../session/[playerId]/[date]/PitchTypeFilter";
+import PitchTypeTable from "../../session/[playerId]/[date]/PitchTypeTable";
+import MovementScatterByType from "../../session/[playerId]/[date]/MovementScatterByType";
+import PitchArsenalCards from "../../session/[playerId]/[date]/PitchArsenalCards";
 
 interface IndexEntry {
   playerName: string;
   playerSlug: string;
   date: string;
   sessionType?: string;
-  pitchCount: number | null;
   pitchTypes?: string[];
   weightedAvgVelo: number | null;
-  maxVelo: number | null;
-  pitchesPath?: string;
   pitchTypesPath?: string;
-  summaryPath?: string;
   handedness?: string;
   team?: string;
-}
-
-interface Summary {
-  total_pitches?: number | null;
-  pitch_types?: string[];
-  pitch_mix_pct?: Record<string, number> | null;
-  weighted_avg_velocity_mph?: number | null;
-  max_velocity_mph?: number | null;
-  weighted_avg_spin_rpm?: number | null;
 }
 
 function normalizeEntry(raw: Record<string, unknown>): IndexEntry {
@@ -35,13 +30,9 @@ function normalizeEntry(raw: Record<string, unknown>): IndexEntry {
     playerSlug: (raw.playerSlug as string) ?? "",
     date: (raw.date as string) ?? "",
     sessionType: (raw.sessionType as string) ?? undefined,
-    pitchCount: (raw.pitchCount as number) ?? (raw.totalPitches as number) ?? null,
     pitchTypes: Array.isArray(raw.pitchTypes) ? raw.pitchTypes as string[] : undefined,
     weightedAvgVelo: (raw.weightedAvgVelo as number) ?? null,
-    maxVelo: (raw.maxVelo as number) ?? null,
-    pitchesPath: (raw.pitchesPath as string) ?? undefined,
     pitchTypesPath: (raw.pitchTypesPath as string) ?? undefined,
-    summaryPath: (raw.summaryPath as string) ?? undefined,
     handedness: (raw.handedness as string) ?? undefined,
     team: (raw.team as string) ?? undefined,
   };
@@ -53,16 +44,113 @@ function extractDateSlug(path?: string): string | null {
   return match?.[1] ?? null;
 }
 
-function formatDateLabel(raw: string): string {
-  if (raw.includes("__")) {
-    const [start, end] = raw.split("__");
-    const startLabel = start.replace(/_/g, "/").replace(/-/g, "/");
-    const endLabel = end.replace(/_/g, "/").replace(/-/g, "/");
-    return `${startLabel} \u2014 ${endLabel}`;
+/** "2026-02-13" → "2/13/26" */
+function formatDate(raw: string): string {
+  const parts = raw.replace(/_/g, "-").split("-");
+  if (parts.length === 3) {
+    const [y, m, d] = parts;
+    const shortYear = y.length === 4 ? y.slice(2) : y;
+    return `${parseInt(m)}/${parseInt(d)}/${shortYear}`;
   }
-  return raw.replace(/_/g, "/").replace(/-/g, "/");
+  return raw;
 }
 
+/** "Burk, Bobby" → "Bobby Burk" */
+function formatPlayerName(raw: string): string {
+  if (raw.includes(",")) {
+    const [last, first] = raw.split(",", 2).map((s) => s.trim());
+    if (first && last) return `${first} ${last}`;
+  }
+  return raw;
+}
+
+/** Average pitch type data across multiple sessions. */
+function aggregatePitchTypes(
+  allSessionPitchTypes: TrackmanPitchTypeSummary[][],
+): TrackmanPitchTypeSummary[] {
+  // Group by pitch type
+  const grouped = new Map<string, TrackmanPitchTypeSummary[]>();
+  for (const session of allSessionPitchTypes) {
+    for (const pt of session) {
+      if (pt.pitchType === "Other") continue;
+      if (!grouped.has(pt.pitchType)) grouped.set(pt.pitchType, []);
+      grouped.get(pt.pitchType)!.push(pt);
+    }
+  }
+
+  const avgNum = (
+    items: TrackmanPitchTypeSummary[],
+    key: keyof TrackmanPitchTypeSummary,
+  ): number | null => {
+    const vals = items
+      .map((i) => i[key] as number | null)
+      .filter((v): v is number => v != null);
+    if (vals.length === 0) return null;
+    return Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 100) / 100;
+  };
+
+  const result: TrackmanPitchTypeSummary[] = [];
+  for (const [pitchType, items] of grouped) {
+    result.push({
+      pitchType,
+      count: null,
+      avgVelo: avgNum(items, "avgVelo"),
+      maxVelo: null,
+      avgSpin: avgNum(items, "avgSpin"),
+      maxSpin: null,
+      avgIvb: avgNum(items, "avgIvb"),
+      avgHb: avgNum(items, "avgHb"),
+      avgExtension: avgNum(items, "avgExtension"),
+      avgRelHeight: avgNum(items, "avgRelHeight"),
+      avgRelSide: avgNum(items, "avgRelSide"),
+      avgSpinAxis2d: avgNum(items, "avgSpinAxis2d"),
+      avgSpinAxis3d: avgNum(items, "avgSpinAxis3d"),
+      avgGyro: avgNum(items, "avgGyro"),
+    });
+  }
+
+  // Sort by avg velo descending
+  result.sort((a, b) => (b.avgVelo ?? 0) - (a.avgVelo ?? 0));
+  return result;
+}
+
+interface SessionPitchTypes {
+  date: string;
+  pitchTypes: TrackmanPitchTypeSummary[];
+}
+
+const FASTBALL_TYPES = new Set(["Fastball", "Sinker", "Cutter"]);
+const BREAKING_TYPES = new Set(["Slider", "Curveball", "Knuckle Curve", "Sweeper"]);
+
+/** Compute avg fastball velo per session for trend line. */
+function computeFbVeloTrend(sessions: SessionPitchTypes[]): { date: string; value: number }[] {
+  const points: { date: string; value: number }[] = [];
+  for (const s of sessions) {
+    const fbs = s.pitchTypes.filter((p) => FASTBALL_TYPES.has(p.pitchType));
+    const velos = fbs.map((p) => p.avgVelo).filter((v): v is number => v != null);
+    if (velos.length === 0) continue;
+    const avg = velos.reduce((a, b) => a + b, 0) / velos.length;
+    points.push({ date: s.date, value: Math.round(avg * 100) / 100 });
+  }
+  points.sort((a, b) => a.date.localeCompare(b.date));
+  return points;
+}
+
+/** Compute avg breaking ball spin per session for trend line. */
+function computeBbSpinTrend(sessions: SessionPitchTypes[]): { date: string; value: number }[] {
+  const points: { date: string; value: number }[] = [];
+  for (const s of sessions) {
+    const bbs = s.pitchTypes.filter((p) => BREAKING_TYPES.has(p.pitchType));
+    const spins = bbs.map((p) => p.avgSpin).filter((v): v is number => v != null);
+    if (spins.length === 0) continue;
+    const avg = spins.reduce((a, b) => a + b, 0) / spins.length;
+    points.push({ date: s.date, value: Math.round(avg * 100) / 100 });
+  }
+  points.sort((a, b) => a.date.localeCompare(b.date));
+  return points;
+}
+
+// -- Trend line SVG component --
 const TREND_W = 600;
 const TREND_H = 120;
 const TPAD = { top: 15, right: 10, bottom: 25, left: 45 };
@@ -73,10 +161,12 @@ function TrendLine({
   points,
   label,
   unit,
+  color = "#10b981",
 }: {
   points: { date: string; value: number }[];
   label: string;
   unit: string;
+  color?: string;
 }) {
   if (points.length === 0) return null;
 
@@ -113,11 +203,11 @@ function TrendLine({
         </text>
 
         {/* Line */}
-        <path d={pathD} fill="none" stroke="#10b981" strokeWidth={1.5} />
+        <path d={pathD} fill="none" stroke={color} strokeWidth={1.5} />
 
         {/* Dots */}
         {sorted.map((p, i) => (
-          <circle key={i} cx={toX(i)} cy={toY(p.value)} r={3} fill="#10b981" />
+          <circle key={i} cx={toX(i)} cy={toY(p.value)} r={3} fill={color} />
         ))}
 
         {/* Date labels */}
@@ -150,6 +240,22 @@ function TrendLine({
   );
 }
 
+async function fetchPitchTypes(path: string): Promise<TrackmanPitchTypeSummary[]> {
+  try {
+    const res = await fetch(path);
+    if (!res.ok) return [];
+    const raw = await res.json();
+    const rows = Array.isArray(raw) ? raw : raw?.pitch_types ?? raw?.rows ?? [];
+    if (!Array.isArray(rows)) return [];
+    return rows
+      .filter((r: Record<string, unknown>) => r?.is_valid !== false)
+      .map((r: Record<string, unknown>) => normalizePitchTypeRow(r))
+      .filter((r: TrackmanPitchTypeSummary) => r.pitchType !== "Other");
+  } catch {
+    return [];
+  }
+}
+
 export default function TrackmanPlayerPage({
   params,
 }: {
@@ -157,8 +263,9 @@ export default function TrackmanPlayerPage({
 }) {
   const [slug, setSlug] = useState("");
   const [entries, setEntries] = useState<IndexEntry[]>([]);
-  const [summaries, setSummaries] = useState<Map<string, Summary>>(new Map());
+  const [sessionData, setSessionData] = useState<SessionPitchTypes[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activePitchTypes, setActivePitchTypes] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     params.then((p) => setSlug(p.slug));
@@ -170,146 +277,173 @@ export default function TrackmanPlayerPage({
     fetch("/trackman/index.json")
       .then((r) => (r.ok ? r.json() : []))
       .catch(() => [])
-      .then((all: unknown) => {
+      .then(async (all: unknown) => {
         const mine = (Array.isArray(all) ? all : [])
           .map((e) => normalizeEntry(e as Record<string, unknown>))
           .filter((e) => e.playerSlug === slug);
-        mine.sort((a, b) => a.date.localeCompare(b.date));
+        // Sort by date descending (most recent first)
+        mine.sort((a, b) => b.date.localeCompare(a.date));
         setEntries(mine);
 
-        // Fetch summaries
-        const summaryPromises = mine
-          .filter((e) => e.summaryPath)
-          .map((e) =>
-            fetch(e.summaryPath!)
-              .then((r) => (r.ok ? r.json() : null))
-              .then((s) => [e.date, s] as [string, Summary | null])
-              .catch(() => [e.date, null] as [string, Summary | null]),
-          );
-
-        Promise.all(summaryPromises).then((results) => {
-          const map = new Map<string, Summary>();
-          for (const [date, s] of results) {
-            if (s) map.set(date, s);
-          }
-          setSummaries(map);
-          setLoading(false);
-        });
+        // Fetch all pitch type data for aggregation + trends
+        const withPaths = mine.filter((e) => e.pitchTypesPath);
+        const fetched = await Promise.all(
+          withPaths.map(async (e) => ({
+            date: e.date,
+            pitchTypes: await fetchPitchTypes(e.pitchTypesPath!),
+          })),
+        );
+        setSessionData(fetched.filter((d) => d.pitchTypes.length > 0));
+        setLoading(false);
       });
   }, [slug]);
 
-  const playerName = entries[0]?.playerName ?? slug;
+  const playerName = formatPlayerName(entries[0]?.playerName ?? slug);
   const team = entries[0]?.team;
   const hand = entries[0]?.handedness;
 
-  // Trend data
-  const veloTrend = useMemo(() => {
-    const points: { date: string; value: number }[] = [];
-    for (const e of entries) {
-      const s = summaries.get(e.date);
-      if (s?.weighted_avg_velocity_mph) points.push({ date: e.date, value: s.weighted_avg_velocity_mph });
-    }
-    return points;
-  }, [entries, summaries]);
+  // Aggregate pitch types across all sessions
+  const aggregated = useMemo(
+    () => aggregatePitchTypes(sessionData.map((s) => s.pitchTypes)),
+    [sessionData],
+  );
 
-  const spinTrend = useMemo(() => {
-    const points: { date: string; value: number }[] = [];
-    for (const e of entries) {
-      const s = summaries.get(e.date);
-      if (s?.weighted_avg_spin_rpm) points.push({ date: e.date, value: s.weighted_avg_spin_rpm });
-    }
-    return points;
-  }, [entries, summaries]);
+  const allTypes = useMemo(
+    () => Array.from(new Set(aggregated.map((p) => p.pitchType))).sort(),
+    [aggregated],
+  );
+
+  const filtered = useMemo(() => {
+    if (activePitchTypes.size === 0) return aggregated;
+    return aggregated.filter((p) => activePitchTypes.has(p.pitchType));
+  }, [aggregated, activePitchTypes]);
+
+  // Trends
+  const fbVeloTrend = useMemo(() => computeFbVeloTrend(sessionData), [sessionData]);
+  const bbSpinTrend = useMemo(() => computeBbSpinTrend(sessionData), [sessionData]);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      <header className="flex items-center gap-3 px-4 py-3 bg-zinc-900 border-b border-zinc-800">
-        <Link href="/trackman" className="text-zinc-400 hover:text-zinc-200 transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-        </Link>
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-sm font-semibold">{playerName}</h1>
-            {hand && <span className="text-[10px] bg-zinc-800 text-zinc-500 px-1 py-0.5 rounded">{hand}</span>}
+      {/* Header */}
+      <header className="bg-zinc-900 border-b border-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-3 mb-3">
+            <Link
+              href="/trackman"
+              className="text-zinc-500 hover:text-zinc-300 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Link>
+            <span className="text-xs text-zinc-600 uppercase tracking-wider">Player Profile</span>
           </div>
-          {team && <p className="text-xs text-zinc-500">{team}</p>}
+          <div className="flex items-baseline gap-4 flex-wrap">
+            <h1 className="text-xl font-bold tracking-tight text-zinc-50">{playerName}</h1>
+            {hand && (
+              <>
+                <span className="w-px h-5 bg-zinc-700 self-center hidden sm:block" />
+                <span className="text-sm text-zinc-400">{hand}</span>
+              </>
+            )}
+            {team && (
+              <>
+                <span className="w-px h-5 bg-zinc-700 self-center hidden sm:block" />
+                <span className="text-sm text-zinc-400">{team}</span>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {loading ? (
           <p className="text-zinc-500 text-sm">Loading player data...</p>
         ) : entries.length === 0 ? (
           <p className="text-zinc-400 text-sm">No sessions found for this player.</p>
         ) : (
           <>
-            {/* Trends */}
-            {(veloTrend.length > 1 || spinTrend.length > 1) && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {veloTrend.length > 1 && (
-                  <TrendLine points={veloTrend} label="Avg Velocity Over Time" unit="mph" />
-                )}
-                {spinTrend.length > 1 && (
-                  <TrendLine points={spinTrend} label="Avg Spin Over Time" unit="rpm" />
-                )}
-              </div>
-            )}
-
-            {/* Sessions list */}
+            {/* Session selector */}
             <div>
               <h3 className="text-xs uppercase tracking-wider text-zinc-500 mb-3">
-                {entries.length} Session{entries.length !== 1 ? "s" : ""}
+                Sessions ({entries.length})
               </h3>
-              <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
                 {entries.map((e, i) => {
                   const dateSlug =
-                    extractDateSlug(e.pitchesPath) ??
                     extractDateSlug(e.pitchTypesPath) ??
                     e.date.replace(/-/g, "_");
-                  const dateLabel = formatDateLabel(dateSlug);
                   return (
                     <Link
                       key={`${e.date}-${i}`}
                       href={`/trackman/session/${slug}/${dateSlug}`}
-                      className="block bg-zinc-900 border border-zinc-800 rounded-lg p-3 hover:border-zinc-600 transition-colors"
+                      className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 hover:border-zinc-600 transition-colors text-sm"
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-mono text-zinc-300">
-                          {dateLabel}
+                      <span className="font-mono text-zinc-300">
+                        {formatDate(e.date)}
+                      </span>
+                      {e.sessionType && (
+                        <span className="ml-2 text-[10px] text-zinc-500">
+                          {e.sessionType}
                         </span>
-                        {e.pitchCount !== null && (
-                          <span className="text-xs text-zinc-500 font-mono">
-                            {e.pitchCount} pitches
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        {e.sessionType && (
-                          <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded">
-                            {e.sessionType}
-                          </span>
-                        )}
-                        {e.pitchTypes && (
-                          <span className="text-[10px] text-zinc-600">
-                            {e.pitchTypes.join(", ")}
-                          </span>
-                        )}
-                        {e.weightedAvgVelo !== null && e.maxVelo !== null && (
-                          <span className="text-[10px] text-zinc-600 font-mono">
-                            Avg {e.weightedAvgVelo.toFixed(1)} mph &middot; Max {e.maxVelo.toFixed(1)} mph
-                          </span>
-                        )}
-                      </div>
-                      {summaries.get(e.date)?.total_pitches == null && (
-                        <div className="text-[10px] text-zinc-600 mt-1">
-                          Pitch counts not provided in this PDF export.
-                        </div>
                       )}
                     </Link>
                   );
                 })}
               </div>
             </div>
+
+            {/* Trend lines */}
+            {(fbVeloTrend.length > 1 || bbSpinTrend.length > 1) && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {fbVeloTrend.length > 1 && (
+                  <TrendLine
+                    points={fbVeloTrend}
+                    label="Avg Fastball Velocity Over Time"
+                    unit="mph"
+                    color="#10b981"
+                  />
+                )}
+                {bbSpinTrend.length > 1 && (
+                  <TrendLine
+                    points={bbSpinTrend}
+                    label="Avg Breaking Ball Spin Over Time"
+                    unit="rpm"
+                    color="#8b5cf6"
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Aggregate view */}
+            {aggregated.length > 0 && (
+              <>
+                <div className="border-t border-zinc-800 pt-6">
+                  <h3 className="text-xs uppercase tracking-wider text-zinc-500 mb-4">
+                    Averages Across All Sessions
+                  </h3>
+
+                  <PitchTypeFilter
+                    allTypes={allTypes}
+                    activePitchTypes={activePitchTypes}
+                    onToggleType={(type) => {
+                      setActivePitchTypes((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(type)) next.delete(type);
+                        else next.add(type);
+                        return next;
+                      });
+                    }}
+                    onClearTypes={() => setActivePitchTypes(new Set())}
+                  />
+                </div>
+
+                <PitchTypeTable pitchTypes={filtered} summary={null} />
+
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-stretch">
+                  <MovementScatterByType pitchTypes={filtered} />
+                  <PitchArsenalCards pitchTypes={filtered} />
+                </div>
+              </>
+            )}
           </>
         )}
       </div>

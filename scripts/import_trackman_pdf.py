@@ -168,7 +168,6 @@ def _update_index(
         "pitchCount": summary.get("total_pitches"),
         "pitchTypes": summary.get("pitch_types"),
         "weightedAvgVelo": summary.get("weighted_avg_velocity_mph"),
-        "maxVelo": summary.get("max_velocity_mph"),
         "pitchTypesPath": f"/{rel_dir}/pitch_types.json",
         "metaPath": f"/{rel_dir}/meta.json",
         "summaryPath": f"/{rel_dir}/session_summary.json",
@@ -469,8 +468,6 @@ def import_pdf(
     print(f"  session_summary.json:  total_pitches={total_pitches}, types: {', '.join(pitch_types)}")
     if summary.get("weighted_avg_velocity_mph") is not None:
         print(f"  Avg Velo:              {summary['weighted_avg_velocity_mph']} mph")
-    if summary.get("max_velocity_mph") is not None:
-        print(f"  Max Velo:              {summary['max_velocity_mph']} mph")
     print(f"Index updated:   {INDEX_PATH}")
 
     return {

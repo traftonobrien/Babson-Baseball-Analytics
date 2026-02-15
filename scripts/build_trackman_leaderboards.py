@@ -90,66 +90,108 @@ def _load_all_sessions(
     return sessions
 
 
-def _rank_by(
-    sessions: List[Dict[str, Any]],
-    key_path: str,
-    stat: Optional[str] = None,
-    descending: bool = True,
-    min_pitches: int = 1,
-) -> List[Dict[str, Any]]:
-    """Rank players by a metric from their summary.
+FASTBALL_TYPES = {"Fastball", "Sinker", "Cutter"}
+BREAKING_TYPES = {"Slider", "Curveball", "Knuckle Curve", "Sweeper"}
 
-    key_path: dot-separated path into summary (e.g. "velo.max")
-    stat: which stat to use ("avg", "min", "max")
-    """
-    values = []
+
+def _player_avg_by_summary_key(
+    sessions: List[Dict[str, Any]],
+    key: str,
+    descending: bool = True,
+) -> List[Dict[str, Any]]:
+    """Rank players by their average across all sessions for a summary-level metric."""
+    from collections import defaultdict
+
+    player_vals: Dict[str, List[float]] = defaultdict(list)
+    player_info: Dict[str, Dict[str, Any]] = {}
+
     for s in sessions:
         summary = s.get("summary")
         entry = s.get("entry", {})
-        if not summary:
+        slug = entry.get("playerSlug", "")
+        if not summary or not slug:
             continue
-        total_pitches = summary.get("total_pitches")
-        if total_pitches is not None and total_pitches < min_pitches:
-            continue
-
-        # Navigate key path
-        obj = summary
-        parts = key_path.split(".")
-        for part in parts:
-            if isinstance(obj, dict):
-                obj = obj.get(part)
-            else:
-                obj = None
-                break
-
-        if obj is None:
-            continue
-
-        # Get specific stat
-        if isinstance(obj, dict) and stat:
-            val = obj.get(stat)
-        elif isinstance(obj, (int, float)):
-            val = obj
-        else:
-            continue
-
+        val = summary.get(key)
         if val is None:
             continue
-
-        values.append({
+        player_vals[slug].append(val)
+        player_info[slug] = {
             "playerName": entry.get("playerName"),
-            "playerSlug": entry.get("playerSlug"),
+            "playerSlug": slug,
             "team": entry.get("team"),
-            "date": entry.get("date"),
-            "sessionType": entry.get("sessionType"),
-            "value": val,
-            "pitchCount": total_pitches,
+        }
+
+    values = []
+    for slug, vals in player_vals.items():
+        avg = sum(vals) / len(vals)
+        info = player_info[slug]
+        values.append({
+            "playerName": info["playerName"],
+            "playerSlug": info["playerSlug"],
+            "team": info.get("team"),
+            "sessionCount": len(vals),
+            "value": round(avg, 2),
         })
 
     values.sort(key=lambda x: x["value"], reverse=descending)
     for i, v in enumerate(values):
         v["rank"] = i + 1
+    return values
 
+
+def _player_avg_by_pitch_type_group(
+    sessions: List[Dict[str, Any]],
+    type_group: set,
+    key: str,
+    descending: bool = True,
+) -> List[Dict[str, Any]]:
+    """Rank players by their average metric across all sessions for a pitch type group."""
+    from collections import defaultdict
+
+    player_vals: Dict[str, List[float]] = defaultdict(list)
+    player_info: Dict[str, Dict[str, Any]] = {}
+
+    for s in sessions:
+        pitch_types = s.get("pitch_types")
+        entry = s.get("entry", {})
+        slug = entry.get("playerSlug", "")
+        if not pitch_types or not slug:
+            continue
+
+        matched_vals = []
+        for pt in pitch_types:
+            if pt.get("pitch_type") not in type_group:
+                continue
+            val = pt.get(key)
+            if val is not None:
+                matched_vals.append(val)
+
+        if not matched_vals:
+            continue
+
+        session_avg = sum(matched_vals) / len(matched_vals)
+        player_vals[slug].append(session_avg)
+        player_info[slug] = {
+            "playerName": entry.get("playerName"),
+            "playerSlug": slug,
+            "team": entry.get("team"),
+        }
+
+    values = []
+    for slug, vals in player_vals.items():
+        avg = sum(vals) / len(vals)
+        info = player_info[slug]
+        values.append({
+            "playerName": info["playerName"],
+            "playerSlug": info["playerSlug"],
+            "team": info.get("team"),
+            "sessionCount": len(vals),
+            "value": round(avg, 2),
+        })
+
+    values.sort(key=lambda x: x["value"], reverse=descending)
+    for i, v in enumerate(values):
+        v["rank"] = i + 1
     return values
 
 
@@ -203,11 +245,10 @@ def build_leaderboards(
         "date_to": date_to,
         "session_count": len(sessions),
         "leaderboards": {
-            "max_velo": _rank_by(sessions, "max_velocity_mph", descending=True),
-            "avg_velo": _rank_by(sessions, "weighted_avg_velocity_mph", descending=True),
-            "avg_spin": _rank_by(sessions, "weighted_avg_spin_rpm", descending=True),
-            "best_ivb": _rank_by(sessions, "weighted_avg_ivb_in", descending=True),
-            "best_extension": _rank_by(sessions, "weighted_avg_extension_ft", descending=True),
+            "avg_fb_velo": _player_avg_by_pitch_type_group(sessions, FASTBALL_TYPES, "avg_velocity_mph", descending=True),
+            "avg_fb_spin": _player_avg_by_pitch_type_group(sessions, FASTBALL_TYPES, "avg_spin_rpm", descending=True),
+            "avg_bb_spin": _player_avg_by_pitch_type_group(sessions, BREAKING_TYPES, "avg_spin_rpm", descending=True),
+            "avg_extension": _player_avg_by_pitch_type_group(sessions, FASTBALL_TYPES, "avg_extension_ft", descending=True),
         },
         "pitch_mix": _pitch_mix(sessions),
     }

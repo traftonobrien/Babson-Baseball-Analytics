@@ -9,10 +9,8 @@ interface LeaderboardEntry {
   playerName: string;
   playerSlug: string;
   team?: string;
-  date: string;
-  sessionType?: string;
+  sessionCount?: number;
   value: number;
-  pitchCount?: number;
 }
 
 interface PitchMix {
@@ -29,19 +27,17 @@ interface Leaderboards {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  max_velo: "Max Velocity",
-  avg_velo: "Avg Velocity",
-  avg_spin: "Avg Spin Rate",
-  best_ivb: "Best IVB",
-  best_extension: "Best Extension",
+  avg_fb_velo: "Avg Fastball Velo",
+  avg_fb_spin: "Avg Spin Rate (Fastballs)",
+  avg_bb_spin: "Avg Spin Rate (Breaking Balls)",
+  avg_extension: "Avg Extension",
 };
 
 const CATEGORY_UNITS: Record<string, string> = {
-  max_velo: "mph",
-  avg_velo: "mph",
-  avg_spin: "rpm",
-  best_ivb: "in",
-  best_extension: "ft",
+  avg_fb_velo: "mph",
+  avg_fb_spin: "rpm",
+  avg_bb_spin: "rpm",
+  avg_extension: "ft",
 };
 
 function fmt(v: number, cat: string): string {
@@ -52,7 +48,7 @@ function fmt(v: number, cat: string): string {
 export default function TrackmanLeaderboardsPage() {
   const [data, setData] = useState<Leaderboards | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState("max_velo");
+  const [activeCategory, setActiveCategory] = useState("avg_fb_velo");
 
   useEffect(() => {
     fetch("/trackman/leaderboards.json")
@@ -75,11 +71,6 @@ export default function TrackmanLeaderboardsPage() {
     if (!data?.leaderboards?.[activeCategory]) return [];
     return data.leaderboards[activeCategory];
   }, [data, activeCategory]);
-
-  const showPitchCount = useMemo(
-    () => entries.some((e) => e.pitchCount != null),
-    [entries],
-  );
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -141,27 +132,22 @@ export default function TrackmanLeaderboardsPage() {
                   <tr>
                     <th className="px-3 py-2 text-left w-10">#</th>
                     <th className="px-3 py-2 text-left">Player</th>
-                    <th className="px-3 py-2 text-left">Date</th>
-                    <th className="px-3 py-2 text-left">Session</th>
+                    <th className="px-3 py-2 text-right">Sessions</th>
                     <th className="px-3 py-2 text-right">
                       {CATEGORY_LABELS[activeCategory] ?? activeCategory}
                     </th>
-                    {showPitchCount && <th className="px-3 py-2 text-right">Pitches</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {entries.map((e, i) => (
                     <tr
-                      key={`${e.playerSlug}-${e.date}-${i}`}
+                      key={`${e.playerSlug}-${i}`}
                       className="border-t border-zinc-800/50 hover:bg-zinc-800/20"
                     >
                       <td className="px-3 py-2 text-zinc-500 font-mono">{e.rank}</td>
                       <td className="px-3 py-2 font-medium">{e.playerName}</td>
-                      <td className="px-3 py-2 text-zinc-400 font-mono">
-                        {e.date.replace(/_/g, "/").replace(/-/g, "/")}
-                      </td>
-                      <td className="px-3 py-2 text-zinc-500">
-                        {e.sessionType ?? "\u2014"}
+                      <td className="px-3 py-2 text-right text-zinc-500 font-mono">
+                        {e.sessionCount ?? "\u2014"}
                       </td>
                       <td className="px-3 py-2 text-right font-mono font-medium">
                         {fmt(e.value, activeCategory)}{" "}
@@ -169,22 +155,11 @@ export default function TrackmanLeaderboardsPage() {
                           {CATEGORY_UNITS[activeCategory] ?? ""}
                         </span>
                       </td>
-                      {showPitchCount && (
-                        <td className="px-3 py-2 text-right text-zinc-500 font-mono">
-                          {e.pitchCount ?? "\u2014"}
-                        </td>
-                      )}
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-
-            {!showPitchCount && (
-              <div className="text-[11px] text-zinc-600 mt-2">
-                Pitch counts not provided in these PDF exports.
-              </div>
-            )}
 
             {/* Pitch mix */}
             {data.pitch_mix && data.pitch_mix.length > 0 && (

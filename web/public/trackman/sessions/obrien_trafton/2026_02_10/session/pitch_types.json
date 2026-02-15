@@ -29,20 +29,20 @@
   },
   {
     "pitch_type": "Splitter",
-    "avg_velocity_mph": null,
-    "avg_spin_rpm": 272.35,
-    "avg_ivb_in": null,
-    "avg_hb_in": -6.92,
-    "avg_extension_ft": 3.0,
-    "avg_rel_height_ft": 5.9,
-    "avg_rel_side_ft": 5.84,
-    "avg_spin_axis_2d": 1.85,
+    "avg_velocity_mph": 72.35,
+    "avg_spin_rpm": null,
+    "avg_ivb_in": -6.92,
+    "avg_hb_in": 3.0,
+    "avg_extension_ft": 5.9,
+    "avg_rel_height_ft": 5.84,
+    "avg_rel_side_ft": 1.85,
+    "avg_spin_axis_2d": null,
     "avg_spin_axis_3d": null,
     "avg_gyro": null,
     "is_valid": true,
     "raw_columns": {
       "Pitch Type": "Splitter",
-      "MPH": "272.35",
+      "MPH": "72.35",
       "RPM": "",
       "IVB": "-6.92",
       "HB": "3.00",
@@ -54,7 +54,7 @@
       "Gyro": ""
     },
     "parse_warnings": [
-      "COLUMN_SHIFT_REPAIRED"
+      "MANUAL_FIX_STRAY_CHAR"
     ]
   },
   {

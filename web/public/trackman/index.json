@@ -13,7 +13,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 78.39,
-    "maxVelo": 84.08,
     "pitchTypesPath": "/trackman/sessions/burk_bobby/2026_01_30/session/pitch_types.json",
     "metaPath": "/trackman/sessions/burk_bobby/2026_01_30/session/meta.json",
     "summaryPath": "/trackman/sessions/burk_bobby/2026_01_30/session/session_summary.json",
@@ -40,7 +39,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 79.56,
-    "maxVelo": 83.02,
     "pitchTypesPath": "/trackman/sessions/camardi_michael/2026_01_30/session/pitch_types.json",
     "metaPath": "/trackman/sessions/camardi_michael/2026_01_30/session/meta.json",
     "summaryPath": "/trackman/sessions/camardi_michael/2026_01_30/session/session_summary.json",
@@ -66,7 +64,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 80.98,
-    "maxVelo": 88.6,
     "pitchTypesPath": "/trackman/sessions/clark_james/2026_01_30/session/pitch_types.json",
     "metaPath": "/trackman/sessions/clark_james/2026_01_30/session/meta.json",
     "summaryPath": "/trackman/sessions/clark_james/2026_01_30/session/session_summary.json",
@@ -92,7 +89,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 73.86,
-    "maxVelo": 78.69,
     "pitchTypesPath": "/trackman/sessions/doan_connor/2026_01_30/session/pitch_types.json",
     "metaPath": "/trackman/sessions/doan_connor/2026_01_30/session/meta.json",
     "summaryPath": "/trackman/sessions/doan_connor/2026_01_30/session/session_summary.json",
@@ -118,7 +114,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 79.15,
-    "maxVelo": 85.01,
     "pitchTypesPath": "/trackman/sessions/place_cal/2026_01_30/session/pitch_types.json",
     "metaPath": "/trackman/sessions/place_cal/2026_01_30/session/meta.json",
     "summaryPath": "/trackman/sessions/place_cal/2026_01_30/session/session_summary.json",
@@ -145,7 +140,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 80.38,
-    "maxVelo": 86.38,
     "pitchTypesPath": "/trackman/sessions/carrea_joe/2026_01_31/session/pitch_types.json",
     "metaPath": "/trackman/sessions/carrea_joe/2026_01_31/session/meta.json",
     "summaryPath": "/trackman/sessions/carrea_joe/2026_01_31/session/session_summary.json",
@@ -171,7 +165,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 81.3,
-    "maxVelo": 87.84,
     "pitchTypesPath": "/trackman/sessions/james_dillon/2026_01_31/session/pitch_types.json",
     "metaPath": "/trackman/sessions/james_dillon/2026_01_31/session/meta.json",
     "summaryPath": "/trackman/sessions/james_dillon/2026_01_31/session/session_summary.json",
@@ -197,7 +190,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 80.67,
-    "maxVelo": 84.59,
     "pitchTypesPath": "/trackman/sessions/langan_shane/2026_01_31/session/pitch_types.json",
     "metaPath": "/trackman/sessions/langan_shane/2026_01_31/session/meta.json",
     "summaryPath": "/trackman/sessions/langan_shane/2026_01_31/session/session_summary.json",
@@ -223,7 +215,6 @@
       "Other"
     ],
     "weightedAvgVelo": 75.6,
-    "maxVelo": 82.89,
     "pitchTypesPath": "/trackman/sessions/getchell_jacob/2026_02_02/session/pitch_types.json",
     "metaPath": "/trackman/sessions/getchell_jacob/2026_02_02/session/meta.json",
     "summaryPath": "/trackman/sessions/getchell_jacob/2026_02_02/session/session_summary.json",
@@ -249,7 +240,6 @@
       "Other"
     ],
     "weightedAvgVelo": 77.51,
-    "maxVelo": 85.15,
     "pitchTypesPath": "/trackman/sessions/obrien_trafton/2026_02_02/session/pitch_types.json",
     "metaPath": "/trackman/sessions/obrien_trafton/2026_02_02/session/meta.json",
     "summaryPath": "/trackman/sessions/obrien_trafton/2026_02_02/session/session_summary.json",
@@ -276,7 +266,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 78.03,
-    "maxVelo": 82.79,
     "pitchTypesPath": "/trackman/sessions/place_cal/2026_02_02/session/pitch_types.json",
     "metaPath": "/trackman/sessions/place_cal/2026_02_02/session/meta.json",
     "summaryPath": "/trackman/sessions/place_cal/2026_02_02/session/session_summary.json",
@@ -302,7 +291,6 @@
       "Other"
     ],
     "weightedAvgVelo": 75.1,
-    "maxVelo": 80.51,
     "pitchTypesPath": "/trackman/sessions/okeefe_quinn/2026_02_05/session/pitch_types.json",
     "metaPath": "/trackman/sessions/okeefe_quinn/2026_02_05/session/meta.json",
     "summaryPath": "/trackman/sessions/okeefe_quinn/2026_02_05/session/session_summary.json",
@@ -330,7 +318,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 72.79,
-    "maxVelo": 77.21,
     "pitchTypesPath": "/trackman/sessions/burrows_chase/2026_02_06/session/pitch_types.json",
     "metaPath": "/trackman/sessions/burrows_chase/2026_02_06/session/meta.json",
     "summaryPath": "/trackman/sessions/burrows_chase/2026_02_06/session/session_summary.json",
@@ -357,7 +344,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 81.56,
-    "maxVelo": 84.2,
     "pitchTypesPath": "/trackman/sessions/clark_james/2026_02_06/session/pitch_types.json",
     "metaPath": "/trackman/sessions/clark_james/2026_02_06/session/meta.json",
     "summaryPath": "/trackman/sessions/clark_james/2026_02_06/session/session_summary.json",
@@ -383,7 +369,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 75.02,
-    "maxVelo": 78.97,
     "pitchTypesPath": "/trackman/sessions/doan_connor/2026_02_06/session/pitch_types.json",
     "metaPath": "/trackman/sessions/doan_connor/2026_02_06/session/meta.json",
     "summaryPath": "/trackman/sessions/doan_connor/2026_02_06/session/session_summary.json",
@@ -410,7 +395,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 80.72,
-    "maxVelo": 86.66,
     "pitchTypesPath": "/trackman/sessions/carrea_joe/2026_02_07/session/pitch_types.json",
     "metaPath": "/trackman/sessions/carrea_joe/2026_02_07/session/meta.json",
     "summaryPath": "/trackman/sessions/carrea_joe/2026_02_07/session/session_summary.json",
@@ -436,7 +420,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 76.54,
-    "maxVelo": 81.67,
     "pitchTypesPath": "/trackman/sessions/pearl_tristan/2026_02_07/session/pitch_types.json",
     "metaPath": "/trackman/sessions/pearl_tristan/2026_02_07/session/meta.json",
     "summaryPath": "/trackman/sessions/pearl_tristan/2026_02_07/session/session_summary.json",
@@ -462,7 +445,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 83.57,
-    "maxVelo": 88.07,
     "pitchTypesPath": "/trackman/sessions/james_dillon/2026_02_09/session/pitch_types.json",
     "metaPath": "/trackman/sessions/james_dillon/2026_02_09/session/meta.json",
     "summaryPath": "/trackman/sessions/james_dillon/2026_02_09/session/session_summary.json",
@@ -488,7 +470,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 79.95,
-    "maxVelo": 83.96,
     "pitchTypesPath": "/trackman/sessions/langan_shane/2026_02_09/session/pitch_types.json",
     "metaPath": "/trackman/sessions/langan_shane/2026_02_09/session/meta.json",
     "summaryPath": "/trackman/sessions/langan_shane/2026_02_09/session/session_summary.json",
@@ -515,7 +496,6 @@
       "Splitter"
     ],
     "weightedAvgVelo": 77.84,
-    "maxVelo": 85.67,
     "pitchTypesPath": "/trackman/sessions/obrien_trafton/2026_02_10/session/pitch_types.json",
     "metaPath": "/trackman/sessions/obrien_trafton/2026_02_10/session/meta.json",
     "summaryPath": "/trackman/sessions/obrien_trafton/2026_02_10/session/session_summary.json",
@@ -523,9 +503,9 @@
       "type": "pdf_export",
       "filename": "Trafton OBrien 2:10.pdf",
       "sha256": "b9447425c3e4a4bada76515909492ae0b3895080845619abbaa2819621afe84f",
-      "imported_at": "2026-02-15T18:57:41Z"
+      "imported_at": "2026-02-15T19:09:13Z"
     },
-    "updatedAt": "2026-02-15T18:57:41Z"
+    "updatedAt": "2026-02-15T19:09:13Z"
   },
   {
     "playerName": "OKeefe, Quinn",
@@ -542,7 +522,6 @@
       "Other"
     ],
     "weightedAvgVelo": 74.31,
-    "maxVelo": 81.5,
     "pitchTypesPath": "/trackman/sessions/okeefe_quinn/2026_02_10/session/pitch_types.json",
     "metaPath": "/trackman/sessions/okeefe_quinn/2026_02_10/session/meta.json",
     "summaryPath": "/trackman/sessions/okeefe_quinn/2026_02_10/session/session_summary.json",
@@ -569,7 +548,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 78.35,
-    "maxVelo": 83.8,
     "pitchTypesPath": "/trackman/sessions/place_cal/2026_02_10/session/pitch_types.json",
     "metaPath": "/trackman/sessions/place_cal/2026_02_10/session/meta.json",
     "summaryPath": "/trackman/sessions/place_cal/2026_02_10/session/session_summary.json",
@@ -596,7 +574,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 80.97,
-    "maxVelo": 84.96,
     "pitchTypesPath": "/trackman/sessions/burk_bobby/2026_02_13/session/pitch_types.json",
     "metaPath": "/trackman/sessions/burk_bobby/2026_02_13/session/meta.json",
     "summaryPath": "/trackman/sessions/burk_bobby/2026_02_13/session/session_summary.json",
@@ -623,7 +600,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 83.94,
-    "maxVelo": 89.18,
     "pitchTypesPath": "/trackman/sessions/chou_colin/2026_02_13/session/pitch_types.json",
     "metaPath": "/trackman/sessions/chou_colin/2026_02_13/session/meta.json",
     "summaryPath": "/trackman/sessions/chou_colin/2026_02_13/session/session_summary.json",
@@ -649,7 +625,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 75.2,
-    "maxVelo": 79.89,
     "pitchTypesPath": "/trackman/sessions/doan_connor/2026_02_13/session/pitch_types.json",
     "metaPath": "/trackman/sessions/doan_connor/2026_02_13/session/meta.json",
     "summaryPath": "/trackman/sessions/doan_connor/2026_02_13/session/session_summary.json",
@@ -677,7 +652,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 71.88,
-    "maxVelo": 76.57,
     "pitchTypesPath": "/trackman/sessions/burrows_chase/2026_02_14/session/pitch_types.json",
     "metaPath": "/trackman/sessions/burrows_chase/2026_02_14/session/meta.json",
     "summaryPath": "/trackman/sessions/burrows_chase/2026_02_14/session/session_summary.json",
@@ -703,7 +677,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 79.18,
-    "maxVelo": 83.99,
     "pitchTypesPath": "/trackman/sessions/carrea_joe/2026_02_14/session/pitch_types.json",
     "metaPath": "/trackman/sessions/carrea_joe/2026_02_14/session/meta.json",
     "summaryPath": "/trackman/sessions/carrea_joe/2026_02_14/session/session_summary.json",
@@ -729,7 +702,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 77.97,
-    "maxVelo": 81.22,
     "pitchTypesPath": "/trackman/sessions/pearl_tristan/2026_02_14/session/pitch_types.json",
     "metaPath": "/trackman/sessions/pearl_tristan/2026_02_14/session/meta.json",
     "summaryPath": "/trackman/sessions/pearl_tristan/2026_02_14/session/session_summary.json",
@@ -755,7 +727,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 78.75,
-    "maxVelo": 82.96,
     "pitchTypesPath": "/trackman/sessions/place_cal/2026_02_14/session/pitch_types.json",
     "metaPath": "/trackman/sessions/place_cal/2026_02_14/session/meta.json",
     "summaryPath": "/trackman/sessions/place_cal/2026_02_14/session/session_summary.json",
@@ -782,7 +753,6 @@
       "Slider"
     ],
     "weightedAvgVelo": 81.6,
-    "maxVelo": 86.16,
     "pitchTypesPath": "/trackman/sessions/clark_james/2026_02_15/session/pitch_types.json",
     "metaPath": "/trackman/sessions/clark_james/2026_02_15/session/meta.json",
     "summaryPath": "/trackman/sessions/clark_james/2026_02_15/session/session_summary.json",
