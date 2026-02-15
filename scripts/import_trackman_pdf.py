@@ -112,9 +112,8 @@ def _build_meta(
     sha256: str,
     session_date: str,
     session_label: Optional[str],
-    player_override: Optional[str],
+    player_name: str,
 ) -> Dict[str, Any]:
-    player_name = player_override or pdf_meta.player_name or "Unknown Player"
     return {
         "player_name": player_name,
         "player_slug": slugify(player_name),
@@ -287,6 +286,27 @@ def latest_pdf(pdf_dir: str) -> str:
     return pdfs[-1]
 
 
+def parse_player_from_filename(pdf_path: str) -> Optional[str]:
+    """Extract player name from filename like 'Bobby Burk 2:13.pdf'.
+
+    Returns "Last, First" format (e.g. "Burk, Bobby") or None if unparseable.
+    macOS stores '/' in filenames as ':'.
+    """
+    stem = os.path.splitext(os.path.basename(pdf_path))[0]
+    # Strip trailing date pattern (e.g. " 2:13", " 12:05")
+    name = re.sub(r'\s+\d{1,2}[:/]\d{1,2}$', '', stem).strip()
+    if not name:
+        return None
+    # Split into parts: "Bobby Burk" -> ["Bobby", "Burk"]
+    parts = name.split()
+    if len(parts) < 2:
+        return None
+    # Last word is last name, everything before is first name(s)
+    last = parts[-1]
+    first = " ".join(parts[:-1])
+    return f"{last}, {first}"
+
+
 def parse_date_from_filename(pdf_path: str, year_hint: Optional[str] = None) -> Optional[str]:
     """Extract session date from filename like 'Bobby Burk 2:13.pdf' or 'Bobby Burk 2/13.pdf'.
 
@@ -339,7 +359,9 @@ def import_pdf(
 
     # Step 3: Parse metadata
     pdf_meta = parse_meta(content.text)
-    player_name = player_override or pdf_meta.player_name or "Unknown Player"
+    # Player name priority: CLI override > filename > PDF metadata
+    filename_player = parse_player_from_filename(pdf_path)
+    player_name = player_override or filename_player or pdf_meta.player_name or "Unknown Player"
     session_label = session_label_override or pdf_meta.session_label
 
     # Resolve session date: explicit override > filename > PDF metadata
@@ -413,7 +435,7 @@ def import_pdf(
     print(f"  Parsed:  {len(rows)} pitch type rows")
 
     # Step 6: Build outputs
-    meta = _build_meta(pdf_meta, content.filename, sha256, session_date, session_label, player_override)
+    meta = _build_meta(pdf_meta, content.filename, sha256, session_date, session_label, player_name)
     summary = build_session_summary(rows)
 
     if debug_dump:

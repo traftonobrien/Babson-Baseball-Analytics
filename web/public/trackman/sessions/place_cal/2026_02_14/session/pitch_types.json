@@ -1,0 +1,88 @@
+[
+  {
+    "pitch_type": "Fastball",
+    "avg_velocity_mph": 82.96,
+    "avg_spin_rpm": 1836.65,
+    "avg_ivb_in": 3.59,
+    "avg_hb_in": 15.72,
+    "avg_extension_ft": 6.9,
+    "avg_rel_height_ft": 6.35,
+    "avg_rel_side_ft": 2.18,
+    "avg_spin_axis_2d": 257.0,
+    "avg_spin_axis_3d": null,
+    "avg_gyro": null,
+    "is_valid": true,
+    "raw_columns": {
+      "Pitch Type": "Fastball",
+      "MPH": "82.96",
+      "RPM": "1,836.65",
+      "IVB": "3.59",
+      "HB": "15.72",
+      "Extension": "6.90",
+      "Rel Height": "6.35",
+      "Rel Side": "2.18",
+      "2D Spin Axis": "257",
+      "3D Spin Axis": "",
+      "Gyro": ""
+    },
+    "parse_warnings": []
+  },
+  {
+    "pitch_type": "Slider",
+    "avg_velocity_mph": 75.72,
+    "avg_spin_rpm": 2140.89,
+    "avg_ivb_in": null,
+    "avg_hb_in": null,
+    "avg_extension_ft": 5.8,
+    "avg_rel_height_ft": 6.5,
+    "avg_rel_side_ft": 2.35,
+    "avg_spin_axis_2d": null,
+    "avg_spin_axis_3d": null,
+    "avg_gyro": null,
+    "is_valid": true,
+    "raw_columns": {
+      "Pitch Type": "Slider",
+      "MPH": "75.72",
+      "RPM": "2,140.89",
+      "IVB": "",
+      "HB": "",
+      "Extension": "5.80",
+      "Rel Height": "6.50",
+      "Rel Side": "2.35",
+      "2D Spin Axis": "",
+      "3D Spin Axis": "",
+      "Gyro": ""
+    },
+    "parse_warnings": []
+  },
+  {
+    "pitch_type": "Other",
+    "avg_velocity_mph": 77.57,
+    "avg_spin_rpm": 1819.89,
+    "avg_ivb_in": -0.14,
+    "avg_hb_in": 5.53,
+    "avg_extension_ft": 5.83,
+    "avg_rel_height_ft": 5.88,
+    "avg_rel_side_ft": 2.14,
+    "avg_spin_axis_2d": 187.0,
+    "avg_spin_axis_3d": null,
+    "avg_gyro": null,
+    "is_valid": true,
+    "raw_columns": {
+      "Pitch Type": "Other",
+      "MPH": "577.57",
+      "RPM": "1,819.89",
+      "IVB": "-0.14",
+      "HB": "5.53",
+      "Extension": "5.83",
+      "Rel Height": "5.88",
+      "Rel Side": "2.14",
+      "2D Spin Axis": "187",
+      "3D Spin Axis": "",
+      "Gyro": ""
+    },
+    "parse_warnings": [
+      "TRIMMED_NUMERIC_AVG_VELOCITY_MPH"
+    ]
+  }
+]

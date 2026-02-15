@@ -1,0 +1,17 @@
+{
+  "player_name": "Doan, Connor",
+  "player_slug": "doan_connor",
+  "team": "Babson College",
+  "handedness": "RHP",
+  "session_date": "2026-01-30",
+  "date_from": "2026-01-01",
+  "date_to": "2026-02-15",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Connor Doan 1:30.pdf",
+    "sha256": "84514119249dae00e9eeb0669fe328594a0afc56821f8ba36bb39ebd89e11fb6",
+    "imported_at": "2026-02-15T18:57:36Z"
+  }
+}

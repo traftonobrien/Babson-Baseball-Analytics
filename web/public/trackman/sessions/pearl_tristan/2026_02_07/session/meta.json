@@ -1,0 +1,17 @@
+{
+  "player_name": "Pearl, Tristan",
+  "player_slug": "pearl_tristan",
+  "team": "Babson College",
+  "handedness": "LHP",
+  "session_date": "2026-02-07",
+  "date_from": "2026-01-01",
+  "date_to": "2026-02-15",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Tristan Pearl 2:7.pdf",
+    "sha256": "e0301bbcf0698c4c8e947c51e0f7d75f58974a495eab8742dc3b3b803534c76b",
+    "imported_at": "2026-02-15T18:57:42Z"
+  }
+}

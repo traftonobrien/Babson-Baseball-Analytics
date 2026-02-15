@@ -1,0 +1,17 @@
+{
+  "player_name": "Burrows, Chase",
+  "player_slug": "burrows_chase",
+  "team": "Babson College",
+  "handedness": "LHP",
+  "session_date": "2026-02-06",
+  "date_from": "2026-01-01",
+  "date_to": "2026-02-15",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Chase Burrows 2:6.pdf",
+    "sha256": "6cf2c6aa8645234a9b0f045cf71b4394c7d2fe999bf481a68a6f5fe91c089587",
+    "imported_at": "2026-02-15T18:57:30Z"
+  }
+}

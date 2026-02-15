@@ -1,0 +1,17 @@
+{
+  "player_name": "Place, Cal",
+  "player_slug": "place_cal",
+  "team": "Babson College",
+  "handedness": "RHP",
+  "session_date": "2026-01-30",
+  "date_from": "2026-01-01",
+  "date_to": "2026-02-15",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Cal Place 1:30.pdf",
+    "sha256": "1ab8b8f430b6ea74340d60133e9acb9cacf8743f56a74124320c75a0aea82210",
+    "imported_at": "2026-02-15T18:57:43Z"
+  }
+}

@@ -1,0 +1,118 @@
+[
+  {
+    "pitch_type": "Fastball",
+    "avg_velocity_mph": 86.16,
+    "avg_spin_rpm": 2016.07,
+    "avg_ivb_in": 15.08,
+    "avg_hb_in": 15.12,
+    "avg_extension_ft": 5.24,
+    "avg_rel_height_ft": 5.72,
+    "avg_rel_side_ft": 2.07,
+    "avg_spin_axis_2d": 225.0,
+    "avg_spin_axis_3d": null,
+    "avg_gyro": null,
+    "is_valid": true,
+    "raw_columns": {
+      "Pitch Type": "Fastball",
+      "MPH": "86.16",
+      "RPM": "2,016.07",
+      "IVB": "15.08",
+      "HB": "15.12",
+      "Extension": "5.24",
+      "Rel Height": "5.72",
+      "Rel Side": "2.07",
+      "2D Spin Axis": "225",
+      "3D Spin Axis": "",
+      "Gyro": ""
+    },
+    "parse_warnings": []
+  },
+  {
+    "pitch_type": "ChangeUp",
+    "avg_velocity_mph": 82.95,
+    "avg_spin_rpm": 1907.57,
+    "avg_ivb_in": null,
+    "avg_hb_in": null,
+    "avg_extension_ft": 6.2,
+    "avg_rel_height_ft": 5.41,
+    "avg_rel_side_ft": 1.96,
+    "avg_spin_axis_2d": null,
+    "avg_spin_axis_3d": null,
+    "avg_gyro": null,
+    "is_valid": true,
+    "raw_columns": {
+      "Pitch Type": "ChangeUp",
+      "MPH": "282.95",
+      "RPM": "1,907.57",
+      "IVB": "",
+      "HB": "",
+      "Extension": "6.20",
+      "Rel Height": "5.41",
+      "Rel Side": "1.96",
+      "2D Spin Axis": "",
+      "3D Spin Axis": "",
+      "Gyro": ""
+    },
+    "parse_warnings": [
+      "TRIMMED_NUMERIC_AVG_VELOCITY_MPH"
+    ]
+  },
+  {
+    "pitch_type": "Slider",
+    "avg_velocity_mph": 80.25,
+    "avg_spin_rpm": 1869.59,
+    "avg_ivb_in": -1.67,
+    "avg_hb_in": -6.67,
+    "avg_extension_ft": 5.12,
+    "avg_rel_height_ft": 5.5,
+    "avg_rel_side_ft": 2.2,
+    "avg_spin_axis_2d": 85.0,
+    "avg_spin_axis_3d": null,
+    "avg_gyro": null,
+    "is_valid": true,
+    "raw_columns": {
+      "Pitch Type": "Slider",
+      "MPH": "80.25",
+      "RPM": "1,869.59",
+      "IVB": "-1.67",
+      "HB": "-6.67",
+      "Extension": "5.12",
+      "Rel Height": "5.50",
+      "Rel Side": "2.20",
+      "2D Spin Axis": "85",
+      "3D Spin Axis": "",
+      "Gyro": ""
+    },
+    "parse_warnings": []
+  },
+  {
+    "pitch_type": "Other",
+    "avg_velocity_mph": 77.04,
+    "avg_spin_rpm": 1818.43,
+    "avg_ivb_in": 8.78,
+    "avg_hb_in": 10.5,
+    "avg_extension_ft": 4.96,
+    "avg_rel_height_ft": 5.77,
+    "avg_rel_side_ft": 2.46,
+    "avg_spin_axis_2d": 217.0,
+    "avg_spin_axis_3d": null,
+    "avg_gyro": null,
+    "is_valid": true,
+    "raw_columns": {
+      "Pitch Type": "Other",
+      "MPH": "577.04",
+      "RPM": "1,818.43",
+      "IVB": "8.78",
+      "HB": "10.50",
+      "Extension": "4.96",
+      "Rel Height": "5.77",
+      "Rel Side": "2.46",
+      "2D Spin Axis": "217",
+      "3D Spin Axis": "",
+      "Gyro": ""
+    },
+    "parse_warnings": [
+      "TRIMMED_NUMERIC_AVG_VELOCITY_MPH"
+    ]
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "player_name": "Clark, James",
+  "player_slug": "clark_james",
+  "team": "Babson College",
+  "handedness": "RHP",
+  "session_date": "2026-02-06",
+  "date_from": "2026-01-01",
+  "date_to": "2026-02-15",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "James Clark 2:6.pdf",
+    "sha256": "7d947839ffbb92e81e694cda1b7627cf1798661bd41ac285476a9f2153c5aa58",
+    "imported_at": "2026-02-15T18:57:35Z"
+  }
+}

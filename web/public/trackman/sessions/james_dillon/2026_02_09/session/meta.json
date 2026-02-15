@@ -1,0 +1,17 @@
+{
+  "player_name": "James, Dillon",
+  "player_slug": "james_dillon",
+  "team": "Babson College",
+  "handedness": "RHP",
+  "session_date": "2026-02-09",
+  "date_from": "2026-01-01",
+  "date_to": "2026-02-15",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Dillon James 2:9.pdf",
+    "sha256": "ea91661baccb35b6d1b86fea5d63db323feeabb18d06ffb88abde4dc51a23f7b",
+    "imported_at": "2026-02-15T18:57:39Z"
+  }
+}

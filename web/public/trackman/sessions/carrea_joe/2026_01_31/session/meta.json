@@ -1,0 +1,17 @@
+{
+  "player_name": "Carrea, Joe",
+  "player_slug": "carrea_joe",
+  "team": null,
+  "handedness": null,
+  "session_date": "2026-01-31",
+  "date_from": "2026-01-01",
+  "date_to": "2026-02-15",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Joe Carrea 1:31.pdf",
+    "sha256": "3a4821a5f11313ff64a334dd90db1984016da1c56999b381bda875477d680ebb",
+    "imported_at": "2026-02-15T18:57:32Z"
+  }
+}

@@ -1,0 +1,88 @@
+[
+  {
+    "pitch_type": "Fastball",
+    "avg_velocity_mph": 83.99,
+    "avg_spin_rpm": 1964.79,
+    "avg_ivb_in": 11.72,
+    "avg_hb_in": 14.44,
+    "avg_extension_ft": 7.04,
+    "avg_rel_height_ft": 5.69,
+    "avg_rel_side_ft": 2.59,
+    "avg_spin_axis_2d": 231.0,
+    "avg_spin_axis_3d": null,
+    "avg_gyro": null,
+    "is_valid": true,
+    "raw_columns": {
+      "Pitch Type": "Fastball",
+      "MPH": "83.99",
+      "RPM": "1,964.79",
+      "IVB": "11.72",
+      "HB": "14.44",
+      "Extension": "7.04",
+      "Rel Height": "5.69",
+      "Rel Side": "2.59",
+      "2D Spin Axis": "231",
+      "3D Spin Axis": "",
+      "Gyro": ""
+    },
+    "parse_warnings": []
+  },
+  {
+    "pitch_type": "Slider",
+    "avg_velocity_mph": 75.94,
+    "avg_spin_rpm": 1681.81,
+    "avg_ivb_in": -2.0,
+    "avg_hb_in": -5.96,
+    "avg_extension_ft": 6.89,
+    "avg_rel_height_ft": 5.46,
+    "avg_rel_side_ft": 2.93,
+    "avg_spin_axis_2d": null,
+    "avg_spin_axis_3d": null,
+    "avg_gyro": null,
+    "is_valid": true,
+    "raw_columns": {
+      "Pitch Type": "Slider",
+      "MPH": "75.94",
+      "RPM": "1,681.81",
+      "IVB": "-2.00",
+      "HB": "-5.96",
+      "Extension": "6.89",
+      "Rel Height": "5.46",
+      "Rel Side": "2.93",
+      "2D Spin Axis": "",
+      "3D Spin Axis": "",
+      "Gyro": ""
+    },
+    "parse_warnings": []
+  },
+  {
+    "pitch_type": "Other",
+    "avg_velocity_mph": 77.62,
+    "avg_spin_rpm": 1834.36,
+    "avg_ivb_in": 7.96,
+    "avg_hb_in": 1.67,
+    "avg_extension_ft": 6.63,
+    "avg_rel_height_ft": 6.03,
+    "avg_rel_side_ft": 1.27,
+    "avg_spin_axis_2d": 190.0,
+    "avg_spin_axis_3d": null,
+    "avg_gyro": null,
+    "is_valid": true,
+    "raw_columns": {
+      "Pitch Type": "Other",
+      "MPH": "577.62",
+      "RPM": "1,834.36",
+      "IVB": "7.96",
+      "HB": "1.67",
+      "Extension": "6.63",
+      "Rel Height": "6.03",
+      "Rel Side": "1.27",
+      "2D Spin Axis": "190",
+      "3D Spin Axis": "",
+      "Gyro": ""
+    },
+    "parse_warnings": [
+      "TRIMMED_NUMERIC_AVG_VELOCITY_MPH"
+    ]
+  }
+]

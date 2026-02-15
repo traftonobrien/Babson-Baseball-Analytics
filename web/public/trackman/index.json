@@ -4,6 +4,588 @@
     "playerSlug": "burk_bobby",
     "team": "Babson College",
     "handedness": "RHP",
+    "date": "2026-01-30",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 78.39,
+    "maxVelo": 84.08,
+    "pitchTypesPath": "/trackman/sessions/burk_bobby/2026_01_30/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/burk_bobby/2026_01_30/session/meta.json",
+    "summaryPath": "/trackman/sessions/burk_bobby/2026_01_30/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Bobby Burk 1:30.pdf",
+      "sha256": "475b529e8e48c4e60d80f3f8b686b7c02d219df41b1e8d644b9cbefe095c1494",
+      "imported_at": "2026-02-15T18:57:30Z"
+    },
+    "updatedAt": "2026-02-15T18:57:30Z"
+  },
+  {
+    "playerName": "Camardi, Michael",
+    "playerSlug": "camardi_michael",
+    "team": "Babson College",
+    "handedness": "LHP",
+    "date": "2026-01-30",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Sinker",
+      "Slider"
+    ],
+    "weightedAvgVelo": 79.56,
+    "maxVelo": 83.02,
+    "pitchTypesPath": "/trackman/sessions/camardi_michael/2026_01_30/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/camardi_michael/2026_01_30/session/meta.json",
+    "summaryPath": "/trackman/sessions/camardi_michael/2026_01_30/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Michael Camardi 1:30.pdf",
+      "sha256": "3c423b3d58b72ac77612f1a3ec22d602c5beeab34365f73d202bebbbc00fde76",
+      "imported_at": "2026-02-15T18:57:32Z"
+    },
+    "updatedAt": "2026-02-15T18:57:32Z"
+  },
+  {
+    "playerName": "Clark, James",
+    "playerSlug": "clark_james",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-01-30",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 80.98,
+    "maxVelo": 88.6,
+    "pitchTypesPath": "/trackman/sessions/clark_james/2026_01_30/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/clark_james/2026_01_30/session/meta.json",
+    "summaryPath": "/trackman/sessions/clark_james/2026_01_30/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "James Clark 1:30.pdf",
+      "sha256": "fd04df733e352f51f807113f838bcd097e568a676bb7cd54cfc7782f837a9d23",
+      "imported_at": "2026-02-15T18:57:34Z"
+    },
+    "updatedAt": "2026-02-15T18:57:34Z"
+  },
+  {
+    "playerName": "Doan, Connor",
+    "playerSlug": "doan_connor",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-01-30",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 73.86,
+    "maxVelo": 78.69,
+    "pitchTypesPath": "/trackman/sessions/doan_connor/2026_01_30/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/doan_connor/2026_01_30/session/meta.json",
+    "summaryPath": "/trackman/sessions/doan_connor/2026_01_30/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Connor Doan 1:30.pdf",
+      "sha256": "84514119249dae00e9eeb0669fe328594a0afc56821f8ba36bb39ebd89e11fb6",
+      "imported_at": "2026-02-15T18:57:36Z"
+    },
+    "updatedAt": "2026-02-15T18:57:36Z"
+  },
+  {
+    "playerName": "Place, Cal",
+    "playerSlug": "place_cal",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-01-30",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 79.15,
+    "maxVelo": 85.01,
+    "pitchTypesPath": "/trackman/sessions/place_cal/2026_01_30/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/place_cal/2026_01_30/session/meta.json",
+    "summaryPath": "/trackman/sessions/place_cal/2026_01_30/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Cal Place 1:30.pdf",
+      "sha256": "1ab8b8f430b6ea74340d60133e9acb9cacf8743f56a74124320c75a0aea82210",
+      "imported_at": "2026-02-15T18:57:43Z"
+    },
+    "updatedAt": "2026-02-15T18:57:43Z"
+  },
+  {
+    "playerName": "Carrea, Joe",
+    "playerSlug": "carrea_joe",
+    "team": null,
+    "handedness": null,
+    "date": "2026-01-31",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "ChangeUp",
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 80.38,
+    "maxVelo": 86.38,
+    "pitchTypesPath": "/trackman/sessions/carrea_joe/2026_01_31/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/carrea_joe/2026_01_31/session/meta.json",
+    "summaryPath": "/trackman/sessions/carrea_joe/2026_01_31/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Joe Carrea 1:31.pdf",
+      "sha256": "3a4821a5f11313ff64a334dd90db1984016da1c56999b381bda875477d680ebb",
+      "imported_at": "2026-02-15T18:57:32Z"
+    },
+    "updatedAt": "2026-02-15T18:57:32Z"
+  },
+  {
+    "playerName": "James, Dillon",
+    "playerSlug": "james_dillon",
+    "team": "See Pitches by:",
+    "handedness": "RHP",
+    "date": "2026-01-31",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 81.3,
+    "maxVelo": 87.84,
+    "pitchTypesPath": "/trackman/sessions/james_dillon/2026_01_31/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/james_dillon/2026_01_31/session/meta.json",
+    "summaryPath": "/trackman/sessions/james_dillon/2026_01_31/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Dillon James 1:31.pdf",
+      "sha256": "2d65b85d92a7db6a37d39b115bfa217860dc6647b34aabc032da11a0de79f1e6",
+      "imported_at": "2026-02-15T18:57:38Z"
+    },
+    "updatedAt": "2026-02-15T18:57:38Z"
+  },
+  {
+    "playerName": "Langan, Shane",
+    "playerSlug": "langan_shane",
+    "team": null,
+    "handedness": null,
+    "date": "2026-01-31",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 80.67,
+    "maxVelo": 84.59,
+    "pitchTypesPath": "/trackman/sessions/langan_shane/2026_01_31/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/langan_shane/2026_01_31/session/meta.json",
+    "summaryPath": "/trackman/sessions/langan_shane/2026_01_31/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Shane Langan 1:31.pdf",
+      "sha256": "cf3c6ca33de0427256e98c796229dbdfac2da9997ed73114d78b782022b98674",
+      "imported_at": "2026-02-15T18:57:40Z"
+    },
+    "updatedAt": "2026-02-15T18:57:40Z"
+  },
+  {
+    "playerName": "Getchell, Jacob",
+    "playerSlug": "getchell_jacob",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-02",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Curveball",
+      "Fastball",
+      "Other"
+    ],
+    "weightedAvgVelo": 75.6,
+    "maxVelo": 82.89,
+    "pitchTypesPath": "/trackman/sessions/getchell_jacob/2026_02_02/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/getchell_jacob/2026_02_02/session/meta.json",
+    "summaryPath": "/trackman/sessions/getchell_jacob/2026_02_02/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Jacob Getchell 2:2.pdf",
+      "sha256": "4b1e5eb66f0a2a7ba6df59644a4d8516ff2d70c1500253d2325d0807a40e301c",
+      "imported_at": "2026-02-15T18:57:38Z"
+    },
+    "updatedAt": "2026-02-15T18:57:38Z"
+  },
+  {
+    "playerName": "OBrien, Trafton",
+    "playerSlug": "obrien_trafton",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-02",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Curveball",
+      "Fastball",
+      "Other"
+    ],
+    "weightedAvgVelo": 77.51,
+    "maxVelo": 85.15,
+    "pitchTypesPath": "/trackman/sessions/obrien_trafton/2026_02_02/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/obrien_trafton/2026_02_02/session/meta.json",
+    "summaryPath": "/trackman/sessions/obrien_trafton/2026_02_02/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Trafton OBrien 2:2.pdf",
+      "sha256": "ba8a59d077a61384eb0d25c28d0f2d6fec38bea4d8829d0dbaed7401ba079570",
+      "imported_at": "2026-02-15T18:57:40Z"
+    },
+    "updatedAt": "2026-02-15T18:57:40Z"
+  },
+  {
+    "playerName": "Place, Cal",
+    "playerSlug": "place_cal",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-02",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Sinker",
+      "Slider"
+    ],
+    "weightedAvgVelo": 78.03,
+    "maxVelo": 82.79,
+    "pitchTypesPath": "/trackman/sessions/place_cal/2026_02_02/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/place_cal/2026_02_02/session/meta.json",
+    "summaryPath": "/trackman/sessions/place_cal/2026_02_02/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Cal Place 2:2.pdf",
+      "sha256": "6ffa10ab68876d7da860c123a9bbabd362cdb65cc6bd4f711ed20cd59e8c5d90",
+      "imported_at": "2026-02-15T18:57:44Z"
+    },
+    "updatedAt": "2026-02-15T18:57:44Z"
+  },
+  {
+    "playerName": "OKeefe, Quinn",
+    "playerSlug": "okeefe_quinn",
+    "team": null,
+    "handedness": null,
+    "date": "2026-02-05",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "ChangeUp",
+      "Fastball",
+      "Other"
+    ],
+    "weightedAvgVelo": 75.1,
+    "maxVelo": 80.51,
+    "pitchTypesPath": "/trackman/sessions/okeefe_quinn/2026_02_05/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/okeefe_quinn/2026_02_05/session/meta.json",
+    "summaryPath": "/trackman/sessions/okeefe_quinn/2026_02_05/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Quinn OKeefe 2:5.pdf",
+      "sha256": "c6f3a29c7bbaba1820d1503b293f58b21ae3988c25515d209a53e767a0fbb3c9",
+      "imported_at": "2026-02-15T18:57:41Z"
+    },
+    "updatedAt": "2026-02-15T18:57:41Z"
+  },
+  {
+    "playerName": "Burrows, Chase",
+    "playerSlug": "burrows_chase",
+    "team": "Babson College",
+    "handedness": "LHP",
+    "date": "2026-02-06",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Cutter",
+      "Fastball",
+      "Other",
+      "Sinker",
+      "Slider"
+    ],
+    "weightedAvgVelo": 72.79,
+    "maxVelo": 77.21,
+    "pitchTypesPath": "/trackman/sessions/burrows_chase/2026_02_06/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/burrows_chase/2026_02_06/session/meta.json",
+    "summaryPath": "/trackman/sessions/burrows_chase/2026_02_06/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Chase Burrows 2:6.pdf",
+      "sha256": "6cf2c6aa8645234a9b0f045cf71b4394c7d2fe999bf481a68a6f5fe91c089587",
+      "imported_at": "2026-02-15T18:57:30Z"
+    },
+    "updatedAt": "2026-02-15T18:57:30Z"
+  },
+  {
+    "playerName": "Clark, James",
+    "playerSlug": "clark_james",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-06",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "ChangeUp",
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 81.56,
+    "maxVelo": 84.2,
+    "pitchTypesPath": "/trackman/sessions/clark_james/2026_02_06/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/clark_james/2026_02_06/session/meta.json",
+    "summaryPath": "/trackman/sessions/clark_james/2026_02_06/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "James Clark 2:6.pdf",
+      "sha256": "7d947839ffbb92e81e694cda1b7627cf1798661bd41ac285476a9f2153c5aa58",
+      "imported_at": "2026-02-15T18:57:35Z"
+    },
+    "updatedAt": "2026-02-15T18:57:35Z"
+  },
+  {
+    "playerName": "Doan, Connor",
+    "playerSlug": "doan_connor",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-06",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 75.02,
+    "maxVelo": 78.97,
+    "pitchTypesPath": "/trackman/sessions/doan_connor/2026_02_06/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/doan_connor/2026_02_06/session/meta.json",
+    "summaryPath": "/trackman/sessions/doan_connor/2026_02_06/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Connor Doan 2:6.pdf",
+      "sha256": "6b8ea88c6ff0b7ac1b02074023f3e3fd5c90691711af754cb1e426b665ce8ad1",
+      "imported_at": "2026-02-15T18:57:37Z"
+    },
+    "updatedAt": "2026-02-15T18:57:37Z"
+  },
+  {
+    "playerName": "Carrea, Joe",
+    "playerSlug": "carrea_joe",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-07",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "ChangeUp",
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 80.72,
+    "maxVelo": 86.66,
+    "pitchTypesPath": "/trackman/sessions/carrea_joe/2026_02_07/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/carrea_joe/2026_02_07/session/meta.json",
+    "summaryPath": "/trackman/sessions/carrea_joe/2026_02_07/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Joe Carrea 2:7.pdf",
+      "sha256": "8ee7e74af64f8f6b173fa08725d24a9878a1e7878b3c0fce5311b8c6e70275b0",
+      "imported_at": "2026-02-15T18:57:33Z"
+    },
+    "updatedAt": "2026-02-15T18:57:33Z"
+  },
+  {
+    "playerName": "Pearl, Tristan",
+    "playerSlug": "pearl_tristan",
+    "team": "Babson College",
+    "handedness": "LHP",
+    "date": "2026-02-07",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 76.54,
+    "maxVelo": 81.67,
+    "pitchTypesPath": "/trackman/sessions/pearl_tristan/2026_02_07/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/pearl_tristan/2026_02_07/session/meta.json",
+    "summaryPath": "/trackman/sessions/pearl_tristan/2026_02_07/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Tristan Pearl 2:7.pdf",
+      "sha256": "e0301bbcf0698c4c8e947c51e0f7d75f58974a495eab8742dc3b3b803534c76b",
+      "imported_at": "2026-02-15T18:57:42Z"
+    },
+    "updatedAt": "2026-02-15T18:57:42Z"
+  },
+  {
+    "playerName": "James, Dillon",
+    "playerSlug": "james_dillon",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-09",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 83.57,
+    "maxVelo": 88.07,
+    "pitchTypesPath": "/trackman/sessions/james_dillon/2026_02_09/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/james_dillon/2026_02_09/session/meta.json",
+    "summaryPath": "/trackman/sessions/james_dillon/2026_02_09/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Dillon James 2:9.pdf",
+      "sha256": "ea91661baccb35b6d1b86fea5d63db323feeabb18d06ffb88abde4dc51a23f7b",
+      "imported_at": "2026-02-15T18:57:39Z"
+    },
+    "updatedAt": "2026-02-15T18:57:39Z"
+  },
+  {
+    "playerName": "Langan, Shane",
+    "playerSlug": "langan_shane",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-09",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 79.95,
+    "maxVelo": 83.96,
+    "pitchTypesPath": "/trackman/sessions/langan_shane/2026_02_09/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/langan_shane/2026_02_09/session/meta.json",
+    "summaryPath": "/trackman/sessions/langan_shane/2026_02_09/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Shane Langan 2:9.pdf",
+      "sha256": "51454bda3ebf1e917fc660e0136cfe4578374275af435b5a356beb7b818c664a",
+      "imported_at": "2026-02-15T18:57:39Z"
+    },
+    "updatedAt": "2026-02-15T18:57:39Z"
+  },
+  {
+    "playerName": "OBrien, Trafton",
+    "playerSlug": "obrien_trafton",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-10",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Curveball",
+      "Fastball",
+      "Other",
+      "Splitter"
+    ],
+    "weightedAvgVelo": 77.84,
+    "maxVelo": 85.67,
+    "pitchTypesPath": "/trackman/sessions/obrien_trafton/2026_02_10/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/obrien_trafton/2026_02_10/session/meta.json",
+    "summaryPath": "/trackman/sessions/obrien_trafton/2026_02_10/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Trafton OBrien 2:10.pdf",
+      "sha256": "b9447425c3e4a4bada76515909492ae0b3895080845619abbaa2819621afe84f",
+      "imported_at": "2026-02-15T18:57:41Z"
+    },
+    "updatedAt": "2026-02-15T18:57:41Z"
+  },
+  {
+    "playerName": "OKeefe, Quinn",
+    "playerSlug": "okeefe_quinn",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-10",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "ChangeUp",
+      "Curveball",
+      "Fastball",
+      "Other"
+    ],
+    "weightedAvgVelo": 74.31,
+    "maxVelo": 81.5,
+    "pitchTypesPath": "/trackman/sessions/okeefe_quinn/2026_02_10/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/okeefe_quinn/2026_02_10/session/meta.json",
+    "summaryPath": "/trackman/sessions/okeefe_quinn/2026_02_10/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Quinn OKeefe 2:10.pdf",
+      "sha256": "b8662c5609f1d9bcae657a2e6738e3798237e3724c94a65680fd58c672b3a126",
+      "imported_at": "2026-02-15T18:57:42Z"
+    },
+    "updatedAt": "2026-02-15T18:57:42Z"
+  },
+  {
+    "playerName": "Place, Cal",
+    "playerSlug": "place_cal",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-10",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Curveball",
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 78.35,
+    "maxVelo": 83.8,
+    "pitchTypesPath": "/trackman/sessions/place_cal/2026_02_10/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/place_cal/2026_02_10/session/meta.json",
+    "summaryPath": "/trackman/sessions/place_cal/2026_02_10/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Cal Place 2:10.pdf",
+      "sha256": "e8c8fa0c4128a65bf3b7c0ef200f89b6ae1290f2a1cfec0762f5f4d80d91a84d",
+      "imported_at": "2026-02-15T18:57:44Z"
+    },
+    "updatedAt": "2026-02-15T18:57:44Z"
+  },
+  {
+    "playerName": "Burk, Bobby",
+    "playerSlug": "burk_bobby",
+    "team": "Babson College",
+    "handedness": "RHP",
     "date": "2026-02-13",
     "sessionType": null,
     "pitchCount": null,
@@ -22,8 +604,194 @@
       "type": "pdf_export",
       "filename": "Bobby Burk 2:13.pdf",
       "sha256": "61140f1a8215c682e11fa6f8e953d7a4df834f968af884ef0520f5a16030d4fb",
-      "imported_at": "2026-02-15T18:47:08Z"
+      "imported_at": "2026-02-15T18:57:29Z"
     },
-    "updatedAt": "2026-02-15T18:47:08Z"
+    "updatedAt": "2026-02-15T18:57:29Z"
+  },
+  {
+    "playerName": "Chou, Colin",
+    "playerSlug": "chou_colin",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-13",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Sinker",
+      "Slider"
+    ],
+    "weightedAvgVelo": 83.94,
+    "maxVelo": 89.18,
+    "pitchTypesPath": "/trackman/sessions/chou_colin/2026_02_13/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/chou_colin/2026_02_13/session/meta.json",
+    "summaryPath": "/trackman/sessions/chou_colin/2026_02_13/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Colin Chou 2:13.pdf",
+      "sha256": "5062c6d908b5e37a335e174abea04879a1a9ac2af5509e1f9a3545f5907baab6",
+      "imported_at": "2026-02-15T18:57:34Z"
+    },
+    "updatedAt": "2026-02-15T18:57:34Z"
+  },
+  {
+    "playerName": "Doan, Connor",
+    "playerSlug": "doan_connor",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-13",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 75.2,
+    "maxVelo": 79.89,
+    "pitchTypesPath": "/trackman/sessions/doan_connor/2026_02_13/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/doan_connor/2026_02_13/session/meta.json",
+    "summaryPath": "/trackman/sessions/doan_connor/2026_02_13/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Connor Doan 2:13.pdf",
+      "sha256": "5b5faf1d9ffceeed29eb1c954165fff70c6df1b20ef3525b91fdc54c5dbb0c8f",
+      "imported_at": "2026-02-15T18:57:37Z"
+    },
+    "updatedAt": "2026-02-15T18:57:37Z"
+  },
+  {
+    "playerName": "Burrows, Chase",
+    "playerSlug": "burrows_chase",
+    "team": "Babson College",
+    "handedness": "LHP",
+    "date": "2026-02-14",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Cutter",
+      "Fastball",
+      "Other",
+      "Sinker",
+      "Slider"
+    ],
+    "weightedAvgVelo": 71.88,
+    "maxVelo": 76.57,
+    "pitchTypesPath": "/trackman/sessions/burrows_chase/2026_02_14/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/burrows_chase/2026_02_14/session/meta.json",
+    "summaryPath": "/trackman/sessions/burrows_chase/2026_02_14/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Chase Burrows 2:14.pdf",
+      "sha256": "fdaf10d02bae189204c5d1738bb9b88c3a62eff85732721219db03a198145246",
+      "imported_at": "2026-02-15T18:57:31Z"
+    },
+    "updatedAt": "2026-02-15T18:57:31Z"
+  },
+  {
+    "playerName": "Carrea, Joe",
+    "playerSlug": "carrea_joe",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-14",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 79.18,
+    "maxVelo": 83.99,
+    "pitchTypesPath": "/trackman/sessions/carrea_joe/2026_02_14/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/carrea_joe/2026_02_14/session/meta.json",
+    "summaryPath": "/trackman/sessions/carrea_joe/2026_02_14/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Joe Carrea 2:14.pdf",
+      "sha256": "aaff9f0b03e77b91ae37a20661b9c6f9e3a8d870de17c013e2e2d9865f57ed1c",
+      "imported_at": "2026-02-15T18:57:33Z"
+    },
+    "updatedAt": "2026-02-15T18:57:33Z"
+  },
+  {
+    "playerName": "Pearl, Tristan",
+    "playerSlug": "pearl_tristan",
+    "team": "Babson College",
+    "handedness": "LHP",
+    "date": "2026-02-14",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 77.97,
+    "maxVelo": 81.22,
+    "pitchTypesPath": "/trackman/sessions/pearl_tristan/2026_02_14/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/pearl_tristan/2026_02_14/session/meta.json",
+    "summaryPath": "/trackman/sessions/pearl_tristan/2026_02_14/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Tristan Pearl 2:14.pdf",
+      "sha256": "8ef412a1e4e7ef4b2ffe876f94c68ddd73e11792c33e12f2301d1fd0f409119d",
+      "imported_at": "2026-02-15T18:57:43Z"
+    },
+    "updatedAt": "2026-02-15T18:57:43Z"
+  },
+  {
+    "playerName": "Place, Cal",
+    "playerSlug": "place_cal",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-14",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 78.75,
+    "maxVelo": 82.96,
+    "pitchTypesPath": "/trackman/sessions/place_cal/2026_02_14/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/place_cal/2026_02_14/session/meta.json",
+    "summaryPath": "/trackman/sessions/place_cal/2026_02_14/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Cal Place 2:14.pdf",
+      "sha256": "771a414db20b6c8ca47d47ebfb3c3cfa3c54fa63ffa24ec9ca248488f84757f6",
+      "imported_at": "2026-02-15T18:57:45Z"
+    },
+    "updatedAt": "2026-02-15T18:57:45Z"
+  },
+  {
+    "playerName": "Clark, James",
+    "playerSlug": "clark_james",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-15",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "ChangeUp",
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 81.6,
+    "maxVelo": 86.16,
+    "pitchTypesPath": "/trackman/sessions/clark_james/2026_02_15/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/clark_james/2026_02_15/session/meta.json",
+    "summaryPath": "/trackman/sessions/clark_james/2026_02_15/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "James Clark 2:15.pdf",
+      "sha256": "e34c3ac2ee906574b7b84ca035b22491c932c77d21599aacc22909c8694889c7",
+      "imported_at": "2026-02-15T18:57:36Z"
+    },
+    "updatedAt": "2026-02-15T18:57:36Z"
   }
 ]

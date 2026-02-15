@@ -1,0 +1,17 @@
+{
+  "player_name": "OKeefe, Quinn",
+  "player_slug": "okeefe_quinn",
+  "team": null,
+  "handedness": null,
+  "session_date": "2026-02-05",
+  "date_from": "2026-01-01",
+  "date_to": "2026-02-15",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Quinn OKeefe 2:5.pdf",
+    "sha256": "c6f3a29c7bbaba1820d1503b293f58b21ae3988c25515d209a53e767a0fbb3c9",
+    "imported_at": "2026-02-15T18:57:41Z"
+  }
+}

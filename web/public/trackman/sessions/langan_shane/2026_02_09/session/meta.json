@@ -1,0 +1,17 @@
+{
+  "player_name": "Langan, Shane",
+  "player_slug": "langan_shane",
+  "team": "Babson College",
+  "handedness": "RHP",
+  "session_date": "2026-02-09",
+  "date_from": "2026-01-01",
+  "date_to": "2026-02-15",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Shane Langan 2:9.pdf",
+    "sha256": "51454bda3ebf1e917fc660e0136cfe4578374275af435b5a356beb7b818c664a",
+    "imported_at": "2026-02-15T18:57:39Z"
+  }
+}
