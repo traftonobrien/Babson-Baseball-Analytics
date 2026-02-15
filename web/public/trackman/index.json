@@ -4,7 +4,7 @@
     "playerSlug": "burk_bobby",
     "team": "Babson College",
     "handedness": "RHP",
-    "date": "2026-02-14",
+    "date": "2026-02-13",
     "sessionType": null,
     "pitchCount": null,
     "pitchTypes": [
@@ -15,15 +15,15 @@
     ],
     "weightedAvgVelo": 80.97,
     "maxVelo": 84.96,
-    "pitchTypesPath": "/trackman/sessions/burk_bobby/2026_01_01__2026_02_14/session/pitch_types.json",
-    "metaPath": "/trackman/sessions/burk_bobby/2026_01_01__2026_02_14/session/meta.json",
-    "summaryPath": "/trackman/sessions/burk_bobby/2026_01_01__2026_02_14/session/session_summary.json",
+    "pitchTypesPath": "/trackman/sessions/burk_bobby/2026_02_13/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/burk_bobby/2026_02_13/session/meta.json",
+    "summaryPath": "/trackman/sessions/burk_bobby/2026_02_13/session/session_summary.json",
     "source": {
       "type": "pdf_export",
-      "filename": "Baseball Team Portal Export.pdf",
+      "filename": "Bobby Burk 2:13.pdf",
       "sha256": "61140f1a8215c682e11fa6f8e953d7a4df834f968af884ef0520f5a16030d4fb",
-      "imported_at": "2026-02-14T22:25:39Z"
+      "imported_at": "2026-02-15T18:47:08Z"
     },
-    "updatedAt": "2026-02-14T22:25:39Z"
+    "updatedAt": "2026-02-15T18:47:08Z"
   }
 ]

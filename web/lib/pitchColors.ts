@@ -4,6 +4,7 @@
  */
 
 const PITCH_COLORS: Record<string, string> = {
+  // Abbreviations
   FF: "#ef4444",   // red
   CU: "#6366f1",   // indigo
   FS: "#14b8a6",   // teal
@@ -14,6 +15,15 @@ const PITCH_COLORS: Record<string, string> = {
   KC: "#0ea5e9",   // sky
   CB: "#6366f1",   // indigo (alias for CU)
   CT: "#f59e0b",   // amber (alias for FC)
+  // Full names (PDF pipeline)
+  Fastball: "#ef4444",
+  Sinker: "#f97316",
+  Slider: "#a855f7",
+  Changeup: "#22c55e",
+  Curveball: "#6366f1",
+  Cutter: "#f59e0b",
+  Splitter: "#14b8a6",
+  "Knuckle Curve": "#0ea5e9",
 };
 
 const OTHER_COLOR = "#71717a"; // zinc-500

@@ -54,7 +54,6 @@ export default function PitchTypeTable({
               <th className="px-3 py-2 text-left">Pitch</th>
               {showCounts && <th className="px-3 py-2 text-right">#</th>}
               <th className="px-3 py-2 text-right">Avg Velo</th>
-              <th className="px-3 py-2 text-right">Max Velo</th>
               <th className="px-3 py-2 text-right">Avg Spin</th>
               <th className="px-3 py-2 text-right">Avg IVB</th>
               <th className="px-3 py-2 text-right">Avg HB</th>
@@ -77,7 +76,6 @@ export default function PitchTypeTable({
                   </td>
                 )}
                 <td className="px-3 py-1.5 text-right font-mono">{fmt(row.avgVelo)}</td>
-                <td className="px-3 py-1.5 text-right font-mono">{fmt(row.maxVelo)}</td>
                 <td className="px-3 py-1.5 text-right font-mono">{fmt(row.avgSpin, 0)}</td>
                 <td className="px-3 py-1.5 text-right font-mono">{fmt(row.avgIvb)}</td>
                 <td className="px-3 py-1.5 text-right font-mono">{fmt(row.avgHb)}</td>
@@ -94,9 +92,6 @@ export default function PitchTypeTable({
                 )}
                 <td className="px-3 py-1.5 text-right font-mono">
                   {fmt(summary.weightedAvgVelo)}
-                </td>
-                <td className="px-3 py-1.5 text-right font-mono">
-                  {fmt(summary.maxVelo)}
                 </td>
                 <td className="px-3 py-1.5 text-right font-mono">
                   {fmt(summary.weightedAvgSpin, 0)}

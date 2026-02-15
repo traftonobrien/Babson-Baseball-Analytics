@@ -3,15 +3,15 @@
   "player_slug": "burk_bobby",
   "team": "Babson College",
   "handedness": "RHP",
-  "session_date": "2026-02-14",
+  "session_date": "2026-02-13",
   "date_from": "2026-01-01",
   "date_to": "2026-02-14",
   "session_label": null,
   "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
   "source": {
     "type": "pdf_export",
-    "filename": "Baseball Team Portal Export.pdf",
+    "filename": "Bobby Burk 2:13.pdf",
     "sha256": "61140f1a8215c682e11fa6f8e953d7a4df834f968af884ef0520f5a16030d4fb",
-    "imported_at": "2026-02-14T22:25:39Z"
+    "imported_at": "2026-02-15T18:47:08Z"
   }
 }

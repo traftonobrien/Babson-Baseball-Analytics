@@ -7,10 +7,6 @@ interface Props {
   activePitchTypes: Set<string>;
   onToggleType: (type: string) => void;
   onClearTypes: () => void;
-  veloMin: number | null;
-  veloMax: number | null;
-  onVeloMinChange: (v: number | null) => void;
-  onVeloMaxChange: (v: number | null) => void;
 }
 
 export default function PitchTypeFilter({
@@ -18,12 +14,8 @@ export default function PitchTypeFilter({
   activePitchTypes,
   onToggleType,
   onClearTypes,
-  veloMin,
-  veloMax,
-  onVeloMinChange,
-  onVeloMaxChange,
 }: Props) {
-  const hasFilters = activePitchTypes.size > 0 || veloMin !== null || veloMax !== null;
+  const hasFilters = activePitchTypes.size > 0;
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -54,34 +46,10 @@ export default function PitchTypeFilter({
         })}
       </div>
 
-      {/* Velo range */}
-      <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-        <span>Velo:</span>
-        <input
-          type="number"
-          placeholder="Min"
-          value={veloMin ?? ""}
-          onChange={(e) => onVeloMinChange(e.target.value ? Number(e.target.value) : null)}
-          className="w-14 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
-        />
-        <span>\u2013</span>
-        <input
-          type="number"
-          placeholder="Max"
-          value={veloMax ?? ""}
-          onChange={(e) => onVeloMaxChange(e.target.value ? Number(e.target.value) : null)}
-          className="w-14 bg-zinc-900 border border-zinc-700 rounded px-1.5 py-1 text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
-        />
-      </div>
-
       {/* Reset */}
       {hasFilters && (
         <button
-          onClick={() => {
-            onClearTypes();
-            onVeloMinChange(null);
-            onVeloMaxChange(null);
-          }}
+          onClick={() => onClearTypes()}
           className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
         >
           Reset

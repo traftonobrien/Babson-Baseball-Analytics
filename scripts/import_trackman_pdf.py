@@ -6,14 +6,18 @@ and updates the global index.
 
 Usage:
     python3 scripts/import_trackman_pdf.py --pdf BobbyBurk.pdf
-    python3 scripts/import_trackman_pdf.py --pdf BobbyBurk.pdf --session-date 2026-02-14 --session-label LiveAB
+    python3 scripts/import_trackman_pdf.py --latest
+    python3 scripts/import_trackman_pdf.py --all
+    python3 scripts/import_trackman_pdf.py --pdf-dir /path/to/folder --latest
     python3 scripts/import_trackman_pdf.py --pdf BobbyBurk.pdf --debug-dump
 """
 
 import argparse
+import glob as globmod
 import hashlib
 import json
 import os
+import re
 import shutil
 import sys
 from datetime import datetime, timezone
@@ -239,6 +243,68 @@ def _dump_debug(
 
     return debug_dir
 
+# Default export folder: relative to repo root, then absolute fallback.
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_DEFAULT_PDF_DIRS = [
+    os.path.join(_REPO_ROOT, "Trackman Exports"),
+    "/Users/traftonobrien/Desktop/pitch-tracker/Trackman Exports",
+]
+
+
+def resolve_pdf_dir(explicit: Optional[str] = None) -> str:
+    """Return the PDF directory to use.
+
+    Priority: explicit arg > repo-relative > absolute fallback.
+    Raises FileNotFoundError if nothing exists.
+    """
+    if explicit:
+        if os.path.isdir(explicit):
+            return explicit
+        raise FileNotFoundError(f"PDF directory not found: {explicit}")
+    for candidate in _DEFAULT_PDF_DIRS:
+        if os.path.isdir(candidate):
+            return candidate
+    raise FileNotFoundError(
+        "Default PDF export folder not found. "
+        f"Looked in: {', '.join(_DEFAULT_PDF_DIRS)}. "
+        "Use --pdf-dir to specify the folder."
+    )
+
+
+def list_pdfs(pdf_dir: str) -> List[str]:
+    """Return all .pdf files in pdf_dir, sorted by modification time ascending."""
+    pattern = os.path.join(pdf_dir, "**", "*.pdf")
+    files = globmod.glob(pattern, recursive=True)
+    files.sort(key=lambda f: os.path.getmtime(f))
+    return files
+
+
+def latest_pdf(pdf_dir: str) -> str:
+    """Return the most recently modified PDF in pdf_dir."""
+    pdfs = list_pdfs(pdf_dir)
+    if not pdfs:
+        raise FileNotFoundError(f"No PDF files found in {pdf_dir}")
+    return pdfs[-1]
+
+
+def parse_date_from_filename(pdf_path: str, year_hint: Optional[str] = None) -> Optional[str]:
+    """Extract session date from filename like 'Bobby Burk 2:13.pdf' or 'Bobby Burk 2/13.pdf'.
+
+    Returns ISO date string (YYYY-MM-DD) or None if no date found.
+    macOS stores '/' in filenames as ':'.
+    """
+    stem = os.path.splitext(os.path.basename(pdf_path))[0]
+    # Match trailing M:DD, M/DD, MM:DD, MM/DD (with : or / separator)
+    m = re.search(r'(\d{1,2})[:/](\d{1,2})$', stem)
+    if not m:
+        return None
+    month, day = int(m.group(1)), int(m.group(2))
+    if not (1 <= month <= 12 and 1 <= day <= 31):
+        return None
+    year = year_hint or str(datetime.now().year)
+    return f"{year}-{month:02d}-{day:02d}"
+
+
 def import_pdf(
     pdf_path: str,
     player_override: Optional[str] = None,
@@ -276,10 +342,21 @@ def import_pdf(
     player_name = player_override or pdf_meta.player_name or "Unknown Player"
     session_label = session_label_override or pdf_meta.session_label
 
+    # Resolve session date: explicit override > filename > PDF metadata
     if session_date_override:
         session_date = session_date_override
     else:
-        session_date = pdf_meta.session_date or pdf_meta.date_to or pdf_meta.date_from or "unknown_date"
+        # Derive year hint from PDF metadata for filename parsing
+        year_hint = None
+        for d in (pdf_meta.date_to, pdf_meta.session_date, pdf_meta.date_from):
+            if d and len(d) >= 4:
+                year_hint = d[:4]
+                break
+        filename_date = parse_date_from_filename(pdf_path, year_hint)
+        if filename_date:
+            session_date = filename_date
+        else:
+            session_date = pdf_meta.session_date or pdf_meta.date_to or pdf_meta.date_from or "unknown_date"
 
     print(f"  Player:  {player_name}")
     print(f"  Date:    {session_date}")
@@ -343,17 +420,9 @@ def import_pdf(
         debug_dir = _dump_debug(pdf_path, sha256, extraction, debug_pages, debug_rows_by_page)
         print(f"  Debug:   {debug_dir}")
 
-    # Compute session directory
+    # Compute session directory — always use session_date (single date)
     player_slug = slugify(player_name)
-    if (
-        not session_date_override
-        and pdf_meta.date_from
-        and pdf_meta.date_to
-        and pdf_meta.date_from != pdf_meta.date_to
-    ):
-        date_slug = f"{pdf_meta.date_from.replace('-', '_')}__{pdf_meta.date_to.replace('-', '_')}"
-    else:
-        date_slug = session_date.replace("-", "_") if session_date != "unknown_date" else "unknown_date"
+    date_slug = session_date.replace("-", "_") if session_date != "unknown_date" else "unknown_date"
     sess_slug = _session_slug(session_label)
     session_dir = os.path.join(SESSIONS_BASE, player_slug, date_slug, sess_slug)
     os.makedirs(session_dir, exist_ok=True)
@@ -392,7 +461,11 @@ def import_pdf(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Import Trackman PDF export into structured session data")
-    parser.add_argument("--pdf", required=True, help="Path to Trackman PDF export")
+    source = parser.add_mutually_exclusive_group()
+    source.add_argument("--pdf", help="Path to a specific Trackman PDF export")
+    source.add_argument("--latest", action="store_true", help="Import the most recently modified PDF in the export folder")
+    source.add_argument("--all", action="store_true", dest="import_all", help="Import all PDFs in the export folder (oldest first)")
+    parser.add_argument("--pdf-dir", help="PDF export folder (default: Trackman Exports/ in repo root)")
     parser.add_argument("--player", help="Override player name (Last, First)")
     parser.add_argument("--session-date", help="Override session date (YYYY-MM-DD)")
     parser.add_argument("--session-label", help="Override session label (e.g. LiveAB, Bullpen)")
@@ -400,15 +473,44 @@ def main() -> None:
     parser.add_argument("--debug-dump", action="store_true", help="Write debug artifacts to output/debug/{sha256}/")
     args = parser.parse_args()
 
+    if not args.pdf and not args.latest and not args.import_all:
+        parser.error("One of --pdf, --latest, or --all is required")
+
     try:
-        import_pdf(
-            args.pdf,
-            player_override=args.player,
-            session_date_override=args.session_date,
-            session_label_override=args.session_label,
-            copy_pdf=not args.no_copy_pdf,
-            debug_dump=args.debug_dump,
-        )
+        pdf_paths: List[str] = []
+        if args.pdf:
+            pdf_paths = [args.pdf]
+        else:
+            pdf_dir = resolve_pdf_dir(args.pdf_dir)
+            print(f"PDF folder: {pdf_dir}")
+            if args.latest:
+                pdf_paths = [latest_pdf(pdf_dir)]
+            else:
+                pdf_paths = list_pdfs(pdf_dir)
+                if not pdf_paths:
+                    raise FileNotFoundError(f"No PDF files found in {pdf_dir}")
+                print(f"Found {len(pdf_paths)} PDF(s)")
+
+        results = []
+        for path in pdf_paths:
+            print(f"\n{'='*60}")
+            print(f"Importing: {path}")
+            print(f"{'='*60}")
+            result = import_pdf(
+                path,
+                player_override=args.player,
+                session_date_override=args.session_date,
+                session_label_override=args.session_label,
+                copy_pdf=not args.no_copy_pdf,
+                debug_dump=args.debug_dump,
+            )
+            results.append(result)
+
+        imported = [r for r in results if not r.get("skipped")]
+        skipped = [r for r in results if r.get("skipped")]
+        if len(pdf_paths) > 1:
+            print(f"\nDone: {len(imported)} imported, {len(skipped)} skipped")
+
     except (FileNotFoundError, ValueError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         raise SystemExit(1)

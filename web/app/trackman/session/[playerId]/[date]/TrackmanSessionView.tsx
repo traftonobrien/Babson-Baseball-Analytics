@@ -20,8 +20,7 @@ import TrackmanPitchTable from "./TrackmanPitchTable";
 import PitchTypeFilter from "./PitchTypeFilter";
 import PitchTypeTable from "./PitchTypeTable";
 import MovementScatterByType from "./MovementScatterByType";
-import VeloByTypeBar from "./VeloByTypeBar";
-import SpinByTypeBar from "./SpinByTypeBar";
+import PitchArsenalCards from "./PitchArsenalCards";
 
 interface PitchPayload {
   format: "pitch";
@@ -53,14 +52,31 @@ function asRecord(value: unknown): Record<string, unknown> | null {
   return value as Record<string, unknown>;
 }
 
+/** "Burk, Bobby" → "Bobby Burk" */
+function formatPlayerName(raw: string): string {
+  if (raw.includes(",")) {
+    const [last, first] = raw.split(",", 2).map((s) => s.trim());
+    if (first && last) return `${first} ${last}`;
+  }
+  return raw;
+}
+
+/** "2026_02_13" → "2/13/26", range → "1/1/26 — 2/13/26" */
 function formatDateLabel(raw: string): string {
+  const toShort = (slug: string): string => {
+    const parts = slug.replace(/_/g, "-").replace(/\//g, "-").split("-");
+    if (parts.length === 3) {
+      const [y, m, d] = parts;
+      const shortYear = y.length === 4 ? y.slice(2) : y;
+      return `${parseInt(m)}/${parseInt(d)}/${shortYear}`;
+    }
+    return slug;
+  };
   if (raw.includes("__")) {
     const [start, end] = raw.split("__");
-    const startLabel = start.replace(/_/g, "/").replace(/-/g, "/");
-    const endLabel = end.replace(/_/g, "/").replace(/-/g, "/");
-    return `${startLabel} \u2014 ${endLabel}`;
+    return `${toShort(start)} \u2014 ${toShort(end)}`;
   }
-  return raw.replace(/_/g, "/").replace(/-/g, "/");
+  return toShort(raw);
 }
 
 /** Try multiple paths to find the session data. */
@@ -178,8 +194,6 @@ export default function TrackmanSessionView({
 
   // Filters
   const [activePitchTypes, setActivePitchTypes] = useState<Set<string>>(new Set());
-  const [veloMin, setVeloMin] = useState<number | null>(null);
-  const [veloMax, setVeloMax] = useState<number | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -199,7 +213,8 @@ export default function TrackmanSessionView({
         } else {
           const normalized = data.pitchTypes
             .filter((row) => (row as Record<string, unknown>)?.is_valid !== false)
-            .map((row) => normalizePitchTypeRow(row));
+            .map((row) => normalizePitchTypeRow(row))
+            .filter((row) => row.pitchType !== "Other");
           setPitchTypes(normalized);
           setSummary(normalizeSessionSummary(data.summary ?? null));
           setPitches([]);
@@ -234,34 +249,28 @@ export default function TrackmanSessionView({
       if (activePitchTypes.size > 0) {
         result = result.filter((p) => activePitchTypes.has(p.pitchType));
       }
-      if (veloMin !== null) {
-        result = result.filter((p) => p.avgVelo !== null && p.avgVelo >= veloMin);
-      }
-      if (veloMax !== null) {
-        result = result.filter((p) => p.avgVelo !== null && p.avgVelo <= veloMax);
-      }
       return result;
     }
     let result = pitches;
     if (activePitchTypes.size > 0) {
       result = result.filter((p) => activePitchTypes.has(p.pitchType));
     }
-    if (veloMin !== null) {
-      result = result.filter((p) => p.mph !== null && p.mph >= veloMin);
-    }
-    if (veloMax !== null) {
-      result = result.filter((p) => p.mph !== null && p.mph <= veloMax);
-    }
     return result;
-  }, [pitches, pitchTypes, activePitchTypes, veloMin, veloMax, viewMode]);
+  }, [pitches, pitchTypes, activePitchTypes, viewMode]);
 
   // Header info
-  const playerName =
+  const playerName = formatPlayerName(
     (meta?.player as string) ??
     (meta?.player_name as string) ??
     (meta?.playerName as string) ??
-    playerId;
-  const dateLabel = formatDateLabel(date);
+    playerId,
+  );
+  const metaDate = (meta?.session_date as string) ?? (meta?.sessionDate as string) ?? null;
+  const dateLabel = formatDateLabel(metaDate ?? date);
+  const sessionLabel =
+    (meta?.session_label as string) ??
+    (meta?.sessionLabel as string) ??
+    null;
   const filteredPitches = viewMode === "pitch" ? (filtered as TrackmanPitch[]) : [];
   const filteredPitchTypes =
     viewMode === "aggregate" ? (filtered as TrackmanPitchTypeSummary[]) : [];
@@ -320,19 +329,29 @@ export default function TrackmanSessionView({
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3 bg-zinc-900 border-b border-zinc-800">
-        <Link
-          href="/trackman"
-          className="text-zinc-400 hover:text-zinc-200 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </Link>
-        <div>
-          <h1 className="text-sm font-semibold">{playerName}</h1>
-          <p className="text-xs text-zinc-500">
-            Trackman Session &middot; {dateLabel}
-          </p>
+      {/* Session Header Strip */}
+      <header className="bg-zinc-900 border-b border-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-3 mb-3">
+            <Link
+              href="/trackman"
+              className="text-zinc-500 hover:text-zinc-300 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Link>
+            <span className="text-xs text-zinc-600 uppercase tracking-wider">Trackman Session</span>
+          </div>
+          <div className="flex items-baseline gap-4 flex-wrap">
+            <h1 className="text-xl font-bold tracking-tight text-zinc-50">{playerName}</h1>
+            <span className="w-px h-5 bg-zinc-700 self-center hidden sm:block" />
+            <span className="text-sm text-zinc-400 font-mono">{dateLabel}</span>
+            {sessionLabel && (
+              <>
+                <span className="w-px h-5 bg-zinc-700 self-center hidden sm:block" />
+                <span className="text-sm font-medium text-zinc-300">{sessionLabel}</span>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
@@ -350,10 +369,6 @@ export default function TrackmanSessionView({
             });
           }}
           onClearTypes={() => setActivePitchTypes(new Set())}
-          veloMin={veloMin}
-          veloMax={veloMax}
-          onVeloMinChange={setVeloMin}
-          onVeloMaxChange={setVeloMax}
         />
 
         {countsMissing && (
@@ -385,11 +400,10 @@ export default function TrackmanSessionView({
         ) : (
           <>
             <PitchTypeTable pitchTypes={filteredPitchTypes} summary={summary} />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-stretch">
               <MovementScatterByType pitchTypes={filteredPitchTypes} />
-              <VeloByTypeBar pitchTypes={filteredPitchTypes} />
+              <PitchArsenalCards pitchTypes={filteredPitchTypes} />
             </div>
-            <SpinByTypeBar pitchTypes={filteredPitchTypes} />
           </>
         )}
       </div>

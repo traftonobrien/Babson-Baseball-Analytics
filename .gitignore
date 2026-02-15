@@ -57,3 +57,7 @@ outings/
 
 # Documentation proposals
 claude.md.proposed
+
+# Trackman PDF exports (large binaries, user-local)
+Trackman Exports/
+web/public/trackman/sessions/**/source.pdf
