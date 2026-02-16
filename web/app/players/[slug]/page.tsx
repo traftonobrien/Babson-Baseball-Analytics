@@ -1,0 +1,927 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { cache } from "react";
+import path from "path";
+import { promises as fs } from "fs";
+import players from "@/data/players.json";
+import { fetchPitchingLeaderboard, searchPlayers } from "@/lib/d3db";
+import PlayerProfileTabs from "./PlayerProfileTabs";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+interface RawPlayerEntry {
+  player_slug?: string;
+  slug?: string;
+  full_name?: string;
+  name?: string;
+  team?: string;
+  school?: string;
+  role?: string;
+  d3_player_id?: number | string | null;
+}
+
+interface PlayerRegistryEntry {
+  slug: string;
+  name: string;
+  team: string;
+  role: string;
+  d3_player_id: string | null;
+}
+
+type D3Row = Record<string, unknown>;
+
+type TrackmanIndexEntry = {
+  playerSlug?: string;
+  date?: string;
+  sessionType?: string | null;
+};
+
+type MetricDefinition = {
+  id: string;
+  label: string;
+  higherBetter: boolean;
+  format: (value: number | null) => string;
+  valueKeys?: string[];
+  percentileKeys?: string[];
+  derive?: (row: D3Row) => number | null;
+};
+
+type PercentileMetric = {
+  label: string;
+  value: string;
+  percentile: number | null;
+  note?: string;
+};
+
+const TARGET_YEAR = 2025;
+
+const registry = (players as RawPlayerEntry[])
+  .map((entry) => normalizePlayerEntry(entry))
+  .filter((entry): entry is PlayerRegistryEntry => entry != null);
+
+const TEAM_KEY_CANDIDATES = [
+  "team",
+  "team_name",
+  "school",
+  "school_name",
+  "college",
+  "college_name",
+  "institution",
+];
+
+const NAME_KEY_CANDIDATES = [
+  "player",
+  "player_name",
+  "name",
+  "full_name",
+  "fullname",
+];
+
+const ID_KEY_CANDIDATES = ["player_id", "playerid", "id"];
+
+const PITCHING_KEYS = {
+  ip: ["ip", "innings", "innings_pitched"],
+  ip_float: ["ip_float"],
+  outs: ["ip_outs", "outs_pitched"],
+  era: ["era"],
+  fip: ["fip"],
+  xfip: ["xfip", "x_fip"],
+  whip: ["whip"],
+  k_pct: ["k_pct", "k_percent", "k_percentage", "so_pct"],
+  bb_pct: ["bb_pct", "bb_percent", "bb_percentage", "bb_rate"],
+  kbb_pct: [
+    "k_minus_bb_pct",
+    "kbb_pct",
+    "k_bb_pct",
+  ],
+  war: ["war", "pitching_war", "pwar"],
+};
+
+const BATTING_KEYS = {
+  avg: ["avg", "ba", "batting_avg", "batting_average"],
+  obp: ["obp", "on_base_percentage", "onbase"],
+  slg: ["slg", "slugging", "slugging_pct"],
+  ops: ["ops", "on_base_plus_slugging"],
+  hr: ["hr", "home_runs", "home_run"],
+  rbi: ["rbi", "runs_batted_in"],
+  k_pct: ["k_pct", "k_percent", "k_percentage", "so_pct"],
+  bb_pct: ["bb_pct", "bb_percent", "bb_percentage", "bb_rate"],
+  war: ["war", "bwar", "fwar", "off_war", "owar"],
+  wrc_plus: ["wrc_plus", "wrcplus"],
+};
+
+function normalizePlayerEntry(entry: RawPlayerEntry): PlayerRegistryEntry | null {
+  const slug = entry.slug ?? entry.player_slug ?? "";
+  const name = entry.name ?? entry.full_name ?? "";
+  const team = entry.team ?? entry.school ?? "";
+  const role = entry.role ?? "";
+  if (!slug || !name) return null;
+
+  return {
+    slug,
+    name,
+    team,
+    role,
+    d3_player_id: entry.d3_player_id != null ? String(entry.d3_player_id) : null,
+  };
+}
+
+function normalizeKey(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function parseMetric(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "string") {
+    const cleaned = value.replace(/[%,$]/g, "").trim();
+    if (!cleaned) return null;
+    const parsed = Number(cleaned);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function getStringByCandidates(row: D3Row, candidates: string[]): string | null {
+  for (const candidate of candidates) {
+    const normalizedCandidate = normalizeKey(candidate);
+    for (const [key, value] of Object.entries(row)) {
+      if (normalizeKey(key) === normalizedCandidate && typeof value === "string") {
+        return value;
+      }
+    }
+  }
+  return null;
+}
+
+function getNumberByCandidates(row: D3Row, candidates: string[]): number | null {
+  for (const candidate of candidates) {
+    const normalizedCandidate = normalizeKey(candidate);
+    for (const [key, value] of Object.entries(row)) {
+      if (normalizeKey(key) === normalizedCandidate) {
+        return parseMetric(value);
+      }
+    }
+  }
+  return null;
+}
+
+function getTeamName(row: D3Row): string | null {
+  return getStringByCandidates(row, TEAM_KEY_CANDIDATES);
+}
+
+function getPlayerName(row: D3Row): string | null {
+  return getStringByCandidates(row, NAME_KEY_CANDIDATES);
+}
+
+function getPlayerId(row: D3Row): string | null {
+  for (const candidate of ID_KEY_CANDIDATES) {
+    const normalizedCandidate = normalizeKey(candidate);
+    for (const [key, value] of Object.entries(row)) {
+      if (normalizeKey(key) === normalizedCandidate && value != null) {
+        return String(value);
+      }
+    }
+  }
+  return null;
+}
+
+function normalizeName(name: string): string {
+  return name.toLowerCase().replace(/[^a-z]/g, "");
+}
+
+function expandNameVariants(name: string): string[] {
+  if (!name) return [];
+  const trimmed = name.trim();
+  const variants = new Set<string>();
+  if (trimmed) variants.add(trimmed);
+
+  if (trimmed.includes(",")) {
+    const [last, first] = trimmed.split(",", 2).map((part) => part.trim());
+    if (first && last) variants.add(`${first} ${last}`);
+  } else {
+    const parts = trimmed.split(/\s+/);
+    if (parts.length >= 2) {
+      const first = parts[0];
+      const last = parts[parts.length - 1];
+      variants.add(`${last}, ${first}`);
+    }
+  }
+
+  return Array.from(variants);
+}
+
+function extractRows(payload: unknown): D3Row[] {
+  if (!payload) return [];
+  if (Array.isArray(payload)) return payload as D3Row[];
+  if (typeof payload !== "object") return [];
+  const record = payload as Record<string, unknown>;
+  const directKeys = ["data", "rows", "players", "results", "leaderboard"];
+  for (const key of directKeys) {
+    if (Array.isArray(record[key])) return record[key] as D3Row[];
+  }
+  if (record.data && typeof record.data === "object") {
+    const nested = record.data as Record<string, unknown>;
+    for (const key of directKeys) {
+      if (Array.isArray(nested[key])) return nested[key] as D3Row[];
+    }
+  }
+  return [];
+}
+
+function extractSeasonRows(payload: unknown, isHitter: boolean): D3Row[] {
+  if (!payload || typeof payload !== "object") return [];
+  const record = payload as Record<string, unknown>;
+  const roleKey = isHitter ? "batting" : "pitching";
+  const keys = [roleKey, "seasons", "season_stats", "stats", "data"];
+
+  for (const key of keys) {
+    if (Array.isArray(record[key])) return record[key] as D3Row[];
+  }
+
+  if (record.stats && typeof record.stats === "object") {
+    const stats = record.stats as Record<string, unknown>;
+    for (const key of keys) {
+      if (Array.isArray(stats[key])) return stats[key] as D3Row[];
+    }
+  }
+
+  if (record.data && typeof record.data === "object") {
+    const data = record.data as Record<string, unknown>;
+    for (const key of keys) {
+      if (Array.isArray(data[key])) return data[key] as D3Row[];
+    }
+  }
+
+  return [];
+}
+
+function extractSeasonYear(row: D3Row): number | null {
+  const yearValue = getNumberByCandidates(row, ["year", "season", "season_year"]);
+  return yearValue ? Math.trunc(yearValue) : null;
+}
+
+function selectSeasonRow(
+  rows: D3Row[],
+  targetYear: number,
+): { row: D3Row | null; year: number | null } {
+  if (rows.length === 0) return { row: null, year: null };
+
+  const withYears = rows
+    .map((row) => ({ row, year: extractSeasonYear(row) }))
+    .filter((entry) => entry.year != null) as { row: D3Row; year: number }[];
+
+  const exact = withYears.find((entry) => entry.year === targetYear);
+  if (exact) return { row: exact.row, year: exact.year };
+
+  if (withYears.length > 0) {
+    const latest = withYears.reduce((prev, next) => (next.year > prev.year ? next : prev));
+    return { row: latest.row, year: latest.year };
+  }
+
+  return { row: rows[0], year: extractSeasonYear(rows[0]) };
+}
+
+function selectBestMatch(
+  rows: D3Row[],
+  playerName: string,
+  teamHint?: string,
+): D3Row | null {
+  const nameNeedle = normalizeName(playerName);
+  const teamNeedle = teamHint ? teamHint.toLowerCase() : "";
+  const nameVariants = expandNameVariants(playerName).map(normalizeName);
+
+  let best: { row: D3Row; score: number } | null = null;
+
+  for (const row of rows) {
+    const rowName = getPlayerName(row) ?? "";
+    if (!rowName) continue;
+    const rowTeam = getTeamName(row) ?? "";
+
+    let score = 0;
+    if (teamNeedle && rowTeam.toLowerCase().includes(teamNeedle)) score += 10;
+
+    const rowNormalized = normalizeName(rowName);
+    if (nameVariants.includes(rowNormalized) || rowNormalized === nameNeedle) {
+      score += 5;
+    } else if (
+      nameVariants.some((variant) => rowNormalized.includes(variant) || variant.includes(rowNormalized)) ||
+      rowNormalized.includes(nameNeedle) ||
+      nameNeedle.includes(rowNormalized)
+    ) {
+      score += 2;
+    }
+
+    if (!best || score > best.score) {
+      best = { row, score };
+    }
+  }
+
+  return best?.row ?? null;
+}
+
+function findPlayerRow(
+  rows: D3Row[],
+  playerId: string | null,
+  fullName: string,
+  teamHint?: string,
+): D3Row | null {
+  if (playerId) {
+    const byId = rows.find((row) => {
+      const rowId = getPlayerId(row);
+      return rowId === playerId;
+    });
+    if (byId) return byId;
+  }
+
+  return selectBestMatch(rows, fullName, teamHint);
+}
+
+function formatNumber(value: number | null, decimals = 2): string {
+  if (value == null || Number.isNaN(value)) return "--";
+  return value.toFixed(decimals);
+}
+
+function formatAverage(value: number | null): string {
+  if (value == null || Number.isNaN(value)) return "--";
+  return value.toFixed(3);
+}
+
+function formatInteger(value: number | null): string {
+  if (value == null || Number.isNaN(value)) return "--";
+  return Math.round(value).toString();
+}
+
+function formatPercent(value: number | null, decimals = 1): string {
+  if (value == null || Number.isNaN(value)) return "--";
+  const normalized = value > 1 ? value : value * 100;
+  return `${normalized.toFixed(decimals)}%`;
+}
+
+function computePercentile(values: number[], value: number, higherBetter: boolean): number | null {
+  if (!Number.isFinite(value)) return null;
+  if (values.length === 0) return null;
+
+  const adjustedValues = higherBetter ? values : values.map((v) => -v);
+  const adjustedValue = higherBetter ? value : -value;
+  const below = adjustedValues.filter((v) => v < adjustedValue).length;
+  const equal = adjustedValues.filter((v) => v === adjustedValue).length;
+  const percentile = (below + equal * 0.5) / adjustedValues.length;
+  return Math.round(percentile * 1000) / 10;
+}
+
+function normalizePercentile(raw: number | null): number | null {
+  if (raw == null || Number.isNaN(raw)) return null;
+  const normalized = raw <= 1 ? raw * 100 : raw;
+  return Math.min(100, Math.max(0, normalized));
+}
+
+function getMetricValue(row: D3Row, metric: MetricDefinition): number | null {
+  if (metric.derive) {
+    const derived = metric.derive(row);
+    if (derived != null) return derived;
+  }
+  if (metric.valueKeys) return getNumberByCandidates(row, metric.valueKeys);
+  return null;
+}
+
+function getPercentileValue(row: D3Row, metric: MetricDefinition): number | null {
+  if (metric.percentileKeys) {
+    const direct = getNumberByCandidates(row, metric.percentileKeys);
+    if (direct != null) return direct;
+  }
+
+  const metricNeedle = normalizeKey(metric.id);
+  for (const [key, value] of Object.entries(row)) {
+    const normalizedKey = normalizeKey(key);
+    if (!normalizedKey.includes("percentile")) continue;
+    if (!normalizedKey.includes(metricNeedle)) continue;
+    const parsed = parseMetric(value);
+    if (parsed != null) return parsed;
+  }
+  return null;
+}
+
+const PITCHING_SNAPSHOT_METRICS: MetricDefinition[] = [
+  {
+    id: "ip",
+    label: "IP",
+    higherBetter: true,
+    format: (value) => formatNumber(value, 1),
+    valueKeys: PITCHING_KEYS.ip,
+    derive: (row) => {
+      const direct = getNumberByCandidates(row, PITCHING_KEYS.ip);
+      if (direct != null) return direct;
+      const ipFloat = getNumberByCandidates(row, PITCHING_KEYS.ip_float);
+      if (ipFloat != null) return ipFloat;
+      const outs = getNumberByCandidates(row, PITCHING_KEYS.outs);
+      return outs != null ? outs / 3 : null;
+    },
+  },
+  {
+    id: "era",
+    label: "ERA",
+    higherBetter: false,
+    format: (value) => formatNumber(value, 2),
+    valueKeys: PITCHING_KEYS.era,
+  },
+  {
+    id: "fip",
+    label: "FIP",
+    higherBetter: false,
+    format: (value) => formatNumber(value, 2),
+    valueKeys: PITCHING_KEYS.fip,
+  },
+  {
+    id: "xfip",
+    label: "xFIP",
+    higherBetter: false,
+    format: (value) => formatNumber(value, 2),
+    valueKeys: PITCHING_KEYS.xfip,
+  },
+  {
+    id: "whip",
+    label: "WHIP",
+    higherBetter: false,
+    format: (value) => formatNumber(value, 2),
+    valueKeys: PITCHING_KEYS.whip,
+  },
+  {
+    id: "k_pct",
+    label: "K%",
+    higherBetter: true,
+    format: (value) => formatPercent(value, 1),
+    valueKeys: PITCHING_KEYS.k_pct,
+  },
+  {
+    id: "bb_pct",
+    label: "BB%",
+    higherBetter: false,
+    format: (value) => formatPercent(value, 1),
+    valueKeys: PITCHING_KEYS.bb_pct,
+  },
+  {
+    id: "kbb_pct",
+    label: "K-BB%",
+    higherBetter: true,
+    format: (value) => formatPercent(value, 1),
+    valueKeys: PITCHING_KEYS.kbb_pct,
+    derive: (row) => {
+      const direct = getNumberByCandidates(row, PITCHING_KEYS.kbb_pct);
+      if (direct != null) return direct;
+      const k = getNumberByCandidates(row, PITCHING_KEYS.k_pct);
+      const bb = getNumberByCandidates(row, PITCHING_KEYS.bb_pct);
+      if (k != null && bb != null) return k - bb;
+      return null;
+    },
+  },
+  {
+    id: "war",
+    label: "WAR",
+    higherBetter: true,
+    format: (value) => formatNumber(value, 2),
+    valueKeys: PITCHING_KEYS.war,
+  },
+];
+
+const PITCHING_PERCENTILE_METRICS: MetricDefinition[] = [
+  {
+    id: "ip_float",
+    label: "IP",
+    higherBetter: true,
+    format: (value) => formatNumber(value, 1),
+    valueKeys: PITCHING_KEYS.ip_float,
+    derive: (row) => {
+      const direct = getNumberByCandidates(row, PITCHING_KEYS.ip_float);
+      if (direct != null) return direct;
+      const ip = getNumberByCandidates(row, PITCHING_KEYS.ip);
+      if (ip != null) return ip;
+      const outs = getNumberByCandidates(row, PITCHING_KEYS.outs);
+      return outs != null ? outs / 3 : null;
+    },
+  },
+  {
+    id: "era",
+    label: "ERA",
+    higherBetter: false,
+    format: (value) => formatNumber(value, 2),
+    valueKeys: PITCHING_KEYS.era,
+    percentileKeys: ["era_percentile", "era_pct", "era_percent"],
+  },
+  {
+    id: "fip",
+    label: "FIP",
+    higherBetter: false,
+    format: (value) => formatNumber(value, 2),
+    valueKeys: PITCHING_KEYS.fip,
+    percentileKeys: ["fip_percentile", "fip_pct", "fip_percent"],
+  },
+  {
+    id: "xfip",
+    label: "xFIP",
+    higherBetter: false,
+    format: (value) => formatNumber(value, 2),
+    valueKeys: PITCHING_KEYS.xfip,
+    percentileKeys: ["xfip_percentile", "xfip_pct", "xfip_percent"],
+  },
+  {
+    id: "k_pct",
+    label: "K%",
+    higherBetter: true,
+    format: (value) => formatPercent(value, 1),
+    valueKeys: PITCHING_KEYS.k_pct,
+    percentileKeys: ["k_percentile", "k_pct_percentile", "k%_percentile"],
+  },
+  {
+    id: "bb_pct",
+    label: "BB%",
+    higherBetter: false,
+    format: (value) => formatPercent(value, 1),
+    valueKeys: PITCHING_KEYS.bb_pct,
+    percentileKeys: ["bb_percentile", "bb_pct_percentile", "bb%_percentile"],
+  },
+  {
+    id: "kbb_pct",
+    label: "K-BB%",
+    higherBetter: true,
+    format: (value) => formatPercent(value, 1),
+    valueKeys: PITCHING_KEYS.kbb_pct,
+    percentileKeys: ["kbb_percentile", "kbb_pct_percentile", "kbb%_percentile"],
+    derive: (row) => {
+      const direct = getNumberByCandidates(row, PITCHING_KEYS.kbb_pct);
+      if (direct != null) return direct;
+      const k = getNumberByCandidates(row, PITCHING_KEYS.k_pct);
+      const bb = getNumberByCandidates(row, PITCHING_KEYS.bb_pct);
+      if (k != null && bb != null) return k - bb;
+      return null;
+    },
+  },
+  {
+    id: "whip",
+    label: "WHIP",
+    higherBetter: false,
+    format: (value) => formatNumber(value, 2),
+    valueKeys: PITCHING_KEYS.whip,
+    percentileKeys: ["whip_percentile", "whip_pct", "whip_percent"],
+  },
+  {
+    id: "war",
+    label: "WAR",
+    higherBetter: true,
+    format: (value) => formatNumber(value, 2),
+    valueKeys: PITCHING_KEYS.war,
+    percentileKeys: ["war_percentile", "pwar_percentile", "pitching_war_percentile"],
+  },
+];
+
+const BATTING_SNAPSHOT_METRICS: MetricDefinition[] = [
+  {
+    id: "avg",
+    label: "AVG",
+    higherBetter: true,
+    format: formatAverage,
+    valueKeys: BATTING_KEYS.avg,
+  },
+  {
+    id: "obp",
+    label: "OBP",
+    higherBetter: true,
+    format: formatAverage,
+    valueKeys: BATTING_KEYS.obp,
+  },
+  {
+    id: "slg",
+    label: "SLG",
+    higherBetter: true,
+    format: formatAverage,
+    valueKeys: BATTING_KEYS.slg,
+  },
+  {
+    id: "ops",
+    label: "OPS",
+    higherBetter: true,
+    format: formatAverage,
+    valueKeys: BATTING_KEYS.ops,
+    derive: (row) => {
+      const direct = getNumberByCandidates(row, BATTING_KEYS.ops);
+      if (direct != null) return direct;
+      const obp = getNumberByCandidates(row, BATTING_KEYS.obp);
+      const slg = getNumberByCandidates(row, BATTING_KEYS.slg);
+      if (obp != null && slg != null) return obp + slg;
+      return null;
+    },
+  },
+  {
+    id: "hr",
+    label: "HR",
+    higherBetter: true,
+    format: formatInteger,
+    valueKeys: BATTING_KEYS.hr,
+  },
+  {
+    id: "rbi",
+    label: "RBI",
+    higherBetter: true,
+    format: formatInteger,
+    valueKeys: BATTING_KEYS.rbi,
+  },
+  {
+    id: "k_pct",
+    label: "K%",
+    higherBetter: false,
+    format: (value) => formatPercent(value, 1),
+    valueKeys: BATTING_KEYS.k_pct,
+  },
+  {
+    id: "bb_pct",
+    label: "BB%",
+    higherBetter: true,
+    format: (value) => formatPercent(value, 1),
+    valueKeys: BATTING_KEYS.bb_pct,
+  },
+  {
+    id: "war",
+    label: "WAR",
+    higherBetter: true,
+    format: (value) => formatNumber(value, 2),
+    valueKeys: BATTING_KEYS.war,
+  },
+];
+
+const BATTING_PERCENTILE_METRICS: MetricDefinition[] = [
+  {
+    id: "avg",
+    label: "AVG",
+    higherBetter: true,
+    format: formatAverage,
+    valueKeys: BATTING_KEYS.avg,
+    percentileKeys: ["avg_percentile", "avg_pct", "avg_percent"],
+  },
+  {
+    id: "obp",
+    label: "OBP",
+    higherBetter: true,
+    format: formatAverage,
+    valueKeys: BATTING_KEYS.obp,
+    percentileKeys: ["obp_percentile", "obp_pct", "obp_percent"],
+  },
+  {
+    id: "slg",
+    label: "SLG",
+    higherBetter: true,
+    format: formatAverage,
+    valueKeys: BATTING_KEYS.slg,
+    percentileKeys: ["slg_percentile", "slg_pct", "slg_percent"],
+  },
+  {
+    id: "ops",
+    label: "OPS",
+    higherBetter: true,
+    format: formatAverage,
+    valueKeys: BATTING_KEYS.ops,
+    percentileKeys: ["ops_percentile", "ops_pct", "ops_percent"],
+    derive: (row) => {
+      const direct = getNumberByCandidates(row, BATTING_KEYS.ops);
+      if (direct != null) return direct;
+      const obp = getNumberByCandidates(row, BATTING_KEYS.obp);
+      const slg = getNumberByCandidates(row, BATTING_KEYS.slg);
+      if (obp != null && slg != null) return obp + slg;
+      return null;
+    },
+  },
+  {
+    id: "k_pct",
+    label: "K%",
+    higherBetter: false,
+    format: (value) => formatPercent(value, 1),
+    valueKeys: BATTING_KEYS.k_pct,
+    percentileKeys: ["k_percentile", "k_pct_percentile", "k%_percentile"],
+  },
+  {
+    id: "bb_pct",
+    label: "BB%",
+    higherBetter: true,
+    format: (value) => formatPercent(value, 1),
+    valueKeys: BATTING_KEYS.bb_pct,
+    percentileKeys: ["bb_percentile", "bb_pct_percentile", "bb%_percentile"],
+  },
+  {
+    id: "war",
+    label: "WAR",
+    higherBetter: true,
+    format: (value) => formatNumber(value, 2),
+    valueKeys: BATTING_KEYS.war,
+    percentileKeys: ["war_percentile", "bwar_percentile", "fwar_percentile"],
+  },
+];
+
+const loadTrackmanIndex = cache(async (): Promise<TrackmanIndexEntry[]> => {
+  try {
+    const filePath = path.join(process.cwd(), "public", "trackman", "index.json");
+    const raw = await fs.readFile(filePath, "utf-8");
+    const data = JSON.parse(raw) as TrackmanIndexEntry[];
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+});
+
+const resolveD3PlayerId = cache(async (player: PlayerRegistryEntry) => {
+  if (player.d3_player_id != null) return String(player.d3_player_id);
+  try {
+    const searchResults = await searchPlayers(player.name);
+    const rows = extractRows(searchResults);
+    if (rows.length === 0) return null;
+
+    const babsonMatches = rows.filter((row) => {
+      const team = getTeamName(row);
+      return team ? team.toLowerCase().includes(player.team.toLowerCase()) : false;
+    });
+
+    const ranked = babsonMatches.length > 0 ? babsonMatches : rows;
+    const best = selectBestMatch(ranked, player.name, player.team) ?? ranked[0];
+    return best ? getPlayerId(best) : null;
+  } catch {
+    return null;
+  }
+});
+
+function buildSeasonStats(metrics: MetricDefinition[], statsSource: D3Row): { label: string; value: string }[] {
+  return metrics.map((metric) => {
+    const value = getMetricValue(statsSource, metric);
+    return {
+      label: metric.label,
+      value: metric.format(value),
+    };
+  });
+}
+
+function buildD3Percentiles(
+  metrics: MetricDefinition[],
+  leaderboardRows: D3Row[],
+  statsSource: D3Row,
+  percentileRow: D3Row,
+): PercentileMetric[] {
+  return metrics.map((metric) => {
+    const playerValue = getMetricValue(statsSource, metric);
+    const rawPercentile = getPercentileValue(percentileRow, metric);
+
+    let percentile: number | null = null;
+    let note: string | undefined;
+
+    if (rawPercentile != null) {
+      const normalized = normalizePercentile(rawPercentile);
+      percentile =
+        normalized == null
+          ? null
+          : metric.higherBetter
+            ? normalized
+            : 100 - normalized;
+    } else if (playerValue != null) {
+      const values = leaderboardRows
+        .map((row) => getMetricValue(row, metric))
+        .filter((value): value is number => value != null);
+      const computed = computePercentile(values, playerValue, metric.higherBetter);
+      percentile = computed;
+      if (computed != null) {
+        note = "Computed (vs D3)";
+      }
+    }
+
+    return {
+      label: metric.label,
+      value: metric.format(playerValue),
+      percentile,
+      note,
+    };
+  });
+}
+
+function buildTeamPercentiles(
+  metrics: MetricDefinition[],
+  teamRows: D3Row[],
+  statsSource: D3Row,
+): PercentileMetric[] {
+  return metrics.map((metric) => {
+    const playerValue = getMetricValue(statsSource, metric);
+    const values = teamRows
+      .map((row) => getMetricValue(row, metric))
+      .filter((value): value is number => value != null);
+    const percentile =
+      playerValue == null ? null : computePercentile(values, playerValue, metric.higherBetter);
+
+    return {
+      label: metric.label,
+      value: metric.format(playerValue),
+      percentile,
+    };
+  });
+}
+
+export default async function PlayerProfilePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const player = registry.find((entry) => entry.slug === slug);
+
+  if (!player) {
+    notFound();
+  }
+
+  const d3PlayerId = await resolveD3PlayerId(player);
+
+  let leaderboardRows: D3Row[] = [];
+  let leaderboardError: string | null = null;
+
+  try {
+    const data = await fetchPitchingLeaderboard(String(TARGET_YEAR), 3);
+    leaderboardRows = Array.isArray(data) ? data : extractRows(data);
+  } catch (error) {
+    leaderboardError =
+      error instanceof Error ? error.message : "Failed to load leaderboard";
+  }
+
+  const playerRow =
+    leaderboardRows.find((row) => row.player_id === d3PlayerId) ??
+    findPlayerRow(leaderboardRows, d3PlayerId, player.name, player.team);
+
+  const statsSource = playerRow ?? {};
+
+  const seasonStats = buildSeasonStats(PITCHING_SNAPSHOT_METRICS, statsSource);
+  const d3Percentiles = buildD3Percentiles(
+    PITCHING_PERCENTILE_METRICS,
+    leaderboardRows,
+    statsSource,
+    playerRow ?? statsSource,
+  );
+
+  if (process.env.NODE_ENV !== "production") {
+    console.log("Player:", player.name, d3PlayerId ?? "Unresolved");
+    console.log("Source: pitching leaderboard 2025");
+    console.log("Leaderboard rows:", leaderboardRows.length);
+    console.log("Player row found:", Boolean(playerRow));
+    console.log("Stat keys:", Object.keys(statsSource ?? {}));
+  }
+
+  const roleLabel =
+    player.role.length > 0
+      ? `${player.role.charAt(0).toUpperCase()}${player.role.slice(1)}`
+      : player.role;
+  const seasonNote = undefined;
+
+  const trackmanIndex = await loadTrackmanIndex();
+  const trackmanSessions = trackmanIndex
+    .filter((entry) => entry.playerSlug === player.slug && entry.date)
+    .map((entry) => {
+      const date = entry.date ?? "";
+      const dateSlug = date.replace(/-/g, "_");
+      const rawLabel = entry.sessionType ?? "Session";
+      const sessionLabel = rawLabel
+        .split(/[_-]/g)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
+      return {
+        date,
+        dateSlug,
+        sessionLabel: sessionLabel || "Session",
+      };
+    });
+
+  return (
+    <main className="min-h-screen bg-zinc-950 text-zinc-100">
+      <div className="mx-auto w-full max-w-5xl px-6 py-10">
+        <Link
+          href="/players"
+          className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-700 transition-colors hover:text-zinc-400"
+        >
+          Roster
+        </Link>
+
+        <header className="mt-6 pb-8">
+          <h1 className="text-[32px] font-black tracking-tight text-white">
+            {player.name}
+          </h1>
+          <p className="mt-1 text-[12px] font-bold uppercase tracking-[0.2em] text-zinc-600">
+            {player.team}
+            <span className="mx-3 text-zinc-800">/</span>
+            {roleLabel}
+            <span className="mx-3 text-zinc-800">/</span>
+            {TARGET_YEAR}
+          </p>
+        </header>
+
+        <PlayerProfileTabs
+          seasonStats={seasonStats}
+          seasonYear={TARGET_YEAR}
+          seasonNote={seasonNote}
+          d3Percentiles={d3Percentiles}
+          trackmanSessions={trackmanSessions}
+          playerSlug={player.slug}
+        />
+      </div>
+    </main>
+  );
+}

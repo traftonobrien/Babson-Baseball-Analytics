@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/api/login", "/api/logout"];
+const PUBLIC_PATHS = ["/login", "/api/login", "/api/logout", "/api/d3db", "/players"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith("/api/d3db")) {
+    return NextResponse.next();
+  }
 
   // Allow Next.js internals and public auth routes
   if (
@@ -26,5 +30,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/d3db).*)"],
 };
