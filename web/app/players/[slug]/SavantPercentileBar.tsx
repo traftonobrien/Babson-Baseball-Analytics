@@ -1,17 +1,71 @@
 "use client";
 
-interface BadgeStyle {
-  bg: string;
-  glow: string;
-  text: string;
+/* ------------------------------------------------------------------ */
+/*  Gradient-sampled badge color — matches the track at badge position */
+/* ------------------------------------------------------------------ */
+
+type RGB = [number, number, number];
+
+function hexToRgb(hex: string): RGB {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-function getPercentileColor(p: number): BadgeStyle {
-  if (p >= 90) return { bg: "#ef4444", glow: "#f87171", text: "#ffffff" }; // red-500 / red-400
-  if (p >= 75) return { bg: "#f97316", glow: "#fb923c", text: "#ffffff" }; // orange-500 / orange-400
-  if (p >= 50) return { bg: "#d4d4d8", glow: "#e4e4e7", text: "#18181b" }; // zinc-300 / zinc-200
-  if (p >= 30) return { bg: "#60a5fa", glow: "#93c5fd", text: "#ffffff" }; // blue-400 / blue-300
-  return { bg: "#2563eb", glow: "#3b82f6", text: "#ffffff" };              // blue-600 / blue-500
+function rgbToHex([r, g, b]: RGB): string {
+  return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
+}
+
+function lerpRgb(a: RGB, b: RGB, t: number): RGB {
+  return [
+    Math.round(a[0] + (b[0] - a[0]) * t),
+    Math.round(a[1] + (b[1] - a[1]) * t),
+    Math.round(a[2] + (b[2] - a[2]) * t),
+  ];
+}
+
+/** Luminance-based contrast: dark text on light badges, white on dark. */
+function textColor(rgb: RGB): string {
+  const [r, g, b] = rgb;
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return lum > 0.55 ? "#18181b" : "#ffffff";
+}
+
+/** Lighten an RGB color for the glow effect. */
+function lighten([r, g, b]: RGB, amount = 0.3): RGB {
+  return [
+    Math.min(255, Math.round(r + (255 - r) * amount)),
+    Math.min(255, Math.round(g + (255 - g) * amount)),
+    Math.min(255, Math.round(b + (255 - b) * amount)),
+  ];
+}
+
+// Track gradient stops — must stay in sync with TRACK constant below.
+const STOPS: { pct: number; rgb: RGB }[] = [
+  { pct: 0,   rgb: hexToRgb("#1e40af") },
+  { pct: 18,  rgb: hexToRgb("#3b82f6") },
+  { pct: 50,  rgb: hexToRgb("#94a3b8") },
+  { pct: 82,  rgb: hexToRgb("#f87171") },
+  { pct: 100, rgb: hexToRgb("#dc2626") },
+];
+
+function sampleTrack(p: number): { bg: string; glow: string; text: string } {
+  // Find the two stops that bracket p
+  let lo = STOPS[0];
+  let hi = STOPS[STOPS.length - 1];
+  for (let i = 0; i < STOPS.length - 1; i++) {
+    if (p >= STOPS[i].pct && p <= STOPS[i + 1].pct) {
+      lo = STOPS[i];
+      hi = STOPS[i + 1];
+      break;
+    }
+  }
+  const t = hi.pct === lo.pct ? 0 : (p - lo.pct) / (hi.pct - lo.pct);
+  const rgb = lerpRgb(lo.rgb, hi.rgb, t);
+  return {
+    bg: rgbToHex(rgb),
+    glow: rgbToHex(lighten(rgb)),
+    text: textColor(rgb),
+  };
 }
 
 const TRACK =
@@ -35,7 +89,7 @@ export default function SavantPercentileBar({
       ? Math.min(100, Math.max(0, percentile))
       : null;
 
-  const style = p != null ? getPercentileColor(p) : null;
+  const style = p != null ? sampleTrack(p) : null;
   const n = p != null ? Math.round(p) : null;
   const delay = index * 60;
 
