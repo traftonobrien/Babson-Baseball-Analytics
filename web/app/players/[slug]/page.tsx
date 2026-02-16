@@ -603,10 +603,14 @@ function buildD3Percentiles(
 
 export default async function PlayerProfilePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { slug } = await params;
+  const sp = await searchParams;
+  const initialTab = typeof sp.tab === "string" ? sp.tab : undefined;
   const player = registry.find((entry) => entry.slug === slug);
 
   if (!player) {
@@ -748,6 +752,7 @@ export default async function PlayerProfilePage({
           trackmanSessions={trackmanSessions}
           commandOutings={commandOutings}
           playerSlug={player.slug}
+          initialTab={initialTab}
         />
       </div>
     </main>

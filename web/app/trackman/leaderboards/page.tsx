@@ -79,7 +79,7 @@ export default function TrackmanLeaderboardsPage() {
           <ArrowLeft className="w-4 h-4" />
         </Link>
         <div className="flex items-center gap-2">
-          <Trophy className="w-4 h-4 text-amber-400" />
+          <Trophy className="w-4 h-4 text-blue-400" />
           <h1 className="text-sm font-semibold">Trackman Leaderboards</h1>
         </div>
       </header>

@@ -10,5 +10,6 @@ export default async function TrackmanSessionPage({
   const { playerId, date } = await params;
   const sp = await searchParams;
   const from = typeof sp.from === "string" ? sp.from : undefined;
-  return <TrackmanSessionView playerId={playerId} date={date} from={from} />;
+  const slug = typeof sp.slug === "string" ? sp.slug : undefined;
+  return <TrackmanSessionView playerId={playerId} date={date} from={from} slug={slug} />;
 }

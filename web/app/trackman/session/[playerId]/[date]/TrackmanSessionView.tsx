@@ -181,12 +181,15 @@ export default function TrackmanSessionView({
   playerId,
   date,
   from,
+  slug,
 }: {
   playerId: string;
   date: string;
   from?: string;
+  slug?: string;
 }) {
-  const backHref = from === "profile" ? `/players/${playerId}` : "/trackman";
+  const profileSlug = slug ?? playerId;
+  const backHref = from === "profile" ? `/players/${profileSlug}?tab=trackman` : "/trackman";
   const backLabel = from === "profile" ? "Back to profile" : "Back to sessions";
   const [pitches, setPitches] = useState<TrackmanPitch[]>([]);
   const [pitchTypes, setPitchTypes] = useState<TrackmanPitchTypeSummary[]>([]);

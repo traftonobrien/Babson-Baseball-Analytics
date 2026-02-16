@@ -161,7 +161,7 @@ function TrendLine({
   points,
   label,
   unit,
-  color = "#10b981",
+  color = "#3b82f6",
 }: {
   points: { date: string; value: number }[];
   label: string;
@@ -258,10 +258,13 @@ async function fetchPitchTypes(path: string): Promise<TrackmanPitchTypeSummary[]
 
 export default function TrackmanPlayerPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const [slug, setSlug] = useState("");
+  const [fromProfile, setFromProfile] = useState(false);
   const [entries, setEntries] = useState<IndexEntry[]>([]);
   const [sessionData, setSessionData] = useState<SessionPitchTypes[]>([]);
   const [loading, setLoading] = useState(true);
@@ -269,7 +272,10 @@ export default function TrackmanPlayerPage({
 
   useEffect(() => {
     params.then((p) => setSlug(p.slug));
-  }, [params]);
+    searchParams.then((sp) => {
+      setFromProfile(sp.from === "profile");
+    });
+  }, [params, searchParams]);
 
   useEffect(() => {
     if (!slug) return;
@@ -329,12 +335,14 @@ export default function TrackmanPlayerPage({
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3 mb-3">
             <Link
-              href="/trackman"
+              href={fromProfile ? `/players/${slug}` : "/trackman"}
               className="text-zinc-500 hover:text-zinc-300 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>
-            <span className="text-xs text-zinc-600 uppercase tracking-wider">Player Profile</span>
+            <span className="text-xs text-zinc-600 uppercase tracking-wider">
+              {fromProfile ? "Player Profile" : "Trackman"}
+            </span>
           </div>
           <div className="flex items-baseline gap-4 flex-wrap">
             <h1 className="text-xl font-bold tracking-tight text-zinc-50">{playerName}</h1>
@@ -374,7 +382,7 @@ export default function TrackmanPlayerPage({
                   return (
                     <Link
                       key={`${e.date}-${i}`}
-                      href={`/trackman/session/${slug}/${dateSlug}`}
+                      href={`/trackman/session/${slug}/${dateSlug}${fromProfile ? `?from=profile&slug=${slug}` : ""}`}
                       className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 hover:border-zinc-600 transition-colors text-sm"
                     >
                       <span className="font-mono text-zinc-300">
@@ -399,7 +407,7 @@ export default function TrackmanPlayerPage({
                     points={fbVeloTrend}
                     label="Avg Fastball Velocity Over Time"
                     unit="mph"
-                    color="#10b981"
+                    color="#3b82f6"
                   />
                 )}
                 {bbSpinTrend.length > 1 && (
@@ -407,7 +415,7 @@ export default function TrackmanPlayerPage({
                     points={bbSpinTrend}
                     label="Avg Breaking Ball Spin Over Time"
                     unit="rpm"
-                    color="#8b5cf6"
+                    color="#60a5fa"
                   />
                 )}
               </div>

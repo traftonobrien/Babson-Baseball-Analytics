@@ -154,7 +154,7 @@ export default function TrackmanPlayersPage() {
           <ArrowLeft className="w-4 h-4" />
         </Link>
         <div className="flex items-center gap-2 flex-1">
-          <Radio className="w-4 h-4 text-emerald-400" />
+          <Radio className="w-4 h-4 text-blue-400" />
           <h1 className="text-sm font-semibold">Trackman</h1>
         </div>
         <Link

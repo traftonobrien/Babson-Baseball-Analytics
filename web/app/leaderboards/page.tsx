@@ -201,7 +201,7 @@ function KpiCells({ row }: { row: { pitchCount: number; onTargetPct: number; avg
   return (
     <>
       <td className="px-3 py-2 text-zinc-300 font-mono">{row.pitchCount}</td>
-      <td className="px-3 py-2 font-mono font-semibold text-emerald-400">{fmtPct(row.onTargetPct)}</td>
+      <td className="px-3 py-2 font-mono font-semibold text-amber-400">{fmtPct(row.onTargetPct)}</td>
       <td className="px-3 py-2 font-mono text-zinc-300">{fmtIn(row.avgMissIn)}</td>
       <td className="px-3 py-2 font-mono text-zinc-300">{fmtIn(row.avgHAbsIn)}</td>
       <td className="px-3 py-2 font-mono text-zinc-300">{fmtIn(row.avgVAbsIn)}</td>
@@ -441,7 +441,7 @@ export default function LeaderboardsPage() {
                     <td className="px-3 py-2 font-medium whitespace-nowrap">
                       <Link
                         href={`/player/${row.playerId}/report?outingId=${row.outingId}`}
-                        className="hover:text-blue-400 transition-colors"
+                        className="hover:text-amber-400 transition-colors"
                       >
                         {row.playerName}
                       </Link>
@@ -470,7 +470,7 @@ export default function LeaderboardsPage() {
                     <td className="px-3 py-2 font-medium whitespace-nowrap">
                       <Link
                         href={`/player/${row.playerId}`}
-                        className="hover:text-blue-400 transition-colors"
+                        className="hover:text-amber-400 transition-colors"
                       >
                         {row.playerName}
                       </Link>
