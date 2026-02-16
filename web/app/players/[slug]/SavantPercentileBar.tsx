@@ -95,7 +95,7 @@ export default function SavantPercentileBar({
 
   return (
     <div
-      className="group flex items-center gap-4 py-[10px] opacity-0"
+      className="group flex items-center gap-4 py-[18px] opacity-0"
       style={{
         animation: `savantFadeIn 0.5s ease-out ${delay}ms forwards`,
       }}
@@ -164,27 +164,10 @@ export default function SavantPercentileBar({
       </div>
 
       {/* Value */}
-      <div className="w-[60px] shrink-0 text-right">
-        <div className="font-mono text-[15px] font-black tabular-nums leading-none text-white">
-          {value}
-        </div>
-        {n != null && (
-          <div className="mt-1 text-[9px] tabular-nums text-zinc-600">
-            {n}{ordinal(n)} pctl
-          </div>
-        )}
+      <div className="w-[60px] shrink-0 text-right font-mono text-[13px] font-black tabular-nums leading-none text-white">
+        {value}
       </div>
     </div>
   );
 }
 
-function ordinal(n: number): string {
-  const mod = n % 100;
-  if (mod >= 11 && mod <= 13) return "th";
-  switch (n % 10) {
-    case 1: return "st";
-    case 2: return "nd";
-    case 3: return "rd";
-    default: return "th";
-  }
-}
