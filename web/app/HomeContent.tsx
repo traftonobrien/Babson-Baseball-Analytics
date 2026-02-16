@@ -47,43 +47,6 @@ function formatDateShort(date: Date): string {
 }
 
 // ---------------------------------------------------------------------------
-// Hero card config
-// ---------------------------------------------------------------------------
-
-const heroCards = [
-  {
-    title: "Player Profiles",
-    description: "Roster, D3 stats, Savant percentiles, Trackman and command data",
-    href: "/players",
-    Icon: Users,
-    accent: "emerald",
-    border: "border-emerald-500/30 hover:border-emerald-500/60",
-    iconColor: "text-emerald-400",
-    glow: "group-hover:shadow-emerald-500/10",
-  },
-  {
-    title: "Trackman",
-    description: "Session data, velocity trends, movement profiles, arsenal breakdowns",
-    href: "/trackman",
-    Icon: Activity,
-    accent: "blue",
-    border: "border-blue-500/30 hover:border-blue-500/60",
-    iconColor: "text-blue-400",
-    glow: "group-hover:shadow-blue-500/10",
-  },
-  {
-    title: "Command Center",
-    description: "Miss vectors, target accuracy, command tracking outings",
-    href: "/command",
-    Icon: Target,
-    accent: "amber",
-    border: "border-amber-500/30 hover:border-amber-500/60",
-    iconColor: "text-amber-400",
-    glow: "group-hover:shadow-amber-500/10",
-  },
-];
-
-// ---------------------------------------------------------------------------
 // HomeContent
 // ---------------------------------------------------------------------------
 
@@ -147,46 +110,66 @@ export default function HomeContent() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        {/* ---- Three Hero Cards ---- */}
+        {/* ---- Player Profiles (hero) ---- */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8"
-          initial={{ opacity: 0, y: 10 }}
+          className="mt-8"
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.05 }}
         >
-          {heroCards.map((card, i) => (
-            <motion.div
-              key={card.href}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.08 + i * 0.06 }}
-            >
-              <Link href={card.href}>
-                <div
-                  className={`group relative rounded-xl border ${card.border} bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-6 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${card.glow}`}
-                >
-                  <div className="flex items-start justify-between">
-                    <card.Icon className={`w-6 h-6 ${card.iconColor}`} />
-                    <ArrowUpRight
-                      className={`w-4 h-4 ${card.iconColor} opacity-0 group-hover:opacity-100 transition-opacity`}
-                    />
-                  </div>
-                  <h2 className="text-lg font-semibold mt-4">{card.title}</h2>
-                  <p className="text-sm text-zinc-400 mt-1 leading-relaxed">
-                    {card.description}
-                  </p>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+          <Link href="/players">
+            <div className="group relative rounded-xl border border-emerald-500/30 hover:border-emerald-500/60 bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-6 transition-all duration-200 hover:scale-[1.01] hover:shadow-lg group-hover:shadow-emerald-500/10">
+              <div className="flex items-start justify-between">
+                <Users className="w-6 h-6 text-emerald-400" />
+                <ArrowUpRight className="w-4 h-4 text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <h2 className="text-lg font-semibold mt-4">Player Profiles</h2>
+              <p className="text-sm text-zinc-400 mt-1 leading-relaxed">
+                Roster, D3 stats, Savant percentiles, Trackman and command data
+              </p>
+            </div>
+          </Link>
+        </motion.div>
+
+        {/* ---- Trackman + Command Center ---- */}
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          <Link href="/trackman">
+            <div className="group relative rounded-xl border border-blue-500/30 hover:border-blue-500/60 bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-6 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg group-hover:shadow-blue-500/10">
+              <div className="flex items-start justify-between">
+                <Activity className="w-6 h-6 text-blue-400" />
+                <ArrowUpRight className="w-4 h-4 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <h2 className="text-lg font-semibold mt-4">Trackman</h2>
+              <p className="text-sm text-zinc-400 mt-1 leading-relaxed">
+                Session data, velocity trends, movement profiles, arsenal breakdowns
+              </p>
+            </div>
+          </Link>
+          <Link href="/command">
+            <div className="group relative rounded-xl border border-amber-500/30 hover:border-amber-500/60 bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-6 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg group-hover:shadow-amber-500/10">
+              <div className="flex items-start justify-between">
+                <Target className="w-6 h-6 text-amber-400" />
+                <ArrowUpRight className="w-4 h-4 text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <h2 className="text-lg font-semibold mt-4">Command Center</h2>
+              <p className="text-sm text-zinc-400 mt-1 leading-relaxed">
+                Miss vectors, target accuracy, command tracking outings
+              </p>
+            </div>
+          </Link>
         </motion.div>
 
         {/* ---- Leaderboards ---- */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
+          transition={{ duration: 0.3, delay: 0.15 }}
         >
           <Link href="/leaderboards">
             <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-amber-500/40 transition-colors group">
