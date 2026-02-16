@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, Target, ChevronRight } from "lucide-react";
+import { ArrowLeft, Target, ChevronRight, Users, Activity, Calendar } from "lucide-react";
 import { players, type Player, type Outing } from "@/lib/dataIndex";
 
 // ---------------------------------------------------------------------------
@@ -39,6 +39,23 @@ function formatDate(date: Date): string {
 
 export default function CommandPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
+
+  const stats = useMemo(() => {
+    const totalPlayers = players.length;
+    const totalOutings = players.reduce((s, p) => s + p.outings.length, 0);
+    const totalPitches = players.reduce(
+      (s, p) => s + p.outings.reduce((a, o) => a + parsePitchCount(o.label), 0),
+      0,
+    );
+    let mostRecentDate: Date | null = null;
+    for (const p of players) {
+      for (const o of p.outings) {
+        const d = parseDateFromId(o.id);
+        if (d && (!mostRecentDate || d > mostRecentDate)) mostRecentDate = d;
+      }
+    }
+    return { totalPlayers, totalOutings, totalPitches, mostRecentDate };
+  }, []);
 
   const pitcherData = useMemo(() => {
     return players
@@ -84,6 +101,40 @@ export default function CommandPage() {
               All command tracking outings by pitcher
             </p>
           </div>
+        </motion.div>
+
+        {/* At a Glance */}
+        <motion.div
+          className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.05 }}
+        >
+          {[
+            { label: "Pitchers", value: stats.totalPlayers, Icon: Users },
+            { label: "Outings", value: stats.totalOutings, Icon: Activity },
+            { label: "Pitches", value: stats.totalPitches.toLocaleString(), Icon: Target },
+            {
+              label: "Latest",
+              value: stats.mostRecentDate
+                ? stats.mostRecentDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                : "\u2014",
+              Icon: Calendar,
+            },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg px-3 py-2"
+            >
+              <div className="text-xs text-zinc-500 flex items-center gap-1">
+                <stat.Icon className="w-3 h-3" />
+                {stat.label}
+              </div>
+              <div className="text-lg font-semibold font-mono mt-0.5">
+                {stat.value}
+              </div>
+            </div>
+          ))}
         </motion.div>
 
         {/* Pitcher grid */}
