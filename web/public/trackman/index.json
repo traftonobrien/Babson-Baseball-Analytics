@@ -154,7 +154,7 @@
     "playerName": "Carrea, Joe",
     "playerSlug": "carrea_joe",
     "team": null,
-    "handedness": null,
+    "handedness": "RHP",
     "date": "2026-01-31",
     "sessionType": null,
     "pitchCount": null,
@@ -205,14 +205,13 @@
     "playerName": "Langan, Shane",
     "playerSlug": "langan_shane",
     "team": null,
-    "handedness": null,
+    "handedness": "RHP",
     "date": "2026-01-31",
     "sessionType": null,
     "pitchCount": null,
     "pitchTypes": [
       "Fastball",
-      "Other",
-      "Slider"
+      "Sweeper"
     ],
     "weightedAvgVelo": 80.67,
     "pitchTypesPath": "/trackman/sessions/langan_shane/2026_01_31/session/pitch_types.json",
@@ -334,10 +333,9 @@
     "sessionType": null,
     "pitchCount": null,
     "pitchTypes": [
+      "Curveball",
       "Fastball",
-      "Other",
-      "Sinker",
-      "Slider"
+      "Sinker"
     ],
     "weightedAvgVelo": 78.03,
     "pitchTypesPath": "/trackman/sessions/place_cal/2026_02_02/session/pitch_types.json",
@@ -456,7 +454,7 @@
     "playerName": "OKeefe, Quinn",
     "playerSlug": "okeefe_quinn",
     "team": null,
-    "handedness": null,
+    "handedness": "RHP",
     "date": "2026-02-05",
     "sessionType": null,
     "pitchCount": null,
@@ -481,7 +479,7 @@
     "playerName": "Rhodes, Pat",
     "playerSlug": "rhodes_pat",
     "team": null,
-    "handedness": null,
+    "handedness": "RHP",
     "date": "2026-02-05",
     "sessionType": null,
     "pitchCount": null,
@@ -767,8 +765,7 @@
     "pitchCount": null,
     "pitchTypes": [
       "Fastball",
-      "Other",
-      "Slider"
+      "Sweeper"
     ],
     "weightedAvgVelo": 76.99,
     "pitchTypesPath": "/trackman/sessions/valente_ben/2026_02_09/session/pitch_types.json",
@@ -844,9 +841,7 @@
     "pitchCount": null,
     "pitchTypes": [
       "Curveball",
-      "Fastball",
-      "Other",
-      "Slider"
+      "Fastball"
     ],
     "weightedAvgVelo": 78.35,
     "pitchTypesPath": "/trackman/sessions/place_cal/2026_02_10/session/pitch_types.json",
@@ -864,7 +859,7 @@
     "playerName": "Snyder, Drew",
     "playerSlug": "snyder_drew",
     "team": null,
-    "handedness": null,
+    "handedness": "LHP",
     "date": "2026-02-10",
     "sessionType": null,
     "pitchCount": null,
@@ -946,9 +941,8 @@
     "pitchCount": null,
     "pitchTypes": [
       "Fastball",
-      "Other",
       "Sinker",
-      "Slider"
+      "Sweeper"
     ],
     "weightedAvgVelo": 80.97,
     "pitchTypesPath": "/trackman/sessions/burk_bobby/2026_02_13/session/pitch_types.json",

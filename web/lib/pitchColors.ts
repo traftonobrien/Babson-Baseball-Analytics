@@ -23,7 +23,9 @@ const PITCH_COLORS: Record<string, string> = {
   Curveball: "#6366f1",
   Cutter: "#f59e0b",
   Splitter: "#14b8a6",
+  Sweeper: "#ec4899",
   "Knuckle Curve": "#0ea5e9",
+  SW: "#ec4899",
 };
 
 const OTHER_COLOR = "#71717a"; // zinc-500

@@ -1,0 +1,22 @@
+{
+  "R": {
+    "Fastball":  { "ivb": 15.45, "hb": 7.76 },
+    "Sinker":    { "ivb": 8.24,  "hb": 14.92 },
+    "Cutter":    { "ivb": 8.08,  "hb": 2.45 },
+    "Splitter":  { "ivb": 3.01,  "hb": 11.05 },
+    "Changeup":  { "ivb": 4.27,  "hb": 14.40 },
+    "Curveball": { "ivb": -10.35, "hb": 8.91 },
+    "Slider":    { "ivb": 1.72,  "hb": 4.63 },
+    "Sweeper":   { "ivb": 1.16,  "hb": 13.90 }
+  },
+  "L": {
+    "Fastball":  { "ivb": 15.32, "hb": 7.96 },
+    "Sinker":    { "ivb": 8.50,  "hb": 15.10 },
+    "Cutter":    { "ivb": 7.78,  "hb": 1.98 },
+    "Splitter":  { "ivb": 6.19,  "hb": 9.34 },
+    "Changeup":  { "ivb": 5.05,  "hb": 14.20 },
+    "Curveball": { "ivb": -10.00, "hb": 8.19 },
+    "Slider":    { "ivb": 2.14,  "hb": 3.84 },
+    "Sweeper":   { "ivb": 0.77,  "hb": 13.13 }
+  }
+}

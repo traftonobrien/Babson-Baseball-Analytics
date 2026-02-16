@@ -2,7 +2,7 @@
   "player_name": "Snyder, Drew",
   "player_slug": "snyder_drew",
   "team": null,
-  "handedness": null,
+  "handedness": "LHP",
   "session_date": "2026-02-10",
   "date_from": "2026-01-01",
   "date_to": "2026-02-15",

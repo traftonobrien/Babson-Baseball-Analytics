@@ -11,6 +11,7 @@ import PitchTypeFilter from "../../session/[playerId]/[date]/PitchTypeFilter";
 import PitchTypeTable from "../../session/[playerId]/[date]/PitchTypeTable";
 import MovementScatterByType from "../../session/[playerId]/[date]/MovementScatterByType";
 import PitchArsenalCards from "../../session/[playerId]/[date]/PitchArsenalCards";
+import { mergeRenamedPitchTypes } from "@/lib/mergePitchTypes";
 
 interface IndexEntry {
   playerName: string;
@@ -306,13 +307,19 @@ export default function TrackmanPlayerPage({
 
   const playerName = formatPlayerName(entries[0]?.playerName ?? slug);
   const team = entries[0]?.team;
-  const hand = entries[0]?.handedness;
+  const rawHand = entries[0]?.handedness;
+  const hand = rawHand;
+  const normalizedHand: "R" | "L" | undefined =
+    rawHand?.toUpperCase().startsWith("R") ? "R" :
+    rawHand?.toUpperCase().startsWith("L") ? "L" :
+    undefined;
 
-  // Aggregate pitch types across all sessions
-  const aggregated = useMemo(
-    () => aggregatePitchTypes(sessionData.map((s) => s.pitchTypes)),
-    [sessionData],
-  );
+  // Aggregate pitch types across all sessions, then merge by movement
+  const aggregated = useMemo(() => {
+    const raw = aggregatePitchTypes(sessionData.map((s) => s.pitchTypes));
+    if (!normalizedHand) return raw;
+    return mergeRenamedPitchTypes(raw, normalizedHand);
+  }, [sessionData, normalizedHand]);
 
   const allTypes = useMemo(
     () => Array.from(new Set(aggregated.map((p) => p.pitchType))).sort(),
@@ -447,7 +454,7 @@ export default function TrackmanPlayerPage({
                 <PitchTypeTable pitchTypes={filtered} summary={null} />
 
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-stretch">
-                  <MovementScatterByType pitchTypes={filtered} />
+                  <MovementScatterByType pitchTypes={filtered} hand={normalizedHand} />
                   <PitchArsenalCards pitchTypes={filtered} />
                 </div>
               </>

@@ -21,6 +21,7 @@ import PitchTypeFilter from "./PitchTypeFilter";
 import PitchTypeTable from "./PitchTypeTable";
 import MovementScatterByType from "./MovementScatterByType";
 import PitchArsenalCards from "./PitchArsenalCards";
+import { mergeRenamedPitchTypes } from "@/lib/mergePitchTypes";
 
 interface PitchPayload {
   format: "pitch";
@@ -241,30 +242,6 @@ export default function TrackmanSessionView({
     };
   }, [playerId, date]);
 
-  // All pitch types
-  const allTypes = useMemo(() => {
-    if (viewMode === "aggregate") {
-      return Array.from(new Set(pitchTypes.map((p) => p.pitchType))).sort();
-    }
-    return uniquePitchTypes(pitches);
-  }, [pitches, pitchTypes, viewMode]);
-
-  // Filtered pitches
-  const filtered = useMemo(() => {
-    if (viewMode === "aggregate") {
-      let result = pitchTypes;
-      if (activePitchTypes.size > 0) {
-        result = result.filter((p) => activePitchTypes.has(p.pitchType));
-      }
-      return result;
-    }
-    let result = pitches;
-    if (activePitchTypes.size > 0) {
-      result = result.filter((p) => activePitchTypes.has(p.pitchType));
-    }
-    return result;
-  }, [pitches, pitchTypes, activePitchTypes, viewMode]);
-
   // Header info
   const playerName = formatPlayerName(
     (meta?.player as string) ??
@@ -278,6 +255,47 @@ export default function TrackmanSessionView({
     (meta?.session_label as string) ??
     (meta?.sessionLabel as string) ??
     null;
+  const rawHand =
+    (meta?.handedness as string) ??
+    (meta?.hand as string) ??
+    (meta?.pitcher_hand as string) ??
+    (meta?.throws as string) ??
+    null;
+  const hand: "R" | "L" | undefined =
+    rawHand?.toUpperCase().startsWith("R") ? "R" :
+    rawHand?.toUpperCase().startsWith("L") ? "L" :
+    undefined;
+
+  // Merge pitch types that auto-rename resolves to the same canonical pitch
+  const mergedPitchTypes = useMemo(() => {
+    if (!hand || pitchTypes.length === 0) return pitchTypes;
+    return mergeRenamedPitchTypes(pitchTypes, hand);
+  }, [pitchTypes, hand]);
+
+  // All pitch types
+  const allTypes = useMemo(() => {
+    if (viewMode === "aggregate") {
+      return Array.from(new Set(mergedPitchTypes.map((p) => p.pitchType))).sort();
+    }
+    return uniquePitchTypes(pitches);
+  }, [pitches, mergedPitchTypes, viewMode]);
+
+  // Filtered pitches
+  const filtered = useMemo(() => {
+    if (viewMode === "aggregate") {
+      let result = mergedPitchTypes;
+      if (activePitchTypes.size > 0) {
+        result = result.filter((p) => activePitchTypes.has(p.pitchType));
+      }
+      return result;
+    }
+    let result = pitches;
+    if (activePitchTypes.size > 0) {
+      result = result.filter((p) => activePitchTypes.has(p.pitchType));
+    }
+    return result;
+  }, [pitches, mergedPitchTypes, activePitchTypes, viewMode]);
+
   const filteredPitches = viewMode === "pitch" ? (filtered as TrackmanPitch[]) : [];
   const filteredPitchTypes =
     viewMode === "aggregate" ? (filtered as TrackmanPitchTypeSummary[]) : [];
@@ -408,7 +426,7 @@ export default function TrackmanSessionView({
           <>
             <PitchTypeTable pitchTypes={filteredPitchTypes} summary={summary} />
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-stretch">
-              <MovementScatterByType pitchTypes={filteredPitchTypes} />
+              <MovementScatterByType pitchTypes={filteredPitchTypes} hand={hand} />
               <PitchArsenalCards pitchTypes={filteredPitchTypes} />
             </div>
           </>
