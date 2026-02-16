@@ -294,40 +294,82 @@ export default function HomeContent() {
           </Link>
         </motion.div>
 
-        {/* ---- Quick Actions ---- */}
+        {/* ---- Sessions + Leaderboards (2×2 grid) ---- */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-3"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.08 }}
         >
-          <Link href="/leaderboards">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-colors group">
+          {/* Left column: Command */}
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() =>
+                playersRef.current?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-colors group text-left"
+              aria-label="Scroll to command sessions"
+            >
               <div className="flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-emerald-400" />
-                <span className="font-medium text-sm">Team Leaderboards</span>
-                <ArrowUpRight className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-zinc-300 transition-colors" />
+                <Target className="w-4 h-4 text-emerald-400" />
+                <span className="font-medium text-sm">Command Sessions</span>
+                <ChevronDown className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-zinc-300 transition-colors" />
               </div>
               <p className="text-xs text-zinc-500 mt-1">
-                Compare stats across all pitchers
+                {stats.totalPlayers} pitchers &middot; {stats.totalOutings} outings
               </p>
-            </div>
-          </Link>
-
-          <Link href="/trackman">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-colors group">
-              <div className="flex items-center gap-2">
-                <Radio className="w-4 h-4 text-emerald-400" />
-                <span className="font-medium text-sm">Trackman Sessions</span>
-                <ArrowUpRight className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-zinc-300 transition-colors" />
+            </button>
+            <Link href="/leaderboards">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-colors group">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-amber-400" />
+                  <span className="font-medium text-sm">Command Leaderboards</span>
+                  <ArrowUpRight className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-zinc-300 transition-colors" />
+                </div>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Compare command stats across pitchers
+                </p>
               </div>
-              <p className="text-xs text-zinc-500 mt-1">
-                View imported Trackman data
-              </p>
-            </div>
-          </Link>
+            </Link>
+          </div>
 
-          {stats.mostRecentOuting && (
+          {/* Right column: Trackman */}
+          <div className="flex flex-col gap-3">
+            <Link href="/trackman">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-colors group">
+                <div className="flex items-center gap-2">
+                  <Radio className="w-4 h-4 text-emerald-400" />
+                  <span className="font-medium text-sm">Trackman Sessions</span>
+                  <ArrowUpRight className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-zinc-300 transition-colors" />
+                </div>
+                <p className="text-xs text-zinc-500 mt-1">
+                  View imported Trackman data
+                </p>
+              </div>
+            </Link>
+            <Link href="/trackman/leaderboards">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-colors group">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-blue-400" />
+                  <span className="font-medium text-sm">Trackman Leaderboards</span>
+                  <ArrowUpRight className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-zinc-300 transition-colors" />
+                </div>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Compare Trackman metrics across pitchers
+                </p>
+              </div>
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* ---- Latest Outing ---- */}
+        {stats.mostRecentOuting && (
+          <motion.div
+            className="mt-3"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.12 }}
+          >
             <Link
               href={`/player/${stats.mostRecentOuting.player.id}?outingId=${stats.mostRecentOuting.outing.id}`}
             >
@@ -335,35 +377,18 @@ export default function HomeContent() {
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-blue-400" />
                   <span className="font-medium text-sm">Latest Outing</span>
+                  <span className="text-xs text-zinc-500 truncate">
+                    {stats.mostRecentOuting.player.name} &middot;{" "}
+                    {stats.mostRecentDate
+                      ? formatDate(stats.mostRecentDate)
+                      : ""}
+                  </span>
                   <ArrowUpRight className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-zinc-300 transition-colors" />
                 </div>
-                <p className="text-xs text-zinc-500 mt-1 truncate">
-                  {stats.mostRecentOuting.player.name} &middot;{" "}
-                  {stats.mostRecentDate
-                    ? formatDate(stats.mostRecentDate)
-                    : ""}
-                </p>
               </div>
             </Link>
-          )}
-
-          <button
-            onClick={() =>
-              playersRef.current?.scrollIntoView({ behavior: "smooth" })
-            }
-            className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-colors group text-left"
-            aria-label="Scroll to all players"
-          >
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-zinc-400" />
-              <span className="font-medium text-sm">All Players</span>
-              <ChevronDown className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-zinc-300 transition-colors" />
-            </div>
-            <p className="text-xs text-zinc-500 mt-1">
-              {stats.totalPlayers} pitchers tracked
-            </p>
-          </button>
-        </motion.div>
+          </motion.div>
+        )}
 
         {/* ---- At a Glance ---- */}
         <motion.div
