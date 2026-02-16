@@ -1,15 +1,17 @@
 "use client";
 
-function badgeColor(p: number): string {
-  if (p >= 90) return "#dc2626";
-  if (p >= 80) return "#ef4444";
-  if (p >= 70) return "#fb923c";
-  if (p >= 60) return "#a1a1aa";
-  if (p >= 40) return "#a1a1aa";
-  if (p >= 30) return "#60a5fa";
-  if (p >= 20) return "#3b82f6";
-  if (p >= 10) return "#2563eb";
-  return "#1d4ed8";
+interface BadgeStyle {
+  bg: string;
+  glow: string;
+  text: string;
+}
+
+function getPercentileColor(p: number): BadgeStyle {
+  if (p >= 90) return { bg: "#ef4444", glow: "#f87171", text: "#ffffff" }; // red-500 / red-400
+  if (p >= 75) return { bg: "#f97316", glow: "#fb923c", text: "#ffffff" }; // orange-500 / orange-400
+  if (p >= 50) return { bg: "#d4d4d8", glow: "#e4e4e7", text: "#18181b" }; // zinc-300 / zinc-200
+  if (p >= 30) return { bg: "#60a5fa", glow: "#93c5fd", text: "#ffffff" }; // blue-400 / blue-300
+  return { bg: "#2563eb", glow: "#3b82f6", text: "#ffffff" };              // blue-600 / blue-500
 }
 
 const TRACK =
@@ -33,7 +35,7 @@ export default function SavantPercentileBar({
       ? Math.min(100, Math.max(0, percentile))
       : null;
 
-  const bg = p != null ? badgeColor(p) : "#3f3f46";
+  const style = p != null ? getPercentileColor(p) : null;
   const n = p != null ? Math.round(p) : null;
   const delay = index * 60;
 
@@ -73,19 +75,22 @@ export default function SavantPercentileBar({
         )}
 
         {/* Badge */}
-        {n != null ? (
+        {n != null && style ? (
           <div
-            className="absolute top-1/2 z-10 flex items-center justify-center rounded-full"
+            className="absolute top-1/2 z-10 flex items-center justify-center rounded-full ring-2 ring-black/40"
             style={{
               left: `${p}%`,
               transform: "translate(-50%, -50%)",
               width: 38,
               height: 38,
-              backgroundColor: bg,
-              boxShadow: `0 0 0 3px #09090b, 0 0 16px ${bg}40, 0 4px 12px rgba(0,0,0,0.5)`,
+              backgroundColor: style.bg,
+              boxShadow: `0 0 12px ${style.glow}90, 0 0 0 3px #09090b, 0 4px 12px rgba(0,0,0,0.5)`,
             }}
           >
-            <span className="text-[14px] font-black leading-none text-white">
+            <span
+              className="text-[14px] font-black leading-none"
+              style={{ color: style.text }}
+            >
               {n}
             </span>
           </div>

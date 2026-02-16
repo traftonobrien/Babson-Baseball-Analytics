@@ -302,6 +302,19 @@ export default function HomeContent() {
             </div>
           </Link>
 
+          <Link href="/players">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-colors group">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-blue-400" />
+                <span className="font-medium text-sm">Player Profiles</span>
+                <ArrowUpRight className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-zinc-300 transition-colors" />
+              </div>
+              <p className="text-xs text-zinc-500 mt-1">
+                D3 stats and Savant percentiles
+              </p>
+            </div>
+          </Link>
+
           {stats.mostRecentOuting && (
             <Link
               href={`/player/${stats.mostRecentOuting.player.id}?outingId=${stats.mostRecentOuting.outing.id}`}
