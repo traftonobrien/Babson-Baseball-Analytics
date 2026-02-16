@@ -616,12 +616,14 @@ export default async function PlayerProfilePage({
   const d3PlayerId = getD3PlayerId(player);
 
   let leaderboardRows: D3Row[] = [];
+  let fetchError: string | null = null;
 
   try {
     const data = await fetchPitchingLeaderboard(String(TARGET_YEAR), 3);
     leaderboardRows = Array.isArray(data) ? data : extractRows(data);
-  } catch {
-    // leaderboard unavailable — playerRow will be null
+  } catch (err) {
+    fetchError = String(err);
+    console.error("[PlayerProfile] leaderboard fetch failed:", fetchError);
   }
 
   // ID-only match. No fuzzy/name fallback.
@@ -641,15 +643,19 @@ export default async function PlayerProfilePage({
       )
     : [];
 
-  if (process.env.NODE_ENV !== "production") {
-    console.log("[PlayerProfile]", {
-      player: player.name,
-      playerId: d3PlayerId ?? "Unresolved",
-      foundRow: Boolean(playerRow),
-      leaderboardCount: leaderboardRows.length,
-      sourceUsed: playerRow ? "leaderboard" : "none",
-    });
-  }
+  const isDev = process.env.NODE_ENV !== "production";
+  const debugInfo = {
+    foundRow: Boolean(playerRow),
+    playerId: d3PlayerId ?? "Unresolved",
+    leaderboardCount: leaderboardRows.length,
+    sourceUsed: playerRow ? "leaderboard" : "none",
+    error: fetchError,
+  };
+
+  // Always log in server logs (visible in Vercel function logs)
+  console.log("[PlayerProfile]", player.name, debugInfo);
+
+  const statsUnavailable = !playerRow && d3PlayerId != null && fetchError != null;
 
   const roleLabel =
     player.role.length > 0
@@ -712,6 +718,27 @@ export default async function PlayerProfilePage({
             {TARGET_YEAR}
           </p>
         </header>
+
+        {statsUnavailable && (
+          <div className="mb-4 rounded-lg border border-amber-800/40 bg-amber-950/30 px-4 py-3 text-sm text-amber-400">
+            2025 stats temporarily unavailable. Check back soon.
+          </div>
+        )}
+
+        {!d3PlayerId && (
+          <div className="mb-4 rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-500">
+            No 2025 stats available
+          </div>
+        )}
+
+        {isDev && (
+          <details className="mb-4 rounded-lg border border-zinc-800 bg-zinc-900/50 p-3 text-xs text-zinc-500">
+            <summary className="cursor-pointer font-mono">Debug info</summary>
+            <pre className="mt-2 overflow-x-auto whitespace-pre-wrap font-mono">
+              {JSON.stringify(debugInfo, null, 2)}
+            </pre>
+          </details>
+        )}
 
         <PlayerProfileTabs
           seasonStats={seasonStats}

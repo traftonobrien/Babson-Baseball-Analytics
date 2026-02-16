@@ -2,9 +2,12 @@ import { NextResponse } from "next/server";
 
 type Ctx = { params: Promise<{ path?: string[] }> };
 
+const isDev = process.env.NODE_ENV !== "production";
+
 async function proxy(request: Request, ctx: Ctx) {
   const apiKey = process.env.D3_DASHBOARD_API_KEY;
   if (!apiKey) {
+    console.error("[d3db proxy] D3_DASHBOARD_API_KEY is not set");
     return NextResponse.json(
       { error: "Missing D3_DASHBOARD_API_KEY" },
       { status: 500 },
@@ -17,17 +20,18 @@ async function proxy(request: Request, ctx: Ctx) {
   const upstream = new URL(`https://d3-dashboard.com/api/${endpoint}`);
   upstream.search = incomingUrl.search;
 
-  if (process.env.NODE_ENV !== "production") {
-    console.log("D3 proxy endpoint:", endpoint || "(root)");
-    console.log("Calling D3:", upstream.toString());
+  if (isDev) {
+    console.log("[d3db proxy] endpoint:", endpoint || "(root)");
+    console.log("[d3db proxy] upstream URL:", upstream.toString());
   }
 
   const headers: Record<string, string> = {
     "X-API-Key": apiKey,
+    Accept: "application/json",
   };
 
   const accept = request.headers.get("accept");
-  if (accept) headers.accept = accept;
+  if (accept) headers.Accept = accept;
 
   const contentType = request.headers.get("content-type");
   if (contentType) headers["content-type"] = contentType;
@@ -38,24 +42,33 @@ async function proxy(request: Request, ctx: Ctx) {
       ? undefined
       : await request.arrayBuffer();
 
-  const upstreamRes = await fetch(upstream.toString(), {
-    method,
-    redirect: "manual",
-    headers,
-    body,
-  });
-
-  if (process.env.NODE_ENV !== "production") {
-    console.log("D3 upstream status:", upstreamRes.status);
+  let upstreamRes: Response;
+  try {
+    upstreamRes = await fetch(upstream.toString(), {
+      method,
+      redirect: "manual",
+      headers,
+      body,
+    });
+  } catch (err) {
+    console.error("[d3db proxy] fetch failed:", err);
+    return NextResponse.json(
+      { error: "Upstream fetch failed", detail: String(err) },
+      { status: 502 },
+    );
   }
 
+  if (isDev) {
+    console.log("[d3db proxy] upstream status:", upstreamRes.status);
+  }
+
+  // Block redirects — never let a 30x become a /login redirect
   if (upstreamRes.status >= 300 && upstreamRes.status < 400) {
     return NextResponse.json(
       {
         error: "Upstream redirect blocked",
         status: upstreamRes.status,
         location: upstreamRes.headers.get("location"),
-        upstream: upstream.toString(),
       },
       { status: 502 },
     );
@@ -63,13 +76,32 @@ async function proxy(request: Request, ctx: Ctx) {
 
   const upstreamType = upstreamRes.headers.get("content-type") ?? "";
 
+  // If upstream returned HTML (likely an error page), block it
+  if (
+    upstreamType.includes("text/html") &&
+    !upstreamType.includes("application/json")
+  ) {
+    const snippet = await upstreamRes.text().catch(() => "");
+    console.error(
+      "[d3db proxy] upstream returned HTML instead of JSON, status:",
+      upstreamRes.status,
+    );
+    return NextResponse.json(
+      {
+        error: "Upstream returned HTML (likely error page)",
+        status: upstreamRes.status,
+        bodySnippet: snippet.slice(0, 500),
+      },
+      { status: 502 },
+    );
+  }
+
   if (!upstreamRes.ok) {
     const text = await upstreamRes.text();
     return NextResponse.json(
       {
         error: "Upstream request failed",
         status: upstreamRes.status,
-        upstream: upstream.toString(),
         bodySnippet: text.slice(0, 2000),
       },
       { status: upstreamRes.status },
@@ -85,7 +117,7 @@ async function proxy(request: Request, ctx: Ctx) {
       return new Response(text, {
         status: upstreamRes.status,
         headers: {
-          "content-type": upstreamType || "application/json",
+          "content-type": "application/json",
         },
       });
     }

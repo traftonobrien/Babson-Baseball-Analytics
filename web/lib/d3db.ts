@@ -29,7 +29,8 @@ async function fetchD3Direct(
     }
   }
 
-  if (process.env.NODE_ENV !== "production") {
+  const isDev = process.env.NODE_ENV !== "production";
+  if (isDev) {
     console.log("[d3db] direct fetch:", url.toString());
   }
 
@@ -42,17 +43,21 @@ async function fetchD3Direct(
     redirect: "manual",
   });
 
+  if (isDev) {
+    console.log("[d3db] response status:", res.status);
+  }
+
   if (res.status >= 300 && res.status < 400) {
-    throw new Error(
-      `D3 API redirected (${res.status}) — likely auth issue. Location: ${res.headers.get("location")}`,
-    );
+    const msg = `D3 API redirected (${res.status}) — likely auth issue. Location: ${res.headers.get("location")}`;
+    console.error("[d3db]", msg);
+    throw new Error(msg);
   }
 
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(
-      `D3 API error ${res.status} for ${url.toString()}: ${body.slice(0, 300)}`,
-    );
+    const msg = `D3 API error ${res.status} for ${endpoint}: ${body.slice(0, 300)}`;
+    console.error("[d3db]", msg);
+    throw new Error(msg);
   }
 
   return res.json();
