@@ -81,9 +81,11 @@ function applyOverrides(pitches: Pitch[], overrides: Overrides): Pitch[] {
 export default function PlayerDashboard({
   player,
   outing,
+  backTo,
 }: {
   player: Player;
   outing: Outing;
+  backTo?: string;
 }) {
   const { pitches: rawPitches, pitcherHand, loading, error } = usePitchData(outing.csvPath, player.id);
   const [overrides, setOverrides] = useState<Overrides>({});
@@ -251,9 +253,15 @@ export default function PlayerDashboard({
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-2 bg-zinc-900 border-b border-zinc-800">
         <div className="flex items-center gap-3">
-          <a href="/" className="text-sm font-semibold tracking-wide hover:text-zinc-300">
-            Pitch Tracker
-          </a>
+          {backTo ? (
+            <a href={backTo} className="text-sm font-semibold tracking-wide hover:text-zinc-300">
+              &larr; Profile
+            </a>
+          ) : (
+            <a href="/" className="text-sm font-semibold tracking-wide hover:text-zinc-300">
+              Pitch Tracker
+            </a>
+          )}
           <span className="text-xs text-zinc-400">
             {player.name} &middot; {outing.label}
           </span>

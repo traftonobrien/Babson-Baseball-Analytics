@@ -7,10 +7,13 @@ export default async function PlayerPage({
   searchParams,
 }: {
   params: Promise<{ playerId: string }>;
-  searchParams: Promise<{ outingId?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { playerId } = await params;
-  const { outingId } = await searchParams;
+  const sp = await searchParams;
+  const outingId = typeof sp.outingId === "string" ? sp.outingId : undefined;
+  const from = typeof sp.from === "string" ? sp.from : undefined;
+  const slug = typeof sp.slug === "string" ? sp.slug : undefined;
 
   const player = getPlayer(playerId);
   if (!player) {
@@ -24,5 +27,11 @@ export default async function PlayerPage({
     notFound();
   }
 
-  return <PlayerDashboard player={player} outing={outing} />;
+  return (
+    <PlayerDashboard
+      player={player}
+      outing={outing}
+      backTo={from === "profile" && slug ? `/players/${slug}` : undefined}
+    />
+  );
 }

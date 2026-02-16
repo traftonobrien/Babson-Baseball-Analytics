@@ -180,10 +180,14 @@ async function fetchSessionData(playerId: string, date: string): Promise<Session
 export default function TrackmanSessionView({
   playerId,
   date,
+  from,
 }: {
   playerId: string;
   date: string;
+  from?: string;
 }) {
+  const backHref = from === "profile" ? `/players/${playerId}` : "/trackman";
+  const backLabel = from === "profile" ? "Back to profile" : "Back to sessions";
   const [pitches, setPitches] = useState<TrackmanPitch[]>([]);
   const [pitchTypes, setPitchTypes] = useState<TrackmanPitchTypeSummary[]>([]);
   const [summary, setSummary] = useState<TrackmanSessionSummary | null>(null);
@@ -290,10 +294,10 @@ export default function TrackmanSessionView({
       <div className="flex flex-col items-center justify-center h-screen bg-zinc-950 text-zinc-400 gap-4">
         <p className="text-red-400">{error}</p>
         <Link
-          href="/trackman"
+          href={backHref}
           className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
         >
-          Back to sessions
+          {backLabel}
         </Link>
       </div>
     );
@@ -304,10 +308,10 @@ export default function TrackmanSessionView({
       <div className="flex flex-col items-center justify-center h-screen bg-zinc-950 text-zinc-400 gap-4">
         <p>No pitches found in session data.</p>
         <Link
-          href="/trackman"
+          href={backHref}
           className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
         >
-          Back to sessions
+          {backLabel}
         </Link>
       </div>
     );
@@ -318,10 +322,10 @@ export default function TrackmanSessionView({
       <div className="flex flex-col items-center justify-center h-screen bg-zinc-950 text-zinc-400 gap-4">
         <p>No pitch type data found in session.</p>
         <Link
-          href="/trackman"
+          href={backHref}
           className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
         >
-          Back to sessions
+          {backLabel}
         </Link>
       </div>
     );
@@ -334,7 +338,7 @@ export default function TrackmanSessionView({
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3 mb-3">
             <Link
-              href="/trackman"
+              href={backHref}
               className="text-zinc-500 hover:text-zinc-300 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />

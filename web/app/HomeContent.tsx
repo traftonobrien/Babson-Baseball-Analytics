@@ -269,12 +269,37 @@ export default function HomeContent() {
           </p>
         </motion.div>
 
-        {/* ---- Quick Actions ---- */}
+        {/* ---- Pitching Hub (hero card) ---- */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-6"
+          className="mt-6"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.05 }}
+        >
+          <Link href="/players">
+            <div className="rounded-xl border border-emerald-500/30 bg-gradient-to-r from-zinc-900 to-zinc-900/80 p-6 hover:border-emerald-500/60 transition-colors group">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Users className="w-5 h-5 text-emerald-400" />
+                  <div>
+                    <span className="text-lg font-semibold text-zinc-100">Babson Pitching Hub</span>
+                    <p className="text-sm text-zinc-400 mt-0.5">
+                      Player profiles, D3 stats, Savant percentiles, Trackman and command data
+                    </p>
+                  </div>
+                </div>
+                <ArrowUpRight className="w-5 h-5 text-emerald-400 opacity-60 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </div>
+          </Link>
+        </motion.div>
+
+        {/* ---- Quick Actions ---- */}
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-3"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.08 }}
         >
           <Link href="/leaderboards">
             <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-colors group">
@@ -298,19 +323,6 @@ export default function HomeContent() {
               </div>
               <p className="text-xs text-zinc-500 mt-1">
                 View imported Trackman data
-              </p>
-            </div>
-          </Link>
-
-          <Link href="/players">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-colors group">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-blue-400" />
-                <span className="font-medium text-sm">Player Profiles</span>
-                <ArrowUpRight className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-zinc-300 transition-colors" />
-              </div>
-              <p className="text-xs text-zinc-500 mt-1">
-                D3 stats and Savant percentiles
               </p>
             </div>
           </Link>

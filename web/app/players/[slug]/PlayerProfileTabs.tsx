@@ -25,12 +25,20 @@ interface TrackmanSession {
   sessionLabel: string;
 }
 
+interface CommandOuting {
+  outingId: string;
+  playerId: string;
+  dateId: string;
+  label: string;
+}
+
 interface Props {
   seasonStats: SeasonStat[];
   seasonYear: number;
   seasonNote?: string;
   d3Percentiles: PercentileMetric[];
   trackmanSessions: TrackmanSession[];
+  commandOutings: CommandOuting[];
   playerSlug: string;
 }
 
@@ -49,6 +57,7 @@ export default function PlayerProfileTabs({
   seasonYear,
   d3Percentiles,
   trackmanSessions,
+  commandOutings,
   playerSlug,
 }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
@@ -84,70 +93,78 @@ export default function PlayerProfileTabs({
       {/* OVERVIEW */}
       {activeTab === "Overview" && (
         <div className="mt-10 space-y-14">
-          {/* Season Snapshot */}
-          <section>
-            <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
-              {seasonYear} Season
-            </h2>
-            <div className="mt-5 grid grid-cols-3 gap-x-1 gap-y-4 sm:grid-cols-5 lg:grid-cols-9">
-              {seasonStats.map((stat, i) => (
-                <div
-                  key={stat.label}
-                  className="text-center opacity-0"
-                  style={{
-                    animation: `savantFadeIn 0.4s ease-out ${i * 50}ms forwards`,
-                  }}
-                >
-                  <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-600">
-                    {stat.label}
+          {seasonStats.length === 0 && d3Percentiles.length === 0 ? (
+            <p className="text-sm text-zinc-600">
+              No {seasonYear} stats available.
+            </p>
+          ) : (
+            <>
+              {/* Season Snapshot */}
+              <section>
+                <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
+                  {seasonYear} Season
+                </h2>
+                <div className="mt-5 grid grid-cols-3 gap-x-1 gap-y-4 sm:grid-cols-5 lg:grid-cols-9">
+                  {seasonStats.map((stat, i) => (
+                    <div
+                      key={stat.label}
+                      className="text-center opacity-0"
+                      style={{
+                        animation: `savantFadeIn 0.4s ease-out ${i * 50}ms forwards`,
+                      }}
+                    >
+                      <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-600">
+                        {stat.label}
+                      </div>
+                      <div className="mt-1 font-mono text-[22px] font-black tabular-nums leading-none text-white">
+                        {stat.value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {/* D3 Percentile Rankings */}
+              <section>
+                <div className="flex items-end justify-between">
+                  <div>
+                    <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
+                      D3 Percentile Rankings
+                    </h2>
+                    <p className="mt-1 text-[10px] tracking-wide text-zinc-700">
+                      vs Division III pitchers, {seasonYear}
+                    </p>
                   </div>
-                  <div className="mt-1 font-mono text-[22px] font-black tabular-nums leading-none text-white">
-                    {stat.value}
+                  <div className="flex items-center gap-3 text-[9px] font-bold uppercase tracking-[0.15em] text-zinc-600">
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block h-[10px] w-[10px] rounded-full" style={{ background: "#3b82f6" }} />
+                      Poor
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block h-[10px] w-[10px] rounded-full" style={{ background: "#a1a1aa" }} />
+                      Avg
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block h-[10px] w-[10px] rounded-full" style={{ background: "#dc2626" }} />
+                      Elite
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          </section>
 
-          {/* D3 Percentile Rankings */}
-          <section>
-            <div className="flex items-end justify-between">
-              <div>
-                <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
-                  D3 Percentile Rankings
-                </h2>
-                <p className="mt-1 text-[10px] tracking-wide text-zinc-700">
-                  vs Division III pitchers, {seasonYear}
-                </p>
-              </div>
-              <div className="flex items-center gap-3 text-[9px] font-bold uppercase tracking-[0.15em] text-zinc-600">
-                <span className="flex items-center gap-1.5">
-                  <span className="inline-block h-[10px] w-[10px] rounded-full" style={{ background: "#3b82f6" }} />
-                  Poor
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="inline-block h-[10px] w-[10px] rounded-full" style={{ background: "#a1a1aa" }} />
-                  Avg
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="inline-block h-[10px] w-[10px] rounded-full" style={{ background: "#dc2626" }} />
-                  Elite
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6 space-y-0">
-              {d3Percentiles.map((m, i) => (
-                <SavantPercentileBar
-                  key={m.label}
-                  label={m.label}
-                  value={m.value}
-                  percentile={m.percentile}
-                  index={i}
-                />
-              ))}
-            </div>
-          </section>
+                <div className="mt-6 space-y-0">
+                  {d3Percentiles.map((m, i) => (
+                    <SavantPercentileBar
+                      key={m.label}
+                      label={m.label}
+                      value={m.value}
+                      percentile={m.percentile}
+                      index={i}
+                    />
+                  ))}
+                </div>
+              </section>
+            </>
+          )}
         </div>
       )}
 
@@ -184,7 +201,7 @@ export default function PlayerProfileTabs({
                     </div>
                   </div>
                   <Link
-                    href={`/trackman/session/${playerSlug}/${s.dateSlug}`}
+                    href={`/trackman/session/${playerSlug}/${s.dateSlug}?from=profile`}
                     className="text-[10px] font-bold uppercase tracking-widest text-red-500 hover:text-red-400"
                   >
                     Open
@@ -200,9 +217,36 @@ export default function PlayerProfileTabs({
       {activeTab === "Command" && (
         <div className="mt-8">
           <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
-            Command & Analytics
+            Command Outings
           </h2>
-          <p className="mt-4 text-sm text-zinc-700">Coming soon.</p>
+
+          {commandOutings.length === 0 ? (
+            <p className="mt-8 text-sm text-zinc-700">No outings yet.</p>
+          ) : (
+            <ul className="mt-6 divide-y divide-zinc-800/30">
+              {commandOutings.map((o) => (
+                <li
+                  key={o.outingId}
+                  className="flex items-center justify-between py-3"
+                >
+                  <div>
+                    <div className="text-sm font-bold text-zinc-200">
+                      {formatDateLabel(o.dateId)}
+                    </div>
+                    <div className="text-[10px] text-zinc-600">
+                      {o.label}
+                    </div>
+                  </div>
+                  <Link
+                    href={`/player/${o.playerId}?from=profile&slug=${playerSlug}`}
+                    className="text-[10px] font-bold uppercase tracking-widest text-red-500 hover:text-red-400"
+                  >
+                    Open
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </div>

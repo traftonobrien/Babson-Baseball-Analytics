@@ -4,7 +4,8 @@ import { cache } from "react";
 import path from "path";
 import { promises as fs } from "fs";
 import players from "@/data/players.json";
-import { fetchPitchingLeaderboard, searchPlayers } from "@/lib/d3db";
+import { fetchPitchingLeaderboard } from "@/lib/d3db";
+import { players as dataIndexPlayers } from "@/lib/dataIndex";
 import PlayerProfileTabs from "./PlayerProfileTabs";
 
 export const dynamic = "force-dynamic";
@@ -60,25 +61,6 @@ const registry = (players as RawPlayerEntry[])
   .map((entry) => normalizePlayerEntry(entry))
   .filter((entry): entry is PlayerRegistryEntry => entry != null);
 
-const TEAM_KEY_CANDIDATES = [
-  "team",
-  "team_name",
-  "school",
-  "school_name",
-  "college",
-  "college_name",
-  "institution",
-];
-
-const NAME_KEY_CANDIDATES = [
-  "player",
-  "player_name",
-  "name",
-  "full_name",
-  "fullname",
-];
-
-const ID_KEY_CANDIDATES = ["player_id", "playerid", "id"];
 
 const PITCHING_KEYS = {
   ip: ["ip", "innings", "innings_pitched"],
@@ -143,18 +125,6 @@ function parseMetric(value: unknown): number | null {
   return null;
 }
 
-function getStringByCandidates(row: D3Row, candidates: string[]): string | null {
-  for (const candidate of candidates) {
-    const normalizedCandidate = normalizeKey(candidate);
-    for (const [key, value] of Object.entries(row)) {
-      if (normalizeKey(key) === normalizedCandidate && typeof value === "string") {
-        return value;
-      }
-    }
-  }
-  return null;
-}
-
 function getNumberByCandidates(row: D3Row, candidates: string[]): number | null {
   for (const candidate of candidates) {
     const normalizedCandidate = normalizeKey(candidate);
@@ -167,50 +137,6 @@ function getNumberByCandidates(row: D3Row, candidates: string[]): number | null 
   return null;
 }
 
-function getTeamName(row: D3Row): string | null {
-  return getStringByCandidates(row, TEAM_KEY_CANDIDATES);
-}
-
-function getPlayerName(row: D3Row): string | null {
-  return getStringByCandidates(row, NAME_KEY_CANDIDATES);
-}
-
-function getPlayerId(row: D3Row): string | null {
-  for (const candidate of ID_KEY_CANDIDATES) {
-    const normalizedCandidate = normalizeKey(candidate);
-    for (const [key, value] of Object.entries(row)) {
-      if (normalizeKey(key) === normalizedCandidate && value != null) {
-        return String(value);
-      }
-    }
-  }
-  return null;
-}
-
-function normalizeName(name: string): string {
-  return name.toLowerCase().replace(/[^a-z]/g, "");
-}
-
-function expandNameVariants(name: string): string[] {
-  if (!name) return [];
-  const trimmed = name.trim();
-  const variants = new Set<string>();
-  if (trimmed) variants.add(trimmed);
-
-  if (trimmed.includes(",")) {
-    const [last, first] = trimmed.split(",", 2).map((part) => part.trim());
-    if (first && last) variants.add(`${first} ${last}`);
-  } else {
-    const parts = trimmed.split(/\s+/);
-    if (parts.length >= 2) {
-      const first = parts[0];
-      const last = parts[parts.length - 1];
-      variants.add(`${last}, ${first}`);
-    }
-  }
-
-  return Array.from(variants);
-}
 
 function extractRows(payload: unknown): D3Row[] {
   if (!payload) return [];
@@ -230,113 +156,6 @@ function extractRows(payload: unknown): D3Row[] {
   return [];
 }
 
-function extractSeasonRows(payload: unknown, isHitter: boolean): D3Row[] {
-  if (!payload || typeof payload !== "object") return [];
-  const record = payload as Record<string, unknown>;
-  const roleKey = isHitter ? "batting" : "pitching";
-  const keys = [roleKey, "seasons", "season_stats", "stats", "data"];
-
-  for (const key of keys) {
-    if (Array.isArray(record[key])) return record[key] as D3Row[];
-  }
-
-  if (record.stats && typeof record.stats === "object") {
-    const stats = record.stats as Record<string, unknown>;
-    for (const key of keys) {
-      if (Array.isArray(stats[key])) return stats[key] as D3Row[];
-    }
-  }
-
-  if (record.data && typeof record.data === "object") {
-    const data = record.data as Record<string, unknown>;
-    for (const key of keys) {
-      if (Array.isArray(data[key])) return data[key] as D3Row[];
-    }
-  }
-
-  return [];
-}
-
-function extractSeasonYear(row: D3Row): number | null {
-  const yearValue = getNumberByCandidates(row, ["year", "season", "season_year"]);
-  return yearValue ? Math.trunc(yearValue) : null;
-}
-
-function selectSeasonRow(
-  rows: D3Row[],
-  targetYear: number,
-): { row: D3Row | null; year: number | null } {
-  if (rows.length === 0) return { row: null, year: null };
-
-  const withYears = rows
-    .map((row) => ({ row, year: extractSeasonYear(row) }))
-    .filter((entry) => entry.year != null) as { row: D3Row; year: number }[];
-
-  const exact = withYears.find((entry) => entry.year === targetYear);
-  if (exact) return { row: exact.row, year: exact.year };
-
-  if (withYears.length > 0) {
-    const latest = withYears.reduce((prev, next) => (next.year > prev.year ? next : prev));
-    return { row: latest.row, year: latest.year };
-  }
-
-  return { row: rows[0], year: extractSeasonYear(rows[0]) };
-}
-
-function selectBestMatch(
-  rows: D3Row[],
-  playerName: string,
-  teamHint?: string,
-): D3Row | null {
-  const nameNeedle = normalizeName(playerName);
-  const teamNeedle = teamHint ? teamHint.toLowerCase() : "";
-  const nameVariants = expandNameVariants(playerName).map(normalizeName);
-
-  let best: { row: D3Row; score: number } | null = null;
-
-  for (const row of rows) {
-    const rowName = getPlayerName(row) ?? "";
-    if (!rowName) continue;
-    const rowTeam = getTeamName(row) ?? "";
-
-    let score = 0;
-    if (teamNeedle && rowTeam.toLowerCase().includes(teamNeedle)) score += 10;
-
-    const rowNormalized = normalizeName(rowName);
-    if (nameVariants.includes(rowNormalized) || rowNormalized === nameNeedle) {
-      score += 5;
-    } else if (
-      nameVariants.some((variant) => rowNormalized.includes(variant) || variant.includes(rowNormalized)) ||
-      rowNormalized.includes(nameNeedle) ||
-      nameNeedle.includes(rowNormalized)
-    ) {
-      score += 2;
-    }
-
-    if (!best || score > best.score) {
-      best = { row, score };
-    }
-  }
-
-  return best?.row ?? null;
-}
-
-function findPlayerRow(
-  rows: D3Row[],
-  playerId: string | null,
-  fullName: string,
-  teamHint?: string,
-): D3Row | null {
-  if (playerId) {
-    const byId = rows.find((row) => {
-      const rowId = getPlayerId(row);
-      return rowId === playerId;
-    });
-    if (byId) return byId;
-  }
-
-  return selectBestMatch(rows, fullName, teamHint);
-}
 
 function formatNumber(value: number | null, decimals = 2): string {
   if (value == null || Number.isNaN(value)) return "--";
@@ -727,25 +546,9 @@ const loadTrackmanIndex = cache(async (): Promise<TrackmanIndexEntry[]> => {
   }
 });
 
-const resolveD3PlayerId = cache(async (player: PlayerRegistryEntry) => {
-  if (player.d3_player_id != null) return String(player.d3_player_id);
-  try {
-    const searchResults = await searchPlayers(player.name);
-    const rows = extractRows(searchResults);
-    if (rows.length === 0) return null;
-
-    const babsonMatches = rows.filter((row) => {
-      const team = getTeamName(row);
-      return team ? team.toLowerCase().includes(player.team.toLowerCase()) : false;
-    });
-
-    const ranked = babsonMatches.length > 0 ? babsonMatches : rows;
-    const best = selectBestMatch(ranked, player.name, player.team) ?? ranked[0];
-    return best ? getPlayerId(best) : null;
-  } catch {
-    return null;
-  }
-});
+function getD3PlayerId(player: PlayerRegistryEntry): string | null {
+  return player.d3_player_id != null ? String(player.d3_player_id) : null;
+}
 
 function buildSeasonStats(metrics: MetricDefinition[], statsSource: D3Row): { label: string; value: string }[] {
   return metrics.map((metric) => {
@@ -798,27 +601,6 @@ function buildD3Percentiles(
   });
 }
 
-function buildTeamPercentiles(
-  metrics: MetricDefinition[],
-  teamRows: D3Row[],
-  statsSource: D3Row,
-): PercentileMetric[] {
-  return metrics.map((metric) => {
-    const playerValue = getMetricValue(statsSource, metric);
-    const values = teamRows
-      .map((row) => getMetricValue(row, metric))
-      .filter((value): value is number => value != null);
-    const percentile =
-      playerValue == null ? null : computePercentile(values, playerValue, metric.higherBetter);
-
-    return {
-      label: metric.label,
-      value: metric.format(playerValue),
-      percentile,
-    };
-  });
-}
-
 export default async function PlayerProfilePage({
   params,
 }: {
@@ -831,39 +613,42 @@ export default async function PlayerProfilePage({
     notFound();
   }
 
-  const d3PlayerId = await resolveD3PlayerId(player);
+  const d3PlayerId = getD3PlayerId(player);
 
   let leaderboardRows: D3Row[] = [];
-  let leaderboardError: string | null = null;
 
   try {
     const data = await fetchPitchingLeaderboard(String(TARGET_YEAR), 3);
     leaderboardRows = Array.isArray(data) ? data : extractRows(data);
-  } catch (error) {
-    leaderboardError =
-      error instanceof Error ? error.message : "Failed to load leaderboard";
+  } catch {
+    // leaderboard unavailable — playerRow will be null
   }
 
-  const playerRow =
-    leaderboardRows.find((row) => row.player_id === d3PlayerId) ??
-    findPlayerRow(leaderboardRows, d3PlayerId, player.name, player.team);
+  // ID-only match. No fuzzy/name fallback.
+  const playerRow = d3PlayerId
+    ? (leaderboardRows.find((row) => row.player_id === d3PlayerId) ?? null)
+    : null;
 
-  const statsSource = playerRow ?? {};
-
-  const seasonStats = buildSeasonStats(PITCHING_SNAPSHOT_METRICS, statsSource);
-  const d3Percentiles = buildD3Percentiles(
-    PITCHING_PERCENTILE_METRICS,
-    leaderboardRows,
-    statsSource,
-    playerRow ?? statsSource,
-  );
+  const seasonStats = playerRow
+    ? buildSeasonStats(PITCHING_SNAPSHOT_METRICS, playerRow)
+    : [];
+  const d3Percentiles = playerRow
+    ? buildD3Percentiles(
+        PITCHING_PERCENTILE_METRICS,
+        leaderboardRows,
+        playerRow,
+        playerRow,
+      )
+    : [];
 
   if (process.env.NODE_ENV !== "production") {
-    console.log("Player:", player.name, d3PlayerId ?? "Unresolved");
-    console.log("Source: pitching leaderboard 2025");
-    console.log("Leaderboard rows:", leaderboardRows.length);
-    console.log("Player row found:", Boolean(playerRow));
-    console.log("Stat keys:", Object.keys(statsSource ?? {}));
+    console.log("[PlayerProfile]", {
+      player: player.name,
+      playerId: d3PlayerId ?? "Unresolved",
+      foundRow: Boolean(playerRow),
+      leaderboardCount: leaderboardRows.length,
+      sourceUsed: playerRow ? "leaderboard" : "none",
+    });
   }
 
   const roleLabel =
@@ -889,6 +674,21 @@ export default async function PlayerProfilePage({
         sessionLabel: sessionLabel || "Session",
       };
     });
+
+  // Command outings from dataIndex — match by normalized name
+  const normName = (n: string) => n.toLowerCase().replace(/[^a-z]/g, "");
+  const diPlayer = dataIndexPlayers.find(
+    (p) => normName(p.name) === normName(player.name),
+  );
+  const commandOutings = (diPlayer?.outings ?? []).map((o) => {
+    const dateId = o.id.split("/")[1] ?? "";
+    return {
+      outingId: o.id,
+      playerId: diPlayer!.id,
+      dateId,
+      label: o.label,
+    };
+  });
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -919,6 +719,7 @@ export default async function PlayerProfilePage({
           seasonNote={seasonNote}
           d3Percentiles={d3Percentiles}
           trackmanSessions={trackmanSessions}
+          commandOutings={commandOutings}
           playerSlug={player.slug}
         />
       </div>

@@ -45,10 +45,13 @@ export default function PlayersPage() {
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-10">
         <header className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-            Player Profiles
-          </p>
-          <h1 className="text-3xl font-semibold">Babson Pitching Hub</h1>
+          <Link
+            href="/"
+            className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-700 transition-colors hover:text-zinc-400"
+          >
+            Home
+          </Link>
+          <h1 className="text-3xl font-semibold mt-2">Babson Pitching Hub</h1>
           <p className="max-w-2xl text-sm text-zinc-400">
             Official season performance paired with Trackman development data.
             Click a player to open the profile view.
