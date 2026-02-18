@@ -1,0 +1,17 @@
+{
+  "player_name": "O'Brien, Trafton",
+  "player_slug": "obrien_trafton",
+  "team": null,
+  "handedness": "RHP",
+  "session_date": "2026-02-17",
+  "date_from": "2026-02-16",
+  "date_to": "2026-02-17",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Trafton O'Brien 2:17.pdf",
+    "sha256": "fd90666d75b08ce387d5690b0fa1ffebe3f9175d1c7e5a86b035e8073084b82c",
+    "imported_at": "2026-02-18T01:08:44Z"
+  }
+}

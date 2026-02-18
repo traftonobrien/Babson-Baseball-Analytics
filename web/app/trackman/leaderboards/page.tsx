@@ -27,6 +27,7 @@ interface Leaderboards {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
+  max_fb_velo: "Max FB Velo",
   avg_fb_velo: "Avg Fastball Velo",
   avg_fb_spin: "Avg Spin Rate (Fastballs)",
   avg_bb_spin: "Avg Spin Rate (Breaking Balls)",
@@ -34,6 +35,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const CATEGORY_UNITS: Record<string, string> = {
+  max_fb_velo: "mph",
   avg_fb_velo: "mph",
   avg_fb_spin: "rpm",
   avg_bb_spin: "rpm",
@@ -45,10 +47,16 @@ function fmt(v: number, cat: string): string {
   return v.toFixed(1);
 }
 
+function firstLast(name: string): string {
+  const parts = name.split(", ");
+  if (parts.length === 2) return `${parts[1]} ${parts[0]}`;
+  return name;
+}
+
 export default function TrackmanLeaderboardsPage() {
   const [data, setData] = useState<Leaderboards | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState("avg_fb_velo");
+  const [activeCategory, setActiveCategory] = useState("max_fb_velo");
 
   useEffect(() => {
     fetch("/trackman/leaderboards.json")
@@ -132,7 +140,9 @@ export default function TrackmanLeaderboardsPage() {
                   <tr>
                     <th className="px-3 py-2 text-left w-10">#</th>
                     <th className="px-3 py-2 text-left">Player</th>
-                    <th className="px-3 py-2 text-right">Sessions</th>
+                    {activeCategory !== "max_fb_velo" && (
+                      <th className="px-3 py-2 text-right">Sessions</th>
+                    )}
                     <th className="px-3 py-2 text-right">
                       {CATEGORY_LABELS[activeCategory] ?? activeCategory}
                     </th>
@@ -145,10 +155,19 @@ export default function TrackmanLeaderboardsPage() {
                       className="border-t border-zinc-800/50 hover:bg-zinc-800/20"
                     >
                       <td className="px-3 py-2 text-zinc-500 font-mono">{e.rank}</td>
-                      <td className="px-3 py-2 font-medium">{e.playerName}</td>
-                      <td className="px-3 py-2 text-right text-zinc-500 font-mono">
-                        {e.sessionCount ?? "\u2014"}
+                      <td className="px-3 py-2 font-medium">
+                        <Link
+                          href={`/trackman/player/${e.playerSlug}`}
+                          className="text-blue-400 hover:text-blue-300 transition-colors"
+                        >
+                          {firstLast(e.playerName)}
+                        </Link>
                       </td>
+                      {activeCategory !== "max_fb_velo" && (
+                        <td className="px-3 py-2 text-right text-zinc-500 font-mono">
+                          {e.sessionCount ?? "\u2014"}
+                        </td>
+                      )}
                       <td className="px-3 py-2 text-right font-mono font-medium">
                         {fmt(e.value, activeCategory)}{" "}
                         <span className="text-zinc-500">

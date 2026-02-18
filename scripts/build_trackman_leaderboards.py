@@ -9,6 +9,7 @@ Usage:
 """
 
 import argparse
+import csv
 import glob
 import json
 import os
@@ -17,6 +18,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+from trackman_pdf.meta import slugify
 
 def load_json(path: str) -> Any:
     with open(path, "r") as f:
@@ -33,6 +35,7 @@ def write_json(path: str, data: Any) -> None:
 SESSIONS_BASE = os.path.join("web", "public", "trackman", "sessions")
 INDEX_PATH = os.path.join("web", "public", "trackman", "index.json")
 LEADERBOARDS_PATH = os.path.join("web", "public", "trackman", "leaderboards.json")
+MAX_VELOS_CSV = os.path.join("data", "Max Velos.csv")
 
 
 def _iso_now() -> str:
@@ -225,6 +228,64 @@ def _pitch_mix(sessions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return results
 
 
+def _load_max_fb_velo(sessions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Load max fastball velo from CSV and return ranked leaderboard entries.
+
+    Joins CSV rows to known players via playerSlug. Players in the CSV
+    but not in any Trackman session are still included (sessionCount=0).
+    """
+    if not os.path.exists(MAX_VELOS_CSV):
+        return []
+
+    # Build slug -> player info from sessions for name/team lookup
+    slug_info: Dict[str, Dict[str, Any]] = {}
+    for s in sessions:
+        entry = s.get("entry", {})
+        sl = entry.get("playerSlug", "")
+        if sl:
+            slug_info[sl] = {
+                "playerName": entry.get("playerName"),
+                "playerSlug": sl,
+                "team": entry.get("team"),
+            }
+
+    entries = []
+    with open(MAX_VELOS_CSV, "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            velo_str = (row.get("max_velo") or "").strip()
+            if not velo_str:
+                continue
+            try:
+                velo = float(velo_str)
+            except ValueError:
+                continue
+
+            # Derive slug from player_name: "First Last" -> "Last, First" -> slugify
+            name = (row.get("player_name") or "").strip()
+            if not name:
+                continue
+            parts = name.split()
+            if len(parts) < 2:
+                continue
+            last_first = f"{parts[-1]}, {' '.join(parts[:-1])}"
+            slug = slugify(last_first)
+
+            info = slug_info.get(slug)
+            entries.append({
+                "playerName": info["playerName"] if info else last_first,
+                "playerSlug": slug,
+                "team": info.get("team") if info else None,
+                "sessionCount": None,
+                "value": round(velo, 1),
+            })
+
+    entries.sort(key=lambda x: x["value"], reverse=True)
+    for i, e in enumerate(entries):
+        e["rank"] = i + 1
+    return entries
+
+
 def build_leaderboards(
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
@@ -245,6 +306,7 @@ def build_leaderboards(
         "date_to": date_to,
         "session_count": len(sessions),
         "leaderboards": {
+            "max_fb_velo": _load_max_fb_velo(sessions),
             "avg_fb_velo": _player_avg_by_pitch_type_group(sessions, FASTBALL_TYPES, "avg_velocity_mph", descending=True),
             "avg_fb_spin": _player_avg_by_pitch_type_group(sessions, FASTBALL_TYPES, "avg_spin_rpm", descending=True),
             "avg_bb_spin": _player_avg_by_pitch_type_group(sessions, BREAKING_TYPES, "avg_spin_rpm", descending=True),

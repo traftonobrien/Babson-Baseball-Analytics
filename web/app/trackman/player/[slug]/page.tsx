@@ -307,7 +307,7 @@ export default function TrackmanPlayerPage({
 
   const playerName = formatPlayerName(entries[0]?.playerName ?? slug);
   const team = entries[0]?.team;
-  const rawHand = entries[0]?.handedness;
+  const rawHand = entries.find((e) => e.handedness)?.handedness ?? null;
   const hand = rawHand;
   const normalizedHand: "R" | "L" | undefined =
     rawHand?.toUpperCase().startsWith("R") ? "R" :

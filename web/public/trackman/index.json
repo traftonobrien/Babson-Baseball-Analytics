@@ -226,8 +226,8 @@
     "updatedAt": "2026-02-15T18:57:40Z"
   },
   {
-    "playerName": "Purpura, Vinny",
-    "playerSlug": "purpura_vinny",
+    "playerName": "Purpura, Vinnie",
+    "playerSlug": "purpura_vinnie",
     "team": "Babson College",
     "handedness": "LHP",
     "date": "2026-01-31",
@@ -238,9 +238,9 @@
       "Other"
     ],
     "weightedAvgVelo": 79.81,
-    "pitchTypesPath": "/trackman/sessions/purpura_vinny/2026_01_31/session/pitch_types.json",
-    "metaPath": "/trackman/sessions/purpura_vinny/2026_01_31/session/meta.json",
-    "summaryPath": "/trackman/sessions/purpura_vinny/2026_01_31/session/session_summary.json",
+    "pitchTypesPath": "/trackman/sessions/purpura_vinnie/2026_01_31/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/purpura_vinnie/2026_01_31/session/meta.json",
+    "summaryPath": "/trackman/sessions/purpura_vinnie/2026_01_31/session/session_summary.json",
     "source": {
       "type": "pdf_export",
       "filename": "Vinny Purpura 1:31.pdf",
@@ -732,8 +732,8 @@
     "updatedAt": "2026-02-15T18:57:39Z"
   },
   {
-    "playerName": "Purpura, Vinny",
-    "playerSlug": "purpura_vinny",
+    "playerName": "Purpura, Vinnie",
+    "playerSlug": "purpura_vinnie",
     "team": "Babson College",
     "handedness": "LHP",
     "date": "2026-02-09",
@@ -744,9 +744,9 @@
       "Other"
     ],
     "weightedAvgVelo": 78.08,
-    "pitchTypesPath": "/trackman/sessions/purpura_vinny/2026_02_09/session/pitch_types.json",
-    "metaPath": "/trackman/sessions/purpura_vinny/2026_02_09/session/meta.json",
-    "summaryPath": "/trackman/sessions/purpura_vinny/2026_02_09/session/session_summary.json",
+    "pitchTypesPath": "/trackman/sessions/purpura_vinnie/2026_02_09/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/purpura_vinnie/2026_02_09/session/meta.json",
+    "summaryPath": "/trackman/sessions/purpura_vinnie/2026_02_09/session/session_summary.json",
     "source": {
       "type": "pdf_export",
       "filename": "Vinny Purpura 2:9.pdf",
@@ -1186,5 +1186,107 @@
       "imported_at": "2026-02-15T18:57:36Z"
     },
     "updatedAt": "2026-02-15T18:57:36Z"
+  },
+  {
+    "playerName": "O'Brien, Trafton",
+    "playerSlug": "obrien_trafton",
+    "team": null,
+    "handedness": "RHP",
+    "date": "2026-02-17",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Curveball",
+      "Fastball",
+      "Other",
+      "Splitter"
+    ],
+    "weightedAvgVelo": 77.0,
+    "pitchTypesPath": "/trackman/sessions/obrien_trafton/2026_02_17/all_go/pitch_types.json",
+    "metaPath": "/trackman/sessions/obrien_trafton/2026_02_17/all_go/meta.json",
+    "summaryPath": "/trackman/sessions/obrien_trafton/2026_02_17/all_go/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Trafton O'Brien 2:17.pdf",
+      "sha256": "fd90666d75b08ce387d5690b0fa1ffebe3f9175d1c7e5a86b035e8073084b82c",
+      "imported_at": "2026-02-18T01:08:44Z"
+    },
+    "updatedAt": "2026-02-18T01:08:44Z"
+  },
+  {
+    "playerName": "Shapiro, Brennan",
+    "playerSlug": "shapiro_brennan",
+    "team": "Babson College",
+    "handedness": "RHP",
+    "date": "2026-02-17",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider",
+      "Splitter"
+    ],
+    "weightedAvgVelo": 77.83,
+    "pitchTypesPath": "/trackman/sessions/shapiro_brennan/2026_02_17/all_go/pitch_types.json",
+    "metaPath": "/trackman/sessions/shapiro_brennan/2026_02_17/all_go/meta.json",
+    "summaryPath": "/trackman/sessions/shapiro_brennan/2026_02_17/all_go/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Brennan Shapiro 2:17.pdf",
+      "sha256": "5937f75443d898948e407e1464c178cbcde3b0a3fe64fb28754c045717510ca2",
+      "imported_at": "2026-02-18T01:08:46Z"
+    },
+    "updatedAt": "2026-02-18T01:08:46Z"
+  },
+  {
+    "playerName": "Snyder, Drew",
+    "playerSlug": "snyder_drew",
+    "team": null,
+    "handedness": "LHP",
+    "date": "2026-02-17",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 79.85,
+    "pitchTypesPath": "/trackman/sessions/snyder_drew/2026_02_17/all_go/pitch_types.json",
+    "metaPath": "/trackman/sessions/snyder_drew/2026_02_17/all_go/meta.json",
+    "summaryPath": "/trackman/sessions/snyder_drew/2026_02_17/all_go/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Drew Snyder 2:17.pdf",
+      "sha256": "199e862f17dcfa030772bf66cb74bfc8b80c690979e9b879feda4c4f733000fa",
+      "imported_at": "2026-02-18T01:08:45Z"
+    },
+    "updatedAt": "2026-02-18T01:08:45Z"
+  },
+  {
+    "playerName": "Vyse, Graydon",
+    "playerSlug": "vyse_graydon",
+    "team": "See Pitches by:",
+    "handedness": "RHP",
+    "date": "2026-02-17",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 81.75,
+    "pitchTypesPath": "/trackman/sessions/vyse_graydon/2026_02_17/all_go/pitch_types.json",
+    "metaPath": "/trackman/sessions/vyse_graydon/2026_02_17/all_go/meta.json",
+    "summaryPath": "/trackman/sessions/vyse_graydon/2026_02_17/all_go/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Graydon Vyse 2:17.pdf",
+      "sha256": "e9d60bf4b66961dd3123cdb1332813451f5733acfb3b8b82c0c295cda90b55f0",
+      "imported_at": "2026-02-18T01:08:45Z"
+    },
+    "updatedAt": "2026-02-18T01:08:45Z"
   }
 ]
