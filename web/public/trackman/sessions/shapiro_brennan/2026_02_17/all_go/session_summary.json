@@ -1,7 +1,7 @@
 {
   "total_pitches": null,
   "pitch_types": [
-    "Fastball",
+    "Sinker",
     "Other",
     "Slider",
     "Splitter"
@@ -21,7 +21,7 @@
   "weighted_avg_gyro": null,
   "per_type": [
     {
-      "pitch_type": "Fastball",
+      "pitch_type": "Sinker",
       "count": null,
       "avg_velocity_mph": 81.45,
       "avg_spin_rpm": 1806.56,

@@ -358,7 +358,7 @@
     "sessionType": null,
     "pitchCount": null,
     "pitchTypes": [
-      "Fastball",
+      "Sinker",
       "Other",
       "Splitter"
     ],
@@ -1222,7 +1222,7 @@
     "sessionType": null,
     "pitchCount": null,
     "pitchTypes": [
-      "Fastball",
+      "Sinker",
       "Other",
       "Slider",
       "Splitter"
