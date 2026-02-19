@@ -288,6 +288,96 @@ def _poses_around_phase(
     return _poses_in_range(poses, phase.frame_idx - before, phase.frame_idx + after)
 
 
+def _body_height_proxy_px(
+    pose: Optional[PoseResult],
+    fallback_height: float | None = None,
+) -> Optional[float]:
+    """
+    Estimate body height in pixels from NOSE -> ankle midpoint.
+
+    Falls back to shoulder midpoint -> ankle midpoint when NOSE is unavailable.
+    """
+    if pose is None:
+        return fallback_height
+
+    la = _px_safe(pose, "LEFT_ANKLE")
+    ra = _px_safe(pose, "RIGHT_ANKLE")
+    if la is None and ra is None:
+        return fallback_height
+    if la is None:
+        ankle_mid = ra
+    elif ra is None:
+        ankle_mid = la
+    else:
+        ankle_mid = _midpoint(la, ra)
+
+    nose = _px_safe(pose, "NOSE")
+    if nose is None:
+        ls = _px_safe(pose, "LEFT_SHOULDER")
+        rs = _px_safe(pose, "RIGHT_SHOULDER")
+        if ls is None and rs is None:
+            return fallback_height
+        if ls is None:
+            nose = rs
+        elif rs is None:
+            nose = ls
+        else:
+            nose = _midpoint(ls, rs)
+
+    height = abs(float(ankle_mid[1] - nose[1]))
+    if height < 10.0:
+        return fallback_height
+    return height
+
+
+def _angle_between_vectors_deg(
+    a: tuple[float, float],
+    b: tuple[float, float],
+) -> Optional[float]:
+    """Unsigned angle in degrees between two vectors, or None if degenerate."""
+    la = math.hypot(a[0], a[1])
+    lb = math.hypot(b[0], b[1])
+    if la < 1e-6 or lb < 1e-6:
+        return None
+    dot = a[0] * b[0] + a[1] * b[1]
+    cos_theta = max(-1.0, min(1.0, dot / (la * lb)))
+    return math.degrees(math.acos(cos_theta))
+
+
+def _theil_sen_fit(
+    xs: list[float],
+    ys: list[float],
+) -> Optional[tuple[float, float, float]]:
+    """
+    Robust linear fit via median pairwise slope.
+
+    Returns (slope, intercept, median_abs_residual).
+    """
+    if len(xs) != len(ys) or len(xs) < 2:
+        return None
+
+    slopes: list[float] = []
+    for i in range(len(xs)):
+        xi = xs[i]
+        yi = ys[i]
+        for j in range(i + 1, len(xs)):
+            xj = xs[j]
+            dx = xj - xi
+            if abs(dx) < 1e-6:
+                continue
+            slopes.append((ys[j] - yi) / dx)
+    if not slopes:
+        slope = 0.0
+    else:
+        slope = float(np.median(np.asarray(slopes, dtype=np.float64)))
+
+    intercepts = [y - slope * x for x, y in zip(xs, ys)]
+    intercept = float(np.median(np.asarray(intercepts, dtype=np.float64)))
+    residuals = [abs(y - (slope * x + intercept)) for x, y in zip(xs, ys)]
+    mad = float(np.median(np.asarray(residuals, dtype=np.float64)))
+    return slope, intercept, mad
+
+
 # ---------------------------------------------------------------------------
 # Score-mapping helpers (public so tests can verify them directly)
 # ---------------------------------------------------------------------------
@@ -1033,6 +1123,141 @@ def _compute_trunk_stability(
     )
 
 
+def _compute_trunk_stability_v2(
+    poses: list[PoseResult],
+    phases: PitchPhases,
+) -> BenchmarkResult:
+    """
+    Trunk Stability v2:
+      - Wider windows around FS/REL
+      - Robust Theil-Sen fit per window
+      - Delta from fitted window centres
+      - Hard gating on residuals, coverage, and visibility
+    """
+    name = "trunk_stability_v2"
+    if phases.foot_strike is None:
+        return BenchmarkResult.insufficient(name, "FOOT_STRIKE phase not detected")
+    if phases.ball_release is None:
+        return BenchmarkResult.insufficient(name, "BALL_RELEASE phase not detected")
+
+    fs_win = _poses_around_phase(poses, phases.foot_strike, before=6, after=6)
+    rel_win = _poses_around_phase(poses, phases.ball_release, before=5, after=5)
+    if not fs_win or not rel_win:
+        return BenchmarkResult.insufficient(name, "Insufficient trunk windows around FS/REL")
+
+    def _sample_window(win: list[PoseResult]) -> tuple[list[float], list[float], list[float]]:
+        xs: list[float] = []
+        ys: list[float] = []
+        vis: list[float] = []
+        for p in win:
+            ls = _px_vis_safe(p, "LEFT_SHOULDER")
+            rs = _px_vis_safe(p, "RIGHT_SHOULDER")
+            lh = _px_vis_safe(p, "LEFT_HIP")
+            rh = _px_vis_safe(p, "RIGHT_HIP")
+            mid_sho = _weighted_midpoint(ls, rs)
+            mid_hip = _weighted_midpoint(lh, rh)
+            if mid_sho is None or mid_hip is None:
+                continue
+            vis_vals = [v[2] for v in [ls, rs, lh, rh] if v is not None]
+            mean_vis = float(np.mean(vis_vals)) if vis_vals else 0.0
+            if mean_vis < 0.25:
+                continue
+            dx = mid_sho[0] - mid_hip[0]
+            dy = mid_sho[1] - mid_hip[1]
+            angle = math.degrees(math.atan2(dx, -dy))
+            xs.append(float(p.frame_idx))
+            ys.append(float(angle))
+            vis.append(mean_vis)
+        return xs, ys, vis
+
+    fs_x, fs_y, fs_vis = _sample_window(fs_win)
+    rel_x, rel_y, rel_vis = _sample_window(rel_win)
+    min_fs = 6
+    min_rel = 5
+    if len(fs_x) < min_fs or len(rel_x) < min_rel:
+        return BenchmarkResult.insufficient(
+            name,
+            f"Insufficient stable trunk frames (fs={len(fs_x)}, rel={len(rel_x)})",
+        )
+
+    fs_fit = _theil_sen_fit(fs_x, fs_y)
+    rel_fit = _theil_sen_fit(rel_x, rel_y)
+    if fs_fit is None or rel_fit is None:
+        return BenchmarkResult.insufficient(name, "Robust trunk fit failed")
+
+    fs_slope, fs_intercept, fs_mad = fs_fit
+    rel_slope, rel_intercept, rel_mad = rel_fit
+
+    fs_cov = len(fs_x) / max(len(fs_win), 1)
+    rel_cov = len(rel_x) / max(len(rel_win), 1)
+    if fs_cov < 0.45 or rel_cov < 0.45:
+        return BenchmarkResult.insufficient(
+            name,
+            f"Low trunk window coverage (fs={fs_cov:.2f}, rel={rel_cov:.2f})",
+        )
+
+    if fs_mad > 4.0 or rel_mad > 4.0:
+        return BenchmarkResult.insufficient(
+            name,
+            f"High trunk fit residuals (fs={fs_mad:.2f}, rel={rel_mad:.2f})",
+        )
+
+    fs_center_x = float(phases.foot_strike.frame_idx)
+    rel_center_x = float(phases.ball_release.frame_idx)
+    fs_angle = fs_slope * fs_center_x + fs_intercept
+    rel_angle = rel_slope * rel_center_x + rel_intercept
+
+    delta_signed = _angle_diff_signed_deg(rel_angle, fs_angle)
+    delta_abs = abs(delta_signed)
+    score = linear_score(delta_abs, 5.0, 20.0, 10.0, 0.0)
+
+    vis_conf = _clamp01((min(np.mean(fs_vis), np.mean(rel_vis)) - 0.25) / 0.75)
+    coverage_conf = _clamp01(min(fs_cov, rel_cov))
+    residual_conf = _clamp01(1.0 - max(fs_mad, rel_mad) / 4.5)
+    conf = _combine_confidence(
+        vis_conf,
+        coverage_conf,
+        residual_conf,
+        _phase_confidence([phases.foot_strike, phases.ball_release]),
+    )
+
+    if abs(fs_angle) > 70.0:
+        conf = _clamp01(conf * 0.35)
+
+    if delta_signed > 1.0:
+        direction = "forward-lean increase (dumping forward)"
+    elif delta_signed < -1.0:
+        direction = "upright shift (standing up/pulling off)"
+    else:
+        direction = "neutral trunk direction"
+
+    return BenchmarkResult(
+        name=name,
+        status="ok",
+        raw_value=delta_abs,
+        unit="°",
+        score=score,
+        pass_fail=score >= 6.0,
+        sub_values={
+            "trunk_angle_fs_deg": round(fs_angle, 2),
+            "trunk_angle_rel_deg": round(rel_angle, 2),
+            "delta_signed_deg": round(delta_signed, 2),
+            "delta_abs_deg": round(delta_abs, 2),
+            "fs_fit_mad_deg": round(fs_mad, 2),
+            "rel_fit_mad_deg": round(rel_mad, 2),
+            "fs_window_frames": len(fs_x),
+            "rel_window_frames": len(rel_x),
+            "fs_coverage": round(fs_cov, 2),
+            "rel_coverage": round(rel_cov, 2),
+        },
+        note=(
+            "Trunk-angle change FS->REL from robust fitted windows. "
+            f"Direction: {direction}."
+        ),
+        confidence=conf,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Additional open-side-friendly metrics
 # ---------------------------------------------------------------------------
@@ -1166,9 +1391,36 @@ def _compute_front_knee_extension_rel(
         )
 
     delta_flex = fs_flex - rel_flex
-    delta_score = linear_score(delta_flex, 2.0, 20.0, 0.0, 10.0)
+    dt = max(1.0 / max(phases.fps, 1e-6), phases.ball_release.time_s - phases.foot_strike.time_s)
+    brace_rate = delta_flex / dt if dt > 1e-9 else 0.0
+
+    lead_knee_rel = _px_safe(rel_pose, f"{lead_prefix}_KNEE")
+    lead_ankle_rel = _px_safe(rel_pose, f"{lead_prefix}_ANKLE")
+    ls_rel = _px_safe(rel_pose, "LEFT_SHOULDER")
+    rs_rel = _px_safe(rel_pose, "RIGHT_SHOULDER")
+    if not all([lead_knee_rel, lead_ankle_rel, ls_rel, rs_rel]):
+        return BenchmarkResult.insufficient(
+            name, "Lead knee/ankle/shoulder keypoints low confidence at release"
+        )
+
+    shoulder_width = math.dist(ls_rel, rs_rel)
+    if shoulder_width < 1e-3:
+        return BenchmarkResult.insufficient(name, "Shoulder width too small at release")
+
+    knee_over_ankle_x = (lead_knee_rel[0] - lead_ankle_rel[0]) / shoulder_width
+    leak_mag = abs(knee_over_ankle_x)
+
+    delta_score = linear_score(delta_flex, 3.0, 20.0, 0.0, 10.0)
+    rate_score = linear_score(brace_rate, 40.0, 170.0, 0.0, 10.0)
+    leak_score = linear_score(leak_mag, 0.05, 0.55, 10.0, 0.0)
     rel_score = _score_front_knee_extension_rel(rel_flex)
-    score = max(0.0, min(10.0, 0.65 * delta_score + 0.35 * rel_score))
+    score = max(0.0, min(10.0, 0.42 * delta_score + 0.28 * rate_score + 0.20 * leak_score + 0.10 * rel_score))
+
+    if delta_flex <= 0.0:
+        score *= 0.25
+    if leak_mag > 0.75:
+        score = min(score, 3.0)
+
     conf = _combine_confidence(
         _visibility_confidence(
             fs_pose, [f"{lead_prefix}_HIP", f"{lead_prefix}_KNEE", f"{lead_prefix}_ANKLE"]
@@ -1190,10 +1442,168 @@ def _compute_front_knee_extension_rel(
             "flexion_fs_deg": round(fs_flex, 1),
             "flexion_rel_deg": round(rel_flex, 1),
             "delta_flexion_deg": round(delta_flex, 1),
+            "brace_rate_deg_s": round(brace_rate, 1),
+            "knee_over_ankle_x": round(knee_over_ankle_x, 3),
+            "knee_leak_mag": round(leak_mag, 3),
         },
         note=(
-            "Lead-knee bracing into release (FS->REL flexion drop). "
-            "Higher positive delta = firmer front-side block."
+            "Lead-knee bracing FS->REL using flexion delta, brace rate, and knee-over-ankle leak control."
+        ),
+        confidence=conf,
+    )
+
+
+def _score_drift_to_pll_pct(drift_to_pll_pct: float) -> float:
+    if drift_to_pll_pct <= 1.0:
+        return 0.0
+    if drift_to_pll_pct <= 4.0:
+        return linear_score(drift_to_pll_pct, 1.0, 4.0, 0.0, 10.0)
+    if drift_to_pll_pct <= 10.0:
+        return linear_score(drift_to_pll_pct, 4.0, 10.0, 10.0, 6.0)
+    if drift_to_pll_pct <= 18.0:
+        return linear_score(drift_to_pll_pct, 10.0, 18.0, 6.0, 0.0)
+    return 0.0
+
+
+def _score_drift_ratio(early_ratio: float) -> float:
+    if early_ratio <= 0.15:
+        return 0.0
+    if early_ratio <= 0.40:
+        return linear_score(early_ratio, 0.15, 0.40, 0.0, 10.0)
+    if early_ratio <= 0.70:
+        return linear_score(early_ratio, 0.40, 0.70, 10.0, 8.0)
+    if early_ratio <= 0.90:
+        return linear_score(early_ratio, 0.70, 0.90, 8.0, 1.0)
+    return 0.0
+
+
+def _score_total_drift_pct(total_pct: float) -> float:
+    if total_pct <= 4.0:
+        return 0.0
+    if total_pct <= 14.0:
+        return linear_score(total_pct, 4.0, 14.0, 0.0, 10.0)
+    if total_pct <= 25.0:
+        return linear_score(total_pct, 14.0, 25.0, 10.0, 8.0)
+    if total_pct <= 40.0:
+        return linear_score(total_pct, 25.0, 40.0, 8.0, 0.0)
+    return 0.0
+
+
+def _compute_drift_forward(
+    poses: list[PoseResult],
+    phases: PitchPhases,
+) -> BenchmarkResult:
+    """
+    Drift forward (open-side):
+      - drift_to_pll: SET -> PEAK_LEG_LIFT hip-midpoint x shift
+      - drift_pll_to_fs: PEAK_LEG_LIFT -> FOOT_STRIKE hip-midpoint x shift
+
+    Uses body-height normalisation so values are scale-independent.
+    """
+    name = "drift_forward"
+    if phases.set_pos is None or phases.peak_leg_lift is None or phases.foot_strike is None:
+        return BenchmarkResult.insufficient(name, "SET/PEAK_LEG_LIFT/FOOT_STRIKE phase not detected")
+
+    start = min(phases.set_pos.frame_idx, phases.foot_strike.frame_idx)
+    end = max(phases.set_pos.frame_idx, phases.foot_strike.frame_idx)
+    span = _poses_in_range(poses, start, end)
+    if len(span) < 6:
+        return BenchmarkResult.insufficient(name, "Not enough frames between SET and FOOT_STRIKE")
+
+    frames: list[int] = []
+    hip_x_raw: list[float] = []
+    hip_vis: list[float] = []
+
+    for p in span:
+        lh = _px_vis_safe(p, "LEFT_HIP")
+        rh = _px_vis_safe(p, "RIGHT_HIP")
+        mid = _weighted_midpoint(lh, rh)
+        if mid is None:
+            continue
+        vis_vals = [v[2] for v in [lh, rh] if v is not None]
+        vis = float(np.mean(vis_vals)) if vis_vals else 0.0
+        frames.append(p.frame_idx)
+        hip_x_raw.append(float(mid[0]))
+        hip_vis.append(vis)
+
+    if len(frames) < 6:
+        return BenchmarkResult.insufficient(name, "Insufficient hip visibility in SET->FS window")
+
+    hip_x_smooth = smooth_series(hip_x_raw, window=7, polyorder=2)
+    frame_to_x: dict[int, float] = {
+        f: float(x)
+        for f, x in zip(frames, hip_x_smooth)
+        if not np.isnan(x)
+    }
+    if len(frame_to_x) < 5:
+        return BenchmarkResult.insufficient(name, "Unable to smooth hip midpoint trajectory")
+
+    def _phase_x(phase: Phase, radius: int = 3) -> Optional[float]:
+        vals: list[float] = []
+        for f in range(phase.frame_idx - radius, phase.frame_idx + radius + 1):
+            v = frame_to_x.get(f)
+            if v is not None:
+                vals.append(v)
+        if not vals:
+            return None
+        return float(np.median(np.asarray(vals, dtype=np.float64)))
+
+    set_x = _phase_x(phases.set_pos, radius=3)
+    pll_x = _phase_x(phases.peak_leg_lift, radius=3)
+    fs_x = _phase_x(phases.foot_strike, radius=3)
+    if set_x is None or pll_x is None or fs_x is None:
+        return BenchmarkResult.insufficient(name, "Cannot estimate stable hip positions at SET/PLL/FS")
+
+    set_pose = _pose_nearest(poses, phases.set_pos)
+    body_height = _body_height_proxy_px(set_pose, fallback_height=float(span[0].height) * 0.55)
+    if body_height is None or body_height < 10.0:
+        return BenchmarkResult.insufficient(name, "Cannot estimate body-height proxy")
+
+    drift_to_pll = abs(pll_x - set_x) / body_height * 100.0
+    drift_pll_to_fs = abs(fs_x - pll_x) / body_height * 100.0
+    total_drift = abs(fs_x - set_x) / body_height * 100.0
+    early_ratio = drift_to_pll / max(total_drift, 1e-6)
+
+    score = max(
+        0.0,
+        min(
+            10.0,
+            0.45 * _score_drift_to_pll_pct(drift_to_pll)
+            + 0.35 * _score_drift_ratio(early_ratio)
+            + 0.20 * _score_total_drift_pct(total_drift),
+        ),
+    )
+
+    vis_scaled = [_clamp01((v - 0.25) / 0.75) for v in hip_vis]
+    visibility_conf = float(np.mean(vis_scaled)) if vis_scaled else 0.0
+    coverage_conf = _clamp01(len(frame_to_x) / max(len(span), 1))
+    jitter_conf = _residual_confidence(hip_x_raw, hip_x_smooth, tolerance=body_height * 0.010)
+    smooth_vals = [v for v in hip_x_smooth if not np.isnan(v)]
+    stability_conf = _stability_confidence(smooth_vals, expected_span=body_height * 0.18)
+    conf = _combine_confidence(
+        visibility_conf,
+        coverage_conf,
+        jitter_conf,
+        stability_conf,
+        _phase_confidence([phases.set_pos, phases.peak_leg_lift, phases.foot_strike]),
+    )
+
+    return BenchmarkResult(
+        name=name,
+        status="ok",
+        raw_value=total_drift,
+        unit="% height",
+        score=score,
+        pass_fail=score >= 6.0,
+        sub_values={
+            "drift_to_pll_pct_height": round(drift_to_pll, 3),
+            "drift_pll_to_fs_pct_height": round(drift_pll_to_fs, 3),
+            "total_drift_pct_height": round(total_drift, 3),
+            "early_ratio": round(early_ratio, 3),
+        },
+        note=(
+            "Hip midpoint drift profile SET->PLL->FS. "
+            "Rewards early controlled move; penalises staying back or collapsing early."
         ),
         confidence=conf,
     )
@@ -1330,6 +1740,207 @@ def _compute_release_extension_proxy(
     )
 
 
+def _score_release_angle_proxy(angle_deg: float) -> float:
+    """
+    Shoulder->wrist line relative to trunk line at release.
+
+    Very small angle often indicates a collapsed arm path; very large can
+    indicate inefficient arm path for this side-view proxy.
+    """
+    if angle_deg <= 20.0:
+        return 0.0
+    if angle_deg <= 65.0:
+        return linear_score(angle_deg, 20.0, 65.0, 0.0, 10.0)
+    if angle_deg <= 110.0:
+        return linear_score(angle_deg, 65.0, 110.0, 10.0, 8.0)
+    if angle_deg <= 150.0:
+        return linear_score(angle_deg, 110.0, 150.0, 8.0, 0.0)
+    return 0.0
+
+
+def _score_forward_intent(vx_norm_per_s: float) -> float:
+    """Score smoothed wrist-x velocity (normalised by body height per second)."""
+    if vx_norm_per_s <= 0.12:
+        return 0.0
+    if vx_norm_per_s <= 0.35:
+        return linear_score(vx_norm_per_s, 0.12, 0.35, 0.0, 8.0)
+    if vx_norm_per_s <= 0.80:
+        return linear_score(vx_norm_per_s, 0.35, 0.80, 8.0, 10.0)
+    return 10.0
+
+
+def _compute_release_extension_v2(
+    poses: list[PoseResult],
+    phases: PitchPhases,
+    hand: str,
+) -> BenchmarkResult:
+    """
+    Open-side release extension composite:
+      A) reach depth proxy (stabilised)
+      B) release-angle proxy (shoulder->wrist vs trunk line)
+      C) forward intent (smoothed wrist x-velocity pre-release)
+    """
+    name = "release_extension_v2"
+    if phases.ball_release is None:
+        return BenchmarkResult.insufficient(name, "BALL_RELEASE phase not detected")
+
+    rel_pose = _pose_nearest(poses, phases.ball_release)
+    if rel_pose is None:
+        return BenchmarkResult.insufficient(name, "BALL_RELEASE pose not found")
+
+    throw_wrist = "RIGHT_WRIST" if hand == "R" else "LEFT_WRIST"
+    drive_hip = "RIGHT_HIP" if hand == "R" else "LEFT_HIP"
+
+    total_w = 0.55 + 0.25 + 0.20
+    comp_scores: dict[str, float] = {}
+    comp_conf: dict[str, float] = {}
+    comp_weights = {"A": 0.55, "B": 0.25, "C": 0.20}
+    sub_values: dict[str, float] = {}
+
+    # ------------------------------------------------------------------
+    # Component A: reach depth from release window (smoothed)
+    # ------------------------------------------------------------------
+    rel_win = _poses_around_phase(poses, phases.ball_release, before=4, after=2)
+    if not rel_win:
+        rel_win = [rel_pose]
+
+    reach_raw: list[float] = []
+    reach_vis: list[float] = []
+    for p in rel_win:
+        wrist = _px_safe(p, throw_wrist)
+        hip = _px_safe(p, drive_hip)
+        ls = _px_safe(p, "LEFT_SHOULDER")
+        rs = _px_safe(p, "RIGHT_SHOULDER")
+        if wrist is None or hip is None or ls is None or rs is None:
+            reach_raw.append(np.nan)
+            continue
+        shoulder_width = math.dist(ls, rs)
+        if shoulder_width < 1e-3:
+            reach_raw.append(np.nan)
+            continue
+        reach_raw.append(math.dist(wrist, hip) / shoulder_width)
+        reach_vis.append(
+            _visibility_confidence(
+                p,
+                [throw_wrist, drive_hip, "LEFT_SHOULDER", "RIGHT_SHOULDER"],
+            )
+        )
+
+    reach_smooth = smooth_series(reach_raw, window=5, polyorder=2)
+    reach_valid = reach_smooth[~np.isnan(reach_smooth)]
+    if len(reach_valid) < 2:
+        return BenchmarkResult.insufficient(name, "Insufficient release reach visibility")
+
+    reach_norm = float(np.median(reach_valid))
+    a_score = _score_release_extension_proxy(reach_norm)
+    a_conf = _combine_confidence(
+        float(np.mean(reach_vis)) if reach_vis else 0.0,
+        _residual_confidence(reach_raw, reach_smooth, tolerance=0.35),
+        _phase_confidence([phases.ball_release]),
+    )
+    comp_scores["A"] = a_score
+    comp_conf["A"] = a_conf
+    sub_values["component_a_reach_norm"] = round(reach_norm, 3)
+    sub_values["component_a_score"] = round(a_score, 3)
+
+    # ------------------------------------------------------------------
+    # Component B: release angle proxy (arm line vs trunk line)
+    # ------------------------------------------------------------------
+    ls = _px_vis_safe(rel_pose, "LEFT_SHOULDER")
+    rs = _px_vis_safe(rel_pose, "RIGHT_SHOULDER")
+    lh = _px_vis_safe(rel_pose, "LEFT_HIP")
+    rh = _px_vis_safe(rel_pose, "RIGHT_HIP")
+    wrist_rel = _px_vis_safe(rel_pose, throw_wrist)
+    mid_sh = _weighted_midpoint(ls, rs)
+    mid_hip = _weighted_midpoint(lh, rh)
+
+    b_angle = None
+    if mid_sh is not None and mid_hip is not None and wrist_rel is not None:
+        arm_vec = (wrist_rel[0] - mid_sh[0], wrist_rel[1] - mid_sh[1])
+        trunk_vec = (mid_hip[0] - mid_sh[0], mid_hip[1] - mid_sh[1])
+        b_angle = _angle_between_vectors_deg(arm_vec, trunk_vec)
+
+    if b_angle is not None:
+        b_score = _score_release_angle_proxy(float(b_angle))
+        vis_vals = [v[2] for v in [ls, rs, lh, rh, wrist_rel] if v is not None]
+        vis_conf = _clamp01((float(np.mean(vis_vals)) - 0.25) / 0.75) if vis_vals else 0.0
+        comp_scores["B"] = b_score
+        comp_conf["B"] = _combine_confidence(vis_conf, _phase_confidence([phases.ball_release]))
+        sub_values["component_b_angle_deg"] = round(float(b_angle), 3)
+        sub_values["component_b_score"] = round(b_score, 3)
+
+    # ------------------------------------------------------------------
+    # Component C: forward intent from pre-release wrist-x velocity
+    # ------------------------------------------------------------------
+    pre_start = max(0, phases.ball_release.frame_idx - 6)
+    pre_win = _poses_in_range(poses, pre_start, phases.ball_release.frame_idx)
+    body_height = _body_height_proxy_px(
+        _pose_nearest(poses, phases.set_pos) or rel_pose,
+        fallback_height=float(rel_pose.height) * 0.55,
+    )
+
+    wrist_x_raw: list[float] = []
+    wrist_vis: list[float] = []
+    for p in pre_win:
+        wpt = _px_vis_safe(p, throw_wrist)
+        if wpt is None:
+            wrist_x_raw.append(np.nan)
+            continue
+        wrist_x_raw.append(float(wpt[0]))
+        wrist_vis.append(_clamp01((wpt[2] - 0.25) / 0.75))
+
+    wrist_x_smooth = smooth_series(wrist_x_raw, window=5, polyorder=2)
+    vx_vals: list[float] = []
+    for i in range(1, len(wrist_x_smooth)):
+        a = wrist_x_smooth[i - 1]
+        b = wrist_x_smooth[i]
+        if np.isnan(a) or np.isnan(b):
+            continue
+        vx_vals.append((b - a) * phases.fps)
+
+    if vx_vals and body_height is not None and body_height > 1e-6:
+        vx_norm = float(np.median(np.abs(np.asarray(vx_vals, dtype=np.float64))) / body_height)
+        c_score = _score_forward_intent(vx_norm)
+        c_conf = _combine_confidence(
+            float(np.mean(wrist_vis)) if wrist_vis else 0.0,
+            _residual_confidence(wrist_x_raw, wrist_x_smooth, tolerance=body_height * 0.012),
+            _phase_confidence([phases.ball_release]),
+        )
+        comp_scores["C"] = c_score
+        comp_conf["C"] = c_conf
+        sub_values["component_c_wrist_vx_norm"] = round(vx_norm, 3)
+        sub_values["component_c_score"] = round(c_score, 3)
+
+    # A is mandatory; B/C may drop with occlusion and are confidence-penalised.
+    if "A" not in comp_scores:
+        return BenchmarkResult.insufficient(name, "Release reach component unavailable")
+
+    used_weights = {k: comp_weights[k] for k in comp_scores.keys()}
+    weight_sum = sum(used_weights.values())
+    if weight_sum <= 1e-9:
+        return BenchmarkResult.insufficient(name, "No extension_v2 components available")
+
+    score = sum(comp_scores[k] * used_weights[k] for k in comp_scores.keys()) / weight_sum
+    conf_weighted = sum(comp_conf.get(k, 0.0) * used_weights[k] for k in comp_scores.keys()) / weight_sum
+    coverage_penalty = _clamp01(weight_sum / total_w)
+    conf = _clamp01(conf_weighted * coverage_penalty)
+
+    sub_values["components_used"] = len(comp_scores)
+    sub_values["coverage_weight"] = round(coverage_penalty, 3)
+
+    return BenchmarkResult(
+        name=name,
+        status="ok",
+        raw_value=reach_norm,
+        unit="x shoulder",
+        score=max(0.0, min(10.0, score)),
+        pass_fail=score >= 6.0,
+        sub_values=sub_values,
+        note="Composite release extension proxy from reach, release-angle, and forward-intent cues.",
+        confidence=conf,
+    )
+
+
 def _score_release_extension_proxy(value: float) -> float:
     """
     Smooth linear score map for release extension proxy.
@@ -1348,10 +1959,11 @@ def _score_release_extension_proxy(value: float) -> float:
 
 OPEN_SIDE_METRIC_ORDER: tuple[str, ...] = (
     "timing",
+    "drift_forward",
     "front_knee_flexion_fs",
     "front_knee_extension_rel",
-    "trunk_stability",
-    "release_extension_proxy",
+    "trunk_stability_v2",
+    "release_extension_v2",
     "swivel_stabilize",
 )
 
@@ -1366,10 +1978,20 @@ FRONT_VIEW_METRIC_ORDER: tuple[str, ...] = (
     "front_knee_flexion_fs",
     "front_knee_extension_rel",
     "tilt_consistency",
+    "drift_forward",
+    "release_extension_v2",
     "release_extension_proxy",
 )
 
 FRONT_VIEW_ONLY_METRICS: tuple[str, ...] = ("stack_track", "torque_retention")
+OPEN_SIDE_DEBUG_METRICS: tuple[str, ...] = (
+    "balance",
+    "posture",
+    "lift_thrust",
+    "tilt_consistency",
+    "trunk_stability",
+    "release_extension_proxy",
+)
 
 
 def official_metric_names(view_mode: str) -> tuple[str, ...]:
@@ -1383,18 +2005,22 @@ _COMMON_WEIGHTS: dict[str, float] = {
     "posture": 1.0,
     "lift_thrust": 1.0,
     "swivel_stabilize": 1.0,
+    "drift_forward": 1.0,
     "front_knee_flexion_fs": 1.0,
     "front_knee_extension_rel": 1.0,
+    "trunk_stability_v2": 1.0,
     "tilt_consistency": 1.0,
+    "release_extension_v2": 1.0,
     "release_extension_proxy": 1.0,
 }
 
 _OPEN_SIDE_WEIGHTS: dict[str, float] = {
     "timing": 1.0,
-    "front_knee_flexion_fs": 1.2,
+    "drift_forward": 1.3,
+    "front_knee_flexion_fs": 1.1,
     "front_knee_extension_rel": 1.4,
-    "trunk_stability": 0.8,
-    "release_extension_proxy": 1.8,
+    "trunk_stability_v2": 0.8,
+    "release_extension_v2": 1.8,
     "swivel_stabilize": 1.1,
 }
 
@@ -1480,8 +2106,8 @@ def compute_benchmarks(
         phases:    Detected pitch phases (from detect_phases or loaded from JSON).
         hand:      Pitcher throwing hand — "R" (default) or "L".
         view_mode: "open_side" (default) or "front".
-                   open_side: replaces Stack & Track with Trunk Stability,
-                   marks Torque Retention as requires_front_view.
+                   open_side: replaces Stack & Track with Trunk Stability v2,
+                   and uses Open-Side Pro v2 official metrics for efficiency.
                    front: uses original Stack & Track and Torque Retention.
 
     Returns:
@@ -1498,7 +2124,10 @@ def compute_benchmarks(
             posture=          empty("posture",          "No pose data"),
             lift_thrust=      empty("lift_thrust",      "No pose data"),
             swivel_stabilize= empty("swivel_stabilize", "No pose data"),
-            stack_track=      empty("stack_track",      "No pose data"),
+            stack_track=      empty(
+                "trunk_stability_v2" if view_mode == "open_side" else "stack_track",
+                "No pose data",
+            ),
             torque_retention= empty("torque_retention", "No pose data"),
             hand=hand,
             view_mode=view_mode,
@@ -1511,14 +2140,17 @@ def compute_benchmarks(
     b4 = _compute_lift_thrust(poses, phases, hand)
     b5 = _compute_swivel_stabilize(poses, phases, hand)
     extras: list[BenchmarkResult] = [
+        _compute_drift_forward(poses, phases),
         _compute_front_knee_flexion_fs(poses, phases, hand),
         _compute_front_knee_extension_rel(poses, phases, hand),
+        _compute_release_extension_v2(poses, phases, hand),
+        _compute_trunk_stability(poses, phases),  # legacy debug metric
         _compute_tilt_consistency_release(poses, phases),
-        _compute_release_extension_proxy(poses, phases, hand),
+        _compute_release_extension_proxy(poses, phases, hand),  # legacy debug metric
     ]
 
     if view_mode == "open_side":
-        b6 = _compute_trunk_stability(poses, phases)
+        b6 = _compute_trunk_stability_v2(poses, phases)
         b7 = BenchmarkResult.requires_front_view(
             "torque_retention",
             "Not measurable from this view (open_side). Requires front view.",

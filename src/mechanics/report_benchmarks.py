@@ -339,6 +339,7 @@ def _annotate_release(
             "swivel_stabilize": "SWIVEL",
             "stack_track":      "STACK",
             "trunk_stability":  "TRUNK STAB.",
+            "trunk_stability_v2": "TRUNK STAB V2",
             "torque_retention": "TORQUE",
         }
         label = labels.get(bm.name, bm.name.upper())
@@ -395,12 +396,15 @@ def _build_summary_strip(
         "balance":          "2. BALANCE",
         "posture":          "3. POSTURE",
         "lift_thrust":      "4. LIFT & THRUST",
+        "drift_forward":    "DRIFT FORWARD",
         "swivel_stabilize": "5. SWIVEL & STAB.",
         "front_knee_flexion_fs": "KNEE @ FS",
         "front_knee_extension_rel": "KNEE BRACE",
+        "release_extension_v2": "RELEASE EXT V2",
         "release_extension_proxy": "RELEASE EXT",
         "stack_track":      "6. STACK & TRACK",
         "trunk_stability":  "6. TRUNK STABILITY",
+        "trunk_stability_v2": "6. TRUNK STABILITY V2",
         "torque_retention": "7. TORQUE RET.",
     }
 

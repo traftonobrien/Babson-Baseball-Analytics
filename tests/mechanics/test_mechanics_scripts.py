@@ -303,7 +303,7 @@ def test_top_issues_excludes_debug_only_metrics_in_open_side():
     report = compute_benchmarks(poses, phases, hand="R", view_mode="open_side")
 
     # Force excluded metrics to look very bad.
-    for name in ("balance", "posture", "lift_thrust", "tilt_consistency"):
+    for name in ("balance", "posture", "lift_thrust", "tilt_consistency", "trunk_stability", "release_extension_proxy"):
         m = report.metric_by_name(name)
         assert m is not None
         m.status = "ok"
@@ -326,3 +326,5 @@ def test_top_issues_excludes_debug_only_metrics_in_open_side():
     assert "posture" not in names
     assert "lift_thrust" not in names
     assert "tilt_consistency" not in names
+    assert "trunk_stability" not in names
+    assert "release_extension_proxy" not in names

@@ -78,7 +78,7 @@ def parse_args() -> argparse.Namespace:
                    help="Disable hold_review.mp4 generation.")
     p.set_defaults(hold_review=None)
     p.add_argument("--debug-metrics", action="store_true",
-                   help="Include debug-only open-side metrics (balance/posture/lift/tilt) in notes overlays.")
+                   help="Include debug-only open-side metrics (balance/posture/lift/tilt + legacy trunk/extension) in notes overlays.")
     p.add_argument("--verbose", action="store_true",
                    help="Print per-frame pose detection progress.")
     return p.parse_args()
@@ -223,14 +223,12 @@ _PHASE_ORDER: list[tuple[str, str, str]] = [
 _PHASE_CARD_METRICS: dict[str, list[str]] = {
     "set": ["timing"],
     "peak_leg_lift": [],
-    "foot_strike": ["timing", "front_knee_flexion_fs", "com_drift_fs_to_rel"],
+    "foot_strike": ["timing", "drift_forward", "front_knee_flexion_fs"],
     "ball_release": [
         "front_knee_extension_rel",
-        "trunk_stability",
-        "release_extension_proxy",
+        "trunk_stability_v2",
+        "release_extension_v2",
         "swivel_stabilize",
-        "hip_drop_fs_to_rel",
-        "com_drift_fs_to_rel",
     ],
 }
 
@@ -266,10 +264,13 @@ _SOFT_JOINTS: list[str] = [
 
 _METRIC_BADGE_LABELS: dict[str, str] = {
     "timing": "Timing",
+    "drift_forward": "DriftForward",
     "lift_thrust": "Lift&Thrust",
     "front_knee_flexion_fs": "FrontKnee@FS",
     "front_knee_extension_rel": "KneeBrace FS->REL",
+    "trunk_stability_v2": "TrunkStabilityV2",
     "trunk_stability": "TrunkStability",
+    "release_extension_v2": "ReleaseExtV2",
     "release_extension_proxy": "ReleaseReach",
     "swivel_stabilize": "GloveContain",
 }

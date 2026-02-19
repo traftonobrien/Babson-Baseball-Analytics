@@ -228,9 +228,10 @@ class TestCalloutTable:
 
     EXPECTED_METRICS = [
         "timing", "balance", "posture", "lift_thrust",
-        "swivel_stabilize", "stack_track", "trunk_stability", "torque_retention",
+        "swivel_stabilize", "stack_track", "trunk_stability", "trunk_stability_v2", "torque_retention",
+        "drift_forward",
         "front_knee_flexion_fs", "front_knee_extension_rel",
-        "tilt_consistency", "release_extension_proxy",
+        "tilt_consistency", "release_extension_proxy", "release_extension_v2",
     ]
 
     def test_all_metrics_have_entries(self):
@@ -275,7 +276,7 @@ class TestCalloutSelection:
         target = [
             ("timing", 2.0, 0.9),
             ("swivel_stabilize", 1.0, 0.7),
-            ("trunk_stability", 4.0, 0.95),
+            ("trunk_stability_v2", 4.0, 0.95),
             ("front_knee_flexion_fs", 3.0, 0.8),
             ("front_knee_extension_rel", 2.5, 0.2),  # low confidence fail
         ]
@@ -292,7 +293,7 @@ class TestCalloutSelection:
             [
                 "timing",
                 "swivel_stabilize",
-                "trunk_stability",
+                "trunk_stability_v2",
                 "front_knee_flexion_fs",
                 "front_knee_extension_rel",
             ],
@@ -345,7 +346,7 @@ class TestBuildNotes:
         assert "camera_limitations" in notes
         assert "official_metric_set" in notes
         assert "official_metrics" in notes
-        assert "official_open_side_metrics_v1" in notes
+        assert "official_open_side_metrics_v2" in notes
         assert "excluded_metrics_reason" in notes
 
     def test_all_metrics_present(self):
@@ -354,7 +355,7 @@ class TestBuildNotes:
         for name in official:
             assert name in notes["metrics"]
         # Debug-only metrics should be omitted by default in open_side notes.
-        for name in ("balance", "posture", "lift_thrust", "tilt_consistency"):
+        for name in ("balance", "posture", "lift_thrust", "tilt_consistency", "trunk_stability", "release_extension_proxy"):
             assert name not in notes["metrics"]
 
     def test_debug_metrics_flag_includes_full_metric_dump(self):
@@ -364,7 +365,7 @@ class TestBuildNotes:
 
     def test_open_side_notes_have_locked_metric_set_name(self):
         notes = _build_notes(self.benchmarks, self.phases)
-        assert notes["official_metric_set"] == "open_side_pro_v1"
+        assert notes["official_metric_set"] == "open_side_pro_v2"
         assert notes["official_metrics"] == list(official_metric_names("open_side"))
         assert notes["excluded_metrics_reason"]["stack_track"] == "front-view-only"
         assert notes["excluded_metrics_reason"]["balance"] == "debug-only"
@@ -614,6 +615,9 @@ class TestPhaseMetrics:
         assert "stack_track" not in rel_metrics
         assert "balance" not in rel_metrics
         assert "posture" not in rel_metrics
+        assert "release_extension_proxy" not in rel_metrics
+        assert "release_extension_v2" in rel_metrics
+        assert "trunk_stability_v2" in rel_metrics
 
     def test_debug_phase_mapping_allows_debug_metrics(self):
         poses = _make_full_pose_sequence(n=60, fps=30.0)
@@ -623,3 +627,4 @@ class TestPhaseMetrics:
         assert "balance" in rel_metrics
         assert "posture" in rel_metrics
         assert "tilt_consistency" in rel_metrics
+        assert "release_extension_proxy" in rel_metrics

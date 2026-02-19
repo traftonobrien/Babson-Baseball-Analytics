@@ -33,6 +33,7 @@ from src.mechanics.benchmarks import (
     linear_score,
     piecewise_timing_score,
     compute_benchmarks,
+    OPEN_SIDE_METRIC_ORDER,
     BenchmarkReport,
     BenchmarkResult,
     _px_safe,
@@ -44,6 +45,9 @@ from src.mechanics.benchmarks import (
     _compute_stack_track,
     _compute_torque_retention,
     _compute_trunk_stability,
+    _compute_trunk_stability_v2,
+    _compute_drift_forward,
+    _compute_release_extension_v2,
     _compute_efficiency_details,
     _compute_efficiency_score,
     _score_release_extension_proxy,
@@ -536,8 +540,16 @@ class TestComputeBenchmarks:
                 assert 0.0 <= bm.score <= 10.0
 
     def test_extra_metrics_present(self):
-        extras = [m for m in self.report.all_metrics() if m.name.startswith("front_") or m.name in {"tilt_consistency", "release_extension_proxy"}]
-        assert len(extras) >= 4
+        extras = [m for m in self.report.all_metrics() if m.name in {
+            "drift_forward",
+            "front_knee_flexion_fs",
+            "front_knee_extension_rel",
+            "release_extension_v2",
+            "tilt_consistency",
+            "release_extension_proxy",
+            "trunk_stability",
+        }]
+        assert len(extras) >= 6
         for m in extras:
             assert m.status in ("ok", "insufficient_data", "requires_front_view")
 
@@ -587,9 +599,20 @@ class TestOpenSideViewMode:
     def test_open_side_replaces_stack_track(self):
         report = compute_benchmarks(self.poses, self.phases, hand="R",
                                     view_mode="open_side")
-        # slot 6 should be trunk_stability, not stack_track
-        assert report.stack_track.name == "trunk_stability"
+        # slot 6 should be trunk_stability_v2, not stack_track
+        assert report.stack_track.name == "trunk_stability_v2"
         assert report.stack_track.status == "ok"
+
+    def test_open_side_official_metric_set_v2(self):
+        assert tuple(OPEN_SIDE_METRIC_ORDER) == (
+            "timing",
+            "drift_forward",
+            "front_knee_flexion_fs",
+            "front_knee_extension_rel",
+            "trunk_stability_v2",
+            "release_extension_v2",
+            "swivel_stabilize",
+        )
 
     def test_open_side_torque_requires_front_view(self):
         report = compute_benchmarks(self.poses, self.phases, hand="R",
@@ -616,7 +639,7 @@ class TestOpenSideViewMode:
         # Create poses where trunk lean barely changes between FS and release
         poses = _make_full_pose_sequence(n=60, fps=self.fps)
         phases = self.phases
-        result = _compute_trunk_stability(poses, phases)
+        result = _compute_trunk_stability_v2(poses, phases)
         assert result.status == "ok"
         # With stable shoulders in our synthetic data, delta should be small → high score
         assert result.score is not None
@@ -632,8 +655,8 @@ class TestOpenSideViewMode:
         lm[KP["RIGHT_SHOULDER"], 0] = 0.95
         poses_noisy[rel_idx].landmarks = lm
 
-        clean = _compute_trunk_stability(poses_clean, self.phases)
-        noisy = _compute_trunk_stability(poses_noisy, self.phases)
+        clean = _compute_trunk_stability_v2(poses_clean, self.phases)
+        noisy = _compute_trunk_stability_v2(poses_noisy, self.phases)
         assert clean.status == "ok" and noisy.status == "ok"
         assert clean.raw_value is not None and noisy.raw_value is not None
         # Windowed median should dampen single-frame spikes.
@@ -652,13 +675,10 @@ class TestOpenSideViewMode:
             lm[KP["RIGHT_SHOULDER"], 2] = 0.05
             occluded[i].landmarks = lm
 
-        a = _compute_trunk_stability(visible, self.phases)
-        b = _compute_trunk_stability(occluded, self.phases)
+        a = _compute_trunk_stability_v2(visible, self.phases)
+        b = _compute_trunk_stability_v2(occluded, self.phases)
         assert a.status == "ok"
-        # Hard gating may mark heavily occluded windows as insufficient.
-        assert b.status in ("ok", "insufficient_data")
-        if b.status == "ok":
-            assert (b.confidence or 0.0) < (a.confidence or 0.0)
+        assert b.status == "insufficient_data"
 
     def test_to_dict_includes_view_mode(self):
         report = compute_benchmarks(self.poses, self.phases, hand="R",
@@ -671,6 +691,50 @@ class TestOpenSideViewMode:
         assert r.status == "requires_front_view"
         assert r.score is None
         assert r.name == "test_metric"
+
+
+class TestOpenSideV2Metrics:
+    def setup_method(self):
+        self.fps = 30.0
+        self.poses = _make_full_pose_sequence(n=60, fps=self.fps)
+        self.phases = _make_phases(set_idx=0, peak_idx=18, fs_idx=30, rel_idx=48, fps=self.fps)
+
+    def test_drift_forward_has_phase_deltas(self):
+        drift = _compute_drift_forward(self.poses, self.phases)
+        assert drift.status == "ok"
+        d1 = drift.sub_values.get("drift_to_pll_pct_height")
+        d2 = drift.sub_values.get("drift_pll_to_fs_pct_height")
+        total = drift.sub_values.get("total_drift_pct_height")
+        assert d1 is not None and d2 is not None and total is not None
+        assert d1 >= 0.0 and d2 >= 0.0 and total >= 0.0
+        assert abs((d1 + d2) - total) < 3.0
+
+    def test_release_extension_v2_blend(self):
+        ext = _compute_release_extension_v2(self.poses, self.phases, hand="R")
+        assert ext.status == "ok"
+        a = ext.sub_values.get("component_a_score")
+        b = ext.sub_values.get("component_b_score")
+        c = ext.sub_values.get("component_c_score")
+        assert a is not None and b is not None and c is not None
+        expected = 0.55 * float(a) + 0.25 * float(b) + 0.20 * float(c)
+        assert ext.score is not None
+        assert ext.score == pytest.approx(expected, abs=0.2)
+
+    def test_trunk_stability_v2_gates_high_residuals(self):
+        poses = _make_full_pose_sequence(n=60, fps=self.fps)
+        fs = self.phases.foot_strike.frame_idx
+        rel = self.phases.ball_release.frame_idx
+        for i in range(fs - 4, rel + 4):
+            if not (0 <= i < len(poses)):
+                continue
+            lm = poses[i].landmarks.copy()
+            # Alternating shoulder jitter to force fit residual blow-up.
+            lm[KP["LEFT_SHOULDER"], 0] += np.float32(((-1.0) ** i) * 0.22)
+            lm[KP["RIGHT_SHOULDER"], 0] += np.float32(((-1.0) ** (i + 1)) * 0.06)
+            lm[KP["LEFT_HIP"], 0] += np.float32(((-1.0) ** (i + 1)) * 0.14)
+            poses[i].landmarks = lm
+        trunk = _compute_trunk_stability_v2(poses, self.phases)
+        assert trunk.status == "insufficient_data"
 
 
 class TestEfficiencyWeighting:
@@ -691,7 +755,7 @@ class TestEfficiencyWeighting:
     def test_metric_weights_change_result_predictably(self):
         metrics = [
             BenchmarkResult(name="timing", status="ok", score=2.0, confidence=1.0),
-            BenchmarkResult(name="release_extension_proxy", status="ok", score=10.0, confidence=1.0),
+            BenchmarkResult(name="release_extension_v2", status="ok", score=10.0, confidence=1.0),
         ]
         eff = _compute_efficiency_score(metrics, view_mode="open_side")
         assert eff is not None

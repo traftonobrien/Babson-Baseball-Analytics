@@ -208,65 +208,67 @@ The `--view` flag controls which metrics are used for slot 6 and 7:
 
 ---
 
-## Mechanics Breakdown v1 (current release)
+## Mechanics Breakdown v2 (open-side official model)
 
-Built for single open-side clips first, with confidence scoring and actionable visuals.
+Built for single open-side clips first, with confidence-aware scoring and coaching-first visuals.
 
-**Official open-side metrics (v1):**
+**Official open-side metric set (v2, locked):**
 
-- `timing` — tempo from `SET -> FOOT_STRIKE` (robust against idle prefix).
+- `timing` — tempo from `SET -> FOOT_STRIKE` using delivery-start SET detection (idle prefix ignored).
+- `drift_forward` — hip midpoint drift profile (`SET->PLL`, `PLL->FS`) normalised by body-height proxy.
 - `front_knee_flexion_fs` — lead-knee flexion at foot strike.
-- `front_knee_extension_rel` — lead-knee bracing into release (`FS flexion - REL flexion`).
-- `trunk_stability` — windowed trunk-angle change (`FS -> REL`) with signed direction in notes.
-- `release_extension_proxy` — 2D reach proxy at release (normalised by shoulder width).
-- `release_extension_proxy` score map (v1 locked):
-  - clamp raw value `x` to `[8.0, 10.5]`
-  - `score = 10 * (x - 8.0) / (10.5 - 8.0)` (clamped to `[0,10]`)
-  - pass threshold: `score >= 6`
+- `front_knee_extension_rel` — brace quality into release using flexion delta, brace rate, and knee-over-ankle leak.
+- `trunk_stability_v2` — robust fitted trunk-angle delta (`FS -> REL`) with hard residual/coverage gating.
+- `release_extension_v2` — composite extension score:
+  - `A` reach depth proxy (stabilised)
+  - `B` release-angle proxy (shoulder->wrist relative to trunk line)
+  - `C` forward intent (smoothed wrist x-velocity pre-release)
+  - `extension_v2 = 0.55*A + 0.25*B + 0.20*C`
 - `swivel_stabilize` — glove-side containment proxy at release.
 
-Open-side debug-only (excluded from issue ranking and score): `balance`, `posture`, `lift_thrust`, `tilt_consistency`.
+Open-side debug-only (excluded from efficiency, priority fixes, and default badges/callouts):
+`balance`, `posture`, `lift_thrust`, `tilt_consistency`, legacy `trunk_stability`, legacy `release_extension_proxy`.
 
-**Confidence scoring (0–1) per metric.**
-Computed from keypoint visibility, phase confidence, and signal stability. Not serialized in `benchmarks.json` (schema preserved) but included in `notes.json` and overlay badges:
-- `low conf` tag appears when confidence < 0.4.
-- `camera_limitations` in `notes.json` lists metrics that are unreliable for the current view (e.g., Torque Retention in open_side).
+**Confidence scoring (0–1).**
+Computed per metric from visibility, phase confidence, and stability/jitter terms.
+- Confidence is not added to `benchmarks.json` (schema preserved).
+- Confidence is surfaced in `notes.json` and coach-pack overlays.
+- Open-side confidence gate: `< 0.35` => metric is ineligible for efficiency and priority fixes.
 
-**Trunk stability math (noise-hardened).**
-- Uses windowed medians, not single frames:
-  - FS window: `[FS-4 ... FS+4]`
-  - REL window: `[REL-3 ... REL+3]`
-- Uses visibility-weighted bilateral midpoints for mid-shoulders and mid-hips.
-- Uses wrap-safe signed delta: `delta_signed = shortest_angle(rel - fs)` and score on `abs(delta_signed)`.
-- Confidence penalizes jitter, low coverage in windows, and extreme FS trunk angle sanity failures.
+**Trunk stability v2 math (noise-hardened).**
+- FS/REL windows are wider than v1 (`FS±6`, `REL±5`).
+- Uses visibility-filtered trunk-angle samples and robust Theil–Sen fits per window.
+- Uses fitted center-frame trunk angles for FS and REL, then signed wrap-safe delta.
+- Hard-gates to `insufficient_data` when:
+  - frame coverage is too low,
+  - fit residuals are too high,
+  - or visibility is insufficient.
+- If `status="insufficient_data"`, trunk is excluded from scoring and overlays.
 
 **Efficiency score (weighted + confidence-aware).**
-- Efficiency is no longer a flat mean.
-- Only official open-side metrics contribute in `open_side` mode.
-- Confidence gate: metrics with `confidence < 0.35` contribute zero weight and cannot appear in Priority Fixes.
-- Effective contribution: `weight_i * clamp(conf_i, 0.25, 1.0)` for eligible metrics.
-- Final score: `sum(score_i * effective_weight_i) / sum(effective_weight_i)`, clamped to `[0,10]`.
-- Open-side weights:
-  - `release_extension_proxy 1.8`, `front_knee_extension_rel 1.4`,
-  - `front_knee_flexion_fs 1.2`, `swivel_stabilize 1.1`, `timing 1.0`,
-  - `trunk_stability 0.8` (only when reliable / `status=="ok"`).
+- Eligible metrics must be official v2, `status=="ok"`, and confidence >= 0.35.
+- Effective weight: `weight_i * clamp(conf_i, 0.25, 1.0)`.
+- Final score: weighted mean clamped to `[0,10]`.
+- Open-side v2 weights:
+  - `release_extension_v2 1.8`
+  - `front_knee_extension_rel 1.4`
+  - `drift_forward 1.3`
+  - `front_knee_flexion_fs 1.1`
+  - `swivel_stabilize 1.1`
+  - `timing 1.0`
+  - `trunk_stability_v2 0.8`
 - `efficiency_low_confidence=true` when fewer than 4 official metrics are eligible.
 
-**Coach pack improvements:**
-- Key frames now prioritize readability:
-  - Only top 3 trusted official issues are shown as primary callouts.
-  - Low-confidence failures are moved to a small footer instead of primary callouts.
-  - Release frame keeps high-value geometry (FS/REL trunk lines + signed delta, glove zone on failure, knee brace line, reach line).
-  - `release.png` includes a compact `Priority Fixes` box (top 2 coaching cues).
-  - `release.png` includes a camera-limitations panel for open-side mode.
-- Head path uses smoothed positions with a shorter tail (last ~40 frames) to avoid scribble.
-- Badge bar is grouped: `Tempo | Stability | Lower Half | Release`.
-- Low-confidence badges use a muted purple/gray style + `LOW CONF`.
-- Cliplets burn in overlays:
-  - `set_to_fs.mp4`: tempo + head movement trace.
-  - `fs_to_release.mp4`: trunk stability + glove stability markers.
-  - `release.mp4`: finish-phase stability tags.
-- Strip includes a tiny low-confidence legend.
+**Coach-pack prioritisation + visuals (default mode).**
+- Only official v2 metrics appear in badges, strip, and priority fixes.
+- Top 3 trusted issues only (lowest scores among eligible metrics).
+- Low-confidence failures are de-emphasized to a footer (`LOW CONF - review manually`).
+- Open-side overlays focus on diagnostic geometry:
+  - drift hip path + phase deltas at foot strike,
+  - trunk fitted lines FS vs REL,
+  - extension reach line + wrist velocity arrow + release-angle badge,
+  - knee-angle lines at FS/REL,
+  - head-path trace with short smoothed tail.
 
 **Outputs layout (per clip):**
 ```
@@ -282,8 +284,9 @@ output/mechanics/<player_slug>/<clip_slug>/
 ```
 
 `notes.json` now includes:
-- `official_metric_set` (e.g., `open_side_pro_v1`)
+- `official_metric_set` (e.g., `open_side_pro_v2`)
 - `official_metrics` (locked list used for open-side scoring and priority fixes)
+- `official_open_side_metrics_v2` (explicit open-side v2 metric list)
 - `excluded_metrics_reason` (why non-official metrics are excluded)
 
 **Single-clip entrypoint (recommended):**
@@ -327,6 +330,148 @@ python scripts/mechanics_coach_pack.py \
   --view open_side
 ```
 Processes all `.mp4` under the folder tree. Writes per-player `index.json` summarizing each clip's efficiency score and top 3 issues.
+
+---
+
+## Multi-angle ingest workflow
+
+When one source file contains multiple camera views, use ingest first, then run mechanics per selected pitch-angle clip.
+
+### 1) Ingest + auto-split all angles
+
+```bash
+python scripts/ingest_multi_angle.py \
+  --video "/Users/traftonobrien/Desktop/pitch-tracker/Mechanics Analysis/Trafton OBrien/All Angles Test.mov" \
+  --player "Trafton OBrien" \
+  --session "all_angles_test" \
+  --hand R \
+  --verbose
+```
+
+Output structure:
+
+```text
+output/ingest/<player_slug>/<session_slug>/
+  index.json
+  <angle_class>/
+    pitch_001.mp4
+    pitch_001.json
+    pitch_002.mp4
+    ...
+```
+
+`index.json` includes:
+- detected segments with start/end frames and angle-class confidence
+- per-pitch clip timing and confidence
+- grouped pitch candidates and recommended best clip per pitch
+
+Supported angle classes:
+- `behind_home`
+- `behind_center`
+- `open_side_RHP`
+- `open_side_LHP`
+- `hitter_view_RHH`
+- `hitter_view_LHH`
+- `unknown`
+
+### 2) Run mechanics session from ingest
+
+```bash
+python scripts/run_mechanics_session.py \
+  --ingest-index "output/ingest/trafton_obrien/all_angles_test/index.json" \
+  --hand R \
+  --slowmo \
+  --hold-review \
+  --verbose
+```
+
+Or one-step (ingest + mechanics from video):
+
+```bash
+python scripts/run_mechanics_session.py \
+  --video "/Users/traftonobrien/Desktop/pitch-tracker/Mechanics Analysis/Trafton OBrien/All Angles Test.mov" \
+  --hand R \
+  --slowmo \
+  --hold-review
+```
+
+Selection logic (per pitch-group candidate set):
+- angle priority: matching open-side > other open-side > behind_home > behind_center > hitter_view > unknown
+- then clip confidence, visibility score (pose validity/visibility), FPS, and resolution
+- if chosen angle is behind-home/center and visibility is strong, runner uses `front` mode; otherwise `open_side`
+
+Session outputs:
+
+```text
+output/mechanics/<player_slug>/<session_slug>/
+  index.json
+  pitch_001/
+    benchmarks.json
+    coach_pack/
+      set.png
+      peak_leg_lift.png
+      foot_strike.png
+      release.png
+      strip.png
+      set_to_fs.mp4
+      fs_to_release.mp4
+      release.mp4
+      slowmo_review.mp4
+      hold_review.mp4
+      notes.json
+```
+
+`output/mechanics/<player_slug>/<session_slug>/index.json` summarizes chosen angle, view mode, efficiency score, top issues, and output paths per pitch.
+
+## Manual Multi-Angle Clipper (Command-style)
+
+Use this when you want full control over clip boundaries and angle labels.
+
+### 1) Mark clips interactively
+
+```bash
+.venv/bin/python scripts/manual_angle_clipper.py \
+  --video "/Users/traftonobrien/Desktop/pitch-tracker/Mechanics Analysis/Trafton OBrien/All Angles Test.mov" \
+  --player "Trafton OBrien" \
+  --session "all_angles_test"
+```
+
+Hotkeys:
+- Playback: `Space` play/pause, `h/l` -1/+1 frame, `j/k` -10/+10 frames, `0/9` -1s/+1s
+- Markers: `s` start, `e` end, `c` commit, `u` undo
+- Pitch index: `n` next, `p` previous
+- Angle: `1=open_side`, `2=front`, `3=back`, `4=behind_home`, `5=center`, `6=unknown`
+- Save/quit: `w` save, `q` quit (save prompt if dirty)
+
+Writes:
+`output/ingest/<player_slug>/<session_slug>/manual_clips.json`
+
+### 2) Export marked clips
+
+```bash
+.venv/bin/python scripts/export_manual_clips.py \
+  --manual-clips "/Users/traftonobrien/Desktop/pitch-tracker/output/ingest/trafton_obrien/all_angles_test/manual_clips.json"
+```
+
+Writes:
+- `output/ingest/<player_slug>/<session_slug>/clips/pitch_###/<angle>.mp4`
+- `output/ingest/<player_slug>/<session_slug>/index.json` (grouped by `pitch_idx` with `preferred_angle`)
+
+### 3) Run mechanics session from manual clips
+
+```bash
+.venv/bin/python scripts/run_mechanics_session.py \
+  --manual-clips "/Users/traftonobrien/Desktop/pitch-tracker/output/ingest/trafton_obrien/all_angles_test/manual_clips.json" \
+  --hand R \
+  --view open_side \
+  --slowmo \
+  --hold-review
+```
+
+Notes:
+- `--manual-clips` auto-exports clips unless `--no-export` is provided.
+- `preferred_angle` per pitch follows: `open_side > front > back > behind_home > center > unknown`.
+- `--view` can force `open_side` or `front`; default is `auto`.
 
 **What to fix first (interpretation guide):**
 1) Address any red metrics with high confidence (≥0.6) — those are reliable and high leverage.
@@ -382,7 +527,7 @@ python scripts/mechanics_benchmarks.py \
     "posture":           { "status": "ok", "raw_value": 2.1,  "unit": "%",   "score": 8.7, "pass_fail": true,  "sub_values": {} },
     "lift_thrust":       { "status": "ok", "raw_value": 18.4, "unit": "deg", "score": 7.1, "pass_fail": true,  "sub_values": {} },
     "swivel_stabilize":  { "status": "ok", "raw_value": 1.0,  "unit": "boolean", "score": 10, "pass_fail": true, "sub_values": { "inside": true } },
-    "trunk_stability":   { "status": "ok", "raw_value": 4.2,  "unit": "deg", "score": 9.6, "pass_fail": true,  "sub_values": { "trunk_lean_at_fs_deg": 18.3, "trunk_lean_at_release_deg": 22.5, "delta_deg": 4.2 } },
+    "trunk_stability_v2":{ "status": "ok", "raw_value": 4.2,  "unit": "deg", "score": 9.6, "pass_fail": true,  "sub_values": { "trunk_angle_fs_deg": 18.3, "trunk_angle_rel_deg": 22.5, "delta_abs_deg": 4.2 } },
     "torque_retention":  { "status": "requires_front_view", "raw_value": null, "unit": "", "score": null, "pass_fail": null, "sub_values": {} }
   },
   "phases": { "set": { "frame_idx": 45, "time_s": 1.50 }, "..." : "..." }
