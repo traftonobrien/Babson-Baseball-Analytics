@@ -359,6 +359,99 @@ def _detect_delivery_start(
 
 
 # ---------------------------------------------------------------------------
+# Peak leg lift detector (open-side robust fallback)
+# ---------------------------------------------------------------------------
+
+def _detect_peak_leg_lift_open_side(
+    poses: List[PoseResult],
+    knee_y_raw: np.ndarray,
+    hip_y_raw: np.ndarray,
+    set_idx: int,
+    first_move_idx: Optional[int],
+    foot_strike_idx: Optional[int],
+    fps: float,
+) -> Optional[Phase]:
+    """
+    Robust PEAK LEG LIFT fallback for open-side clips.
+
+    Searches between delivery start and foot strike (if available),
+    smooths lead-knee trajectory, and finds the highest-knee frame
+    (minimum image y). If visibility is sparse, still returns a fallback
+    frame with low (non-zero) confidence when any knee points exist.
+    """
+    n = len(poses)
+    if n == 0:
+        return None
+
+    start_idx = max(0, first_move_idx if first_move_idx is not None else set_idx)
+    default_end = min(int(n * 0.75), n - 1)
+    if foot_strike_idx is not None and foot_strike_idx > start_idx + 1:
+        end_idx = min(n - 1, foot_strike_idx)
+    else:
+        end_idx = default_end
+
+    if end_idx <= start_idx:
+        end_idx = min(n - 1, start_idx + 1)
+    if end_idx <= start_idx:
+        return None
+
+    patch_raw = knee_y_raw[start_idx:end_idx + 1]
+    patch_smooth = _smooth(patch_raw, window=5)
+    valid_raw = np.where(~np.isnan(patch_raw))[0]
+    coverage = float(len(valid_raw)) / float(max(1, len(patch_raw)))
+
+    local_idx: Optional[int] = None
+    valid_smooth = np.where(~np.isnan(patch_smooth))[0]
+    if len(valid_smooth) > 0:
+        local_idx = int(valid_smooth[int(np.nanargmin(patch_smooth[valid_smooth]))])
+    elif len(valid_raw) > 0:
+        local_idx = int(valid_raw[int(np.nanargmin(patch_raw[valid_raw]))])
+    elif len(patch_raw) > 0:
+        # No knee observations in window.
+        local_idx = int(round((len(patch_raw) - 1) / 2.0))
+
+    if local_idx is None:
+        return None
+
+    peak_idx = start_idx + local_idx
+    knee_at_peak = knee_y_raw[peak_idx]
+    hip_at_peak = hip_y_raw[peak_idx]
+    if np.isnan(knee_at_peak):
+        knee_at_peak = float(np.nanmedian(patch_raw)) if np.any(~np.isnan(patch_raw)) else np.nan
+    if np.isnan(hip_at_peak):
+        hip_at_peak = np.nan
+
+    lift_px = None
+    if not np.isnan(knee_at_peak) and not np.isnan(hip_at_peak):
+        lift_px = float(hip_at_peak - knee_at_peak)
+
+    if coverage <= 0.0:
+        conf = 0.0
+        note = "Lead-knee landmarks absent in SET→FS window; midpoint fallback"
+    elif coverage < 0.5:
+        # Keep non-zero confidence for sparse, partially visible windows.
+        conf = float(np.clip(0.20 + 0.20 * coverage, 0.20, 0.30))
+        note = f"Sparse knee visibility ({coverage:.0%}) in SET→FS window; low-confidence fallback"
+    else:
+        lift_quality = 0.0
+        if lift_px is not None:
+            lift_quality = float(np.clip(lift_px / 80.0, 0.0, 1.0))
+        conf = float(np.clip(0.35 + 0.45 * coverage + 0.20 * lift_quality, 0.20, 0.95))
+        if lift_px is not None:
+            note = f"Lead knee peak in SET→FS window ({lift_px:.0f}px above hip)"
+        else:
+            note = "Lead knee peak in SET→FS window (hip visibility limited)"
+
+    return Phase(
+        name="peak_leg_lift",
+        frame_idx=poses[peak_idx].frame_idx,
+        time_s=poses[peak_idx].frame_idx / fps,
+        confidence=conf,
+        note=note,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Phase detectors
 # ---------------------------------------------------------------------------
 
@@ -477,8 +570,7 @@ def detect_phases(
             )
 
     # ---- PEAK LEG LIFT -------------------------------------------------------
-    # Heuristic: minimum Y of lead knee in image (= highest point in the room).
-    # Search between first_movement and 75% of the clip.
+    # Initial estimate before foot-strike is known.
     search_start = first_move_idx if first_move_idx is not None else set_idx + 1
     search_end   = min(int(n * 0.75), n - 1)
 
@@ -542,6 +634,29 @@ def detect_phases(
             confidence=0.6,
             note="Lead ankle velocity drops (foot contacts ground)",
         )
+
+    # Refine PLL for open-side robustness in the final SET→FS window.
+    # Confidence remains non-zero for sparse but present knee observations.
+    robust_peak = _detect_peak_leg_lift_open_side(
+        poses=poses,
+        knee_y_raw=knee_y_raw,
+        hip_y_raw=hip_y_raw,
+        set_idx=set_idx,
+        first_move_idx=first_move_idx,
+        foot_strike_idx=foot_strike_idx,
+        fps=fps,
+    )
+    if robust_peak is not None:
+        peak_phase = robust_peak
+        if peak_idx is None:
+            mapped_idx = None
+            for i, p in enumerate(poses):
+                if p.frame_idx == robust_peak.frame_idx:
+                    mapped_idx = i
+                    break
+            if mapped_idx is None:
+                mapped_idx = max(0, min(n - 1, int(robust_peak.frame_idx)))
+            peak_idx = mapped_idx
 
     # ---- BALL RELEASE --------------------------------------------------------
     # Heuristic: peak throwing wrist speed after foot strike.

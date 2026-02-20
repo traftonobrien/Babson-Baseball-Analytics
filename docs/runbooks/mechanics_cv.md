@@ -208,59 +208,84 @@ The `--view` flag controls which metrics are used for slot 6 and 7:
 
 ---
 
-## Mechanics Breakdown v2 (open-side official model)
+## Mechanics Breakdown v3 (open-side official model)
 
 Built for single open-side clips first, with confidence-aware scoring and coaching-first visuals.
 
-**Official open-side metric set (v2, locked):**
+**Official open-side metric set (v3, locked):**
 
-- `timing` — tempo from `SET -> FOOT_STRIKE` using delivery-start SET detection (idle prefix ignored).
-- `drift_forward` — hip midpoint drift profile (`SET->PLL`, `PLL->FS`) normalised by body-height proxy.
-- `front_knee_flexion_fs` — lead-knee flexion at foot strike.
-- `front_knee_extension_rel` — brace quality into release using flexion delta, brace rate, and knee-over-ankle leak.
-- `trunk_stability_v2` — robust fitted trunk-angle delta (`FS -> REL`) with hard residual/coverage gating.
+- `lead_leg_block_v3` — open-side visual brace model using robust FS/REL windows:
+  - release knee firmness (absolute angle),
+  - shin verticality,
+  - hip-over-heel alignment,
+  - post-FS forward leak (mid-hip drift),
+  - extension-delta bonus as a secondary signal,
+  - visual brace override floor for clearly posted/braced deliveries.
+- `hip_shoulder_sep_v3` — open-side separation proxy from temporal burst logic:
+  - shoulder rotation burst timing from smoothed shoulder-angle velocity,
+  - pelvis forward burst timing from smoothed pelvis translation velocity,
+  - penalties for early pelvis dump / collapse-before-rotate.
+- `front_side_closedness_v2` — glove-side containment and front-side strength from PLL->REL with FS->REL opening-drop penalty.
 - `release_extension_v2` — composite extension score:
   - `A` reach depth proxy (stabilised)
   - `B` release-angle proxy (shoulder->wrist relative to trunk line)
   - `C` forward intent (smoothed wrist x-velocity pre-release)
   - `extension_v2 = 0.55*A + 0.25*B + 0.20*C`
+- `timing` — tempo from `SET -> FOOT_STRIKE` using delivery-start SET detection (idle prefix ignored).
 - `swivel_stabilize` — glove-side containment proxy at release.
 
 Open-side debug-only (excluded from efficiency, priority fixes, and default badges/callouts):
-`balance`, `posture`, `lift_thrust`, `tilt_consistency`, legacy `trunk_stability`, legacy `release_extension_proxy`.
+`balance`, `posture`, `lift_thrust`, `tilt_consistency`, `trunk_stability_v2`, legacy `trunk_stability`, legacy `release_extension_proxy`, `drift_forward`, `front_knee_flexion_fs`, `front_knee_extension_rel`, `forward_leak_proxy`, older `lead_leg_block_v2`, `hip_shoulder_sep_v2`, `front_side_closedness`.
 
-**Confidence scoring (0–1).**
-Computed per metric from visibility, phase confidence, and stability/jitter terms.
-- Confidence is not added to `benchmarks.json` (schema preserved).
-- Confidence is surfaced in `notes.json` and coach-pack overlays.
-- Open-side confidence gate: `< 0.35` => metric is ineligible for efficiency and priority fixes.
+**Confidence architecture (v3.1, graceful degradation).**
 
-**Trunk stability v2 math (noise-hardened).**
-- FS/REL windows are wider than v1 (`FS±6`, `REL±5`).
-- Uses visibility-filtered trunk-angle samples and robust Theil–Sen fits per window.
-- Uses fitted center-frame trunk angles for FS and REL, then signed wrap-safe delta.
-- Hard-gates to `insufficient_data` when:
-  - frame coverage is too low,
-  - fit residuals are too high,
-  - or visibility is insufficient.
-- If `status="insufficient_data"`, trunk is excluded from scoring and overlays.
+- Constants:
+  - `CONF_BLIND = 0.15`
+  - `CONF_FULL = 0.60`
+- Metrics now expose both:
+  - `score_raw` (unpenalized metric score),
+  - `score_eff` (confidence-scaled score used for pass/fail, ranking, and overlays).
+- Scaling:
+  - `conf_scaled = clamp((conf - CONF_BLIND) / (CONF_FULL - CONF_BLIND), 0, 1)`
+  - `score_eff = score_raw * (0.35 + 0.65 * conf_scaled)`
+- Blind rule:
+  - `conf < CONF_BLIND` => `status="insufficient_data"`
+  - otherwise metric remains `status="ok"` (with LOW CONF styling if needed).
 
-**Efficiency score (weighted + confidence-aware).**
-- Eligible metrics must be official v2, `status=="ok"`, and confidence >= 0.35.
-- Effective weight: `weight_i * clamp(conf_i, 0.25, 1.0)`.
-- Final score: weighted mean clamped to `[0,10]`.
-- Open-side v2 weights:
-  - `release_extension_v2 1.8`
-  - `front_knee_extension_rel 1.4`
-  - `drift_forward 1.3`
-  - `front_knee_flexion_fs 1.1`
-  - `swivel_stabilize 1.1`
-  - `timing 1.0`
-  - `trunk_stability_v2 0.8`
+**Component-level confidence (official open-side composites).**
+- Composite metrics compute subcomponent `{value_raw, score_raw, conf, reasons}`.
+- Aggregation uses shared subcomponent weights and re-normalizes on non-blind components.
+- If fewer than 2 subcomponents are non-blind, metric becomes `insufficient_data`.
+- This is used in `lead_leg_block_v3`, `hip_shoulder_sep_v3`, and `release_extension_v2`.
+
+**Standard low-confidence reasons (controlled vocabulary).**
+- `missing_landmarks`
+- `occluded`
+- `window_too_small`
+- `high_jitter`
+- `outlier_jump`
+- `low_motion`
+- `phase_uncertain`
+
+**Windowing defaults for FS/REL metrics.**
+- Uses symmetric phase windows with `radius=2` (target 5 frames).
+- Requires at least 3 valid landmark frames per critical window/component.
+- Jitter/outlier penalties reduce confidence before any hard blind decision.
+
+**Efficiency score (official open-side metrics only).**
+- Eligible metrics: `status=="ok"` and `conf >= CONF_BLIND`.
+- Uses weighted mean of `score_eff` (confidence scaling already applied at metric level).
+- Open-side v3 weights:
+  - `lead_leg_block_v3 2.0`
+  - `hip_shoulder_sep_v3 1.8`
+  - `front_side_closedness_v2 1.6`
+  - `release_extension_v2 1.0`
+  - `timing 0.7`
+  - `swivel_stabilize 0.5`
 - `efficiency_low_confidence=true` when fewer than 4 official metrics are eligible.
 
 **Coach-pack prioritisation + visuals (default mode).**
-- Only official v2 metrics appear in badges, strip, and priority fixes.
+- Only official v3 metrics appear in badges, strip, and priority fixes.
 - Top 3 trusted issues only (lowest scores among eligible metrics).
 - Low-confidence failures are de-emphasized to a footer (`LOW CONF - review manually`).
 - Open-side overlays focus on diagnostic geometry:
@@ -284,9 +309,9 @@ output/mechanics/<player_slug>/<clip_slug>/
 ```
 
 `notes.json` now includes:
-- `official_metric_set` (e.g., `open_side_pro_v2`)
+- `official_metric_set` (e.g., `open_side_pro_v3`)
 - `official_metrics` (locked list used for open-side scoring and priority fixes)
-- `official_open_side_metrics_v2` (explicit open-side v2 metric list)
+- `official_open_side_metrics_v3` (explicit open-side v3 metric list)
 - `excluded_metrics_reason` (why non-official metrics are excluded)
 
 **Single-clip entrypoint (recommended):**

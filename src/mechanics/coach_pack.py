@@ -36,6 +36,8 @@ from .phases import PitchPhases, Phase
 from .benchmarks import (
     BenchmarkReport,
     BenchmarkResult,
+    CONF_BLIND,
+    CONF_FULL,
     FRONT_VIEW_ONLY_METRICS,
     OPEN_SIDE_DEBUG_METRICS,
     OPEN_SIDE_METRIC_ORDER,
@@ -80,8 +82,7 @@ CALLOUT_TABLE: dict[str, str] = {
         "Maintain posture through the landing to improve force transfer."
     ),
     "trunk_stability_v2": (
-        "Trunk angle changes too much between foot strike and release. "
-        "Keep the torso stable through release to avoid energy leak."
+        "Trunk-angle proxy is unstable through release. Use this as a secondary cue only if confidence is strong."
     ),
     "torque_retention": (
         "Shoulders are already rotating too early at foot strike. Keep the "
@@ -103,19 +104,27 @@ CALLOUT_TABLE: dict[str, str] = {
         "Release reach is short. Finish with the throwing hand further out front for better extension."
     ),
     "release_extension_v2": (
-        "Release extension is limited. Reach further out front with intent while maintaining a clean arm path."
+        "Release extension is limited. Finish further out front with intent while keeping a clean arm path."
+    ),
+    "lead_leg_block_v3": (
+        "Lead leg block is soft through release. Land on a firm post and reduce forward leak after foot strike."
+    ),
+    "hip_shoulder_sep_v3": (
+        "Shoulder acceleration is not lagging pelvis enough. Delay upper-body rotation and avoid early pelvis collapse."
+    ),
+    "front_side_closedness_v2": (
+        "Front side is opening early. Keep the glove side contained into foot strike before stabilizing at release."
     ),
 }
 
 _PHASE_METRICS_BY_VIEW: dict[str, dict[str, list[str]]] = {
     "open_side": {
-        "set": [],
+        "set": ["timing"],
         "peak_leg_lift": [],
-        "foot_strike": ["timing", "drift_forward", "front_knee_flexion_fs"],
+        "foot_strike": ["hip_shoulder_sep_v3", "front_side_closedness_v2", "lead_leg_block_v3"],
         "ball_release": [
-            "swivel_stabilize",
-            "trunk_stability_v2",
-            "front_knee_extension_rel",
+            "lead_leg_block_v3",
+            "hip_shoulder_sep_v3",
             "release_extension_v2",
         ],
     },
@@ -138,13 +147,15 @@ _PHASE_METRICS_BY_VIEW: dict[str, dict[str, list[str]]] = {
 _OPEN_SIDE_DEBUG_PHASE_METRICS: dict[str, list[str]] = {
     "set": [],
     "peak_leg_lift": ["lift_thrust"],
-    "foot_strike": [],
+    "foot_strike": ["drift_forward", "front_knee_flexion_fs"],
     "ball_release": [
         "balance",
         "posture",
         "tilt_consistency",
         "trunk_stability",
         "release_extension_proxy",
+        "front_knee_extension_rel",
+        "forward_leak_proxy",
     ],
 }
 
@@ -187,7 +198,8 @@ def _sc(val: float, scale: float) -> int:
 
 _METRIC_SECTION: dict[str, str] = {
     "timing": "Tempo",
-    "drift_forward": "Tempo",
+    "hip_shoulder_sep_v3": "Tempo",
+    "front_side_closedness_v2": "Tempo",
     "balance": "Stability",
     "posture": "Stability",
     "trunk_stability": "Stability",
@@ -197,6 +209,9 @@ _METRIC_SECTION: dict[str, str] = {
     "lift_thrust": "Lower Half",
     "front_knee_flexion_fs": "Lower Half",
     "front_knee_extension_rel": "Lower Half",
+    "lead_leg_block_v3": "Lower Half",
+    "drift_forward": "Lower Half",
+    "forward_leak_proxy": "Lower Half",
     "swivel_stabilize": "Release",
     "release_extension_v2": "Release",
     "release_extension_proxy": "Release",
@@ -205,7 +220,8 @@ _METRIC_SECTION: dict[str, str] = {
 
 _METRIC_SHORT: dict[str, str] = {
     "timing": "Timing",
-    "drift_forward": "Drift",
+    "hip_shoulder_sep_v3": "Sep",
+    "front_side_closedness_v2": "Closed",
     "balance": "Balance",
     "posture": "Posture",
     "trunk_stability": "Trunk",
@@ -219,10 +235,22 @@ _METRIC_SHORT: dict[str, str] = {
     "release_extension_v2": "ExtV2",
     "release_extension_proxy": "Reach",
     "torque_retention": "Torque",
+    "lead_leg_block_v3": "Block",
+    "drift_forward": "Drift",
+    "forward_leak_proxy": "Leak",
 }
 
-LOW_CONF_THRESHOLD = 0.35
+ELIGIBLE_CONF_THRESHOLD = CONF_BLIND
+LOW_CONF_THRESHOLD = CONF_FULL
 DEBUG_OPEN_SIDE_METRICS = set(OPEN_SIDE_DEBUG_METRICS)
+_OPEN_SIDE_PRIORITY_WEIGHT: dict[str, float] = {
+    "lead_leg_block_v3": 2.0,
+    "hip_shoulder_sep_v3": 1.8,
+    "front_side_closedness_v2": 1.6,
+    "release_extension_v2": 1.0,
+    "timing": 0.7,
+    "swivel_stabilize": 0.5,
+}
 
 
 def _allowed_metric_names(
@@ -248,7 +276,10 @@ def _badge_color(metric: BenchmarkResult) -> tuple[int, int, int]:
     return (30, 30, 240)
 
 
-def _issue_rank_key(metric: BenchmarkResult) -> tuple[float, float, float]:
+def _issue_rank_key(
+    metric: BenchmarkResult,
+    view_mode: str,
+) -> tuple[float, float, float]:
     """
     Lower key = higher-priority issue.
 
@@ -257,8 +288,12 @@ def _issue_rank_key(metric: BenchmarkResult) -> tuple[float, float, float]:
     """
     score = float(metric.score) if metric.score is not None else 10.0
     conf = max(0.05, float(metric.confidence) if metric.confidence is not None else 1.0)
-    weighted_score = score / conf
-    return (weighted_score, score, -conf)
+    if view_mode == "open_side":
+        weight = _OPEN_SIDE_PRIORITY_WEIGHT.get(metric.name, 0.6)
+    else:
+        weight = 1.0
+    leverage = (10.0 - score) * weight * conf
+    return (-leverage, score, -conf)
 
 
 def _select_trusted_issues(
@@ -276,13 +311,16 @@ def _select_trusted_issues(
             continue
         if m.status != "ok" or m.score is None or m.pass_fail is not False:
             continue
-        if m.confidence is not None and m.confidence < low_conf_threshold:
+        conf = float(m.confidence) if m.confidence is not None else 1.0
+        if conf < ELIGIBLE_CONF_THRESHOLD:
+            continue
+        if conf < low_conf_threshold:
             low_conf.append(m)
         else:
             trusted.append(m)
 
-    trusted.sort(key=_issue_rank_key)
-    low_conf.sort(key=_issue_rank_key)
+    trusted.sort(key=lambda m: _issue_rank_key(m, benchmarks.view_mode))
+    low_conf.sort(key=lambda m: _issue_rank_key(m, benchmarks.view_mode))
     return trusted[:max_items], low_conf
 
 
@@ -313,15 +351,18 @@ def _select_phase_callouts(
             m = metric_map.get(name)
             if m is None or m.status != "ok" or m.score is None or m.pass_fail is not False:
                 continue
-            if m.confidence is not None and m.confidence < low_conf_threshold:
+            conf = float(m.confidence) if m.confidence is not None else 1.0
+            if conf < ELIGIBLE_CONF_THRESHOLD:
+                continue
+            if conf < low_conf_threshold:
                 low_conf_issues.append(m)
             else:
                 trusted_issues.append(m)
 
     trusted = [m for m in trusted_issues if m.name in metric_set]
     low_conf = [m for m in low_conf_issues if m.name in metric_set]
-    trusted.sort(key=_issue_rank_key)
-    low_conf.sort(key=_issue_rank_key)
+    trusted.sort(key=lambda m: _issue_rank_key(m, benchmarks.view_mode))
+    low_conf.sort(key=lambda m: _issue_rank_key(m, benchmarks.view_mode))
     return trusted[:max_items], low_conf
 
 
@@ -331,6 +372,9 @@ def _priority_cues(
     allowed_metric_names: Optional[set[str]] = None,
 ) -> list[str]:
     """Top coaching cues from highest-leverage failures."""
+    focus_set = {"lead_leg_block_v3", "hip_shoulder_sep_v3", "front_side_closedness_v2"}
+    if benchmarks.view_mode != "open_side":
+        focus_set = set()
     failing, _ = _select_trusted_issues(
         benchmarks,
         max_items=max(3, max_items),
@@ -338,6 +382,8 @@ def _priority_cues(
     )
     cues: list[str] = []
     for m in failing:
+        if focus_set and m.name not in focus_set:
+            continue
         callout = _get_callout(m.name, m)
         if not callout:
             continue
@@ -399,8 +445,11 @@ def _draw_badge_bar(
                 label = f"{label_name} {m.score:.1f}/10 {state}"
             elif m.status == "requires_front_view":
                 label = f"{label_name} N/A"
+            elif m.status == "insufficient_data":
+                reason = (m.reasons[0] if getattr(m, "reasons", None) else "insufficient_data").replace("_", " ")
+                label = f"{label_name} N/A ({reason})"
             else:
-                label = f"{label_name} --"
+                label = f"{label_name} N/A"
 
             color = _badge_color(m)
             (tw, th), bl = cv2.getTextSize(label, font, font_scale, thickness)
@@ -875,99 +924,96 @@ def _build_key_frame(
 
     # Per-phase overlays
     if phase_name == "ball_release" and pose.valid:
-        if allowed_metric_names and "balance" in allowed_metric_names:
-            _overlay_balance_zone(frame, pose, benchmarks)
-
-        trunk_v2 = benchmarks.metric_by_name("trunk_stability_v2")
-        if trunk_v2 and trunk_v2.status == "ok":
-            _overlay_trunk_lines(frame, pose, benchmarks, aux_pose=aux_pose)
-        if head_path:
+        if head_path and allowed_metric_names and "posture" in allowed_metric_names:
             _overlay_head_path(frame, head_path)
 
-        # Glove zone is diagnostic only when swivel fails with usable confidence.
-        swivel = benchmarks.metric_by_name("swivel_stabilize")
-        if swivel and swivel.pass_fail is False and (swivel.confidence or 0.0) >= LOW_CONF_THRESHOLD:
-            _overlay_swivel_zone(frame, pose, benchmarks, benchmarks.hand)
+        # Optional debug-only trunk overlay when explicitly enabled.
+        trunk_v2 = benchmarks.metric_by_name("trunk_stability_v2")
+        if (
+            trunk_v2
+            and trunk_v2.status == "ok"
+            and allowed_metric_names
+            and "trunk_stability_v2" in allowed_metric_names
+        ):
+            _overlay_trunk_lines(frame, pose, benchmarks, aux_pose=aux_pose)
 
-        # Front-knee geometry for release bracing.
-        fk_rel = benchmarks.metric_by_name("front_knee_extension_rel")
-        if fk_rel and fk_rel.status == "ok" and fk_rel.raw_value is not None:
+        block = benchmarks.metric_by_name("lead_leg_block_v3")
+        sep = benchmarks.metric_by_name("hip_shoulder_sep_v3")
+        ext = benchmarks.metric_by_name("release_extension_v2")
+
+        if block and block.status == "ok":
             lead_hip = pose.pixel("LEFT_HIP" if benchmarks.hand == "R" else "RIGHT_HIP")
-            knee_pt = pose.pixel("LEFT_KNEE" if benchmarks.hand == "R" else "RIGHT_KNEE")
+            lead_knee = pose.pixel("LEFT_KNEE" if benchmarks.hand == "R" else "RIGHT_KNEE")
             lead_ankle = pose.pixel("LEFT_ANKLE" if benchmarks.hand == "R" else "RIGHT_ANKLE")
-            if lead_hip and knee_pt and lead_ankle:
-                cv2.line(frame, (int(lead_hip[0]), int(lead_hip[1])),
-                         (int(knee_pt[0]), int(knee_pt[1])), (80, 200, 240), _sc(2, scale), cv2.LINE_AA)
-                cv2.line(frame, (int(knee_pt[0]), int(knee_pt[1])),
-                         (int(lead_ankle[0]), int(lead_ankle[1])), (80, 200, 240), _sc(2, scale), cv2.LINE_AA)
-            if knee_pt:
-                rel_flex = fk_rel.sub_values.get("flexion_rel_deg")
-                delta = fk_rel.sub_values.get("delta_flexion_deg", fk_rel.raw_value)
-                if rel_flex is not None and delta is not None:
-                    badge = f"knee REL {float(rel_flex):.0f}deg | brace {float(delta):+.0f}deg"
-                else:
-                    badge = f"brace {fk_rel.raw_value:+.0f}deg"
+            if lead_hip and lead_knee and lead_ankle:
+                cv2.line(
+                    frame,
+                    (int(lead_hip[0]), int(lead_hip[1])),
+                    (int(lead_knee[0]), int(lead_knee[1])),
+                    (90, 215, 245),
+                    _sc(2, scale),
+                    cv2.LINE_AA,
+                )
+                cv2.line(
+                    frame,
+                    (int(lead_knee[0]), int(lead_knee[1])),
+                    (int(lead_ankle[0]), int(lead_ankle[1])),
+                    (90, 215, 245),
+                    _sc(2, scale),
+                    cv2.LINE_AA,
+                )
                 _overlay_angle_badge(
                     frame,
-                    badge,
-                    (int(knee_pt[0]) + _sc(12, scale), int(knee_pt[1]) - _sc(8, scale)),
-                    fk_rel.score,
+                    f"Block {block.score:.1f}" if block.score is not None else "Block",
+                    (int(lead_knee[0]) + _sc(10, scale), int(lead_knee[1]) - _sc(10, scale)),
+                    block.score,
                 )
 
-        # Release extension v2 overlay (reach line + velocity arrow + angle badge).
-        ext = benchmarks.metric_by_name("release_extension_v2")
-        if ext is None and allowed_metric_names and "release_extension_proxy" in allowed_metric_names:
-            ext = benchmarks.metric_by_name("release_extension_proxy")
+        ls = pose.pixel("LEFT_SHOULDER")
+        rs = pose.pixel("RIGHT_SHOULDER")
+        lh = pose.pixel("LEFT_HIP")
+        rh = pose.pixel("RIGHT_HIP")
+        if sep and sep.status == "ok" and ls and rs and lh and rh:
+            cv2.line(frame, (int(ls[0]), int(ls[1])), (int(rs[0]), int(rs[1])), (0, 190, 255), _sc(2, scale), cv2.LINE_AA)
+            cv2.line(frame, (int(lh[0]), int(lh[1])), (int(rh[0]), int(rh[1])), (100, 170, 220), _sc(2, scale), cv2.LINE_AA)
+            sh_mid = (int((ls[0] + rs[0]) / 2), int((ls[1] + rs[1]) / 2))
+            _overlay_angle_badge(
+                frame,
+                f"Separation {sep.score:.1f}" if sep.score is not None else "Separation",
+                (sh_mid[0] + _sc(8, scale), sh_mid[1] - _sc(14, scale)),
+                sep.score,
+            )
+
         if ext and ext.status == "ok":
             throw_wrist = pose.pixel("RIGHT_WRIST" if benchmarks.hand == "R" else "LEFT_WRIST")
             drive_hip = pose.pixel("RIGHT_HIP" if benchmarks.hand == "R" else "LEFT_HIP")
             if throw_wrist and drive_hip:
                 p1 = (int(drive_hip[0]), int(drive_hip[1]))
                 p2 = (int(throw_wrist[0]), int(throw_wrist[1]))
-                cv2.line(frame, p1, p2, (255, 190, 60), _sc(2, scale), cv2.LINE_AA)
+                cv2.line(frame, p1, p2, (255, 195, 70), _sc(2, scale), cv2.LINE_AA)
                 if rel_prev_pose is not None:
                     prev_wrist = rel_prev_pose.pixel("RIGHT_WRIST" if benchmarks.hand == "R" else "LEFT_WRIST")
                     if prev_wrist:
-                        p_prev = (int(prev_wrist[0]), int(prev_wrist[1]))
-                        cv2.arrowedLine(frame, p_prev, p2, (255, 220, 110), _sc(1, scale),
-                                        cv2.LINE_AA, tipLength=0.18)
-                if ext.raw_value is not None:
-                    _overlay_angle_badge(
-                        frame,
-                        f"reach {ext.raw_value:.2f}x",
-                        (p2[0] + _sc(8, scale), p2[1] + _sc(14, scale)),
-                        ext.score,
-                    )
-                angle = ext.sub_values.get("component_b_angle_deg")
-                if angle is not None:
-                    _overlay_angle_badge(
-                        frame,
-                        f"release ang {float(angle):.1f}deg",
-                        (p1[0] + _sc(10, scale), p1[1] - _sc(10, scale)),
-                        ext.score,
-                    )
+                        cv2.arrowedLine(
+                            frame,
+                            (int(prev_wrist[0]), int(prev_wrist[1])),
+                            p2,
+                            (255, 220, 120),
+                            _sc(1, scale),
+                            cv2.LINE_AA,
+                            tipLength=0.18,
+                        )
+                _overlay_angle_badge(
+                    frame,
+                    f"Extension {ext.score:.1f}" if ext.score is not None else "Extension",
+                    (p2[0] + _sc(8, scale), p2[1] + _sc(14, scale)),
+                    ext.score,
+                )
 
-        # Shoulder/hip tilt is debug-only.
-        tilt = benchmarks.metric_by_name("tilt_consistency")
-        if (
-            tilt
-            and allowed_metric_names
-            and "tilt_consistency" in allowed_metric_names
-            and tilt.pass_fail is False
-            and (tilt.confidence or 0.0) >= LOW_CONF_THRESHOLD
-            and tilt.raw_value is not None
-        ):
-            ls = pose.pixel("LEFT_SHOULDER")
-            rs = pose.pixel("RIGHT_SHOULDER")
-            lh = pose.pixel("LEFT_HIP")
-            rh = pose.pixel("RIGHT_HIP")
-            if lh and rh:
-                cv2.line(frame, (int(lh[0]), int(lh[1])), (int(rh[0]), int(rh[1])),
-                         (180, 180, 40), _sc(2, scale), cv2.LINE_AA)
-            if ls and rs:
-                midx = int((ls[0] + rs[0]) / 2)
-                midy = int((ls[1] + rs[1]) / 2) - _sc(20, scale)
-                _overlay_angle_badge(frame, f"tilt gap {tilt.raw_value:.1f}deg", (midx, midy), tilt.score)
+        # Secondary glove containment diagnostic when confidence is good.
+        swivel = benchmarks.metric_by_name("swivel_stabilize")
+        if swivel and swivel.pass_fail is False and (swivel.confidence or 0.0) >= LOW_CONF_THRESHOLD:
+            _overlay_swivel_zone(frame, pose, benchmarks, benchmarks.hand)
 
         _draw_priority_fixes(
             frame,
@@ -980,47 +1026,70 @@ def _build_key_frame(
         _draw_camera_limitations(frame, benchmarks)
 
     if phase_name == "foot_strike" and pose.valid:
-        # Shoulder line reference
         ls = pose.pixel("LEFT_SHOULDER")
         rs = pose.pixel("RIGHT_SHOULDER")
-        cv2.line(frame, (int(ls[0]), int(ls[1])), (int(rs[0]), int(rs[1])),
-                 (0, 165, 255), _sc(2, scale), cv2.LINE_AA)
-        fk = benchmarks.metric_by_name("front_knee_flexion_fs")
-        if fk and fk.raw_value is not None:
-            lead_hip = pose.pixel("LEFT_HIP" if benchmarks.hand == "R" else "RIGHT_HIP")
-            knee_pt = pose.pixel("LEFT_KNEE" if benchmarks.hand == "R" else "RIGHT_KNEE")
-            lead_ankle = pose.pixel("LEFT_ANKLE" if benchmarks.hand == "R" else "RIGHT_ANKLE")
-            if lead_hip and knee_pt and lead_ankle:
-                cv2.line(frame, (int(lead_hip[0]), int(lead_hip[1])),
-                         (int(knee_pt[0]), int(knee_pt[1])), (80, 200, 240), _sc(2, scale), cv2.LINE_AA)
-                cv2.line(frame, (int(knee_pt[0]), int(knee_pt[1])),
-                         (int(lead_ankle[0]), int(lead_ankle[1])), (80, 200, 240), _sc(2, scale), cv2.LINE_AA)
-            if knee_pt:
-                text = f"knee flex {fk.raw_value:.0f}deg"
-                _overlay_angle_badge(frame, text, (int(knee_pt[0]) + _sc(12, scale),
-                                                  int(knee_pt[1]) - _sc(8, scale)), fk.score)
-        drift = benchmarks.metric_by_name("drift_forward")
-        if hip_path:
+        lh = pose.pixel("LEFT_HIP")
+        rh = pose.pixel("RIGHT_HIP")
+        if ls and rs:
+            cv2.line(frame, (int(ls[0]), int(ls[1])), (int(rs[0]), int(rs[1])), (0, 170, 255), _sc(2, scale), cv2.LINE_AA)
+        if lh and rh:
+            cv2.line(frame, (int(lh[0]), int(lh[1])), (int(rh[0]), int(rh[1])), (120, 180, 220), _sc(2, scale), cv2.LINE_AA)
+
+        sep = benchmarks.metric_by_name("hip_shoulder_sep_v3")
+        if sep and sep.status == "ok" and ls and rs:
+            sh_mid = (int((ls[0] + rs[0]) / 2), int((ls[1] + rs[1]) / 2))
+            _overlay_angle_badge(
+                frame,
+                f"Separation {sep.score:.1f}" if sep.score is not None else "Separation",
+                (sh_mid[0] + _sc(8, scale), sh_mid[1] - _sc(16, scale)),
+                sep.score,
+            )
+
+        closed = benchmarks.metric_by_name("front_side_closedness_v2")
+        if closed and closed.status == "ok":
+            glove_wrist = pose.pixel("LEFT_WRIST" if benchmarks.hand == "R" else "RIGHT_WRIST")
+            if glove_wrist and ls and rs:
+                chest = (int((ls[0] + rs[0]) / 2), int((ls[1] + rs[1]) / 2))
+                gw = (int(glove_wrist[0]), int(glove_wrist[1]))
+                cv2.line(frame, gw, chest, (170, 220, 120), _sc(2, scale), cv2.LINE_AA)
+                _overlay_angle_badge(
+                    frame,
+                    f"Front Side {closed.score:.1f}" if closed.score is not None else "Front Side",
+                    (gw[0] + _sc(8, scale), gw[1] - _sc(10, scale)),
+                    closed.score,
+                )
+
+        if hip_path and allowed_metric_names and "drift_forward" in allowed_metric_names:
+            drift = benchmarks.metric_by_name("drift_forward")
             _overlay_drift_path(frame, hip_path, drift)
 
     if phase_name == "peak_leg_lift" and pose.valid:
-        # Energy vector arrow
-        drive_kp = "RIGHT_ANKLE" if benchmarks.hand == "R" else "LEFT_ANKLE"
-        stride_kp = "LEFT_HIP" if benchmarks.hand == "R" else "RIGHT_HIP"
-        da = pose.pixel(drive_kp)
-        sh = pose.pixel(stride_kp)
-        cv2.arrowedLine(frame, (int(da[0]), int(da[1])), (int(sh[0]), int(sh[1])),
-                         (0, 200, 240), _sc(2, scale), cv2.LINE_AA, tipLength=0.15)
+        sep = benchmarks.metric_by_name("hip_shoulder_sep_v3")
+        if sep and sep.status == "ok":
+            ls = pose.pixel("LEFT_SHOULDER")
+            rs = pose.pixel("RIGHT_SHOULDER")
+            lh = pose.pixel("LEFT_HIP")
+            rh = pose.pixel("RIGHT_HIP")
+            if ls and rs:
+                cv2.line(frame, (int(ls[0]), int(ls[1])), (int(rs[0]), int(rs[1])), (0, 200, 240), _sc(2, scale), cv2.LINE_AA)
+            if lh and rh:
+                cv2.line(frame, (int(lh[0]), int(lh[1])), (int(rh[0]), int(rh[1])), (100, 170, 220), _sc(1, scale), cv2.LINE_AA)
 
     # Badge bar at bottom
     _draw_badge_bar(frame, benchmarks, relevant_metrics,
                      y_bottom=h - _sc(35, scale))
 
     # Failure callouts: top 3 trusted failures only, with low-conf footer.
+    phase_max_callouts = 3
+    if phase_name == "foot_strike":
+        phase_max_callouts = 2
+    elif phase_name in ("set", "peak_leg_lift"):
+        phase_max_callouts = 1
+
     callouts, low_conf_failures = _select_phase_callouts(
         benchmarks,
         relevant_metrics,
-        max_items=3,
+        max_items=phase_max_callouts,
         trusted_issues=trusted_issues,
         low_conf_issues=low_conf_issues,
         allowed_metric_names=allowed_metric_names,
@@ -1189,10 +1258,19 @@ def _build_notes(
             "raw_value": round(m.raw_value, 3) if m.raw_value is not None else None,
             "unit": m.unit,
             "score": round(m.score, 2) if m.score is not None else None,
+            "score_raw": round(m.score_raw, 2) if m.score_raw is not None else (
+                round(m.score, 2) if m.score is not None else None
+            ),
+            "score_eff": round(m.score_eff, 2) if m.score_eff is not None else (
+                round(m.score, 2) if m.score is not None else None
+            ),
             "pass_fail": m.pass_fail,
             "callout": callout,
             "confidence": round(m.confidence, 2) if m.confidence is not None else None,
-            "low_confidence": bool(m.confidence is not None and m.confidence < LOW_CONF_THRESHOLD),
+            "low_confidence": bool(
+                m.status == "ok" and m.confidence is not None and m.confidence < LOW_CONF_THRESHOLD
+            ),
+            "reasons": list(m.reasons) if getattr(m, "reasons", None) else [],
             "coaching_cues": cues[:2],
         }
 
@@ -1239,14 +1317,15 @@ def _build_notes(
             "not_measurable": sorted(set(not_measurable)),
             "low_confidence_metrics": sorted(set(low_confidence)),
         },
-        "official_metric_set": "open_side_pro_v2" if benchmarks.view_mode == "open_side" else "front_view_full",
+        "official_metric_set": "open_side_pro_v3" if benchmarks.view_mode == "open_side" else "front_view_full",
         "official_metrics": (
             list(OPEN_SIDE_METRIC_ORDER)
             if benchmarks.view_mode == "open_side"
             else list(official_metric_names("front"))
         ),
-        "official_open_side_metrics_v2": list(OPEN_SIDE_METRIC_ORDER),
-        "excluded_metrics_reason": (
+        "official_open_side_metrics_v3": list(OPEN_SIDE_METRIC_ORDER),
+        "excluded_metrics_reason": "open_side_only" if benchmarks.view_mode == "open_side" else "",
+        "excluded_metrics_detail": (
             {
                 **{name: "debug-only" for name in OPEN_SIDE_DEBUG_METRICS},
                 "stack_track": "front-view-only",
@@ -1440,20 +1519,21 @@ def build_coach_pack(
         return frame
 
     def _overlay_fs_to_rel(frame: np.ndarray, fidx: int) -> np.ndarray:
-        """Trunk stability + glove stabilisation overlay."""
-        trunk = benchmarks.metric_by_name("trunk_stability_v2")
-        if trunk is None and include_debug_metrics:
-            trunk = benchmarks.metric_by_name("trunk_stability")
+        """Lead-leg block + extension + glove stabilisation overlay."""
+        block = benchmarks.metric_by_name("lead_leg_block_v3")
+        ext = benchmarks.metric_by_name("release_extension_v2")
         swivel = benchmarks.metric_by_name("swivel_stabilize")
         parts = []
-        if trunk and trunk.raw_value is not None:
-            parts.append(f"TRUNK Δ {trunk.raw_value:.1f}° ({trunk.score:.0f}/10)")
+        if block and block.score is not None:
+            parts.append(f"BLOCK {block.score:.1f}/10")
+        if ext and ext.score is not None:
+            parts.append(f"EXT {ext.score:.1f}/10")
         if swivel and swivel.pass_fail is not None:
             parts.append("GLOVE STABLE" if swivel.pass_fail else "GLOVE DRIFT")
         if parts:
             frame = add_text_overlay(
                 frame, " | ".join(parts), pos=(10, 25), scale=0.6,
-                color=score_color_bgr(trunk.score if trunk else None)
+                color=score_color_bgr(block.score if block else None)
             )
         # Mark glove position on each frame if pose available
         pose = pose_map.get(fidx)
@@ -1463,18 +1543,19 @@ def build_coach_pack(
         return frame
 
     def _overlay_release_finish(frame: np.ndarray, fidx: int) -> np.ndarray:
-        """Finish stability overlay."""
-        if include_debug_metrics:
-            bal = benchmarks.metric_by_name("balance")
-        else:
-            bal = benchmarks.metric_by_name("trunk_stability_v2")
+        """Finish overlay with extension/block context."""
+        block = benchmarks.metric_by_name("lead_leg_block_v3")
+        ext = benchmarks.metric_by_name("release_extension_v2")
         text = ""
-        if bal and bal.raw_value is not None:
-            label = "BALANCE" if include_debug_metrics else "TRUNK"
-            text = f"{label} {bal.raw_value:.1f}° ({bal.score:.0f}/10)"
+        if block and block.score is not None and ext and ext.score is not None:
+            text = f"BLOCK {block.score:.1f}/10 | EXT {ext.score:.1f}/10"
+        elif block and block.score is not None:
+            text = f"BLOCK {block.score:.1f}/10"
+        elif ext and ext.score is not None:
+            text = f"EXT {ext.score:.1f}/10"
         if text:
             frame = add_text_overlay(frame, text, pos=(10, 25), scale=0.6,
-                                     color=score_color_bgr(bal.score if bal else None))
+                                     color=score_color_bgr(block.score if block else (ext.score if ext else None)))
         return frame
 
     if phases.set_pos is not None and phases.foot_strike is not None:

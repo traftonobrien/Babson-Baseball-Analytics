@@ -17,7 +17,7 @@ from typing import Any, Optional
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.ingest_manual.export import export_manual_clips
-from src.ingest_manual.utils import choose_preferred_angle
+from src.ingest_manual.schema import load_manual_clips
 from scripts.ingest_multi_angle import run_ingest
 from scripts.mechanics_coach_pack import _top_issues, _write_hold_review_video, _write_slowmo_video
 from src.ingest.selection import candidate_quality_score
@@ -31,6 +31,7 @@ from src.mechanics.video_io import read_video_meta
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SINGLE_CLIP = REPO_ROOT / "Mechanics Analysis" / "Trafton OBrien" / "Trafton Mechanics Test.mov"
 DEFAULT_MULTI_ANGLE_VIDEO = REPO_ROOT / "Mechanics Analysis" / "Trafton OBrien" / "All Angles Test.mov"
+OPEN_SIDE_ONLY = True
 
 
 def parse_args() -> argparse.Namespace:
@@ -45,10 +46,10 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--player", default=None, help="Player name override when ingesting from video.")
     p.add_argument("--session", default=None, help="Session name override when ingesting from video.")
     p.add_argument("--hand", default="R", choices=["R", "L"], help="Pitcher hand.")
-    p.add_argument("--view", default="auto", choices=["auto", "open_side", "front"], help="View mode: auto (default), open_side, or front.")
+    p.add_argument("--view", default="open_side", choices=["open_side"], help="View mode (locked): open_side.")
     p.add_argument("--outdir", default="output/mechanics", help="Mechanics output root.")
     p.add_argument("--ingest-outdir", default="output/ingest", help="Ingest output root when --video is used.")
-    p.add_argument("--front-min-visibility", type=float, default=0.52, help="Minimum visibility score to trust front view.")
+    p.add_argument("--front-min-visibility", type=float, default=0.52, help="Deprecated (ignored in open-side-only mode).")
     p.add_argument("--no-export", action="store_true", help="With --manual-clips, skip export and use existing clips/index.")
     p.add_argument("--slowmo", action="store_true", help="Write slowmo_review.mp4.")
     p.add_argument("--hold-review", action="store_true", help="Write hold_review.mp4.")
@@ -110,18 +111,30 @@ def _load_ingest_index(path: Path) -> dict[str, Any]:
     return data
 
 
-def _choose_best_candidate(
+def _normalize_angle(angle: str | None) -> str:
+    return str(angle or "").strip().lower()
+
+
+def _is_open_side_angle(angle: str | None) -> bool:
+    norm = _normalize_angle(angle)
+    return norm == "open_side" or norm.startswith("open_side_")
+
+
+def _choose_best_open_side_candidate(
     candidates: list[dict[str, Any]],
     hand: str,
-    front_min_visibility: float,
-    forced_view: str = "auto",
     verbose: bool = False,
 ) -> tuple[dict[str, Any], float, float, str]:
+    """
+    Select the best candidate among open-side clips only.
+    """
     best: Optional[dict[str, Any]] = None
     best_score = -1.0
     best_vis = 0.0
     best_view = "open_side"
     for c in candidates:
+        if not _is_open_side_angle(c.get("angle_class")):
+            continue
         clip_path = Path(c["clip_path_abs"])
         vis_score = _estimate_visibility_score(clip_path)
         score = candidate_quality_score(
@@ -133,23 +146,18 @@ def _choose_best_candidate(
             height=int(c.get("height", 720)),
             visibility_score=vis_score,
         )
-        angle = c.get("angle_class", "unknown")
-        if forced_view in ("open_side", "front"):
-            view_mode = forced_view
-        else:
-            if angle in ("behind_home", "behind_center") and vis_score >= front_min_visibility:
-                view_mode = "front"
-            else:
-                view_mode = "open_side"
         if verbose:
-            print(f"  candidate={c.get('clip_id')} angle={angle} vis={vis_score:.2f} score={score:.2f} view={view_mode}")
+            print(
+                f"  candidate={c.get('clip_id')} angle={c.get('angle_class')} "
+                f"vis={vis_score:.2f} score={score:.2f} view=open_side"
+            )
         if score > best_score:
             best = c
             best_score = score
             best_vis = vis_score
-            best_view = view_mode
+            best_view = "open_side"
     if best is None:
-        raise ValueError("No valid candidate clips.")
+        raise ValueError("No valid open-side candidate clips.")
     return best, best_score, best_vis, best_view
 
 
@@ -266,45 +274,53 @@ def _ensure_manual_index(
             overwrite=False,
             keep_audio=False,
         )
-    return manual_path, index_path, _load_manual_index(index_path)
+    index = _load_manual_index(index_path)
+    # Backfill clip order into index rows for older indices that do not include it.
+    try:
+        manual_doc = load_manual_clips(manual_path)
+        by_pitch: dict[int, list[Any]] = {}
+        for clip in manual_doc.clips:
+            by_pitch.setdefault(int(clip.pitch_idx), []).append(clip)
+        for rows in by_pitch.values():
+            rows.sort(key=lambda c: ((c.order if c.order is not None else 10_000), c.start_frame))
+        for row in index.get("clips", []):
+            pitch_idx = int(row.get("pitch_idx", 0))
+            clips = by_pitch.get(pitch_idx, [])
+            angles = row.get("angles", {})
+            for clip in clips:
+                angle_name = _normalize_angle(clip.angle)
+                if angle_name in angles and "order" not in angles[angle_name]:
+                    if clip.order is not None:
+                        angles[angle_name]["order"] = int(clip.order)
+    except Exception:
+        # Index remains usable even if order backfill fails.
+        pass
+    return manual_path, index_path, index
 
 
-def _manual_view_mode_for_angle(
-    angle: str,
-    clip_path: Path,
-    forced_view: str,
-    front_min_visibility: float,
-) -> tuple[str, float]:
-    if forced_view in ("open_side", "front"):
-        vis = _estimate_visibility_score(clip_path)
-        return forced_view, vis
-
-    vis = _estimate_visibility_score(clip_path)
-    if angle in ("front", "back", "behind_home", "center") and vis >= front_min_visibility:
-        return "front", vis
-    return "open_side", vis
+def _available_paths_from_manual_angles(angles: dict[str, Any], root: Path) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for angle_name, meta in sorted(angles.items()):
+        rel = Path(str(meta.get("path", "")))
+        out[angle_name] = str((root / rel).resolve())
+    return out
 
 
-def _resolve_manual_pitch_choice(
+def _select_open_side_manual_angle(
     pitch_row: dict[str, Any],
-    forced_view: str,
 ) -> Optional[str]:
     angles = pitch_row.get("angles", {})
     if not angles:
         return None
-    if forced_view == "open_side" and "open_side" in angles:
-        return "open_side"
-    if forced_view == "front":
-        for a in ("front", "back", "behind_home", "center"):
-            if a in angles:
-                return a
-    preferred = pitch_row.get("preferred_angle")
-    if preferred and preferred in angles:
-        return preferred
-    ordered = choose_preferred_angle(angles.keys())
-    if ordered in angles:
-        return ordered
-    return sorted(angles.keys())[0]
+    # Primary selector: explicit open_side angle key.
+    for angle_name in sorted(angles.keys()):
+        if _is_open_side_angle(angle_name):
+            return angle_name
+    # Compatibility fallback: legacy indices may preserve order only.
+    for angle_name, meta in angles.items():
+        if int(meta.get("order", -1)) == 3:
+            return angle_name
+    return None
 
 
 def _run_from_manual_index(args: argparse.Namespace, manual_index_path: Path, manual_index: dict[str, Any]) -> None:
@@ -318,10 +334,18 @@ def _run_from_manual_index(args: argparse.Namespace, manual_index_path: Path, ma
     for pitch_row in sorted(manual_index.get("clips", []), key=lambda r: int(r.get("pitch_idx", 0))):
         pitch_idx = int(pitch_row.get("pitch_idx", 0))
         pitch_id = f"pitch_{pitch_idx:03d}" if pitch_idx > 0 else f"pitch_{len(session_rows) + 1:03d}"
-        chosen_angle = _resolve_manual_pitch_choice(pitch_row, forced_view=args.view)
         angles = pitch_row.get("angles", {})
+        chosen_angle = _select_open_side_manual_angle(pitch_row)
         if chosen_angle is None or chosen_angle not in angles:
-            session_rows.append({"pitch_id": pitch_id, "status": "skipped", "reason": "no_angles"})
+            session_rows.append(
+                {
+                    "pitch_id": pitch_id,
+                    "status": "skipped_missing_open_side",
+                    "reason": "open_side_clip_not_found",
+                    "available_angles": sorted(list(angles.keys())),
+                    "available_paths": _available_paths_from_manual_angles(angles, manual_index_path.parent),
+                }
+            )
             continue
 
         clip_rel = Path(str(angles[chosen_angle]["path"]))
@@ -330,19 +354,18 @@ def _run_from_manual_index(args: argparse.Namespace, manual_index_path: Path, ma
             session_rows.append(
                 {
                     "pitch_id": pitch_id,
-                    "status": "skipped",
-                    "reason": "clip_missing",
-                    "clip_path_abs": str(clip_path),
+                    "status": "skipped_missing_open_side",
+                    "reason": "open_side_clip_missing",
+                    "chosen_angle": chosen_angle,
+                    "clip_path_abs": str(clip_path.resolve()),
+                    "available_angles": sorted(list(angles.keys())),
+                    "available_paths": _available_paths_from_manual_angles(angles, manual_index_path.parent),
                 }
             )
             continue
 
-        view_mode, vis_score = _manual_view_mode_for_angle(
-            angle=chosen_angle,
-            clip_path=clip_path,
-            forced_view=args.view,
-            front_min_visibility=args.front_min_visibility,
-        )
+        vis_score = _estimate_visibility_score(clip_path)
+        view_mode = "open_side"
         pitch_out = session_out / pitch_id
         run = _run_mechanics_for_clip(
             clip_path=clip_path,
@@ -396,6 +419,8 @@ def _run_from_manual_index(args: argparse.Namespace, manual_index_path: Path, ma
 
 def main() -> None:
     args = parse_args()
+    if OPEN_SIDE_ONLY and args.view != "open_side":
+        raise SystemExit("ERROR: run_mechanics_session is locked to open-side analysis.")
     if args.manual_clips and args.ingest_index:
         raise SystemExit("ERROR: Use either --manual-clips or --ingest-index, not both.")
     if args.manual_clips and args.video:
@@ -451,11 +476,28 @@ def main() -> None:
 
         if args.verbose:
             print(f"[pitch] {pitch_id} candidates={len(candidates)}")
-        chosen, select_score, vis_score, view_mode = _choose_best_candidate(
-            candidates,
+        open_side_candidates = [c for c in candidates if _is_open_side_angle(c.get("angle_class"))]
+        if not open_side_candidates:
+            session_rows.append(
+                {
+                    "pitch_id": pitch_id,
+                    "status": "skipped_missing_open_side",
+                    "reason": "open_side_clip_not_found",
+                    "available_candidates": [
+                        {
+                            "clip_id": c.get("clip_id"),
+                            "angle_class": c.get("angle_class"),
+                            "clip_path_abs": c.get("clip_path_abs"),
+                        }
+                        for c in candidates
+                    ],
+                }
+            )
+            continue
+
+        chosen, select_score, vis_score, view_mode = _choose_best_open_side_candidate(
+            open_side_candidates,
             hand=args.hand,
-            front_min_visibility=args.front_min_visibility,
-            forced_view=args.view,
             verbose=args.verbose,
         )
         clip_path = Path(chosen["clip_path_abs"])

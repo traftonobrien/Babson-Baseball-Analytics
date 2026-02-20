@@ -42,7 +42,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.mechanics.video_io import read_video_meta
 from src.mechanics.pose import PoseResult, KP, extract_poses
 from src.mechanics.phases import detect_phases, Phase, PitchPhases
-from src.mechanics.benchmarks import BenchmarkReport, compute_benchmarks, official_metric_names
+from src.mechanics.benchmarks import (
+    BenchmarkReport,
+    CONF_BLIND,
+    CONF_FULL,
+    compute_benchmarks,
+    official_metric_names,
+)
 from src.mechanics.coach_pack import build_coach_pack
 from src.mechanics.utils import slugify
 
@@ -130,7 +136,7 @@ def _top_issues(benchmarks: BenchmarkReport, limit: int = 3) -> list[dict]:
             and m.status == "ok"
             and m.score is not None
             and m.pass_fail is False
-            and (m.confidence or 0.0) >= 0.35
+            and (m.confidence or 0.0) >= CONF_BLIND
         )
     ]
     candidates.sort(
@@ -223,10 +229,11 @@ _PHASE_ORDER: list[tuple[str, str, str]] = [
 _PHASE_CARD_METRICS: dict[str, list[str]] = {
     "set": ["timing"],
     "peak_leg_lift": [],
-    "foot_strike": ["timing", "drift_forward", "front_knee_flexion_fs"],
+    "foot_strike": ["timing", "hip_shoulder_sep_v3", "front_side_closedness_v2"],
     "ball_release": [
-        "front_knee_extension_rel",
-        "trunk_stability_v2",
+        "lead_leg_block_v3",
+        "hip_shoulder_sep_v3",
+        "front_side_closedness_v2",
         "release_extension_v2",
         "swivel_stabilize",
     ],
@@ -264,10 +271,9 @@ _SOFT_JOINTS: list[str] = [
 
 _METRIC_BADGE_LABELS: dict[str, str] = {
     "timing": "Timing",
-    "drift_forward": "DriftForward",
-    "lift_thrust": "Lift&Thrust",
-    "front_knee_flexion_fs": "FrontKnee@FS",
-    "front_knee_extension_rel": "KneeBrace FS->REL",
+    "hip_shoulder_sep_v3": "Separation",
+    "front_side_closedness_v2": "FrontSideClosed",
+    "lead_leg_block_v3": "LeadLegBlock",
     "trunk_stability_v2": "TrunkStabilityV2",
     "trunk_stability": "TrunkStability",
     "release_extension_v2": "ReleaseExtV2",
@@ -414,7 +420,7 @@ def _badge_color(score: float) -> tuple[int, int, int]:
 def _phase_metric_badges(
     phase_key: str,
     benchmarks: BenchmarkReport,
-    min_confidence: float = 0.30,
+    min_confidence: float = CONF_BLIND,
 ) -> list[tuple[str, tuple[int, int, int]]]:
     allowed = set(official_metric_names("open_side"))
     badges: list[tuple[str, tuple[int, int, int]]] = []
@@ -443,6 +449,7 @@ def _draw_phase_card(
     phase_title: str,
     phase_time_s: float,
     badges: list[tuple[str, tuple[int, int, int]]],
+    low_confidence: bool = False,
 ) -> np.ndarray:
     out = frame.copy()
     h, w = out.shape[:2]
@@ -485,9 +492,20 @@ def _draw_phase_card(
         max(1, thickness - 1),
         cv2.LINE_AA,
     )
+    if low_confidence:
+        cv2.putText(
+            out,
+            "LOW CONF",
+            (x, y + max(34, int(round(44 * scale)))),
+            title_font,
+            text_scale,
+            (170, 145, 220),
+            max(1, thickness - 1),
+            cv2.LINE_AA,
+        )
 
     badge_x = x
-    badge_y = y + max(34, int(round(46 * scale)))
+    badge_y = y + max(34, int(round((58 if low_confidence else 46) * scale)))
     for text, color in badges:
         (tw, th), bl = cv2.getTextSize(text, title_font, text_scale, max(1, thickness - 1))
         box_w = tw + pad * 2
@@ -520,7 +538,7 @@ def _write_hold_review_video(
     original_total_frames: int,
     original_fps: float,
     hold_seconds: float = 2.0,
-    min_confidence: float = 0.30,
+    min_confidence: float = CONF_BLIND,
     phase_card_hook: Optional[Callable[[str, int], None]] = None,
 ) -> Optional[Path]:
     """Render hold_review.mp4 from slowmo_review.mp4 with phase-card holds."""
@@ -581,7 +599,14 @@ def _write_hold_review_video(
                 benchmarks=benchmarks,
                 min_confidence=min_confidence,
             )
-            hold_frame = _draw_phase_card(frame, phase_title, phase.time_s, badges)
+            phase_low_conf = (phase.confidence is not None) and (float(phase.confidence) < CONF_FULL)
+            hold_frame = _draw_phase_card(
+                frame,
+                phase_title,
+                phase.time_s,
+                badges,
+                low_confidence=phase_low_conf,
+            )
             writer.write(hold_frame)
             if phase_card_hook is not None:
                 phase_card_hook(phase_key, slow_idx)
@@ -662,7 +687,7 @@ def _process_single_video(video_path: Path, args: argparse.Namespace) -> Benchma
             original_total_frames=len(poses),
             original_fps=meta.fps,
             hold_seconds=2.0,
-            min_confidence=0.30,
+            min_confidence=CONF_BLIND,
         )
 
     # ---- Summary ----

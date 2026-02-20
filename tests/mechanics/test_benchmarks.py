@@ -27,6 +27,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from src.mechanics.pose import PoseResult, KP, NUM_LANDMARKS
 from src.mechanics.phases import PitchPhases, Phase
 from src.mechanics.benchmarks import (
+    CONF_BLIND,
+    CONF_FULL,
     angle_from_vertical_deg,
     angle_from_horizontal_deg,
     shoulder_line_angle_deg,
@@ -47,9 +49,14 @@ from src.mechanics.benchmarks import (
     _compute_trunk_stability,
     _compute_trunk_stability_v2,
     _compute_drift_forward,
+    _compute_forward_leak_proxy,
     _compute_release_extension_v2,
+    _compute_lead_leg_block_v3,
+    _compute_hip_shoulder_sep_v3,
+    _compute_front_side_closedness_v2,
     _compute_efficiency_details,
     _compute_efficiency_score,
+    _confidence_scaled_factor,
     _score_release_extension_proxy,
 )
 from src.mechanics.utils import smooth_series
@@ -255,6 +262,18 @@ class TestPiecewiseTimingScore:
         s2 = piecewise_timing_score(1.10)
         s3 = piecewise_timing_score(1.14)
         assert s1 > s2 > s3
+
+
+class TestConfidenceScaling:
+    def test_confidence_scaled_factor_boundaries(self):
+        assert _confidence_scaled_factor(CONF_BLIND) == pytest.approx(0.0)
+        assert _confidence_scaled_factor(CONF_FULL) == pytest.approx(1.0)
+        assert _confidence_scaled_factor(0.0) == pytest.approx(0.0)
+        assert _confidence_scaled_factor(1.0) == pytest.approx(1.0)
+
+    def test_confidence_scaled_factor_midpoint(self):
+        mid = (CONF_BLIND + CONF_FULL) / 2.0
+        assert _confidence_scaled_factor(mid) == pytest.approx(0.5)
 
 
 class TestReleaseExtensionScore:
@@ -541,15 +560,19 @@ class TestComputeBenchmarks:
 
     def test_extra_metrics_present(self):
         extras = [m for m in self.report.all_metrics() if m.name in {
+            "lead_leg_block_v3",
+            "hip_shoulder_sep_v3",
+            "front_side_closedness_v2",
+            "release_extension_v2",
+            "forward_leak_proxy",
             "drift_forward",
             "front_knee_flexion_fs",
             "front_knee_extension_rel",
-            "release_extension_v2",
             "tilt_consistency",
             "release_extension_proxy",
             "trunk_stability",
         }]
-        assert len(extras) >= 6
+        assert len(extras) >= 8
         for m in extras:
             assert m.status in ("ok", "insufficient_data", "requires_front_view")
 
@@ -603,14 +626,13 @@ class TestOpenSideViewMode:
         assert report.stack_track.name == "trunk_stability_v2"
         assert report.stack_track.status == "ok"
 
-    def test_open_side_official_metric_set_v2(self):
+    def test_open_side_official_metric_set_v3(self):
         assert tuple(OPEN_SIDE_METRIC_ORDER) == (
-            "timing",
-            "drift_forward",
-            "front_knee_flexion_fs",
-            "front_knee_extension_rel",
-            "trunk_stability_v2",
+            "lead_leg_block_v3",
+            "hip_shoulder_sep_v3",
+            "front_side_closedness_v2",
             "release_extension_v2",
+            "timing",
             "swivel_stabilize",
         )
 
@@ -716,9 +738,48 @@ class TestOpenSideV2Metrics:
         b = ext.sub_values.get("component_b_score")
         c = ext.sub_values.get("component_c_score")
         assert a is not None and b is not None and c is not None
-        expected = 0.55 * float(a) + 0.25 * float(b) + 0.20 * float(c)
+        weights = {"A": 0.55, "B": 0.25, "C": 0.20}
+        used = ext.sub_values.get("components_used") or ["A", "B", "C"]
+        weight_sum = sum(weights[k] for k in used)
+        expected = sum(
+            weights[k] * {"A": float(a), "B": float(b), "C": float(c)}[k]
+            for k in used
+        ) / max(weight_sum, 1e-9)
+        assert ext.score_raw is not None
+        assert ext.score_raw == pytest.approx(expected, abs=0.2)
         assert ext.score is not None
-        assert ext.score == pytest.approx(expected, abs=0.2)
+        assert ext.score <= ext.score_raw
+
+    def test_release_extension_v2_medium_visibility_stays_ok(self):
+        poses = _make_full_pose_sequence(n=60, fps=self.fps)
+        rel = self.phases.ball_release.frame_idx
+        # Keep exactly three visible REL-window wrist frames (radius=2 -> 5 frames total).
+        occlude_frames = {rel - 2, rel + 2}
+        for i in range(rel - 2, rel + 3):
+            if not (0 <= i < len(poses)):
+                continue
+            if i in occlude_frames:
+                lm = poses[i].landmarks.copy()
+                lm[KP["RIGHT_WRIST"], 2] = 0.05
+                poses[i].landmarks = lm
+
+        ext = _compute_release_extension_v2(poses, self.phases, hand="R")
+        assert ext.status == "ok"
+        assert ext.confidence is not None and ext.confidence >= CONF_BLIND
+        assert ext.score is not None and ext.score_raw is not None
+        assert ext.score <= ext.score_raw
+
+    def test_release_extension_v2_missing_wrist_is_insufficient(self):
+        poses = _make_full_pose_sequence(n=60, fps=self.fps)
+        rel = self.phases.ball_release.frame_idx
+        for i in range(rel - 2, rel + 3):
+            if not (0 <= i < len(poses)):
+                continue
+            lm = poses[i].landmarks.copy()
+            lm[KP["RIGHT_WRIST"], 2] = 0.05
+            poses[i].landmarks = lm
+        ext = _compute_release_extension_v2(poses, self.phases, hand="R")
+        assert ext.status == "insufficient_data"
 
     def test_trunk_stability_v2_gates_high_residuals(self):
         poses = _make_full_pose_sequence(n=60, fps=self.fps)
@@ -736,6 +797,210 @@ class TestOpenSideV2Metrics:
         trunk = _compute_trunk_stability_v2(poses, self.phases)
         assert trunk.status == "insufficient_data"
 
+    def test_lead_leg_block_v3_high_when_leg_is_firm_fs_to_rel_even_small_delta(self):
+        stiff = _make_full_pose_sequence(n=60, fps=self.fps)
+        fs = self.phases.foot_strike.frame_idx
+        rel = self.phases.ball_release.frame_idx
+        for i in range(fs - 4, rel + 5):
+            if not (0 <= i < len(stiff)):
+                continue
+            lm = stiff[i].landmarks.copy()
+            # Keep lead leg nearly vertical/firm from FS through REL.
+            lm[KP["LEFT_HIP"], 0] = 0.40
+            lm[KP["LEFT_HIP"], 1] = 0.55
+            lm[KP["LEFT_KNEE"], 0] = 0.40
+            lm[KP["LEFT_KNEE"], 1] = 0.68 + (0.002 if i >= rel else 0.0)
+            lm[KP["LEFT_ANKLE"], 0] = 0.40
+            lm[KP["LEFT_ANKLE"], 1] = 0.82
+            lm[KP["RIGHT_HIP"], 0] = 0.60
+            stiff[i].landmarks = lm
+
+        block = _compute_lead_leg_block_v3(stiff, self.phases, hand="R")
+        assert block.status == "ok"
+        assert block.score is not None
+        assert block.score >= 7.5
+        assert block.sub_values.get("label") == "BRACED"
+
+    def test_lead_leg_block_v3_penalizes_forward_leak_and_knee_collapse(self):
+        strong = _make_full_pose_sequence(n=60, fps=self.fps)
+        leaky = _make_full_pose_sequence(n=60, fps=self.fps)
+        fs = self.phases.foot_strike.frame_idx
+        rel = self.phases.ball_release.frame_idx
+
+        for i in range(fs - 4, rel + 5):
+            if not (0 <= i < len(strong)):
+                continue
+            for seq in (strong, leaky):
+                lm = seq[i].landmarks.copy()
+                lm[KP["LEFT_HIP"], 0] = 0.40
+                lm[KP["LEFT_KNEE"], 0] = 0.40
+                lm[KP["LEFT_ANKLE"], 0] = 0.40
+                seq[i].landmarks = lm
+
+            # Collapse/leak in leaky sequence after FS.
+            if i >= fs:
+                lm_bad = leaky[i].landmarks.copy()
+                progress = (i - fs) / max(1, rel - fs)
+                lm_bad[KP["LEFT_HIP"], 0] += np.float32(0.14 * progress)
+                lm_bad[KP["RIGHT_HIP"], 0] += np.float32(0.14 * progress)
+                lm_bad[KP["LEFT_KNEE"], 0] += np.float32(0.18 * progress)
+                lm_bad[KP["LEFT_KNEE"], 1] += np.float32(0.04 * progress)
+                leaky[i].landmarks = lm_bad
+
+        a = _compute_lead_leg_block_v3(strong, self.phases, hand="R")
+        b = _compute_lead_leg_block_v3(leaky, self.phases, hand="R")
+        assert a.status == "ok" and b.status == "ok"
+        assert a.score is not None and b.score is not None
+        assert b.score <= a.score - 1.0
+        assert b.sub_values.get("label") in {"LEAK", "COLLAPSE", "SOFT"}
+
+    def test_lead_leg_block_v3_three_valid_window_frames_stays_ok(self):
+        poses = _make_full_pose_sequence(n=60, fps=self.fps)
+        fs = self.phases.foot_strike.frame_idx
+        rel = self.phases.ball_release.frame_idx
+        # Remove two frames in each 5-frame FS/REL window, leaving 3 valid frames.
+        for i in (fs - 2, fs + 2, rel - 2, rel + 2):
+            if not (0 <= i < len(poses)):
+                continue
+            lm = poses[i].landmarks.copy()
+            for kp in ("LEFT_HIP", "LEFT_KNEE", "LEFT_ANKLE"):
+                lm[KP[kp], 2] = 0.05
+            poses[i].landmarks = lm
+        block = _compute_lead_leg_block_v3(poses, self.phases, hand="R")
+        assert block.status == "ok"
+        assert block.confidence is not None and block.confidence >= CONF_BLIND
+
+    def test_hip_shoulder_sep_v3_scores_higher_for_positive_lag_and_ratio(self):
+        good = _make_full_pose_sequence(n=60, fps=self.fps)
+        poor = _make_full_pose_sequence(n=60, fps=self.fps)
+        fs = self.phases.foot_strike.frame_idx
+        rel = self.phases.ball_release.frame_idx
+
+        # Good sequence: shoulders burst while pelvis/back-hip stays back.
+        for i in range(10, rel + 1):
+            if not (0 <= i < len(good)):
+                continue
+            lm = good[i].landmarks.copy()
+            if i >= fs - 1:
+                p = (i - (fs - 1)) / max(1, rel - (fs - 1))
+                lm[KP["RIGHT_SHOULDER"], 1] += np.float32(0.14 * p)
+                lm[KP["LEFT_SHOULDER"], 1] -= np.float32(0.14 * p)
+            good[i].landmarks = lm
+
+        # Poor sequence: pelvis/back-hip drifts forward early before shoulder burst.
+        for i in range(10, rel + 1):
+            if not (0 <= i < len(poor)):
+                continue
+            lm = poor[i].landmarks.copy()
+            if i <= fs - 3:
+                p = (i - 10) / max(1, (fs - 3) - 10)
+                lm[KP["RIGHT_HIP"], 0] += np.float32(0.16 * p)
+                lm[KP["LEFT_HIP"], 0] += np.float32(0.16 * p)
+            if i >= fs + 1:
+                p = (i - (fs + 1)) / max(1, rel - (fs + 1))
+                lm[KP["RIGHT_SHOULDER"], 1] += np.float32(0.08 * p)
+                lm[KP["LEFT_SHOULDER"], 1] -= np.float32(0.08 * p)
+            poor[i].landmarks = lm
+
+        a = _compute_hip_shoulder_sep_v3(good, self.phases, hand="R")
+        b = _compute_hip_shoulder_sep_v3(poor, self.phases, hand="R")
+        assert a.status == "ok" and b.status == "ok"
+        assert a.score is not None and b.score is not None
+        assert a.score > b.score
+        assert float(a.sub_values["lag_s"]) >= float(b.sub_values["lag_s"])
+        assert a.sub_values.get("label") == "GOOD LAG"
+        assert b.sub_values.get("label") in {"EARLY HIP COLLAPSE", "SIMULTANEOUS"}
+
+    def test_hip_shoulder_sep_v3_penalizes_early_pelvis_burst(self):
+        seq = _make_full_pose_sequence(n=60, fps=self.fps)
+        fs = self.phases.foot_strike.frame_idx
+        rel = self.phases.ball_release.frame_idx
+
+        for i in range(8, rel + 1):
+            if not (0 <= i < len(seq)):
+                continue
+            lm = seq[i].landmarks.copy()
+            if i <= fs - 3:
+                p = (i - 8) / max(1, (fs - 3) - 8)
+                lm[KP["RIGHT_HIP"], 0] += np.float32(0.18 * p)
+                lm[KP["LEFT_HIP"], 0] += np.float32(0.18 * p)
+            if i >= fs + 1:
+                p = (i - (fs + 1)) / max(1, rel - (fs + 1))
+                lm[KP["RIGHT_SHOULDER"], 1] += np.float32(0.16 * p)
+                lm[KP["LEFT_SHOULDER"], 1] -= np.float32(0.16 * p)
+            seq[i].landmarks = lm
+
+        sep = _compute_hip_shoulder_sep_v3(seq, self.phases, hand="R")
+        assert sep.status == "ok"
+        assert sep.sub_values.get("label") == "EARLY HIP COLLAPSE"
+        assert sep.score is not None and sep.score < 6.0
+
+    def test_hip_shoulder_sep_v3_medium_quality_is_not_hard_failed(self):
+        seq = _make_full_pose_sequence(n=60, fps=self.fps)
+        fs = self.phases.foot_strike.frame_idx
+        rel = self.phases.ball_release.frame_idx
+        # Add shoulder rotation while intermittently occluding hips.
+        for i in range(10, rel + 1):
+            if not (0 <= i < len(seq)):
+                continue
+            lm = seq[i].landmarks.copy()
+            if i >= fs - 1:
+                p = (i - (fs - 1)) / max(1, rel - (fs - 1))
+                lm[KP["RIGHT_SHOULDER"], 1] += np.float32(0.10 * p)
+                lm[KP["LEFT_SHOULDER"], 1] -= np.float32(0.10 * p)
+            if i % 5 == 0:
+                lm[KP["RIGHT_HIP"], 2] = 0.1
+            seq[i].landmarks = lm
+
+        sep = _compute_hip_shoulder_sep_v3(seq, self.phases, hand="R")
+        assert sep.status == "ok"
+        assert sep.confidence is not None and sep.confidence >= CONF_BLIND
+        assert sep.score is not None and sep.score_raw is not None
+        assert sep.score <= sep.score_raw
+
+    def test_confidence_gating_missing_landmarks_returns_insufficient_data(self):
+        occluded = _make_full_pose_sequence(n=60, fps=self.fps)
+        start = self.phases.set_pos.frame_idx
+        rel = self.phases.ball_release.frame_idx
+        for i in range(start, rel + 5):
+            if not (0 <= i < len(occluded)):
+                continue
+            lm = occluded[i].landmarks.copy()
+            lm[KP["LEFT_ANKLE"], 2] = 0.05
+            lm[KP["LEFT_KNEE"], 2] = 0.05
+            lm[KP["LEFT_HIP"], 2] = 0.05
+            lm[KP["RIGHT_HIP"], 2] = 0.05
+            lm[KP["LEFT_SHOULDER"], 2] = 0.05
+            lm[KP["RIGHT_SHOULDER"], 2] = 0.05
+            occluded[i].landmarks = lm
+
+        block = _compute_lead_leg_block_v3(occluded, self.phases, hand="R")
+        sep = _compute_hip_shoulder_sep_v3(occluded, self.phases, hand="R")
+        assert block.status == "insufficient_data"
+        assert sep.status == "insufficient_data"
+
+    def test_front_side_closedness_v2_detects_early_glove_open(self):
+        closed = _make_full_pose_sequence(n=60, fps=self.fps)
+        open_front = _make_full_pose_sequence(n=60, fps=self.fps)
+        pll = self.phases.peak_leg_lift.frame_idx
+        fs = self.phases.foot_strike.frame_idx
+        rel = self.phases.ball_release.frame_idx
+        for i in range(pll, rel + 1):
+            progress = (i - pll) / max(1, rel - pll)
+            lm = open_front[i].landmarks.copy()
+            lm[KP["LEFT_WRIST"], 0] -= np.float32(0.28 * progress)
+            lm[KP["LEFT_ELBOW"], 0] -= np.float32(0.22 * progress)
+            if i >= fs:
+                lm[KP["LEFT_SHOULDER"], 0] -= np.float32(0.08 * ((i - fs) / max(1, rel - fs)))
+            open_front[i].landmarks = lm
+
+        a = _compute_front_side_closedness_v2(closed, self.phases, hand="R")
+        b = _compute_front_side_closedness_v2(open_front, self.phases, hand="R")
+        assert a.status == "ok" and b.status == "ok"
+        assert a.score is not None and b.score is not None
+        assert b.score < a.score
+        assert b.sub_values.get("label") == "OPENS EARLY"
+
 
 class TestEfficiencyWeighting:
     def test_low_confidence_metric_contributes_less(self):
@@ -744,13 +1009,21 @@ class TestEfficiencyWeighting:
                 name="timing", status="ok", score=0.0, confidence=1.0
             ),
             BenchmarkResult(
-                name="front_knee_extension_rel", status="ok", score=10.0, confidence=0.1
+                name="lead_leg_block_v3", status="ok", score=10.0, confidence=0.1
             ),
         ]
         eff = _compute_efficiency_score(metrics, view_mode="open_side")
         assert eff is not None
         # Metric below confidence gate should be excluded.
         assert eff == 0.0
+
+    def test_efficiency_eligibility_uses_conf_blind(self):
+        metrics = [
+            BenchmarkResult(name="timing", status="ok", score=5.0, confidence=CONF_BLIND - 0.01),
+            BenchmarkResult(name="release_extension_v2", status="ok", score=9.0, confidence=CONF_BLIND + 0.01),
+        ]
+        eff = _compute_efficiency_score(metrics, view_mode="open_side")
+        assert eff == 9.0
 
     def test_metric_weights_change_result_predictably(self):
         metrics = [
@@ -759,7 +1032,7 @@ class TestEfficiencyWeighting:
         ]
         eff = _compute_efficiency_score(metrics, view_mode="open_side")
         assert eff is not None
-        expected = round((2.0 * 1.0 + 10.0 * 1.8) / (1.0 + 1.8), 2)
+        expected = round((2.0 * 0.7 + 10.0 * 1.0) / (0.7 + 1.0), 2)
         assert eff == expected
 
     def test_open_side_ignores_front_view_metric_even_if_ok(self):
@@ -773,8 +1046,8 @@ class TestEfficiencyWeighting:
     def test_open_side_efficiency_marks_low_conf_when_fewer_than_four_metrics(self):
         metrics = [
             BenchmarkResult(name="timing", status="ok", score=7.0, confidence=0.9),
-            BenchmarkResult(name="front_knee_flexion_fs", status="ok", score=7.0, confidence=0.9),
-            BenchmarkResult(name="front_knee_extension_rel", status="ok", score=7.0, confidence=0.9),
+            BenchmarkResult(name="lead_leg_block_v3", status="ok", score=7.0, confidence=0.9),
+            BenchmarkResult(name="hip_shoulder_sep_v3", status="ok", score=7.0, confidence=0.9),
         ]
         score, low_conf = _compute_efficiency_details(metrics, view_mode="open_side")
         assert score is not None

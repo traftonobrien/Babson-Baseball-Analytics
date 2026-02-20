@@ -90,11 +90,14 @@ def build_manual_index(
                 "pitch_idx": pitch_idx,
                 "angles": {},
             }
-        by_pitch[pitch_idx]["angles"][angle] = {
+        angle_row = {
             "path": str(clip.get("path", "")),
             "start_frame": int(clip["start_frame"]),
             "end_frame": int(clip["end_frame"]),
         }
+        if clip.get("order") is not None:
+            angle_row["order"] = int(clip["order"])
+        by_pitch[pitch_idx]["angles"][angle] = angle_row
 
     rows: list[dict[str, Any]] = []
     for pitch_idx in sorted(by_pitch.keys()):

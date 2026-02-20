@@ -30,6 +30,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from src.mechanics.pose import PoseResult, KP, NUM_LANDMARKS
 from src.mechanics.phases import PitchPhases, Phase
 from src.mechanics.benchmarks import (
+    CONF_BLIND,
+    CONF_FULL,
     compute_benchmarks,
     BenchmarkReport,
     BenchmarkResult,
@@ -42,6 +44,8 @@ from src.mechanics.coach_pack import (
     _get_callout,
     _get_relevant_metrics,
     _select_phase_callouts,
+    _select_trusted_issues,
+    _priority_cues,
     _build_notes,
     _build_strip,
     _write_cliplet,
@@ -232,6 +236,7 @@ class TestCalloutTable:
         "drift_forward",
         "front_knee_flexion_fs", "front_knee_extension_rel",
         "tilt_consistency", "release_extension_proxy", "release_extension_v2",
+        "lead_leg_block_v3", "hip_shoulder_sep_v3", "front_side_closedness_v2",
     ]
 
     def test_all_metrics_have_entries(self):
@@ -277,8 +282,8 @@ class TestCalloutSelection:
             ("timing", 2.0, 0.9),
             ("swivel_stabilize", 1.0, 0.7),
             ("trunk_stability_v2", 4.0, 0.95),
-            ("front_knee_flexion_fs", 3.0, 0.8),
-            ("front_knee_extension_rel", 2.5, 0.2),  # low confidence fail
+            ("lead_leg_block_v3", 3.0, 0.8),
+            ("front_side_closedness_v2", 2.5, 0.2),  # low confidence fail
         ]
         for name, score, conf in target:
             metric = report.metric_by_name(name)
@@ -294,14 +299,38 @@ class TestCalloutSelection:
                 "timing",
                 "swivel_stabilize",
                 "trunk_stability_v2",
-                "front_knee_flexion_fs",
-                "front_knee_extension_rel",
+                "lead_leg_block_v3",
+                "front_side_closedness_v2",
             ],
             max_items=3,
         )
         assert len(callouts) == 3
-        assert all((m.confidence or 0.0) >= 0.35 for m in callouts)
-        assert any(m.name == "front_knee_extension_rel" for m in low_conf)
+        assert all((m.confidence or 0.0) >= CONF_FULL for m in callouts)
+        assert any(m.name == "front_side_closedness_v2" for m in low_conf)
+
+    def test_issue_eligibility_uses_conf_blind_threshold(self):
+        poses = _make_full_pose_sequence(n=60, fps=30.0)
+        phases = _make_phases(fps=30.0)
+        report = compute_benchmarks(poses, phases, hand="R", view_mode="open_side")
+
+        timing = report.metric_by_name("timing")
+        block = report.metric_by_name("lead_leg_block_v3")
+        assert timing is not None and block is not None
+
+        timing.status = "ok"
+        timing.score = 2.0
+        timing.pass_fail = False
+        timing.confidence = CONF_BLIND - 0.01
+
+        block.status = "ok"
+        block.score = 2.0
+        block.pass_fail = False
+        block.confidence = CONF_BLIND + 0.01
+
+        trusted, low_conf = _select_trusted_issues(report, max_items=3)
+        names = {m.name for m in trusted + low_conf}
+        assert "timing" not in names
+        assert "lead_leg_block_v3" in names
 
     def test_open_side_excludes_front_view_metrics_from_callouts(self):
         poses = _make_full_pose_sequence(n=60, fps=30.0)
@@ -315,11 +344,70 @@ class TestCalloutSelection:
 
         callouts, low_conf = _select_phase_callouts(
             report,
-            ["timing", "torque_retention", "front_knee_flexion_fs"],
+            ["timing", "torque_retention", "lead_leg_block_v3"],
             max_items=3,
         )
         names = {m.name for m in callouts + low_conf}
         assert "torque_retention" not in names
+
+    def test_priority_cues_ignore_insufficient_and_low_conf_metrics(self):
+        poses = _make_full_pose_sequence(n=60, fps=30.0)
+        phases = _make_phases(fps=30.0)
+        report = compute_benchmarks(poses, phases, hand="R", view_mode="open_side")
+
+        block = report.metric_by_name("lead_leg_block_v3")
+        sep = report.metric_by_name("hip_shoulder_sep_v3")
+        ext = report.metric_by_name("release_extension_v2")
+        assert block is not None and sep is not None and ext is not None
+
+        block.status = "ok"
+        block.score = 2.0
+        block.pass_fail = False
+        block.confidence = 0.20  # low confidence -> should be ignored
+
+        sep.status = "insufficient_data"  # should be ignored
+        sep.score = None
+        sep.pass_fail = None
+        sep.confidence = 0.9
+
+        ext.status = "ok"
+        ext.score = 3.0
+        ext.pass_fail = False
+        ext.confidence = 0.85
+
+        cues = _priority_cues(report, max_items=3)
+        joined = " ".join(cues).lower()
+        assert "lead leg" not in joined
+        assert "separation" not in joined
+        assert "extension" not in joined
+        assert "release" not in joined
+
+    def test_priority_cues_only_use_block_sep_closed_and_max_two(self):
+        poses = _make_full_pose_sequence(n=60, fps=30.0)
+        phases = _make_phases(fps=30.0)
+        report = compute_benchmarks(poses, phases, hand="R", view_mode="open_side")
+
+        for name, score in [
+            ("lead_leg_block_v3", 2.0),
+            ("hip_shoulder_sep_v3", 3.0),
+            ("front_side_closedness_v2", 4.0),
+            ("release_extension_v2", 0.0),
+            ("timing", 0.0),
+            ("swivel_stabilize", 0.0),
+        ]:
+            m = report.metric_by_name(name)
+            assert m is not None
+            m.status = "ok"
+            m.score = score
+            m.pass_fail = False
+            m.confidence = 0.95
+
+        cues = _priority_cues(report, max_items=2)
+        assert len(cues) <= 2
+        joined = " ".join(cues).lower()
+        assert "block" in joined or "lead leg" in joined
+        assert "shoulder" in joined or "pelvis" in joined or "front side" in joined
+        assert "extension" not in joined
 
 
 # ---------------------------------------------------------------------------
@@ -346,7 +434,7 @@ class TestBuildNotes:
         assert "camera_limitations" in notes
         assert "official_metric_set" in notes
         assert "official_metrics" in notes
-        assert "official_open_side_metrics_v2" in notes
+        assert "official_open_side_metrics_v3" in notes
         assert "excluded_metrics_reason" in notes
 
     def test_all_metrics_present(self):
@@ -358,6 +446,11 @@ class TestBuildNotes:
         for name in ("balance", "posture", "lift_thrust", "tilt_consistency", "trunk_stability", "release_extension_proxy"):
             assert name not in notes["metrics"]
 
+    def test_open_side_notes_do_not_include_front_only_metrics_by_default(self):
+        notes = _build_notes(self.benchmarks, self.phases)
+        assert "stack_track" not in notes["metrics"]
+        assert "torque_retention" not in notes["metrics"]
+
     def test_debug_metrics_flag_includes_full_metric_dump(self):
         notes = _build_notes(self.benchmarks, self.phases, include_debug_metrics=True)
         for m in self.benchmarks.all_metrics():
@@ -365,10 +458,11 @@ class TestBuildNotes:
 
     def test_open_side_notes_have_locked_metric_set_name(self):
         notes = _build_notes(self.benchmarks, self.phases)
-        assert notes["official_metric_set"] == "open_side_pro_v2"
+        assert notes["official_metric_set"] == "open_side_pro_v3"
         assert notes["official_metrics"] == list(official_metric_names("open_side"))
-        assert notes["excluded_metrics_reason"]["stack_track"] == "front-view-only"
-        assert notes["excluded_metrics_reason"]["balance"] == "debug-only"
+        assert notes["excluded_metrics_reason"] == "open_side_only"
+        assert notes["excluded_metrics_detail"]["stack_track"] == "front-view-only"
+        assert notes["excluded_metrics_detail"]["balance"] == "debug-only"
 
     def test_metric_required_fields(self):
         notes = _build_notes(self.benchmarks, self.phases)
@@ -377,10 +471,13 @@ class TestBuildNotes:
             assert "raw_value" in entry
             assert "unit" in entry
             assert "score" in entry
+            assert "score_raw" in entry
+            assert "score_eff" in entry
             assert "pass_fail" in entry
             assert "callout" in entry
             assert "confidence" in entry
             assert "low_confidence" in entry
+            assert "reasons" in entry
             assert "coaching_cues" in entry
 
     def test_passing_metric_has_null_callout(self):
@@ -597,13 +694,11 @@ class TestPhaseMetrics:
         for phase in ["set", "peak_leg_lift", "foot_strike", "ball_release"]:
             assert phase in PHASE_METRICS
 
-    def test_no_duplicate_metrics_across_phases(self):
-        """Each metric should appear in at most one phase."""
-        seen = set()
-        for phase, metrics in PHASE_METRICS.items():
+    def test_phase_metrics_are_official_open_side_metrics(self):
+        allowed = set(official_metric_names("open_side"))
+        for metrics in PHASE_METRICS.values():
             for m in metrics:
-                assert m not in seen, f"{m} appears in multiple phases"
-                seen.add(m)
+                assert m in allowed
 
     def test_open_side_phase_mapping_excludes_front_view_only_metrics(self):
         poses = _make_full_pose_sequence(n=60, fps=30.0)
@@ -616,8 +711,12 @@ class TestPhaseMetrics:
         assert "balance" not in rel_metrics
         assert "posture" not in rel_metrics
         assert "release_extension_proxy" not in rel_metrics
+        assert "lead_leg_block_v3" in rel_metrics
+        assert "front_side_closedness_v2" in fs_metrics
+        assert "hip_shoulder_sep_v3" in fs_metrics
+        assert "hip_shoulder_sep_v3" in rel_metrics
         assert "release_extension_v2" in rel_metrics
-        assert "trunk_stability_v2" in rel_metrics
+        assert "trunk_stability_v2" not in rel_metrics
 
     def test_debug_phase_mapping_allows_debug_metrics(self):
         poses = _make_full_pose_sequence(n=60, fps=30.0)

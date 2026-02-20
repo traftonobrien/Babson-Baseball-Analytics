@@ -249,6 +249,20 @@ class TestDetectPhasesSynthetic:
         phases = detect_phases(poses, fps=30.0, hand="L")
         assert phases is not None
 
+    def test_peak_leg_lift_fallback_keeps_nonzero_confidence_with_sparse_knee_points(self):
+        poses = make_synthetic_pitch(n=90, fps=30.0)
+        # Keep some lead-knee points visible but make coverage sparse and noisy.
+        for i, pose in enumerate(poses):
+            if (i % 6) != 0:
+                pose.landmarks[KP["LEFT_KNEE"], 2] = 0.1  # below min visibility threshold
+            pose.landmarks[KP["LEFT_HIP"], 1] = 0.40
+            pose.landmarks[KP["LEFT_KNEE"], 1] = 0.62 - 0.04 * np.sin(i / 8.0)
+
+        phases = detect_phases(poses, fps=30.0, hand="R")
+        assert phases.peak_leg_lift is not None
+        # Sparse knee visibility should still produce low (but non-zero) confidence.
+        assert phases.peak_leg_lift.confidence > 0.0
+
 
 # ---------------------------------------------------------------------------
 # Delivery-start detection tests

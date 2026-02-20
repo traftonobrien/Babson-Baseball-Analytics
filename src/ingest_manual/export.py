@@ -154,6 +154,7 @@ def export_manual_clips(
                 "angle": angle,
                 "start_frame": int(clip.start_frame),
                 "end_frame": int(clip.end_frame),
+                "order": int(clip.order) if getattr(clip, "order", None) is not None else None,
                 "path": str(rel.as_posix()),
             }
         )
