@@ -54,11 +54,17 @@ def conf_from_window(n_frames: int, min_frames: int) -> float:
     return clamp01(float(n_frames) / float(min_frames))
 
 
-def conf_from_jitter(mad: float, target_mad: float) -> float:
-    """Monotonic decreasing confidence as jitter grows."""
+def conf_from_jitter(mad: float, target_mad: float, floor: float = 0.10) -> float:
+    """
+    Monotonic decreasing confidence as jitter grows.
+
+    Never goes below `floor` — jitter alone should reduce confidence
+    but not drive it to zero (only missing landmarks do that).
+    """
     if target_mad <= 1e-9:
         return 1.0
-    return clamp01(1.0 - (float(mad) / float(target_mad)))
+    raw = 1.0 - (float(mad) / float(target_mad))
+    return clamp01(max(raw, floor))
 
 
 def conf_from_motion(motion: float, min_motion: float) -> float:
@@ -135,6 +141,13 @@ def finalize_metric(
     """
     Normalize confidence-driven metric status and scores.
 
+    Rules:
+      - score_raw is None → insufficient_data (no signal at all).
+      - conf <= CONF_BLIND with only jitter/motion reasons → still "ok"
+        with penalised score_eff (soft degrade, never blind).
+      - conf <= CONF_BLIND with missing_landmarks/window_too_small → insufficient.
+      - conf > CONF_BLIND → "ok".
+
     Always returns:
       status, confidence, reasons, score_raw, score_eff
     """
@@ -153,12 +166,21 @@ def finalize_metric(
     raw = max(0.0, min(10.0, float(score_raw)))
     score_eff = apply_confidence_to_score(raw, conf)
 
+    # Determine if the signal is truly blind vs just noisy.
+    # Only structural reasons (missing data) cause insufficient_data.
+    _STRUCTURAL_REASONS = {"missing_landmarks", "window_too_small", "occluded"}
+    has_structural_reason = bool(_STRUCTURAL_REASONS & set(reasons))
+
     if conf <= CONF_BLIND:
-        if allow_soft_fail and conf > 0.0:
-            status = "ok"
-        else:
+        if has_structural_reason and not allow_soft_fail:
             status = "insufficient_data"
             score_eff = None
+        elif has_structural_reason and conf <= 0.0:
+            status = "insufficient_data"
+            score_eff = None
+        else:
+            # Jitter/motion reasons alone → soft degrade, keep "ok"
+            status = "ok"
     else:
         status = "ok"
 

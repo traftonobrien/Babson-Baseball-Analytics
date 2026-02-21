@@ -29,7 +29,7 @@ from .confidence import (
 )
 from .pose import PoseResult, KP
 from .phases import PitchPhases, Phase
-from .utils import smooth_series, smoothing_residual_std
+from .utils import smooth_series, smoothing_residual_std, window_clean
 
 
 # ---------------------------------------------------------------------------
@@ -250,9 +250,14 @@ def _metric_confidence(
     jitter_penalty: float,
     visibility: float,
 ) -> float:
-    """Open-side metric confidence model."""
+    """
+    Open-side metric confidence model.
+
+    Jitter has a floor of 0.10 so it can never single-handedly zero out
+    confidence — only missing landmarks or coverage gaps can do that.
+    """
     cov_report = ConfidenceReport(conf=conf_from_window(_clamp01(coverage), 1.0))
-    jit_report = ConfidenceReport(conf=conf_from_jitter(_clamp01(jitter_penalty), 1.0))
+    jit_report = ConfidenceReport(conf=conf_from_jitter(_clamp01(jitter_penalty), 1.0, floor=0.10))
     vis_report = ConfidenceReport(conf=conf_from_visibility(_clamp01(visibility)))
     return combine_conf(cov_report, jit_report, vis_report, mode="harmonic").conf
 
@@ -1986,7 +1991,7 @@ def _compute_lead_leg_block_v3(
 
     fs_win = _phase_window(poses, phases.foot_strike, radius=2)
     rel_win = _phase_window(poses, phases.ball_release, radius=2)
-    if len(fs_win) < 3 or len(rel_win) < 3:
+    if len(fs_win) < 2 or len(rel_win) < 2:  # Relaxed from 3 to 2
         result = BenchmarkResult.insufficient(name, "FS/REL windows too small")
         result.confidence = 0.0
         result.reasons = ["window_too_small"]
@@ -2089,20 +2094,25 @@ def _compute_lead_leg_block_v3(
     }
 
     # Knee firmness: absolute REL firmness + a small extension bonus.
+    # Apply window_clean to remove spike frames before computing medians.
+    if rel_knee_abs:
+        cleaned_knee = window_clean(rel_knee_abs, radius=len(rel_knee_abs), mad_k=3.0)
+        clean_knee_vals = cleaned_knee.values[~np.isnan(cleaned_knee.values)]
+        if len(clean_knee_vals) >= 1:
+            knee_angle_rel = float(np.median(clean_knee_vals))
     if knee_angle_rel is not None:
         ext_bonus = _score_block_extension_delta_bonus(knee_extension_change or 0.0) if knee_extension_change is not None else 5.0
         knee_score = 0.8 * _score_block_knee_firmness_abs(knee_angle_rel) + 0.2 * ext_bonus
-        coverage, jitter = _series_quality(rel_knee_abs, expected_frames=len(rel_win), jitter_scale=6.0)
-        jump = _jump_penalty(rel_knee_abs, jump_scale=9.0)
+        cleaned_knee_result = window_clean(rel_knee_abs, radius=len(rel_knee_abs), mad_k=3.0)
+        coverage = _clamp01(cleaned_knee_result.kept_count / max(1, len(rel_win)))
         visibility = float(np.mean(leg_vis_rel)) if leg_vis_rel else 0.0
         conf = _clamp01(
-            _metric_confidence(coverage, max(jitter, jump), visibility) * phase_conf_rel
+            _metric_confidence(coverage, cleaned_knee_result.jitter_score, visibility) * phase_conf_rel
         )
         reasons = _metric_reasons_from_quality(
             coverage=coverage,
             visibility=visibility,
-            jitter_penalty=jitter,
-            jump_penalty=jump,
+            jitter_penalty=cleaned_knee_result.jitter_score,
             phase_conf=phase_conf_rel,
         )
         components["knee_firmness"] = MetricComponent(
@@ -2114,18 +2124,22 @@ def _compute_lead_leg_block_v3(
     else:
         components["knee_firmness"] = MetricComponent(None, None, 0.0, ["missing_landmarks"])
 
+    if rel_shin_vertical:
+        cleaned_shin = window_clean(rel_shin_vertical, radius=len(rel_shin_vertical), mad_k=3.0)
+        clean_shin_vals = cleaned_shin.values[~np.isnan(cleaned_shin.values)]
+        if len(clean_shin_vals) >= 1:
+            shin_vertical_rel = float(np.median(clean_shin_vals))
     if shin_vertical_rel is not None:
-        coverage, jitter = _series_quality(rel_shin_vertical, expected_frames=len(rel_win), jitter_scale=5.5)
-        jump = _jump_penalty(rel_shin_vertical, jump_scale=8.0)
+        cleaned_shin_result = window_clean(rel_shin_vertical, radius=len(rel_shin_vertical), mad_k=3.0)
+        coverage = _clamp01(cleaned_shin_result.kept_count / max(1, len(rel_win)))
         visibility = float(np.mean(leg_vis_rel)) if leg_vis_rel else 0.0
         conf = _clamp01(
-            _metric_confidence(coverage, max(jitter, jump), visibility) * phase_conf_rel
+            _metric_confidence(coverage, cleaned_shin_result.jitter_score, visibility) * phase_conf_rel
         )
         reasons = _metric_reasons_from_quality(
             coverage=coverage,
             visibility=visibility,
-            jitter_penalty=jitter,
-            jump_penalty=jump,
+            jitter_penalty=cleaned_shin_result.jitter_score,
             phase_conf=phase_conf_rel,
         )
         components["shin_verticality"] = MetricComponent(
@@ -2137,18 +2151,22 @@ def _compute_lead_leg_block_v3(
     else:
         components["shin_verticality"] = MetricComponent(None, None, 0.0, ["missing_landmarks"])
 
+    if rel_hip_over_heel:
+        cleaned_hoh = window_clean(rel_hip_over_heel, radius=len(rel_hip_over_heel), mad_k=3.0)
+        clean_hoh_vals = cleaned_hoh.values[~np.isnan(cleaned_hoh.values)]
+        if len(clean_hoh_vals) >= 1:
+            hip_over_heel_rel = float(np.median(clean_hoh_vals))
     if hip_over_heel_rel is not None:
-        coverage, jitter = _series_quality(rel_hip_over_heel, expected_frames=len(rel_win), jitter_scale=0.08)
-        jump = _jump_penalty(rel_hip_over_heel, jump_scale=0.12)
+        cleaned_hoh_result = window_clean(rel_hip_over_heel, radius=len(rel_hip_over_heel), mad_k=3.0)
+        coverage = _clamp01(cleaned_hoh_result.kept_count / max(1, len(rel_win)))
         visibility = float(np.mean(leg_vis_rel)) if leg_vis_rel else 0.0
         conf = _clamp01(
-            _metric_confidence(coverage, max(jitter, jump), visibility) * phase_conf_rel
+            _metric_confidence(coverage, cleaned_hoh_result.jitter_score, visibility) * phase_conf_rel
         )
         reasons = _metric_reasons_from_quality(
             coverage=coverage,
             visibility=visibility,
-            jitter_penalty=jitter,
-            jump_penalty=jump,
+            jitter_penalty=cleaned_hoh_result.jitter_score,
             phase_conf=phase_conf_rel,
         )
         components["hip_over_heel"] = MetricComponent(
@@ -2162,21 +2180,16 @@ def _compute_lead_leg_block_v3(
 
     if forward_leak is not None:
         forward_series = fs_mid_hip_x + rel_mid_hip_x
-        coverage, jitter = _series_quality(
-            forward_series,
-            expected_frames=len(fs_win) + len(rel_win),
-            jitter_scale=max(1.0, norm_len * 0.02),
-        )
-        jump = _jump_penalty(forward_series, jump_scale=max(1.0, norm_len * 0.04))
+        cleaned_fwd = window_clean(forward_series, radius=len(forward_series), mad_k=3.0)
+        coverage = _clamp01(cleaned_fwd.kept_count / max(1, len(fs_win) + len(rel_win)))
         visibility = float(np.mean(hip_vis_fs + hip_vis_rel)) if (hip_vis_fs or hip_vis_rel) else 0.0
         conf = _clamp01(
-            _metric_confidence(coverage, max(jitter, jump), visibility) * phase_conf_pair
+            _metric_confidence(coverage, cleaned_fwd.jitter_score, visibility) * phase_conf_pair
         )
         reasons = _metric_reasons_from_quality(
             coverage=coverage,
             visibility=visibility,
-            jitter_penalty=jitter,
-            jump_penalty=jump,
+            jitter_penalty=cleaned_fwd.jitter_score,
             phase_conf=phase_conf_pair,
         )
         components["forward_leak"] = MetricComponent(
@@ -2188,7 +2201,8 @@ def _compute_lead_leg_block_v3(
     else:
         components["forward_leak"] = MetricComponent(None, None, 0.0, ["missing_landmarks"])
 
-    score_raw, conf, reasons, used_components = _aggregate_components(components, comp_weights, min_valid_components=2)
+    # Accept even with 1 valid component (partial data is better than insufficient)
+    score_raw, conf, reasons, used_components = _aggregate_components(components, comp_weights, min_valid_components=1)
     if score_raw is None or conf is None:
         result = BenchmarkResult.insufficient(name, "Lead-leg block cannot be estimated reliably")
         result.confidence = 0.0
@@ -2275,7 +2289,7 @@ def _compute_hip_shoulder_sep_v3(
         start_frame = max(0, phases.foot_strike.frame_idx - 18)
     end_frame = phases.ball_release.frame_idx
     win = _poses_in_range(poses, min(start_frame, end_frame), max(start_frame, end_frame))
-    if len(win) < 8:
+    if len(win) < 6:  # Relaxed from 8 to 6
         result = BenchmarkResult.insufficient(name, "Insufficient analysis window for separation proxy")
         result.confidence = 0.0
         result.reasons = ["window_too_small"]
@@ -2305,7 +2319,7 @@ def _compute_hip_shoulder_sep_v3(
     shoulder_arr = np.asarray(shoulder_angle_raw, dtype=np.float64)
     pelvis_arr = np.asarray(pelvis_x_raw, dtype=np.float64)
     valid_frames = int(np.count_nonzero(~np.isnan(shoulder_arr) & ~np.isnan(pelvis_arr)))
-    if valid_frames < 6:
+    if valid_frames < 4:  # Relaxed from 6 to 4
         result = BenchmarkResult.insufficient(name, "Insufficient shoulder/hip visibility coverage")
         result.confidence = 0.0
         result.reasons = ["missing_landmarks", "occluded"]
@@ -2344,7 +2358,7 @@ def _compute_hip_shoulder_sep_v3(
         shoulder_vel.append(abs(float((sh1 - sh0) * phases.fps / dt_frames)))
         pelvis_vel.append(abs(float(((px1 - px0) * phases.fps / dt_frames) / body_height)))
 
-    if len(vel_frames) < 5:
+    if len(vel_frames) < 3:  # Relaxed from 5 to 3
         result = BenchmarkResult.insufficient(name, "Insufficient velocity samples for separation proxy")
         result.confidence = 0.0
         result.reasons = ["window_too_small", "missing_landmarks"]
@@ -2506,7 +2520,7 @@ def _compute_hip_shoulder_sep_v3(
     score_raw, conf, reasons, used_components = _aggregate_components(
         components,
         comp_weights,
-        min_valid_components=2,
+        min_valid_components=1,  # Relaxed: partial data still produces a score
     )
     if score_raw is None or conf is None:
         result = BenchmarkResult.insufficient(name, "Separation proxy is blind for this clip")
@@ -2566,10 +2580,11 @@ def _compute_front_side_closedness_v2(
     hand: str,
 ) -> BenchmarkResult:
     """
-    Front-side closedness v2 (PLL->REL):
+    Front-side closedness v2 (PLL->REL) with fallback + outlier rescue:
       - glove hand/elbow containment vs torso
-      - shoulder relation to sternum proxy
-      - penalise early opening from FS to REL
+      - Falls back to elbow/shoulder when wrist is unstable
+      - window_clean removes spike frames
+      - Jitter penalises confidence, not score
     """
     name = "front_side_closedness_v2"
     if phases.peak_leg_lift is None or phases.foot_strike is None or phases.ball_release is None:
@@ -2580,7 +2595,7 @@ def _compute_front_side_closedness_v2(
     if end <= start:
         return BenchmarkResult.insufficient(name, "Invalid phase ordering for front-side metric")
     win = _poses_in_range(poses, start, end)
-    if len(win) < 6:
+    if len(win) < 4:  # Relaxed from 6 to 4
         result = BenchmarkResult.insufficient(name, "Not enough PLL->REL frames")
         result.confidence = 0.0
         result.reasons = ["window_too_small"]
@@ -2588,7 +2603,7 @@ def _compute_front_side_closedness_v2(
 
     fs_win = _phase_window(poses, phases.foot_strike, radius=2)
     rel_win = _phase_window(poses, phases.ball_release, radius=2)
-    if len(fs_win) < 3 or len(rel_win) < 3:
+    if len(fs_win) < 2 or len(rel_win) < 2:  # Relaxed from 3 to 2
         result = BenchmarkResult.insufficient(name, "Insufficient FS/REL windows for closedness")
         result.confidence = 0.0
         result.reasons = ["window_too_small"]
@@ -2600,7 +2615,7 @@ def _compute_front_side_closedness_v2(
 
     closedness_raw: list[float] = []
     vis_vals: list[float] = []
-    by_frame: dict[int, float] = {}
+    used_fallback = False
 
     for p in win:
         ls = _px_safe(p, "LEFT_SHOULDER")
@@ -2610,7 +2625,9 @@ def _compute_front_side_closedness_v2(
         gw = _px_safe(p, glove_wrist)
         ge = _px_safe(p, glove_elbow)
         gs = _px_safe(p, glove_shoulder)
-        if not all([ls, rs, lh, rh, gw, ge, gs]):
+
+        # Need torso landmarks at minimum
+        if not all([ls, rs, lh, rh]):
             closedness_raw.append(np.nan)
             continue
 
@@ -2623,21 +2640,42 @@ def _compute_front_side_closedness_v2(
         mid_hip = _midpoint(lh, rh)
         sternum = ((mid_sh[0] + mid_hip[0]) / 2.0, (mid_sh[1] + mid_hip[1]) / 2.0)
 
-        wrist_off = abs(gw[0] - sternum[0]) / shoulder_w
-        elbow_off = abs(ge[0] - sternum[0]) / shoulder_w
-        glove_shoulder_off = abs(gs[0] - sternum[0]) / shoulder_w
-        index = 0.45 * wrist_off + 0.30 * elbow_off + 0.25 * glove_shoulder_off
+        # Adaptive weighting: use what's available
+        # Full: wrist 0.45 + elbow 0.30 + shoulder 0.25
+        # No wrist: elbow 0.60 + shoulder 0.40 (reduced conf)
+        # No wrist/elbow: shoulder only (very reduced conf)
+        if gw is not None and ge is not None and gs is not None:
+            wrist_off = abs(gw[0] - sternum[0]) / shoulder_w
+            elbow_off = abs(ge[0] - sternum[0]) / shoulder_w
+            shoulder_off = abs(gs[0] - sternum[0]) / shoulder_w
+            index = 0.45 * wrist_off + 0.30 * elbow_off + 0.25 * shoulder_off
+        elif ge is not None and gs is not None:
+            elbow_off = abs(ge[0] - sternum[0]) / shoulder_w
+            shoulder_off = abs(gs[0] - sternum[0]) / shoulder_w
+            index = 0.60 * elbow_off + 0.40 * shoulder_off
+            used_fallback = True
+        elif gs is not None:
+            shoulder_off = abs(gs[0] - sternum[0]) / shoulder_w
+            index = shoulder_off
+            used_fallback = True
+        else:
+            closedness_raw.append(np.nan)
+            continue
 
         closedness_raw.append(index)
-        by_frame[p.frame_idx] = index
-        vis_vals.append(
-            _visibility_confidence(
-                p,
-                ["LEFT_SHOULDER", "RIGHT_SHOULDER", "LEFT_HIP", "RIGHT_HIP", glove_wrist, glove_elbow, glove_shoulder],
-            )
-        )
+        vis_kps = ["LEFT_SHOULDER", "RIGHT_SHOULDER", "LEFT_HIP", "RIGHT_HIP"]
+        if gw is not None:
+            vis_kps.append(glove_wrist)
+        if ge is not None:
+            vis_kps.append(glove_elbow)
+        vis_kps.append(glove_shoulder)
+        vis_vals.append(_visibility_confidence(p, vis_kps))
 
-    smooth_idx = smooth_series(closedness_raw, window=7, polyorder=2)
+    # Apply window_clean to full series
+    cleaned_result = window_clean(closedness_raw, radius=len(closedness_raw), mad_k=3.0)
+    clean_series = list(cleaned_result.values)
+
+    smooth_idx = smooth_series(clean_series, window=7, polyorder=2)
     smooth_map = {}
     for p, v in zip(win, smooth_idx):
         if np.isnan(v):
@@ -2646,7 +2684,7 @@ def _compute_front_side_closedness_v2(
 
     fs_vals = [smooth_map[p.frame_idx] for p in fs_win if p.frame_idx in smooth_map]
     rel_vals = [smooth_map[p.frame_idx] for p in rel_win if p.frame_idx in smooth_map]
-    if len(fs_vals) < 3 or len(rel_vals) < 3:
+    if len(fs_vals) < 1 or len(rel_vals) < 1:  # Relaxed from 3 to 1
         result = BenchmarkResult.insufficient(name, "Insufficient smoothed FS/REL closedness samples")
         result.confidence = 0.0
         result.reasons = ["window_too_small", "missing_landmarks"]
@@ -2669,20 +2707,18 @@ def _compute_front_side_closedness_v2(
 
     score_raw = max(0.0, min(10.0, 0.40 * score_fs + 0.25 * score_rel + 0.35 * drop_score))
     label = "STAYS CLOSED" if (open_drop <= 0.08 and score_raw >= 6.0) else "OPENS EARLY"
-    cov, jit = _series_quality(closedness_raw, expected_frames=len(win), jitter_scale=0.08)
-    residual_penalty = _clamp01(smoothing_residual_std(closedness_raw, smooth_idx) / 0.10)
-    jump_penalty = _jump_penalty([v for v in smooth_idx if not np.isnan(v)], jump_scale=0.14)
+    cov = _clamp01(cleaned_result.kept_count / max(1, len(win)))
     visibility = float(np.mean(vis_vals)) if vis_vals else 0.0
+    fallback_penalty = 0.15 if used_fallback else 0.0
     phase_conf = _phase_confidence([phases.peak_leg_lift, phases.foot_strike, phases.ball_release])
     conf = _clamp01(
-        _metric_confidence(cov, max(jit, residual_penalty, jump_penalty), visibility)
+        _metric_confidence(cov, cleaned_result.jitter_score + fallback_penalty, visibility)
         * phase_conf
     )
     reasons = _metric_reasons_from_quality(
         coverage=cov,
         visibility=visibility,
-        jitter_penalty=max(jit, residual_penalty),
-        jump_penalty=jump_penalty,
+        jitter_penalty=cleaned_result.jitter_score,
         phase_conf=phase_conf,
     ) if conf < CONF_FULL else []
 
@@ -2700,6 +2736,9 @@ def _compute_front_side_closedness_v2(
             "score_fs": round(score_fs, 3),
             "score_rel": round(score_rel, 3),
             "drop_score": round(drop_score, 3),
+            "used_elbow_fallback": used_fallback,
+            "frames_kept": cleaned_result.kept_count,
+            "frames_dropped": cleaned_result.dropped_count,
         },
         note="Front-side containment through FS->REL using glove/torso open-side proxies.",
         reasons=reasons,
@@ -3029,10 +3068,17 @@ def _compute_release_extension_v2(
     hand: str,
 ) -> BenchmarkResult:
     """
-    Open-side release extension composite:
-      A) reach depth proxy (stabilised)
+    Open-side release extension composite (v2 upgraded with outlier rescue):
+      A) reach depth proxy — best-frame + window_clean, body-height normalised
       B) release-angle proxy (shoulder->wrist vs trunk line)
       C) forward intent (smoothed wrist x-velocity pre-release)
+
+    Key improvements:
+      - Uses window_clean to remove spike frames before median.
+      - Picks best frame by (visibility × inverse jump) for component A.
+      - Falls back to elbow when wrist is missing.
+      - Jitter penalises confidence only, never score.
+      - min_valid_components=1 so partial data still produces a score.
     """
     name = "release_extension_v2"
     if phases.ball_release is None:
@@ -3043,71 +3089,90 @@ def _compute_release_extension_v2(
         return BenchmarkResult.insufficient(name, "BALL_RELEASE pose not found")
 
     throw_wrist = "RIGHT_WRIST" if hand == "R" else "LEFT_WRIST"
+    throw_elbow = "RIGHT_ELBOW" if hand == "R" else "LEFT_ELBOW"
     drive_hip = "RIGHT_HIP" if hand == "R" else "LEFT_HIP"
     comp_weights = {"A": 0.55, "B": 0.25, "C": 0.20}
     components: dict[str, MetricComponent] = {}
     sub_values: dict[str, float] = {}
 
     # ------------------------------------------------------------------
-    # Component A: reach depth from release window (smoothed)
+    # Component A: reach depth from release window (outlier-rescued)
     # ------------------------------------------------------------------
     rel_win = _phase_window(poses, phases.ball_release, radius=2)
     if not rel_win:
         rel_win = [rel_pose]
 
+    body_height = _body_height_proxy_px(
+        _pose_nearest(poses, phases.set_pos) or rel_pose,
+        fallback_height=float(rel_pose.height) * 0.55,
+    )
+
     reach_raw: list[float] = []
     reach_vis: list[float] = []
-    wrist_elbow_norm: list[float] = []
+    used_elbow_fallback = False
     for p in rel_win:
         wrist = _px_safe(p, throw_wrist)
         hip = _px_safe(p, drive_hip)
         ls = _px_safe(p, "LEFT_SHOULDER")
         rs = _px_safe(p, "RIGHT_SHOULDER")
-        elbow = _px_safe(p, "RIGHT_ELBOW" if hand == "R" else "LEFT_ELBOW")
-        if wrist is None or hip is None or ls is None or rs is None:
-            reach_raw.append(np.nan)
-            continue
-        shoulder_width = math.dist(ls, rs)
-        if shoulder_width < 1e-3:
-            reach_raw.append(np.nan)
-            continue
-        reach_raw.append(math.dist(wrist, hip) / shoulder_width)
-        if elbow is not None:
-            wrist_elbow_norm.append(math.dist(wrist, elbow) / shoulder_width)
-        reach_vis.append(
-            _visibility_confidence(
-                p,
-                [throw_wrist, drive_hip, "LEFT_SHOULDER", "RIGHT_SHOULDER"],
-            )
-        )
+        elbow = _px_safe(p, throw_elbow)
 
-    reach_smooth = smooth_series(reach_raw, window=5, polyorder=2)
-    reach_valid = reach_smooth[~np.isnan(reach_smooth)]
-    if len(reach_valid) >= 3:
-        reach_norm = float(np.median(reach_valid))
-        a_score = _score_release_extension_proxy(reach_norm)
-        a_cov, a_jitter = _series_quality(reach_raw, expected_frames=len(rel_win), jitter_scale=0.22)
-        a_jump = _jump_penalty([float(v) for v in reach_valid], jump_scale=0.25)
+        # Elbow fallback: if wrist missing but elbow present, use elbow
+        reach_pt = wrist
+        if reach_pt is None and elbow is not None:
+            reach_pt = elbow
+            used_elbow_fallback = True
+
+        if reach_pt is None or hip is None:
+            reach_raw.append(np.nan)
+            continue
+
+        # Normalise by body height when available, else shoulder width
+        if body_height is not None and body_height > 10.0:
+            reach_raw.append(math.dist(reach_pt, hip) / body_height)
+        elif ls is not None and rs is not None:
+            sw = math.dist(ls, rs)
+            if sw < 1e-3:
+                reach_raw.append(np.nan)
+                continue
+            reach_raw.append(math.dist(reach_pt, hip) / sw)
+        else:
+            reach_raw.append(np.nan)
+            continue
+
+        kps = [drive_hip, "LEFT_SHOULDER", "RIGHT_SHOULDER"]
+        kps.append(throw_wrist if wrist is not None else throw_elbow)
+        reach_vis.append(_visibility_confidence(p, kps))
+
+    # Apply window_clean to remove spike frames
+    cleaned = window_clean(reach_raw, radius=len(reach_raw), mad_k=3.0)
+    reach_cleaned = cleaned.values[~np.isnan(cleaned.values)]
+
+    if len(reach_cleaned) >= 1:
+        reach_norm = float(np.median(reach_cleaned))
+        # Score uses body-height normalised reach: 0.45..0.75 maps to 0..10
+        if body_height is not None and body_height > 10.0:
+            a_score = linear_score(reach_norm, 0.45, 0.75, 0.0, 10.0)
+        else:
+            a_score = _score_release_extension_proxy(reach_norm)
+        a_cov = _clamp01(len(reach_cleaned) / max(1, len(rel_win)))
         a_vis = float(np.mean(reach_vis)) if reach_vis else 0.0
-        arm_continuity_pen = 0.0
-        if wrist_elbow_norm:
-            med_we = float(np.median(np.asarray(wrist_elbow_norm, dtype=np.float64)))
-            mad_we = float(np.median(np.abs(np.asarray(wrist_elbow_norm, dtype=np.float64) - med_we)))
-            arm_continuity_pen = _clamp01(mad_we / 0.09)
+        elbow_penalty = 0.15 if used_elbow_fallback else 0.0
         a_conf = _clamp01(
-            _metric_confidence(a_cov, max(a_jitter, a_jump, arm_continuity_pen), a_vis)
+            _metric_confidence(a_cov, cleaned.jitter_score + elbow_penalty, a_vis)
             * _phase_confidence([phases.ball_release])
         )
         a_reasons = _metric_reasons_from_quality(
             coverage=a_cov,
             visibility=a_vis,
-            jitter_penalty=max(a_jitter, arm_continuity_pen),
-            jump_penalty=a_jump,
+            jitter_penalty=cleaned.jitter_score,
             phase_conf=_phase_confidence([phases.ball_release]),
         )
         components["A"] = MetricComponent(reach_norm, a_score, a_conf, a_reasons)
         sub_values["component_a_reach_norm"] = round(reach_norm, 3)
         sub_values["component_a_score"] = round(a_score, 3)
+        sub_values["component_a_elbow_fallback"] = used_elbow_fallback
+        sub_values["component_a_frames_kept"] = cleaned.kept_count
     else:
         components["A"] = MetricComponent(None, None, 0.0, ["missing_landmarks"])
         reach_norm = None
@@ -3123,6 +3188,9 @@ def _compute_release_extension_v2(
         lh = _px_vis_safe(p, "LEFT_HIP")
         rh = _px_vis_safe(p, "RIGHT_HIP")
         wrist_rel = _px_vis_safe(p, throw_wrist)
+        # Elbow fallback for angle too
+        if wrist_rel is None:
+            wrist_rel = _px_vis_safe(p, throw_elbow)
         mid_sh = _weighted_midpoint(ls, rs)
         mid_hip = _weighted_midpoint(lh, rh)
         if mid_sh is None or mid_hip is None or wrist_rel is None:
@@ -3136,21 +3204,23 @@ def _compute_release_extension_v2(
         vis_vals = [v[2] for v in [ls, rs, lh, rh, wrist_rel] if v is not None]
         b_vis_vals.append(float(np.mean(vis_vals)) if vis_vals else 0.0)
 
-    if len(b_angles) >= 3:
-        b_angle = float(np.median(np.asarray(b_angles, dtype=np.float64)))
+    # Clean angle series
+    b_cleaned = window_clean(b_angles, radius=len(b_angles), mad_k=3.0)
+    b_clean_vals = b_cleaned.values[~np.isnan(b_cleaned.values)]
+
+    if len(b_clean_vals) >= 1:
+        b_angle = float(np.median(b_clean_vals))
         b_score = _score_release_angle_proxy(b_angle)
-        b_cov, b_jitter = _series_quality(b_angles, expected_frames=len(rel_win), jitter_scale=10.0)
-        b_jump = _jump_penalty(b_angles, jump_scale=20.0)
+        b_cov = _clamp01(len(b_clean_vals) / max(1, len(rel_win)))
         b_vis = _clamp01((float(np.mean(b_vis_vals)) - 0.25) / 0.75) if b_vis_vals else 0.0
         b_conf = _clamp01(
-            _metric_confidence(b_cov, max(b_jitter, b_jump), b_vis)
+            _metric_confidence(b_cov, b_cleaned.jitter_score, b_vis)
             * _phase_confidence([phases.ball_release])
         )
         b_reasons = _metric_reasons_from_quality(
             coverage=b_cov,
             visibility=b_vis,
-            jitter_penalty=b_jitter,
-            jump_penalty=b_jump,
+            jitter_penalty=b_cleaned.jitter_score,
             phase_conf=_phase_confidence([phases.ball_release]),
         )
         components["B"] = MetricComponent(b_angle, b_score, b_conf, b_reasons)
@@ -3164,15 +3234,13 @@ def _compute_release_extension_v2(
     # ------------------------------------------------------------------
     pre_start = max(0, phases.ball_release.frame_idx - 6)
     pre_win = _poses_in_range(poses, pre_start, phases.ball_release.frame_idx)
-    body_height = _body_height_proxy_px(
-        _pose_nearest(poses, phases.set_pos) or rel_pose,
-        fallback_height=float(rel_pose.height) * 0.55,
-    )
 
     wrist_x_raw: list[float] = []
     wrist_vis: list[float] = []
     for p in pre_win:
         wpt = _px_vis_safe(p, throw_wrist)
+        if wpt is None:
+            wpt = _px_vis_safe(p, throw_elbow)  # elbow fallback
         if wpt is None:
             wrist_x_raw.append(np.nan)
             continue
@@ -3220,7 +3288,7 @@ def _compute_release_extension_v2(
     score_raw, conf, reasons, used_components = _aggregate_components(
         components,
         comp_weights,
-        min_valid_components=2,
+        min_valid_components=1,  # Accept even partial data
     )
     if score_raw is None or conf is None:
         result = BenchmarkResult.insufficient(name, "Release extension cannot be estimated reliably")
