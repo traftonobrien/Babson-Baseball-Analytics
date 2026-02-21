@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { pitchColor } from "@/lib/pitchColors";
 import type { TrackmanPitchTypeSummary } from "@/lib/trackman/metrics";
 import {
@@ -9,6 +9,8 @@ import {
   type CanonPitch,
 } from "@/lib/mlbPitchAverages";
 import { evaluateAutoRename, type AutoRenameResult } from "@/lib/autoRenamePitch";
+import { ArmAngleOverlay } from "@/app/components/trackman/ArmAngleOverlay";
+import { computeReleaseRaysByPitchType } from "@/lib/release_viz/selectors";
 
 /* ------------------------------------------------------------------ */
 /*  Layout constants                                                   */
@@ -91,6 +93,7 @@ export default function MovementScatterByType({
   pitchTypes: TrackmanPitchTypeSummary[];
   hand?: "R" | "L";
 }) {
+  const [hoveredPitchType, setHoveredPitchType] = useState<string | null>(null);
   // Filter out "Other" and require valid movement data
   const valid = useMemo(
     () =>
@@ -183,6 +186,11 @@ export default function MovementScatterByType({
     }));
     return resolveCollisions(raw);
   }, [valid, maxAbs]);
+
+  const armAngleRays = useMemo(() => {
+    if (!hand) return [];
+    return computeReleaseRaysByPitchType(pitchTypes, hand);
+  }, [pitchTypes, hand]);
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 h-full flex flex-col">
@@ -333,6 +341,18 @@ export default function MovementScatterByType({
           );
         })}
 
+        {/* Arm Angle Overlay */}
+        {armAngleRays.length > 0 && hand && (
+          <ArmAngleOverlay
+            rays={armAngleRays}
+            hand={hand}
+            plotSize={PLOT}
+            pad={PAD}
+            maxAbs={maxAbs}
+            hoveredPitchType={hoveredPitchType}
+          />
+        )}
+
         {/* Player pitch dots */}
         {valid.map((p) => {
           const rename = renameMap.get(p.pitchType);
@@ -343,7 +363,12 @@ export default function MovementScatterByType({
           const y = toSvg(-p.avgIvb!, maxAbs);
           const color = pitchColor(displayType);
           return (
-            <g key={p.pitchType}>
+            <g
+              key={p.pitchType}
+              onMouseEnter={() => setHoveredPitchType(p.pitchType)}
+              onMouseLeave={() => setHoveredPitchType(null)}
+              style={{ cursor: "pointer" }}
+            >
               {/* Outer halo disk */}
               <circle cx={x} cy={y} r={HALO_R} fill={color} opacity={HALO_OPACITY} />
               {/* Faint outline stroke */}

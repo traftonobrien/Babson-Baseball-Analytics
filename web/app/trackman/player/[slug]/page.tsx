@@ -83,6 +83,24 @@ function aggregatePitchTypes(
     items: TrackmanPitchTypeSummary[],
     key: keyof TrackmanPitchTypeSummary,
   ): number | null => {
+    // If we have counts for all items, use weighted average
+    const hasCounts = items.every(i => i.count !== null);
+    
+    if (hasCounts) {
+      let totalW = 0;
+      let totalV = 0;
+      for (const i of items) {
+        const val = i[key] as number | null;
+        if (val !== null && i.count !== null) {
+          totalW += i.count;
+          totalV += val * i.count;
+        }
+      }
+      if (totalW === 0) return null;
+      return Math.round((totalV / totalW) * 100) / 100;
+    }
+
+    // Fallback to simple average of averages
     const vals = items
       .map((i) => i[key] as number | null)
       .filter((v): v is number => v != null);
@@ -92,9 +110,15 @@ function aggregatePitchTypes(
 
   const result: TrackmanPitchTypeSummary[] = [];
   for (const [pitchType, items] of grouped) {
+    // Sum counts if available
+    const totalCount = items.reduce((acc, curr) => {
+      if (acc === null && curr.count === null) return null;
+      return (acc || 0) + (curr.count || 0);
+    }, null as number | null);
+
     result.push({
       pitchType,
-      count: null,
+      count: totalCount,
       avgVelo: avgNum(items, "avgVelo"),
       maxVelo: null,
       avgSpin: avgNum(items, "avgSpin"),
@@ -454,8 +478,13 @@ export default function TrackmanPlayerPage({
                 <PitchTypeTable pitchTypes={filtered} summary={null} />
 
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-stretch">
-                  <MovementScatterByType pitchTypes={filtered} hand={normalizedHand} />
-                  <PitchArsenalCards pitchTypes={filtered} />
+                  <MovementScatterByType
+                    pitchTypes={filtered}
+                    hand={normalizedHand}
+                  />
+                  <div className="flex flex-col gap-4">
+                    <PitchArsenalCards pitchTypes={filtered} />
+                  </div>
                 </div>
               </>
             )}
