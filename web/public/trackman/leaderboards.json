@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-21T20:54:41Z",
+  "generated_at": "2026-02-21T20:58:42Z",
   "date_from": null,
   "date_to": null,
   "session_count": 58,
@@ -142,12 +142,20 @@
         "rank": 17
       },
       {
+        "playerName": "Pearl, Tristan",
+        "playerSlug": "pearl_tristan",
+        "team": "Babson College Beavers",
+        "sessionCount": null,
+        "value": 83.4,
+        "rank": 18
+      },
+      {
         "playerName": "Purpura, Vinnie",
         "playerSlug": "purpura_vinnie",
         "team": "Babson College",
         "sessionCount": null,
         "value": 82.5,
-        "rank": 18
+        "rank": 19
       },
       {
         "playerName": "OKeefe, Quinn",
@@ -155,7 +163,7 @@
         "team": "Babson College",
         "sessionCount": null,
         "value": 82.4,
-        "rank": 19
+        "rank": 20
       },
       {
         "playerName": "Doan, Connor",
@@ -163,7 +171,7 @@
         "team": "Babson College",
         "sessionCount": null,
         "value": 82.1,
-        "rank": 20
+        "rank": 21
       },
       {
         "playerName": "LaPierre, Anthony",
@@ -171,14 +179,6 @@
         "team": null,
         "sessionCount": null,
         "value": 82.0,
-        "rank": 21
-      },
-      {
-        "playerName": "Pearl, Tristan",
-        "playerSlug": "pearl_tristan",
-        "team": "Babson College Beavers",
-        "sessionCount": null,
-        "value": 81.8,
         "rank": 22
       },
       {
