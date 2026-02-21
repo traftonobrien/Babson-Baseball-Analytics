@@ -2353,6 +2353,7 @@ def _compute_hip_shoulder_sep_v3(
 
     shoulder_angle_raw: list[float] = []
     pelvis_x_raw: list[float] = []
+    shoulder_widths: list[float] = []
     vis_vals: list[float] = []
     frame_idx: list[int] = []
 
@@ -2367,6 +2368,7 @@ def _compute_hip_shoulder_sep_v3(
             pelvis_x_raw.append(np.nan)
             continue
         shoulder_angle_raw.append(float(math.degrees(math.atan2(rs[1] - ls[1], rs[0] - ls[0] + 1e-9))))
+        shoulder_widths.append(float(math.dist(ls, rs)))
         back_hip = rh if hand == "R" else lh
         mid_hip_x = float((lh[0] + rh[0]) / 2.0)
         pelvis_x_raw.append(0.7 * float(back_hip[0]) + 0.3 * mid_hip_x)
@@ -2486,8 +2488,19 @@ def _compute_hip_shoulder_sep_v3(
     phase_conf = _phase_confidence([phases.set_pos, phases.peak_leg_lift, phases.foot_strike, phases.ball_release])
     cov_sh, jit_sh = _series_quality(shoulder_angle_raw, expected_frames=len(win), jitter_scale=7.0)
     cov_pe, jit_pe = _series_quality(pelvis_x_raw, expected_frames=len(win), jitter_scale=body_height * 0.02)
-    jump_sh = _jump_penalty(shoulder_vel, jump_scale=35.0)
-    jump_pe = _jump_penalty(pelvis_vel, jump_scale=0.18)
+    # Require ≥2 consecutive frames of instability — single-frame shoulder-angle
+    # flips from open-side foreshortening should not trigger outlier_jump.
+    jump_sh = _jump_penalty_consecutive(shoulder_vel, jump_scale=35.0, min_consecutive=2)
+    jump_pe = _jump_penalty_consecutive(pelvis_vel, jump_scale=0.18, min_consecutive=2)
+
+    # Shoulder-width floor: when shoulders appear very narrow (foreshortened
+    # on open-side), shoulder angle is unreliable.  Scale down shoulder jump
+    # penalty to avoid false outlier_jump flags.
+    _sh_width_floor_px = 25.0 * (float(win[0].height) / 720.0) if win else 25.0
+    median_sh_width = float(np.median(shoulder_widths)) if shoulder_widths else 0.0
+    if median_sh_width < _sh_width_floor_px:
+        jump_sh = min(jump_sh, 0.15)  # suppress shoulder jump in low-trust mode
+
     visibility = float(np.mean(vis_vals)) if vis_vals else 0.0
 
     components: dict[str, MetricComponent] = {}
