@@ -57,7 +57,7 @@
   },
   {
     "pitch_type": "Curveball",
-    "avg_velocity_mph": 74.89,
+    "avg_velocity_mph": 70.2,
     "avg_spin_rpm": 2104.04,
     "avg_ivb_in": -14.3,
     "avg_hb_in": -12.34,
@@ -70,7 +70,7 @@
     "is_valid": true,
     "raw_columns": {
       "Pitch Type": "Curveball",
-      "MPH": "74.89",
+      "MPH": "70.20",
       "RPM": "2,104.04",
       "IVB": "-14.30",
       "HB": "-12.34",
