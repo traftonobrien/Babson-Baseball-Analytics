@@ -60,6 +60,7 @@ from src.mechanics.benchmarks import (
     _score_release_extension_proxy,
 )
 from src.mechanics.utils import smooth_series
+from src.mechanics.benchmarks import _jump_penalty_consecutive
 
 
 # ---------------------------------------------------------------------------
@@ -1316,3 +1317,158 @@ class TestSyntheticLeakLowScore:
         # Should score notably lower than a braced leg
         if result.score is not None:
             assert result.score < 8.0, f"Leaking leg should score lower, got {result.score}"
+
+
+# ---------------------------------------------------------------------------
+# Reason flag regression tests
+# ---------------------------------------------------------------------------
+
+class TestNoFalsePhaseUncertain:
+    """phase_uncertain should only appear when phase_conf < 0.50."""
+
+    def test_block_no_phase_uncertain_above_threshold(self):
+        """lead_leg_block_v3 should NOT have phase_uncertain when phase confs >= 0.55."""
+        poses = []
+        for i in range(50):
+            lm = _base_lm(vis=0.95)
+            lm[KP["LEFT_HIP"]] = [0.35, 0.40, 0.95]
+            lm[KP["LEFT_KNEE"]] = [0.35, 0.55, 0.95]
+            lm[KP["LEFT_ANKLE"]] = [0.35, 0.75, 0.95]
+            lm[KP["RIGHT_HIP"]] = [0.55, 0.40, 0.95]
+            lm[KP["RIGHT_KNEE"]] = [0.55, 0.60, 0.95]
+            lm[KP["RIGHT_ANKLE"]] = [0.55, 0.75, 0.95]
+            lm[KP["LEFT_SHOULDER"]] = [0.30, 0.25, 0.95]
+            lm[KP["RIGHT_SHOULDER"]] = [0.60, 0.25, 0.95]
+            lm[KP["RIGHT_WRIST"]] = [0.70, 0.20, 0.90]
+            lm[KP["LEFT_WRIST"]] = [0.25, 0.30, 0.90]
+            lm[KP["RIGHT_ELBOW"]] = [0.65, 0.23, 0.92]
+            lm[KP["LEFT_ELBOW"]] = [0.28, 0.28, 0.92]
+            lm[KP["NOSE"]] = [0.45, 0.10, 0.95]
+            poses.append(_make_pose(frame_idx=i, lm=lm))
+        # Phase confs will be >= 0.55 for these clear poses
+        phases = _make_phases(set_idx=0, peak_idx=15, fs_idx=30, rel_idx=42)
+        result = _compute_lead_leg_block_v3(poses, phases, hand="R")
+        assert result.status == "ok"
+        reasons = result.reasons or []
+        assert "phase_uncertain" not in reasons, f"False phase_uncertain: {reasons}"
+
+
+class TestConsecutiveJumpPenalty:
+    """_jump_penalty_consecutive only triggers on sustained instability."""
+
+    def test_isolated_spike_creates_consecutive_diffs(self):
+        """A single-value spike creates 2 consecutive large diffs (up+down),
+        which correctly triggers the consecutive check."""
+        # Spike at index 4: diffs include ~48.9 and ~49.0 back-to-back
+        vals = [1.0, 1.1, 1.0, 1.1, 50.0, 1.0, 1.1, 1.0, 1.1, 1.0]
+        penalty = _jump_penalty_consecutive(vals, jump_scale=5.0, min_consecutive=2)
+        # This IS consecutive (up-jump + down-jump) so penalty should be > 0
+        assert penalty > 0.0, f"Spike up+down are consecutive, got {penalty}"
+
+    def test_sustained_instability_penalized(self):
+        """Sustained large diffs across multiple consecutive frames are penalized."""
+        # Diffs: [0, 0, 49, 30, 40, 119, 0, 0, 0] — four consecutive above thresh
+        vals = [1.0, 1.0, 1.0, 50.0, 80.0, 120.0, 1.0, 1.0, 1.0, 1.0]
+        penalty = _jump_penalty_consecutive(vals, jump_scale=5.0, min_consecutive=2)
+        assert penalty > 0.0, f"Sustained instability should penalize, got {penalty}"
+
+    def test_stable_series_no_penalty(self):
+        """A stable series should have zero penalty."""
+        vals = [10.0, 10.1, 10.0, 10.2, 10.1, 10.0, 10.1, 10.0]
+        penalty = _jump_penalty_consecutive(vals, jump_scale=5.0, min_consecutive=2)
+        assert penalty == 0.0, f"Stable series should not penalize, got {penalty}"
+
+
+class TestSwivel_NoFalseOutlierJump:
+    """swivel_stabilize should not flag outlier_jump from a single frame spike."""
+
+    def test_swivel_single_spike_no_outlier(self):
+        """One bad glove-tracking frame should not produce outlier_jump."""
+        poses = []
+        for i in range(50):
+            lm = _base_lm(vis=0.95)
+            lm[KP["LEFT_SHOULDER"]] = [0.30, 0.25, 0.95]
+            lm[KP["RIGHT_SHOULDER"]] = [0.60, 0.25, 0.95]
+            lm[KP["LEFT_HIP"]] = [0.35, 0.50, 0.95]
+            lm[KP["RIGHT_HIP"]] = [0.55, 0.50, 0.95]
+            # Glove stays inside torso frame, except one spike
+            glove_x = 0.40
+            if i == 40:
+                glove_x = 0.10  # single spike outside
+            lm[KP["LEFT_WRIST"]] = [glove_x, 0.35, 0.90]
+            lm[KP["RIGHT_WRIST"]] = [0.70, 0.20, 0.90]
+            lm[KP["LEFT_ELBOW"]] = [0.33, 0.30, 0.92]
+            lm[KP["RIGHT_ELBOW"]] = [0.65, 0.23, 0.92]
+            lm[KP["NOSE"]] = [0.45, 0.10, 0.95]
+            poses.append(_make_pose(frame_idx=i, lm=lm))
+        phases = _make_phases(set_idx=0, peak_idx=15, fs_idx=30, rel_idx=42)
+        result = _compute_swivel_stabilize(poses, phases, hand="R")
+        assert result.status == "ok"
+        reasons = result.reasons or []
+        assert "outlier_jump" not in reasons, f"Single spike caused outlier_jump: {reasons}"
+
+
+class TestHipShoulderSep_NoFalseOutlierJump:
+    """hip_shoulder_sep_v3 should not flag outlier_jump from single-frame shoulder flip."""
+
+    def test_single_shoulder_flip_no_outlier(self):
+        """A single-frame shoulder angle spike should not trigger outlier_jump."""
+        poses = []
+        for i in range(50):
+            lm = _base_lm(vis=0.95)
+            # Consistent shoulder line, except one flip frame
+            ls_x = 0.30
+            rs_x = 0.60
+            if i == 25:
+                # Flip: shoulders appear reversed for one frame
+                ls_x = 0.58
+                rs_x = 0.32
+            lm[KP["LEFT_SHOULDER"]] = [ls_x, 0.25, 0.95]
+            lm[KP["RIGHT_SHOULDER"]] = [rs_x, 0.25, 0.95]
+            lm[KP["LEFT_HIP"]] = [0.35, 0.50, 0.95]
+            lm[KP["RIGHT_HIP"]] = [0.55, 0.50, 0.95]
+            lm[KP["LEFT_KNEE"]] = [0.35, 0.65, 0.95]
+            lm[KP["RIGHT_KNEE"]] = [0.55, 0.65, 0.95]
+            lm[KP["LEFT_ANKLE"]] = [0.35, 0.80, 0.95]
+            lm[KP["RIGHT_ANKLE"]] = [0.55, 0.80, 0.95]
+            lm[KP["LEFT_WRIST"]] = [0.25, 0.30, 0.90]
+            lm[KP["RIGHT_WRIST"]] = [0.70, 0.20, 0.90]
+            lm[KP["LEFT_ELBOW"]] = [0.28, 0.28, 0.92]
+            lm[KP["RIGHT_ELBOW"]] = [0.65, 0.23, 0.92]
+            lm[KP["NOSE"]] = [0.45, 0.10, 0.95]
+            poses.append(_make_pose(frame_idx=i, lm=lm))
+        phases = _make_phases(set_idx=0, peak_idx=15, fs_idx=30, rel_idx=42)
+        result = _compute_hip_shoulder_sep_v3(poses, phases, hand="R")
+        assert result.status == "ok"
+        reasons = result.reasons or []
+        assert "outlier_jump" not in reasons, f"Single shoulder flip caused outlier_jump: {reasons}"
+
+    def test_narrow_shoulders_low_trust(self):
+        """Very narrow shoulder width should not produce false outlier_jump."""
+        poses = []
+        for i in range(50):
+            lm = _base_lm(vis=0.95)
+            # Narrow shoulders (foreshortened open-side) with some motion
+            # to avoid low_motion / insufficient velocity samples.
+            progress = i / 49.0
+            lm[KP["LEFT_SHOULDER"]] = [0.44 - 0.02 * progress, 0.25, 0.95]
+            lm[KP["RIGHT_SHOULDER"]] = [0.46 + 0.02 * progress, 0.25, 0.95]
+            lm[KP["LEFT_HIP"]] = [0.40 + 0.04 * progress, 0.50, 0.95]
+            lm[KP["RIGHT_HIP"]] = [0.50 + 0.04 * progress, 0.50, 0.95]
+            lm[KP["LEFT_KNEE"]] = [0.40, 0.65, 0.95]
+            lm[KP["RIGHT_KNEE"]] = [0.50, 0.65, 0.95]
+            lm[KP["LEFT_ANKLE"]] = [0.40, 0.80, 0.95]
+            lm[KP["RIGHT_ANKLE"]] = [0.50, 0.80, 0.95]
+            lm[KP["LEFT_WRIST"]] = [0.38, 0.30, 0.90]
+            lm[KP["RIGHT_WRIST"]] = [0.52, 0.20, 0.90]
+            lm[KP["LEFT_ELBOW"]] = [0.39, 0.28, 0.92]
+            lm[KP["RIGHT_ELBOW"]] = [0.51, 0.23, 0.92]
+            lm[KP["NOSE"]] = [0.45, 0.10, 0.95]
+            poses.append(_make_pose(frame_idx=i, lm=lm))
+        phases = _make_phases(set_idx=0, peak_idx=15, fs_idx=30, rel_idx=42)
+        result = _compute_hip_shoulder_sep_v3(poses, phases, hand="R")
+        assert result.status == "ok"
+        reasons = result.reasons or []
+        assert "outlier_jump" not in reasons, f"Narrow shoulders caused outlier_jump: {reasons}"
+        # Confidence should be positive but lower than normal
+        assert result.confidence is not None and result.confidence > CONF_BLIND
