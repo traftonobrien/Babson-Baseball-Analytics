@@ -1,0 +1,17 @@
+{
+  "player_name": "O'Brien, Trafton",
+  "player_slug": "obrien_trafton",
+  "team": "Babson College Beavers",
+  "handedness": "RHP",
+  "session_date": "2026-02-21",
+  "date_from": "2026-02-20",
+  "date_to": "2026-02-21",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Trafton O'Brien 2:21.pdf",
+    "sha256": "f9818ddebbb3af48b56866e7f678d6013bcf5c885761fd10db280f7746ef86fc",
+    "imported_at": "2026-02-21T20:42:18Z"
+  }
+}

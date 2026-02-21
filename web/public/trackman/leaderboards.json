@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-02-18T01:20:21Z",
+  "generated_at": "2026-02-21T20:54:41Z",
   "date_from": null,
   "date_to": null,
-  "session_count": 51,
+  "session_count": 58,
   "leaderboards": {
     "max_fb_velo": [
       {
@@ -40,7 +40,7 @@
       {
         "playerName": "Carrea, Joe",
         "playerSlug": "carrea_joe",
-        "team": "Babson College",
+        "team": "Babson College Beavers",
         "sessionCount": null,
         "value": 89.9,
         "rank": 5
@@ -48,7 +48,7 @@
       {
         "playerName": "O'Brien, Trafton",
         "playerSlug": "obrien_trafton",
-        "team": null,
+        "team": "Babson College Beavers",
         "sessionCount": null,
         "value": 88.7,
         "rank": 6
@@ -64,7 +64,7 @@
       {
         "playerName": "Vyse, Graydon",
         "playerSlug": "vyse_graydon",
-        "team": "See Pitches by:",
+        "team": "Babson College Beavers",
         "sessionCount": null,
         "value": 87.2,
         "rank": 8
@@ -80,7 +80,7 @@
       {
         "playerName": "Snyder, Drew",
         "playerSlug": "snyder_drew",
-        "team": null,
+        "team": "Babson College Beavers",
         "sessionCount": null,
         "value": 86.7,
         "rank": 10
@@ -128,7 +128,7 @@
       {
         "playerName": "Camardi, Michael",
         "playerSlug": "camardi_michael",
-        "team": "Babson College",
+        "team": "Babson College Beavers",
         "sessionCount": null,
         "value": 84.2,
         "rank": 16
@@ -136,9 +136,9 @@
       {
         "playerName": "Shapiro, Brennan",
         "playerSlug": "shapiro_brennan",
-        "team": "Babson College",
+        "team": "Babson College Beavers",
         "sessionCount": null,
-        "value": 82.8,
+        "value": 84.0,
         "rank": 17
       },
       {
@@ -176,7 +176,7 @@
       {
         "playerName": "Pearl, Tristan",
         "playerSlug": "pearl_tristan",
-        "team": "Babson College",
+        "team": "Babson College Beavers",
         "sessionCount": null,
         "value": 81.8,
         "rank": 22
@@ -242,25 +242,25 @@
       {
         "playerName": "Vyse, Graydon",
         "playerSlug": "vyse_graydon",
-        "team": "See Pitches by:",
-        "sessionCount": 3,
-        "value": 85.76,
+        "team": "Babson College Beavers",
+        "sessionCount": 4,
+        "value": 85.64,
         "rank": 5
-      },
-      {
-        "playerName": "Carrea, Joe",
-        "playerSlug": "carrea_joe",
-        "team": "Babson College",
-        "sessionCount": 3,
-        "value": 85.68,
-        "rank": 6
       },
       {
         "playerName": "O'Brien, Trafton",
         "playerSlug": "obrien_trafton",
-        "team": null,
-        "sessionCount": 3,
-        "value": 85.25,
+        "team": "Babson College Beavers",
+        "sessionCount": 4,
+        "value": 85.55,
+        "rank": 6
+      },
+      {
+        "playerName": "Carrea, Joe",
+        "playerSlug": "carrea_joe",
+        "team": "Babson College Beavers",
+        "sessionCount": 4,
+        "value": 85.5,
         "rank": 7
       },
       {
@@ -282,9 +282,9 @@
       {
         "playerName": "Snyder, Drew",
         "playerSlug": "snyder_drew",
-        "team": null,
-        "sessionCount": 3,
-        "value": 84.18,
+        "team": "Babson College Beavers",
+        "sessionCount": 4,
+        "value": 84.17,
         "rank": 10
       },
       {
@@ -312,28 +312,36 @@
         "rank": 13
       },
       {
+        "playerName": "Camardi, Michael",
+        "playerSlug": "camardi_michael",
+        "team": "Babson College Beavers",
+        "sessionCount": 2,
+        "value": 82.98,
+        "rank": 14
+      },
+      {
         "playerName": "Getchell, Jacob",
         "playerSlug": "getchell_jacob",
         "team": "Babson College",
         "sessionCount": 1,
         "value": 82.89,
-        "rank": 14
-      },
-      {
-        "playerName": "Camardi, Michael",
-        "playerSlug": "camardi_michael",
-        "team": "Babson College",
-        "sessionCount": 1,
-        "value": 82.85,
         "rank": 15
       },
       {
         "playerName": "Pearl, Tristan",
         "playerSlug": "pearl_tristan",
-        "team": "Babson College",
-        "sessionCount": 2,
-        "value": 81.44,
+        "team": "Babson College Beavers",
+        "sessionCount": 3,
+        "value": 81.52,
         "rank": 16
+      },
+      {
+        "playerName": "Shapiro, Brennan",
+        "playerSlug": "shapiro_brennan",
+        "team": "Babson College Beavers",
+        "sessionCount": 3,
+        "value": 81.34,
+        "rank": 17
       },
       {
         "playerName": "OKeefe, Quinn",
@@ -341,7 +349,7 @@
         "team": "Babson College",
         "sessionCount": 2,
         "value": 81.0,
-        "rank": 17
+        "rank": 18
       },
       {
         "playerName": "Purpura, Vinnie",
@@ -349,14 +357,6 @@
         "team": "Babson College",
         "sessionCount": 2,
         "value": 80.97,
-        "rank": 18
-      },
-      {
-        "playerName": "Shapiro, Brennan",
-        "playerSlug": "shapiro_brennan",
-        "team": "Babson College",
-        "sessionCount": 2,
-        "value": 80.84,
         "rank": 19
       },
       {
@@ -388,9 +388,9 @@
       {
         "playerName": "Snyder, Drew",
         "playerSlug": "snyder_drew",
-        "team": null,
-        "sessionCount": 3,
-        "value": 2185.96,
+        "team": "Babson College Beavers",
+        "sessionCount": 4,
+        "value": 2196.94,
         "rank": 1
       },
       {
@@ -404,34 +404,26 @@
       {
         "playerName": "Carrea, Joe",
         "playerSlug": "carrea_joe",
-        "team": "Babson College",
-        "sessionCount": 3,
-        "value": 2113.48,
+        "team": "Babson College Beavers",
+        "sessionCount": 4,
+        "value": 2087.79,
         "rank": 3
-      },
-      {
-        "playerName": "Camardi, Michael",
-        "playerSlug": "camardi_michael",
-        "team": "Babson College",
-        "sessionCount": 1,
-        "value": 2071.51,
-        "rank": 4
       },
       {
         "playerName": "O'Brien, Trafton",
         "playerSlug": "obrien_trafton",
-        "team": null,
-        "sessionCount": 3,
-        "value": 2062.81,
-        "rank": 5
+        "team": "Babson College Beavers",
+        "sessionCount": 4,
+        "value": 2069.13,
+        "rank": 4
       },
       {
-        "playerName": "Vyse, Graydon",
-        "playerSlug": "vyse_graydon",
-        "team": "See Pitches by:",
-        "sessionCount": 3,
-        "value": 2055.19,
-        "rank": 6
+        "playerName": "Camardi, Michael",
+        "playerSlug": "camardi_michael",
+        "team": "Babson College Beavers",
+        "sessionCount": 2,
+        "value": 2054.97,
+        "rank": 5
       },
       {
         "playerName": "James, Dillon",
@@ -439,7 +431,7 @@
         "team": "Babson College",
         "sessionCount": 2,
         "value": 2032.76,
-        "rank": 7
+        "rank": 6
       },
       {
         "playerName": "Smith, Cooper",
@@ -447,7 +439,7 @@
         "team": "See Pitches by:",
         "sessionCount": 2,
         "value": 2032.01,
-        "rank": 8
+        "rank": 7
       },
       {
         "playerName": "Doan, Connor",
@@ -455,6 +447,14 @@
         "team": "Babson College",
         "sessionCount": 3,
         "value": 2018.48,
+        "rank": 8
+      },
+      {
+        "playerName": "Vyse, Graydon",
+        "playerSlug": "vyse_graydon",
+        "team": "Babson College Beavers",
+        "sessionCount": 4,
+        "value": 2009.27,
         "rank": 9
       },
       {
@@ -492,9 +492,9 @@
       {
         "playerName": "Pearl, Tristan",
         "playerSlug": "pearl_tristan",
-        "team": "Babson College",
-        "sessionCount": 2,
-        "value": 1851.11,
+        "team": "Babson College Beavers",
+        "sessionCount": 3,
+        "value": 1885.57,
         "rank": 14
       },
       {
@@ -522,19 +522,19 @@
         "rank": 17
       },
       {
+        "playerName": "Shapiro, Brennan",
+        "playerSlug": "shapiro_brennan",
+        "team": "Babson College Beavers",
+        "sessionCount": 3,
+        "value": 1769.87,
+        "rank": 18
+      },
+      {
         "playerName": "Valente, Ben",
         "playerSlug": "valente_ben",
         "team": "Babson College",
         "sessionCount": 2,
         "value": 1751.16,
-        "rank": 18
-      },
-      {
-        "playerName": "Shapiro, Brennan",
-        "playerSlug": "shapiro_brennan",
-        "team": "Babson College",
-        "sessionCount": 2,
-        "value": 1705.28,
         "rank": 19
       },
       {
@@ -564,28 +564,20 @@
     ],
     "avg_bb_spin": [
       {
+        "playerName": "Snyder, Drew",
+        "playerSlug": "snyder_drew",
+        "team": "Babson College Beavers",
+        "sessionCount": 4,
+        "value": 2289.74,
+        "rank": 1
+      },
+      {
         "playerName": "Getchell, Jacob",
         "playerSlug": "getchell_jacob",
         "team": "Babson College",
         "sessionCount": 1,
         "value": 2246.11,
-        "rank": 1
-      },
-      {
-        "playerName": "Snyder, Drew",
-        "playerSlug": "snyder_drew",
-        "team": null,
-        "sessionCount": 3,
-        "value": 2228.54,
         "rank": 2
-      },
-      {
-        "playerName": "Camardi, Michael",
-        "playerSlug": "camardi_michael",
-        "team": "Babson College",
-        "sessionCount": 1,
-        "value": 2219.87,
-        "rank": 3
       },
       {
         "playerName": "Langan, Shane",
@@ -593,6 +585,14 @@
         "team": "Babson College",
         "sessionCount": 2,
         "value": 2212.82,
+        "rank": 3
+      },
+      {
+        "playerName": "Camardi, Michael",
+        "playerSlug": "camardi_michael",
+        "team": "Babson College Beavers",
+        "sessionCount": 2,
+        "value": 2201.61,
         "rank": 4
       },
       {
@@ -628,19 +628,19 @@
         "rank": 8
       },
       {
+        "playerName": "O'Brien, Trafton",
+        "playerSlug": "obrien_trafton",
+        "team": "Babson College Beavers",
+        "sessionCount": 4,
+        "value": 2051.26,
+        "rank": 9
+      },
+      {
         "playerName": "Valente, Ben",
         "playerSlug": "valente_ben",
         "team": "Babson College",
         "sessionCount": 2,
         "value": 2042.27,
-        "rank": 9
-      },
-      {
-        "playerName": "O'Brien, Trafton",
-        "playerSlug": "obrien_trafton",
-        "team": null,
-        "sessionCount": 3,
-        "value": 2033.67,
         "rank": 10
       },
       {
@@ -660,35 +660,35 @@
         "rank": 12
       },
       {
+        "playerName": "Carrea, Joe",
+        "playerSlug": "carrea_joe",
+        "team": "Babson College Beavers",
+        "sessionCount": 4,
+        "value": 1954.34,
+        "rank": 13
+      },
+      {
         "playerName": "OKeefe, Quinn",
         "playerSlug": "okeefe_quinn",
         "team": "Babson College",
         "sessionCount": 1,
         "value": 1948.29,
-        "rank": 13
-      },
-      {
-        "playerName": "Vyse, Graydon",
-        "playerSlug": "vyse_graydon",
-        "team": "See Pitches by:",
-        "sessionCount": 3,
-        "value": 1895.92,
         "rank": 14
       },
       {
         "playerName": "Pearl, Tristan",
         "playerSlug": "pearl_tristan",
-        "team": "Babson College",
-        "sessionCount": 2,
-        "value": 1831.34,
+        "team": "Babson College Beavers",
+        "sessionCount": 3,
+        "value": 1867.09,
         "rank": 15
       },
       {
-        "playerName": "Carrea, Joe",
-        "playerSlug": "carrea_joe",
-        "team": "Babson College",
-        "sessionCount": 3,
-        "value": 1747.13,
+        "playerName": "Vyse, Graydon",
+        "playerSlug": "vyse_graydon",
+        "team": "Babson College Beavers",
+        "sessionCount": 4,
+        "value": 1842.99,
         "rank": 16
       },
       {
@@ -718,35 +718,35 @@
       {
         "playerName": "Shapiro, Brennan",
         "playerSlug": "shapiro_brennan",
-        "team": "Babson College",
-        "sessionCount": 1,
-        "value": 1474.78,
+        "team": "Babson College Beavers",
+        "sessionCount": 2,
+        "value": 1498.34,
         "rank": 20
       }
     ],
     "avg_extension": [
-      {
-        "playerName": "Vyse, Graydon",
-        "playerSlug": "vyse_graydon",
-        "team": "See Pitches by:",
-        "sessionCount": 3,
-        "value": 8.03,
-        "rank": 1
-      },
       {
         "playerName": "Purpura, Vinnie",
         "playerSlug": "purpura_vinnie",
         "team": "Babson College",
         "sessionCount": 2,
         "value": 7.95,
+        "rank": 1
+      },
+      {
+        "playerName": "Vyse, Graydon",
+        "playerSlug": "vyse_graydon",
+        "team": "Babson College Beavers",
+        "sessionCount": 4,
+        "value": 7.86,
         "rank": 2
       },
       {
         "playerName": "Pearl, Tristan",
         "playerSlug": "pearl_tristan",
-        "team": "Babson College",
-        "sessionCount": 2,
-        "value": 7.69,
+        "team": "Babson College Beavers",
+        "sessionCount": 3,
+        "value": 7.32,
         "rank": 3
       },
       {
@@ -758,28 +758,12 @@
         "rank": 4
       },
       {
-        "playerName": "Shapiro, Brennan",
-        "playerSlug": "shapiro_brennan",
-        "team": "Babson College",
-        "sessionCount": 2,
-        "value": 7.23,
-        "rank": 5
-      },
-      {
         "playerName": "Valente, Ben",
         "playerSlug": "valente_ben",
         "team": "Babson College",
         "sessionCount": 2,
         "value": 7.18,
-        "rank": 6
-      },
-      {
-        "playerName": "Snyder, Drew",
-        "playerSlug": "snyder_drew",
-        "team": null,
-        "sessionCount": 3,
-        "value": 7.17,
-        "rank": 7
+        "rank": 5
       },
       {
         "playerName": "Langan, Shane",
@@ -787,15 +771,23 @@
         "team": "Babson College",
         "sessionCount": 2,
         "value": 6.99,
-        "rank": 8
+        "rank": 6
       },
       {
-        "playerName": "Carrea, Joe",
-        "playerSlug": "carrea_joe",
-        "team": "Babson College",
+        "playerName": "Shapiro, Brennan",
+        "playerSlug": "shapiro_brennan",
+        "team": "Babson College Beavers",
         "sessionCount": 3,
-        "value": 6.91,
-        "rank": 9
+        "value": 6.96,
+        "rank": 7
+      },
+      {
+        "playerName": "Snyder, Drew",
+        "playerSlug": "snyder_drew",
+        "team": "Babson College Beavers",
+        "sessionCount": 4,
+        "value": 6.96,
+        "rank": 8
       },
       {
         "playerName": "Burk, Bobby",
@@ -803,6 +795,14 @@
         "team": "Babson College",
         "sessionCount": 2,
         "value": 6.86,
+        "rank": 9
+      },
+      {
+        "playerName": "Carrea, Joe",
+        "playerSlug": "carrea_joe",
+        "team": "Babson College Beavers",
+        "sessionCount": 4,
+        "value": 6.69,
         "rank": 10
       },
       {
@@ -814,20 +814,12 @@
         "rank": 11
       },
       {
-        "playerName": "O'Brien, Trafton",
-        "playerSlug": "obrien_trafton",
-        "team": null,
-        "sessionCount": 3,
-        "value": 6.25,
-        "rank": 12
-      },
-      {
         "playerName": "Smith, Cooper",
         "playerSlug": "smith_cooper",
         "team": "See Pitches by:",
         "sessionCount": 2,
         "value": 6.22,
-        "rank": 13
+        "rank": 12
       },
       {
         "playerName": "Place, Cal",
@@ -835,6 +827,14 @@
         "team": "Babson College",
         "sessionCount": 4,
         "value": 6.21,
+        "rank": 13
+      },
+      {
+        "playerName": "O'Brien, Trafton",
+        "playerSlug": "obrien_trafton",
+        "team": "Babson College Beavers",
+        "sessionCount": 4,
+        "value": 6.16,
         "rank": 14
       },
       {
@@ -864,9 +864,9 @@
       {
         "playerName": "Camardi, Michael",
         "playerSlug": "camardi_michael",
-        "team": "Babson College",
-        "sessionCount": 1,
-        "value": 5.8,
+        "team": "Babson College Beavers",
+        "sessionCount": 2,
+        "value": 5.62,
         "rank": 18
       },
       {

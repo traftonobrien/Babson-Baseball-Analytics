@@ -1,0 +1,17 @@
+{
+  "player_name": "Vyse, Graydon",
+  "player_slug": "vyse_graydon",
+  "team": "Babson College Beavers",
+  "handedness": "RHP",
+  "session_date": "2026-02-21",
+  "date_from": "2026-02-20",
+  "date_to": "2026-02-21",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Graydon Vyse 2:21.pdf",
+    "sha256": "1605308fa157e09567ce98d07597ad69fc821d1136f48689d4cea98bb2d9611b",
+    "imported_at": "2026-02-21T20:43:36Z"
+  }
+}

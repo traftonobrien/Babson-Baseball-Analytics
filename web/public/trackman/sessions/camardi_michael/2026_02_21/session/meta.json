@@ -1,0 +1,17 @@
+{
+  "player_name": "Camardi, Michael",
+  "player_slug": "camardi_michael",
+  "team": "Babson College Beavers",
+  "handedness": "LHP",
+  "session_date": "2026-02-21",
+  "date_from": "2026-02-20",
+  "date_to": "2026-02-21",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Michael Camardi 2:21.pdf",
+    "sha256": "de020f97a1d67fce271498e2315dd8c0d34c70339a838b2a630fc2b55052d4c2",
+    "imported_at": "2026-02-21T20:47:47Z"
+  }
+}

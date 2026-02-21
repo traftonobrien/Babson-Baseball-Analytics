@@ -1,0 +1,17 @@
+{
+  "player_name": "Carrea, Joe",
+  "player_slug": "carrea_joe",
+  "team": "Babson College Beavers",
+  "handedness": "RHP",
+  "session_date": "2026-02-21",
+  "date_from": "2026-02-20",
+  "date_to": "2026-02-21",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Joe Carrea 2:21.pdf",
+    "sha256": "22253f8a0b84110208178df9fb1aeb247fb7d37f7b5211b569299d2a2776512a",
+    "imported_at": "2026-02-21T20:47:48Z"
+  }
+}

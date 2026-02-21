@@ -1,0 +1,17 @@
+{
+  "player_name": "Shapiro, Brennan",
+  "player_slug": "shapiro_brennan",
+  "team": "Babson College Beavers",
+  "handedness": "RHP",
+  "session_date": "2026-02-21",
+  "date_from": "2026-02-20",
+  "date_to": "2026-02-21",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Brennan Shapiro 2:21.pdf",
+    "sha256": "2b406b5a58825fd028865f0a10dc76d2cc8e3369c83d2a2fc822387515e6968f",
+    "imported_at": "2026-02-21T20:43:35Z"
+  }
+}

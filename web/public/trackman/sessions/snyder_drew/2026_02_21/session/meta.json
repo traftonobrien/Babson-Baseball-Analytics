@@ -1,0 +1,17 @@
+{
+  "player_name": "Snyder, Drew",
+  "player_slug": "snyder_drew",
+  "team": "Babson College Beavers",
+  "handedness": "LHP",
+  "session_date": "2026-02-21",
+  "date_from": "2026-02-20",
+  "date_to": "2026-02-21",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Drew Snyder 2:21.pdf",
+    "sha256": "ff1d2938770008c71e6a1f72559857f1a84ec0019d42811f341a9b44f0181f5e",
+    "imported_at": "2026-02-21T20:43:35Z"
+  }
+}

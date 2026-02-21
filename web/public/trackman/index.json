@@ -1288,5 +1288,182 @@
       "imported_at": "2026-02-18T01:08:45Z"
     },
     "updatedAt": "2026-02-18T01:08:45Z"
+  },
+  {
+    "playerName": "Camardi, Michael",
+    "playerSlug": "camardi_michael",
+    "team": "Babson College Beavers",
+    "handedness": "LHP",
+    "date": "2026-02-21",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Other",
+      "Sinker",
+      "Slider"
+    ],
+    "weightedAvgVelo": 76.6,
+    "pitchTypesPath": "/trackman/sessions/camardi_michael/2026_02_21/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/camardi_michael/2026_02_21/session/meta.json",
+    "summaryPath": "/trackman/sessions/camardi_michael/2026_02_21/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Michael Camardi 2:21.pdf",
+      "sha256": "de020f97a1d67fce271498e2315dd8c0d34c70339a838b2a630fc2b55052d4c2",
+      "imported_at": "2026-02-21T20:47:47Z"
+    },
+    "updatedAt": "2026-02-21T20:47:47Z"
+  },
+  {
+    "playerName": "Carrea, Joe",
+    "playerSlug": "carrea_joe",
+    "team": "Babson College Beavers",
+    "handedness": "RHP",
+    "date": "2026-02-21",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 80.07,
+    "pitchTypesPath": "/trackman/sessions/carrea_joe/2026_02_21/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/carrea_joe/2026_02_21/session/meta.json",
+    "summaryPath": "/trackman/sessions/carrea_joe/2026_02_21/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Joe Carrea 2:21.pdf",
+      "sha256": "22253f8a0b84110208178df9fb1aeb247fb7d37f7b5211b569299d2a2776512a",
+      "imported_at": "2026-02-21T20:47:48Z"
+    },
+    "updatedAt": "2026-02-21T20:47:48Z"
+  },
+  {
+    "playerName": "O'Brien, Trafton",
+    "playerSlug": "obrien_trafton",
+    "team": "Babson College Beavers",
+    "handedness": "RHP",
+    "date": "2026-02-21",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Curveball",
+      "Fastball",
+      "Other",
+      "Splitter"
+    ],
+    "weightedAvgVelo": 77.86,
+    "pitchTypesPath": "/trackman/sessions/obrien_trafton/2026_02_21/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/obrien_trafton/2026_02_21/session/meta.json",
+    "summaryPath": "/trackman/sessions/obrien_trafton/2026_02_21/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Trafton O'Brien 2:21.pdf",
+      "sha256": "f9818ddebbb3af48b56866e7f678d6013bcf5c885761fd10db280f7746ef86fc",
+      "imported_at": "2026-02-21T20:42:18Z"
+    },
+    "updatedAt": "2026-02-21T20:42:18Z"
+  },
+  {
+    "playerName": "Pearl, Tristan",
+    "playerSlug": "pearl_tristan",
+    "team": "Babson College Beavers",
+    "handedness": "LHP",
+    "date": "2026-02-21",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "ChangeUp",
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 76.99,
+    "pitchTypesPath": "/trackman/sessions/pearl_tristan/2026_02_21/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/pearl_tristan/2026_02_21/session/meta.json",
+    "summaryPath": "/trackman/sessions/pearl_tristan/2026_02_21/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Tristan Pearl 2:21.pdf",
+      "sha256": "b162c4011fb525b0736aaca3db19c6c3b67ad31f0fdd2bc3f77515e3aa185462",
+      "imported_at": "2026-02-21T20:47:49Z"
+    },
+    "updatedAt": "2026-02-21T20:47:49Z"
+  },
+  {
+    "playerName": "Shapiro, Brennan",
+    "playerSlug": "shapiro_brennan",
+    "team": "Babson College Beavers",
+    "handedness": "RHP",
+    "date": "2026-02-21",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Sinker",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 78.49,
+    "pitchTypesPath": "/trackman/sessions/shapiro_brennan/2026_02_21/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/shapiro_brennan/2026_02_21/session/meta.json",
+    "summaryPath": "/trackman/sessions/shapiro_brennan/2026_02_21/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Brennan Shapiro 2:21.pdf",
+      "sha256": "2b406b5a58825fd028865f0a10dc76d2cc8e3369c83d2a2fc822387515e6968f",
+      "imported_at": "2026-02-21T20:43:35Z"
+    },
+    "updatedAt": "2026-02-21T20:43:35Z"
+  },
+  {
+    "playerName": "Snyder, Drew",
+    "playerSlug": "snyder_drew",
+    "team": "Babson College Beavers",
+    "handedness": "LHP",
+    "date": "2026-02-21",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Sinker",
+      "Slider"
+    ],
+    "weightedAvgVelo": 81.39,
+    "pitchTypesPath": "/trackman/sessions/snyder_drew/2026_02_21/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/snyder_drew/2026_02_21/session/meta.json",
+    "summaryPath": "/trackman/sessions/snyder_drew/2026_02_21/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Drew Snyder 2:21.pdf",
+      "sha256": "ff1d2938770008c71e6a1f72559857f1a84ec0019d42811f341a9b44f0181f5e",
+      "imported_at": "2026-02-21T20:43:35Z"
+    },
+    "updatedAt": "2026-02-21T20:43:35Z"
+  },
+  {
+    "playerName": "Vyse, Graydon",
+    "playerSlug": "vyse_graydon",
+    "team": "Babson College Beavers",
+    "handedness": "RHP",
+    "date": "2026-02-21",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Slider"
+    ],
+    "weightedAvgVelo": 80.78,
+    "pitchTypesPath": "/trackman/sessions/vyse_graydon/2026_02_21/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/vyse_graydon/2026_02_21/session/meta.json",
+    "summaryPath": "/trackman/sessions/vyse_graydon/2026_02_21/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Graydon Vyse 2:21.pdf",
+      "sha256": "1605308fa157e09567ce98d07597ad69fc821d1136f48689d4cea98bb2d9611b",
+      "imported_at": "2026-02-21T20:43:36Z"
+    },
+    "updatedAt": "2026-02-21T20:43:36Z"
   }
 ]
