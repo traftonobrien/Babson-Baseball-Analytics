@@ -140,7 +140,10 @@ def _aggregate_components(
         for reason in comp.reasons:
             _add_reason(reasons, reason)
     if conf < CONF_FULL and not reasons:
-        _add_reason(reasons, "phase_uncertain")
+        # Only flag phase_uncertain when phase detection is genuinely weak.
+        # Low confidence from visibility/jitter alone is already captured
+        # by the component reasons — don't add a misleading blanket flag.
+        pass
 
     return float(score_raw), float(conf), reasons, valid_names
 
@@ -281,7 +284,7 @@ def _metric_reasons_from_quality(
         _add_reason(reasons, "high_jitter")
     if jump_penalty > 0.35:
         _add_reason(reasons, "outlier_jump")
-    if phase_conf is not None and phase_conf < 0.55:
+    if phase_conf is not None and phase_conf < 0.50:
         _add_reason(reasons, "phase_uncertain")
     if low_motion:
         _add_reason(reasons, "low_motion")
@@ -1989,8 +1992,14 @@ def _compute_lead_leg_block_v3(
     lead_knee = f"{lead}_KNEE"
     lead_ankle = f"{lead}_ANKLE"
 
-    fs_win = _phase_window(poses, phases.foot_strike, radius=2)
-    rel_win = _phase_window(poses, phases.ball_release, radius=2)
+    # Adaptive window: default radius=3 (7 frames), widen REL to 4 when
+    # FS and REL are close together (≤4 frames apart).
+    fs_radius = 3
+    rel_radius = 3
+    if abs(phases.ball_release.frame_idx - phases.foot_strike.frame_idx) <= 4:
+        rel_radius = 4
+    fs_win = _phase_window(poses, phases.foot_strike, radius=fs_radius)
+    rel_win = _phase_window(poses, phases.ball_release, radius=rel_radius)
     if len(fs_win) < 2 or len(rel_win) < 2:  # Relaxed from 3 to 2
         result = BenchmarkResult.insufficient(name, "FS/REL windows too small")
         result.confidence = 0.0
