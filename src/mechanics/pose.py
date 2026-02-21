@@ -28,12 +28,18 @@ WHAT COMES NEXT:
 from __future__ import annotations
 
 import dataclasses
+import logging
+import os
 import urllib.request
 from pathlib import Path
 from typing import List, Optional
 
 import cv2
 import numpy as np
+
+# Suppress MediaPipe internal warnings (NORM_RECT, IMAGE_DIMENSIONS)
+# that are harmless but noisy when running in VIDEO mode.
+os.environ.setdefault("GLOG_minloglevel", "2")
 
 import mediapipe as mp
 from mediapipe.tasks import python as mp_python
@@ -155,12 +161,28 @@ class PoseResult:
 # Pose extraction
 # ---------------------------------------------------------------------------
 
+_log = logging.getLogger(__name__)
+
+
+def _frame_jump_magnitude(
+    prev: np.ndarray,
+    curr: np.ndarray,
+) -> float:
+    """L2 distance between two landmark arrays (ignoring NaN entries)."""
+    mask = ~np.isnan(prev[:, 0]) & ~np.isnan(curr[:, 0])
+    if mask.sum() == 0:
+        return 0.0
+    diff = curr[mask, :2] - prev[mask, :2]
+    return float(np.sqrt(np.mean(diff ** 2)))
+
+
 def extract_poses(
     video_path: str | Path,
     max_frames: Optional[int] = None,
     min_detection_confidence: float = 0.5,
     min_tracking_confidence: float = 0.5,
     verbose: bool = False,
+    debug_stability: bool = False,
 ) -> List[PoseResult]:
     """
     Run MediaPipe Pose Landmarker on every frame and return a list of PoseResult.
@@ -181,6 +203,7 @@ def extract_poses(
         min_detection_confidence: Threshold for initial detection.
         min_tracking_confidence:  Threshold for subsequent tracking.
         verbose:     Print progress every 30 frames.
+        debug_stability: Log per-frame visibility and jump magnitude.
     """
     model_path = _ensure_model()
     meta = read_video_meta(video_path)
@@ -224,6 +247,16 @@ def extract_poses(
                 width=meta.width,
                 height=meta.height,
             ))
+
+            if debug_stability and results:
+                vis_mean = float(np.nanmean(lm[:, 2])) if not np.isnan(lm[:, 0]).all() else 0.0
+                jump = 0.0
+                if len(results) >= 2:
+                    jump = _frame_jump_magnitude(results[-2].landmarks, lm)
+                _log.debug(
+                    "frame=%d  vis=%.3f  jump=%.4f",
+                    frame_idx, vis_mean, jump,
+                )
 
             if verbose and frame_idx % 30 == 0:
                 status = "OK" if detection.pose_landmarks else "NO POSE"

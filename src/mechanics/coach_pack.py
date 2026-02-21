@@ -941,6 +941,10 @@ def _build_key_frame(
         sep = benchmarks.metric_by_name("hip_shoulder_sep_v3")
         ext = benchmarks.metric_by_name("release_extension_v2")
 
+        # --- Release frame overlays: Block, Separation, Extension ---
+        # Thick lines, clear badges, LOW CONF indicator when applicable.
+        _line_thick = _sc(3, scale)  # thicker than default for clarity
+
         if block and block.status == "ok":
             lead_hip = pose.pixel("LEFT_HIP" if benchmarks.hand == "R" else "RIGHT_HIP")
             lead_knee = pose.pixel("LEFT_KNEE" if benchmarks.hand == "R" else "RIGHT_KNEE")
@@ -951,7 +955,7 @@ def _build_key_frame(
                     (int(lead_hip[0]), int(lead_hip[1])),
                     (int(lead_knee[0]), int(lead_knee[1])),
                     (90, 215, 245),
-                    _sc(2, scale),
+                    _line_thick,
                     cv2.LINE_AA,
                 )
                 cv2.line(
@@ -959,12 +963,15 @@ def _build_key_frame(
                     (int(lead_knee[0]), int(lead_knee[1])),
                     (int(lead_ankle[0]), int(lead_ankle[1])),
                     (90, 215, 245),
-                    _sc(2, scale),
+                    _line_thick,
                     cv2.LINE_AA,
                 )
+                badge_text = f"Block {block.score:.1f}" if block.score is not None else "Block"
+                if block.confidence is not None and block.confidence < CONF_FULL:
+                    badge_text += " *"
                 _overlay_angle_badge(
                     frame,
-                    f"Block {block.score:.1f}" if block.score is not None else "Block",
+                    badge_text,
                     (int(lead_knee[0]) + _sc(10, scale), int(lead_knee[1]) - _sc(10, scale)),
                     block.score,
                 )
@@ -974,12 +981,15 @@ def _build_key_frame(
         lh = pose.pixel("LEFT_HIP")
         rh = pose.pixel("RIGHT_HIP")
         if sep and sep.status == "ok" and ls and rs and lh and rh:
-            cv2.line(frame, (int(ls[0]), int(ls[1])), (int(rs[0]), int(rs[1])), (0, 190, 255), _sc(2, scale), cv2.LINE_AA)
-            cv2.line(frame, (int(lh[0]), int(lh[1])), (int(rh[0]), int(rh[1])), (100, 170, 220), _sc(2, scale), cv2.LINE_AA)
+            cv2.line(frame, (int(ls[0]), int(ls[1])), (int(rs[0]), int(rs[1])), (0, 190, 255), _line_thick, cv2.LINE_AA)
+            cv2.line(frame, (int(lh[0]), int(lh[1])), (int(rh[0]), int(rh[1])), (100, 170, 220), _line_thick, cv2.LINE_AA)
             sh_mid = (int((ls[0] + rs[0]) / 2), int((ls[1] + rs[1]) / 2))
+            badge_text = f"Separation {sep.score:.1f}" if sep.score is not None else "Separation"
+            if sep.confidence is not None and sep.confidence < CONF_FULL:
+                badge_text += " *"
             _overlay_angle_badge(
                 frame,
-                f"Separation {sep.score:.1f}" if sep.score is not None else "Separation",
+                badge_text,
                 (sh_mid[0] + _sc(8, scale), sh_mid[1] - _sc(14, scale)),
                 sep.score,
             )
@@ -990,7 +1000,7 @@ def _build_key_frame(
             if throw_wrist and drive_hip:
                 p1 = (int(drive_hip[0]), int(drive_hip[1]))
                 p2 = (int(throw_wrist[0]), int(throw_wrist[1]))
-                cv2.line(frame, p1, p2, (255, 195, 70), _sc(2, scale), cv2.LINE_AA)
+                cv2.line(frame, p1, p2, (255, 195, 70), _line_thick, cv2.LINE_AA)
                 if rel_prev_pose is not None:
                     prev_wrist = rel_prev_pose.pixel("RIGHT_WRIST" if benchmarks.hand == "R" else "LEFT_WRIST")
                     if prev_wrist:
@@ -999,13 +1009,16 @@ def _build_key_frame(
                             (int(prev_wrist[0]), int(prev_wrist[1])),
                             p2,
                             (255, 220, 120),
-                            _sc(1, scale),
+                            _sc(2, scale),
                             cv2.LINE_AA,
                             tipLength=0.18,
                         )
+                badge_text = f"Extension {ext.score:.1f}" if ext.score is not None else "Extension"
+                if ext.confidence is not None and ext.confidence < CONF_FULL:
+                    badge_text += " *"
                 _overlay_angle_badge(
                     frame,
-                    f"Extension {ext.score:.1f}" if ext.score is not None else "Extension",
+                    badge_text,
                     (p2[0] + _sc(8, scale), p2[1] + _sc(14, scale)),
                     ext.score,
                 )
@@ -1026,14 +1039,23 @@ def _build_key_frame(
         _draw_camera_limitations(frame, benchmarks)
 
     if phase_name == "foot_strike" and pose.valid:
+        _fs_thick = _sc(3, scale)
         ls = pose.pixel("LEFT_SHOULDER")
         rs = pose.pixel("RIGHT_SHOULDER")
         lh = pose.pixel("LEFT_HIP")
         rh = pose.pixel("RIGHT_HIP")
         if ls and rs:
-            cv2.line(frame, (int(ls[0]), int(ls[1])), (int(rs[0]), int(rs[1])), (0, 170, 255), _sc(2, scale), cv2.LINE_AA)
+            cv2.line(frame, (int(ls[0]), int(ls[1])), (int(rs[0]), int(rs[1])), (0, 170, 255), _fs_thick, cv2.LINE_AA)
         if lh and rh:
-            cv2.line(frame, (int(lh[0]), int(lh[1])), (int(rh[0]), int(rh[1])), (120, 180, 220), _sc(2, scale), cv2.LINE_AA)
+            cv2.line(frame, (int(lh[0]), int(lh[1])), (int(rh[0]), int(rh[1])), (120, 180, 220), _fs_thick, cv2.LINE_AA)
+
+        # Show lead shin line for block context
+        lead_knee = pose.pixel("LEFT_KNEE" if benchmarks.hand == "R" else "RIGHT_KNEE")
+        lead_ankle = pose.pixel("LEFT_ANKLE" if benchmarks.hand == "R" else "RIGHT_ANKLE")
+        if lead_knee and lead_ankle:
+            cv2.line(frame, (int(lead_knee[0]), int(lead_knee[1])),
+                     (int(lead_ankle[0]), int(lead_ankle[1])),
+                     (90, 215, 245), _sc(2, scale), cv2.LINE_AA)
 
         sep = benchmarks.metric_by_name("hip_shoulder_sep_v3")
         if sep and sep.status == "ok" and ls and rs:
@@ -1253,6 +1275,7 @@ def _build_notes(
             note_cue = m.note.split(".")[0].strip()
             if note_cue and note_cue not in cues:
                 cues.append(note_cue)
+        conf_val = m.confidence if m.confidence is not None else 0.0
         metrics_out[m.name] = {
             "status": m.status,
             "raw_value": round(m.raw_value, 3) if m.raw_value is not None else None,
@@ -1266,9 +1289,12 @@ def _build_notes(
             ),
             "pass_fail": m.pass_fail,
             "callout": callout,
-            "confidence": round(m.confidence, 2) if m.confidence is not None else None,
+            "confidence": round(conf_val, 2),
             "low_confidence": bool(
-                m.status == "ok" and m.confidence is not None and m.confidence < LOW_CONF_THRESHOLD
+                m.status == "ok" and conf_val < LOW_CONF_THRESHOLD
+            ),
+            "manual_review_recommended": bool(
+                m.status == "ok" and conf_val < CONF_FULL
             ),
             "reasons": list(m.reasons) if getattr(m, "reasons", None) else [],
             "coaching_cues": cues[:2],

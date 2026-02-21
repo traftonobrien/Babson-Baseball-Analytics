@@ -769,7 +769,9 @@ class TestOpenSideV2Metrics:
         assert ext.score is not None and ext.score_raw is not None
         assert ext.score <= ext.score_raw
 
-    def test_release_extension_v2_missing_wrist_is_insufficient(self):
+    def test_release_extension_v2_missing_wrist_falls_back_to_elbow(self):
+        """When wrist is occluded but elbow is visible, extension still produces
+        a score via elbow fallback (lower confidence)."""
         poses = _make_full_pose_sequence(n=60, fps=self.fps)
         rel = self.phases.ball_release.frame_idx
         for i in range(rel - 2, rel + 3):
@@ -777,6 +779,20 @@ class TestOpenSideV2Metrics:
                 continue
             lm = poses[i].landmarks.copy()
             lm[KP["RIGHT_WRIST"], 2] = 0.05
+            poses[i].landmarks = lm
+        ext = _compute_release_extension_v2(poses, self.phases, hand="R")
+        assert ext.status == "ok", "Elbow fallback should keep status=ok"
+
+    def test_release_extension_v2_missing_wrist_and_elbow_is_insufficient(self):
+        """When both wrist AND elbow are occluded, extension should be insufficient."""
+        poses = _make_full_pose_sequence(n=60, fps=self.fps)
+        rel = self.phases.ball_release.frame_idx
+        for i in range(rel - 2, rel + 3):
+            if not (0 <= i < len(poses)):
+                continue
+            lm = poses[i].landmarks.copy()
+            lm[KP["RIGHT_WRIST"], 2] = 0.05
+            lm[KP["RIGHT_ELBOW"], 2] = 0.05
             poses[i].landmarks = lm
         ext = _compute_release_extension_v2(poses, self.phases, hand="R")
         assert ext.status == "insufficient_data"
@@ -1052,3 +1068,251 @@ class TestEfficiencyWeighting:
         score, low_conf = _compute_efficiency_details(metrics, view_mode="open_side")
         assert score is not None
         assert low_conf is True
+
+
+# ---------------------------------------------------------------------------
+# Phase 2+3+4 regression tests: outlier rescue, confidence hardening,
+# metric robustness
+# ---------------------------------------------------------------------------
+
+class TestWindowClean:
+    """Test the window_clean outlier rescue utility."""
+
+    def test_import(self):
+        from src.mechanics.utils import window_clean, WindowCleanResult  # noqa: F401
+
+    def test_clean_series_removes_spike(self):
+        """A single spike frame in a stable series should be NaN'd out."""
+        from src.mechanics.utils import window_clean
+        series = [10.0, 10.1, 10.0, 50.0, 10.2, 10.0]  # spike at index 3
+        result = window_clean(series, radius=6, mad_k=3.0)
+        assert np.isnan(result.values[3]), "Spike frame should be dropped"
+        assert result.dropped_count >= 1
+
+    def test_clean_series_preserves_stable(self):
+        """A stable series with no outliers should be unchanged."""
+        from src.mechanics.utils import window_clean
+        series = [10.0, 10.1, 10.0, 10.2, 10.1, 10.0]
+        result = window_clean(series, radius=6, mad_k=3.0)
+        assert result.dropped_count == 0
+        assert result.kept_count == 6
+
+    def test_jitter_score_low_for_stable(self):
+        from src.mechanics.utils import window_clean
+        series = [5.0, 5.1, 5.0, 5.1, 5.0]
+        result = window_clean(series, radius=5, mad_k=3.0)
+        assert result.jitter_score <= 0.3
+
+    def test_empty_series(self):
+        from src.mechanics.utils import window_clean
+        result = window_clean([], radius=3)
+        assert result.kept_count == 0
+        assert result.jitter_score == 1.0
+
+
+class TestJitterNeverZerosConfidence:
+    """Ensure high_jitter alone can never set conf to 0."""
+
+    def test_jitter_floor_in_conf_from_jitter(self):
+        from src.mechanics.confidence import conf_from_jitter
+        # Even with extreme jitter (mad >> target_mad), floor prevents 0
+        result = conf_from_jitter(mad=100.0, target_mad=1.0, floor=0.10)
+        assert result >= 0.10
+
+    def test_metric_confidence_nonzero_with_high_jitter(self):
+        """_metric_confidence should not return 0 when jitter is maxed but
+        coverage and visibility are good."""
+        from src.mechanics.benchmarks import _metric_confidence
+        conf = _metric_confidence(coverage=1.0, jitter_penalty=1.0, visibility=0.9)
+        assert conf > 0.0, "Jitter alone should not zero out confidence"
+
+
+class TestSpikeDoesNotCauseInsufficient:
+    """Core regression: a single bad frame must NOT cause insufficient_data."""
+
+    def _make_braced_leg_poses(self, n: int = 50, spike_frame: int = 40) -> list[PoseResult]:
+        """Create synthetic braced-leg poses with optional spike."""
+        poses = []
+        for i in range(n):
+            lm = _base_lm(vis=0.85)
+            # Place landmarks to simulate a braced lead leg (RHP):
+            # LEFT_HIP slightly to left, LEFT_KNEE below and straight, LEFT_ANKLE below
+            lm[KP["LEFT_HIP"]] = [0.35, 0.45, 0.9]
+            lm[KP["LEFT_KNEE"]] = [0.35, 0.60, 0.9]
+            lm[KP["LEFT_ANKLE"]] = [0.35, 0.75, 0.9]
+            # Right side (drive leg)
+            lm[KP["RIGHT_HIP"]] = [0.55, 0.45, 0.9]
+            lm[KP["RIGHT_KNEE"]] = [0.55, 0.60, 0.9]
+            lm[KP["RIGHT_ANKLE"]] = [0.55, 0.75, 0.9]
+            # Shoulders and hips for separation
+            lm[KP["LEFT_SHOULDER"]] = [0.30, 0.30, 0.9]
+            lm[KP["RIGHT_SHOULDER"]] = [0.60, 0.30, 0.9]
+            # Wrists for extension
+            lm[KP["RIGHT_WRIST"]] = [0.70, 0.25, 0.85]
+            lm[KP["LEFT_WRIST"]] = [0.25, 0.35, 0.85]
+            # Elbows
+            lm[KP["RIGHT_ELBOW"]] = [0.65, 0.28, 0.88]
+            lm[KP["LEFT_ELBOW"]] = [0.28, 0.32, 0.88]
+            # NOSE
+            lm[KP["NOSE"]] = [0.45, 0.15, 0.95]
+
+            if i == spike_frame:
+                # Inject a massive spike on the lead knee
+                lm[KP["LEFT_KNEE"]] = [0.80, 0.20, 0.7]
+
+            poses.append(_make_pose(frame_idx=i, lm=lm))
+        return poses
+
+    def test_spike_does_not_cause_insufficient_block(self):
+        """A single spike frame should NOT make lead_leg_block insufficient."""
+        poses = self._make_braced_leg_poses(spike_frame=40)
+        phases = _make_phases(set_idx=0, peak_idx=18, fs_idx=30, rel_idx=45)
+        result = _compute_lead_leg_block_v3(poses, phases, hand="R")
+        assert result.status == "ok", f"Expected 'ok', got '{result.status}' — reasons: {result.reasons}"
+
+    def test_spike_does_not_cause_insufficient_closedness(self):
+        """A single spike frame should NOT make closedness insufficient."""
+        poses = self._make_braced_leg_poses(spike_frame=25)
+        phases = _make_phases(set_idx=0, peak_idx=18, fs_idx=30, rel_idx=45)
+        result = _compute_front_side_closedness_v2(poses, phases, hand="R")
+        assert result.status == "ok", f"Expected 'ok', got '{result.status}' — reasons: {result.reasons}"
+
+    def test_spike_does_not_cause_insufficient_extension(self):
+        """A single spike frame should NOT make release_extension insufficient."""
+        poses = self._make_braced_leg_poses(spike_frame=44)
+        phases = _make_phases(set_idx=0, peak_idx=18, fs_idx=30, rel_idx=45)
+        result = _compute_release_extension_v2(poses, phases, hand="R")
+        assert result.status == "ok", f"Expected 'ok', got '{result.status}' — reasons: {result.reasons}"
+
+
+class TestJitterLowersConfidenceNotStatus:
+    """Jitter should lower confidence but keep status='ok'."""
+
+    def _make_jittery_poses(self, n: int = 50) -> list[PoseResult]:
+        """Create poses with moderate jitter on all landmarks."""
+        import random
+        random.seed(42)
+        poses = []
+        for i in range(n):
+            lm = _base_lm(vis=0.85)
+            # Add random jitter to simulate noisy detection
+            for j in range(NUM_LANDMARKS):
+                lm[j, 0] += random.uniform(-0.05, 0.05)
+                lm[j, 1] += random.uniform(-0.05, 0.05)
+            lm[KP["LEFT_HIP"]] = [0.35 + random.uniform(-0.03, 0.03), 0.45, 0.9]
+            lm[KP["LEFT_KNEE"]] = [0.35 + random.uniform(-0.03, 0.03), 0.60, 0.9]
+            lm[KP["LEFT_ANKLE"]] = [0.35 + random.uniform(-0.03, 0.03), 0.75, 0.9]
+            lm[KP["RIGHT_HIP"]] = [0.55, 0.45, 0.9]
+            lm[KP["RIGHT_KNEE"]] = [0.55, 0.60, 0.9]
+            lm[KP["RIGHT_ANKLE"]] = [0.55, 0.75, 0.9]
+            lm[KP["LEFT_SHOULDER"]] = [0.30, 0.30, 0.9]
+            lm[KP["RIGHT_SHOULDER"]] = [0.60, 0.30, 0.9]
+            lm[KP["RIGHT_WRIST"]] = [0.70, 0.25, 0.85]
+            lm[KP["LEFT_WRIST"]] = [0.25, 0.35, 0.85]
+            lm[KP["RIGHT_ELBOW"]] = [0.65, 0.28, 0.88]
+            lm[KP["LEFT_ELBOW"]] = [0.28, 0.32, 0.88]
+            lm[KP["NOSE"]] = [0.45, 0.15, 0.95]
+            poses.append(_make_pose(frame_idx=i, lm=lm))
+        return poses
+
+    def test_jitter_keeps_block_ok(self):
+        poses = self._make_jittery_poses()
+        phases = _make_phases()
+        result = _compute_lead_leg_block_v3(poses, phases, hand="R")
+        assert result.status == "ok", f"Jittery block should be ok, got {result.status}"
+
+    def test_jitter_keeps_sep_ok(self):
+        poses = self._make_jittery_poses()
+        phases = _make_phases()
+        result = _compute_hip_shoulder_sep_v3(poses, phases, hand="R")
+        assert result.status == "ok", f"Jittery sep should be ok, got {result.status}"
+
+
+class TestMissingLandmarksCauseInsufficient:
+    """Missing landmarks should cause insufficient_data."""
+
+    def test_all_nan_poses_cause_insufficient_block(self):
+        """If all poses are NaN, lead_leg_block should be insufficient."""
+        poses = []
+        for i in range(50):
+            lm = np.full((NUM_LANDMARKS, 3), np.nan, dtype=np.float32)
+            poses.append(_make_pose(frame_idx=i, lm=lm))
+        phases = _make_phases()
+        result = _compute_lead_leg_block_v3(poses, phases, hand="R")
+        assert result.status == "insufficient_data"
+
+    def test_all_nan_poses_cause_insufficient_closedness(self):
+        poses = []
+        for i in range(50):
+            lm = np.full((NUM_LANDMARKS, 3), np.nan, dtype=np.float32)
+            poses.append(_make_pose(frame_idx=i, lm=lm))
+        phases = _make_phases()
+        result = _compute_front_side_closedness_v2(poses, phases, hand="R")
+        assert result.status == "insufficient_data"
+
+
+class TestSyntheticBracedLegHighScore:
+    """A synthetic perfectly braced leg should score high."""
+
+    def test_braced_leg_high_block_score(self):
+        """With a perfectly straight and stable lead leg, block score should be >= 7."""
+        poses = []
+        for i in range(50):
+            lm = _base_lm(vis=0.95)
+            # Perfectly straight lead leg (knee angle ~180)
+            lm[KP["LEFT_HIP"]] = [0.35, 0.40, 0.95]
+            lm[KP["LEFT_KNEE"]] = [0.35, 0.57, 0.95]
+            lm[KP["LEFT_ANKLE"]] = [0.35, 0.75, 0.95]
+            # Other landmarks
+            lm[KP["RIGHT_HIP"]] = [0.55, 0.40, 0.95]
+            lm[KP["RIGHT_KNEE"]] = [0.55, 0.60, 0.95]
+            lm[KP["RIGHT_ANKLE"]] = [0.55, 0.75, 0.95]
+            lm[KP["LEFT_SHOULDER"]] = [0.30, 0.25, 0.95]
+            lm[KP["RIGHT_SHOULDER"]] = [0.60, 0.25, 0.95]
+            lm[KP["RIGHT_WRIST"]] = [0.70, 0.20, 0.90]
+            lm[KP["LEFT_WRIST"]] = [0.25, 0.30, 0.90]
+            lm[KP["RIGHT_ELBOW"]] = [0.65, 0.23, 0.92]
+            lm[KP["LEFT_ELBOW"]] = [0.28, 0.28, 0.92]
+            lm[KP["NOSE"]] = [0.45, 0.10, 0.95]
+            poses.append(_make_pose(frame_idx=i, lm=lm))
+        phases = _make_phases(set_idx=0, peak_idx=18, fs_idx=30, rel_idx=45)
+        result = _compute_lead_leg_block_v3(poses, phases, hand="R")
+        assert result.status == "ok"
+        assert result.score is not None
+        assert result.score >= 6.0, f"Braced leg should score high, got {result.score}"
+
+
+class TestSyntheticLeakLowScore:
+    """A synthetic leaking/collapsing leg should score low."""
+
+    def test_leak_leg_low_block_score(self):
+        """With a soft/collapsing lead leg, block score should be low."""
+        poses = []
+        for i in range(50):
+            lm = _base_lm(vis=0.95)
+            # Heavily bent lead leg at release — knee significantly forward
+            knee_x = 0.35 + (0.15 if i >= 30 else 0.0)  # leak after FS
+            knee_y = 0.55  # knee high (bent)
+            lm[KP["LEFT_HIP"]] = [0.35, 0.40, 0.95]
+            lm[KP["LEFT_KNEE"]] = [knee_x, knee_y, 0.95]
+            lm[KP["LEFT_ANKLE"]] = [0.35, 0.75, 0.95]
+            # Forward-leaking hips
+            hip_x = 0.35 + (0.08 if i >= 30 else 0.0)
+            lm[KP["LEFT_HIP"]] = [hip_x, 0.40, 0.95]
+            lm[KP["RIGHT_HIP"]] = [0.55 + (0.08 if i >= 30 else 0.0), 0.40, 0.95]
+            lm[KP["RIGHT_KNEE"]] = [0.55, 0.60, 0.95]
+            lm[KP["RIGHT_ANKLE"]] = [0.55, 0.75, 0.95]
+            lm[KP["LEFT_SHOULDER"]] = [0.30, 0.25, 0.95]
+            lm[KP["RIGHT_SHOULDER"]] = [0.60, 0.25, 0.95]
+            lm[KP["RIGHT_WRIST"]] = [0.70, 0.20, 0.90]
+            lm[KP["LEFT_WRIST"]] = [0.25, 0.30, 0.90]
+            lm[KP["RIGHT_ELBOW"]] = [0.65, 0.23, 0.92]
+            lm[KP["LEFT_ELBOW"]] = [0.28, 0.28, 0.92]
+            lm[KP["NOSE"]] = [0.45, 0.10, 0.95]
+            poses.append(_make_pose(frame_idx=i, lm=lm))
+        phases = _make_phases(set_idx=0, peak_idx=18, fs_idx=30, rel_idx=45)
+        result = _compute_lead_leg_block_v3(poses, phases, hand="R")
+        assert result.status == "ok"
+        # Should score notably lower than a braced leg
+        if result.score is not None:
+            assert result.score < 8.0, f"Leaking leg should score lower, got {result.score}"

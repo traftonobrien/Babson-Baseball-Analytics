@@ -5,6 +5,7 @@ Drawing helpers, path slugification, and output directory management.
 """
 from __future__ import annotations
 
+import dataclasses
 import re
 from pathlib import Path
 from typing import Iterable
@@ -133,6 +134,137 @@ def smooth_series(
     out = out.astype(np.float64, copy=False)
     out[~valid] = np.nan
     return out
+
+
+@dataclasses.dataclass
+class WindowCleanResult:
+    """Result of window_clean outlier removal."""
+    values: np.ndarray      # cleaned values (NaN where dropped)
+    kept_mask: np.ndarray   # bool mask of kept frames
+    jitter_score: float     # 0..1, lower is better
+    kept_count: int
+    dropped_count: int
+
+
+def window_clean(
+    series: Iterable[float],
+    radius: int = 3,
+    center: int | None = None,
+    mad_k: float = 3.0,
+    top_pct: float = 0.15,
+) -> WindowCleanResult:
+    """
+    Universal outlier rescue: remove spike frames from a windowed series.
+
+    Steps:
+      1. Collect frames within ±radius of center (or entire series if center=None).
+      2. Compute per-frame jump magnitude (absolute first differences).
+      3. Compute median + MAD of jumps.
+      4. Drop frames with jump > median + mad_k * MAD.
+      5. Also drop the top top_pct largest jumps (catches systematic noise).
+      6. Return cleaned series with jitter score.
+
+    Args:
+        series:   1D numeric values (may contain NaN).
+        radius:   Half-window size around center.
+        center:   Center index (default: middle of series).
+        mad_k:    MAD multiplier for outlier threshold.
+        top_pct:  Fraction of largest jumps to additionally drop.
+
+    Returns:
+        WindowCleanResult with cleaned values and diagnostics.
+    """
+    raw = np.asarray(list(series), dtype=np.float64)
+    n = raw.size
+    if n == 0:
+        return WindowCleanResult(
+            values=raw.copy(), kept_mask=np.zeros(0, dtype=bool),
+            jitter_score=1.0, kept_count=0, dropped_count=0,
+        )
+
+    # Windowing
+    if center is None:
+        center = n // 2
+    lo = max(0, center - radius)
+    hi = min(n, center + radius + 1)
+    window_mask = np.zeros(n, dtype=bool)
+    window_mask[lo:hi] = True
+
+    # Work only on the window, but preserve full array
+    out = raw.copy()
+    kept = np.ones(n, dtype=bool)
+
+    # Compute jumps within window
+    win_indices = np.where(window_mask & ~np.isnan(raw))[0]
+    if len(win_indices) < 3:
+        return WindowCleanResult(
+            values=out, kept_mask=kept,
+            jitter_score=0.5, kept_count=int(len(win_indices)), dropped_count=0,
+        )
+
+    # Frame-to-frame jump magnitudes
+    win_vals = raw[win_indices]
+    jumps = np.abs(np.diff(win_vals))
+
+    if jumps.size == 0:
+        return WindowCleanResult(
+            values=out, kept_mask=kept,
+            jitter_score=0.0, kept_count=int(len(win_indices)), dropped_count=0,
+        )
+
+    # MAD-based threshold
+    med_jump = float(np.median(jumps))
+    mad_jump = float(np.median(np.abs(jumps - med_jump)))
+    # Use a minimum MAD proportional to median to avoid flagging mild variation.
+    # A jump of 2-3x the median is normal; only flag truly anomalous spikes.
+    effective_mad = max(mad_jump, med_jump * 0.5, 1e-9)
+    threshold = med_jump + mad_k * effective_mad
+
+    # Mark frames whose incoming or outgoing jump exceeds threshold
+    bad_by_mad = set()
+    for i, j in enumerate(jumps):
+        if j > threshold:
+            # Mark the frame that moved (the second frame in the pair)
+            bad_by_mad.add(int(win_indices[i + 1]))
+
+    # Top-percentile largest jumps — only flag if clearly anomalous
+    n_top = max(1, int(np.ceil(top_pct * len(jumps))))
+    top_indices = np.argsort(jumps)[-n_top:]
+    bad_by_top = set()
+    # Require jump to be at least 2x median + 2*MAD to avoid false positives
+    top_floor = med_jump * 2.0 + mad_jump * 2.0
+    for idx in top_indices:
+        if jumps[idx] > top_floor:
+            bad_by_top.add(int(win_indices[idx + 1]))
+
+    bad_frames = bad_by_mad | bad_by_top
+
+    # Don't drop more than half the window
+    max_drop = max(1, len(win_indices) // 2)
+    if len(bad_frames) > max_drop:
+        # Keep only the worst max_drop
+        all_jumps_for_frame = {}
+        for i, j in enumerate(jumps):
+            fi = int(win_indices[i + 1])
+            all_jumps_for_frame[fi] = max(all_jumps_for_frame.get(fi, 0.0), float(j))
+        sorted_bad = sorted(bad_frames, key=lambda f: all_jumps_for_frame.get(f, 0.0), reverse=True)
+        bad_frames = set(sorted_bad[:max_drop])
+
+    for fi in bad_frames:
+        out[fi] = np.nan
+        kept[fi] = False
+
+    # Jitter score: fraction of jumps exceeding threshold (lower is better)
+    n_over = sum(1 for j in jumps if j > threshold)
+    jitter_score = min(1.0, n_over / max(1, len(jumps)))
+
+    return WindowCleanResult(
+        values=out,
+        kept_mask=kept,
+        jitter_score=jitter_score,
+        kept_count=int(kept[window_mask].sum()),
+        dropped_count=int(len(bad_frames)),
+    )
 
 
 def smoothing_residual_std(
