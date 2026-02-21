@@ -1108,10 +1108,14 @@ def _compute_swivel_stabilize(
         glove_offsets.append(0.0 if (wmin <= g[0] <= wmax) else min(abs(g[0] - wmin), abs(g[0] - wmax)))
         vis_vals.append(_visibility_confidence(wp, [glove_kp, "LEFT_SHOULDER", "RIGHT_SHOULDER", "LEFT_HIP", "RIGHT_HIP"]))
 
+    # Clean glove offsets to remove single-frame spikes before computing quality.
+    cleaned_offsets = window_clean(glove_offsets, radius=len(glove_offsets), mad_k=3.0)
+    cleaned_vals = [float(v) for v in cleaned_offsets.values if not np.isnan(v)]
+
     coverage, jitter_penalty = _series_quality(glove_offsets, expected_frames=len(rel_win), jitter_scale=14.0)
-    valid_offsets = [g for g in glove_offsets if not np.isnan(g)]
-    jump_penalty = _jump_penalty(valid_offsets, jump_scale=18.0)
-    if len(valid_offsets) < 3:
+    # Require ≥2 consecutive jumps to trigger outlier_jump (single-frame spikes don't count).
+    jump_penalty = _jump_penalty_consecutive(cleaned_vals, jump_scale=18.0, min_consecutive=2)
+    if len(cleaned_vals) < 3:
         # Single-frame release clips cannot support robust jitter stats.
         jitter_penalty = min(jitter_penalty, 0.15)
         jump_penalty = 0.0
@@ -1854,6 +1858,49 @@ def _jump_penalty(
     thresh = max(float(jump_scale), med + 3.0 * mad)
     jump_ratio = float(np.count_nonzero(diffs > thresh) / diffs.size)
     return _clamp01(jump_ratio * 1.5)
+
+
+def _jump_penalty_consecutive(
+    values: list[float],
+    jump_scale: float,
+    min_consecutive: int = 2,
+) -> float:
+    """
+    Like _jump_penalty but only counts jumps that persist for ≥min_consecutive frames.
+
+    A single-frame spike that immediately returns to baseline is not penalized —
+    only sustained instability triggers outlier_jump.
+    """
+    if len(values) < 4:
+        return 0.0
+    arr = np.asarray(values, dtype=np.float64)
+    arr = arr[~np.isnan(arr)]
+    if arr.size < 4:
+        return 0.0
+    diffs = np.abs(np.diff(arr))
+    if diffs.size == 0:
+        return 0.0
+    med = float(np.median(diffs))
+    mad = float(np.median(np.abs(diffs - med)))
+    thresh = max(float(jump_scale), med + 3.0 * max(mad, med * 0.5, 1e-9))
+
+    # Count runs of consecutive above-threshold jumps.
+    above = diffs > thresh
+    consecutive_count = 0
+    run = 0
+    for a in above:
+        if a:
+            run += 1
+        else:
+            if run >= min_consecutive:
+                consecutive_count += run
+            run = 0
+    if run >= min_consecutive:
+        consecutive_count += run
+
+    if consecutive_count == 0:
+        return 0.0
+    return _clamp01(consecutive_count / diffs.size * 1.5)
 
 
 def _component_confidence(
