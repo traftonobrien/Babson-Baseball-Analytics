@@ -6,6 +6,7 @@ import { promises as fs } from "fs";
 import players from "@/data/players.json";
 import { fetchPitchingLeaderboard } from "@/lib/d3db";
 import { players as dataIndexPlayers } from "@/lib/dataIndex";
+import { readMechanicsIndex, getMechanicsForPlayer } from "@/lib/mechanics/registry";
 import PlayerProfileTabs from "./PlayerProfileTabs";
 
 export const dynamic = "force-dynamic";
@@ -667,6 +668,12 @@ export default async function PlayerProfilePage({
       : player.role;
   const seasonNote = undefined;
 
+  const mechanicsIndex = await readMechanicsIndex();
+  const mechanicsEntry = getMechanicsForPlayer(mechanicsIndex, {
+    profileSlug: player.slug,
+    playerName: player.name,
+  });
+
   const trackmanIndex = await loadTrackmanIndex();
   const trackmanSessions = trackmanIndex
     .filter((entry) => entry.playerSlug === player.slug && entry.date)
@@ -753,6 +760,7 @@ export default async function PlayerProfilePage({
           commandOutings={commandOutings}
           playerSlug={player.slug}
           initialTab={initialTab}
+          mechanicsEntry={mechanicsEntry ?? null}
         />
       </div>
     </main>

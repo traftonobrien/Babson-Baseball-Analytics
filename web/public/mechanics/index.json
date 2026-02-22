@@ -2,6 +2,7 @@
   "players": [
     {
       "slug": "trafton_obrien",
+      "profile_slug": "obrien_trafton",
       "player_id": "TOBrien1",
       "name": "Trafton O'Brien",
       "sessions": [

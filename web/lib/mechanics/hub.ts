@@ -17,6 +17,8 @@ export interface HubSessionEntry {
 
 export interface HubPlayerEntry {
   slug: string;
+  /** Explicit mapping to /players/[slug] profile route. Add for every new player. */
+  profile_slug?: string;
   player_id: string;
   name: string;
   sessions: HubSessionEntry[];

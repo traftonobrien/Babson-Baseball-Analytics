@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Activity, Target, ArrowRight } from "lucide-react";
 import SavantPercentileBar from "./SavantPercentileBar";
+import MechanicsProfileCard from "@/app/components/mechanics/MechanicsProfileCard";
+import type { HubPlayerEntry } from "@/lib/mechanics/hub";
 
 const TABS = ["Overview", "Trackman", "Command"] as const;
 type Tab = (typeof TABS)[number];
@@ -42,6 +44,7 @@ interface Props {
   commandOutings: CommandOuting[];
   playerSlug: string;
   initialTab?: string;
+  mechanicsEntry?: HubPlayerEntry | null;
 }
 
 function formatDateLabel(raw: string): string {
@@ -70,6 +73,7 @@ export default function PlayerProfileTabs({
   commandOutings,
   playerSlug,
   initialTab,
+  mechanicsEntry,
 }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>(resolveInitialTab(initialTab));
 
@@ -176,6 +180,14 @@ export default function PlayerProfileTabs({
               </section>
             </>
           )}
+
+          {/* Mechanics section — always shown (empty state if no data) */}
+          <section>
+            <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500 mb-4">
+              Mechanics
+            </h2>
+            <MechanicsProfileCard entry={mechanicsEntry ?? null} />
+          </section>
         </div>
       )}
 

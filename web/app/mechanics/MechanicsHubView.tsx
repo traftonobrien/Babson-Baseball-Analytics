@@ -101,7 +101,11 @@ function PlayerCard({ player }: { player: HubPlayerEntry }) {
         {/* Action buttons */}
         <div className="flex flex-col gap-1.5 mt-auto pt-1">
           <Link
-            href={`/player/${player.player_id}`}
+            href={
+              player.profile_slug
+                ? `/players/${player.profile_slug}`
+                : `/player/${player.player_id}`
+            }
             className="w-full text-center text-[11px] font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg px-3 py-1.5 transition-colors"
           >
             Player Profile

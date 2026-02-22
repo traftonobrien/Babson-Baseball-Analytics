@@ -8,10 +8,19 @@ import {
   Target,
   ArrowUpRight,
   Trophy,
+  Film,
 } from "lucide-react";
 import LogoutButton from "./components/LogoutButton";
 
-export default function HomeContent() {
+interface Props {
+  mechanicsPlayerCount?: number;
+  mechanicsNeedsAttention?: number;
+}
+
+export default function HomeContent({
+  mechanicsPlayerCount,
+  mechanicsNeedsAttention,
+}: Props = {}) {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 relative">
       {/* Logout */}
@@ -103,6 +112,40 @@ export default function HomeContent() {
               </div>
             </Link>
           </div>
+        </motion.div>
+
+        {/* ---- Mechanics card ---- */}
+        <motion.div
+          className="mt-3"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.15 }}
+        >
+          <Link href="/mechanics">
+            <div className="group relative rounded-xl border border-violet-500/30 hover:border-violet-500/60 bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-6 transition-all duration-200 hover:scale-[1.01] hover:shadow-lg">
+              <div className="flex items-start justify-between">
+                <Film className="w-6 h-6 text-violet-400" />
+                <div className="flex items-center gap-3">
+                  {mechanicsPlayerCount != null && mechanicsPlayerCount > 0 && (
+                    <div className="flex items-center gap-3 text-[11px] text-zinc-600">
+                      <span>{mechanicsPlayerCount} pitcher{mechanicsPlayerCount !== 1 ? "s" : ""}</span>
+                      {mechanicsNeedsAttention != null && mechanicsNeedsAttention > 0 && (
+                        <>
+                          <span className="text-zinc-800">·</span>
+                          <span className="text-amber-500">{mechanicsNeedsAttention} need attention</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  <ArrowUpRight className="w-4 h-4 text-violet-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </div>
+              <h2 className="text-lg font-semibold mt-4">Mechanics</h2>
+              <p className="text-sm text-zinc-400 mt-1 leading-relaxed">
+                Video-first mechanics snapshots, phase breakdowns, and session history
+              </p>
+            </div>
+          </Link>
         </motion.div>
       </div>
     </div>
