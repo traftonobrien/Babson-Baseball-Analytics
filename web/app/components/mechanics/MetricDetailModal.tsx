@@ -134,14 +134,6 @@ export function MetricDetailModal({ metricKey, metric, onClose }: MetricDetailMo
             }
           />
 
-          {/* Callout */}
-          {metric.callout && (
-            <div className="mt-4 bg-zinc-800/50 rounded-lg p-3">
-              <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Callout</p>
-              <p className="text-sm text-zinc-200 leading-relaxed">{metric.callout}</p>
-            </div>
-          )}
-
           {/* Flags */}
           {metric.reasons && metric.reasons.length > 0 && (
             <div className="mt-3">
@@ -166,8 +158,7 @@ export function MetricDetailModal({ metricKey, metric, onClose }: MetricDetailMo
                 Low Confidence
               </p>
               <p className="text-xs text-amber-200/70 leading-relaxed">
-                Pose estimation quality may affect this score. Review film before coaching on this
-                metric.
+                Pose estimation quality may affect this score. Cross-reference with film.
               </p>
             </div>
           )}

@@ -14,7 +14,9 @@
           "hand": "R",
           "view_mode": "open_side",
           "pass_count": 3,
-          "fail_count": 3
+          "fail_count": 3,
+          "avg_confidence": 0.53,
+          "low_confidence_count": 5
         }
       ]
     }

@@ -29,7 +29,7 @@ export function MechanicsHero({ notes, playerName, sessionLabel }: MechanicsHero
   }, [pct]);
 
   return (
-    <div className="bg-zinc-900 border-b border-zinc-800 px-6 py-8">
+    <div className="bg-zinc-900 border-b border-zinc-800 px-6 py-5">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-start justify-between gap-8 flex-wrap">
           {/* LEFT: Identity */}
@@ -84,9 +84,9 @@ export function MechanicsHero({ notes, playerName, sessionLabel }: MechanicsHero
         </div>
 
         {/* Score bar */}
-        <div className="mt-8">
+        <div className="mt-5">
           <div
-            className="relative h-1.5 rounded-full overflow-hidden"
+            className="relative h-1 rounded-full overflow-hidden"
             style={{ background: SCORE_GRADIENT }}
           >
             {/* Dim overlay animates from right */}
@@ -100,7 +100,7 @@ export function MechanicsHero({ notes, playerName, sessionLabel }: MechanicsHero
           </div>
 
           {/* Tick marks + marker pin */}
-          <div className="relative h-5 mt-1">
+          <div className="relative h-5 mt-0.5">
             {[0, 2, 4, 6, 8, 10].map((t) => (
               <span
                 key={t}
@@ -111,15 +111,30 @@ export function MechanicsHero({ notes, playerName, sessionLabel }: MechanicsHero
               </span>
             ))}
             <div
-              className="absolute top-0 w-0.5 h-3.5 rounded-full"
+              className="absolute top-0 w-0.5 h-3 rounded-full"
               style={{
                 left: `${fillPct}%`,
                 backgroundColor: color,
-                boxShadow: `0 0 8px 2px ${color}55`,
+                boxShadow: `0 0 6px 1px ${color}44`,
                 transition: "left 600ms cubic-bezier(0.4,0,0.2,1)",
               }}
             />
           </div>
+
+          {/* Confidence band — 1px strip showing aggregate confidence */}
+          {aggConf !== null && (
+            <div className="mt-1.5 h-px bg-zinc-800 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${aggConf * 100}%`,
+                  backgroundColor:
+                    aggConf >= 0.7 ? "#22c55e" : aggConf >= 0.5 ? "#f59e0b" : "#ef4444",
+                  transition: "width 600ms cubic-bezier(0.4,0,0.2,1)",
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

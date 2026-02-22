@@ -35,8 +35,8 @@ export function MechanicsTopInsights({ notes, onMetricClick }: MechanicsTopInsig
   if (top.length === 0) return null;
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-6">
-      <div className="flex items-baseline gap-3 mb-4">
+    <div className="max-w-5xl mx-auto px-6 py-4">
+      <div className="flex items-baseline gap-3 mb-3">
         <h2 className="text-[10px] uppercase tracking-wider text-zinc-500">Top Issues</h2>
         <span className="text-[9px] text-zinc-700">Sorted by impact · Click for breakdown</span>
       </div>
@@ -73,19 +73,22 @@ export function MechanicsTopInsights({ notes, onMetricClick }: MechanicsTopInsig
                 </span>
               </div>
 
-              {/* Confidence badge */}
-              <span
-                className={`inline-flex items-center text-[9px] uppercase tracking-wider border rounded px-1.5 py-0.5 ${confBadge(metric.confidence)}`}
-              >
-                {confidenceLabel(metric.confidence)} conf
-              </span>
-
-              {/* 1-line summary */}
-              {metric.callout && (
-                <p className="mt-2 text-[11px] text-zinc-300 leading-relaxed line-clamp-1">
-                  {metric.callout}
-                </p>
-              )}
+              {/* Confidence badge + reason tags */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span
+                  className={`inline-flex items-center text-[9px] uppercase tracking-wider border rounded px-1.5 py-0.5 ${confBadge(metric.confidence)}`}
+                >
+                  {confidenceLabel(metric.confidence)} conf
+                </span>
+                {metric.reasons?.map((r) => (
+                  <span
+                    key={r}
+                    className="text-[8px] uppercase tracking-wider bg-zinc-900 text-amber-500/70 border border-zinc-700/60 rounded px-1.5 py-0.5"
+                  >
+                    {r.replace(/_/g, " ")}
+                  </span>
+                ))}
+              </div>
             </button>
           );
         })}

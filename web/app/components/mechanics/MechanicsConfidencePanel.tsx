@@ -22,12 +22,10 @@ export function MechanicsConfidencePanel({ notes }: MechanicsConfidencePanelProp
       </h2>
 
       {majorityLow && (
-        <div className="mb-4 flex items-start gap-2.5 bg-amber-950/30 border border-amber-800/40 rounded-lg px-4 py-3">
+        <div className="mb-4 flex items-center gap-2.5 bg-amber-950/30 border border-amber-800/40 rounded-lg px-4 py-2.5">
           <span className="text-amber-500 text-xs shrink-0">△</span>
-          <p className="text-xs text-amber-300/80 leading-relaxed">
-            Most metrics in this session have low confidence. Scores reflect what the model can
-            infer from this camera angle. Cross-reference with film before making coaching
-            decisions.
+          <p className="text-xs text-amber-300/80">
+            Most metrics have low confidence this session. Cross-reference with film.
           </p>
         </div>
       )}
@@ -36,11 +34,8 @@ export function MechanicsConfidencePanel({ notes }: MechanicsConfidencePanelProp
         {/* Camera View */}
         <div>
           <p className="text-[9px] uppercase tracking-wider text-zinc-600 mb-2">Camera View</p>
-          <p className="text-sm font-medium text-zinc-300 capitalize mb-1">
+          <p className="text-sm font-medium text-zinc-300 capitalize">
             {limitations.camera_view.replace(/_/g, " ")}
-          </p>
-          <p className="text-[11px] text-zinc-600 leading-relaxed">
-            Metric availability varies by angle. Some measurements require additional views.
           </p>
         </div>
 

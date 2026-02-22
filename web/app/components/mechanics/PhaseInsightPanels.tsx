@@ -88,7 +88,7 @@ function PhaseBlock({ title, imageSrc, metricKeys, notes, onMetricClick }: Phase
       {/* Image + rail */}
       <div className="flex flex-col lg:flex-row">
         {/* Image — dominant column */}
-        <div className="relative flex-1 min-w-0 bg-zinc-950 min-h-[220px] lg:min-h-[300px]">
+        <div className="relative flex-1 min-w-0 bg-zinc-950 min-h-[240px] lg:min-h-[380px]">
           <Image
             src={imageSrc}
             alt={title}

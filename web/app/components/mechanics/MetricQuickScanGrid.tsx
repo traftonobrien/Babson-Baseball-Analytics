@@ -72,11 +72,18 @@ function MetricTile({ metricKey, metric, onClick }: MetricTileProps) {
         )}
       </div>
 
-      {/* Callout snippet */}
-      {metric.callout && (
-        <p className="mt-3 text-[11px] text-zinc-300 leading-relaxed line-clamp-2">
-          {metric.callout}
-        </p>
+      {/* Reason tags */}
+      {metric.reasons && metric.reasons.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {metric.reasons.map((r) => (
+            <span
+              key={r}
+              className="text-[8px] uppercase tracking-wider bg-zinc-900/60 text-amber-500/60 border border-zinc-700/50 rounded px-1.5 py-px"
+            >
+              {r.replace(/_/g, " ")}
+            </span>
+          ))}
+        </div>
       )}
     </button>
   );

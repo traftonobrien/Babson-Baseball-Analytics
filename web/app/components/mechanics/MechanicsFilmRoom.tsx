@@ -37,7 +37,7 @@ export function MechanicsFilmRoom({ notes, basePath }: MechanicsFilmRoomProps) {
 
       {/* Large frame viewer */}
       <div
-        className="relative w-full bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800 cursor-zoom-in"
+        className="relative w-full bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800 cursor-zoom-in lg:min-h-[420px]"
         style={{ aspectRatio: "16/9" }}
         onClick={() => setLightboxOpen(true)}
       >
