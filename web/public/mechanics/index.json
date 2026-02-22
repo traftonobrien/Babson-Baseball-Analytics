@@ -1,0 +1,22 @@
+{
+  "players": [
+    {
+      "slug": "trafton_obrien",
+      "player_id": "TOBrien1",
+      "name": "Trafton O'Brien",
+      "sessions": [
+        {
+          "slug": "trafton_mechanics_test",
+          "date": "2026-02-21",
+          "label": "Feb 21 — Open Side",
+          "efficiency_score": 5.44,
+          "efficiency_low_confidence": false,
+          "hand": "R",
+          "view_mode": "open_side",
+          "pass_count": 3,
+          "fail_count": 3
+        }
+      ]
+    }
+  ]
+}

@@ -26,6 +26,7 @@ export interface NotesJson {
   efficiency_low_confidence: boolean;
   hand: "R" | "L";
   view_mode: string;
+  model_version?: string;
   metrics: Record<string, MetricResult>;
   phases: Record<string, PhaseFrame>;
   camera_limitations: string[];

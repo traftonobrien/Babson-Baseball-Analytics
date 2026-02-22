@@ -11,13 +11,33 @@ interface MetricDetailModalProps {
   onClose: () => void;
 }
 
-function ScoreRow({ label, value, color }: { label: string; value: string; color?: string }) {
+function DataRow({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-zinc-800">
-      <span className="text-xs text-zinc-400">{label}</span>
+    <div className="flex items-center justify-between py-2 border-b border-zinc-800/60">
+      <span className="text-xs text-zinc-500">{label}</span>
       <span className="text-sm font-mono font-semibold" style={{ color: color ?? "#e4e4e7" }}>
         {value}
       </span>
+    </div>
+  );
+}
+
+function ConfidenceBar({ confidence }: { confidence: number }) {
+  const pct = Math.min(Math.max(confidence, 0), 1) * 100;
+  const color =
+    confidence >= 0.7
+      ? "#22c55e"
+      : confidence >= 0.5
+        ? "#a3e635"
+        : confidence >= 0.3
+          ? "#f59e0b"
+          : "#ef4444";
+  return (
+    <div className="w-20 h-1.5 rounded-full bg-zinc-800 overflow-hidden ml-2 shrink-0">
+      <div
+        className="h-full rounded-full"
+        style={{ width: `${pct}%`, backgroundColor: color }}
+      />
     </div>
   );
 }
@@ -37,84 +57,92 @@ export function MetricDetailModal({ metricKey, metric, onClose }: MetricDetailMo
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <div
-        className="bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-md shadow-2xl"
+        className="bg-zinc-900 border border-zinc-700/60 rounded-xl w-full max-w-sm shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
+        <div className="flex items-start justify-between px-5 py-4 border-b border-zinc-800">
           <div>
-            <h3 className="font-semibold text-zinc-100">{metricLabel(metricKey)}</h3>
-            <p className="text-[10px] text-zinc-500 mt-0.5 font-mono">{metricKey}</p>
+            <h3 className="font-semibold text-zinc-100 text-sm">{metricLabel(metricKey)}</h3>
+            <p className="text-[9px] text-zinc-600 mt-0.5 font-mono">{metricKey}</p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-zinc-500 hover:text-zinc-200 transition-colors p-1"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-3 ml-4 shrink-0">
+            <span
+              className="text-2xl font-black font-mono tabular-nums"
+              style={{ color: effColor }}
+            >
+              {eff != null ? eff.toFixed(1) : "—"}
+            </span>
+            <button
+              onClick={onClose}
+              className="text-zinc-600 hover:text-zinc-300 transition-colors p-1"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        <div className="px-5 py-4 space-y-1">
-          {metric.status !== "ok" ? (
-            <p className="text-sm text-zinc-500 italic">
-              Status: <span className="text-amber-400">{metric.status}</span>
+        <div className="px-5 py-4 space-y-0">
+          {metric.status !== "ok" && (
+            <p className="text-xs text-amber-400 mb-3">
+              Status: <span className="font-mono">{metric.status}</span>
             </p>
-          ) : null}
+          )}
 
-          <ScoreRow
-            label="Efficiency Score (score_eff)"
+          <DataRow
+            label="Efficiency Score"
             value={eff != null ? eff.toFixed(2) + " / 10" : "—"}
             color={effColor}
           />
-          <ScoreRow
-            label="Raw Score (score_raw)"
+          <DataRow
+            label="Raw Score"
             value={raw != null ? raw.toFixed(2) + " / 10" : "—"}
           />
           {metric.raw_value != null && (
-            <ScoreRow
-              label={`Measured Value`}
+            <DataRow
+              label="Measured Value"
               value={`${metric.raw_value.toFixed(3)} ${metric.unit}`}
             />
           )}
-          <ScoreRow
-            label="Confidence"
-            value={metric.confidence != null ? `${(metric.confidence * 100).toFixed(0)}%  (${confidenceLabel(metric.confidence)})` : "—"}
-            color={metric.low_confidence ? "#f59e0b" : "#e4e4e7"}
-          />
-          <ScoreRow
+
+          {/* Confidence row with spark bar */}
+          <div className="flex items-center py-2 border-b border-zinc-800/60">
+            <span className="text-xs text-zinc-500">Confidence</span>
+            <div className="flex-1 flex items-center justify-end gap-1">
+              <span
+                className={`text-xs font-mono ${metric.low_confidence ? "text-amber-400" : "text-zinc-300"}`}
+              >
+                {metric.confidence != null
+                  ? `${(metric.confidence * 100).toFixed(0)}%  (${confidenceLabel(metric.confidence)})`
+                  : "—"}
+              </span>
+              {metric.confidence != null && <ConfidenceBar confidence={metric.confidence} />}
+            </div>
+          </div>
+
+          <DataRow
             label="Pass / Fail"
-            value={metric.pass_fail === null ? "—" : metric.pass_fail ? "✓ Pass" : "✗ Fail"}
-            color={metric.pass_fail === null ? "#71717a" : metric.pass_fail ? "#22c55e" : "#ef4444"}
+            value={
+              metric.pass_fail === null ? "—" : metric.pass_fail ? "✓  Pass" : "✗  Fail"
+            }
+            color={
+              metric.pass_fail === null ? "#71717a" : metric.pass_fail ? "#22c55e" : "#ef4444"
+            }
           />
 
           {/* Callout */}
           {metric.callout && (
-            <div className="mt-4 bg-zinc-800/60 rounded-lg p-3">
+            <div className="mt-4 bg-zinc-800/50 rounded-lg p-3">
               <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">Callout</p>
               <p className="text-sm text-zinc-200 leading-relaxed">{metric.callout}</p>
             </div>
           )}
 
-          {/* Coaching cues */}
-          {metric.coaching_cues.length > 0 && (
-            <div className="mt-3">
-              <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2">Coaching Cues</p>
-              <ul className="space-y-1">
-                {metric.coaching_cues.map((cue, i) => (
-                  <li key={i} className="text-xs text-zinc-400 flex gap-2">
-                    <span className="text-zinc-600 shrink-0">·</span>
-                    {cue}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Reasons / flags */}
+          {/* Flags */}
           {metric.reasons && metric.reasons.length > 0 && (
             <div className="mt-3">
               <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2">Flags</p>
@@ -134,9 +162,12 @@ export function MetricDetailModal({ metricKey, metric, onClose }: MetricDetailMo
           {/* Low confidence warning */}
           {metric.low_confidence && (
             <div className="mt-3 bg-amber-950/40 border border-amber-800/30 rounded-lg p-3">
-              <p className="text-[10px] uppercase tracking-wider text-amber-500 mb-1">Low Confidence</p>
+              <p className="text-[10px] uppercase tracking-wider text-amber-500 mb-1">
+                Low Confidence
+              </p>
               <p className="text-xs text-amber-200/70 leading-relaxed">
-                This metric may be affected by occlusion, pose estimation quality, or limited frame windows. Review the film before acting on this score.
+                Pose estimation quality may affect this score. Review film before coaching on this
+                metric.
               </p>
             </div>
           )}

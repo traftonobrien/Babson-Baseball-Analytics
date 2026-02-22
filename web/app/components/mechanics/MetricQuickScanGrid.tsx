@@ -85,14 +85,19 @@ function MetricTile({ metricKey, metric, onClick }: MetricTileProps) {
 interface MetricQuickScanGridProps {
   notes: NotesJson;
   onMetricClick: (key: string) => void;
+  heading?: string;
 }
 
-export function MetricQuickScanGrid({ notes, onMetricClick }: MetricQuickScanGridProps) {
+export function MetricQuickScanGrid({
+  notes,
+  onMetricClick,
+  heading = "All Metrics",
+}: MetricQuickScanGridProps) {
   const keys = notes.official_metrics.filter((k) => notes.metrics[k]);
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-6">
-      <h2 className="text-[10px] uppercase tracking-wider text-zinc-500 mb-4">Quick Scan</h2>
+      <h2 className="text-[10px] uppercase tracking-wider text-zinc-500 mb-4">{heading}</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {keys.map((key) => (
           <MetricTile

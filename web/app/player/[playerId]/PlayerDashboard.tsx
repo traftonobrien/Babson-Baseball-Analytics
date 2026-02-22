@@ -18,6 +18,7 @@ import MissHeatmap from "../../components/MissHeatmap";
 import LogoutButton from "../../components/LogoutButton";
 import OutingSelect from "./OutingSelect";
 import GameStatsSection from "@/lib/stats/GameStatsSection";
+import { MechanicsProfileSection } from "@/app/components/mechanics/MechanicsProfileSection";
 import {
   loadOutingMeta,
   loadPlayerGameStats,
@@ -421,6 +422,9 @@ export default function PlayerDashboard({
               onSelectLane={toggleLane}
             />
           )}
+
+          {/* Mechanics Analysis */}
+          <MechanicsProfileSection playerId={player.id} />
         </main>
       </div>
     </div>
