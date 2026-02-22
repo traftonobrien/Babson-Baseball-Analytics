@@ -14,6 +14,7 @@ interface ArmAngleOverlayProps {
   pad: number;
   maxAbs: number;
   hoveredPitchType?: string | null;
+  onHoverPitchType?: (pitchType: string | null) => void;
 }
 
 /** Short abbreviation for pill label */
@@ -39,6 +40,7 @@ export function ArmAngleOverlay({
   pad,
   maxAbs,
   hoveredPitchType,
+  onHoverPitchType,
 }: ArmAngleOverlayProps) {
   const primary = useMemo(() => rays.find((r) => r.isPrimary) ?? rays[0], [rays]);
   const displayRay = useMemo(() => {
@@ -122,7 +124,7 @@ export function ArmAngleOverlay({
   const pillH = 26;
 
   return (
-    <g className="arm-angle-overlay" pointerEvents="none">
+    <g className="arm-angle-overlay">
       <defs>
         <filter id={RELEASE_THEME.filters.beamGlow} x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="4" result="blur" />
@@ -185,6 +187,7 @@ export function ArmAngleOverlay({
         strokeOpacity="0.40"
         strokeLinecap="round"
         strokeDasharray="3 6"
+        pointerEvents="none"
       />
 
       {/* Beams (render in reverse so primary draws on top) */}
@@ -233,16 +236,33 @@ export function ArmAngleOverlay({
           const gradId = `beamGradient-${ray.pitchType.replace(/\s+/g, "-")}`;
 
           return (
-            <g key={ray.pitchType} opacity={beamAlpha} style={{ transition: "opacity 150ms ease" }}>
+            <g
+              key={ray.pitchType}
+              opacity={beamAlpha}
+              style={{ transition: "opacity 150ms ease", cursor: "pointer" }}
+              onMouseEnter={() => onHoverPitchType?.(ray.pitchType)}
+              onMouseLeave={() => onHoverPitchType?.(null)}
+            >
+              {/* Invisible wider hit area for easier hovering */}
+              <line
+                x1={anchorX}
+                y1={anchorY}
+                x2={bx2}
+                y2={by2}
+                stroke="transparent"
+                strokeWidth="14"
+                pointerEvents="stroke"
+              />
               {/* Glow */}
               <path
                 d={beamPath}
                 fill={ray.color}
                 opacity={glowAlpha / beamAlpha}
                 filter={`url(#${RELEASE_THEME.filters.beamGlow})`}
+                pointerEvents="none"
               />
               {/* Core */}
-              <path d={beamPath} fill={`url(#${gradId})`} />
+              <path d={beamPath} fill={`url(#${gradId})`} pointerEvents="none" />
               {/* White center line */}
               <line
                 x1={anchorX}
@@ -253,18 +273,19 @@ export function ArmAngleOverlay({
                 strokeWidth="0.75"
                 opacity={0.25}
                 strokeLinecap="round"
+                pointerEvents="none"
               />
             </g>
           );
         })}
 
         {/* Anchor dot (shared) */}
-        <circle cx={anchorX} cy={anchorY} r={4} fill={primary.color} opacity={0.6} />
+        <circle cx={anchorX} cy={anchorY} r={4} fill={primary.color} opacity={0.6} pointerEvents="none" />
       </g>
 
       {/* Label pill */}
       {displayRay.slotClass && (
-        <g className="pill-group-multi" transform={`translate(${labelX}, ${labelY + 4})`}>
+        <g className="pill-group-multi" transform={`translate(${labelX}, ${labelY + 4})`} pointerEvents="none">
           <rect
             x={-pillW / 2}
             y={-pillH / 2}

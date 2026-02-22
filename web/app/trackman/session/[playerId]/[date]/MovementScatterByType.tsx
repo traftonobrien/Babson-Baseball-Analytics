@@ -350,6 +350,7 @@ export default function MovementScatterByType({
             pad={PAD}
             maxAbs={maxAbs}
             hoveredPitchType={hoveredPitchType}
+            onHoverPitchType={setHoveredPitchType}
           />
         )}
 
