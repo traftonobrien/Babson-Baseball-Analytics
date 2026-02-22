@@ -1,0 +1,198 @@
+{
+  "efficiency_score": 5.44,
+  "efficiency_low_confidence": false,
+  "hand": "R",
+  "view_mode": "open_side",
+  "metrics": {
+    "timing": {
+      "status": "ok",
+      "raw_value": 0.935,
+      "unit": "s",
+      "score": 10.0,
+      "score_raw": 10.0,
+      "score_eff": 10.0,
+      "pass_fail": true,
+      "callout": null,
+      "confidence": 0.82,
+      "low_confidence": false,
+      "manual_review_recommended": false,
+      "reasons": [],
+      "coaching_cues": [
+        "SET \u2192 FOOT STRIKE elapsed time"
+      ]
+    },
+    "swivel_stabilize": {
+      "status": "ok",
+      "raw_value": 1.0,
+      "unit": "boolean",
+      "score": 4.69,
+      "score_raw": 10.0,
+      "score_eff": 4.69,
+      "pass_fail": false,
+      "callout": "Glove arm is flying out past the torso frame at release. Pull the glove to the chest to stabilise rotation.",
+      "confidence": 0.36,
+      "low_confidence": true,
+      "manual_review_recommended": true,
+      "reasons": [
+        "outlier_jump"
+      ],
+      "coaching_cues": [
+        "Glove arm is flying out past the torso frame at release",
+        "Glove (LEFT_WRIST) x-position inside torso x-bounds at release"
+      ]
+    },
+    "lead_leg_block_v3": {
+      "status": "ok",
+      "raw_value": 6.125,
+      "unit": "score",
+      "score": 4.7,
+      "score_raw": 6.12,
+      "score_eff": 4.7,
+      "pass_fail": false,
+      "callout": "Lead leg block is soft through release. Land on a firm post and reduce forward leak after foot strike.",
+      "confidence": 0.5,
+      "low_confidence": true,
+      "manual_review_recommended": true,
+      "reasons": [
+        "phase_uncertain"
+      ],
+      "coaching_cues": [
+        "Lead leg block is soft through release",
+        "Lead leg leaked/collapsed through release"
+      ]
+    },
+    "hip_shoulder_sep_v3": {
+      "status": "ok",
+      "raw_value": 0.501,
+      "unit": "s",
+      "score": 6.76,
+      "score_raw": 10.0,
+      "score_eff": 6.76,
+      "pass_fail": true,
+      "callout": null,
+      "confidence": 0.45,
+      "low_confidence": true,
+      "manual_review_recommended": true,
+      "reasons": [
+        "outlier_jump"
+      ],
+      "coaching_cues": [
+        "Open-side separation proxy from shoulder-vs-pelvis burst timing"
+      ]
+    },
+    "front_side_closedness_v2": {
+      "status": "ok",
+      "raw_value": 3.5,
+      "unit": "score",
+      "score": 2.63,
+      "score_raw": 3.5,
+      "score_eff": 2.63,
+      "pass_fail": false,
+      "callout": "Front side is opening early. Keep the glove side contained into foot strike before stabilizing at release.",
+      "confidence": 0.49,
+      "low_confidence": true,
+      "manual_review_recommended": true,
+      "reasons": [],
+      "coaching_cues": [
+        "Front side is opening early",
+        "Front-side containment through FS->REL using glove/torso open-side proxies"
+      ]
+    },
+    "release_extension_v2": {
+      "status": "ok",
+      "raw_value": 0.65,
+      "unit": "x shoulder",
+      "score": 6.21,
+      "score_raw": 7.14,
+      "score_eff": 6.21,
+      "pass_fail": true,
+      "callout": null,
+      "confidence": 0.54,
+      "low_confidence": true,
+      "manual_review_recommended": true,
+      "reasons": [
+        "high_jitter"
+      ],
+      "coaching_cues": [
+        "Composite release extension proxy from reach, release-angle, and forward-intent cues"
+      ]
+    }
+  },
+  "phases": {
+    "set": {
+      "frame_idx": 57,
+      "time_s": 1.904
+    },
+    "peak_leg_lift": {
+      "frame_idx": 68,
+      "time_s": 2.271
+    },
+    "foot_strike": {
+      "frame_idx": 85,
+      "time_s": 2.839
+    },
+    "ball_release": {
+      "frame_idx": 88,
+      "time_s": 2.939
+    }
+  },
+  "camera_limitations": [
+    "stack_track: Not measurable from this view (open_side)",
+    "torque_retention: Not measurable from this view (open_side)",
+    "swivel_stabilize: low confidence due to visibility/occlusion",
+    "lead_leg_block_v3: low confidence due to visibility/occlusion",
+    "hip_shoulder_sep_v3: low confidence due to visibility/occlusion",
+    "front_side_closedness_v2: low confidence due to visibility/occlusion",
+    "release_extension_v2: low confidence due to visibility/occlusion"
+  ],
+  "limitations": {
+    "camera_view": "open_side",
+    "not_measurable": [
+      "stack_track",
+      "torque_retention"
+    ],
+    "low_confidence_metrics": [
+      "front_side_closedness_v2",
+      "hip_shoulder_sep_v3",
+      "lead_leg_block_v3",
+      "release_extension_v2",
+      "swivel_stabilize"
+    ]
+  },
+  "official_metric_set": "open_side_pro_v3",
+  "official_metrics": [
+    "lead_leg_block_v3",
+    "hip_shoulder_sep_v3",
+    "front_side_closedness_v2",
+    "release_extension_v2",
+    "timing",
+    "swivel_stabilize"
+  ],
+  "official_open_side_metrics_v3": [
+    "lead_leg_block_v3",
+    "hip_shoulder_sep_v3",
+    "front_side_closedness_v2",
+    "release_extension_v2",
+    "timing",
+    "swivel_stabilize"
+  ],
+  "excluded_metrics_reason": "open_side_only",
+  "excluded_metrics_detail": {
+    "balance": "debug-only",
+    "posture": "debug-only",
+    "lift_thrust": "debug-only",
+    "tilt_consistency": "debug-only",
+    "trunk_stability": "debug-only",
+    "trunk_stability_v2": "debug-only",
+    "release_extension_proxy": "debug-only",
+    "drift_forward": "debug-only",
+    "front_knee_flexion_fs": "debug-only",
+    "front_knee_extension_rel": "debug-only",
+    "lead_leg_block_v2": "debug-only",
+    "hip_shoulder_sep_v2": "debug-only",
+    "front_side_closedness": "debug-only",
+    "forward_leak_proxy": "debug-only",
+    "stack_track": "front-view-only",
+    "torque_retention": "front-view-only"
+  }
+}
