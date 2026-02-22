@@ -97,8 +97,8 @@ function groupByPlayer(sessions: Session[]): Player[] {
     });
   }
 
-  // Sort by name
-  players.sort((a, b) => formatPlayerName(a.name).localeCompare(formatPlayerName(b.name)));
+  // Sort by most recent session first
+  players.sort((a, b) => b.latestDate.localeCompare(a.latestDate));
   return players;
 }
 

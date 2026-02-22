@@ -413,7 +413,7 @@ export default function TrackmanPlayerPage({
                   return (
                     <Link
                       key={`${e.date}-${i}`}
-                      href={`/trackman/session/${slug}/${dateSlug}${fromProfile ? `?from=profile&slug=${slug}` : ""}`}
+                      href={`/trackman/session/${slug}/${dateSlug}?from=player&slug=${slug}`}
                       className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 hover:border-zinc-600 transition-colors text-sm"
                     >
                       <span className="font-mono text-zinc-300">
