@@ -187,7 +187,7 @@ export default function MLBCompsPanel({
   // Arsenal comps
   const arsenalComps: ArsenalCompResult[] = useMemo(() => {
     if (!mlbData || !hand || arsenal.length === 0) return [];
-    return findArsenalComps(arsenal, hand, mlbData.pitchers, 8, 1);
+    return findArsenalComps(arsenal, hand, mlbData.pitchers, 8, 2);
   }, [mlbData, arsenal, hand]);
 
   // Active pitch defaults to first available

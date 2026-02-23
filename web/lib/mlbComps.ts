@@ -172,14 +172,14 @@ export interface ArsenalCompResult {
  * the provided Babson arsenal profile.
  *
  * Only pitchers who share at least `minMatchedPitches` pitch types with the
- * Babson arsenal are considered.
+ * Babson arsenal are considered (default 2 — requires matching on at least 2 pitches).
  */
 export function findArsenalComps(
   babsonArsenal: CompInput[],
   hand: "R" | "L",
   pitchers: MLBPitcher[],
   topN = 5,
-  minMatchedPitches = 1,
+  minMatchedPitches = 2,
 ): ArsenalCompResult[] {
   const results: ArsenalCompResult[] = [];
 
