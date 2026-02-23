@@ -44,6 +44,25 @@ function DeltaBadge({ value }: { value: number | null }) {
 // Sub-components
 // ---------------------------------------------------------------------------
 
+function WatchClipButton({
+  onClick,
+  title,
+}: {
+  onClick: () => void;
+  title: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center justify-start gap-1.5 w-[92px] h-[28px] shrink-0 px-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-zinc-100 transition-colors text-[11px] font-medium border border-zinc-700/60 hover:border-zinc-600 whitespace-nowrap"
+      title={title}
+    >
+      <Play className="w-3 h-3 fill-current shrink-0" />
+      Watch clip
+    </button>
+  );
+}
+
 function PitchCompCard({
   result,
   rank,
@@ -79,17 +98,14 @@ function PitchCompCard({
           </span>
         </div>
       </div>
-      <div className="flex items-center gap-3 shrink-0">
+      <div className="flex items-center shrink-0 flex-nowrap">
         {onWatch && (
-          <button
+          <WatchClipButton
             onClick={onWatch}
-            className="flex items-center justify-center w-7 h-7 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-100 transition-colors"
-            title={`Watch ${result.pitcher.name}'s ${result.pitch.pitchType}`}
-          >
-            <Play className="w-3.5 h-3.5" />
-          </button>
+            title={`Watch ${result.pitcher.name}'s ${result.pitch.pitchType} strike clip`}
+          />
         )}
-        <div className="text-right">
+        <div className="text-right shrink-0 ml-8">
           <div className="text-[10px] uppercase tracking-wide text-zinc-600 mb-0.5">Δ shape</div>
           <div className="flex items-center gap-1.5">
             <DeltaBadge value={result.deltas.ivb} />

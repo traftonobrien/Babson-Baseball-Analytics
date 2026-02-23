@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { X, ExternalLink, Loader2 } from "lucide-react";
 
-interface Clip {
+interface ClipData {
+  mp4Url: string;
   playId: string;
   date: string;
   velo: string;
@@ -13,7 +14,7 @@ interface Clip {
 interface VideoClipsModalProps {
   pitcherId: string;
   pitcherName: string;
-  pitchType: string; // Canonical name e.g. "Curveball"
+  pitchType: string;
   year?: number;
   onClose: () => void;
 }
@@ -25,10 +26,10 @@ export default function VideoClipsModal({
   year = 2025,
   onClose,
 }: VideoClipsModalProps) {
-  const [clips, setClips] = useState<Clip[]>([]);
+  const [clip, setClip] = useState<ClipData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [fallbackUrl, setFallbackUrl] = useState<string | null>(null);
+  const [noClip, setNoClip] = useState(false);
   const backdropRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,19 +37,18 @@ export default function VideoClipsModal({
       pitcherId,
       pitchType,
       year: String(year),
-      n: "4",
     });
 
     fetch(`/api/savant-clips?${params}`)
       .then((r) => r.json())
       .then((data) => {
-        setClips(data.clips ?? []);
+        setClip(data.clip ?? null);
         setFallbackUrl(data.fallbackUrl ?? null);
-        if (data.error) setError(data.error);
+        if (!data.clip) setNoClip(true);
         setLoading(false);
       })
-      .catch((err) => {
-        setError(String(err));
+      .catch(() => {
+        setNoClip(true);
         setLoading(false);
       });
   }, [pitcherId, pitchType, year]);
@@ -73,24 +73,21 @@ export default function VideoClipsModal({
     if (e.target === backdropRef.current) onClose();
   };
 
-  const sportyUrl = (playId: string) =>
-    `https://baseballsavant.mlb.com/sporty-videos?playId=${playId}`;
-
   return (
     <div
       ref={backdropRef}
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
     >
-      <div className="relative bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div className="relative bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-md overflow-hidden shadow-2xl">
         {/* Header */}
-        <div className="sticky top-0 bg-zinc-900/95 backdrop-blur border-b border-zinc-800 px-5 py-4 flex items-center justify-between rounded-t-xl z-10">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
           <div>
             <h3 className="text-sm font-semibold text-zinc-100">
-              {pitcherName} — {pitchType}
+              {pitcherName}
             </h3>
             <p className="text-[10px] text-zinc-500 mt-0.5">
-              {year} pitch clips from Baseball Savant
+              {pitchType} · {year}
             </p>
           </div>
           <button
@@ -101,97 +98,67 @@ export default function VideoClipsModal({
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-5">
+        {/* Video area */}
+        <div className="bg-black">
           {loading && (
-            <div className="flex flex-col items-center justify-center py-12 gap-3">
-              <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
-              <p className="text-zinc-500 text-sm">
-                Loading clips from Savant...
-              </p>
+            <div className="flex flex-col items-center justify-center py-16 gap-2">
+              <Loader2 className="w-5 h-5 text-zinc-500 animate-spin" />
+              <p className="text-zinc-500 text-xs">Finding clip...</p>
             </div>
           )}
 
-          {!loading && clips.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-zinc-400 text-sm mb-3">
-                {error
-                  ? "Could not load video clips."
-                  : `No ${pitchType} clips found for ${year}.`}
+          {!loading && noClip && (
+            <div className="flex flex-col items-center justify-center py-16 gap-2">
+              <p className="text-zinc-400 text-sm">
+                No strike clip found for {year}.
               </p>
               {fallbackUrl && (
                 <a
                   href={fallbackUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                  className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors mt-1"
                 >
-                  View on Savant <ExternalLink className="w-3.5 h-3.5" />
+                  View on Savant <ExternalLink className="w-3 h-3" />
                 </a>
               )}
             </div>
           )}
 
-          {!loading && clips.length > 0 && (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {clips.map((clip) => (
-                  <div
-                    key={clip.playId}
-                    className="bg-zinc-800/60 border border-zinc-700/50 rounded-lg overflow-hidden"
-                  >
-                    {/* Video iframe */}
-                    <div className="relative aspect-video bg-black">
-                      <iframe
-                        src={sportyUrl(clip.playId)}
-                        className="absolute inset-0 w-full h-full"
-                        allow="autoplay; encrypted-media"
-                        allowFullScreen
-                        loading="lazy"
-                        title={`${pitcherName} ${pitchType} - ${clip.date}`}
-                      />
-                    </div>
-                    {/* Clip info */}
-                    <div className="flex items-center justify-between px-3 py-2">
-                      <span className="text-[11px] font-mono text-zinc-400">
-                        {clip.date}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-mono text-zinc-500">
-                          {clip.velo} mph
-                        </span>
-                        <a
-                          href={sportyUrl(clip.playId)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-zinc-500 hover:text-zinc-300 transition-colors"
-                          title="Open in Savant"
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Savant link */}
-              {fallbackUrl && (
-                <div className="mt-4 text-center">
-                  <a
-                    href={fallbackUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
-                  >
-                    View full profile on Savant{" "}
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              )}
-            </>
+          {!loading && clip && (
+            <video
+              src={clip.mp4Url}
+              autoPlay
+              muted
+              loop
+              playsInline
+              controls
+              className="w-full aspect-video object-contain"
+            />
           )}
         </div>
+
+        {/* Footer info */}
+        {!loading && clip && (
+          <div className="flex items-center justify-between px-4 py-2.5 border-t border-zinc-800">
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] font-mono text-zinc-400">
+                {clip.date}
+              </span>
+              <span className="text-[11px] font-mono text-zinc-500">
+                {clip.velo} mph
+              </span>
+            </div>
+            <a
+              href={`https://baseballsavant.mlb.com/sporty-videos?playId=${clip.playId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors"
+            >
+              Savant <ExternalLink className="w-2.5 h-2.5" />
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
