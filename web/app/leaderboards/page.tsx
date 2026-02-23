@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { Target, ArrowLeft } from "lucide-react";
 import {
   loadAllOutingData,
   computeLeaderboardRows,
@@ -17,6 +18,7 @@ import type {
 } from "@/lib/leaderboards/types";
 import type { PitchGroup } from "@/lib/leaderboards/pitchGroups";
 import { handBadgeClassesCompact } from "@/lib/handBadge";
+import { savantColorAt } from "@/lib/savantColors";
 import LogoutButton from "@/app/components/LogoutButton";
 
 /* ------------------------------------------------------------------ */
@@ -115,10 +117,10 @@ function HandBadge({ hand, unknown }: { hand: "R" | "L"; unknown: boolean }) {
 
 function SkeletonRow({ i, cols }: { i: number; cols: number }) {
   return (
-    <tr className="border-b border-zinc-800 animate-pulse">
-      <td className="px-3 py-2 text-zinc-600">{i + 1}</td>
+    <tr className="border-b border-zinc-800/50 animate-pulse">
+      <td className="px-4 py-3 text-zinc-600">{i + 1}</td>
       {Array.from({ length: cols }, (_, j) => (
-        <td key={j} className="px-3 py-2">
+        <td key={j} className="px-4 py-3">
           <div className="h-4 bg-zinc-800 rounded w-16" />
         </td>
       ))}
@@ -142,13 +144,13 @@ function Col({ label, sortKey, sort, onSort, title }: ColProps) {
   const active = sort.key === sortKey;
   return (
     <th
-      className="px-3 py-2 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer select-none hover:text-zinc-200 whitespace-nowrap"
+      className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider cursor-pointer select-none hover:text-orange-400/80 whitespace-nowrap transition-colors"
       onClick={() => onSort(sortKey)}
       title={title}
     >
       {label}
       {active && (
-        <span className="ml-1 text-zinc-300">
+        <span className="ml-1 text-orange-400">
           {sort.desc ? "\u25BC" : "\u25B2"}
         </span>
       )}
@@ -170,16 +172,16 @@ interface SegmentProps<T extends string> {
 function Segment<T extends string>({ label, options, selected, onChange }: SegmentProps<T>) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-zinc-400 uppercase tracking-wider">{label}</span>
-      <div className="flex rounded-md overflow-hidden border border-zinc-700">
+      <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">{label}</span>
+      <div className="flex rounded-lg overflow-hidden border border-zinc-700/80 bg-zinc-900/60 p-0.5">
         {options.map((opt) => (
           <button
             key={opt.value}
             onClick={() => onChange(opt.value)}
-            className={`px-3 py-1 text-sm transition-colors ${
+            className={`px-3 py-1.5 text-sm font-medium transition-all rounded-md ${
               selected === opt.value
-                ? "bg-zinc-700 text-zinc-100"
-                : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800"
+                ? "bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-sm"
+                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60"
             }`}
           >
             {opt.display}
@@ -191,19 +193,50 @@ function Segment<T extends string>({ label, options, selected, onChange }: Segme
 }
 
 /* ------------------------------------------------------------------ */
+/*  Rank badge (gold / silver / bronze)                                 */
+/* ------------------------------------------------------------------ */
+
+function rankColor(i: number): string {
+  if (i === 0) return "text-amber-400"; // gold
+  if (i === 1) return "text-zinc-400"; // silver
+  if (i === 2) return "text-amber-600"; // bronze
+  return "text-zinc-500";
+}
+
+/* ------------------------------------------------------------------ */
 /*  KPI columns (shared between both modes)                            */
 /* ------------------------------------------------------------------ */
 
-function KpiCells({ row }: { row: { pitchCount: number; onTargetPct: number; avgMissIn: number; avgHAbsIn: number; avgVAbsIn: number; outlierPct: number; consistencyStdIn: number } }) {
+function KpiCells({
+  row,
+  onTargetMin,
+  onTargetMax,
+}: {
+  row: { pitchCount: number; onTargetPct: number; avgMissIn: number; avgHAbsIn: number; avgVAbsIn: number; outlierPct: number; consistencyStdIn: number };
+  onTargetMin: number;
+  onTargetMax: number;
+}) {
+  const pctForColor =
+    onTargetMax > onTargetMin
+      ? ((row.onTargetPct - onTargetMin) / (onTargetMax - onTargetMin)) * 100
+      : 50;
+  const onTargetStyle = savantColorAt(pctForColor);
   return (
     <>
-      <td className="px-3 py-2 text-zinc-300 font-mono">{row.pitchCount}</td>
-      <td className="px-3 py-2 font-mono font-semibold text-amber-400">{fmtPct(row.onTargetPct)}</td>
-      <td className="px-3 py-2 font-mono text-zinc-300">{fmtIn(row.avgMissIn)}</td>
-      <td className="px-3 py-2 font-mono text-zinc-300">{fmtIn(row.avgHAbsIn)}</td>
-      <td className="px-3 py-2 font-mono text-zinc-300">{fmtIn(row.avgVAbsIn)}</td>
-      <td className="px-3 py-2 font-mono text-zinc-400">{fmtPct(row.outlierPct)}</td>
-      <td className="px-3 py-2 font-mono text-zinc-400">{fmtIn(row.consistencyStdIn)}</td>
+      <td className="px-4 py-3 text-zinc-300 font-mono text-sm">{row.pitchCount}</td>
+      <td className="px-4 py-3">
+        <span
+          className="inline-block font-mono font-bold text-[11px] px-2 py-0.5 rounded"
+          style={{ backgroundColor: onTargetStyle.bg, color: onTargetStyle.text }}
+        >
+          {fmtPct(row.onTargetPct)}
+        </span>
+      </td>
+      <td className="px-4 py-3 font-mono text-zinc-300 text-sm">{fmtIn(row.avgMissIn)}</td>
+      <td className="px-4 py-3 font-mono text-zinc-300 text-sm">{fmtIn(row.avgHAbsIn)}</td>
+      <td className="px-4 py-3 font-mono text-zinc-300 text-sm">{fmtIn(row.avgVAbsIn)}</td>
+      <td className="px-4 py-3 font-mono text-zinc-400 text-sm">{fmtPct(row.outlierPct)}</td>
+      <td className="px-4 py-3 font-mono text-zinc-400 text-sm">{fmtIn(row.consistencyStdIn)}</td>
     </>
   );
 }
@@ -304,6 +337,16 @@ export default function LeaderboardsPage() {
 
   const rowCount = mode === "outings" ? displayedOutings.length : displayedPlayers.length;
 
+  const { onTargetMin, onTargetMax } = useMemo(() => {
+    const rows = mode === "outings" ? displayedOutings : displayedPlayers;
+    if (rows.length === 0) return { onTargetMin: 0, onTargetMax: 100 };
+    const vals = rows.map((r) => r.onTargetPct);
+    return {
+      onTargetMin: Math.min(...vals),
+      onTargetMax: Math.max(...vals),
+    };
+  }, [mode, displayedOutings, displayedPlayers]);
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6 relative">
       <div className="absolute top-4 right-4">
@@ -312,18 +355,31 @@ export default function LeaderboardsPage() {
 
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-6 flex items-center gap-4">
+        <div className="mb-8">
           <Link
             href="/"
-            className="text-zinc-500 hover:text-zinc-300 transition-colors text-sm"
+            className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-300 transition-colors mb-4"
           >
-            &larr; Home
+            <ArrowLeft className="w-4 h-4" />
+            Home
           </Link>
-          <h1 className="text-2xl font-semibold">Team Leaderboards</h1>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-orange-500/10 border border-orange-500/20">
+              <Target className="w-6 h-6 text-orange-400" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-zinc-50">
+                Team Leaderboards
+              </h1>
+              <p className="text-sm text-zinc-500 mt-0.5">
+                Command metrics by outing or player
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-4 mb-6">
+        <div className="flex flex-wrap items-center gap-4 mb-6 p-4 rounded-xl bg-zinc-900/50 border border-zinc-800/60">
           <Segment<LeaderboardMode>
             label="Mode"
             options={[
@@ -372,36 +428,36 @@ export default function LeaderboardsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search player..."
-            className="bg-zinc-900 border border-zinc-700 rounded-md px-3 py-1 text-sm text-zinc-100 placeholder-zinc-500 w-48 focus:outline-none focus:border-zinc-500"
+            className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 w-48 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20 transition-colors"
           />
 
           {loading && progress.total > 0 && (
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs text-zinc-500 font-medium">
               Loading {progress.loaded}/{progress.total} outings...
             </span>
           )}
           {!loading && (
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs font-semibold text-orange-400/80">
               {rowCount} {mode === "outings" ? "outing" : "player"}{rowCount !== 1 ? "s" : ""}
             </span>
           )}
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto rounded-lg border border-zinc-800">
+        <div className="overflow-x-auto rounded-xl border border-zinc-800/80 bg-zinc-900/30 shadow-xl shadow-black/20">
           <table className="w-full text-sm">
-            <thead className="bg-zinc-900">
+            <thead className="bg-zinc-900/80">
               <tr>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider w-10">
+                <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-12">
                   #
                 </th>
                 <Col label="Player" sortKey="playerName" sort={sort} onSort={handleSort} />
                 {mode === "outings" ? (
-                  <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                     Date
                   </th>
                 ) : (
-                  <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                     Outings
                   </th>
                 )}
@@ -421,7 +477,7 @@ export default function LeaderboardsPage() {
                 ))}
               {!loading && rowCount === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-3 py-8 text-center text-zinc-500">
+                  <td colSpan={10} className="px-4 py-12 text-center text-zinc-500">
                     No {mode === "outings" ? "outings" : "players"} found for the selected filters.
                   </td>
                 </tr>
@@ -432,19 +488,21 @@ export default function LeaderboardsPage() {
                 displayedOutings.map((row, i) => (
                   <tr
                     key={row.outingId}
-                    className="border-b border-zinc-800 hover:bg-zinc-900/60 transition-colors cursor-pointer"
+                    className="border-b border-zinc-800/50 hover:bg-orange-500/5 transition-colors cursor-pointer group"
                   >
-                    <td className="px-3 py-2 text-zinc-500 font-mono text-xs">{i + 1}</td>
-                    <td className="px-3 py-2 font-medium whitespace-nowrap">
+                    <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>
+                      {i + 1}
+                    </td>
+                    <td className="px-4 py-3 font-medium whitespace-nowrap">
                       <Link
                         href={`/player/${row.playerId}/report?outingId=${row.outingId}`}
-                        className="hover:text-amber-400 transition-colors"
+                        className="hover:text-orange-400 transition-colors"
                       >
                         {row.playerName}
                       </Link>
                       <HandBadge hand={row.pitcherHand} unknown={row.handUnknown} />
                     </td>
-                    <td className="px-3 py-2 text-zinc-400 whitespace-nowrap">
+                    <td className="px-4 py-3 text-zinc-400 whitespace-nowrap">
                       <Link
                         href={`/player/${row.playerId}/report?outingId=${row.outingId}`}
                         className="hover:text-zinc-200 transition-colors"
@@ -452,7 +510,7 @@ export default function LeaderboardsPage() {
                         {dateLabel(row.dateId)}
                       </Link>
                     </td>
-                    <KpiCells row={row} />
+                    <KpiCells row={row} onTargetMin={onTargetMin} onTargetMax={onTargetMax} />
                   </tr>
                 ))}
 
@@ -461,22 +519,24 @@ export default function LeaderboardsPage() {
                 displayedPlayers.map((row, i) => (
                   <tr
                     key={row.playerId}
-                    className="border-b border-zinc-800 hover:bg-zinc-900/60 transition-colors cursor-pointer"
+                    className="border-b border-zinc-800/50 hover:bg-orange-500/5 transition-colors cursor-pointer group"
                   >
-                    <td className="px-3 py-2 text-zinc-500 font-mono text-xs">{i + 1}</td>
-                    <td className="px-3 py-2 font-medium whitespace-nowrap">
+                    <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>
+                      {i + 1}
+                    </td>
+                    <td className="px-4 py-3 font-medium whitespace-nowrap">
                       <Link
                         href={`/player/${row.playerId}`}
-                        className="hover:text-amber-400 transition-colors"
+                        className="hover:text-orange-400 transition-colors"
                       >
                         {row.playerName}
                       </Link>
                       <HandBadge hand={row.pitcherHand} unknown={row.handUnknown} />
                     </td>
-                    <td className="px-3 py-2 text-zinc-400 font-mono">
+                    <td className="px-4 py-3 text-zinc-400 font-mono">
                       {row.outingCount}
                     </td>
-                    <KpiCells row={row} />
+                    <KpiCells row={row} onTargetMin={onTargetMin} onTargetMax={onTargetMax} />
                   </tr>
                 ))}
             </tbody>
@@ -485,7 +545,7 @@ export default function LeaderboardsPage() {
 
         {/* Aggregate subtext */}
         {!loading && mode === "players" && displayedPlayers.length > 0 && (
-          <p className="mt-3 text-xs text-zinc-500">
+          <p className="mt-4 text-xs text-zinc-500">
             Aggregated across all outings matching filters. Consistency is exact standard deviation across all pitches.
           </p>
         )}

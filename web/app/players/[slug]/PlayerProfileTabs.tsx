@@ -237,15 +237,15 @@ export default function PlayerProfileTabs({
         <div className="mt-10">
           {/* Command Hub button */}
           <Link href="/command">
-            <div className="group flex items-center justify-between rounded-xl border border-amber-500/30 bg-zinc-900/60 px-5 py-4 transition-all hover:border-amber-500/50 hover:bg-zinc-900">
+            <div className="group flex items-center justify-between rounded-xl border border-orange-500/30 bg-zinc-900/60 px-5 py-4 transition-all hover:border-orange-500/50 hover:bg-zinc-900">
               <div className="flex items-center gap-3">
-                <Target className="h-4 w-4 text-amber-400" />
+                <Target className="h-4 w-4 text-orange-400" />
                 <div>
                   <span className="text-sm font-semibold text-zinc-100">Command Hub</span>
                   <p className="text-[10px] text-zinc-500">All pitchers, all outings</p>
                 </div>
               </div>
-              <ArrowRight className="h-4 w-4 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity" />
+              <ArrowRight className="h-4 w-4 text-orange-400 opacity-60 group-hover:opacity-100 transition-opacity" />
             </div>
           </Link>
 

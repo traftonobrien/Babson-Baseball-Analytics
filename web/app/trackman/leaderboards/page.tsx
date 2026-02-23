@@ -67,6 +67,13 @@ function fmt(v: number, cat: string): string {
 }
 
 
+function rankColor(i: number): string {
+  if (i === 0) return "text-amber-400"; // gold
+  if (i === 1) return "text-zinc-400"; // silver
+  if (i === 2) return "text-amber-600"; // bronze
+  return "text-zinc-500";
+}
+
 function stuffPlusBadgeClass(v: number): string {
   if (v >= 110) return "bg-rose-600 text-white";
   if (v >= 100) return "bg-orange-500/80 text-white";
@@ -288,7 +295,7 @@ export default function TrackmanLeaderboardsPage() {
                           key={`${r.playerId}-${r.pitchType}-${i}`}
                           className="border-t border-zinc-800/50 hover:bg-zinc-800/20"
                         >
-                          <td className="px-3 py-2 text-zinc-500 font-mono">{i + 1}</td>
+                          <td className={`px-3 py-2 font-mono font-semibold ${rankColor(i)}`}>{i + 1}</td>
                           <td className="px-3 py-2 font-medium">
                             <Link
                               href={`/trackman/player/${r.playerId}`}
@@ -357,7 +364,7 @@ export default function TrackmanLeaderboardsPage() {
                           key={`${e.playerSlug}-${i}`}
                           className="border-t border-zinc-800/50 hover:bg-zinc-800/20"
                         >
-                          <td className="px-3 py-2 text-zinc-500 font-mono">{e.rank}</td>
+                          <td className={`px-3 py-2 font-mono font-semibold ${rankColor(i)}`}>{e.rank}</td>
                           <td className="px-3 py-2 font-medium">
                             <Link
                               href={`/trackman/player/${e.playerSlug}`}

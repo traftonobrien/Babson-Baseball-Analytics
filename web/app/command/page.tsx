@@ -95,7 +95,7 @@ export default function CommandPage() {
           </Link>
           <div>
             <h1 className="text-2xl font-semibold flex items-center gap-2">
-              <Target className="w-5 h-5 text-amber-400" />
+              <Target className="w-5 h-5 text-orange-400" />
               Command Hub
             </h1>
             <p className="text-sm text-zinc-400 mt-0.5">

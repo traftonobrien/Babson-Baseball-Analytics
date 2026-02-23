@@ -80,10 +80,10 @@ export default function HomeContent() {
           {/* Command column */}
           <div className="flex flex-col gap-3">
             <Link href="/command" className="flex-1">
-              <div className="group relative h-full rounded-xl border border-amber-500/30 hover:border-amber-500/60 bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-6 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg group-hover:shadow-amber-500/10">
+              <div className="group relative h-full rounded-xl border border-orange-500/30 hover:border-orange-500/60 bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-6 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg group-hover:shadow-orange-500/10">
                 <div className="flex items-start justify-between">
-                  <Target className="w-6 h-6 text-amber-400" />
-                  <ArrowUpRight className="w-4 h-4 text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Target className="w-6 h-6 text-orange-400" />
+                  <ArrowUpRight className="w-4 h-4 text-orange-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <h2 className="text-lg font-semibold mt-4">Command Hub</h2>
                 <p className="text-sm text-zinc-400 mt-1 leading-relaxed">
@@ -92,11 +92,11 @@ export default function HomeContent() {
               </div>
             </Link>
             <Link href="/leaderboards">
-              <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-amber-500/40 transition-colors group">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-orange-500/40 transition-colors group">
                 <div className="flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-amber-400" />
+                  <Trophy className="w-4 h-4 text-orange-400" />
                   <span className="font-medium text-sm">Command Leaderboards</span>
-                  <ArrowUpRight className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-amber-400 transition-colors" />
+                  <ArrowUpRight className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-orange-400 transition-colors" />
                 </div>
                 <p className="text-xs text-zinc-500 mt-1">
                   Compare command stats across pitchers

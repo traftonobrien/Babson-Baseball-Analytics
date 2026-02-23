@@ -14,7 +14,7 @@ import {
   type PitchGroupHorizontalCommand,
 } from "@/lib/reportModel";
 import { hDirectionLabel } from "@/lib/handedness";
-import { handBadgeClassesCompact } from "@/lib/handBadge";
+import { handBadgeClassesCompact, parseHand } from "@/lib/handBadge";
 import { useAllPitchData } from "@/app/hooks/useAllPitchData";
 import LogoutButton from "@/app/components/LogoutButton";
 
@@ -157,7 +157,7 @@ function ReportInner() {
           <Pill>{report.meta.scope === "overall" ? "Overall" : "Single Outing"}</Pill>
           <Pill>{report.meta.totalPitches} pitches</Pill>
           <span
-            className={`inline-block text-[9px] px-1.5 py-[1px] rounded font-medium ${handBadgeClassesCompact(report.meta.pitcherHand)}`}
+            className={`inline-block text-[9px] px-1.5 py-[1px] rounded font-medium ${handBadgeClassesCompact(parseHand(report.meta.pitcherHand) ?? "R")}`}
           >
             Throws {report.meta.pitcherHand === "L" ? "LHP" : "RHP"}
           </span>

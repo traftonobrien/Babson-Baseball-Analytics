@@ -42,6 +42,16 @@ export function getCanonicalName(slugOrPlayerIdOrRaw: string): string {
   const bySlug = CANONICAL_BY_SLUG[key];
   if (bySlug) return bySlug;
 
+  // Mechanics index uses first_last; canonical uses last_first — try reversed
+  if (key.includes("_")) {
+    const parts = key.split("_");
+    if (parts.length === 2) {
+      const reversed = `${parts[1]}_${parts[0]}`;
+      const byReversed = CANONICAL_BY_SLUG[reversed];
+      if (byReversed) return byReversed;
+    }
+  }
+
   const parsedSlug = parseToSlug(key);
   const byParsed = CANONICAL_BY_SLUG[parsedSlug];
   if (byParsed) return byParsed;
