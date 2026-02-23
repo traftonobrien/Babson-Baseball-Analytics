@@ -2,12 +2,12 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Activity, Target, ArrowRight } from "lucide-react";
+import { Activity, Target, ArrowRight, ScanLine } from "lucide-react";
 import SavantPercentileBar from "./SavantPercentileBar";
 import MechanicsProfileCard from "@/app/components/mechanics/MechanicsProfileCard";
 import type { HubPlayerEntry } from "@/lib/mechanics/hub";
 
-const TABS = ["Overview", "Trackman", "Command"] as const;
+const TABS = ["Overview", "Trackman", "Command", "Mechanics"] as const;
 type Tab = (typeof TABS)[number];
 
 interface SeasonStat {
@@ -62,6 +62,7 @@ function resolveInitialTab(raw?: string): Tab {
   const lower = raw.toLowerCase();
   if (lower === "trackman") return "Trackman";
   if (lower === "command") return "Command";
+  if (lower === "mechanics") return "Mechanics";
   return "Overview";
 }
 
@@ -82,7 +83,7 @@ export default function PlayerProfileTabs({
   }, [trackmanSessions]);
 
   return (
-    <div className="mt-10">
+    <div className="mt-6">
       {/* Tab bar */}
       <div className="flex gap-0">
         {TABS.map((tab) => (
@@ -90,7 +91,7 @@ export default function PlayerProfileTabs({
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
-            className={`relative cursor-pointer px-6 py-3 text-[11px] font-black uppercase tracking-[0.2em] transition-colors ${
+            className={`relative cursor-pointer px-6 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] transition-colors ${
               activeTab === tab
                 ? "text-white"
                 : "text-zinc-600 hover:text-zinc-400"
@@ -98,7 +99,7 @@ export default function PlayerProfileTabs({
           >
             {tab}
             {activeTab === tab && (
-              <span className="absolute inset-x-2 bottom-0 h-[3px] rounded-full bg-red-600" />
+              <span className="absolute inset-x-2 bottom-0 h-[3px] rounded-full bg-emerald-500" />
             )}
           </button>
         ))}
@@ -107,7 +108,7 @@ export default function PlayerProfileTabs({
 
       {/* OVERVIEW */}
       {activeTab === "Overview" && (
-        <div className="mt-10 space-y-14">
+        <div className="mt-12 space-y-16">
           {seasonStats.length === 0 && d3Percentiles.length === 0 ? (
             <p className="text-sm text-zinc-600">
               No {seasonYear} stats available.
@@ -119,7 +120,7 @@ export default function PlayerProfileTabs({
                 <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
                   {seasonYear} Season
                 </h2>
-                <div className="mt-5 grid grid-cols-3 gap-x-1 gap-y-4 sm:grid-cols-5 lg:grid-cols-9">
+                <div className="mt-6 grid grid-cols-3 gap-x-2 gap-y-5 sm:grid-cols-5 lg:grid-cols-9">
                   {seasonStats.map((stat, i) => (
                     <div
                       key={stat.label}
@@ -166,7 +167,7 @@ export default function PlayerProfileTabs({
                   </div>
                 </div>
 
-                <div className="mt-6 space-y-0">
+                <div className="mt-8 space-y-0">
                   {d3Percentiles.map((m, i) => (
                     <SavantPercentileBar
                       key={m.label}
@@ -180,23 +181,15 @@ export default function PlayerProfileTabs({
               </section>
             </>
           )}
-
-          {/* Mechanics section — always shown (empty state if no data) */}
-          <section>
-            <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500 mb-4">
-              Mechanics
-            </h2>
-            <MechanicsProfileCard entry={mechanicsEntry ?? null} />
-          </section>
         </div>
       )}
 
       {/* TRACKMAN */}
       {activeTab === "Trackman" && (
-        <div className="mt-8">
+        <div className="mt-10">
           {/* Hub button */}
           <Link href={`/trackman/player/${playerSlug}?from=profile`}>
-            <div className="group flex items-center justify-between rounded-lg border border-blue-500/30 bg-zinc-900 px-4 py-3 transition-colors hover:border-blue-500/60">
+            <div className="group flex items-center justify-between rounded-xl border border-blue-500/30 bg-zinc-900/60 px-5 py-4 transition-all hover:border-blue-500/50 hover:bg-zinc-900">
               <div className="flex items-center gap-3">
                 <Activity className="h-4 w-4 text-blue-400" />
                 <div>
@@ -208,19 +201,19 @@ export default function PlayerProfileTabs({
             </div>
           </Link>
 
-          <h2 className="mt-8 text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
+          <h2 className="mt-10 text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
             Sessions
           </h2>
 
           {sortedSessions.length === 0 ? (
-            <p className="mt-6 text-sm text-zinc-700">No sessions yet.</p>
+            <p className="mt-6 text-sm text-zinc-600">No sessions yet.</p>
           ) : (
-            <ul className="mt-4 divide-y divide-zinc-800/30">
+            <ul className="mt-5 divide-y divide-zinc-800/40">
               {sortedSessions.map((s) => (
                 <li key={`${s.dateSlug}-${s.sessionLabel}`}>
                   <Link
                     href={`/trackman/session/${playerSlug}/${s.dateSlug}?from=profile&slug=${playerSlug}`}
-                    className="flex items-center justify-between py-3 group/row"
+                    className="flex items-center justify-between py-4 group/row"
                   >
                     <div>
                       <div className="text-sm font-bold text-zinc-200 group-hover/row:text-white transition-colors">
@@ -241,14 +234,14 @@ export default function PlayerProfileTabs({
 
       {/* COMMAND */}
       {activeTab === "Command" && (
-        <div className="mt-8">
-          {/* Command Center button */}
+        <div className="mt-10">
+          {/* Command Hub button */}
           <Link href="/command">
-            <div className="group flex items-center justify-between rounded-lg border border-amber-500/30 bg-zinc-900 px-4 py-3 transition-colors hover:border-amber-500/60">
+            <div className="group flex items-center justify-between rounded-xl border border-amber-500/30 bg-zinc-900/60 px-5 py-4 transition-all hover:border-amber-500/50 hover:bg-zinc-900">
               <div className="flex items-center gap-3">
                 <Target className="h-4 w-4 text-amber-400" />
                 <div>
-                  <span className="text-sm font-semibold text-zinc-100">Command Center</span>
+                  <span className="text-sm font-semibold text-zinc-100">Command Hub</span>
                   <p className="text-[10px] text-zinc-500">All pitchers, all outings</p>
                 </div>
               </div>
@@ -256,19 +249,19 @@ export default function PlayerProfileTabs({
             </div>
           </Link>
 
-          <h2 className="mt-8 text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
+          <h2 className="mt-10 text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
             Outings
           </h2>
 
           {commandOutings.length === 0 ? (
-            <p className="mt-6 text-sm text-zinc-700">No outings yet.</p>
+            <p className="mt-6 text-sm text-zinc-600">No outings yet.</p>
           ) : (
-            <ul className="mt-4 divide-y divide-zinc-800/30">
+            <ul className="mt-5 divide-y divide-zinc-800/40">
               {commandOutings.map((o) => (
                 <li key={o.outingId}>
                   <Link
                     href={`/player/${o.playerId}?from=profile&slug=${playerSlug}`}
-                    className="flex items-center justify-between py-3 group/row"
+                    className="flex items-center justify-between py-4 group/row"
                   >
                     <div>
                       <div className="text-sm font-bold text-zinc-200 group-hover/row:text-white transition-colors">
@@ -284,6 +277,32 @@ export default function PlayerProfileTabs({
               ))}
             </ul>
           )}
+        </div>
+      )}
+
+      {/* MECHANICS */}
+      {activeTab === "Mechanics" && (
+        <div className="mt-10">
+          <Link href={`/mechanics/player/${playerSlug}?from=profile&slug=${playerSlug}`}>
+            <div className="group flex items-center justify-between rounded-xl border border-violet-500/30 bg-zinc-900/60 px-5 py-4 transition-all hover:border-violet-500/50 hover:bg-zinc-900">
+              <div className="flex items-center gap-3">
+                <ScanLine className="h-4 w-4 text-violet-400" />
+                <div>
+                  <span className="text-sm font-semibold text-zinc-100">Mechanics Hub</span>
+                  <p className="text-[10px] text-zinc-500">Video analysis, efficiency scores, and session history</p>
+                </div>
+              </div>
+              <ArrowRight className="h-4 w-4 text-violet-400 opacity-60 group-hover:opacity-100 transition-opacity" />
+            </div>
+          </Link>
+
+          <h2 className="mt-10 text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
+            Sessions
+          </h2>
+
+          <div className="mt-5">
+            <MechanicsProfileCard entry={mechanicsEntry ?? null} profileSlug={playerSlug} />
+          </div>
         </div>
       )}
     </div>

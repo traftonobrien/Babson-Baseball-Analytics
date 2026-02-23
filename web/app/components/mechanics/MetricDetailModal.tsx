@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { metricLabel, scoreColor, confidenceLabel } from "@/lib/mechanics/labels";
 import type { MetricResult } from "@/lib/mechanics/types";
@@ -56,18 +57,29 @@ export function MetricDetailModal({ metricKey, metric, onClose }: MetricDetailMo
   const effColor = scoreColor(eff);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-zinc-900 border border-zinc-700/60 rounded-xl w-full max-w-sm shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
+    <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4"
+        onClick={onClose}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="metric-modal-title"
       >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.96 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="bg-zinc-900 border border-zinc-700/60 rounded-xl w-full max-w-sm shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header */}
         <div className="flex items-start justify-between px-5 py-4 border-b border-zinc-800">
           <div>
-            <h3 className="font-semibold text-zinc-100 text-sm">{metricLabel(metricKey)}</h3>
+            <h3 id="metric-modal-title" className="font-semibold text-zinc-100 text-sm">{metricLabel(metricKey)}</h3>
             <p className="text-[9px] text-zinc-600 mt-0.5 font-mono">{metricKey}</p>
           </div>
           <div className="flex items-center gap-3 ml-4 shrink-0">
@@ -80,6 +92,7 @@ export function MetricDetailModal({ metricKey, metric, onClose }: MetricDetailMo
             <button
               onClick={onClose}
               className="text-zinc-600 hover:text-zinc-300 transition-colors p-1"
+              aria-label="Close metric details"
             >
               <X className="w-4 h-4" />
             </button>
@@ -162,8 +175,12 @@ export function MetricDetailModal({ metricKey, metric, onClose }: MetricDetailMo
               </p>
             </div>
           )}
+
+          <p className="text-[9px] text-zinc-600 mt-4 pt-3 border-t border-zinc-800/60">
+            Click outside or press Escape to close
+          </p>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

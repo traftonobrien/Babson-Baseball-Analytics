@@ -10,3 +10,4 @@ pytest
 playwright
 pdfplumber
 pypdf
+mediapipe>=0.10.0

@@ -95,7 +95,7 @@ export default function SavantPercentileBar({
 
   return (
     <div
-      className="group flex items-center gap-4 py-[18px] opacity-0"
+      className="group flex items-center gap-4 py-5 opacity-0"
       style={{
         animation: `savantFadeIn 0.5s ease-out ${delay}ms forwards`,
       }}

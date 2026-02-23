@@ -16,7 +16,7 @@ export interface Player {
 export const players: Player[] = [
   {
     id: "TOBrien1",
-    name: "Trafton O'Brien",
+    name: "Trafton OBrien",
     throws: "R",
     outings: [
       {

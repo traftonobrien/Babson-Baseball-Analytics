@@ -1,0 +1,14 @@
+{
+  "tools": {
+    "shell": {
+      "allow": ["*"]
+    },
+    "fs": {
+      "allow": ["*"]
+    }
+  },
+  "confirmations": {
+    "shell": false,
+    "fileWrite": false
+  }
+}

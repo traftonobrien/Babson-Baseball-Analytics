@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Link from "next/link";
-import { Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, ArrowRight } from "lucide-react";
 import { scoreColor, confidenceLabel } from "@/lib/mechanics/labels";
 import {
   getLatestSession,
@@ -13,11 +13,14 @@ import {
   type HubPlayerEntry,
   type SortKey,
 } from "@/lib/mechanics/hub";
+import { getCanonicalName } from "@/lib/canonicalPlayers";
+import { handBadgeClassesCompact } from "@/lib/handBadge";
 
 // ---------------------------------------------------------------------------
 // PlayerCard
 // ---------------------------------------------------------------------------
 function PlayerCard({ player }: { player: HubPlayerEntry }) {
+  const router = useRouter();
   const [thumbError, setThumbError] = useState(false);
   const latest = getLatestSession(player);
 
@@ -26,16 +29,34 @@ function PlayerCard({ player }: { player: HubPlayerEntry }) {
   const color = scoreColor(latest.efficiency_score);
   const confPct = latest.avg_confidence != null ? Math.round(latest.avg_confidence * 100) : null;
   const thumbSrc = `/mechanics/${player.slug}/${latest.slug}/release.png`;
+  const latestHref = `/mechanics/session/${player.slug}/${latest.slug}`;
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden flex flex-col hover:border-zinc-700 transition-colors">
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={`View mechanics for ${getCanonicalName(player.name ?? player.slug)}, score ${latest.efficiency_score.toFixed(1)} out of 10`}
+      onClick={() => router.push(latestHref)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          router.push(latestHref);
+        }
+      }}
+      className="group relative bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden flex flex-col hover:border-violet-500/50 hover:scale-[1.02] hover:shadow-lg hover:shadow-violet-500/10 transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+    >
+      {/* Hover affordance */}
+      <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-medium text-violet-400">
+        <span>View</span>
+        <ArrowRight className="w-3 h-3" />
+      </div>
       {/* Phase thumbnail strip — silently hidden on 404 */}
       {!thumbError && (
         // eslint-disable-next-line @next/next/no-img-element
         <div className="relative h-24 bg-zinc-950 overflow-hidden">
           <img
             src={thumbSrc}
-            alt={`${player.name} release`}
+            alt={`${getCanonicalName(player.name ?? player.slug)} release`}
             className="w-full h-full object-cover object-top"
             onError={() => setThumbError(true)}
           />
@@ -48,17 +69,16 @@ function PlayerCard({ player }: { player: HubPlayerEntry }) {
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="font-semibold text-zinc-100 text-sm leading-tight truncate">
-              {player.name}
+              {getCanonicalName(player.name ?? player.slug)}
             </p>
-            <p className="text-[10px] text-zinc-600 mt-0.5">
-              {player.slug} · {latest.hand === "R" ? "RHP" : "LHP"}
+            <p className="text-[10px] text-zinc-600 mt-0.5 flex items-center gap-1.5">
+              <span
+                className={`text-[9px] px-1.5 py-0.5 rounded font-normal ${handBadgeClassesCompact(latest.hand)}`}
+              >
+                {latest.hand === "R" ? "RHP" : "LHP"}
+              </span>
             </p>
           </div>
-          {player.sessions.length > 1 && (
-            <span className="text-[9px] bg-zinc-800 border border-zinc-700 text-zinc-400 px-1.5 py-0.5 rounded-full shrink-0 whitespace-nowrap">
-              {player.sessions.length} sessions
-            </span>
-          )}
         </div>
 
         {/* Score + stats */}
@@ -98,33 +118,6 @@ function PlayerCard({ player }: { player: HubPlayerEntry }) {
           <span className="text-[9px] text-zinc-500 truncate">{latest.label}</span>
         </div>
 
-        {/* Action buttons */}
-        <div className="flex flex-col gap-1.5 mt-auto pt-1">
-          <Link
-            href={
-              player.profile_slug
-                ? `/players/${player.profile_slug}`
-                : `/player/${player.player_id}`
-            }
-            className="w-full text-center text-[11px] font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg px-3 py-1.5 transition-colors"
-          >
-            Player Profile
-          </Link>
-          <div className="flex gap-1.5">
-            <Link
-              href={`/mechanics/player/${player.slug}`}
-              className="flex-1 text-center text-[11px] text-zinc-400 hover:text-zinc-200 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-lg px-2 py-1.5 transition-colors"
-            >
-              All Sessions
-            </Link>
-            <Link
-              href={`/mechanics/session/${player.slug}/${latest.slug}`}
-              className="flex-1 text-center text-[11px] text-zinc-400 hover:text-zinc-200 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-lg px-2 py-1.5 transition-colors"
-            >
-              Latest →
-            </Link>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -213,9 +206,20 @@ export default function MechanicsHubView({ index }: { index: MechanicsIndex }) {
       {/* Player grid */}
       <div className="max-w-6xl mx-auto px-6 py-6">
         {displayed.length === 0 ? (
-          <p className="text-zinc-600 text-sm text-center py-16">
-            No players match your filters.
-          </p>
+          <div className="text-center py-16 px-4">
+            {index.players.length === 0 ? (
+              <>
+                <p className="text-zinc-500 text-sm mb-2">No mechanics sessions yet</p>
+                <p className="text-zinc-600 text-xs max-w-md mx-auto">
+                  Mechanics data is added when video analysis sessions are processed. Check back after new sessions are run.
+                </p>
+              </>
+            ) : (
+              <p className="text-zinc-600 text-sm">
+                No players match your filters. Try a different search or clear the low-confidence filter.
+              </p>
+            )}
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {displayed.map((player) => (

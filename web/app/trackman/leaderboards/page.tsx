@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Trophy, Search } from "lucide-react";
 import { pitchColor } from "@/lib/pitchColors";
 import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
+import { getCanonicalName } from "@/lib/canonicalPlayers";
 
 interface LeaderboardEntry {
   rank: number;
@@ -65,11 +66,6 @@ function fmt(v: number, cat: string): string {
   return v.toFixed(1);
 }
 
-function firstLast(name: string): string {
-  const parts = name.split(", ");
-  if (parts.length === 2) return `${parts[1]} ${parts[0]}`;
-  return name;
-}
 
 function stuffPlusBadgeClass(v: number): string {
   if (v >= 110) return "bg-rose-600 text-white";
@@ -164,7 +160,7 @@ export default function TrackmanLeaderboardsPage() {
       const q = stuffPlusSearch.toLowerCase();
       d = d.filter(
         (r) =>
-          firstLast(r.playerName ?? "").toLowerCase().includes(q) ||
+          getCanonicalName(r.playerName ?? r.playerId ?? "").toLowerCase().includes(q) ||
           r.playerId.toLowerCase().includes(q)
       );
     }
@@ -298,7 +294,7 @@ export default function TrackmanLeaderboardsPage() {
                               href={`/trackman/player/${r.playerId}`}
                               className="text-blue-400 hover:text-blue-300 transition-colors"
                             >
-                              {firstLast(r.playerName ?? "")}
+                              {getCanonicalName(r.playerName ?? r.playerId ?? "")}
                             </Link>
                           </td>
                           {stuffPlusPitchFilter === "all" && (
@@ -367,7 +363,7 @@ export default function TrackmanLeaderboardsPage() {
                               href={`/trackman/player/${e.playerSlug}`}
                               className="text-blue-400 hover:text-blue-300 transition-colors"
                             >
-                              {firstLast(e.playerName)}
+                              {getCanonicalName(e.playerName)}
                             </Link>
                           </td>
                           {activeCategory !== "max_fb_velo" && (

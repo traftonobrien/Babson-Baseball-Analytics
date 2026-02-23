@@ -4,7 +4,10 @@ import { cache } from "react";
 import path from "path";
 import { promises as fs } from "fs";
 import players from "@/data/players.json";
+import rosterData from "@/data/roster.json";
 import { fetchPitchingLeaderboard } from "@/lib/d3db";
+import { getHand } from "@/lib/canonicalPlayers";
+import { handBadgeClasses } from "@/lib/handBadge";
 import { players as dataIndexPlayers } from "@/lib/dataIndex";
 import { readMechanicsIndex, getMechanicsForPlayer } from "@/lib/mechanics/registry";
 import PlayerProfileTabs from "./PlayerProfileTabs";
@@ -648,7 +651,6 @@ export default async function PlayerProfilePage({
       )
     : [];
 
-  const isDev = process.env.NODE_ENV !== "production";
   const debugInfo = {
     foundRow: Boolean(playerRow),
     playerId: d3PlayerId ?? "Unresolved",
@@ -667,6 +669,9 @@ export default async function PlayerProfilePage({
       ? `${player.role.charAt(0).toUpperCase()}${player.role.slice(1)}`
       : player.role;
   const seasonNote = undefined;
+  const roster = rosterData as Record<string, { height?: string; weight?: string; class?: string }>;
+  const rosterInfo = roster[player.slug];
+  const hand = getHand(player.slug);
 
   const mechanicsIndex = await readMechanicsIndex();
   const mechanicsEntry = getMechanicsForPlayer(mechanicsIndex, {
@@ -709,7 +714,7 @@ export default async function PlayerProfilePage({
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="mx-auto w-full max-w-5xl px-6 py-10">
+      <div className="mx-auto w-full max-w-5xl px-6 py-12">
         <Link
           href="/players"
           className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-700 transition-colors hover:text-zinc-400"
@@ -717,17 +722,36 @@ export default async function PlayerProfilePage({
           Roster
         </Link>
 
-        <header className="mt-6 pb-8">
-          <h1 className="text-[32px] font-black tracking-tight text-white">
-            {player.name}
-          </h1>
-          <p className="mt-1 text-[12px] font-bold uppercase tracking-[0.2em] text-zinc-600">
-            {player.team}
-            <span className="mx-3 text-zinc-800">/</span>
-            {roleLabel}
-            <span className="mx-3 text-zinc-800">/</span>
-            {TARGET_YEAR}
-          </p>
+        <header className="mt-6 pb-4">
+          <div className="flex flex-wrap items-center gap-3 gap-y-2">
+            <h1 className="text-[32px] font-black tracking-tight text-white">
+              {player.name}
+            </h1>
+            {hand && (
+              <span
+                className={`text-sm font-semibold px-3 py-1.5 rounded-full uppercase tracking-wider shrink-0 ${handBadgeClasses(hand)}`}
+              >
+                {hand === "R" ? "RHP" : "LHP"}
+              </span>
+            )}
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] font-bold uppercase tracking-[0.2em] text-zinc-600">
+            <span>{player.team}</span>
+            <span className="text-zinc-800">/</span>
+            <span>{roleLabel}</span>
+            <span className="text-zinc-800">/</span>
+            <span>{TARGET_YEAR}</span>
+            {(rosterInfo?.height || rosterInfo?.weight || rosterInfo?.class) && (
+              <>
+                <span className="text-zinc-800">/</span>
+                <span className="text-zinc-500 font-normal normal-case tracking-normal">
+                  {[rosterInfo.height, rosterInfo.weight && `${rosterInfo.weight} lbs`, rosterInfo.class]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
+              </>
+            )}
+          </div>
         </header>
 
         {statsUnavailable && (
@@ -740,15 +764,6 @@ export default async function PlayerProfilePage({
           <div className="mb-4 rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-500">
             No 2025 stats available
           </div>
-        )}
-
-        {isDev && (
-          <details className="mb-4 rounded-lg border border-zinc-800 bg-zinc-900/50 p-3 text-xs text-zinc-500">
-            <summary className="cursor-pointer font-mono">Debug info</summary>
-            <pre className="mt-2 overflow-x-auto whitespace-pre-wrap font-mono">
-              {JSON.stringify(debugInfo, null, 2)}
-            </pre>
-          </details>
         )}
 
         <PlayerProfileTabs

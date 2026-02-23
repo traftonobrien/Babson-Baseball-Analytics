@@ -3,6 +3,8 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { ArrowLeft, Radio, Trophy, Search } from "lucide-react";
+import { getCanonicalName } from "@/lib/canonicalPlayers";
+import { handBadgeClassesCompact, parseHand } from "@/lib/handBadge";
 
 interface Session {
   playerName: string;
@@ -39,15 +41,6 @@ function normalizeSession(raw: Record<string, unknown>): Session {
     handedness: (raw.handedness as string) ?? undefined,
     team: (raw.team as string) ?? undefined,
   };
-}
-
-/** "Burk, Bobby" → "Bobby Burk" */
-function formatPlayerName(raw: string): string {
-  if (raw.includes(",")) {
-    const [last, first] = raw.split(",", 2).map((s) => s.trim());
-    if (first && last) return `${first} ${last}`;
-  }
-  return raw;
 }
 
 /** "2026-02-13" → "2/13/26" */
@@ -140,7 +133,7 @@ export default function TrackmanPlayersPage() {
     const q = search.toLowerCase();
     return players.filter(
       (p) =>
-        formatPlayerName(p.name).toLowerCase().includes(q) ||
+        getCanonicalName(p.name).toLowerCase().includes(q) ||
         p.slug.toLowerCase().includes(q),
     );
   }, [players, search]);
@@ -199,7 +192,9 @@ export default function TrackmanPlayersPage() {
 
             {/* Player cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {filtered.map((p) => (
+              {filtered.map((p) => {
+                const hand = parseHand(p.handedness);
+                return (
                 <Link
                   key={p.slug}
                   href={`/trackman/player/${p.slug}`}
@@ -208,13 +203,15 @@ export default function TrackmanPlayersPage() {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-sm text-zinc-50">
-                        {formatPlayerName(p.name)}
+                        {getCanonicalName(p.name)}
                       </span>
-                      {p.handedness && (
-                        <span className="text-[10px] bg-zinc-800 text-zinc-500 px-1 py-0.5 rounded">
-                          {p.handedness}
-                        </span>
-                      )}
+                      {hand && (
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded font-normal ${handBadgeClassesCompact(hand)}`}
+                          >
+                            {hand === "L" ? "LHP" : "RHP"}
+                          </span>
+                        )}
                     </div>
                     <span className="text-xs text-zinc-500 font-mono">
                       {p.sessionCount} session{p.sessionCount !== 1 ? "s" : ""}
@@ -226,14 +223,9 @@ export default function TrackmanPlayersPage() {
                       Last: {formatDate(p.latestDate)}
                     </span>
                   </div>
-
-                  {p.pitchTypes.length > 0 && (
-                    <div className="text-[10px] text-zinc-600 mt-2">
-                      {p.pitchTypes.join(", ")}
-                    </div>
-                  )}
                 </Link>
-              ))}
+              );
+              })}
               {filtered.length === 0 && (
                 <p className="text-zinc-500 text-sm text-center py-4 col-span-2">
                   No players match your search.

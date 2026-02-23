@@ -24,12 +24,14 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+sys.path.insert(0, os.path.dirname(__file__))
 
 from trackman_pdf.extract import extract_pdf
 from trackman_pdf.meta import PdfMeta, parse_meta, slugify
 from trackman_pdf.table import find_table, extract_table_from_pdf
 from trackman_pdf.rows import parse_rows, parse_rows_from_cells
 from trackman.summary import build_session_summary
+from lib.canonical_players import get_canonical_name
 
 def load_json(path: str) -> Any:
     with open(path, "r") as f:
@@ -114,8 +116,9 @@ def _build_meta(
     session_label: Optional[str],
     player_name: str,
 ) -> Dict[str, Any]:
+    canonical_name = get_canonical_name(player_name)
     return {
-        "player_name": player_name,
+        "player_name": canonical_name,
         "player_slug": slugify(player_name),
         "team": pdf_meta.team,
         "handedness": pdf_meta.handedness,

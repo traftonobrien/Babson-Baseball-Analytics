@@ -1,0 +1,247 @@
+{
+  "miller_wyatt": {
+    "height": "5'11\"",
+    "weight": "160",
+    "class": "Fr."
+  },
+  "drazka_dylan": {
+    "height": "5'9\"",
+    "weight": "180",
+    "class": "So."
+  },
+  "teator_zander": {
+    "height": "5'11\"",
+    "weight": "170",
+    "class": "Sr."
+  },
+  "harmon_gabe": {
+    "height": "5'11\"",
+    "weight": "180",
+    "class": "So."
+  },
+  "wilson_alexander": {
+    "height": "5'9\"",
+    "weight": "170",
+    "class": "Jr."
+  },
+  "christensen_robert": {
+    "height": "5'11\"",
+    "weight": "195",
+    "class": "Fr."
+  },
+  "davanzo_dante": {
+    "height": "6'0\"",
+    "weight": "180",
+    "class": "Jr."
+  },
+  "cushner_gabe": {
+    "height": "5'10\"",
+    "weight": "190",
+    "class": "So."
+  },
+  "clark_james": {
+    "height": "6'2\"",
+    "weight": "215",
+    "class": "Sr."
+  },
+  "laforest_ian": {
+    "height": "6'1\"",
+    "weight": "175",
+    "class": "Jr."
+  },
+  "frickey_connor": {
+    "height": "6'5\"",
+    "weight": "215",
+    "class": "Jr."
+  },
+  "valente_ben": {
+    "height": "6'2\"",
+    "weight": "195",
+    "class": "So."
+  },
+  "hvozdovic_ryan": {
+    "height": "5'11\"",
+    "weight": "180",
+    "class": "Sr."
+  },
+  "doan_connor": {
+    "height": "5'8\"",
+    "weight": "130",
+    "class": "Sr."
+  },
+  "liss_ryan": {
+    "height": "6'3\"",
+    "weight": "205",
+    "class": "Jr."
+  },
+  "grace_ryan": {
+    "height": "5'9\"",
+    "weight": "210",
+    "class": "Gr."
+  },
+  "camardi_michael": {
+    "height": "5'9\"",
+    "weight": "155",
+    "class": "Gr."
+  },
+  "herrera_julian": {
+    "height": "6'2\"",
+    "weight": "187",
+    "class": "Fr."
+  },
+  "moses_jack": {
+    "height": "6'2\"",
+    "weight": "200",
+    "class": "Jr."
+  },
+  "saft_brooks": {
+    "height": "6'1\"",
+    "weight": "205",
+    "class": "So."
+  },
+  "mccarthy_michael": {
+    "height": "6'3\"",
+    "weight": "180",
+    "class": "Fr."
+  },
+  "burk_bobby": {
+    "height": "6'2\"",
+    "weight": "200",
+    "class": "So."
+  },
+  "james_dillon": {
+    "height": "6'1\"",
+    "weight": "185",
+    "class": "So."
+  },
+  "noone_sean": {
+    "height": "5'11\"",
+    "weight": "200",
+    "class": "Fr."
+  },
+  "chou_colin": {
+    "height": "6'3\"",
+    "weight": "195",
+    "class": "So."
+  },
+  "langan_shane": {
+    "height": "6'0\"",
+    "weight": "175",
+    "class": "Fr."
+  },
+  "flack_tj": {
+    "height": "5'8\"",
+    "weight": "175",
+    "class": "Fr."
+  },
+  "burrows_chase": {
+    "height": "5'11\"",
+    "weight": "175",
+    "class": "So."
+  },
+  "lapierre_anthony": {
+    "height": "6'6\"",
+    "weight": "205",
+    "class": "So."
+  },
+  "grindle_cameron": {
+    "height": "6'3\"",
+    "weight": "205",
+    "class": "Jr."
+  },
+  "grindle_cam": {
+    "height": "6'3\"",
+    "weight": "205",
+    "class": "Jr."
+  },
+  "carrea_joe": {
+    "height": "6'2\"",
+    "weight": "214",
+    "class": "Gr."
+  },
+  "obrien_trafton": {
+    "height": "6'2\"",
+    "weight": "214",
+    "class": "So."
+  },
+  "rhodes_patrick": {
+    "height": "6'2\"",
+    "weight": "200",
+    "class": "Fr."
+  },
+  "clarke_griffin": {
+    "height": "5'9\"",
+    "weight": "185",
+    "class": "Fr."
+  },
+  "getchell_jacob": {
+    "height": "5'10\"",
+    "weight": "215",
+    "class": "Fr."
+  },
+  "pearl_tristan": {
+    "height": "6'2\"",
+    "weight": "181",
+    "class": "Jr."
+  },
+  "purpura_vinnie": {
+    "height": "6'7\"",
+    "weight": "200",
+    "class": "Sr."
+  },
+  "finkelstein_jason": {
+    "height": "6'2\"",
+    "weight": "198",
+    "class": "Jr."
+  },
+  "vyse_graydon": {
+    "height": "6'7\"",
+    "weight": "205",
+    "class": "So."
+  },
+  "shapiro_brennan": {
+    "height": "6'6\"",
+    "weight": "215",
+    "class": "Jr."
+  },
+  "place_cal": {
+    "height": "6'5\"",
+    "weight": "240",
+    "class": "Gr."
+  },
+  "smith_cooper": {
+    "height": "6'0\"",
+    "weight": "204",
+    "class": "Gr."
+  },
+  "stephens_owen": {
+    "height": "6'0\"",
+    "weight": "215",
+    "class": "Sr."
+  },
+  "labrador_jayson": {
+    "height": "5'10\"",
+    "weight": "190",
+    "class": "Fr."
+  },
+  "okeefe_quinn": {
+    "height": "6'1\"",
+    "weight": "180",
+    "class": "So."
+  },
+  "reid_bourke": {
+    "height": "6'3\"",
+    "weight": "195",
+    "class": "Fr."
+  },
+  "schildcrout_joshua": {
+    "height": "6'3\"",
+    "weight": "220",
+    "class": "Fr."
+  },
+  "snyder_drew": {
+    "height": "6'0\"",
+    "weight": "185",
+    "class": "Fr."
+  }
+}

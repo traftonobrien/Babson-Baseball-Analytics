@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { AnimatePresence } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import type { NotesJson } from "@/lib/mechanics/types";
 import { MechanicsHero } from "@/app/components/mechanics/MechanicsHero";
@@ -11,17 +13,11 @@ import { PhaseInsightPanels } from "@/app/components/mechanics/PhaseInsightPanel
 import { MetricQuickScanGrid } from "@/app/components/mechanics/MetricQuickScanGrid";
 import { MetricDetailModal } from "@/app/components/mechanics/MetricDetailModal";
 import { MechanicsConfidencePanel } from "@/app/components/mechanics/MechanicsConfidencePanel";
+import { getCanonicalName } from "@/lib/canonicalPlayers";
 
 interface MechanicsSessionViewProps {
   playerSlug: string;
   sessionSlug: string;
-}
-
-function formatPlayerName(slug: string): string {
-  return slug
-    .split("_")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
 }
 
 function formatSessionLabel(slug: string): string {
@@ -40,6 +36,11 @@ export default function MechanicsSessionView({
   playerSlug,
   sessionSlug,
 }: MechanicsSessionViewProps) {
+  const searchParams = useSearchParams();
+  const fromProfile = searchParams.get("from") === "profile";
+  const profileSlug = searchParams.get("slug");
+  const backHref = fromProfile && profileSlug ? `/players/${profileSlug}?tab=mechanics` : "/mechanics";
+
   const [notes, setNotes] = useState<NotesJson | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -84,63 +85,103 @@ export default function MechanicsSessionView({
     );
   }
 
-  const playerName = formatPlayerName(playerSlug);
+  const playerName = getCanonicalName(playerSlug);
   const sessionLabel = formatSessionLabel(sessionSlug);
   const modalMetric = selectedMetric ? notes.metrics[selectedMetric] : null;
 
+  const sectionLinks = [
+    { id: "top-issues", label: "Top Issues" },
+    { id: "film-room", label: "Film Room" },
+    { id: "phase-breakdown", label: "Phase Breakdown" },
+    { id: "all-metrics", label: "All Metrics" },
+    { id: "context", label: "Context" },
+  ];
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-20">
-      {/* Sticky back nav */}
-      <div className="bg-zinc-950/90 backdrop-blur-sm border-b border-zinc-800/40 px-6 py-2.5 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto">
-          <Link
-            href={`/mechanics/player/${playerSlug}`}
-            className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors w-fit"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            All Sessions
-          </Link>
+      {/* Sticky hero + breadcrumb */}
+      <div className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur-sm border-b border-zinc-800/40">
+        {/* Breadcrumb */}
+        <div className="px-6 py-2.5">
+          <div className="max-w-5xl mx-auto flex items-center gap-2 text-xs">
+            <Link
+              href={backHref}
+              className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-300 transition-colors w-fit"
+              aria-label={fromProfile ? "Back to profile" : "Back to Mechanics Hub"}
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              {fromProfile ? "Profile" : "Mechanics Hub"}
+            </Link>
+            <span className="text-zinc-600">·</span>
+            <span className="text-zinc-400 truncate">{playerName}</span>
+          </div>
+        </div>
+        {/* Hero */}
+        <MechanicsHero notes={notes} playerName={playerName} sessionLabel={sessionLabel} />
+        {/* Section anchors */}
+        <div className="px-6 py-2 border-t border-zinc-800/40 overflow-x-auto">
+          <div className="max-w-5xl mx-auto flex flex-wrap gap-2">
+            {sectionLinks.map(({ id, label }) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                className="text-[10px] text-zinc-500 hover:text-violet-400 transition-colors whitespace-nowrap px-2 py-1 rounded hover:bg-zinc-800/50"
+              >
+                {label}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Hero */}
-      <MechanicsHero notes={notes} playerName={playerName} sessionLabel={sessionLabel} />
-
       {/* Top Issues */}
-      <MechanicsTopInsights notes={notes} onMetricClick={setSelectedMetric} />
+      <section id="top-issues" className="scroll-mt-4">
+        <MechanicsTopInsights notes={notes} onMetricClick={setSelectedMetric} />
+      </section>
 
       <Divider />
 
       {/* Film Room */}
-      <MechanicsFilmRoom notes={notes} basePath={basePath} />
+      <section id="film-room" className="scroll-mt-4">
+        <MechanicsFilmRoom notes={notes} basePath={basePath} />
+      </section>
 
       <Divider />
 
       {/* Phase Breakdown */}
-      <PhaseInsightPanels notes={notes} basePath={basePath} onMetricClick={setSelectedMetric} />
+      <section id="phase-breakdown" className="scroll-mt-4">
+        <PhaseInsightPanels notes={notes} basePath={basePath} onMetricClick={setSelectedMetric} />
+      </section>
 
       <Divider />
 
       {/* All Metrics deep dive */}
-      <MetricQuickScanGrid
-        notes={notes}
-        onMetricClick={setSelectedMetric}
-        heading="All Metrics"
-      />
+      <section id="all-metrics" className="scroll-mt-4">
+        <MetricQuickScanGrid
+          notes={notes}
+          onMetricClick={setSelectedMetric}
+          heading="All Metrics"
+        />
+      </section>
 
       <Divider />
 
       {/* Mechanics Context (confidence) */}
-      <MechanicsConfidencePanel notes={notes} />
+      <section id="context" className="scroll-mt-4">
+        <MechanicsConfidencePanel notes={notes} />
+      </section>
 
       {/* Metric Detail Modal */}
-      {selectedMetric && modalMetric && (
-        <MetricDetailModal
-          metricKey={selectedMetric}
-          metric={modalMetric}
-          onClose={() => setSelectedMetric(null)}
-        />
-      )}
+      <AnimatePresence>
+        {selectedMetric && modalMetric && (
+          <MetricDetailModal
+            key={selectedMetric}
+            metricKey={selectedMetric}
+            metric={modalMetric}
+            onClose={() => setSelectedMetric(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

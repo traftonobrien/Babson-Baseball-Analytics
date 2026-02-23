@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { phaseLabel } from "@/lib/mechanics/labels";
 import type { NotesJson } from "@/lib/mechanics/types";
@@ -24,6 +24,32 @@ export function MechanicsFilmRoom({ notes, basePath }: MechanicsFilmRoomProps) {
 
   const [activePhase, setActivePhase] = useState<string>(availablePhases[0] ?? "");
   const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  const goPrev = useCallback(() => {
+    const i = (availablePhases as readonly string[]).indexOf(activePhase);
+    if (i > 0) setActivePhase(availablePhases[i - 1]);
+    else setActivePhase(availablePhases[availablePhases.length - 1]);
+  }, [availablePhases, activePhase]);
+  const goNext = useCallback(() => {
+    const i = (availablePhases as readonly string[]).indexOf(activePhase);
+    if (i < availablePhases.length - 1 && i >= 0) setActivePhase(availablePhases[i + 1]);
+    else setActivePhase(availablePhases[0]);
+  }, [availablePhases, activePhase]);
+
+  useEffect(() => {
+    if (availablePhases.length === 0) return;
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        goPrev();
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        goNext();
+      }
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [goPrev, goNext, availablePhases.length]);
 
   if (availablePhases.length === 0) return null;
 
@@ -62,7 +88,7 @@ export function MechanicsFilmRoom({ notes, basePath }: MechanicsFilmRoomProps) {
             )}
           </div>
           <span className="text-[9px] uppercase tracking-wider text-zinc-600">
-            Click to zoom
+            Click to zoom · ← → to change phase
           </span>
         </div>
       </div>

@@ -22,14 +22,6 @@ export default function Header() {
           </span>
         </Link>
 
-        <nav className="flex items-center">
-          <Link
-            href="/mechanics"
-            className="text-xs text-zinc-500 hover:text-zinc-200 transition-colors px-3 py-2 rounded-lg hover:bg-zinc-800/60"
-          >
-            Mechanics
-          </Link>
-        </nav>
       </div>
     </header>
   );

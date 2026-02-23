@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { scoreColor } from "@/lib/mechanics/labels";
+import { getCanonicalName } from "@/lib/canonicalPlayers";
+import { handBadgeClassesCompact } from "@/lib/handBadge";
 
 interface SessionEntry {
   slug: string;
@@ -19,6 +22,7 @@ interface SessionEntry {
 
 interface PlayerEntry {
   slug: string;
+  profile_slug?: string;
   player_id: string;
   name: string;
   sessions: SessionEntry[];
@@ -28,14 +32,12 @@ interface MechanicsIndex {
   players: PlayerEntry[];
 }
 
-function formatPlayerName(slug: string): string {
-  return slug
-    .split("_")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-
 export default function MechanicsPlayerView({ playerSlug }: { playerSlug: string }) {
+  const searchParams = useSearchParams();
+  const fromProfile = searchParams.get("from") === "profile";
+  const profileSlug = searchParams.get("slug");
+  const backHref = fromProfile && profileSlug ? `/players/${profileSlug}?tab=mechanics` : "/mechanics";
+
   const [player, setPlayer] = useState<PlayerEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +49,9 @@ export default function MechanicsPlayerView({ playerSlug }: { playerSlug: string
         return r.json() as Promise<MechanicsIndex>;
       })
       .then((data) => {
-        const found = data.players.find((p) => p.slug === playerSlug);
+        const found = data.players.find(
+          (p) => p.slug === playerSlug || p.profile_slug === playerSlug
+        );
         if (!found) throw new Error("Player not found");
         setPlayer(found);
         setLoading(false);
@@ -78,7 +82,7 @@ export default function MechanicsPlayerView({ playerSlug }: { playerSlug: string
   }
 
   const sorted = [...player.sessions].sort((a, b) => b.date.localeCompare(a.date));
-  const displayName = player.name ?? formatPlayerName(playerSlug);
+  const displayName = getCanonicalName(player.name ?? playerSlug);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-20">
@@ -86,11 +90,11 @@ export default function MechanicsPlayerView({ playerSlug }: { playerSlug: string
       <div className="bg-zinc-950/90 backdrop-blur-sm border-b border-zinc-800/40 px-6 py-2.5 sticky top-0 z-10">
         <div className="max-w-3xl mx-auto">
           <Link
-            href="/"
+            href={backHref}
             className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors w-fit"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            Home
+            {fromProfile ? "Profile" : "Home"}
           </Link>
         </div>
       </div>
@@ -110,7 +114,7 @@ export default function MechanicsPlayerView({ playerSlug }: { playerSlug: string
             return (
               <Link
                 key={session.slug}
-                href={`/mechanics/session/${playerSlug}/${session.slug}`}
+                href={`/mechanics/session/${player.slug}/${session.slug}${fromProfile && profileSlug ? `?from=profile&slug=${profileSlug}` : ""}`}
                 className="flex items-center gap-4 bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition-all group"
               >
                 {/* Info */}
@@ -118,7 +122,11 @@ export default function MechanicsPlayerView({ playerSlug }: { playerSlug: string
                   <p className="text-[10px] text-zinc-600 mb-0.5">{session.date}</p>
                   <p className="text-sm font-semibold text-zinc-100 mb-1">{session.label}</p>
                   <div className="flex items-center gap-3 text-[10px] text-zinc-600">
-                    <span>{session.hand === "R" ? "RHP" : "LHP"}</span>
+                    <span
+                      className={`text-[9px] px-1.5 py-0.5 rounded font-normal ${handBadgeClassesCompact(session.hand)}`}
+                    >
+                      {session.hand === "R" ? "RHP" : "LHP"}
+                    </span>
                     <span>·</span>
                     <span className="capitalize">{session.view_mode.replace(/_/g, " ")}</span>
                   </div>

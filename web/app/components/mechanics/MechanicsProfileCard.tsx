@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { scoreColor, confidenceLabel } from "@/lib/mechanics/labels";
+import { handBadgeClassesCompact } from "@/lib/handBadge";
 import type { HubPlayerEntry } from "@/lib/mechanics/hub";
 
 // ---------------------------------------------------------------------------
@@ -12,12 +13,14 @@ import type { HubPlayerEntry } from "@/lib/mechanics/hub";
 interface Props {
   /** null = player exists but has no mechanics data */
   entry: HubPlayerEntry | null;
+  /** When set (e.g. from player profile), back button on session will return to profile */
+  profileSlug?: string;
 }
 
 // ---------------------------------------------------------------------------
 // MechanicsProfileCard
 // ---------------------------------------------------------------------------
-export default function MechanicsProfileCard({ entry }: Props) {
+export default function MechanicsProfileCard({ entry, profileSlug }: Props) {
   const [thumbError, setThumbError] = useState(false);
 
   // No sessions or player not found
@@ -30,10 +33,10 @@ export default function MechanicsProfileCard({ entry }: Props) {
         <p className="text-sm text-zinc-600 mb-4">No mechanics sessions for this player yet.</p>
         <Link
           href="/mechanics"
-          className="inline-flex items-center gap-1.5 text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
+          className="group/btn inline-flex items-center gap-2 rounded-xl border border-violet-500/30 bg-zinc-900/60 px-4 py-3 text-sm font-semibold text-zinc-100 transition-all hover:border-violet-500/50 hover:bg-zinc-900"
         >
           Browse Mechanics Hub
-          <ArrowRight className="w-3 h-3" />
+          <ArrowRight className="h-4 w-4 text-violet-400 opacity-60 group-hover/btn:opacity-100 transition-opacity shrink-0" />
         </Link>
       </div>
     );
@@ -85,8 +88,12 @@ export default function MechanicsProfileCard({ entry }: Props) {
               <p className="text-sm font-semibold text-zinc-200 leading-tight mt-0.5 truncate">
                 {latest.label}
               </p>
-              <p className="text-[10px] text-zinc-600 mt-0.5">
-                {latest.hand === "R" ? "RHP" : "LHP"}
+              <p className="text-[10px] text-zinc-600 mt-0.5 flex items-center gap-1.5">
+                <span
+                  className={`text-[9px] px-1.5 py-0.5 rounded font-normal ${handBadgeClassesCompact(latest.hand)}`}
+                >
+                  {latest.hand === "R" ? "RHP" : "LHP"}
+                </span>
                 {" · "}
                 {latest.view_mode.replace(/_/g, " ")}
               </p>
@@ -126,21 +133,15 @@ export default function MechanicsProfileCard({ entry }: Props) {
             )}
           </div>
 
-          {/* Buttons */}
-          <div className="flex items-center gap-2">
-            <Link
-              href={`/mechanics/session/${entry.slug}/${latest.slug}`}
-              className="flex-1 text-center text-[11px] font-medium bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 rounded-lg px-3 py-1.5 transition-colors"
-            >
-              Open Mechanics Session
-            </Link>
-            <Link
-              href={`/mechanics/player/${entry.slug}`}
-              className="text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors whitespace-nowrap px-2"
-            >
-              All Sessions →
-            </Link>
-          </div>
+          <Link
+            href={`/mechanics/session/${entry.slug}/${latest.slug}${profileSlug ? `?from=profile&slug=${profileSlug}` : ""}`}
+            className="group/btn flex items-center justify-between rounded-xl border border-violet-500/30 bg-zinc-900/60 px-4 py-3 transition-all hover:border-violet-500/50 hover:bg-zinc-900"
+          >
+            <span className="text-sm font-semibold text-zinc-100 group-hover/btn:text-white transition-colors">
+              Open Session
+            </span>
+            <ArrowRight className="h-4 w-4 text-violet-400 opacity-60 group-hover/btn:opacity-100 transition-opacity shrink-0" />
+          </Link>
         </div>
       </div>
     </div>

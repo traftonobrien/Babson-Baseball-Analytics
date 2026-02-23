@@ -14,6 +14,7 @@ import {
   type PitchGroupHorizontalCommand,
 } from "@/lib/reportModel";
 import { hDirectionLabel } from "@/lib/handedness";
+import { handBadgeClassesCompact } from "@/lib/handBadge";
 import { useAllPitchData } from "@/app/hooks/useAllPitchData";
 import LogoutButton from "@/app/components/LogoutButton";
 
@@ -155,7 +156,11 @@ function ReportInner() {
         <div className="flex items-center gap-2 mt-1.5 text-[9px] text-zinc-500 print:text-zinc-600 flex-wrap">
           <Pill>{report.meta.scope === "overall" ? "Overall" : "Single Outing"}</Pill>
           <Pill>{report.meta.totalPitches} pitches</Pill>
-          <Pill>Throws {report.meta.pitcherHand === "L" ? "LHP" : "RHP"}</Pill>
+          <span
+            className={`inline-block text-[9px] px-1.5 py-[1px] rounded font-medium ${handBadgeClassesCompact(report.meta.pitcherHand)}`}
+          >
+            Throws {report.meta.pitcherHand === "L" ? "LHP" : "RHP"}
+          </span>
           <Pill>{generatedDate}</Pill>
           {/* Outlier toggle */}
           <label className="inline-flex items-center gap-1 cursor-pointer select-none print:hidden">

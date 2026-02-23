@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft, Target, ChevronRight, Users, Activity, Calendar } from "lucide-react";
 import { players, type Player, type Outing } from "@/lib/dataIndex";
+import { handBadgeClassesCompact } from "@/lib/handBadge";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -34,7 +35,7 @@ function formatDate(date: Date): string {
 }
 
 // ---------------------------------------------------------------------------
-// Command Center Page
+// Command Hub Page
 // ---------------------------------------------------------------------------
 
 export default function CommandPage() {
@@ -95,7 +96,7 @@ export default function CommandPage() {
           <div>
             <h1 className="text-2xl font-semibold flex items-center gap-2">
               <Target className="w-5 h-5 text-amber-400" />
-              Command Center
+              Command Hub
             </h1>
             <p className="text-sm text-zinc-400 mt-0.5">
               All command tracking outings by pitcher
@@ -164,11 +165,9 @@ export default function CommandPage() {
                       {item.player.name}
                     </span>
                     <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded font-normal ${
-                        item.player.throws === "L"
-                          ? "bg-blue-900/40 text-blue-400"
-                          : "bg-zinc-800 text-zinc-400"
-                      }`}
+                      className={`text-[10px] px-1.5 py-0.5 rounded font-normal ${handBadgeClassesCompact(
+                        item.player.throws === "L" ? "L" : "R"
+                      )}`}
                     >
                       {item.player.throws === "L" ? "LHP" : "RHP"}
                     </span>

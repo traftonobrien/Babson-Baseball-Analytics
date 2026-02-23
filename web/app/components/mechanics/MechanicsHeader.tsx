@@ -1,6 +1,7 @@
 "use client";
 
 import { scoreColor } from "@/lib/mechanics/labels";
+import { handBadgeClassesCompact } from "@/lib/handBadge";
 import type { NotesJson } from "@/lib/mechanics/types";
 
 interface MechanicsHeaderProps {
@@ -28,7 +29,11 @@ export function MechanicsHeader({ notes, playerName, sessionLabel }: MechanicsHe
             <div className="flex items-center gap-3 mt-1 text-xs text-zinc-500">
               <span>{sessionLabel}</span>
               <span className="w-px h-3 bg-zinc-700" />
-              <span>{notes.hand === "R" ? "RHP" : "LHP"}</span>
+              <span
+              className={`text-[10px] px-1.5 py-0.5 rounded font-normal ${handBadgeClassesCompact(notes.hand)}`}
+            >
+              {notes.hand === "R" ? "RHP" : "LHP"}
+            </span>
               <span className="w-px h-3 bg-zinc-700" />
               <span className="capitalize">{notes.view_mode.replace(/_/g, " ")} view</span>
               <span className="w-px h-3 bg-zinc-700" />

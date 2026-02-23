@@ -23,6 +23,7 @@ import MovementScatterByType from "./MovementScatterByType";
 import PitchArsenalCards from "./PitchArsenalCards";
 import { mergeRenamedPitchTypes } from "@/lib/mergePitchTypes";
 import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
+import { getCanonicalName } from "@/lib/canonicalPlayers";
 
 interface PitchPayload {
   format: "pitch";
@@ -52,15 +53,6 @@ async function fetchJson(path: string): Promise<unknown | null> {
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   return value as Record<string, unknown>;
-}
-
-/** "Burk, Bobby" → "Bobby Burk" */
-function formatPlayerName(raw: string): string {
-  if (raw.includes(",")) {
-    const [last, first] = raw.split(",", 2).map((s) => s.trim());
-    if (first && last) return `${first} ${last}`;
-  }
-  return raw;
 }
 
 /** "2026_02_13" → "2/13/26", range → "1/1/26 — 2/13/26" */
@@ -266,7 +258,7 @@ export default function TrackmanSessionView({
   }, [playerId, date]);
 
   // Header info
-  const playerName = formatPlayerName(
+  const playerName = getCanonicalName(
     (meta?.player as string) ??
     (meta?.player_name as string) ??
     (meta?.playerName as string) ??

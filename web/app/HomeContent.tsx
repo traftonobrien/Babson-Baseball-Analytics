@@ -12,15 +12,7 @@ import {
 } from "lucide-react";
 import LogoutButton from "./components/LogoutButton";
 
-interface Props {
-  mechanicsPlayerCount?: number;
-  mechanicsNeedsAttention?: number;
-}
-
-export default function HomeContent({
-  mechanicsPlayerCount,
-  mechanicsNeedsAttention,
-}: Props = {}) {
+export default function HomeContent() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 relative">
       {/* Logout */}
@@ -93,7 +85,7 @@ export default function HomeContent({
                   <Target className="w-6 h-6 text-amber-400" />
                   <ArrowUpRight className="w-4 h-4 text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <h2 className="text-lg font-semibold mt-4">Command Center</h2>
+                <h2 className="text-lg font-semibold mt-4">Command Hub</h2>
                 <p className="text-sm text-zinc-400 mt-1 leading-relaxed">
                   Miss vectors, target accuracy, command tracking outings
                 </p>
@@ -123,22 +115,12 @@ export default function HomeContent({
         >
           <Link href="/mechanics">
             <div className="group relative rounded-xl border border-violet-500/30 hover:border-violet-500/60 bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-6 transition-all duration-200 hover:scale-[1.01] hover:shadow-lg">
+              <span className="absolute top-3 right-3 text-xs uppercase tracking-wider font-semibold bg-violet-500/20 text-violet-400 border border-violet-500/40 rounded-md px-3 py-1">
+                Beta
+              </span>
               <div className="flex items-start justify-between">
                 <Film className="w-6 h-6 text-violet-400" />
-                <div className="flex items-center gap-3">
-                  {mechanicsPlayerCount != null && mechanicsPlayerCount > 0 && (
-                    <div className="flex items-center gap-3 text-[11px] text-zinc-600">
-                      <span>{mechanicsPlayerCount} pitcher{mechanicsPlayerCount !== 1 ? "s" : ""}</span>
-                      {mechanicsNeedsAttention != null && mechanicsNeedsAttention > 0 && (
-                        <>
-                          <span className="text-zinc-800">·</span>
-                          <span className="text-amber-500">{mechanicsNeedsAttention} need attention</span>
-                        </>
-                      )}
-                    </div>
-                  )}
-                  <ArrowUpRight className="w-4 h-4 text-violet-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
+                <ArrowUpRight className="w-4 h-4 text-violet-400 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
               <h2 className="text-lg font-semibold mt-4">Mechanics</h2>
               <p className="text-sm text-zinc-400 mt-1 leading-relaxed">

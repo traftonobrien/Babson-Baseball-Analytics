@@ -16,6 +16,7 @@ import type {
   LeaderboardMode,
 } from "@/lib/leaderboards/types";
 import type { PitchGroup } from "@/lib/leaderboards/pitchGroups";
+import { handBadgeClassesCompact } from "@/lib/handBadge";
 import LogoutButton from "@/app/components/LogoutButton";
 
 /* ------------------------------------------------------------------ */
@@ -101,11 +102,7 @@ function HandBadge({ hand, unknown }: { hand: "R" | "L"; unknown: boolean }) {
   }
   return (
     <span
-      className={`ml-2 text-[10px] px-1.5 py-0.5 rounded font-normal ${
-        hand === "L"
-          ? "bg-blue-900/40 text-blue-400"
-          : "bg-zinc-800 text-zinc-400"
-      }`}
+      className={`ml-2 text-[10px] px-1.5 py-0.5 rounded font-normal ${handBadgeClassesCompact(hand)}`}
     >
       {hand === "L" ? "LHP" : "RHP"}
     </span>

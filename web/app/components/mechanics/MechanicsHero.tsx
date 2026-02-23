@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { scoreColor, confidenceLabel } from "@/lib/mechanics/labels";
+import { handBadgeClassesCompact } from "@/lib/handBadge";
 import { getAggregateConfidence } from "@/lib/mechanics/selectors";
 import type { NotesJson } from "@/lib/mechanics/types";
 
@@ -43,7 +44,11 @@ export function MechanicsHero({ notes, playerName, sessionLabel }: MechanicsHero
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-zinc-500">
               <span>{sessionLabel}</span>
               <span className="w-px h-3 bg-zinc-700 hidden sm:block" />
-              <span>{notes.hand === "R" ? "RHP" : "LHP"}</span>
+              <span
+              className={`text-[10px] px-1.5 py-0.5 rounded font-normal ${handBadgeClassesCompact(notes.hand)}`}
+            >
+              {notes.hand === "R" ? "RHP" : "LHP"}
+            </span>
               <span className="w-px h-3 bg-zinc-700 hidden sm:block" />
               <span className="capitalize">{notes.view_mode.replace(/_/g, " ")} view</span>
               <span className="w-px h-3 bg-zinc-700 hidden sm:block" />
@@ -60,7 +65,7 @@ export function MechanicsHero({ notes, playerName, sessionLabel }: MechanicsHero
             <p className="text-[10px] uppercase tracking-wider text-zinc-500">Efficiency Score</p>
             <div className="flex items-baseline gap-2">
               <span
-                className="font-black font-mono tabular-nums leading-none"
+                className={`font-black font-mono tabular-nums leading-none ${score < 4 ? "animate-pulse" : ""}`}
                 style={{ color, fontSize: 72 }}
               >
                 {score.toFixed(1)}

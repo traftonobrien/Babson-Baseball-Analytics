@@ -14,6 +14,8 @@ import PitchArsenalCards from "../../session/[playerId]/[date]/PitchArsenalCards
 import TopPitchCard from "./TopPitchCard";
 import { mergeRenamedPitchTypes } from "@/lib/mergePitchTypes";
 import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
+import { getCanonicalName } from "@/lib/canonicalPlayers";
+import { handBadgeClassesCompact, parseHand } from "@/lib/handBadge";
 
 interface IndexEntry {
   playerName: string;
@@ -58,14 +60,6 @@ function formatDate(raw: string): string {
   return raw;
 }
 
-/** "Burk, Bobby" → "Bobby Burk" */
-function formatPlayerName(raw: string): string {
-  if (raw.includes(",")) {
-    const [last, first] = raw.split(",", 2).map((s) => s.trim());
-    if (first && last) return `${first} ${last}`;
-  }
-  return raw;
-}
 
 /** Average pitch type data across multiple sessions. */
 function aggregatePitchTypes(
@@ -339,7 +333,7 @@ export default function TrackmanPlayerPage({
       });
   }, [slug]);
 
-  const playerName = formatPlayerName(entries[0]?.playerName ?? slug);
+  const playerName = getCanonicalName(entries[0]?.playerName ?? slug);
   const team = entries[0]?.team;
   const rawHand = entries.find((e) => e.handedness)?.handedness ?? null;
   const hand = rawHand;
@@ -397,10 +391,14 @@ export default function TrackmanPlayerPage({
           </div>
           <div className="flex items-baseline gap-4 flex-wrap">
             <h1 className="text-xl font-bold tracking-tight text-zinc-50">{playerName}</h1>
-            {hand && (
+            {hand && parseHand(hand) && (
               <>
                 <span className="w-px h-5 bg-zinc-700 self-center hidden sm:block" />
-                <span className="text-sm text-zinc-400">{hand}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${handBadgeClassesCompact(parseHand(hand)!)}`}
+                >
+                  {hand}
+                </span>
               </>
             )}
             {team && (

@@ -18,7 +18,9 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+sys.path.insert(0, os.path.dirname(__file__))
 from trackman_pdf.meta import slugify
+from lib.canonical_players import get_canonical_name
 
 def load_json(path: str) -> Any:
     with open(path, "r") as f:
@@ -119,7 +121,7 @@ def _player_avg_by_summary_key(
             continue
         player_vals[slug].append(val)
         player_info[slug] = {
-            "playerName": entry.get("playerName"),
+            "playerName": get_canonical_name(entry.get("playerName") or slug),
             "playerSlug": slug,
             "team": entry.get("team"),
         }
@@ -175,7 +177,7 @@ def _player_avg_by_pitch_type_group(
         session_avg = sum(matched_vals) / len(matched_vals)
         player_vals[slug].append(session_avg)
         player_info[slug] = {
-            "playerName": entry.get("playerName"),
+            "playerName": get_canonical_name(entry.get("playerName") or slug),
             "playerSlug": slug,
             "team": entry.get("team"),
         }
@@ -244,7 +246,7 @@ def _load_max_fb_velo(sessions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         sl = entry.get("playerSlug", "")
         if sl:
             slug_info[sl] = {
-                "playerName": entry.get("playerName"),
+                "playerName": get_canonical_name(entry.get("playerName") or sl),
                 "playerSlug": sl,
                 "team": entry.get("team"),
             }
@@ -273,7 +275,7 @@ def _load_max_fb_velo(sessions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
             info = slug_info.get(slug)
             entries.append({
-                "playerName": info["playerName"] if info else last_first,
+                "playerName": info["playerName"] if info else get_canonical_name(name),
                 "playerSlug": slug,
                 "team": info.get("team") if info else None,
                 "sessionCount": None,
