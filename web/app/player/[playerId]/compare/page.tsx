@@ -181,7 +181,7 @@ function CompareInner() {
       <div className="flex items-center justify-between mb-4">
         <a
           href={`/player/${playerId}`}
-          className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
+          className="text-sm text-zinc-400 hover:text-zinc-200 transition-smooth"
         >
           &larr; Dashboard
         </a>

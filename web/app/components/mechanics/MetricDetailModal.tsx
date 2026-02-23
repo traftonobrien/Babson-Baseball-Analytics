@@ -91,7 +91,7 @@ export function MetricDetailModal({ metricKey, metric, onClose }: MetricDetailMo
             </span>
             <button
               onClick={onClose}
-              className="text-zinc-600 hover:text-zinc-300 transition-colors p-1"
+              className="text-zinc-600 hover:text-zinc-300 transition-smooth p-1"
               aria-label="Close metric details"
             >
               <X className="w-4 h-4" />

@@ -50,7 +50,7 @@ export function MechanicsTopInsights({ notes, onMetricClick }: MechanicsTopInsig
             <button
               key={key}
               onClick={() => onMetricClick(key)}
-              className={`text-left p-4 rounded-xl border cursor-pointer transition-all hover:brightness-110 hover:scale-[1.01] ${insightBorder(eff)} ${insightBg(eff)}`}
+              className={`text-left p-4 rounded-xl border cursor-pointer transition-smooth hover:brightness-110 hover:scale-[1.01] ${insightBorder(eff)} ${insightBg(eff)}`}
             >
               {/* Metric name */}
               <p className="text-[10px] uppercase tracking-wider text-zinc-400 mb-3">

@@ -106,7 +106,7 @@ export default function MechanicsSessionView({
           <div className="max-w-5xl mx-auto flex items-center gap-2 text-xs">
             <Link
               href={backHref}
-              className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-300 transition-colors w-fit"
+              className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-300 transition-smooth w-fit"
               aria-label={fromProfile ? "Back to profile" : "Back to Mechanics Hub"}
             >
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -125,7 +125,7 @@ export default function MechanicsSessionView({
               <a
                 key={id}
                 href={`#${id}`}
-                className="text-[10px] text-zinc-500 hover:text-violet-400 transition-colors whitespace-nowrap px-2 py-1 rounded hover:bg-zinc-800/50"
+                className="text-[10px] text-zinc-500 hover:text-violet-400 transition-smooth whitespace-nowrap px-2 py-1 rounded hover:bg-zinc-800/50"
               >
                 {label}
               </a>

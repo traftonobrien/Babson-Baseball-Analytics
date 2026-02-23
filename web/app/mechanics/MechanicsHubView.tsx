@@ -43,7 +43,7 @@ function PlayerCard({ player }: { player: HubPlayerEntry }) {
           router.push(latestHref);
         }
       }}
-      className="group relative bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden flex flex-col hover:border-violet-500/50 hover:scale-[1.02] hover:shadow-lg hover:shadow-violet-500/10 transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+      className="group relative bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden flex flex-col hover:border-violet-500/50 hover:scale-[1.02] hover:shadow-lg hover:shadow-violet-500/10 transition-smooth duration-300 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
     >
       {/* Hover affordance */}
       <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-medium text-violet-400">
@@ -173,7 +173,7 @@ export default function MechanicsHubView({ index }: { index: MechanicsIndex }) {
               placeholder="Search by name…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-9 pr-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors"
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-9 pr-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 transition-smooth"
             />
           </div>
 
@@ -181,7 +181,7 @@ export default function MechanicsHubView({ index }: { index: MechanicsIndex }) {
           <select
             value={sortKey}
             onChange={(e) => setSortKey(e.target.value as SortKey)}
-            className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-300 focus:outline-none focus:border-zinc-600 cursor-pointer transition-colors"
+            className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-300 focus:outline-none focus:border-zinc-600 cursor-pointer transition-smooth"
           >
             <option value="date_desc">Latest first</option>
             <option value="score_desc">Highest score</option>
@@ -192,7 +192,7 @@ export default function MechanicsHubView({ index }: { index: MechanicsIndex }) {
           {/* Low confidence filter toggle */}
           <button
             onClick={() => setFilterLowConf(!filterLowConf)}
-            className={`text-[11px] px-3 py-2 rounded-lg border transition-colors whitespace-nowrap ${
+            className={`text-[11px] px-3 py-2 rounded-lg border transition-smooth whitespace-nowrap ${
               filterLowConf
                 ? "bg-amber-950/50 border-amber-800/60 text-amber-400"
                 : "bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-700"

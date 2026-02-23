@@ -143,7 +143,7 @@ export default function TrackmanPlayersPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <header className="flex items-center gap-3 px-4 py-3 bg-zinc-900 border-b border-zinc-800">
-        <Link href="/" className="text-zinc-400 hover:text-zinc-200 transition-colors">
+        <Link href="/" className="text-zinc-400 hover:text-zinc-200 transition-smooth">
           <ArrowLeft className="w-4 h-4" />
         </Link>
         <div className="flex items-center gap-2 flex-1">
@@ -152,7 +152,7 @@ export default function TrackmanPlayersPage() {
         </div>
         <Link
           href="/trackman/leaderboards"
-          className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+          className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-smooth"
         >
           <Trophy className="w-3.5 h-3.5" />
           Leaderboards
@@ -198,7 +198,7 @@ export default function TrackmanPlayersPage() {
                 <Link
                   key={p.slug}
                   href={`/trackman/player/${p.slug}`}
-                  className="block bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-colors"
+                  className="block bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-smooth"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">

@@ -60,7 +60,7 @@ export default function TrackmanPitchTable({ pitches }: { pitches: TrackmanPitch
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className={`px-3 py-2 cursor-pointer hover:text-zinc-200 transition-colors select-none ${
+                  className={`px-3 py-2 cursor-pointer hover:text-zinc-200 transition-smooth select-none ${
                     col.align === "right" ? "text-right" : "text-left"
                   }`}
                   onClick={() => handleSort(col.key)}
@@ -77,7 +77,7 @@ export default function TrackmanPitchTable({ pitches }: { pitches: TrackmanPitch
             {sorted.map((p) => (
               <tr
                 key={p.pitchNo}
-                className="border-t border-zinc-800/50 hover:bg-zinc-800/30 transition-colors"
+                className="border-t border-zinc-800/50 hover:bg-zinc-800/30 transition-smooth"
               >
                 <td className="px-3 py-1.5 font-mono text-zinc-400">{p.pitchNo}</td>
                 <td className="px-3 py-1.5">

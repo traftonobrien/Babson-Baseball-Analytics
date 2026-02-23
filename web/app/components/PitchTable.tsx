@@ -59,7 +59,7 @@ export default function PitchTable({
               <tr
                 key={p.pitch_number}
                 onClick={() => onSelect(p)}
-                className={`cursor-pointer border-b border-zinc-800 transition-colors ${
+                className={`cursor-pointer border-b border-zinc-800 transition-smooth ${
                   isSelected ? "bg-zinc-700" : "hover:bg-zinc-800"
                 } ${isOutlier ? "opacity-50 grayscale hover:opacity-70" : ""}`}
               >
@@ -127,7 +127,7 @@ export default function PitchTable({
                         e.stopPropagation();
                         setEditingPitch(isEditing ? null : p.pitch_number);
                       }}
-                      className="text-zinc-500 hover:text-zinc-300 transition-colors text-[11px]"
+                      className="text-zinc-500 hover:text-zinc-300 transition-smooth text-[11px]"
                     >
                       ✎
                     </button>

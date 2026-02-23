@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft, Trophy, Search } from "lucide-react";
+import { Trophy, Search, Download } from "lucide-react";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import { pitchColor } from "@/lib/pitchColors";
 import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
 import { getCanonicalName } from "@/lib/canonicalPlayers";
@@ -54,6 +55,15 @@ const CATEGORY_UNITS: Record<string, string> = {
   avg_fb_spin: "rpm",
   avg_bb_spin: "rpm",
   avg_extension: "ft",
+};
+
+const CATEGORY_TOOLTIPS: Record<string, string> = {
+  stuff_plus: "Pitch quality metric (100 = league average). Higher = better movement/velo/spin.",
+  max_fb_velo: "Maximum fastball velocity from session. Primary fastball type used.",
+  avg_fb_velo: "Average fastball velocity across sessions.",
+  avg_fb_spin: "Average spin rate for fastballs (4-seam, sinker).",
+  avg_bb_spin: "Average spin rate for breaking balls (slider, curve, sweeper).",
+  avg_extension: "Average release extension (feet from rubber).",
 };
 
 const STUFF_PLUS_PITCH_ORDER = [
@@ -235,18 +245,54 @@ export default function TrackmanLeaderboardsPage() {
     return [...d].sort((a, b) => b.meanStuffPlus - a.meanStuffPlus);
   }, [stuffPlusRows, stuffPlusPitchFilter, search]);
 
+  const exportCsv = useCallback(() => {
+    if (activeCategory === "") {
+      const headers = ["Rank", "Player", "Pitch", "Stuff+", "Velo (mph)", "Sessions"];
+      const rows = rankedStuffPlus.map((r, i) => [
+        i + 1,
+        getCanonicalName(r.playerName ?? r.playerId ?? ""),
+        getStuffPlusDisplayPitchType(r.playerId, r.pitchType),
+        r.meanStuffPlus.toFixed(1),
+        r.avgVeloMph != null ? r.avgVeloMph.toFixed(1) : "",
+        r.nSessions ?? "",
+      ]);
+      const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `trackman-stuff-plus-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } else {
+      const headers =
+        activeCategory === "max_fb_velo" && categoryPitchOptions.length > 0
+          ? ["Rank", "Player", "Pitch", CATEGORY_LABELS[activeCategory] ?? activeCategory, "Unit"]
+          : ["Rank", "Player", "Sessions", CATEGORY_LABELS[activeCategory] ?? activeCategory, "Unit"];
+      const rows = entries.map((e, i) => {
+        const pitchLabel = (e as LeaderboardEntry & { pitch_type?: string }).pitch_type ?? (categoryPitchFilter !== "all" ? categoryPitchFilter : "");
+        if (activeCategory === "max_fb_velo" && categoryPitchOptions.length > 0) {
+          return [e.rank, getCanonicalName(e.playerName), pitchLabel, fmt(e.value, activeCategory), CATEGORY_UNITS[activeCategory] ?? ""];
+        }
+        return [e.rank, getCanonicalName(e.playerName), e.sessionCount ?? "", fmt(e.value, activeCategory), CATEGORY_UNITS[activeCategory] ?? ""];
+      });
+      const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `trackman-${activeCategory}-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  }, [activeCategory, rankedStuffPlus, entries, categoryPitchFilter, categoryPitchOptions.length]);
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Link
-            href="/trackman"
-            className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-300 transition-colors mb-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Trackman
-          </Link>
+          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Trackman", href: "/trackman" }, { label: "Leaderboards" }]} />
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20">
               <Trophy className="w-6 h-6 text-blue-400" />
@@ -292,15 +338,13 @@ export default function TrackmanLeaderboardsPage() {
                   <button
                     key={cat}
                     onClick={() => setActiveCategory(cat)}
-                    className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
+                    title={CATEGORY_TOOLTIPS[cat]}
+                    className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-smooth flex items-center gap-1.5 ${
                       activeCategory === cat
                         ? "bg-blue-500/20 text-blue-400 border border-blue-500/30 shadow-sm"
                         : "bg-zinc-900/60 border border-zinc-700/80 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60"
                     }`}
                   >
-                    {cat === "stuff_plus" && (
-                      <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
-                    )}
                     {CATEGORY_LABELS[cat] ?? cat}
                   </button>
                 ))}
@@ -312,9 +356,19 @@ export default function TrackmanLeaderboardsPage() {
                   placeholder="Search players..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded-lg pl-9 pr-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-colors"
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded-lg pl-9 pr-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-smooth"
                 />
               </div>
+              {((activeCategory === "" && rankedStuffPlus.length > 0) || (activeCategory && entries.length > 0)) && (
+                <button
+                  type="button"
+                  onClick={exportCsv}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100 transition-smooth text-xs font-medium"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Export CSV
+                </button>
+              )}
             </div>
 
             {/* Category pitch type filter (for non-Stuff+ categories) */}
@@ -324,7 +378,7 @@ export default function TrackmanLeaderboardsPage() {
                   <button
                     key={opt.value}
                     onClick={() => setCategoryPitchFilter(opt.value)}
-                    className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
+                    className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-smooth flex items-center gap-1.5 ${
                       categoryPitchFilter === opt.value
                         ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
                         : "bg-zinc-900/60 border border-zinc-700/80 text-zinc-400 hover:border-zinc-600"
@@ -348,7 +402,7 @@ export default function TrackmanLeaderboardsPage() {
                 <div className="flex flex-wrap gap-2 mb-4">
                   <button
                     onClick={() => setStuffPlusPitchFilter("all")}
-                    className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
+                    className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-smooth ${
                       stuffPlusPitchFilter === "all"
                         ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
                         : "bg-zinc-900/60 border border-zinc-700/80 text-zinc-400 hover:border-zinc-600"
@@ -360,7 +414,7 @@ export default function TrackmanLeaderboardsPage() {
                     <button
                       key={pt}
                       onClick={() => setStuffPlusPitchFilter(pt)}
-                      className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
+                      className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-smooth flex items-center gap-1.5 ${
                         stuffPlusPitchFilter === pt
                           ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
                           : "bg-zinc-900/60 border border-zinc-700/80 text-zinc-400 hover:border-zinc-600"
@@ -374,16 +428,16 @@ export default function TrackmanLeaderboardsPage() {
                     </button>
                   ))}
                 </div>
-                <div className="overflow-x-auto rounded-xl border border-zinc-800/80 bg-zinc-900/30 shadow-xl shadow-black/20 overflow-hidden">
+                <div className="overflow-x-auto rounded-xl border border-zinc-800/80 bg-zinc-900/30 shadow-xl shadow-black/20 overflow-hidden max-h-[70vh] overflow-y-auto">
                   <table className="w-full text-sm">
-                    <thead className="bg-zinc-900/80">
+                    <thead className="sticky top-0 z-10 bg-zinc-900/95 backdrop-blur-sm">
                       <tr>
                         <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-12">#</th>
                         <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Player</th>
                         {stuffPlusPitchFilter === "all" && (
                           <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Pitch</th>
                         )}
-                        <th className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Stuff+</th>
+                        <th className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider" title={CATEGORY_TOOLTIPS.stuff_plus}>Stuff+</th>
                         <th className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Velo</th>
                         <th className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Sessions</th>
                       </tr>
@@ -392,13 +446,13 @@ export default function TrackmanLeaderboardsPage() {
                       {rankedStuffPlus.map((r, i) => (
                         <tr
                           key={`${r.playerId}-${r.pitchType}-${i}`}
-                          className="border-b border-zinc-800/50 hover:bg-blue-500/5 transition-colors"
+                          className="border-b border-zinc-800/50 hover:bg-blue-500/5 transition-smooth"
                         >
                           <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>{i + 1}</td>
                           <td className="px-4 py-3 font-medium">
                             <Link
                               href={`/trackman/player/${r.playerId}`}
-                              className="text-blue-400 hover:text-blue-300 transition-colors"
+                              className="text-blue-400 hover:text-blue-300 transition-smooth"
                             >
                               {getCanonicalName(r.playerName ?? r.playerId ?? "")}
                             </Link>
@@ -437,15 +491,26 @@ export default function TrackmanLeaderboardsPage() {
                   </table>
                 </div>
                 {rankedStuffPlus.length === 0 && (
-                  <p className="text-zinc-500 text-sm text-center py-6">No players match your search.</p>
+                  <div className="flex flex-col items-center gap-2 py-8">
+                    <p className="text-zinc-500 text-sm">No players match your search.</p>
+                    {search.trim() && (
+                      <button
+                        type="button"
+                        onClick={() => setSearch("")}
+                        className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-smooth"
+                      >
+                        Clear filters
+                      </button>
+                    )}
+                  </div>
                 )}
               </>
             ) : activeCategory ? (
               <>
                 {/* Trackman leaderboard table */}
-                <div className="overflow-x-auto rounded-xl border border-zinc-800/80 bg-zinc-900/30 shadow-xl shadow-black/20 overflow-hidden">
+                <div className="overflow-x-auto rounded-xl border border-zinc-800/80 bg-zinc-900/30 shadow-xl shadow-black/20 overflow-hidden max-h-[70vh] overflow-y-auto">
                   <table className="w-full text-sm">
-                    <thead className="bg-zinc-900/80">
+                    <thead className="sticky top-0 z-10 bg-zinc-900/95 backdrop-blur-sm">
                       <tr>
                         <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-12">#</th>
                         <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Player</th>
@@ -461,18 +526,36 @@ export default function TrackmanLeaderboardsPage() {
                       </tr>
                     </thead>
                     <tbody>
+                      {entries.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="px-4 py-12 text-center">
+                            <div className="flex flex-col items-center gap-2">
+                              <span className="text-zinc-500">No players match your search.</span>
+                              {search.trim() && (
+                                <button
+                                  type="button"
+                                  onClick={() => setSearch("")}
+                                  className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-smooth"
+                                >
+                                  Clear filters
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
                       {entries.map((e, i) => {
                         const pitchLabel = (e as LeaderboardEntry & { pitch_type?: string }).pitch_type ?? (categoryPitchFilter !== "all" ? categoryPitchFilter : null);
                         return (
                         <tr
                           key={`${e.playerSlug}-${i}`}
-                          className="border-b border-zinc-800/50 hover:bg-blue-500/5 transition-colors"
+                          className="border-b border-zinc-800/50 hover:bg-blue-500/5 transition-smooth"
                         >
                           <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>{e.rank}</td>
                           <td className="px-4 py-3 font-medium">
                             <Link
                               href={`/trackman/player/${e.playerSlug}`}
-                              className="text-blue-400 hover:text-blue-300 transition-colors"
+                              className="text-blue-400 hover:text-blue-300 transition-smooth"
                             >
                               {getCanonicalName(e.playerName)}
                             </Link>

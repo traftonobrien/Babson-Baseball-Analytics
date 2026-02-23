@@ -717,7 +717,7 @@ export default async function PlayerProfilePage({
       <div className="mx-auto w-full max-w-5xl px-6 py-12">
         <Link
           href="/players"
-          className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-700 transition-colors hover:text-zinc-400"
+          className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-700 transition-smooth hover:text-zinc-400"
         >
           Roster
         </Link>

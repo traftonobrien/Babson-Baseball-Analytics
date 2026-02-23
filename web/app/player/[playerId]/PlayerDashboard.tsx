@@ -277,22 +277,34 @@ export default function PlayerDashboard({
         <div className="flex items-center gap-3">
           <a
             href={`/trackman/session/${player.id}/${outing.id.split("/")[1] ?? ""}`}
-            className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+            className="text-xs text-zinc-400 hover:text-zinc-200 transition-smooth"
           >
             Trackman
           </a>
           <a
             href={`/player/${player.id}/report?scope=outing&outingId=${outing.id}`}
-            className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+            className="text-xs text-zinc-400 hover:text-zinc-200 transition-smooth"
           >
             Outing Report
           </a>
           <a
             href={`/player/${player.id}/report?scope=overall`}
-            className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+            className="text-xs text-zinc-400 hover:text-zinc-200 transition-smooth"
           >
             Overall Report
           </a>
+          {player.outings.length >= 1 && (
+            <a
+              href={
+                player.outings.length >= 2
+                  ? `/player/${player.id}/compare?outingA=${outing.id}&outingB=${player.outings.find((o) => o.id !== outing.id)?.id ?? player.outings[1].id}`
+                  : `/player/${player.id}/compare?outingA=${outing.id}`
+              }
+              className="text-xs font-medium text-orange-400 hover:text-orange-300 transition-smooth"
+            >
+              Compare
+            </a>
+          )}
           <span className="text-xs text-zinc-500">
             {laneFiltered.length} / {pitches.length} pitches
           </span>
@@ -320,7 +332,7 @@ export default function PlayerDashboard({
               <button
                 type="button"
                 onClick={handleResetEdits}
-                className="text-[10px] text-zinc-400 hover:text-zinc-200 underline transition-colors"
+                className="text-[10px] text-zinc-400 hover:text-zinc-200 underline transition-smooth"
               >
                 Reset edits
               </button>
@@ -357,7 +369,7 @@ export default function PlayerDashboard({
                       type="button"
                       onClick={() => setVizMode(mode)}
                       className={[
-                        "px-3 py-1 text-xs rounded-md capitalize transition-colors",
+                        "px-3 py-1 text-xs rounded-md capitalize transition-smooth",
                         vizMode === mode
                           ? "bg-zinc-700 text-zinc-100"
                           : "bg-zinc-900 text-zinc-500 hover:text-zinc-300",
@@ -375,7 +387,7 @@ export default function PlayerDashboard({
                         type="button"
                         onClick={() => setHeatmapPitchType(pt)}
                         className={[
-                          "px-2 py-0.5 text-xs rounded transition-colors",
+                          "px-2 py-0.5 text-xs rounded transition-smooth",
                           heatmapPitchType === pt
                             ? "bg-zinc-600 text-zinc-100"
                             : "bg-zinc-900 text-zinc-500 hover:text-zinc-300",

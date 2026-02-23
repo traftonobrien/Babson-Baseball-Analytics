@@ -91,7 +91,7 @@ export default function MechanicsPlayerView({ playerSlug }: { playerSlug: string
         <div className="max-w-3xl mx-auto">
           <Link
             href={backHref}
-            className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors w-fit"
+            className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-smooth w-fit"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             {fromProfile ? "Profile" : "Home"}
@@ -115,7 +115,7 @@ export default function MechanicsPlayerView({ playerSlug }: { playerSlug: string
               <Link
                 key={session.slug}
                 href={`/mechanics/session/${player.slug}/${session.slug}${fromProfile && profileSlug ? `?from=profile&slug=${profileSlug}` : ""}`}
-                className="flex items-center gap-4 bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition-all group"
+                className="flex items-center gap-4 bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition-smooth group"
               >
                 {/* Info */}
                 <div className="flex-1 min-w-0">
@@ -150,7 +150,7 @@ export default function MechanicsPlayerView({ playerSlug }: { playerSlug: string
                   </div>
                 </div>
 
-                <span className="text-zinc-700 group-hover:text-zinc-400 transition-colors text-lg">
+                <span className="text-zinc-700 group-hover:text-zinc-400 transition-smooth text-lg">
                   →
                 </span>
               </Link>

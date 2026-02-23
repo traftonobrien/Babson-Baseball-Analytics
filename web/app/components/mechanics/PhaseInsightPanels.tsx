@@ -25,7 +25,7 @@ function MetricRow({ metricKey, metric, onClick }: MetricRowProps) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left px-3 py-3 rounded-lg bg-zinc-800/30 border border-zinc-800/80 hover:border-zinc-700 hover:bg-zinc-800/50 transition-all"
+      className="w-full text-left px-3 py-3 rounded-lg bg-zinc-800/30 border border-zinc-800/80 hover:border-zinc-700 hover:bg-zinc-800/50 transition-smooth"
     >
       {/* Top row: dot + name + score */}
       <div className="flex items-center gap-2.5">

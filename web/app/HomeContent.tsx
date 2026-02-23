@@ -29,7 +29,7 @@ export default function HomeContent() {
           transition={{ duration: 0.3, delay: 0.05 }}
         >
           <Link href="/players">
-            <div className="group relative rounded-xl border border-emerald-500/30 hover:border-emerald-500/60 bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-6 transition-all duration-200 hover:scale-[1.01] hover:shadow-lg group-hover:shadow-emerald-500/10">
+            <div className="group relative rounded-xl border border-emerald-500/30 hover:border-emerald-500/60 bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-6 transition-smooth duration-300 hover:scale-[1.01] hover:shadow-lg group-hover:shadow-emerald-500/10">
               <div className="flex items-start justify-between">
                 <Users className="w-6 h-6 text-emerald-400" />
                 <ArrowUpRight className="w-4 h-4 text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -52,7 +52,7 @@ export default function HomeContent() {
           {/* Trackman column */}
           <div className="flex flex-col gap-3">
             <Link href="/trackman" className="flex-1">
-              <div className="group relative h-full rounded-xl border border-blue-500/30 hover:border-blue-500/60 bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-6 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg group-hover:shadow-blue-500/10">
+              <div className="group relative h-full rounded-xl border border-blue-500/30 hover:border-blue-500/60 bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-6 transition-smooth duration-300 hover:scale-[1.02] hover:shadow-lg group-hover:shadow-blue-500/10">
                 <div className="flex items-start justify-between">
                   <Activity className="w-6 h-6 text-blue-400" />
                   <ArrowUpRight className="w-4 h-4 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -64,11 +64,11 @@ export default function HomeContent() {
               </div>
             </Link>
             <Link href="/trackman/leaderboards">
-              <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-blue-500/40 transition-colors group">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-blue-500/40 transition-smooth group">
                 <div className="flex items-center gap-2">
                   <Trophy className="w-4 h-4 text-blue-400" />
                   <span className="font-medium text-sm">Trackman Leaderboards</span>
-                  <ArrowUpRight className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-blue-400 transition-colors" />
+                  <ArrowUpRight className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-blue-400 transition-smooth" />
                 </div>
                 <p className="text-xs text-zinc-500 mt-1">
                   Compare Trackman metrics across pitchers
@@ -80,7 +80,7 @@ export default function HomeContent() {
           {/* Command column */}
           <div className="flex flex-col gap-3">
             <Link href="/command" className="flex-1">
-              <div className="group relative h-full rounded-xl border border-orange-500/30 hover:border-orange-500/60 bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-6 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg group-hover:shadow-orange-500/10">
+              <div className="group relative h-full rounded-xl border border-orange-500/30 hover:border-orange-500/60 bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-6 transition-smooth duration-300 hover:scale-[1.02] hover:shadow-lg group-hover:shadow-orange-500/10">
                 <div className="flex items-start justify-between">
                   <Target className="w-6 h-6 text-orange-400" />
                   <ArrowUpRight className="w-4 h-4 text-orange-400 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -92,11 +92,11 @@ export default function HomeContent() {
               </div>
             </Link>
             <Link href="/leaderboards">
-              <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-orange-500/40 transition-colors group">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-orange-500/40 transition-smooth group">
                 <div className="flex items-center gap-2">
                   <Trophy className="w-4 h-4 text-orange-400" />
                   <span className="font-medium text-sm">Command Leaderboards</span>
-                  <ArrowUpRight className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-orange-400 transition-colors" />
+                  <ArrowUpRight className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-orange-400 transition-smooth" />
                 </div>
                 <p className="text-xs text-zinc-500 mt-1">
                   Compare command stats across pitchers
@@ -114,7 +114,7 @@ export default function HomeContent() {
           transition={{ duration: 0.3, delay: 0.15 }}
         >
           <Link href="/mechanics">
-            <div className="group relative rounded-xl border border-violet-500/30 hover:border-violet-500/60 bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-6 transition-all duration-200 hover:scale-[1.01] hover:shadow-lg">
+            <div className="group relative rounded-xl border border-violet-500/30 hover:border-violet-500/60 bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-6 transition-smooth duration-300 hover:scale-[1.01] hover:shadow-lg">
               <span className="absolute top-3 right-3 text-xs uppercase tracking-wider font-semibold bg-violet-500/20 text-violet-400 border border-violet-500/40 rounded-md px-3 py-1">
                 Beta
               </span>

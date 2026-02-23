@@ -381,7 +381,7 @@ export default function TrackmanPlayerPage({
           <div className="flex items-center gap-3 mb-3">
             <Link
               href={fromProfile ? `/players/${slug}` : "/trackman"}
-              className="text-zinc-500 hover:text-zinc-300 transition-colors"
+              className="text-zinc-500 hover:text-zinc-300 transition-smooth"
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>
@@ -437,7 +437,7 @@ export default function TrackmanPlayerPage({
                     <Link
                       key={`${e.date}-${i}`}
                       href={`/trackman/session/${slug}/${dateSlug}?from=player&slug=${slug}`}
-                      className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 hover:border-zinc-600 transition-colors text-sm"
+                      className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 hover:border-zinc-600 transition-smooth text-sm"
                     >
                       <span className="font-mono text-zinc-300">
                         {formatDate(e.date)}

@@ -18,7 +18,7 @@ function MetricTile({ metricKey, metric, onClick }: MetricTileProps) {
   return (
     <button
       onClick={onClick}
-      className={`relative text-left p-4 rounded-xl border cursor-pointer transition-all hover:brightness-110 hover:scale-[1.01] ${bg}`}
+      className={`relative text-left p-4 rounded-xl border cursor-pointer transition-smooth hover:brightness-110 hover:scale-[1.01] ${bg}`}
     >
       {/* Low confidence badge */}
       {metric.low_confidence && (

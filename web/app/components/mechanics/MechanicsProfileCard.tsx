@@ -33,7 +33,7 @@ export default function MechanicsProfileCard({ entry, profileSlug }: Props) {
         <p className="text-sm text-zinc-600 mb-4">No mechanics sessions for this player yet.</p>
         <Link
           href="/mechanics"
-          className="group/btn inline-flex items-center gap-2 rounded-xl border border-violet-500/30 bg-zinc-900/60 px-4 py-3 text-sm font-semibold text-zinc-100 transition-all hover:border-violet-500/50 hover:bg-zinc-900"
+          className="group/btn inline-flex items-center gap-2 rounded-xl border border-violet-500/30 bg-zinc-900/60 px-4 py-3 text-sm font-semibold text-zinc-100 transition-smooth hover:border-violet-500/50 hover:bg-zinc-900"
         >
           Browse Mechanics Hub
           <ArrowRight className="h-4 w-4 text-violet-400 opacity-60 group-hover/btn:opacity-100 transition-opacity shrink-0" />
@@ -135,9 +135,9 @@ export default function MechanicsProfileCard({ entry, profileSlug }: Props) {
 
           <Link
             href={`/mechanics/session/${entry.slug}/${latest.slug}${profileSlug ? `?from=profile&slug=${profileSlug}` : ""}`}
-            className="group/btn flex items-center justify-between rounded-xl border border-violet-500/30 bg-zinc-900/60 px-4 py-3 transition-all hover:border-violet-500/50 hover:bg-zinc-900"
+            className="group/btn flex items-center justify-between rounded-xl border border-violet-500/30 bg-zinc-900/60 px-4 py-3 transition-smooth hover:border-violet-500/50 hover:bg-zinc-900"
           >
-            <span className="text-sm font-semibold text-zinc-100 group-hover/btn:text-white transition-colors">
+            <span className="text-sm font-semibold text-zinc-100 group-hover/btn:text-white transition-smooth">
               Open Session
             </span>
             <ArrowRight className="h-4 w-4 text-violet-400 opacity-60 group-hover/btn:opacity-100 transition-opacity shrink-0" />

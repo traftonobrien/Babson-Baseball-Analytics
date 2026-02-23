@@ -44,7 +44,7 @@ export default function PitchArsenalCards({
           return (
             <div
               key={row.pitchType}
-              className="relative bg-zinc-900 border border-zinc-800 rounded-lg p-4 overflow-hidden transition-colors duration-200 hover:border-zinc-700"
+              className="relative bg-zinc-900 border border-zinc-800 rounded-lg p-4 overflow-hidden transition-smooth duration-300 hover:border-zinc-700"
             >
               {/* Colored accent bar */}
               <div

@@ -341,7 +341,7 @@ export default function TrackmanSessionView({
         <p className="text-red-400">{error}</p>
         <Link
           href={backHref}
-          className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+          className="text-xs text-zinc-500 hover:text-zinc-300 transition-smooth"
         >
           {backLabel}
         </Link>
@@ -355,7 +355,7 @@ export default function TrackmanSessionView({
         <p>No pitches found in session data.</p>
         <Link
           href={backHref}
-          className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+          className="text-xs text-zinc-500 hover:text-zinc-300 transition-smooth"
         >
           {backLabel}
         </Link>
@@ -369,7 +369,7 @@ export default function TrackmanSessionView({
         <p>No pitch type data found in session.</p>
         <Link
           href={backHref}
-          className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+          className="text-xs text-zinc-500 hover:text-zinc-300 transition-smooth"
         >
           {backLabel}
         </Link>
@@ -385,7 +385,7 @@ export default function TrackmanSessionView({
           <div className="flex items-center gap-3 mb-3">
             <Link
               href={backHref}
-              className="text-zinc-500 hover:text-zinc-300 transition-colors"
+              className="text-zinc-500 hover:text-zinc-300 transition-smooth"
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>

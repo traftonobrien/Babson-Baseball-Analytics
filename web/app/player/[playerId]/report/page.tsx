@@ -109,21 +109,21 @@ function ReportInner() {
       <div className="flex items-center justify-between mb-4 print:hidden">
         <a
           href={backHref}
-          className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
+          className="text-sm text-zinc-400 hover:text-zinc-200 transition-smooth"
         >
           &larr; Dashboard
         </a>
         <div className="flex items-center gap-2">
           <a
             href={`/player/${playerId}/compare${outingId ? `?outingA=${outingId}` : ""}`}
-            className="px-4 py-1.5 text-sm rounded-md bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors font-medium"
+            className="px-4 py-1.5 text-sm rounded-md bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-smooth font-medium"
           >
             Compare
           </a>
           <button
             type="button"
             onClick={handlePrint}
-            className="px-4 py-1.5 text-sm rounded-md bg-zinc-700 text-zinc-100 hover:bg-zinc-600 transition-colors font-medium"
+            className="px-4 py-1.5 text-sm rounded-md bg-zinc-700 text-zinc-100 hover:bg-zinc-600 transition-smooth font-medium"
           >
             Export PDF
           </button>

@@ -104,7 +104,7 @@ function LanePanel({
             type="button"
             onClick={() => onSelectLane?.(b.key)}
             className={[
-              "flex flex-col items-center gap-2 rounded-md p-2 transition-all cursor-pointer",
+              "flex flex-col items-center gap-2 rounded-md p-2 transition-smooth cursor-pointer",
               isActive
                 ? "border border-zinc-300/40 ring-2 ring-zinc-300/20 bg-zinc-800/60"
                 : "border border-transparent",

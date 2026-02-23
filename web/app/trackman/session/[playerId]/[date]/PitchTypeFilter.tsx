@@ -27,7 +27,7 @@ export default function PitchTypeFilter({
             <button
               key={type}
               onClick={() => onToggleType(type)}
-              className={`px-2.5 py-1 text-xs rounded-md font-mono transition-colors border ${
+              className={`px-2.5 py-1 text-xs rounded-md font-mono transition-smooth border ${
                 active
                   ? "border-zinc-600 text-zinc-100"
                   : "border-zinc-800 text-zinc-500"
@@ -50,7 +50,7 @@ export default function PitchTypeFilter({
       {hasFilters && (
         <button
           onClick={() => onClearTypes()}
-          className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+          className="text-xs text-zinc-500 hover:text-zinc-300 transition-smooth"
         >
           Reset
         </button>

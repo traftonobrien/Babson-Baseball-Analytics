@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, Target, ChevronRight, Users, Activity, Calendar } from "lucide-react";
+import { Target, ChevronRight, Users, Activity, Calendar } from "lucide-react";
+import Breadcrumbs from "../components/Breadcrumbs";
 import { players, type Player, type Outing } from "@/lib/dataIndex";
 import { handBadgeClassesCompact } from "@/lib/handBadge";
 
@@ -85,15 +86,10 @@ export default function CommandPage() {
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="flex items-center gap-3 mb-6"
+          className="mb-6"
         >
-          <Link
-            href="/"
-            className="text-zinc-500 hover:text-zinc-300 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <div>
+          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Command Hub" }]} />
+          <div className="flex items-center gap-3 mt-2">
             <h1 className="text-2xl font-semibold flex items-center gap-2">
               <Target className="w-5 h-5 text-orange-400" />
               Command Hub
@@ -158,7 +154,7 @@ export default function CommandPage() {
                   onClick={() =>
                     setExpanded(isExpanded ? null : item.player.id)
                   }
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-zinc-800/50 transition-colors text-left"
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-zinc-800/50 transition-smooth text-left"
                 >
                   <div className="flex items-center gap-3">
                     <span className="font-medium text-sm text-zinc-100">
@@ -200,7 +196,7 @@ export default function CommandPage() {
                       <Link
                         key={o.id}
                         href={`/player/${item.player.id}?outingId=${o.id}&from=command`}
-                        className="flex items-center justify-between px-4 py-2.5 hover:bg-zinc-800/50 transition-colors border-b border-zinc-800/50 last:border-b-0"
+                        className="flex items-center justify-between px-4 py-2.5 hover:bg-zinc-800/50 transition-smooth border-b border-zinc-800/50 last:border-b-0"
                       >
                         <div className="flex items-center gap-3">
                           <span className="text-sm text-zinc-300">

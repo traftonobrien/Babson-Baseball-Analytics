@@ -124,7 +124,7 @@ export function MechanicsProfileSection({ playerId }: MechanicsProfileSectionPro
 
         <Link
           href={`/mechanics/session/${player.slug}/${latest.slug}`}
-          className="block w-full text-center text-xs bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 rounded-lg px-3 py-2 transition-colors"
+          className="block w-full text-center text-xs bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 rounded-lg px-3 py-2 transition-smooth"
         >
           Open Mechanics
         </Link>

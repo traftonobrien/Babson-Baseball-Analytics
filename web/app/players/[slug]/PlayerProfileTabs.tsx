@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { Activity, Target, ArrowRight, ScanLine } from "lucide-react";
 import SavantPercentileBar from "./SavantPercentileBar";
 import MechanicsProfileCard from "@/app/components/mechanics/MechanicsProfileCard";
@@ -91,7 +92,7 @@ export default function PlayerProfileTabs({
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
-            className={`relative cursor-pointer px-6 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] transition-colors ${
+            className={`relative cursor-pointer px-6 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] transition-smooth ${
               activeTab === tab
                 ? "text-white"
                 : "text-zinc-600 hover:text-zinc-400"
@@ -106,9 +107,17 @@ export default function PlayerProfileTabs({
       </div>
       <div className="h-px bg-zinc-800/60" />
 
-      {/* OVERVIEW */}
-      {activeTab === "Overview" && (
-        <div className="mt-12 space-y-16">
+      <AnimatePresence mode="wait">
+        {/* OVERVIEW */}
+        {activeTab === "Overview" && (
+          <motion.div
+            key="Overview"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            className="mt-12 space-y-16"
+          >
           {seasonStats.length === 0 && d3Percentiles.length === 0 ? (
             <p className="text-sm text-zinc-600">
               No {seasonYear} stats available.
@@ -181,15 +190,22 @@ export default function PlayerProfileTabs({
               </section>
             </>
           )}
-        </div>
-      )}
+          </motion.div>
+        )}
 
-      {/* TRACKMAN */}
-      {activeTab === "Trackman" && (
-        <div className="mt-10">
+        {/* TRACKMAN */}
+        {activeTab === "Trackman" && (
+          <motion.div
+            key="Trackman"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            className="mt-10"
+          >
           {/* Hub button */}
           <Link href={`/trackman/player/${playerSlug}?from=profile`}>
-            <div className="group flex items-center justify-between rounded-xl border border-blue-500/30 bg-zinc-900/60 px-5 py-4 transition-all hover:border-blue-500/50 hover:bg-zinc-900">
+            <div className="group flex items-center justify-between rounded-xl border border-blue-500/30 bg-zinc-900/60 px-5 py-4 transition-smooth hover:border-blue-500/50 hover:bg-zinc-900">
               <div className="flex items-center gap-3">
                 <Activity className="h-4 w-4 text-blue-400" />
                 <div>
@@ -216,7 +232,7 @@ export default function PlayerProfileTabs({
                     className="flex items-center justify-between py-4 group/row"
                   >
                     <div>
-                      <div className="text-sm font-bold text-zinc-200 group-hover/row:text-white transition-colors">
+                      <div className="text-sm font-bold text-zinc-200 group-hover/row:text-white transition-smooth">
                         {formatDateLabel(s.date)}
                       </div>
                       <div className="text-[10px] text-zinc-600">
@@ -229,15 +245,22 @@ export default function PlayerProfileTabs({
               ))}
             </ul>
           )}
-        </div>
-      )}
+          </motion.div>
+        )}
 
-      {/* COMMAND */}
-      {activeTab === "Command" && (
-        <div className="mt-10">
+        {/* COMMAND */}
+        {activeTab === "Command" && (
+          <motion.div
+            key="Command"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            className="mt-10"
+          >
           {/* Command Hub button */}
           <Link href="/command">
-            <div className="group flex items-center justify-between rounded-xl border border-orange-500/30 bg-zinc-900/60 px-5 py-4 transition-all hover:border-orange-500/50 hover:bg-zinc-900">
+            <div className="group flex items-center justify-between rounded-xl border border-orange-500/30 bg-zinc-900/60 px-5 py-4 transition-smooth hover:border-orange-500/50 hover:bg-zinc-900">
               <div className="flex items-center gap-3">
                 <Target className="h-4 w-4 text-orange-400" />
                 <div>
@@ -264,7 +287,7 @@ export default function PlayerProfileTabs({
                     className="flex items-center justify-between py-4 group/row"
                   >
                     <div>
-                      <div className="text-sm font-bold text-zinc-200 group-hover/row:text-white transition-colors">
+                      <div className="text-sm font-bold text-zinc-200 group-hover/row:text-white transition-smooth">
                         {formatDateLabel(o.dateId)}
                       </div>
                       <div className="text-[10px] text-zinc-600">
@@ -277,14 +300,21 @@ export default function PlayerProfileTabs({
               ))}
             </ul>
           )}
-        </div>
-      )}
+          </motion.div>
+        )}
 
-      {/* MECHANICS */}
-      {activeTab === "Mechanics" && (
-        <div className="mt-10">
+        {/* MECHANICS */}
+        {activeTab === "Mechanics" && (
+          <motion.div
+            key="Mechanics"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            className="mt-10"
+          >
           <Link href={`/mechanics/player/${playerSlug}?from=profile&slug=${playerSlug}`}>
-            <div className="group flex items-center justify-between rounded-xl border border-violet-500/30 bg-zinc-900/60 px-5 py-4 transition-all hover:border-violet-500/50 hover:bg-zinc-900">
+            <div className="group flex items-center justify-between rounded-xl border border-violet-500/30 bg-zinc-900/60 px-5 py-4 transition-smooth hover:border-violet-500/50 hover:bg-zinc-900">
               <div className="flex items-center gap-3">
                 <ScanLine className="h-4 w-4 text-violet-400" />
                 <div>
@@ -303,8 +333,9 @@ export default function PlayerProfileTabs({
           <div className="mt-5">
             <MechanicsProfileCard entry={mechanicsEntry ?? null} profileSlug={playerSlug} />
           </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

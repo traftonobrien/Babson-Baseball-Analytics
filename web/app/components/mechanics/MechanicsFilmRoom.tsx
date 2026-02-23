@@ -123,7 +123,7 @@ export function MechanicsFilmRoom({ notes, basePath }: MechanicsFilmRoomProps) {
           href={videoUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[10px] text-zinc-600 hover:text-zinc-400 transition-colors inline-flex items-center gap-1"
+          className="text-[10px] text-zinc-600 hover:text-zinc-400 transition-smooth inline-flex items-center gap-1"
         >
           <span>↗</span>
           <span>Open slowmo video</span>
@@ -150,7 +150,7 @@ export function MechanicsFilmRoom({ notes, basePath }: MechanicsFilmRoomProps) {
             />
             <button
               onClick={() => setLightboxOpen(false)}
-              className="absolute top-3 right-3 bg-zinc-900/80 border border-zinc-700 text-zinc-300 hover:text-white rounded-full w-8 h-8 flex items-center justify-center text-sm transition-colors"
+              className="absolute top-3 right-3 bg-zinc-900/80 border border-zinc-700 text-zinc-300 hover:text-white rounded-full w-8 h-8 flex items-center justify-center text-sm transition-smooth"
             >
               ✕
             </button>

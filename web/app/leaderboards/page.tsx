@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Target, ArrowLeft } from "lucide-react";
+import { Target, Download } from "lucide-react";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import {
   loadAllOutingData,
   computeLeaderboardRows,
@@ -144,7 +145,7 @@ function Col({ label, sortKey, sort, onSort, title }: ColProps) {
   const active = sort.key === sortKey;
   return (
     <th
-      className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider cursor-pointer select-none hover:text-orange-400/80 whitespace-nowrap transition-colors"
+      className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider cursor-pointer select-none hover:text-orange-400/80 whitespace-nowrap transition-smooth"
       onClick={() => onSort(sortKey)}
       title={title}
     >
@@ -178,7 +179,7 @@ function Segment<T extends string>({ label, options, selected, onChange }: Segme
           <button
             key={opt.value}
             onClick={() => onChange(opt.value)}
-            className={`px-3 py-1.5 text-sm font-medium transition-all rounded-md ${
+            className={`px-3 py-1.5 text-sm font-medium transition-smooth rounded-md ${
               selected === opt.value
                 ? "bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-sm"
                 : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60"
@@ -338,6 +339,53 @@ export default function LeaderboardsPage() {
 
   const rowCount = mode === "outings" ? displayedOutings.length : displayedPlayers.length;
 
+  const escapeCsv = (v: string | number): string => {
+    const s = String(v);
+    if (s.includes(",") || s.includes('"') || s.includes("\n")) return `"${s.replace(/"/g, '""')}"`;
+    return s;
+  };
+
+  const exportCsv = useCallback(() => {
+    const headers =
+      mode === "outings"
+        ? ["Rank", "Player", "Date", "Pitches", "On-target %", "Avg Miss (in)", "Avg H (in)", "Avg V (in)", "Outlier %", "Consistency (in)"]
+        : ["Rank", "Player", "Outings", "Pitches", "On-target %", "Avg Miss (in)", "Avg H (in)", "Avg V (in)", "Outlier %", "Consistency (in)"];
+    const rows =
+      mode === "outings"
+        ? displayedOutings.map((r, i) => [
+            i + 1,
+            r.playerName,
+            dateLabel(r.dateId),
+            r.pitchCount,
+            r.onTargetPct.toFixed(1),
+            r.avgMissIn.toFixed(1),
+            r.avgHAbsIn.toFixed(1),
+            r.avgVAbsIn.toFixed(1),
+            r.outlierPct.toFixed(1),
+            r.consistencyStdIn.toFixed(1),
+          ])
+        : displayedPlayers.map((r, i) => [
+            i + 1,
+            r.playerName,
+            r.outingCount,
+            r.pitchCount,
+            r.onTargetPct.toFixed(1),
+            r.avgMissIn.toFixed(1),
+            r.avgHAbsIn.toFixed(1),
+            r.avgVAbsIn.toFixed(1),
+            r.outlierPct.toFixed(1),
+            r.consistencyStdIn.toFixed(1),
+          ]);
+    const csv = [headers.map(escapeCsv).join(","), ...rows.map((r) => r.map(escapeCsv).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `command-leaderboard-${mode}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [mode, displayedOutings, displayedPlayers]);
+
   const { onTargetMin, onTargetMax } = useMemo(() => {
     const rows = mode === "outings" ? displayedOutings : displayedPlayers;
     if (rows.length === 0) return { onTargetMin: 0, onTargetMax: 100 };
@@ -357,14 +405,8 @@ export default function LeaderboardsPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-300 transition-colors mb-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Home
-          </Link>
-          <div className="flex items-center gap-3">
+          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Command", href: "/command" }, { label: "Leaderboards" }]} />
+          <div className="flex items-center gap-3 mt-2">
             <div className="p-2 rounded-xl bg-orange-500/10 border border-orange-500/20">
               <Target className="w-6 h-6 text-orange-400" />
             </div>
@@ -429,7 +471,7 @@ export default function LeaderboardsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search player..."
-            className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 w-48 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20 transition-colors"
+            className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 w-48 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20 transition-smooth"
           />
 
           {loading && progress.total > 0 && (
@@ -442,12 +484,22 @@ export default function LeaderboardsPage() {
               {rowCount} {mode === "outings" ? "outing" : "player"}{rowCount !== 1 ? "s" : ""}
             </span>
           )}
+          {!loading && rowCount > 0 && (
+            <button
+              type="button"
+              onClick={exportCsv}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100 transition-smooth text-xs font-medium"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Export CSV
+            </button>
+          )}
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto rounded-xl border border-zinc-800/80 bg-zinc-900/30 shadow-xl shadow-black/20">
+        <div className="overflow-x-auto rounded-xl border border-zinc-800/80 bg-zinc-900/30 shadow-xl shadow-black/20 max-h-[70vh] overflow-y-auto">
           <table className="w-full text-sm">
-            <thead className="bg-zinc-900/80">
+            <thead className="sticky top-0 z-10 bg-zinc-900/95 backdrop-blur-sm">
               <tr>
                 <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-12">
                   #
@@ -478,8 +530,21 @@ export default function LeaderboardsPage() {
                 ))}
               {!loading && rowCount === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-4 py-12 text-center text-zinc-500">
-                    No {mode === "outings" ? "outings" : "players"} found for the selected filters.
+                  <td colSpan={10} className="px-4 py-12 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="text-zinc-500">
+                        No {mode === "outings" ? "outings" : "players"} found for the selected filters.
+                      </span>
+                      {search.trim() && (
+                        <button
+                          type="button"
+                          onClick={() => setSearch("")}
+                          className="text-sm font-medium text-orange-400 hover:text-orange-300 transition-smooth"
+                        >
+                          Clear filters
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               )}
@@ -489,7 +554,7 @@ export default function LeaderboardsPage() {
                 displayedOutings.map((row, i) => (
                   <tr
                     key={row.outingId}
-                    className="border-b border-zinc-800/50 hover:bg-orange-500/5 transition-colors cursor-pointer group"
+                    className="border-b border-zinc-800/50 hover:bg-orange-500/5 transition-smooth cursor-pointer group"
                   >
                     <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>
                       {i + 1}
@@ -497,7 +562,7 @@ export default function LeaderboardsPage() {
                     <td className="px-4 py-3 font-medium whitespace-nowrap">
                       <Link
                         href={`/player/${row.playerId}/report?outingId=${row.outingId}`}
-                        className="hover:text-orange-400 transition-colors"
+                        className="hover:text-orange-400 transition-smooth"
                       >
                         {row.playerName}
                       </Link>
@@ -506,7 +571,7 @@ export default function LeaderboardsPage() {
                     <td className="px-4 py-3 text-zinc-400 whitespace-nowrap">
                       <Link
                         href={`/player/${row.playerId}/report?outingId=${row.outingId}`}
-                        className="hover:text-zinc-200 transition-colors"
+                        className="hover:text-zinc-200 transition-smooth"
                       >
                         {dateLabel(row.dateId)}
                       </Link>
@@ -520,7 +585,7 @@ export default function LeaderboardsPage() {
                 displayedPlayers.map((row, i) => (
                   <tr
                     key={row.playerId}
-                    className="border-b border-zinc-800/50 hover:bg-orange-500/5 transition-colors cursor-pointer group"
+                    className="border-b border-zinc-800/50 hover:bg-orange-500/5 transition-smooth cursor-pointer group"
                   >
                     <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>
                       {i + 1}
@@ -528,7 +593,7 @@ export default function LeaderboardsPage() {
                     <td className="px-4 py-3 font-medium whitespace-nowrap">
                       <Link
                         href={`/player/${row.playerId}`}
-                        className="hover:text-orange-400 transition-colors"
+                        className="hover:text-orange-400 transition-smooth"
                       >
                         {row.playerName}
                       </Link>

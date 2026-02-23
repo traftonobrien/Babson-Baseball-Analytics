@@ -42,7 +42,7 @@ export default function FilterPanel({ pitches, filters, onChange }: Props) {
               <button
                 key={t}
                 onClick={() => toggleType(t)}
-                className={`px-2 py-0.5 rounded text-xs font-mono border transition-colors ${
+                className={`px-2 py-0.5 rounded text-xs font-mono border transition-smooth ${
                   active
                     ? "border-zinc-500 text-white"
                     : "border-zinc-700 text-zinc-600"
@@ -73,7 +73,7 @@ export default function FilterPanel({ pitches, filters, onChange }: Props) {
               <button
                 key={q}
                 onClick={() => toggleQuad(q)}
-                className={`px-2 py-0.5 rounded text-xs font-mono border transition-colors ${
+                className={`px-2 py-0.5 rounded text-xs font-mono border transition-smooth ${
                   active
                     ? "border-zinc-500 text-white bg-zinc-800"
                     : "border-zinc-700 text-zinc-600"
