@@ -3,12 +3,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Users, Activity, Target, Film } from "lucide-react";
+import { Users, Activity, Target, Film, BarChart3 } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home" },
   { href: "/players", label: "Players", icon: Users },
-  { href: "/trackman", label: "Trackman", icon: Activity },
+  { href: "/team-stats", label: "Statistics Leaderboard", icon: BarChart3 },
+  { href: "/trackman", label: "Trackman Hub", icon: Activity },
   { href: "/command", label: "Command", icon: Target },
   { href: "/mechanics", label: "Mechanics", icon: Film },
 ];

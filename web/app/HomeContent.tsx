@@ -9,6 +9,7 @@ import {
   ArrowUpRight,
   Trophy,
   Film,
+  BarChart3,
 } from "lucide-react";
 import LogoutButton from "./components/LogoutButton";
 
@@ -36,7 +37,28 @@ export default function HomeContent() {
               </div>
               <h2 className="text-lg font-semibold mt-4">Player Profiles</h2>
               <p className="text-sm text-zinc-400 mt-1 leading-relaxed">
-                Roster, D3 stats, Savant percentiles, Trackman and command data
+                Full roster with D3 stats, Savant percentiles, Trackman and command
+              </p>
+            </div>
+          </Link>
+        </motion.div>
+
+        {/* ---- Statistics Leaderboard ---- */}
+        <motion.div
+          className="mt-3"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.07 }}
+        >
+          <Link href="/team-stats">
+            <div className="group relative rounded-xl border border-sky-500/30 hover:border-sky-500/60 bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-4 transition-smooth duration-300 hover:scale-[1.01] hover:shadow-lg group-hover:shadow-sky-500/10">
+              <div className="flex items-start justify-between">
+                <BarChart3 className="w-5 h-5 text-sky-400" />
+                <ArrowUpRight className="w-3.5 h-3.5 text-sky-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <h2 className="text-base font-semibold mt-3">Statistics Leaderboard</h2>
+              <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">
+                Season pitching stats for the roster
               </p>
             </div>
           </Link>
@@ -57,9 +79,9 @@ export default function HomeContent() {
                   <Activity className="w-6 h-6 text-blue-400" />
                   <ArrowUpRight className="w-4 h-4 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <h2 className="text-lg font-semibold mt-4">Trackman</h2>
+                <h2 className="text-lg font-semibold mt-4">Trackman Hub</h2>
                 <p className="text-sm text-zinc-400 mt-1 leading-relaxed">
-                  Session data, velocity trends, movement profiles, arsenal breakdowns
+                  Velocity, movement, and arsenal data by session
                 </p>
               </div>
             </Link>
@@ -71,7 +93,7 @@ export default function HomeContent() {
                   <ArrowUpRight className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-blue-400 transition-smooth" />
                 </div>
                 <p className="text-xs text-zinc-500 mt-1">
-                  Compare Trackman metrics across pitchers
+                  Rank pitchers by velocity and movement
                 </p>
               </div>
             </Link>
@@ -87,7 +109,7 @@ export default function HomeContent() {
                 </div>
                 <h2 className="text-lg font-semibold mt-4">Command Hub</h2>
                 <p className="text-sm text-zinc-400 mt-1 leading-relaxed">
-                  Miss vectors, target accuracy, command tracking outings
+                  Command accuracy and miss tracking by outing
                 </p>
               </div>
             </Link>
@@ -99,7 +121,7 @@ export default function HomeContent() {
                   <ArrowUpRight className="w-3 h-3 text-zinc-500 ml-auto group-hover:text-orange-400 transition-smooth" />
                 </div>
                 <p className="text-xs text-zinc-500 mt-1">
-                  Compare command stats across pitchers
+                  Rank pitchers by command
                 </p>
               </div>
             </Link>
@@ -124,7 +146,7 @@ export default function HomeContent() {
               </div>
               <h2 className="text-lg font-semibold mt-4">Mechanics</h2>
               <p className="text-sm text-zinc-400 mt-1 leading-relaxed">
-                Video-first mechanics snapshots, phase breakdowns, and session history
+                Delivery breakdowns by phase and session
               </p>
             </div>
           </Link>
