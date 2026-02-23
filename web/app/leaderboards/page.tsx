@@ -197,9 +197,10 @@ function Segment<T extends string>({ label, options, selected, onChange }: Segme
 /* ------------------------------------------------------------------ */
 
 function rankColor(i: number): string {
-  if (i === 0) return "text-amber-400"; // gold
-  if (i === 1) return "text-zinc-400"; // silver
-  if (i === 2) return "text-amber-600"; // bronze
+  const glow = "[text-shadow:0_0_8px_currentColor]";
+  if (i === 0) return `text-amber-400 ${glow}`; // gold
+  if (i === 1) return `text-zinc-400 ${glow}`; // silver
+  if (i === 2) return `text-amber-600 ${glow}`; // bronze
   return "text-zinc-500";
 }
 

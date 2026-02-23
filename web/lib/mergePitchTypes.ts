@@ -21,7 +21,7 @@ import {
 const SIMILARITY_THRESHOLD = 5.0;
 
 const ALL_CANON: CanonPitch[] = [
-  "Fastball", "Sinker", "Cutter", "Splitter",
+  "Fastball", "Sinker", "Splitter",
   "Changeup", "Curveball", "Slider", "Sweeper",
 ];
 
@@ -31,7 +31,7 @@ const ALL_CANON: CanonPitch[] = [
  * that family* — so Fastball + Sinker can only become FB/SI/CT, never CH.
  */
 const FAMILIES: CanonPitch[][] = [
-  ["Fastball", "Sinker", "Cutter"],
+  ["Fastball", "Sinker"],
   ["Changeup", "Splitter"],
   ["Curveball", "Slider", "Sweeper"],
 ];

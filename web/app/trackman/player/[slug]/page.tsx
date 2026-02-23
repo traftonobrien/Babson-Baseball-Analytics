@@ -140,8 +140,8 @@ interface SessionPitchTypes {
   pitchTypes: TrackmanPitchTypeSummary[];
 }
 
-const FASTBALL_TYPES = new Set(["Fastball", "Sinker", "Cutter"]);
-const BREAKING_TYPES = new Set(["Slider", "Curveball", "Knuckle Curve", "Sweeper"]);
+const FASTBALL_TYPES = new Set(["Fastball", "Sinker"]);
+const BREAKING_TYPES = new Set(["Slider", "Curveball", "Sweeper"]);
 
 /** Compute avg fastball velo per session for trend line. */
 function computeFbVeloTrend(sessions: SessionPitchTypes[]): { date: string; value: number }[] {

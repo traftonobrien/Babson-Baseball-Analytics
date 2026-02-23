@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Papa from "papaparse";
 import type { Pitch } from "../types";
-import { getPlayerMeta } from "@/lib/arsenals";
+import { getPlayerMeta, getPlayerArsenal } from "@/lib/arsenals";
+import { assignPitchTypes } from "@/lib/assignPitchType";
 import { updateDebug } from "@/lib/debug";
 
 const NUM_FIELDS = new Set([
@@ -44,11 +45,13 @@ export function usePitchData(csvPath: string, playerId: string) {
           });
         }),
       getPlayerMeta(playerId),
+      getPlayerArsenal(playerId),
     ])
-      .then(([rows, meta]) => {
+      .then(([rows, meta, arsenal]) => {
         if (cancelled) return;
         const hand = meta.pitcherHand === "L" ? "L" : "R";
-        setPitches(rows);
+        const assigned = assignPitchTypes(rows, playerId, arsenal);
+        setPitches(assigned);
         setPitcherHand(hand);
         updateDebug(playerId, hand, rows);
         setLoading(false);

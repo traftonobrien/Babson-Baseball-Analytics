@@ -10,7 +10,6 @@ Usage:
 
 import argparse
 import csv
-import glob
 import json
 import os
 import sys
@@ -19,8 +18,7 @@ from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 sys.path.insert(0, os.path.dirname(__file__))
-from trackman_pdf.meta import slugify
-from lib.canonical_players import get_canonical_name
+from lib.canonical_players import get_canonical_name, get_all_canonical, slugify
 
 def load_json(path: str) -> Any:
     with open(path, "r") as f:
@@ -95,8 +93,20 @@ def _load_all_sessions(
     return sessions
 
 
-FASTBALL_TYPES = {"Fastball", "Sinker", "Cutter"}
-BREAKING_TYPES = {"Slider", "Curveball", "Knuckle Curve", "Sweeper"}
+FASTBALL_TYPES = {"Fastball", "Sinker"}
+BREAKING_TYPES = {"Slider", "Curveball", "Sweeper"}
+
+# Chase Burrows: Cutter displayed as Sinker
+CUTTER_TO_SINKER_SLUGS = {"burrows_chase", "CBurrows1"}
+
+# Slider -> Sweeper (movement-based overrides, matches stuffPlusPitchOverrides)
+SLIDER_TO_SWEEPER_SLUGS = {
+    "camardi_michael", "MCamardi1",
+    "burk_bobby", "BBurk1",
+    "langan_shane", "SLangan1",
+    "valente_ben", "BValente1",
+    "burrows_chase", "CBurrows1",
+}
 
 
 def _player_avg_by_summary_key(
@@ -144,6 +154,66 @@ def _player_avg_by_summary_key(
     return values
 
 
+def _player_metric_by_single_pitch_type(
+    sessions: List[Dict[str, Any]],
+    pitch_type: str,
+    key: str,
+    use_max: bool = False,
+    descending: bool = True,
+) -> List[Dict[str, Any]]:
+    """Rank players by avg or max of a metric for a single pitch type (e.g. Fastball, Sinker)."""
+    from collections import defaultdict
+
+    player_vals: Dict[str, List[float]] = defaultdict(list)
+    player_info: Dict[str, Dict[str, Any]] = {}
+
+    for s in sessions:
+        summary = s.get("summary")
+        entry = s.get("entry", {})
+        slug = entry.get("playerSlug", "")
+        if not summary or not slug:
+            continue
+        per_type = summary.get("per_type") or []
+        for pt in per_type:
+            raw_type = pt.get("pitch_type") or ""
+            matches = (
+                raw_type == pitch_type
+                or (raw_type == "Cutter" and slug in CUTTER_TO_SINKER_SLUGS and pitch_type == "Sinker")
+                or (raw_type == "Slider" and slug in SLIDER_TO_SWEEPER_SLUGS and pitch_type == "Sweeper")
+            )
+            if not matches:
+                continue
+            val = pt.get(key)
+            if val is not None:
+                player_vals[slug].append(val)
+                if slug not in player_info:
+                    player_info[slug] = {
+                        "playerName": get_canonical_name(entry.get("playerName") or slug),
+                        "playerSlug": slug,
+                        "team": entry.get("team"),
+                    }
+                break
+
+    values = []
+    for slug, vals in player_vals.items():
+        if not vals:
+            continue
+        agg = max(vals) if use_max else sum(vals) / len(vals)
+        info = player_info[slug]
+        values.append({
+            "playerName": info["playerName"],
+            "playerSlug": info["playerSlug"],
+            "team": info.get("team"),
+            "sessionCount": len(vals),
+            "value": round(agg, 2),
+        })
+
+    values.sort(key=lambda x: x["value"], reverse=descending)
+    for i, v in enumerate(values):
+        v["rank"] = i + 1
+    return values
+
+
 def _player_avg_by_pitch_type_group(
     sessions: List[Dict[str, Any]],
     type_group: set,
@@ -165,7 +235,8 @@ def _player_avg_by_pitch_type_group(
 
         matched_vals = []
         for pt in pitch_types:
-            if pt.get("pitch_type") not in type_group:
+            resolved = _resolve_fastball_type(slug, pt.get("pitch_type") or "")
+            if resolved not in type_group:
                 continue
             val = pt.get(key)
             if val is not None:
@@ -230,56 +301,100 @@ def _pitch_mix(sessions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return results
 
 
-def _load_max_fb_velo(sessions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Load max fastball velo from CSV and return ranked leaderboard entries.
+def _resolve_fastball_type(slug: str, pitch_type: str) -> str:
+    """Map pitch type for display. Chase's Cutter -> Sinker."""
+    if pitch_type == "Cutter" and slug in CUTTER_TO_SINKER_SLUGS:
+        return "Sinker"
+    return pitch_type
 
-    Joins CSV rows to known players via playerSlug. Players in the CSV
-    but not in any Trackman session are still included (sessionCount=0).
-    """
+
+def _primary_fastball_type_by_avg_velo(
+    sessions: List[Dict[str, Any]],
+) -> Dict[str, str]:
+    """For each player slug, return primary fastball type (Fastball or Sinker).
+    If multiple fastball types, use the one with higher average velocity.
+    Chase's Cutter -> Sinker."""
+    from collections import defaultdict
+
+    # slug -> { type -> [avg_velocity_mph from each session] }
+    player_type_avgs: Dict[str, Dict[str, List[float]]] = defaultdict(lambda: defaultdict(list))
+
+    for s in sessions:
+        summary = s.get("summary")
+        entry = s.get("entry", {})
+        slug = entry.get("playerSlug", "")
+        if not summary or not slug:
+            continue
+        per_type = summary.get("per_type") or []
+        for pt in per_type:
+            raw_type = pt.get("pitch_type") or ""
+            resolved = _resolve_fastball_type(slug, raw_type)
+            if resolved not in FASTBALL_TYPES:
+                continue
+            avg_v = pt.get("avg_velocity_mph")
+            if avg_v is not None:
+                player_type_avgs[slug][resolved].append(avg_v)
+
+    result: Dict[str, str] = {}
+    for slug, type_vals in player_type_avgs.items():
+        # Pick type with higher average velocity
+        best_type = None
+        best_avg = 0.0
+        for pt, vals in type_vals.items():
+            avg = sum(vals) / len(vals)
+            if avg > best_avg:
+                best_avg = avg
+                best_type = pt
+        if best_type:
+            result[slug] = best_type
+    return result
+
+
+def _load_max_fb_velo_with_pitch_type(
+    sessions: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """Load max velo from Max Velos.csv, assign pitch_type from session data.
+
+    Values come from CSV. Pitch type = player's primary fastball (Fastball or Sinker).
+    If multiple fastball types, use the one with higher average velo."""
+    primary_types = _primary_fastball_type_by_avg_velo(sessions)
+
+    # Build player_id -> slug from Arsenals (Max Velos uses player_id)
+    by_id, by_slug, _ = get_all_canonical()
+    player_id_to_slug: Dict[str, str] = {}
+    for pid, name in by_id.items():
+        s = slugify(name)
+        if s:
+            player_id_to_slug[pid] = s
+
     if not os.path.exists(MAX_VELOS_CSV):
         return []
 
-    # Build slug -> player info from sessions for name/team lookup
-    slug_info: Dict[str, Dict[str, Any]] = {}
-    for s in sessions:
-        entry = s.get("entry", {})
-        sl = entry.get("playerSlug", "")
-        if sl:
-            slug_info[sl] = {
-                "playerName": get_canonical_name(entry.get("playerName") or sl),
-                "playerSlug": sl,
-                "team": entry.get("team"),
-            }
-
     entries = []
-    with open(MAX_VELOS_CSV, "r") as f:
+    with open(MAX_VELOS_CSV, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
+            player_id = (row.get("player_id") or "").strip()
             velo_str = (row.get("max_velo") or "").strip()
-            if not velo_str:
+            if not player_id or not velo_str:
                 continue
             try:
                 velo = float(velo_str)
             except ValueError:
                 continue
 
-            # Derive slug from player_name: "First Last" -> "Last, First" -> slugify
-            name = (row.get("player_name") or "").strip()
-            if not name:
-                continue
-            parts = name.split()
-            if len(parts) < 2:
-                continue
-            last_first = f"{parts[-1]}, {' '.join(parts[:-1])}"
-            slug = slugify(last_first)
+            slug = player_id_to_slug.get(player_id) or slugify(
+                (row.get("player_name") or "").strip()
+            )
+            pitch_type = primary_types.get(slug, "Fastball")
 
-            info = slug_info.get(slug)
             entries.append({
-                "playerName": info["playerName"] if info else get_canonical_name(name),
+                "playerName": get_canonical_name(player_id),
                 "playerSlug": slug,
-                "team": info.get("team") if info else None,
+                "team": None,
                 "sessionCount": None,
                 "value": round(velo, 1),
+                "pitch_type": pitch_type,
             })
 
     entries.sort(key=lambda x: x["value"], reverse=True)
@@ -302,18 +417,40 @@ def build_leaderboards(
             "leaderboards": {},
         }
 
+    lb: Dict[str, Any] = {
+        "max_fb_velo": _load_max_fb_velo_with_pitch_type(sessions),
+        "avg_fb_velo": _player_avg_by_pitch_type_group(sessions, FASTBALL_TYPES, "avg_velocity_mph", descending=True),
+        "avg_fb_spin": _player_avg_by_pitch_type_group(sessions, FASTBALL_TYPES, "avg_spin_rpm", descending=True),
+        "avg_bb_spin": _player_avg_by_pitch_type_group(sessions, BREAKING_TYPES, "avg_spin_rpm", descending=True),
+        "avg_extension": _player_avg_by_pitch_type_group(sessions, FASTBALL_TYPES, "avg_extension_ft", descending=True),
+    }
+
+    # Per-pitch-type leaderboards for filtering (no Cutter)
+    for pt in ["Fastball", "Sinker"]:
+        lb[f"max_fb_velo_{pt.lower()}"] = _player_metric_by_single_pitch_type(
+            sessions, pt, "max_velocity_mph", use_max=True
+        )
+        lb[f"avg_fb_velo_{pt.lower()}"] = _player_metric_by_single_pitch_type(
+            sessions, pt, "avg_velocity_mph"
+        )
+        lb[f"avg_fb_spin_{pt.lower()}"] = _player_metric_by_single_pitch_type(
+            sessions, pt, "avg_spin_rpm"
+        )
+        lb[f"avg_extension_{pt.lower()}"] = _player_metric_by_single_pitch_type(
+            sessions, pt, "avg_extension_ft"
+        )
+    for pt in ["Slider", "Curveball", "Sweeper"]:
+        pt_key = pt.lower().replace(" ", "_")
+        lb[f"avg_bb_spin_{pt_key}"] = _player_metric_by_single_pitch_type(
+            sessions, pt, "avg_spin_rpm"
+        )
+
     return {
         "generated_at": _iso_now(),
         "date_from": date_from,
         "date_to": date_to,
         "session_count": len(sessions),
-        "leaderboards": {
-            "max_fb_velo": _load_max_fb_velo(sessions),
-            "avg_fb_velo": _player_avg_by_pitch_type_group(sessions, FASTBALL_TYPES, "avg_velocity_mph", descending=True),
-            "avg_fb_spin": _player_avg_by_pitch_type_group(sessions, FASTBALL_TYPES, "avg_spin_rpm", descending=True),
-            "avg_bb_spin": _player_avg_by_pitch_type_group(sessions, BREAKING_TYPES, "avg_spin_rpm", descending=True),
-            "avg_extension": _player_avg_by_pitch_type_group(sessions, FASTBALL_TYPES, "avg_extension_ft", descending=True),
-        },
+        "leaderboards": lb,
         "pitch_mix": _pitch_mix(sessions),
     }
 

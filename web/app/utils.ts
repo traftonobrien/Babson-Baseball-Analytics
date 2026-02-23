@@ -13,22 +13,22 @@ export function clipUrl(pitch: Pitch, clipsDir: string): string {
   return `${clipsDir}/pitch_${id}.mp4`;
 }
 
-/** Unique sorted pitch types from data */
+/** Unique sorted pitch types from data (excludes empty/undefined) */
 export function uniqueTypes(pitches: Pitch[]): string[] {
-  return [...new Set(pitches.map((p) => p.pitch_type))].sort();
+  return [...new Set(pitches.map((p) => p.pitch_type).filter(Boolean))].sort();
 }
 
-/** Unique sorted quadrants from data */
+/** Unique sorted quadrants from data (excludes empty/undefined) */
 export function uniqueQuadrants(pitches: Pitch[]): string[] {
-  return [...new Set(pitches.map((p) => p.result_quadrant))].sort();
+  return [...new Set(pitches.map((p) => p.result_quadrant).filter(Boolean))].sort();
 }
 
 /** Apply filters to pitch array */
 export function applyFilters(pitches: Pitch[], filters: Filters): Pitch[] {
   return pitches.filter((p) => {
-    if (filters.pitchTypes.size > 0 && !filters.pitchTypes.has(p.pitch_type))
+    if (filters.pitchTypes.size > 0 && !filters.pitchTypes.has(p.pitch_type ?? ""))
       return false;
-    if (filters.quadrants.size > 0 && !filters.quadrants.has(p.result_quadrant))
+    if (filters.quadrants.size > 0 && !filters.quadrants.has(p.result_quadrant ?? ""))
       return false;
     if (filters.maxMiss !== null && p.total_miss_inches > filters.maxMiss)
       return false;

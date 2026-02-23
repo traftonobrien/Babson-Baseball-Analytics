@@ -12,7 +12,8 @@
 import Papa from "papaparse";
 import type { Pitch } from "@/app/types";
 import { players } from "@/lib/dataIndex";
-import { getPlayerMeta } from "@/lib/arsenals";
+import { getPlayerMeta, getPlayerArsenal } from "@/lib/arsenals";
+import { assignPitchTypes } from "@/lib/assignPitchType";
 import { seasonFromDateId } from "@/lib/season";
 import { computeOutingKpis, mergeKpis, type ComputeOptions } from "./metrics";
 import type { OutingLeaderboardRow, PlayerAggregateRow, SeasonFilter } from "./types";
@@ -108,9 +109,10 @@ async function loadSingleOuting(
   const cached = outingCache.get(outingId);
   if (cached) return cached;
 
-  const [res, meta] = await Promise.all([
+  const [res, meta, arsenal] = await Promise.all([
     fetch(csvPath),
     getPlayerMeta(playerId),
+    getPlayerArsenal(playerId),
   ]);
 
   if (!res.ok) {
@@ -118,7 +120,8 @@ async function loadSingleOuting(
   }
 
   const text = await res.text();
-  const pitches = parseCsvText(text);
+  let pitches = parseCsvText(text);
+  pitches = assignPitchTypes(pitches, playerId, arsenal);
 
   let pitcherHand: "R" | "L" = "R";
   let handUnknown = false;
