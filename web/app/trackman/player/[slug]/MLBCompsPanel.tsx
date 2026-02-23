@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { Play } from "lucide-react";
 import { pitchColor } from "@/lib/pitchColors";
 import {
   findPitchComps,
@@ -11,6 +12,7 @@ import {
   type CompInput,
 } from "@/lib/mlbComps";
 import type { TrackmanPitchTypeSummary } from "@/lib/trackman/metrics";
+import VideoClipsModal from "./VideoClipsModal";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -45,9 +47,11 @@ function DeltaBadge({ value }: { value: number | null }) {
 function PitchCompCard({
   result,
   rank,
+  onWatch,
 }: {
   result: MLBCompResult;
   rank: number;
+  onWatch?: () => void;
 }) {
   const rankColors = ["text-yellow-400", "text-zinc-300", "text-amber-600"];
   const rankColor = rankColors[rank] ?? "text-zinc-500";
@@ -75,12 +79,23 @@ function PitchCompCard({
           </span>
         </div>
       </div>
-      <div className="text-right shrink-0">
-        <div className="text-[10px] uppercase tracking-wide text-zinc-600 mb-0.5">Δ shape</div>
-        <div className="flex items-center gap-1.5">
-          <DeltaBadge value={result.deltas.ivb} />
-          <span className="text-zinc-700 text-[10px]">/</span>
-          <DeltaBadge value={result.deltas.hb} />
+      <div className="flex items-center gap-3 shrink-0">
+        {onWatch && (
+          <button
+            onClick={onWatch}
+            className="flex items-center justify-center w-7 h-7 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-100 transition-colors"
+            title={`Watch ${result.pitcher.name}'s ${result.pitch.pitchType}`}
+          >
+            <Play className="w-3.5 h-3.5" />
+          </button>
+        )}
+        <div className="text-right">
+          <div className="text-[10px] uppercase tracking-wide text-zinc-600 mb-0.5">Δ shape</div>
+          <div className="flex items-center gap-1.5">
+            <DeltaBadge value={result.deltas.ivb} />
+            <span className="text-zinc-700 text-[10px]">/</span>
+            <DeltaBadge value={result.deltas.hb} />
+          </div>
         </div>
       </div>
     </div>
@@ -145,6 +160,11 @@ export default function MLBCompsPanel({
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<ViewMode>("per-pitch");
   const [activePitch, setActivePitch] = useState<string | null>(null);
+  const [activeClip, setActiveClip] = useState<{
+    pitcherId: string;
+    pitcherName: string;
+    pitchType: string;
+  } | null>(null);
 
   useEffect(() => {
     fetch("/data/mlb_pitch_comps.json")
@@ -308,7 +328,18 @@ export default function MLBCompsPanel({
                     </div>
 
                     {comps.map((comp, i) => (
-                      <PitchCompCard key={comp.pitcher.id} result={comp} rank={i} />
+                      <PitchCompCard
+                        key={comp.pitcher.id}
+                        result={comp}
+                        rank={i}
+                        onWatch={() =>
+                          setActiveClip({
+                            pitcherId: comp.pitcher.id,
+                            pitcherName: comp.pitcher.name,
+                            pitchType: comp.pitch.pitchType,
+                          })
+                        }
+                      />
                     ))}
                   </div>
                 );
@@ -337,6 +368,17 @@ export default function MLBCompsPanel({
             </div>
           )}
         </>
+      )}
+
+      {/* Video clips modal */}
+      {activeClip && (
+        <VideoClipsModal
+          pitcherId={activeClip.pitcherId}
+          pitcherName={activeClip.pitcherName}
+          pitchType={activeClip.pitchType}
+          year={mlbData?.year}
+          onClose={() => setActiveClip(null)}
+        />
       )}
     </div>
   );
