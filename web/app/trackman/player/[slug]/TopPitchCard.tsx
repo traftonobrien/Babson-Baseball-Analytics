@@ -1,20 +1,28 @@
 "use client";
 
 import { pitchColor } from "@/lib/pitchColors";
+import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
 
 interface StuffPlusPitch {
   pitchType: string;
   meanStuffPlus: number;
 }
 
-export default function TopPitchCard({ arsenal }: { arsenal: StuffPlusPitch[] }) {
+export default function TopPitchCard({
+  arsenal,
+  playerId,
+}: {
+  arsenal: StuffPlusPitch[];
+  playerId: string;
+}) {
   if (arsenal.length === 0) return null;
 
   const top = arsenal.reduce((a, b) =>
     b.meanStuffPlus > (a?.meanStuffPlus ?? 0) ? b : a
   );
 
-  const color = pitchColor(top.pitchType);
+  const displayType = getStuffPlusDisplayPitchType(playerId, top.pitchType);
+  const color = pitchColor(displayType);
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
@@ -28,7 +36,7 @@ export default function TopPitchCard({ arsenal }: { arsenal: StuffPlusPitch[] })
             Best Pitch
           </p>
           <p className="text-lg font-semibold text-zinc-100">
-            {top.pitchType}{" "}
+            {displayType}{" "}
             <span className="font-mono text-zinc-300">
               ({top.meanStuffPlus.toFixed(1)} Stuff+)
             </span>

@@ -22,6 +22,7 @@ import PitchTypeTable from "./PitchTypeTable";
 import MovementScatterByType from "./MovementScatterByType";
 import PitchArsenalCards from "./PitchArsenalCards";
 import { mergeRenamedPitchTypes } from "@/lib/mergePitchTypes";
+import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
 
 interface PitchPayload {
   format: "pitch";
@@ -253,6 +254,8 @@ export default function TrackmanSessionView({
         const map = new Map<string, number>();
         for (const p of res.points) {
           map.set(p.pitchType, p.stuffPlus);
+          const displayType = getStuffPlusDisplayPitchType(playerId, p.pitchType);
+          if (displayType !== p.pitchType) map.set(displayType, p.stuffPlus);
         }
         setSessionStuffPlus(map);
       });

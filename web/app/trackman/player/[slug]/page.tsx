@@ -13,6 +13,7 @@ import MovementScatterByType from "../../session/[playerId]/[date]/MovementScatt
 import PitchArsenalCards from "../../session/[playerId]/[date]/PitchArsenalCards";
 import TopPitchCard from "./TopPitchCard";
 import { mergeRenamedPitchTypes } from "@/lib/mergePitchTypes";
+import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
 
 interface IndexEntry {
   playerName: string;
@@ -351,8 +352,13 @@ export default function TrackmanPlayerPage({
   const aggregated = useMemo(() => {
     const raw = aggregatePitchTypes(sessionData.map((s) => s.pitchTypes));
     const merged = normalizedHand ? mergeRenamedPitchTypes(raw, normalizedHand) : raw;
-    // Merge Stuff+ data by pitch type
-    const stuffMap = new Map(stuffPlusArsenal.map((p) => [p.pitchType, p.meanStuffPlus]));
+    // Merge Stuff+ data by pitch type (with display-name overrides)
+    const stuffMap = new Map<string, number>();
+    for (const p of stuffPlusArsenal) {
+      const displayType = getStuffPlusDisplayPitchType(slug, p.pitchType);
+      stuffMap.set(displayType, p.meanStuffPlus);
+      stuffMap.set(p.pitchType, p.meanStuffPlus);
+    }
     return merged.map((p) => ({
       ...p,
       meanStuffPlus: stuffMap.get(p.pitchType) ?? p.meanStuffPlus,
@@ -416,7 +422,7 @@ export default function TrackmanPlayerPage({
           <>
             {/* Top Pitch */}
             {stuffPlusArsenal.length > 0 && (
-              <TopPitchCard arsenal={stuffPlusArsenal} />
+              <TopPitchCard arsenal={stuffPlusArsenal} playerId={slug} />
             )}
 
             {/* Session selector */}

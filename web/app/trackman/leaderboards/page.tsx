@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { ArrowLeft, Trophy, Search } from "lucide-react";
 import { pitchColor } from "@/lib/pitchColors";
+import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
 
 interface LeaderboardEntry {
   rank: number;
@@ -130,7 +131,9 @@ export default function TrackmanLeaderboardsPage() {
   }, [data, activeCategory]);
 
   const stuffPlusPitchTypes = useMemo(() => {
-    const set = new Set(stuffPlusRows.map((r) => r.pitchType));
+    const set = new Set(
+      stuffPlusRows.map((r) => getStuffPlusDisplayPitchType(r.playerId, r.pitchType))
+    );
     return Array.from(set).sort((a, b) => {
       const ia = STUFF_PLUS_PITCH_ORDER.indexOf(a);
       const ib = STUFF_PLUS_PITCH_ORDER.indexOf(b);
@@ -144,7 +147,9 @@ export default function TrackmanLeaderboardsPage() {
   const rankedStuffPlus = useMemo(() => {
     let d = stuffPlusRows;
     if (stuffPlusPitchFilter !== "all") {
-      d = d.filter((r) => r.pitchType === stuffPlusPitchFilter);
+      d = d.filter(
+        (r) => getStuffPlusDisplayPitchType(r.playerId, r.pitchType) === stuffPlusPitchFilter
+      );
     } else {
       const byPlayer = new Map<string, StuffPlusRow>();
       for (const r of d) {
@@ -301,9 +306,13 @@ export default function TrackmanLeaderboardsPage() {
                               <span className="inline-flex items-center gap-1">
                                 <span
                                   className="w-2 h-2 rounded-full shrink-0"
-                                  style={{ backgroundColor: pitchColor(r.pitchType) }}
+                                  style={{
+                                    backgroundColor: pitchColor(
+                                      getStuffPlusDisplayPitchType(r.playerId, r.pitchType)
+                                    ),
+                                  }}
                                 />
-                                {r.pitchType}
+                                {getStuffPlusDisplayPitchType(r.playerId, r.pitchType)}
                               </span>
                             </td>
                           )}
