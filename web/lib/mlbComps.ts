@@ -48,6 +48,7 @@ export interface CompInput {
   pitchType: string;   // Trackman pitch type label (will be normalized)
   ivb: number | null;
   hb: number | null;
+  /** Retained for display context only — not used in distance calculation */
   velo: number | null;
 }
 
@@ -58,13 +59,13 @@ export interface MLBCompResult {
     hand: string;
   };
   pitch: MLBPitch;
-  /** Weighted Euclidean distance — lower = more similar */
+  /** Shape distance (IVB + HB only) — lower = more similar movement profile */
   distance: number;
-  /** Breakdown of per-metric deltas for display */
+  /** Per-metric deltas for display; velo always null (not used in matching) */
   deltas: {
     ivb: number | null;
     hb: number | null;
-    velo: number | null;
+    velo: null;
   };
 }
 
@@ -72,11 +73,13 @@ export interface MLBCompResult {
 // Distance weights
 // ---------------------------------------------------------------------------
 
-/** IVB and HB drive the movement profile; velocity is secondary. */
+/**
+ * Shape-only matching: pure movement profile, velocity intentionally excluded.
+ * Equal weight to IVB and HB so neither axis dominates.
+ */
 const WEIGHTS = {
-  ivb: 0.4,
-  hb: 0.4,
-  velo: 0.2,
+  ivb: 0.5,
+  hb: 0.5,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -118,42 +121,23 @@ export function findPitchComps(
         : null;
     const hbDiff =
       input.hb != null && match.avgHb != null ? input.hb - match.avgHb : null;
-    const veloDiff =
-      input.velo != null && match.avgVelo != null
-        ? input.velo - match.avgVelo
-        : null;
 
-    // Need at least IVB or HB to compute a meaningful distance
-    if (ivbDiff === null && hbDiff === null) continue;
+    // Both IVB and HB required for a shape-based comp
+    if (ivbDiff === null || hbDiff === null) continue;
 
-    // Weighted distance: use available metrics, scale weights accordingly
-    let totalWeight = 0;
-    let dist = 0;
-
-    if (ivbDiff !== null) {
-      dist += WEIGHTS.ivb * ivbDiff ** 2;
-      totalWeight += WEIGHTS.ivb;
-    }
-    if (hbDiff !== null) {
-      dist += WEIGHTS.hb * hbDiff ** 2;
-      totalWeight += WEIGHTS.hb;
-    }
-    if (veloDiff !== null) {
-      dist += WEIGHTS.velo * veloDiff ** 2;
-      totalWeight += WEIGHTS.velo;
-    }
-
-    // Normalize by total weight used so partial matches are comparable
-    const normalizedDist = totalWeight > 0 ? Math.sqrt(dist / totalWeight) : Infinity;
+    // Pure shape distance — velocity intentionally excluded
+    const dist = Math.sqrt(
+      WEIGHTS.ivb * ivbDiff ** 2 + WEIGHTS.hb * hbDiff ** 2,
+    );
 
     results.push({
       pitcher: { id: pitcher.pitcherId, name: pitcher.name, hand: pitcher.hand },
       pitch: match,
-      distance: Math.round(normalizedDist * 100) / 100,
+      distance: Math.round(dist * 100) / 100,
       deltas: {
-        ivb: ivbDiff !== null ? Math.round(ivbDiff * 10) / 10 : null,
-        hb: hbDiff !== null ? Math.round(hbDiff * 10) / 10 : null,
-        velo: veloDiff !== null ? Math.round(veloDiff * 10) / 10 : null,
+        ivb: Math.round(ivbDiff * 10) / 10,
+        hb: Math.round(hbDiff * 10) / 10,
+        velo: null,
       },
     });
   }

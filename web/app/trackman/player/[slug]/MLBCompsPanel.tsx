@@ -63,20 +63,20 @@ function PitchCompCard({
         </div>
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-[10px] font-mono text-zinc-500">
-            {fmt(result.pitch.avgVelo)} mph
-          </span>
-          <span className="text-zinc-700">·</span>
-          <span className="text-[10px] font-mono text-zinc-500">
             IVB {fmt(result.pitch.avgIvb)}&quot;
           </span>
           <span className="text-zinc-700">·</span>
           <span className="text-[10px] font-mono text-zinc-500">
             HB {fmt(result.pitch.avgHb)}&quot;
           </span>
+          <span className="text-zinc-700">·</span>
+          <span className="text-[10px] font-mono text-zinc-400">
+            {fmt(result.pitch.avgVelo)} mph
+          </span>
         </div>
       </div>
       <div className="text-right shrink-0">
-        <div className="text-[10px] uppercase tracking-wide text-zinc-600 mb-0.5">Δ</div>
+        <div className="text-[10px] uppercase tracking-wide text-zinc-600 mb-0.5">Δ shape</div>
         <div className="flex items-center gap-1.5">
           <DeltaBadge value={result.deltas.ivb} />
           <span className="text-zinc-700 text-[10px]">/</span>
@@ -202,10 +202,10 @@ export default function MLBCompsPanel({
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-sm font-semibold text-zinc-100">MLB Comps</h3>
+          <h3 className="text-sm font-semibold text-zinc-100">MLB Shape Comps</h3>
           {mlbData && (
             <p className="text-[10px] text-zinc-500 mt-0.5">
-              {mlbData.year} · {mlbData.pitchers.length} MLB pitchers
+              {mlbData.year} · {mlbData.pitchers.length} MLB pitchers · matched by IVB &amp; HB
             </p>
           )}
         </div>
@@ -278,7 +278,7 @@ export default function MLBCompsPanel({
                   <div>
                     {/* Babson pitcher's stats for context */}
                     {input && (
-                      <div className="flex items-center gap-4 mb-3 pb-3 border-b border-zinc-800">
+                      <div className="flex items-center gap-3 mb-3 pb-3 border-b border-zinc-800">
                         <div className="flex items-center gap-1.5">
                           <span
                             className="w-2 h-2 rounded-full shrink-0"
@@ -288,14 +288,14 @@ export default function MLBCompsPanel({
                             Your {currentPitch}
                           </span>
                         </div>
-                        <span className="text-[11px] font-mono text-zinc-500">
-                          {fmt(input.velo)} mph
-                        </span>
-                        <span className="text-[11px] font-mono text-zinc-500">
+                        <span className="text-[11px] font-mono text-zinc-400">
                           IVB {fmt(input.ivb)}&quot;
                         </span>
-                        <span className="text-[11px] font-mono text-zinc-500">
+                        <span className="text-[11px] font-mono text-zinc-400">
                           HB {fmt(input.hb)}&quot;
+                        </span>
+                        <span className="text-[11px] font-mono text-zinc-600">
+                          {fmt(input.velo)} mph
                         </span>
                       </div>
                     )}

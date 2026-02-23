@@ -3,7 +3,7 @@
   "updated": "2026-02-23",
   "minPitches": 100,
   "convention": {
-    "hb": "positive = toward 1B from catcher's perspective (matches Trackman HB)",
+    "hb": "signed: positive = toward 1B from catcher (Trackman convention). Savant magnitudes converted using sign_hb(hand, abbrev).",
     "ivb": "positive = upward (rising fastball = positive, matches Trackman IVB)"
   },
   "pitchers": [
@@ -17,14 +17,14 @@
           "n": 249,
           "avgVelo": 94.5,
           "avgIvb": 17.1,
-          "avgHb": 5.3
+          "avgHb": -5.3
         },
         {
           "pitchType": "Cutter",
           "n": 180,
           "avgVelo": 89.4,
           "avgIvb": 4.6,
-          "avgHb": 5.4
+          "avgHb": -5.4
         }
       ]
     },
@@ -38,14 +38,14 @@
           "n": 507,
           "avgVelo": 95.6,
           "avgIvb": 14.3,
-          "avgHb": 10.7
+          "avgHb": -10.7
         },
         {
           "pitchType": "Sinker",
           "n": 173,
           "avgVelo": 94.6,
           "avgIvb": 7.9,
-          "avgHb": 17.1
+          "avgHb": -17.1
         },
         {
           "pitchType": "Slider",
@@ -73,7 +73,7 @@
           "n": 216,
           "avgVelo": 96.2,
           "avgIvb": 8.4,
-          "avgHb": 14.8
+          "avgHb": -14.8
         }
       ]
     },
@@ -94,7 +94,7 @@
           "n": 131,
           "avgVelo": 85.2,
           "avgIvb": 0.5,
-          "avgHb": 2.0
+          "avgHb": -2.0
         }
       ]
     },
@@ -108,7 +108,7 @@
           "n": 388,
           "avgVelo": 93.1,
           "avgIvb": 0.3,
-          "avgHb": 15.2
+          "avgHb": -15.2
         },
         {
           "pitchType": "Sweeper",
@@ -150,14 +150,14 @@
           "n": 398,
           "avgVelo": 80.2,
           "avgIvb": -2.2,
-          "avgHb": 17.3
+          "avgHb": -17.3
         },
         {
           "pitchType": "Curveball",
           "n": 423,
           "avgVelo": 77.1,
           "avgIvb": -17.0,
-          "avgHb": 13.0
+          "avgHb": -13.0
         }
       ]
     },
@@ -199,7 +199,7 @@
           "n": 1049,
           "avgVelo": 79.1,
           "avgIvb": -9.9,
-          "avgHb": 14.0
+          "avgHb": -14.0
         }
       ]
     },
@@ -241,7 +241,7 @@
           "n": 136,
           "avgVelo": 73.4,
           "avgIvb": 13.3,
-          "avgHb": 16.4
+          "avgHb": -16.4
         }
       ]
     },
@@ -262,7 +262,7 @@
           "n": 196,
           "avgVelo": 86.8,
           "avgIvb": 1.7,
-          "avgHb": 1.4
+          "avgHb": -1.4
         }
       ]
     },
@@ -283,7 +283,7 @@
           "n": 106,
           "avgVelo": 81.5,
           "avgIvb": -13.0,
-          "avgHb": 4.9
+          "avgHb": -4.9
         }
       ]
     },
@@ -318,7 +318,7 @@
           "n": 375,
           "avgVelo": 78.9,
           "avgIvb": 1.1,
-          "avgHb": 17.3
+          "avgHb": -17.3
         }
       ]
     },
@@ -332,7 +332,7 @@
           "n": 155,
           "avgVelo": 87.2,
           "avgIvb": 3.2,
-          "avgHb": 6.9
+          "avgHb": -6.9
         }
       ]
     },
@@ -367,7 +367,7 @@
           "n": 196,
           "avgVelo": 83.2,
           "avgIvb": 0.6,
-          "avgHb": 5.7
+          "avgHb": -5.7
         }
       ]
     },
@@ -381,14 +381,14 @@
           "n": 385,
           "avgVelo": 97.4,
           "avgIvb": 10.3,
-          "avgHb": 15.7
+          "avgHb": -15.7
         },
         {
           "pitchType": "Fastball",
           "n": 247,
           "avgVelo": 96.9,
           "avgIvb": 16.4,
-          "avgHb": 6.3
+          "avgHb": -6.3
         },
         {
           "pitchType": "Slider",
@@ -430,7 +430,7 @@
           "n": 293,
           "avgVelo": 79.0,
           "avgIvb": -7.0,
-          "avgHb": 5.7
+          "avgHb": -5.7
         }
       ]
     },
@@ -458,7 +458,7 @@
           "n": 386,
           "avgVelo": 86.6,
           "avgIvb": 0.5,
-          "avgHb": 3.3
+          "avgHb": -3.3
         },
         {
           "pitchType": "Changeup",
@@ -472,14 +472,14 @@
           "n": 106,
           "avgVelo": 86.1,
           "avgIvb": -1.8,
-          "avgHb": 11.0
+          "avgHb": -11.0
         },
         {
           "pitchType": "Curveball",
           "n": 355,
           "avgVelo": 82.8,
           "avgIvb": -7.2,
-          "avgHb": 7.5
+          "avgHb": -7.5
         }
       ]
     },
@@ -507,7 +507,7 @@
           "n": 120,
           "avgVelo": 81.0,
           "avgIvb": -1.7,
-          "avgHb": 13.5
+          "avgHb": -13.5
         }
       ]
     },
@@ -556,7 +556,7 @@
           "n": 399,
           "avgVelo": 83.2,
           "avgIvb": -1.7,
-          "avgHb": 3.4
+          "avgHb": -3.4
         }
       ]
     },
@@ -570,7 +570,7 @@
           "n": 218,
           "avgVelo": 88.1,
           "avgIvb": -0.1,
-          "avgHb": 1.0
+          "avgHb": -1.0
         }
       ]
     },
@@ -584,7 +584,7 @@
           "n": 700,
           "avgVelo": 93.4,
           "avgIvb": 20.3,
-          "avgHb": 6.2
+          "avgHb": -6.2
         },
         {
           "pitchType": "Slider",
@@ -605,14 +605,14 @@
           "n": 348,
           "avgVelo": 90.5,
           "avgIvb": 10.5,
-          "avgHb": 16.6
+          "avgHb": -16.6
         },
         {
           "pitchType": "Changeup",
           "n": 169,
           "avgVelo": 84.5,
           "avgIvb": 0.1,
-          "avgHb": 15.8
+          "avgHb": -15.8
         },
         {
           "pitchType": "Slider",
@@ -633,14 +633,14 @@
           "n": 102,
           "avgVelo": 90.2,
           "avgIvb": 6.1,
-          "avgHb": 16.5
+          "avgHb": -16.5
         },
         {
           "pitchType": "Changeup",
           "n": 124,
           "avgVelo": 85.2,
           "avgIvb": 1.2,
-          "avgHb": 10.9
+          "avgHb": -10.9
         }
       ]
     },
@@ -661,7 +661,7 @@
           "n": 411,
           "avgVelo": 87.6,
           "avgIvb": 3.4,
-          "avgHb": 3.1
+          "avgHb": -3.1
         }
       ]
     },
@@ -689,14 +689,14 @@
           "n": 333,
           "avgVelo": 87.5,
           "avgIvb": -1.6,
-          "avgHb": 4.9
+          "avgHb": -4.9
         },
         {
           "pitchType": "Curveball",
           "n": 244,
           "avgVelo": 79.5,
           "avgIvb": -15.6,
-          "avgHb": 4.2
+          "avgHb": -4.2
         }
       ]
     },
@@ -710,14 +710,14 @@
           "n": 1249,
           "avgVelo": 92.8,
           "avgIvb": 16.3,
-          "avgHb": 8.9
+          "avgHb": -8.9
         },
         {
           "pitchType": "Changeup",
           "n": 381,
           "avgVelo": 84.8,
           "avgIvb": 12.5,
-          "avgHb": 14.8
+          "avgHb": -14.8
         },
         {
           "pitchType": "Sweeper",
@@ -745,14 +745,14 @@
           "n": 142,
           "avgVelo": 91.7,
           "avgIvb": 16.6,
-          "avgHb": 8.1
+          "avgHb": -8.1
         },
         {
           "pitchType": "Sinker",
           "n": 382,
           "avgVelo": 91.7,
           "avgIvb": 12.9,
-          "avgHb": 14.7
+          "avgHb": -14.7
         },
         {
           "pitchType": "Slider",
@@ -773,14 +773,14 @@
           "n": 1393,
           "avgVelo": 91.6,
           "avgIvb": 13.8,
-          "avgHb": 15.7
+          "avgHb": -15.7
         },
         {
           "pitchType": "Changeup",
           "n": 462,
           "avgVelo": 83.7,
           "avgIvb": 5.6,
-          "avgHb": 17.4
+          "avgHb": -17.4
         },
         {
           "pitchType": "Slider",
@@ -815,7 +815,7 @@
           "n": 508,
           "avgVelo": 88.1,
           "avgIvb": 0.5,
-          "avgHb": 6.5
+          "avgHb": -6.5
         }
       ]
     },
@@ -829,7 +829,7 @@
           "n": 551,
           "avgVelo": 94.0,
           "avgIvb": 17.3,
-          "avgHb": 8.3
+          "avgHb": -8.3
         },
         {
           "pitchType": "Slider",
@@ -864,7 +864,7 @@
           "n": 448,
           "avgVelo": 87.6,
           "avgIvb": 0.0,
-          "avgHb": 5.6
+          "avgHb": -5.6
         }
       ]
     },
@@ -899,14 +899,14 @@
           "n": 416,
           "avgVelo": 96.4,
           "avgIvb": 4.4,
-          "avgHb": 16.5
+          "avgHb": -16.5
         },
         {
           "pitchType": "Fastball",
           "n": 187,
           "avgVelo": 95.8,
           "avgIvb": 11.8,
-          "avgHb": 9.7
+          "avgHb": -9.7
         },
         {
           "pitchType": "Slider",
@@ -927,14 +927,14 @@
           "n": 268,
           "avgVelo": 96.1,
           "avgIvb": 14.3,
-          "avgHb": 9.7
+          "avgHb": -9.7
         },
         {
           "pitchType": "Sinker",
           "n": 189,
           "avgVelo": 96.1,
           "avgIvb": 8.4,
-          "avgHb": 15.8
+          "avgHb": -15.8
         },
         {
           "pitchType": "Slider",
@@ -962,7 +962,7 @@
           "n": 433,
           "avgVelo": 84.9,
           "avgIvb": 3.1,
-          "avgHb": 14.2
+          "avgHb": -14.2
         }
       ]
     },
@@ -976,7 +976,7 @@
           "n": 184,
           "avgVelo": 85.2,
           "avgIvb": 4.8,
-          "avgHb": 1.1
+          "avgHb": -1.1
         }
       ]
     },
@@ -997,7 +997,7 @@
           "n": 222,
           "avgVelo": 88.6,
           "avgIvb": 7.4,
-          "avgHb": 3.0
+          "avgHb": -3.0
         },
         {
           "pitchType": "Changeup",
@@ -1018,7 +1018,7 @@
           "n": 113,
           "avgVelo": 94.8,
           "avgIvb": 15.3,
-          "avgHb": 10.3
+          "avgHb": -10.3
         }
       ]
     },
@@ -1046,21 +1046,21 @@
           "n": 313,
           "avgVelo": 99.8,
           "avgIvb": 15.5,
-          "avgHb": 11.0
+          "avgHb": -11.0
         },
         {
           "pitchType": "Fastball",
           "n": 377,
           "avgVelo": 97.8,
           "avgIvb": 17.3,
-          "avgHb": 4.0
+          "avgHb": -4.0
         },
         {
           "pitchType": "Splitter",
           "n": 138,
           "avgVelo": 91.6,
           "avgIvb": 3.5,
-          "avgHb": 4.0
+          "avgHb": -4.0
         },
         {
           "pitchType": "Slider",
@@ -1088,7 +1088,7 @@
           "n": 594,
           "avgVelo": 87.7,
           "avgIvb": -1.1,
-          "avgHb": 9.3
+          "avgHb": -9.3
         }
       ]
     },
@@ -1102,7 +1102,7 @@
           "n": 1058,
           "avgVelo": 90.4,
           "avgIvb": 17.0,
-          "avgHb": 7.6
+          "avgHb": -7.6
         },
         {
           "pitchType": "Slider",
@@ -1116,7 +1116,7 @@
           "n": 538,
           "avgVelo": 81.1,
           "avgIvb": 10.4,
-          "avgHb": 10.1
+          "avgHb": -10.1
         },
         {
           "pitchType": "Curveball",
@@ -1151,14 +1151,14 @@
           "n": 230,
           "avgVelo": 80.8,
           "avgIvb": -0.4,
-          "avgHb": 15.7
+          "avgHb": -15.7
         },
         {
           "pitchType": "Curveball",
           "n": 184,
           "avgVelo": 75.3,
           "avgIvb": -12.7,
-          "avgHb": 15.3
+          "avgHb": -15.3
         }
       ]
     },
@@ -1172,14 +1172,14 @@
           "n": 1042,
           "avgVelo": 91.9,
           "avgIvb": 17.7,
-          "avgHb": 2.8
+          "avgHb": -2.8
         },
         {
           "pitchType": "Sinker",
           "n": 296,
           "avgVelo": 91.9,
           "avgIvb": 16.8,
-          "avgHb": 8.0
+          "avgHb": -8.0
         },
         {
           "pitchType": "Slider",
@@ -1228,7 +1228,7 @@
           "n": 523,
           "avgVelo": 86.2,
           "avgIvb": 6.5,
-          "avgHb": 3.6
+          "avgHb": -3.6
         },
         {
           "pitchType": "Changeup",
@@ -1242,7 +1242,7 @@
           "n": 319,
           "avgVelo": 80.3,
           "avgIvb": -2.2,
-          "avgHb": 12.3
+          "avgHb": -12.3
         }
       ]
     },
@@ -1277,7 +1277,7 @@
           "n": 199,
           "avgVelo": 86.1,
           "avgIvb": 0.4,
-          "avgHb": 3.2
+          "avgHb": -3.2
         }
       ]
     },
@@ -1298,7 +1298,7 @@
           "n": 303,
           "avgVelo": 86.5,
           "avgIvb": -3.5,
-          "avgHb": 1.9
+          "avgHb": -1.9
         }
       ]
     },
@@ -1354,21 +1354,21 @@
           "n": 111,
           "avgVelo": 80.6,
           "avgIvb": 8.0,
-          "avgHb": 6.2
+          "avgHb": -6.2
         },
         {
           "pitchType": "Sweeper",
           "n": 415,
           "avgVelo": 79.0,
           "avgIvb": 2.6,
-          "avgHb": 10.7
+          "avgHb": -10.7
         },
         {
           "pitchType": "Curveball",
           "n": 207,
           "avgVelo": 77.1,
           "avgIvb": -5.1,
-          "avgHb": 8.8
+          "avgHb": -8.8
         }
       ]
     },
@@ -1382,7 +1382,7 @@
           "n": 821,
           "avgVelo": 95.9,
           "avgIvb": 18.7,
-          "avgHb": 5.8
+          "avgHb": -5.8
         },
         {
           "pitchType": "Slider",
@@ -1396,7 +1396,7 @@
           "n": 311,
           "avgVelo": 85.5,
           "avgIvb": 10.3,
-          "avgHb": 13.7
+          "avgHb": -13.7
         },
         {
           "pitchType": "Curveball",
@@ -1431,7 +1431,7 @@
           "n": 284,
           "avgVelo": 83.9,
           "avgIvb": -1.6,
-          "avgHb": 15.2
+          "avgHb": -15.2
         }
       ]
     },
@@ -1445,7 +1445,7 @@
           "n": 112,
           "avgVelo": 91.5,
           "avgIvb": 14.7,
-          "avgHb": 7.9
+          "avgHb": -7.9
         }
       ]
     },
@@ -1473,7 +1473,7 @@
           "n": 101,
           "avgVelo": 88.6,
           "avgIvb": 2.3,
-          "avgHb": 6.2
+          "avgHb": -6.2
         },
         {
           "pitchType": "Changeup",
@@ -1487,7 +1487,7 @@
           "n": 200,
           "avgVelo": 79.8,
           "avgIvb": -12.5,
-          "avgHb": 8.3
+          "avgHb": -8.3
         }
       ]
     },
@@ -1515,14 +1515,14 @@
           "n": 145,
           "avgVelo": 81.7,
           "avgIvb": -0.2,
-          "avgHb": 5.6
+          "avgHb": -5.6
         },
         {
           "pitchType": "Curveball",
           "n": 283,
           "avgVelo": 73.5,
           "avgIvb": -9.2,
-          "avgHb": 15.6
+          "avgHb": -15.6
         }
       ]
     },
@@ -1543,7 +1543,7 @@
           "n": 270,
           "avgVelo": 86.0,
           "avgIvb": -3.6,
-          "avgHb": 6.9
+          "avgHb": -6.9
         }
       ]
     },
@@ -1564,7 +1564,7 @@
           "n": 122,
           "avgVelo": 85.2,
           "avgIvb": -0.7,
-          "avgHb": 3.4
+          "avgHb": -3.4
         }
       ]
     },
@@ -1578,7 +1578,7 @@
           "n": 165,
           "avgVelo": 92.2,
           "avgIvb": 15.8,
-          "avgHb": 2.5
+          "avgHb": -2.5
         }
       ]
     },
@@ -1606,14 +1606,14 @@
           "n": 1196,
           "avgVelo": 83.0,
           "avgIvb": -1.0,
-          "avgHb": 4.5
+          "avgHb": -4.5
         },
         {
           "pitchType": "Sweeper",
           "n": 153,
           "avgVelo": 82.1,
           "avgIvb": 2.5,
-          "avgHb": 10.7
+          "avgHb": -10.7
         }
       ]
     },
@@ -1655,7 +1655,7 @@
           "n": 115,
           "avgVelo": 92.4,
           "avgIvb": 14.8,
-          "avgHb": 9.6
+          "avgHb": -9.6
         },
         {
           "pitchType": "Slider",
@@ -1697,14 +1697,14 @@
           "n": 763,
           "avgVelo": 84.8,
           "avgIvb": 6.5,
-          "avgHb": 11.3
+          "avgHb": -11.3
         },
         {
           "pitchType": "Curveball",
           "n": 148,
           "avgVelo": 80.8,
           "avgIvb": -8.2,
-          "avgHb": 12.8
+          "avgHb": -12.8
         }
       ]
     },
@@ -1718,7 +1718,7 @@
           "n": 115,
           "avgVelo": 90.1,
           "avgIvb": 9.6,
-          "avgHb": 2.1
+          "avgHb": -2.1
         }
       ]
     },
@@ -1732,7 +1732,7 @@
           "n": 325,
           "avgVelo": 92.4,
           "avgIvb": 4.1,
-          "avgHb": 15.6
+          "avgHb": -15.6
         },
         {
           "pitchType": "Sweeper",
@@ -1753,7 +1753,7 @@
           "n": 195,
           "avgVelo": 90.0,
           "avgIvb": 7.4,
-          "avgHb": 16.2
+          "avgHb": -16.2
         },
         {
           "pitchType": "Slider",
@@ -1795,7 +1795,7 @@
           "n": 753,
           "avgVelo": 86.8,
           "avgIvb": -0.7,
-          "avgHb": 7.9
+          "avgHb": -7.9
         }
       ]
     },
@@ -1816,7 +1816,7 @@
           "n": 100,
           "avgVelo": 87.4,
           "avgIvb": 1.6,
-          "avgHb": 2.6
+          "avgHb": -2.6
         }
       ]
     },
@@ -1830,7 +1830,7 @@
           "n": 397,
           "avgVelo": 94.5,
           "avgIvb": -0.2,
-          "avgHb": 16.1
+          "avgHb": -16.1
         },
         {
           "pitchType": "Curveball",
@@ -1851,7 +1851,7 @@
           "n": 401,
           "avgVelo": 91.4,
           "avgIvb": 5.6,
-          "avgHb": 15.9
+          "avgHb": -15.9
         },
         {
           "pitchType": "Curveball",
@@ -1879,7 +1879,7 @@
           "n": 130,
           "avgVelo": 86.0,
           "avgIvb": 2.6,
-          "avgHb": 7.8
+          "avgHb": -7.8
         }
       ]
     },
@@ -1893,14 +1893,14 @@
           "n": 214,
           "avgVelo": 87.4,
           "avgIvb": 13.3,
-          "avgHb": 10.0
+          "avgHb": -10.0
         },
         {
           "pitchType": "Fastball",
           "n": 440,
           "avgVelo": 85.8,
           "avgIvb": 12.9,
-          "avgHb": 4.3
+          "avgHb": -4.3
         },
         {
           "pitchType": "Slider",
@@ -1914,7 +1914,7 @@
           "n": 202,
           "avgVelo": 75.5,
           "avgIvb": 11.7,
-          "avgHb": 8.9
+          "avgHb": -8.9
         }
       ]
     },
@@ -1928,7 +1928,7 @@
           "n": 289,
           "avgVelo": 95.8,
           "avgIvb": 16.2,
-          "avgHb": 9.1
+          "avgHb": -9.1
         },
         {
           "pitchType": "Slider",
@@ -1970,7 +1970,7 @@
           "n": 690,
           "avgVelo": 86.2,
           "avgIvb": -5.9,
-          "avgHb": 8.1
+          "avgHb": -8.1
         }
       ]
     },
@@ -1991,7 +1991,7 @@
           "n": 104,
           "avgVelo": 87.4,
           "avgIvb": 4.3,
-          "avgHb": 7.2
+          "avgHb": -7.2
         }
       ]
     },
@@ -2019,7 +2019,7 @@
           "n": 179,
           "avgVelo": 83.0,
           "avgIvb": -3.8,
-          "avgHb": 2.1
+          "avgHb": -2.1
         }
       ]
     },
@@ -2033,14 +2033,14 @@
           "n": 484,
           "avgVelo": 91.3,
           "avgIvb": 12.3,
-          "avgHb": 7.1
+          "avgHb": -7.1
         },
         {
           "pitchType": "Cutter",
           "n": 227,
           "avgVelo": 86.0,
           "avgIvb": 3.9,
-          "avgHb": 0.9
+          "avgHb": -0.9
         },
         {
           "pitchType": "Sweeper",
@@ -2061,7 +2061,7 @@
           "n": 218,
           "avgVelo": 92.1,
           "avgIvb": 14.6,
-          "avgHb": 2.4
+          "avgHb": -2.4
         },
         {
           "pitchType": "Sweeper",
@@ -2082,7 +2082,7 @@
           "n": 147,
           "avgVelo": 91.5,
           "avgIvb": 15.9,
-          "avgHb": 9.5
+          "avgHb": -9.5
         }
       ]
     },
@@ -2117,14 +2117,14 @@
           "n": 164,
           "avgVelo": 86.2,
           "avgIvb": 2.1,
-          "avgHb": 3.3
+          "avgHb": -3.3
         },
         {
           "pitchType": "Sweeper",
           "n": 156,
           "avgVelo": 82.2,
           "avgIvb": 2.3,
-          "avgHb": 14.9
+          "avgHb": -14.9
         }
       ]
     },
@@ -2159,7 +2159,7 @@
           "n": 271,
           "avgVelo": 83.6,
           "avgIvb": 0.4,
-          "avgHb": 0.8
+          "avgHb": -0.8
         }
       ]
     },
@@ -2194,7 +2194,7 @@
           "n": 241,
           "avgVelo": 86.4,
           "avgIvb": -0.8,
-          "avgHb": 6.8
+          "avgHb": -6.8
         },
         {
           "pitchType": "Changeup",
@@ -2229,14 +2229,14 @@
           "n": 229,
           "avgVelo": 86.6,
           "avgIvb": 1.4,
-          "avgHb": 3.2
+          "avgHb": -3.2
         },
         {
           "pitchType": "Curveball",
           "n": 123,
           "avgVelo": 85.0,
           "avgIvb": -6.8,
-          "avgHb": 1.7
+          "avgHb": -1.7
         },
         {
           "pitchType": "Splitter",
@@ -2250,7 +2250,7 @@
           "n": 233,
           "avgVelo": 82.4,
           "avgIvb": -5.3,
-          "avgHb": 14.8
+          "avgHb": -14.8
         }
       ]
     },
@@ -2285,7 +2285,7 @@
           "n": 228,
           "avgVelo": 80.4,
           "avgIvb": -3.4,
-          "avgHb": 15.1
+          "avgHb": -15.1
         }
       ]
     },
@@ -2320,7 +2320,7 @@
           "n": 407,
           "avgVelo": 82.2,
           "avgIvb": 3.9,
-          "avgHb": 9.5
+          "avgHb": -9.5
         }
       ]
     },
@@ -2348,7 +2348,7 @@
           "n": 164,
           "avgVelo": 80.0,
           "avgIvb": -13.7,
-          "avgHb": 11.0
+          "avgHb": -11.0
         }
       ]
     },
@@ -2362,28 +2362,28 @@
           "n": 566,
           "avgVelo": 92.4,
           "avgIvb": 16.7,
-          "avgHb": 9.3
+          "avgHb": -9.3
         },
         {
           "pitchType": "Sinker",
           "n": 116,
           "avgVelo": 91.5,
           "avgIvb": 11.1,
-          "avgHb": 15.5
+          "avgHb": -15.5
         },
         {
           "pitchType": "Cutter",
           "n": 104,
           "avgVelo": 88.3,
           "avgIvb": 9.3,
-          "avgHb": 3.1
+          "avgHb": -3.1
         },
         {
           "pitchType": "Changeup",
           "n": 151,
           "avgVelo": 86.1,
           "avgIvb": 7.8,
-          "avgHb": 14.7
+          "avgHb": -14.7
         },
         {
           "pitchType": "Curveball",
@@ -2418,7 +2418,7 @@
           "n": 119,
           "avgVelo": 82.1,
           "avgIvb": 2.0,
-          "avgHb": 13.7
+          "avgHb": -13.7
         }
       ]
     },
@@ -2474,7 +2474,7 @@
           "n": 311,
           "avgVelo": 79.4,
           "avgIvb": -4.4,
-          "avgHb": 2.9
+          "avgHb": -2.9
         }
       ]
     },
@@ -2488,14 +2488,14 @@
           "n": 407,
           "avgVelo": 93.8,
           "avgIvb": 15.4,
-          "avgHb": 8.6
+          "avgHb": -8.6
         },
         {
           "pitchType": "Cutter",
           "n": 249,
           "avgVelo": 89.0,
           "avgIvb": 6.3,
-          "avgHb": 2.4
+          "avgHb": -2.4
         }
       ]
     },
@@ -2509,7 +2509,7 @@
           "n": 385,
           "avgVelo": 93.2,
           "avgIvb": 18.3,
-          "avgHb": 3.5
+          "avgHb": -3.5
         },
         {
           "pitchType": "Sweeper",
@@ -2551,7 +2551,7 @@
           "n": 217,
           "avgVelo": 85.7,
           "avgIvb": -12.6,
-          "avgHb": 8.4
+          "avgHb": -8.4
         }
       ]
     },
@@ -2565,14 +2565,14 @@
           "n": 285,
           "avgVelo": 95.3,
           "avgIvb": 16.1,
-          "avgHb": 7.3
+          "avgHb": -7.3
         },
         {
           "pitchType": "Cutter",
           "n": 246,
           "avgVelo": 88.3,
           "avgIvb": 4.2,
-          "avgHb": 2.8
+          "avgHb": -2.8
         },
         {
           "pitchType": "Sweeper",
@@ -2607,7 +2607,7 @@
           "n": 570,
           "avgVelo": 88.8,
           "avgIvb": -0.6,
-          "avgHb": 4.9
+          "avgHb": -4.9
         }
       ]
     },
@@ -2642,14 +2642,14 @@
           "n": 412,
           "avgVelo": 83.9,
           "avgIvb": 0.0,
-          "avgHb": 4.2
+          "avgHb": -4.2
         },
         {
           "pitchType": "Curveball",
           "n": 117,
           "avgVelo": 80.4,
           "avgIvb": -8.3,
-          "avgHb": 11.1
+          "avgHb": -11.1
         }
       ]
     },
@@ -2670,7 +2670,7 @@
           "n": 231,
           "avgVelo": 89.4,
           "avgIvb": 2.9,
-          "avgHb": 5.5
+          "avgHb": -5.5
         }
       ]
     },
@@ -2698,14 +2698,14 @@
           "n": 1531,
           "avgVelo": 95.4,
           "avgIvb": 17.8,
-          "avgHb": 8.8
+          "avgHb": -8.8
         },
         {
           "pitchType": "Cutter",
           "n": 108,
           "avgVelo": 91.8,
           "avgIvb": 11.0,
-          "avgHb": 0.3
+          "avgHb": -0.3
         },
         {
           "pitchType": "Slider",
@@ -2719,7 +2719,7 @@
           "n": 400,
           "avgVelo": 85.5,
           "avgIvb": 3.1,
-          "avgHb": 12.5
+          "avgHb": -12.5
         },
         {
           "pitchType": "Curveball",
@@ -2754,14 +2754,14 @@
           "n": 230,
           "avgVelo": 87.5,
           "avgIvb": 1.6,
-          "avgHb": 3.3
+          "avgHb": -3.3
         },
         {
           "pitchType": "Sweeper",
           "n": 112,
           "avgVelo": 84.9,
           "avgIvb": 3.0,
-          "avgHb": 10.7
+          "avgHb": -10.7
         }
       ]
     },
@@ -2789,7 +2789,7 @@
           "n": 240,
           "avgVelo": 88.0,
           "avgIvb": 5.3,
-          "avgHb": 4.2
+          "avgHb": -4.2
         },
         {
           "pitchType": "Changeup",
@@ -2838,7 +2838,7 @@
           "n": 368,
           "avgVelo": 81.3,
           "avgIvb": 0.8,
-          "avgHb": 15.5
+          "avgHb": -15.5
         }
       ]
     },
@@ -2873,14 +2873,14 @@
           "n": 466,
           "avgVelo": 85.8,
           "avgIvb": 0.2,
-          "avgHb": 3.6
+          "avgHb": -3.6
         },
         {
           "pitchType": "Curveball",
           "n": 134,
           "avgVelo": 79.6,
           "avgIvb": -12.1,
-          "avgHb": 8.8
+          "avgHb": -8.8
         }
       ]
     },
@@ -2901,7 +2901,7 @@
           "n": 330,
           "avgVelo": 87.7,
           "avgIvb": 2.5,
-          "avgHb": 2.3
+          "avgHb": -2.3
         }
       ]
     },
@@ -2929,14 +2929,14 @@
           "n": 349,
           "avgVelo": 86.9,
           "avgIvb": 0.9,
-          "avgHb": 4.8
+          "avgHb": -4.8
         },
         {
           "pitchType": "Sweeper",
           "n": 101,
           "avgVelo": 78.8,
           "avgIvb": 1.0,
-          "avgHb": 15.5
+          "avgHb": -15.5
         }
       ]
     },
@@ -2978,7 +2978,7 @@
           "n": 1183,
           "avgVelo": 81.5,
           "avgIvb": -8.9,
-          "avgHb": 13.6
+          "avgHb": -13.6
         }
       ]
     },
@@ -3013,7 +3013,7 @@
           "n": 154,
           "avgVelo": 80.5,
           "avgIvb": -2.9,
-          "avgHb": 15.7
+          "avgHb": -15.7
         }
       ]
     },
@@ -3062,21 +3062,21 @@
           "n": 131,
           "avgVelo": 82.5,
           "avgIvb": -0.8,
-          "avgHb": 6.8
+          "avgHb": -6.8
         },
         {
           "pitchType": "Sweeper",
           "n": 218,
           "avgVelo": 74.1,
           "avgIvb": -0.8,
-          "avgHb": 17.5
+          "avgHb": -17.5
         },
         {
           "pitchType": "Curveball",
           "n": 405,
           "avgVelo": 71.0,
           "avgIvb": -12.5,
-          "avgHb": 15.3
+          "avgHb": -15.3
         }
       ]
     },
@@ -3132,14 +3132,14 @@
           "n": 209,
           "avgVelo": 80.0,
           "avgIvb": -3.1,
-          "avgHb": 11.9
+          "avgHb": -11.9
         },
         {
           "pitchType": "Curveball",
           "n": 342,
           "avgVelo": 72.0,
           "avgIvb": -15.7,
-          "avgHb": 7.2
+          "avgHb": -7.2
         }
       ]
     },
@@ -3181,7 +3181,7 @@
           "n": 258,
           "avgVelo": 85.9,
           "avgIvb": 5.3,
-          "avgHb": 2.0
+          "avgHb": -2.0
         },
         {
           "pitchType": "Changeup",
@@ -3195,7 +3195,7 @@
           "n": 198,
           "avgVelo": 78.2,
           "avgIvb": -13.2,
-          "avgHb": 6.7
+          "avgHb": -6.7
         }
       ]
     },
@@ -3223,7 +3223,7 @@
           "n": 125,
           "avgVelo": 83.8,
           "avgIvb": 2.3,
-          "avgHb": 12.1
+          "avgHb": -12.1
         }
       ]
     },
@@ -3237,21 +3237,21 @@
           "n": 1075,
           "avgVelo": 94.8,
           "avgIvb": 10.1,
-          "avgHb": 14.9
+          "avgHb": -14.9
         },
         {
           "pitchType": "Sinker",
           "n": 205,
           "avgVelo": 93.9,
           "avgIvb": 2.7,
-          "avgHb": 17.8
+          "avgHb": -17.8
         },
         {
           "pitchType": "Changeup",
           "n": 400,
           "avgVelo": 86.9,
           "avgIvb": 0.2,
-          "avgHb": 16.2
+          "avgHb": -16.2
         },
         {
           "pitchType": "Slider",
@@ -3279,14 +3279,14 @@
           "n": 205,
           "avgVelo": 86.1,
           "avgIvb": 1.5,
-          "avgHb": 4.2
+          "avgHb": -4.2
         },
         {
           "pitchType": "Curveball",
           "n": 220,
           "avgVelo": 79.2,
           "avgIvb": -8.3,
-          "avgHb": 16.5
+          "avgHb": -16.5
         }
       ]
     },
@@ -3307,14 +3307,14 @@
           "n": 141,
           "avgVelo": 87.3,
           "avgIvb": 4.2,
-          "avgHb": 3.2
+          "avgHb": -3.2
         },
         {
           "pitchType": "Sweeper",
           "n": 148,
           "avgVelo": 83.2,
           "avgIvb": 6.2,
-          "avgHb": 13.2
+          "avgHb": -13.2
         }
       ]
     },
@@ -3328,14 +3328,14 @@
           "n": 209,
           "avgVelo": 96.5,
           "avgIvb": 14.5,
-          "avgHb": 6.3
+          "avgHb": -6.3
         },
         {
           "pitchType": "Sinker",
           "n": 331,
           "avgVelo": 96.1,
           "avgIvb": 7.2,
-          "avgHb": 14.8
+          "avgHb": -14.8
         }
       ]
     },
@@ -3363,14 +3363,14 @@
           "n": 356,
           "avgVelo": 85.2,
           "avgIvb": 3.9,
-          "avgHb": 12.6
+          "avgHb": -12.6
         },
         {
           "pitchType": "Curveball",
           "n": 249,
           "avgVelo": 83.8,
           "avgIvb": -10.6,
-          "avgHb": 16.2
+          "avgHb": -16.2
         }
       ]
     },
@@ -3391,14 +3391,14 @@
           "n": 250,
           "avgVelo": 87.1,
           "avgIvb": -4.4,
-          "avgHb": 2.4
+          "avgHb": -2.4
         },
         {
           "pitchType": "Sweeper",
           "n": 222,
           "avgVelo": 83.7,
           "avgIvb": -8.0,
-          "avgHb": 16.8
+          "avgHb": -16.8
         }
       ]
     },
@@ -3412,7 +3412,7 @@
           "n": 174,
           "avgVelo": 89.9,
           "avgIvb": 17.2,
-          "avgHb": 0.0
+          "avgHb": -0.0
         },
         {
           "pitchType": "Slider",
@@ -3433,14 +3433,14 @@
           "n": 615,
           "avgVelo": 89.8,
           "avgIvb": 18.3,
-          "avgHb": 6.0
+          "avgHb": -6.0
         },
         {
           "pitchType": "Changeup",
           "n": 321,
           "avgVelo": 80.9,
           "avgIvb": 11.7,
-          "avgHb": 13.7
+          "avgHb": -13.7
         },
         {
           "pitchType": "Curveball",
@@ -3475,28 +3475,28 @@
           "n": 479,
           "avgVelo": 91.9,
           "avgIvb": 15.2,
-          "avgHb": 12.0
+          "avgHb": -12.0
         },
         {
           "pitchType": "Sinker",
           "n": 340,
           "avgVelo": 91.6,
           "avgIvb": 10.3,
-          "avgHb": 15.6
+          "avgHb": -15.6
         },
         {
           "pitchType": "Cutter",
           "n": 193,
           "avgVelo": 85.9,
           "avgIvb": 5.1,
-          "avgHb": 1.8
+          "avgHb": -1.8
         },
         {
           "pitchType": "Changeup",
           "n": 237,
           "avgVelo": 84.9,
           "avgIvb": 7.8,
-          "avgHb": 13.9
+          "avgHb": -13.9
         },
         {
           "pitchType": "Curveball",
@@ -3517,14 +3517,14 @@
           "n": 1299,
           "avgVelo": 95.4,
           "avgIvb": 17.3,
-          "avgHb": 12.6
+          "avgHb": -12.6
         },
         {
           "pitchType": "Cutter",
           "n": 352,
           "avgVelo": 90.8,
           "avgIvb": 9.8,
-          "avgHb": 1.0
+          "avgHb": -1.0
         },
         {
           "pitchType": "Slider",
@@ -3538,7 +3538,7 @@
           "n": 740,
           "avgVelo": 84.8,
           "avgIvb": 12.3,
-          "avgHb": 16.0
+          "avgHb": -16.0
         },
         {
           "pitchType": "Curveball",
@@ -3587,7 +3587,7 @@
           "n": 163,
           "avgVelo": 82.4,
           "avgIvb": -5.2,
-          "avgHb": 13.5
+          "avgHb": -13.5
         }
       ]
     },
@@ -3643,7 +3643,7 @@
           "n": 414,
           "avgVelo": 84.7,
           "avgIvb": 7.4,
-          "avgHb": 9.2
+          "avgHb": -9.2
         }
       ]
     },
@@ -3657,7 +3657,7 @@
           "n": 370,
           "avgVelo": 91.2,
           "avgIvb": 18.9,
-          "avgHb": 2.2
+          "avgHb": -2.2
         },
         {
           "pitchType": "Slider",
@@ -3706,14 +3706,14 @@
           "n": 446,
           "avgVelo": 82.0,
           "avgIvb": -0.7,
-          "avgHb": 12.8
+          "avgHb": -12.8
         },
         {
           "pitchType": "Curveball",
           "n": 120,
           "avgVelo": 78.9,
           "avgIvb": -9.1,
-          "avgHb": 10.0
+          "avgHb": -10.0
         }
       ]
     },
@@ -3741,7 +3741,7 @@
           "n": 254,
           "avgVelo": 82.4,
           "avgIvb": 1.1,
-          "avgHb": 15.6
+          "avgHb": -15.6
         }
       ]
     },
@@ -3762,14 +3762,14 @@
           "n": 106,
           "avgVelo": 86.2,
           "avgIvb": 2.1,
-          "avgHb": 4.9
+          "avgHb": -4.9
         },
         {
           "pitchType": "Curveball",
           "n": 110,
           "avgVelo": 80.7,
           "avgIvb": -14.9,
-          "avgHb": 14.3
+          "avgHb": -14.3
         }
       ]
     },
@@ -3804,7 +3804,7 @@
           "n": 471,
           "avgVelo": 76.8,
           "avgIvb": 5.1,
-          "avgHb": 18.2
+          "avgHb": -18.2
         }
       ]
     },
@@ -3839,14 +3839,14 @@
           "n": 383,
           "avgVelo": 87.6,
           "avgIvb": -1.1,
-          "avgHb": 8.3
+          "avgHb": -8.3
         },
         {
           "pitchType": "Curveball",
           "n": 644,
           "avgVelo": 80.3,
           "avgIvb": -12.9,
-          "avgHb": 10.0
+          "avgHb": -10.0
         }
       ]
     },
@@ -3867,7 +3867,7 @@
           "n": 278,
           "avgVelo": 84.3,
           "avgIvb": -8.9,
-          "avgHb": 11.7
+          "avgHb": -11.7
         }
       ]
     },
@@ -3895,7 +3895,7 @@
           "n": 169,
           "avgVelo": 77.5,
           "avgIvb": -0.9,
-          "avgHb": 16.7
+          "avgHb": -16.7
         }
       ]
     },
@@ -3909,14 +3909,14 @@
           "n": 1324,
           "avgVelo": 94.5,
           "avgIvb": 7.5,
-          "avgHb": 17.8
+          "avgHb": -17.8
         },
         {
           "pitchType": "Changeup",
           "n": 998,
           "avgVelo": 85.1,
           "avgIvb": 0.6,
-          "avgHb": 17.9
+          "avgHb": -17.9
         },
         {
           "pitchType": "Slider",
@@ -3937,7 +3937,7 @@
           "n": 860,
           "avgVelo": 93.5,
           "avgIvb": 15.9,
-          "avgHb": 12.4
+          "avgHb": -12.4
         },
         {
           "pitchType": "Slider",
@@ -3951,7 +3951,7 @@
           "n": 389,
           "avgVelo": 83.5,
           "avgIvb": 6.1,
-          "avgHb": 15.5
+          "avgHb": -15.5
         }
       ]
     },
@@ -3965,14 +3965,14 @@
           "n": 351,
           "avgVelo": 93.3,
           "avgIvb": 14.3,
-          "avgHb": 6.5
+          "avgHb": -6.5
         },
         {
           "pitchType": "Changeup",
           "n": 160,
           "avgVelo": 84.7,
           "avgIvb": 9.7,
-          "avgHb": 15.6
+          "avgHb": -15.6
         },
         {
           "pitchType": "Slider",
@@ -4014,7 +4014,7 @@
           "n": 367,
           "avgVelo": 84.0,
           "avgIvb": 1.2,
-          "avgHb": 0.5
+          "avgHb": -0.5
         },
         {
           "pitchType": "Changeup",
@@ -4028,7 +4028,7 @@
           "n": 257,
           "avgVelo": 80.2,
           "avgIvb": -5.3,
-          "avgHb": 12.3
+          "avgHb": -12.3
         }
       ]
     },
@@ -4042,7 +4042,7 @@
           "n": 175,
           "avgVelo": 88.1,
           "avgIvb": 5.6,
-          "avgHb": 14.0
+          "avgHb": -14.0
         }
       ]
     },
@@ -4077,7 +4077,7 @@
           "n": 396,
           "avgVelo": 80.6,
           "avgIvb": -0.9,
-          "avgHb": 2.7
+          "avgHb": -2.7
         }
       ]
     },
@@ -4098,7 +4098,7 @@
           "n": 409,
           "avgVelo": 88.0,
           "avgIvb": 5.3,
-          "avgHb": 0.4
+          "avgHb": -0.4
         }
       ]
     },
@@ -4112,7 +4112,7 @@
           "n": 224,
           "avgVelo": 92.9,
           "avgIvb": 15.1,
-          "avgHb": 8.4
+          "avgHb": -8.4
         },
         {
           "pitchType": "Slider",
@@ -4126,7 +4126,7 @@
           "n": 134,
           "avgVelo": 84.7,
           "avgIvb": 4.1,
-          "avgHb": 13.9
+          "avgHb": -13.9
         }
       ]
     },
@@ -4154,7 +4154,7 @@
           "n": 140,
           "avgVelo": 85.8,
           "avgIvb": 1.8,
-          "avgHb": 3.8
+          "avgHb": -3.8
         },
         {
           "pitchType": "Sweeper",
@@ -4175,7 +4175,7 @@
           "n": 329,
           "avgVelo": 91.4,
           "avgIvb": 3.7,
-          "avgHb": 18.4
+          "avgHb": -18.4
         },
         {
           "pitchType": "Sweeper",
@@ -4203,7 +4203,7 @@
           "n": 263,
           "avgVelo": 81.9,
           "avgIvb": 1.6,
-          "avgHb": 0.5
+          "avgHb": -0.5
         }
       ]
     },
@@ -4231,7 +4231,7 @@
           "n": 271,
           "avgVelo": 81.9,
           "avgIvb": 5.0,
-          "avgHb": 11.4
+          "avgHb": -11.4
         }
       ]
     },
@@ -4273,7 +4273,7 @@
           "n": 209,
           "avgVelo": 77.2,
           "avgIvb": -9.8,
-          "avgHb": 9.0
+          "avgHb": -9.0
         }
       ]
     },
@@ -4301,7 +4301,7 @@
           "n": 349,
           "avgVelo": 86.1,
           "avgIvb": -0.3,
-          "avgHb": 2.7
+          "avgHb": -2.7
         }
       ]
     },
@@ -4315,14 +4315,14 @@
           "n": 491,
           "avgVelo": 93.1,
           "avgIvb": 13.5,
-          "avgHb": 6.5
+          "avgHb": -6.5
         },
         {
           "pitchType": "Sinker",
           "n": 585,
           "avgVelo": 91.9,
           "avgIvb": 6.8,
-          "avgHb": 14.7
+          "avgHb": -14.7
         },
         {
           "pitchType": "Slider",
@@ -4336,7 +4336,7 @@
           "n": 307,
           "avgVelo": 84.7,
           "avgIvb": 3.6,
-          "avgHb": 14.6
+          "avgHb": -14.6
         },
         {
           "pitchType": "Curveball",
@@ -4364,7 +4364,7 @@
           "n": 323,
           "avgVelo": 84.2,
           "avgIvb": -11.1,
-          "avgHb": 7.4
+          "avgHb": -7.4
         }
       ]
     },
@@ -4385,7 +4385,7 @@
           "n": 121,
           "avgVelo": 81.8,
           "avgIvb": 6.6,
-          "avgHb": 12.1
+          "avgHb": -12.1
         }
       ]
     },
@@ -4420,7 +4420,7 @@
           "n": 239,
           "avgVelo": 83.6,
           "avgIvb": 1.4,
-          "avgHb": 7.9
+          "avgHb": -7.9
         }
       ]
     },
@@ -4441,7 +4441,7 @@
           "n": 179,
           "avgVelo": 89.0,
           "avgIvb": 0.5,
-          "avgHb": 3.5
+          "avgHb": -3.5
         }
       ]
     },
@@ -4483,7 +4483,7 @@
           "n": 248,
           "avgVelo": 77.0,
           "avgIvb": -14.2,
-          "avgHb": 8.6
+          "avgHb": -8.6
         }
       ]
     },
@@ -4504,7 +4504,7 @@
           "n": 564,
           "avgVelo": 87.1,
           "avgIvb": -1.8,
-          "avgHb": 5.6
+          "avgHb": -5.6
         }
       ]
     },
@@ -4525,7 +4525,7 @@
           "n": 255,
           "avgVelo": 87.5,
           "avgIvb": -3.4,
-          "avgHb": 1.3
+          "avgHb": -1.3
         }
       ]
     },
@@ -4574,7 +4574,7 @@
           "n": 357,
           "avgVelo": 87.1,
           "avgIvb": 2.4,
-          "avgHb": 2.8
+          "avgHb": -2.8
         }
       ]
     },
@@ -4609,7 +4609,7 @@
           "n": 414,
           "avgVelo": 87.3,
           "avgIvb": 0.6,
-          "avgHb": 3.1
+          "avgHb": -3.1
         }
       ]
     },
@@ -4644,7 +4644,7 @@
           "n": 111,
           "avgVelo": 86.9,
           "avgIvb": 2.9,
-          "avgHb": 3.9
+          "avgHb": -3.9
         }
       ]
     },
@@ -4665,7 +4665,7 @@
           "n": 197,
           "avgVelo": 79.5,
           "avgIvb": 5.1,
-          "avgHb": 11.1
+          "avgHb": -11.1
         }
       ]
     },
@@ -4686,7 +4686,7 @@
           "n": 124,
           "avgVelo": 81.8,
           "avgIvb": 3.5,
-          "avgHb": 2.0
+          "avgHb": -2.0
         }
       ]
     },
@@ -4742,7 +4742,7 @@
           "n": 485,
           "avgVelo": 92.6,
           "avgIvb": 17.7,
-          "avgHb": 7.2
+          "avgHb": -7.2
         },
         {
           "pitchType": "Curveball",
@@ -4784,7 +4784,7 @@
           "n": 108,
           "avgVelo": 81.6,
           "avgIvb": -3.3,
-          "avgHb": 4.7
+          "avgHb": -4.7
         }
       ]
     },
@@ -4805,21 +4805,21 @@
           "n": 1371,
           "avgVelo": 87.7,
           "avgIvb": 1.9,
-          "avgHb": 2.2
+          "avgHb": -2.2
         },
         {
           "pitchType": "Sweeper",
           "n": 131,
           "avgVelo": 82.6,
           "avgIvb": -11.1,
-          "avgHb": 11.2
+          "avgHb": -11.2
         },
         {
           "pitchType": "Curveball",
           "n": 251,
           "avgVelo": 82.3,
           "avgIvb": -15.8,
-          "avgHb": 3.1
+          "avgHb": -3.1
         }
       ]
     },
@@ -4847,7 +4847,7 @@
           "n": 274,
           "avgVelo": 83.3,
           "avgIvb": 4.6,
-          "avgHb": 1.2
+          "avgHb": -1.2
         }
       ]
     },
@@ -4861,14 +4861,14 @@
           "n": 284,
           "avgVelo": 92.4,
           "avgIvb": 19.1,
-          "avgHb": 7.9
+          "avgHb": -7.9
         },
         {
           "pitchType": "Changeup",
           "n": 104,
           "avgVelo": 85.7,
           "avgIvb": 11.5,
-          "avgHb": 12.1
+          "avgHb": -12.1
         },
         {
           "pitchType": "Slider",
@@ -4889,7 +4889,7 @@
           "n": 131,
           "avgVelo": 94.3,
           "avgIvb": 17.2,
-          "avgHb": 6.8
+          "avgHb": -6.8
         }
       ]
     },
@@ -4910,7 +4910,7 @@
           "n": 206,
           "avgVelo": 82.7,
           "avgIvb": -1.3,
-          "avgHb": 15.9
+          "avgHb": -15.9
         }
       ]
     },
@@ -4924,21 +4924,21 @@
           "n": 369,
           "avgVelo": 92.0,
           "avgIvb": 14.4,
-          "avgHb": 5.9
+          "avgHb": -5.9
         },
         {
           "pitchType": "Cutter",
           "n": 166,
           "avgVelo": 88.8,
           "avgIvb": 8.6,
-          "avgHb": 1.2
+          "avgHb": -1.2
         },
         {
           "pitchType": "Changeup",
           "n": 195,
           "avgVelo": 86.7,
           "avgIvb": 6.2,
-          "avgHb": 16.1
+          "avgHb": -16.1
         }
       ]
     },
@@ -4959,7 +4959,7 @@
           "n": 211,
           "avgVelo": 87.8,
           "avgIvb": -0.3,
-          "avgHb": 3.8
+          "avgHb": -3.8
         }
       ]
     },
@@ -4994,14 +4994,14 @@
           "n": 145,
           "avgVelo": 89.3,
           "avgIvb": 3.3,
-          "avgHb": 1.7
+          "avgHb": -1.7
         },
         {
           "pitchType": "Curveball",
           "n": 379,
           "avgVelo": 84.8,
           "avgIvb": -5.5,
-          "avgHb": 8.2
+          "avgHb": -8.2
         }
       ]
     },
@@ -5022,7 +5022,7 @@
           "n": 437,
           "avgVelo": 89.6,
           "avgIvb": 5.3,
-          "avgHb": 1.1
+          "avgHb": -1.1
         }
       ]
     },
@@ -5071,7 +5071,7 @@
           "n": 233,
           "avgVelo": 86.8,
           "avgIvb": 2.6,
-          "avgHb": 3.2
+          "avgHb": -3.2
         },
         {
           "pitchType": "Changeup",
@@ -5113,7 +5113,7 @@
           "n": 419,
           "avgVelo": 90.1,
           "avgIvb": -1.9,
-          "avgHb": 3.5
+          "avgHb": -3.5
         }
       ]
     },
@@ -5148,7 +5148,7 @@
           "n": 106,
           "avgVelo": 82.9,
           "avgIvb": 0.9,
-          "avgHb": 4.9
+          "avgHb": -4.9
         }
       ]
     },
@@ -5190,7 +5190,7 @@
           "n": 202,
           "avgVelo": 91.0,
           "avgIvb": 2.2,
-          "avgHb": 7.1
+          "avgHb": -7.1
         }
       ]
     },
@@ -5232,7 +5232,7 @@
           "n": 120,
           "avgVelo": 85.6,
           "avgIvb": 2.2,
-          "avgHb": 7.6
+          "avgHb": -7.6
         }
       ]
     },
@@ -5253,7 +5253,7 @@
           "n": 484,
           "avgVelo": 86.4,
           "avgIvb": 5.9,
-          "avgHb": 1.7
+          "avgHb": -1.7
         }
       ]
     },
@@ -5309,7 +5309,7 @@
           "n": 583,
           "avgVelo": 83.5,
           "avgIvb": 4.8,
-          "avgHb": 11.7
+          "avgHb": -11.7
         }
       ]
     },
@@ -5323,14 +5323,14 @@
           "n": 631,
           "avgVelo": 96.9,
           "avgIvb": 16.1,
-          "avgHb": 8.5
+          "avgHb": -8.5
         },
         {
           "pitchType": "Changeup",
           "n": 430,
           "avgVelo": 85.5,
           "avgIvb": 2.2,
-          "avgHb": 15.8
+          "avgHb": -15.8
         },
         {
           "pitchType": "Slider",
@@ -5351,7 +5351,7 @@
           "n": 114,
           "avgVelo": 92.6,
           "avgIvb": 20.1,
-          "avgHb": 7.4
+          "avgHb": -7.4
         }
       ]
     },
@@ -5372,7 +5372,7 @@
           "n": 128,
           "avgVelo": 86.8,
           "avgIvb": 3.2,
-          "avgHb": 4.9
+          "avgHb": -4.9
         },
         {
           "pitchType": "Splitter",
@@ -5400,7 +5400,7 @@
           "n": 281,
           "avgVelo": 81.3,
           "avgIvb": -1.6,
-          "avgHb": 19.6
+          "avgHb": -19.6
         }
       ]
     },
@@ -5428,7 +5428,7 @@
           "n": 354,
           "avgVelo": 85.0,
           "avgIvb": 0.6,
-          "avgHb": 16.0
+          "avgHb": -16.0
         }
       ]
     },
@@ -5470,14 +5470,14 @@
           "n": 1201,
           "avgVelo": 94.1,
           "avgIvb": 6.3,
-          "avgHb": 16.5
+          "avgHb": -16.5
         },
         {
           "pitchType": "Changeup",
           "n": 454,
           "avgVelo": 89.9,
           "avgIvb": 1.0,
-          "avgHb": 14.8
+          "avgHb": -14.8
         },
         {
           "pitchType": "Slider",
@@ -5533,14 +5533,14 @@
           "n": 165,
           "avgVelo": 85.7,
           "avgIvb": 0.9,
-          "avgHb": 6.7
+          "avgHb": -6.7
         },
         {
           "pitchType": "Sweeper",
           "n": 114,
           "avgVelo": 84.9,
           "avgIvb": 7.1,
-          "avgHb": 8.8
+          "avgHb": -8.8
         }
       ]
     },
@@ -5554,7 +5554,7 @@
           "n": 240,
           "avgVelo": 95.1,
           "avgIvb": 14.3,
-          "avgHb": 11.7
+          "avgHb": -11.7
         },
         {
           "pitchType": "Slider",
@@ -5589,14 +5589,14 @@
           "n": 661,
           "avgVelo": 81.5,
           "avgIvb": 2.2,
-          "avgHb": 7.6
+          "avgHb": -7.6
         },
         {
           "pitchType": "Curveball",
           "n": 217,
           "avgVelo": 78.1,
           "avgIvb": -4.8,
-          "avgHb": 4.6
+          "avgHb": -4.6
         }
       ]
     },
@@ -5610,14 +5610,14 @@
           "n": 147,
           "avgVelo": 93.0,
           "avgIvb": 15.3,
-          "avgHb": 9.2
+          "avgHb": -9.2
         },
         {
           "pitchType": "Sinker",
           "n": 141,
           "avgVelo": 92.8,
           "avgIvb": 7.1,
-          "avgHb": 17.1
+          "avgHb": -17.1
         },
         {
           "pitchType": "Slider",
@@ -5638,14 +5638,14 @@
           "n": 263,
           "avgVelo": 96.4,
           "avgIvb": 16.6,
-          "avgHb": 7.8
+          "avgHb": -7.8
         },
         {
           "pitchType": "Cutter",
           "n": 260,
           "avgVelo": 90.8,
           "avgIvb": 6.8,
-          "avgHb": 3.3
+          "avgHb": -3.3
         },
         {
           "pitchType": "Slider",
@@ -5673,21 +5673,21 @@
           "n": 1284,
           "avgVelo": 97.1,
           "avgIvb": 15.6,
-          "avgHb": 8.1
+          "avgHb": -8.1
         },
         {
           "pitchType": "Cutter",
           "n": 683,
           "avgVelo": 91.5,
           "avgIvb": 5.8,
-          "avgHb": 3.8
+          "avgHb": -3.8
         },
         {
           "pitchType": "Changeup",
           "n": 142,
           "avgVelo": 91.0,
           "avgIvb": 9.0,
-          "avgHb": 15.9
+          "avgHb": -15.9
         },
         {
           "pitchType": "Sweeper",
@@ -5729,7 +5729,7 @@
           "n": 318,
           "avgVelo": 88.8,
           "avgIvb": 1.2,
-          "avgHb": 2.4
+          "avgHb": -2.4
         },
         {
           "pitchType": "Changeup",
@@ -5764,14 +5764,14 @@
           "n": 153,
           "avgVelo": 88.6,
           "avgIvb": 5.9,
-          "avgHb": 2.7
+          "avgHb": -2.7
         },
         {
           "pitchType": "Curveball",
           "n": 271,
           "avgVelo": 79.5,
           "avgIvb": -14.7,
-          "avgHb": 10.4
+          "avgHb": -10.4
         }
       ]
     },
@@ -5799,7 +5799,7 @@
           "n": 702,
           "avgVelo": 87.2,
           "avgIvb": -2.6,
-          "avgHb": 7.7
+          "avgHb": -7.7
         },
         {
           "pitchType": "Splitter",
@@ -5813,7 +5813,7 @@
           "n": 242,
           "avgVelo": 83.3,
           "avgIvb": -14.1,
-          "avgHb": 8.6
+          "avgHb": -8.6
         }
       ]
     },
@@ -5834,7 +5834,7 @@
           "n": 205,
           "avgVelo": 84.0,
           "avgIvb": 0.4,
-          "avgHb": 8.4
+          "avgHb": -8.4
         }
       ]
     },
@@ -5862,14 +5862,14 @@
           "n": 231,
           "avgVelo": 88.3,
           "avgIvb": 1.4,
-          "avgHb": 5.5
+          "avgHb": -5.5
         },
         {
           "pitchType": "Curveball",
           "n": 287,
           "avgVelo": 82.5,
           "avgIvb": -14.7,
-          "avgHb": 8.9
+          "avgHb": -8.9
         }
       ]
     },
@@ -5890,7 +5890,7 @@
           "n": 167,
           "avgVelo": 82.1,
           "avgIvb": -2.5,
-          "avgHb": 12.5
+          "avgHb": -12.5
         }
       ]
     },
@@ -5911,7 +5911,7 @@
           "n": 197,
           "avgVelo": 83.6,
           "avgIvb": 2.1,
-          "avgHb": 0.9
+          "avgHb": -0.9
         }
       ]
     },
@@ -5939,7 +5939,7 @@
           "n": 429,
           "avgVelo": 88.4,
           "avgIvb": 1.3,
-          "avgHb": 9.3
+          "avgHb": -9.3
         }
       ]
     },
@@ -5967,7 +5967,7 @@
           "n": 184,
           "avgVelo": 82.1,
           "avgIvb": 6.0,
-          "avgHb": 7.4
+          "avgHb": -7.4
         }
       ]
     },
@@ -6002,14 +6002,14 @@
           "n": 331,
           "avgVelo": 86.5,
           "avgIvb": -1.2,
-          "avgHb": 1.6
+          "avgHb": -1.6
         },
         {
           "pitchType": "Curveball",
           "n": 215,
           "avgVelo": 83.9,
           "avgIvb": -7.6,
-          "avgHb": 3.5
+          "avgHb": -3.5
         }
       ]
     },
@@ -6030,7 +6030,7 @@
           "n": 297,
           "avgVelo": 86.5,
           "avgIvb": 2.0,
-          "avgHb": 5.3
+          "avgHb": -5.3
         },
         {
           "pitchType": "Changeup",
@@ -6044,7 +6044,7 @@
           "n": 291,
           "avgVelo": 81.3,
           "avgIvb": -9.8,
-          "avgHb": 8.3
+          "avgHb": -8.3
         }
       ]
     },
@@ -6072,7 +6072,7 @@
           "n": 300,
           "avgVelo": 79.8,
           "avgIvb": 4.0,
-          "avgHb": 20.3
+          "avgHb": -20.3
         }
       ]
     },
@@ -6086,14 +6086,14 @@
           "n": 105,
           "avgVelo": 98.0,
           "avgIvb": 12.8,
-          "avgHb": 10.9
+          "avgHb": -10.9
         },
         {
           "pitchType": "Sinker",
           "n": 450,
           "avgVelo": 97.4,
           "avgIvb": 8.4,
-          "avgHb": 17.1
+          "avgHb": -17.1
         },
         {
           "pitchType": "Slider",
@@ -6128,14 +6128,14 @@
           "n": 690,
           "avgVelo": 87.7,
           "avgIvb": -1.2,
-          "avgHb": 0.1
+          "avgHb": -0.1
         },
         {
           "pitchType": "Curveball",
           "n": 307,
           "avgVelo": 80.5,
           "avgIvb": -6.0,
-          "avgHb": 12.4
+          "avgHb": -12.4
         }
       ]
     },
@@ -6163,7 +6163,7 @@
           "n": 400,
           "avgVelo": 88.8,
           "avgIvb": -1.6,
-          "avgHb": 13.0
+          "avgHb": -13.0
         }
       ]
     },
@@ -6184,7 +6184,7 @@
           "n": 174,
           "avgVelo": 88.7,
           "avgIvb": 0.8,
-          "avgHb": 1.5
+          "avgHb": -1.5
         }
       ]
     },
@@ -6198,21 +6198,21 @@
           "n": 223,
           "avgVelo": 96.0,
           "avgIvb": 12.6,
-          "avgHb": 15.8
+          "avgHb": -15.8
         },
         {
           "pitchType": "Fastball",
           "n": 199,
           "avgVelo": 95.9,
           "avgIvb": 17.3,
-          "avgHb": 9.9
+          "avgHb": -9.9
         },
         {
           "pitchType": "Cutter",
           "n": 405,
           "avgVelo": 89.2,
           "avgIvb": 4.7,
-          "avgHb": 0.1
+          "avgHb": -0.1
         },
         {
           "pitchType": "Curveball",
@@ -6240,7 +6240,7 @@
           "n": 170,
           "avgVelo": 83.8,
           "avgIvb": 2.6,
-          "avgHb": 2.8
+          "avgHb": -2.8
         }
       ]
     },
@@ -6268,14 +6268,14 @@
           "n": 254,
           "avgVelo": 86.4,
           "avgIvb": 1.1,
-          "avgHb": 1.5
+          "avgHb": -1.5
         },
         {
           "pitchType": "Curveball",
           "n": 259,
           "avgVelo": 80.5,
           "avgIvb": -13.5,
-          "avgHb": 5.7
+          "avgHb": -5.7
         }
       ]
     },
@@ -6303,7 +6303,7 @@
           "n": 437,
           "avgVelo": 82.4,
           "avgIvb": -2.2,
-          "avgHb": 17.4
+          "avgHb": -17.4
         }
       ]
     },
@@ -6317,21 +6317,21 @@
           "n": 224,
           "avgVelo": 88.8,
           "avgIvb": 7.1,
-          "avgHb": 15.1
+          "avgHb": -15.1
         },
         {
           "pitchType": "Sinker",
           "n": 333,
           "avgVelo": 88.5,
           "avgIvb": 0.5,
-          "avgHb": 17.7
+          "avgHb": -17.7
         },
         {
           "pitchType": "Changeup",
           "n": 143,
           "avgVelo": 81.1,
           "avgIvb": 2.7,
-          "avgHb": 14.9
+          "avgHb": -14.9
         },
         {
           "pitchType": "Sweeper",
@@ -6352,14 +6352,14 @@
           "n": 679,
           "avgVelo": 92.9,
           "avgIvb": 16.9,
-          "avgHb": 10.0
+          "avgHb": -10.0
         },
         {
           "pitchType": "Changeup",
           "n": 200,
           "avgVelo": 81.1,
           "avgIvb": 9.6,
-          "avgHb": 17.4
+          "avgHb": -17.4
         },
         {
           "pitchType": "Sweeper",
@@ -6457,7 +6457,7 @@
           "n": 163,
           "avgVelo": 89.3,
           "avgIvb": 4.5,
-          "avgHb": 3.7
+          "avgHb": -3.7
         },
         {
           "pitchType": "Changeup",
@@ -6471,7 +6471,7 @@
           "n": 360,
           "avgVelo": 82.9,
           "avgIvb": -15.2,
-          "avgHb": 4.7
+          "avgHb": -4.7
         }
       ]
     },
@@ -6492,7 +6492,7 @@
           "n": 482,
           "avgVelo": 89.1,
           "avgIvb": 4.3,
-          "avgHb": 5.1
+          "avgHb": -5.1
         },
         {
           "pitchType": "Changeup",
@@ -6527,7 +6527,7 @@
           "n": 886,
           "avgVelo": 86.8,
           "avgIvb": 3.9,
-          "avgHb": 6.1
+          "avgHb": -6.1
         }
       ]
     },
@@ -6576,7 +6576,7 @@
           "n": 147,
           "avgVelo": 84.1,
           "avgIvb": 5.1,
-          "avgHb": 11.5
+          "avgHb": -11.5
         }
       ]
     },
@@ -6604,7 +6604,7 @@
           "n": 152,
           "avgVelo": 85.1,
           "avgIvb": -1.1,
-          "avgHb": 6.3
+          "avgHb": -6.3
         },
         {
           "pitchType": "Cutter",
@@ -6660,7 +6660,7 @@
           "n": 336,
           "avgVelo": 88.5,
           "avgIvb": 4.0,
-          "avgHb": 1.1
+          "avgHb": -1.1
         }
       ]
     },
@@ -6709,7 +6709,7 @@
           "n": 161,
           "avgVelo": 85.4,
           "avgIvb": 2.0,
-          "avgHb": 3.1
+          "avgHb": -3.1
         }
       ]
     },
@@ -6723,21 +6723,21 @@
           "n": 1032,
           "avgVelo": 91.9,
           "avgIvb": 14.8,
-          "avgHb": 11.6
+          "avgHb": -11.6
         },
         {
           "pitchType": "Sinker",
           "n": 307,
           "avgVelo": 90.0,
           "avgIvb": 6.2,
-          "avgHb": 16.1
+          "avgHb": -16.1
         },
         {
           "pitchType": "Changeup",
           "n": 549,
           "avgVelo": 84.0,
           "avgIvb": 2.5,
-          "avgHb": 16.6
+          "avgHb": -16.6
         },
         {
           "pitchType": "Slider",
@@ -6772,7 +6772,7 @@
           "n": 228,
           "avgVelo": 85.6,
           "avgIvb": 1.0,
-          "avgHb": 1.4
+          "avgHb": -1.4
         }
       ]
     },
@@ -6793,14 +6793,14 @@
           "n": 746,
           "avgVelo": 84.7,
           "avgIvb": 2.1,
-          "avgHb": 6.7
+          "avgHb": -6.7
         },
         {
           "pitchType": "Curveball",
           "n": 560,
           "avgVelo": 77.4,
           "avgIvb": -8.6,
-          "avgHb": 13.3
+          "avgHb": -13.3
         }
       ]
     },
@@ -6821,7 +6821,7 @@
           "n": 121,
           "avgVelo": 85.4,
           "avgIvb": -0.3,
-          "avgHb": 7.2
+          "avgHb": -7.2
         }
       ]
     },
@@ -6842,7 +6842,7 @@
           "n": 195,
           "avgVelo": 86.8,
           "avgIvb": 1.0,
-          "avgHb": 4.2
+          "avgHb": -4.2
         }
       ]
     },
@@ -6877,14 +6877,14 @@
           "n": 402,
           "avgVelo": 94.9,
           "avgIvb": 18.5,
-          "avgHb": 5.7
+          "avgHb": -5.7
         },
         {
           "pitchType": "Changeup",
           "n": 185,
           "avgVelo": 85.9,
           "avgIvb": 11.2,
-          "avgHb": 13.6
+          "avgHb": -13.6
         },
         {
           "pitchType": "Slider",
@@ -6919,7 +6919,7 @@
           "n": 262,
           "avgVelo": 82.8,
           "avgIvb": -1.3,
-          "avgHb": 13.3
+          "avgHb": -13.3
         }
       ]
     },
@@ -6940,14 +6940,14 @@
           "n": 194,
           "avgVelo": 85.5,
           "avgIvb": 2.8,
-          "avgHb": 10.1
+          "avgHb": -10.1
         },
         {
           "pitchType": "Curveball",
           "n": 121,
           "avgVelo": 81.7,
           "avgIvb": -8.6,
-          "avgHb": 14.4
+          "avgHb": -14.4
         }
       ]
     },
@@ -6982,7 +6982,7 @@
           "n": 423,
           "avgVelo": 82.1,
           "avgIvb": -0.1,
-          "avgHb": 13.8
+          "avgHb": -13.8
         }
       ]
     },
@@ -6996,7 +6996,7 @@
           "n": 299,
           "avgVelo": 94.7,
           "avgIvb": 11.1,
-          "avgHb": 17.5
+          "avgHb": -17.5
         },
         {
           "pitchType": "Sweeper",
@@ -7045,7 +7045,7 @@
           "n": 952,
           "avgVelo": 81.1,
           "avgIvb": -3.0,
-          "avgHb": 12.0
+          "avgHb": -12.0
         }
       ]
     },
@@ -7073,7 +7073,7 @@
           "n": 174,
           "avgVelo": 80.7,
           "avgIvb": -2.8,
-          "avgHb": 13.5
+          "avgHb": -13.5
         }
       ]
     },
@@ -7094,7 +7094,7 @@
           "n": 426,
           "avgVelo": 83.0,
           "avgIvb": 1.1,
-          "avgHb": 13.4
+          "avgHb": -13.4
         }
       ]
     },
@@ -7108,21 +7108,21 @@
           "n": 658,
           "avgVelo": 94.5,
           "avgIvb": 15.3,
-          "avgHb": 5.0
+          "avgHb": -5.0
         },
         {
           "pitchType": "Changeup",
           "n": 304,
           "avgVelo": 88.9,
           "avgIvb": 8.6,
-          "avgHb": 15.0
+          "avgHb": -15.0
         },
         {
           "pitchType": "Cutter",
           "n": 211,
           "avgVelo": 84.9,
           "avgIvb": 3.4,
-          "avgHb": 2.3
+          "avgHb": -2.3
         }
       ]
     },
@@ -7143,14 +7143,14 @@
           "n": 195,
           "avgVelo": 87.7,
           "avgIvb": 2.4,
-          "avgHb": 1.2
+          "avgHb": -1.2
         },
         {
           "pitchType": "Curveball",
           "n": 304,
           "avgVelo": 83.7,
           "avgIvb": -11.0,
-          "avgHb": 13.9
+          "avgHb": -13.9
         }
       ]
     },
@@ -7164,14 +7164,14 @@
           "n": 928,
           "avgVelo": 93.2,
           "avgIvb": 13.8,
-          "avgHb": 10.5
+          "avgHb": -10.5
         },
         {
           "pitchType": "Changeup",
           "n": 112,
           "avgVelo": 82.6,
           "avgIvb": 9.0,
-          "avgHb": 13.9
+          "avgHb": -13.9
         },
         {
           "pitchType": "Curveball",
@@ -7220,14 +7220,14 @@
           "n": 385,
           "avgVelo": 80.4,
           "avgIvb": 0.3,
-          "avgHb": 15.7
+          "avgHb": -15.7
         },
         {
           "pitchType": "Curveball",
           "n": 364,
           "avgVelo": 79.6,
           "avgIvb": -10.7,
-          "avgHb": 9.9
+          "avgHb": -9.9
         }
       ]
     },
@@ -7255,14 +7255,14 @@
           "n": 667,
           "avgVelo": 88.8,
           "avgIvb": 2.6,
-          "avgHb": 3.8
+          "avgHb": -3.8
         },
         {
           "pitchType": "Curveball",
           "n": 178,
           "avgVelo": 81.5,
           "avgIvb": -10.7,
-          "avgHb": 6.3
+          "avgHb": -6.3
         }
       ]
     },
@@ -7276,14 +7276,14 @@
           "n": 576,
           "avgVelo": 95.0,
           "avgIvb": 11.5,
-          "avgHb": 14.8
+          "avgHb": -14.8
         },
         {
           "pitchType": "Cutter",
           "n": 256,
           "avgVelo": 90.3,
           "avgIvb": 9.9,
-          "avgHb": 0.5
+          "avgHb": -0.5
         },
         {
           "pitchType": "Curveball",
@@ -7304,7 +7304,7 @@
           "n": 493,
           "avgVelo": 92.5,
           "avgIvb": 14.7,
-          "avgHb": 10.5
+          "avgHb": -10.5
         },
         {
           "pitchType": "Slider",
@@ -7318,7 +7318,7 @@
           "n": 379,
           "avgVelo": 84.1,
           "avgIvb": 9.4,
-          "avgHb": 12.8
+          "avgHb": -12.8
         }
       ]
     },
@@ -7346,14 +7346,14 @@
           "n": 213,
           "avgVelo": 84.3,
           "avgIvb": -4.2,
-          "avgHb": 3.2
+          "avgHb": -3.2
         },
         {
           "pitchType": "Sweeper",
           "n": 179,
           "avgVelo": 78.9,
           "avgIvb": -3.7,
-          "avgHb": 17.7
+          "avgHb": -17.7
         }
       ]
     },
@@ -7374,7 +7374,7 @@
           "n": 285,
           "avgVelo": 88.5,
           "avgIvb": 1.1,
-          "avgHb": 2.1
+          "avgHb": -2.1
         }
       ]
     },
@@ -7416,14 +7416,14 @@
           "n": 228,
           "avgVelo": 79.9,
           "avgIvb": 0.0,
-          "avgHb": 15.0
+          "avgHb": -15.0
         },
         {
           "pitchType": "Curveball",
           "n": 294,
           "avgVelo": 76.8,
           "avgIvb": -9.8,
-          "avgHb": 11.1
+          "avgHb": -11.1
         }
       ]
     },
@@ -7444,7 +7444,7 @@
           "n": 252,
           "avgVelo": 84.9,
           "avgIvb": 6.4,
-          "avgHb": 3.3
+          "avgHb": -3.3
         }
       ]
     },
@@ -7465,7 +7465,7 @@
           "n": 142,
           "avgVelo": 87.8,
           "avgIvb": 2.5,
-          "avgHb": 1.3
+          "avgHb": -1.3
         }
       ]
     },
@@ -7500,7 +7500,7 @@
           "n": 408,
           "avgVelo": 86.8,
           "avgIvb": -2.5,
-          "avgHb": 5.5
+          "avgHb": -5.5
         }
       ]
     },
@@ -7514,7 +7514,7 @@
           "n": 240,
           "avgVelo": 89.8,
           "avgIvb": 16.7,
-          "avgHb": 9.4
+          "avgHb": -9.4
         },
         {
           "pitchType": "Slider",
@@ -7528,7 +7528,7 @@
           "n": 179,
           "avgVelo": 79.6,
           "avgIvb": 3.4,
-          "avgHb": 13.4
+          "avgHb": -13.4
         }
       ]
     },
@@ -7549,7 +7549,7 @@
           "n": 237,
           "avgVelo": 89.8,
           "avgIvb": 5.4,
-          "avgHb": 5.0
+          "avgHb": -5.0
         },
         {
           "pitchType": "Splitter",
@@ -7605,7 +7605,7 @@
           "n": 336,
           "avgVelo": 86.6,
           "avgIvb": 4.3,
-          "avgHb": 6.0
+          "avgHb": -6.0
         }
       ]
     },
@@ -7619,21 +7619,21 @@
           "n": 386,
           "avgVelo": 95.2,
           "avgIvb": 15.5,
-          "avgHb": 12.8
+          "avgHb": -12.8
         },
         {
           "pitchType": "Sinker",
           "n": 127,
           "avgVelo": 95.0,
           "avgIvb": 12.3,
-          "avgHb": 16.6
+          "avgHb": -16.6
         },
         {
           "pitchType": "Changeup",
           "n": 252,
           "avgVelo": 86.3,
           "avgIvb": 8.8,
-          "avgHb": 15.9
+          "avgHb": -15.9
         },
         {
           "pitchType": "Slider",
@@ -7668,7 +7668,7 @@
           "n": 244,
           "avgVelo": 86.1,
           "avgIvb": -9.5,
-          "avgHb": 6.2
+          "avgHb": -6.2
         }
       ]
     },
@@ -7710,14 +7710,14 @@
           "n": 358,
           "avgVelo": 94.0,
           "avgIvb": 3.4,
-          "avgHb": 17.6
+          "avgHb": -17.6
         },
         {
           "pitchType": "Changeup",
           "n": 157,
           "avgVelo": 85.9,
           "avgIvb": 3.2,
-          "avgHb": 15.4
+          "avgHb": -15.4
         },
         {
           "pitchType": "Slider",
@@ -7745,7 +7745,7 @@
           "n": 331,
           "avgVelo": 88.0,
           "avgIvb": -1.3,
-          "avgHb": 3.8
+          "avgHb": -3.8
         }
       ]
     },
@@ -7766,7 +7766,7 @@
           "n": 540,
           "avgVelo": 84.6,
           "avgIvb": 2.9,
-          "avgHb": 5.8
+          "avgHb": -5.8
         }
       ]
     },
@@ -7794,7 +7794,7 @@
           "n": 120,
           "avgVelo": 90.1,
           "avgIvb": -0.9,
-          "avgHb": 9.7
+          "avgHb": -9.7
         }
       ]
     },
@@ -7808,7 +7808,7 @@
           "n": 144,
           "avgVelo": 87.6,
           "avgIvb": 4.1,
-          "avgHb": 18.2
+          "avgHb": -18.2
         }
       ]
     },
@@ -7822,14 +7822,14 @@
           "n": 368,
           "avgVelo": 88.9,
           "avgIvb": 2.0,
-          "avgHb": 18.1
+          "avgHb": -18.1
         },
         {
           "pitchType": "Changeup",
           "n": 229,
           "avgVelo": 81.0,
           "avgIvb": -3.9,
-          "avgHb": 14.6
+          "avgHb": -14.6
         },
         {
           "pitchType": "Curveball",
@@ -7871,14 +7871,14 @@
           "n": 317,
           "avgVelo": 82.1,
           "avgIvb": -3.8,
-          "avgHb": 16.9
+          "avgHb": -16.9
         },
         {
           "pitchType": "Curveball",
           "n": 356,
           "avgVelo": 81.6,
           "avgIvb": -15.3,
-          "avgHb": 11.4
+          "avgHb": -11.4
         }
       ]
     },
@@ -7906,7 +7906,7 @@
           "n": 447,
           "avgVelo": 86.6,
           "avgIvb": 2.7,
-          "avgHb": 2.9
+          "avgHb": -2.9
         }
       ]
     },
@@ -7941,14 +7941,14 @@
           "n": 149,
           "avgVelo": 87.1,
           "avgIvb": 4.4,
-          "avgHb": 2.7
+          "avgHb": -2.7
         },
         {
           "pitchType": "Sweeper",
           "n": 341,
           "avgVelo": 81.3,
           "avgIvb": 2.4,
-          "avgHb": 15.0
+          "avgHb": -15.0
         }
       ]
     },
@@ -7976,7 +7976,7 @@
           "n": 362,
           "avgVelo": 83.8,
           "avgIvb": 0.1,
-          "avgHb": 11.6
+          "avgHb": -11.6
         }
       ]
     },
@@ -7990,7 +7990,7 @@
           "n": 122,
           "avgVelo": 90.0,
           "avgIvb": 6.8,
-          "avgHb": 17.7
+          "avgHb": -17.7
         }
       ]
     },
@@ -8004,14 +8004,14 @@
           "n": 347,
           "avgVelo": 92.2,
           "avgIvb": 17.1,
-          "avgHb": 4.7
+          "avgHb": -4.7
         },
         {
           "pitchType": "Changeup",
           "n": 196,
           "avgVelo": 77.8,
           "avgIvb": 12.0,
-          "avgHb": 9.1
+          "avgHb": -9.1
         },
         {
           "pitchType": "Curveball",
@@ -8046,14 +8046,14 @@
           "n": 276,
           "avgVelo": 81.7,
           "avgIvb": 0.3,
-          "avgHb": 5.6
+          "avgHb": -5.6
         },
         {
           "pitchType": "Sweeper",
           "n": 396,
           "avgVelo": 78.2,
           "avgIvb": 6.1,
-          "avgHb": 15.5
+          "avgHb": -15.5
         }
       ]
     },
@@ -8067,21 +8067,21 @@
           "n": 447,
           "avgVelo": 93.7,
           "avgIvb": 17.4,
-          "avgHb": 7.9
+          "avgHb": -7.9
         },
         {
           "pitchType": "Cutter",
           "n": 384,
           "avgVelo": 85.9,
           "avgIvb": 4.0,
-          "avgHb": 3.0
+          "avgHb": -3.0
         },
         {
           "pitchType": "Changeup",
           "n": 234,
           "avgVelo": 85.7,
           "avgIvb": 10.6,
-          "avgHb": 14.0
+          "avgHb": -14.0
         },
         {
           "pitchType": "Curveball",
@@ -8109,7 +8109,7 @@
           "n": 515,
           "avgVelo": 83.1,
           "avgIvb": 0.5,
-          "avgHb": 9.1
+          "avgHb": -9.1
         }
       ]
     },
@@ -8123,14 +8123,14 @@
           "n": 505,
           "avgVelo": 93.5,
           "avgIvb": 3.4,
-          "avgHb": 15.1
+          "avgHb": -15.1
         },
         {
           "pitchType": "Changeup",
           "n": 237,
           "avgVelo": 84.4,
           "avgIvb": 3.4,
-          "avgHb": 15.6
+          "avgHb": -15.6
         },
         {
           "pitchType": "Slider",
@@ -8151,7 +8151,7 @@
           "n": 109,
           "avgVelo": 85.3,
           "avgIvb": 1.1,
-          "avgHb": 2.0
+          "avgHb": -2.0
         }
       ]
     },
@@ -8165,7 +8165,7 @@
           "n": 120,
           "avgVelo": 90.5,
           "avgIvb": 19.6,
-          "avgHb": 7.2
+          "avgHb": -7.2
         }
       ]
     },
@@ -8200,7 +8200,7 @@
           "n": 241,
           "avgVelo": 81.1,
           "avgIvb": 0.0,
-          "avgHb": 14.1
+          "avgHb": -14.1
         }
       ]
     },
@@ -8228,7 +8228,7 @@
           "n": 711,
           "avgVelo": 88.6,
           "avgIvb": 5.4,
-          "avgHb": 1.8
+          "avgHb": -1.8
         }
       ]
     },
@@ -8270,7 +8270,7 @@
           "n": 442,
           "avgVelo": 81.9,
           "avgIvb": 2.5,
-          "avgHb": 12.5
+          "avgHb": -12.5
         }
       ]
     },
@@ -8291,7 +8291,7 @@
           "n": 375,
           "avgVelo": 87.7,
           "avgIvb": 2.6,
-          "avgHb": 4.8
+          "avgHb": -4.8
         }
       ]
     },
@@ -8326,7 +8326,7 @@
           "n": 471,
           "avgVelo": 81.1,
           "avgIvb": 2.6,
-          "avgHb": 12.2
+          "avgHb": -12.2
         }
       ]
     },
@@ -8347,7 +8347,7 @@
           "n": 161,
           "avgVelo": 88.2,
           "avgIvb": 3.7,
-          "avgHb": 6.3
+          "avgHb": -6.3
         }
       ]
     },
@@ -8361,21 +8361,21 @@
           "n": 332,
           "avgVelo": 92.1,
           "avgIvb": 15.1,
-          "avgHb": 5.3
+          "avgHb": -5.3
         },
         {
           "pitchType": "Sinker",
           "n": 597,
           "avgVelo": 91.8,
           "avgIvb": 10.2,
-          "avgHb": 14.7
+          "avgHb": -14.7
         },
         {
           "pitchType": "Changeup",
           "n": 373,
           "avgVelo": 83.1,
           "avgIvb": 11.7,
-          "avgHb": 10.2
+          "avgHb": -10.2
         },
         {
           "pitchType": "Curveball",
@@ -8403,7 +8403,7 @@
           "n": 112,
           "avgVelo": 86.4,
           "avgIvb": -3.2,
-          "avgHb": 2.3
+          "avgHb": -2.3
         }
       ]
     },
@@ -8424,7 +8424,7 @@
           "n": 256,
           "avgVelo": 87.6,
           "avgIvb": 1.9,
-          "avgHb": 5.4
+          "avgHb": -5.4
         }
       ]
     },
@@ -8438,21 +8438,21 @@
           "n": 384,
           "avgVelo": 92.5,
           "avgIvb": 17.6,
-          "avgHb": 4.2
+          "avgHb": -4.2
         },
         {
           "pitchType": "Sinker",
           "n": 111,
           "avgVelo": 91.7,
           "avgIvb": 11.7,
-          "avgHb": 14.3
+          "avgHb": -14.3
         },
         {
           "pitchType": "Changeup",
           "n": 220,
           "avgVelo": 82.2,
           "avgIvb": 6.9,
-          "avgHb": 11.6
+          "avgHb": -11.6
         }
       ]
     },
@@ -8473,7 +8473,7 @@
           "n": 360,
           "avgVelo": 89.9,
           "avgIvb": 4.4,
-          "avgHb": 3.6
+          "avgHb": -3.6
         }
       ]
     },
@@ -8501,14 +8501,14 @@
           "n": 152,
           "avgVelo": 86.6,
           "avgIvb": 2.3,
-          "avgHb": 7.2
+          "avgHb": -7.2
         },
         {
           "pitchType": "Curveball",
           "n": 105,
           "avgVelo": 83.0,
           "avgIvb": -10.8,
-          "avgHb": 8.5
+          "avgHb": -8.5
         }
       ]
     },
@@ -8522,7 +8522,7 @@
           "n": 263,
           "avgVelo": 97.9,
           "avgIvb": 7.1,
-          "avgHb": 17.8
+          "avgHb": -17.8
         }
       ]
     },
@@ -8557,21 +8557,21 @@
           "n": 857,
           "avgVelo": 90.8,
           "avgIvb": 12.8,
-          "avgHb": 13.9
+          "avgHb": -13.9
         },
         {
           "pitchType": "Fastball",
           "n": 634,
           "avgVelo": 90.7,
           "avgIvb": 16.2,
-          "avgHb": 3.9
+          "avgHb": -3.9
         },
         {
           "pitchType": "Changeup",
           "n": 544,
           "avgVelo": 85.7,
           "avgIvb": 4.3,
-          "avgHb": 14.3
+          "avgHb": -14.3
         },
         {
           "pitchType": "Curveball",
@@ -8592,21 +8592,21 @@
           "n": 203,
           "avgVelo": 90.4,
           "avgIvb": 2.1,
-          "avgHb": 16.5
+          "avgHb": -16.5
         },
         {
           "pitchType": "Cutter",
           "n": 136,
           "avgVelo": 87.2,
           "avgIvb": 7.1,
-          "avgHb": 2.3
+          "avgHb": -2.3
         },
         {
           "pitchType": "Changeup",
           "n": 160,
           "avgVelo": 83.2,
           "avgIvb": -0.1,
-          "avgHb": 12.2
+          "avgHb": -12.2
         }
       ]
     },
@@ -8620,7 +8620,7 @@
           "n": 832,
           "avgVelo": 96.1,
           "avgIvb": 19.5,
-          "avgHb": 7.1
+          "avgHb": -7.1
         },
         {
           "pitchType": "Slider",
@@ -8662,7 +8662,7 @@
           "n": 258,
           "avgVelo": 86.7,
           "avgIvb": -1.8,
-          "avgHb": 2.8
+          "avgHb": -2.8
         }
       ]
     },
@@ -8697,7 +8697,7 @@
           "n": 165,
           "avgVelo": 85.2,
           "avgIvb": 0.3,
-          "avgHb": 8.2
+          "avgHb": -8.2
         }
       ]
     },
@@ -8711,14 +8711,14 @@
           "n": 623,
           "avgVelo": 97.8,
           "avgIvb": 14.9,
-          "avgHb": 12.0
+          "avgHb": -12.0
         },
         {
           "pitchType": "Cutter",
           "n": 424,
           "avgVelo": 92.5,
           "avgIvb": 6.0,
-          "avgHb": 0.1
+          "avgHb": -0.1
         }
       ]
     },
@@ -8788,14 +8788,14 @@
           "n": 158,
           "avgVelo": 85.0,
           "avgIvb": 0.3,
-          "avgHb": 3.6
+          "avgHb": -3.6
         },
         {
           "pitchType": "Sweeper",
           "n": 128,
           "avgVelo": 82.7,
           "avgIvb": -4.2,
-          "avgHb": 12.6
+          "avgHb": -12.6
         }
       ]
     },
@@ -8844,7 +8844,7 @@
           "n": 384,
           "avgVelo": 82.0,
           "avgIvb": 4.3,
-          "avgHb": 9.2
+          "avgHb": -9.2
         }
       ]
     },
@@ -8858,7 +8858,7 @@
           "n": 120,
           "avgVelo": 85.2,
           "avgIvb": -2.2,
-          "avgHb": 7.2
+          "avgHb": -7.2
         }
       ]
     },
@@ -8872,7 +8872,7 @@
           "n": 357,
           "avgVelo": 93.9,
           "avgIvb": 16.4,
-          "avgHb": 5.2
+          "avgHb": -5.2
         }
       ]
     },
@@ -8900,7 +8900,7 @@
           "n": 344,
           "avgVelo": 86.2,
           "avgIvb": -3.7,
-          "avgHb": 1.3
+          "avgHb": -1.3
         }
       ]
     },
@@ -8935,7 +8935,7 @@
           "n": 440,
           "avgVelo": 86.4,
           "avgIvb": -8.2,
-          "avgHb": 11.3
+          "avgHb": -11.3
         }
       ]
     },
@@ -8949,7 +8949,7 @@
           "n": 395,
           "avgVelo": 93.0,
           "avgIvb": 17.7,
-          "avgHb": 7.7
+          "avgHb": -7.7
         },
         {
           "pitchType": "Slider",
@@ -8963,7 +8963,7 @@
           "n": 244,
           "avgVelo": 82.9,
           "avgIvb": 4.1,
-          "avgHb": 14.1
+          "avgHb": -14.1
         },
         {
           "pitchType": "Sweeper",
@@ -8998,7 +8998,7 @@
           "n": 609,
           "avgVelo": 87.0,
           "avgIvb": 8.5,
-          "avgHb": 2.7
+          "avgHb": -2.7
         }
       ]
     },
@@ -9040,7 +9040,7 @@
           "n": 117,
           "avgVelo": 84.7,
           "avgIvb": -1.5,
-          "avgHb": 0.0
+          "avgHb": -0.0
         }
       ]
     },
@@ -9068,7 +9068,7 @@
           "n": 428,
           "avgVelo": 85.6,
           "avgIvb": 1.7,
-          "avgHb": 9.4
+          "avgHb": -9.4
         }
       ]
     },
@@ -9089,7 +9089,7 @@
           "n": 444,
           "avgVelo": 83.0,
           "avgIvb": 3.6,
-          "avgHb": 14.2
+          "avgHb": -14.2
         }
       ]
     },
@@ -9124,7 +9124,7 @@
           "n": 255,
           "avgVelo": 89.8,
           "avgIvb": 5.0,
-          "avgHb": 2.4
+          "avgHb": -2.4
         }
       ]
     },
@@ -9152,7 +9152,7 @@
           "n": 200,
           "avgVelo": 84.0,
           "avgIvb": 0.1,
-          "avgHb": 12.1
+          "avgHb": -12.1
         }
       ]
     },
@@ -9166,14 +9166,14 @@
           "n": 1221,
           "avgVelo": 91.6,
           "avgIvb": 13.2,
-          "avgHb": 0.3
+          "avgHb": -0.3
         },
         {
           "pitchType": "Sinker",
           "n": 107,
           "avgVelo": 91.5,
           "avgIvb": 9.6,
-          "avgHb": 12.4
+          "avgHb": -12.4
         },
         {
           "pitchType": "Slider",
@@ -9201,7 +9201,7 @@
           "n": 305,
           "avgVelo": 86.7,
           "avgIvb": 5.9,
-          "avgHb": 4.0
+          "avgHb": -4.0
         },
         {
           "pitchType": "Changeup",
@@ -9215,7 +9215,7 @@
           "n": 346,
           "avgVelo": 77.6,
           "avgIvb": -13.4,
-          "avgHb": 7.2
+          "avgHb": -7.2
         }
       ]
     },
@@ -9229,14 +9229,14 @@
           "n": 405,
           "avgVelo": 95.5,
           "avgIvb": 17.6,
-          "avgHb": 6.6
+          "avgHb": -6.6
         },
         {
           "pitchType": "Cutter",
           "n": 195,
           "avgVelo": 92.3,
           "avgIvb": 12.5,
-          "avgHb": 1.8
+          "avgHb": -1.8
         },
         {
           "pitchType": "Slider",
@@ -9257,7 +9257,7 @@
           "n": 350,
           "avgVelo": 95.1,
           "avgIvb": 16.4,
-          "avgHb": 7.9
+          "avgHb": -7.9
         }
       ]
     },
@@ -9306,7 +9306,7 @@
           "n": 118,
           "avgVelo": 87.9,
           "avgIvb": 1.1,
-          "avgHb": 1.2
+          "avgHb": -1.2
         }
       ]
     },
@@ -9320,14 +9320,14 @@
           "n": 695,
           "avgVelo": 93.9,
           "avgIvb": 18.3,
-          "avgHb": 9.9
+          "avgHb": -9.9
         },
         {
           "pitchType": "Changeup",
           "n": 134,
           "avgVelo": 85.6,
           "avgIvb": 9.4,
-          "avgHb": 15.6
+          "avgHb": -15.6
         },
         {
           "pitchType": "Slider",
@@ -9390,14 +9390,14 @@
           "n": 438,
           "avgVelo": 83.6,
           "avgIvb": -1.2,
-          "avgHb": 10.2
+          "avgHb": -10.2
         },
         {
           "pitchType": "Curveball",
           "n": 177,
           "avgVelo": 78.7,
           "avgIvb": -10.9,
-          "avgHb": 13.6
+          "avgHb": -13.6
         }
       ]
     },
@@ -9425,14 +9425,14 @@
           "n": 196,
           "avgVelo": 90.2,
           "avgIvb": 17.6,
-          "avgHb": 8.6
+          "avgHb": -8.6
         },
         {
           "pitchType": "Changeup",
           "n": 132,
           "avgVelo": 81.1,
           "avgIvb": 10.0,
-          "avgHb": 9.0
+          "avgHb": -9.0
         }
       ]
     },
@@ -9446,7 +9446,7 @@
           "n": 176,
           "avgVelo": 89.4,
           "avgIvb": 2.7,
-          "avgHb": 14.9
+          "avgHb": -14.9
         }
       ]
     },
@@ -9481,14 +9481,14 @@
           "n": 444,
           "avgVelo": 82.1,
           "avgIvb": 3.9,
-          "avgHb": 4.7
+          "avgHb": -4.7
         },
         {
           "pitchType": "Sweeper",
           "n": 260,
           "avgVelo": 80.3,
           "avgIvb": 1.9,
-          "avgHb": 12.6
+          "avgHb": -12.6
         }
       ]
     },
@@ -9523,7 +9523,7 @@
           "n": 240,
           "avgVelo": 82.7,
           "avgIvb": 3.8,
-          "avgHb": 1.3
+          "avgHb": -1.3
         }
       ]
     },
@@ -9551,7 +9551,7 @@
           "n": 455,
           "avgVelo": 87.4,
           "avgIvb": -0.5,
-          "avgHb": 4.0
+          "avgHb": -4.0
         }
       ]
     },
@@ -9572,7 +9572,7 @@
           "n": 288,
           "avgVelo": 77.3,
           "avgIvb": 7.2,
-          "avgHb": 19.6
+          "avgHb": -19.6
         }
       ]
     },
@@ -9607,14 +9607,14 @@
           "n": 131,
           "avgVelo": 93.3,
           "avgIvb": 7.3,
-          "avgHb": 15.9
+          "avgHb": -15.9
         },
         {
           "pitchType": "Cutter",
           "n": 285,
           "avgVelo": 92.1,
           "avgIvb": 10.7,
-          "avgHb": 1.7
+          "avgHb": -1.7
         },
         {
           "pitchType": "Sweeper",
@@ -9635,14 +9635,14 @@
           "n": 177,
           "avgVelo": 90.0,
           "avgIvb": 16.7,
-          "avgHb": 6.2
+          "avgHb": -6.2
         },
         {
           "pitchType": "Changeup",
           "n": 106,
           "avgVelo": 82.0,
           "avgIvb": 8.2,
-          "avgHb": 14.3
+          "avgHb": -14.3
         }
       ]
     },
@@ -9656,7 +9656,7 @@
           "n": 207,
           "avgVelo": 93.0,
           "avgIvb": 17.8,
-          "avgHb": 3.6
+          "avgHb": -3.6
         },
         {
           "pitchType": "Sweeper",
@@ -9698,14 +9698,14 @@
           "n": 522,
           "avgVelo": 80.8,
           "avgIvb": 1.7,
-          "avgHb": 12.8
+          "avgHb": -12.8
         },
         {
           "pitchType": "Curveball",
           "n": 202,
           "avgVelo": 77.3,
           "avgIvb": -13.7,
-          "avgHb": 7.9
+          "avgHb": -7.9
         }
       ]
     },
@@ -9719,7 +9719,7 @@
           "n": 167,
           "avgVelo": 91.7,
           "avgIvb": 16.9,
-          "avgHb": 3.4
+          "avgHb": -3.4
         }
       ]
     },
@@ -9740,14 +9740,14 @@
           "n": 201,
           "avgVelo": 88.2,
           "avgIvb": -0.2,
-          "avgHb": 11.8
+          "avgHb": -11.8
         },
         {
           "pitchType": "Curveball",
           "n": 116,
           "avgVelo": 84.1,
           "avgIvb": -11.7,
-          "avgHb": 4.3
+          "avgHb": -4.3
         }
       ]
     },
@@ -9782,28 +9782,28 @@
           "n": 360,
           "avgVelo": 91.6,
           "avgIvb": 14.3,
-          "avgHb": 7.6
+          "avgHb": -7.6
         },
         {
           "pitchType": "Sinker",
           "n": 470,
           "avgVelo": 91.2,
           "avgIvb": 7.4,
-          "avgHb": 13.9
+          "avgHb": -13.9
         },
         {
           "pitchType": "Cutter",
           "n": 400,
           "avgVelo": 86.9,
           "avgIvb": 6.0,
-          "avgHb": 0.1
+          "avgHb": -0.1
         },
         {
           "pitchType": "Changeup",
           "n": 206,
           "avgVelo": 85.7,
           "avgIvb": 5.7,
-          "avgHb": 12.1
+          "avgHb": -12.1
         },
         {
           "pitchType": "Curveball",
@@ -9852,14 +9852,14 @@
           "n": 569,
           "avgVelo": 80.7,
           "avgIvb": -0.4,
-          "avgHb": 12.5
+          "avgHb": -12.5
         },
         {
           "pitchType": "Curveball",
           "n": 239,
           "avgVelo": 78.3,
           "avgIvb": -9.5,
-          "avgHb": 6.4
+          "avgHb": -6.4
         }
       ]
     },
@@ -9873,14 +9873,14 @@
           "n": 1196,
           "avgVelo": 92.6,
           "avgIvb": 10.8,
-          "avgHb": 14.7
+          "avgHb": -14.7
         },
         {
           "pitchType": "Changeup",
           "n": 411,
           "avgVelo": 84.8,
           "avgIvb": 1.0,
-          "avgHb": 16.4
+          "avgHb": -16.4
         }
       ]
     },
@@ -9915,7 +9915,7 @@
           "n": 279,
           "avgVelo": 74.3,
           "avgIvb": -10.5,
-          "avgHb": 14.9
+          "avgHb": -14.9
         }
       ]
     },
@@ -9936,14 +9936,14 @@
           "n": 176,
           "avgVelo": 89.9,
           "avgIvb": 3.7,
-          "avgHb": 4.9
+          "avgHb": -4.9
         },
         {
           "pitchType": "Sweeper",
           "n": 103,
           "avgVelo": 85.4,
           "avgIvb": 2.5,
-          "avgHb": 16.2
+          "avgHb": -16.2
         }
       ]
     },
@@ -9957,7 +9957,7 @@
           "n": 387,
           "avgVelo": 92.6,
           "avgIvb": 15.9,
-          "avgHb": 1.6
+          "avgHb": -1.6
         },
         {
           "pitchType": "Slider",
@@ -9992,14 +9992,14 @@
           "n": 209,
           "avgVelo": 90.9,
           "avgIvb": 3.3,
-          "avgHb": 4.7
+          "avgHb": -4.7
         },
         {
           "pitchType": "Curveball",
           "n": 218,
           "avgVelo": 85.6,
           "avgIvb": -9.7,
-          "avgHb": 4.9
+          "avgHb": -4.9
         }
       ]
     },
@@ -10020,7 +10020,7 @@
           "n": 165,
           "avgVelo": 77.0,
           "avgIvb": -13.9,
-          "avgHb": 7.0
+          "avgHb": -7.0
         }
       ]
     },
@@ -10062,7 +10062,7 @@
           "n": 127,
           "avgVelo": 80.4,
           "avgIvb": -8.5,
-          "avgHb": 6.7
+          "avgHb": -6.7
         }
       ]
     },
@@ -10083,7 +10083,7 @@
           "n": 400,
           "avgVelo": 77.4,
           "avgIvb": -8.8,
-          "avgHb": 18.1
+          "avgHb": -18.1
         }
       ]
     },
@@ -10104,7 +10104,7 @@
           "n": 257,
           "avgVelo": 85.1,
           "avgIvb": 2.5,
-          "avgHb": 3.7
+          "avgHb": -3.7
         },
         {
           "pitchType": "Changeup",
@@ -10118,7 +10118,7 @@
           "n": 186,
           "avgVelo": 79.6,
           "avgIvb": -14.7,
-          "avgHb": 8.1
+          "avgHb": -8.1
         }
       ]
     },
@@ -10132,28 +10132,28 @@
           "n": 622,
           "avgVelo": 91.2,
           "avgIvb": 15.8,
-          "avgHb": 7.4
+          "avgHb": -7.4
         },
         {
           "pitchType": "Sinker",
           "n": 184,
           "avgVelo": 91.2,
           "avgIvb": 14.1,
-          "avgHb": 12.2
+          "avgHb": -12.2
         },
         {
           "pitchType": "Cutter",
           "n": 243,
           "avgVelo": 85.3,
           "avgIvb": 5.8,
-          "avgHb": 4.8
+          "avgHb": -4.8
         },
         {
           "pitchType": "Changeup",
           "n": 303,
           "avgVelo": 81.7,
           "avgIvb": 2.6,
-          "avgHb": 1.7
+          "avgHb": -1.7
         },
         {
           "pitchType": "Sweeper",
@@ -10174,7 +10174,7 @@
           "n": 104,
           "avgVelo": 87.0,
           "avgIvb": 8.2,
-          "avgHb": 3.0
+          "avgHb": -3.0
         }
       ]
     },
@@ -10202,7 +10202,7 @@
           "n": 982,
           "avgVelo": 88.4,
           "avgIvb": -0.1,
-          "avgHb": 0.9
+          "avgHb": -0.9
         },
         {
           "pitchType": "Splitter",
@@ -10216,7 +10216,7 @@
           "n": 359,
           "avgVelo": 83.2,
           "avgIvb": -3.9,
-          "avgHb": 13.5
+          "avgHb": -13.5
         }
       ]
     },
@@ -10251,7 +10251,7 @@
           "n": 680,
           "avgVelo": 83.8,
           "avgIvb": -0.9,
-          "avgHb": 16.4
+          "avgHb": -16.4
         }
       ]
     },
@@ -10272,14 +10272,14 @@
           "n": 250,
           "avgVelo": 90.1,
           "avgIvb": 6.3,
-          "avgHb": 3.7
+          "avgHb": -3.7
         },
         {
           "pitchType": "Curveball",
           "n": 140,
           "avgVelo": 84.6,
           "avgIvb": -7.2,
-          "avgHb": 2.4
+          "avgHb": -2.4
         }
       ]
     },
@@ -10314,7 +10314,7 @@
           "n": 264,
           "avgVelo": 85.7,
           "avgIvb": -3.1,
-          "avgHb": 0.1
+          "avgHb": -0.1
         }
       ]
     },
@@ -10342,7 +10342,7 @@
           "n": 382,
           "avgVelo": 84.1,
           "avgIvb": 4.2,
-          "avgHb": 17.5
+          "avgHb": -17.5
         }
       ]
     },
@@ -10377,7 +10377,7 @@
           "n": 639,
           "avgVelo": 85.7,
           "avgIvb": 0.8,
-          "avgHb": 0.9
+          "avgHb": -0.9
         }
       ]
     },
@@ -10419,7 +10419,7 @@
           "n": 116,
           "avgVelo": 82.8,
           "avgIvb": -0.1,
-          "avgHb": 7.9
+          "avgHb": -7.9
         }
       ]
     },
@@ -10447,7 +10447,7 @@
           "n": 691,
           "avgVelo": 87.5,
           "avgIvb": 6.8,
-          "avgHb": 5.7
+          "avgHb": -5.7
         }
       ]
     },
@@ -10475,7 +10475,7 @@
           "n": 181,
           "avgVelo": 85.8,
           "avgIvb": 0.2,
-          "avgHb": 3.5
+          "avgHb": -3.5
         }
       ]
     },
@@ -10510,7 +10510,7 @@
           "n": 574,
           "avgVelo": 85.8,
           "avgIvb": 2.1,
-          "avgHb": 6.6
+          "avgHb": -6.6
         }
       ]
     },
@@ -10524,7 +10524,7 @@
           "n": 137,
           "avgVelo": 95.0,
           "avgIvb": 13.9,
-          "avgHb": 9.5
+          "avgHb": -9.5
         }
       ]
     },
@@ -10559,7 +10559,7 @@
           "n": 201,
           "avgVelo": 86.8,
           "avgIvb": 1.0,
-          "avgHb": 7.2
+          "avgHb": -7.2
         },
         {
           "pitchType": "Changeup",
@@ -10573,7 +10573,7 @@
           "n": 496,
           "avgVelo": 85.1,
           "avgIvb": 2.7,
-          "avgHb": 15.0
+          "avgHb": -15.0
         }
       ]
     },
@@ -10594,14 +10594,14 @@
           "n": 477,
           "avgVelo": 87.3,
           "avgIvb": -5.5,
-          "avgHb": 0.2
+          "avgHb": -0.2
         },
         {
           "pitchType": "Curveball",
           "n": 141,
           "avgVelo": 84.6,
           "avgIvb": -12.0,
-          "avgHb": 3.3
+          "avgHb": -3.3
         }
       ]
     },
@@ -10615,7 +10615,7 @@
           "n": 316,
           "avgVelo": 95.8,
           "avgIvb": 9.1,
-          "avgHb": 9.1
+          "avgHb": -9.1
         },
         {
           "pitchType": "Sweeper",
@@ -10664,21 +10664,21 @@
           "n": 1658,
           "avgVelo": 96.0,
           "avgIvb": 17.6,
-          "avgHb": 5.9
+          "avgHb": -5.9
         },
         {
           "pitchType": "Cutter",
           "n": 424,
           "avgVelo": 91.1,
           "avgIvb": 8.6,
-          "avgHb": 1.4
+          "avgHb": -1.4
         },
         {
           "pitchType": "Changeup",
           "n": 277,
           "avgVelo": 85.9,
           "avgIvb": 9.4,
-          "avgHb": 12.4
+          "avgHb": -12.4
         },
         {
           "pitchType": "Curveball",
@@ -10713,7 +10713,7 @@
           "n": 278,
           "avgVelo": 89.3,
           "avgIvb": -1.2,
-          "avgHb": 4.5
+          "avgHb": -4.5
         }
       ]
     },
@@ -10727,21 +10727,21 @@
           "n": 175,
           "avgVelo": 89.7,
           "avgIvb": 15.3,
-          "avgHb": 11.4
+          "avgHb": -11.4
         },
         {
           "pitchType": "Cutter",
           "n": 130,
           "avgVelo": 85.7,
           "avgIvb": 8.8,
-          "avgHb": 0.6
+          "avgHb": -0.6
         },
         {
           "pitchType": "Changeup",
           "n": 139,
           "avgVelo": 80.2,
           "avgIvb": 4.2,
-          "avgHb": 16.3
+          "avgHb": -16.3
         }
       ]
     },
@@ -10769,7 +10769,7 @@
           "n": 425,
           "avgVelo": 85.3,
           "avgIvb": -2.2,
-          "avgHb": 4.5
+          "avgHb": -4.5
         },
         {
           "pitchType": "Splitter",
@@ -10804,7 +10804,7 @@
           "n": 172,
           "avgVelo": 73.5,
           "avgIvb": -17.0,
-          "avgHb": 9.2
+          "avgHb": -9.2
         }
       ]
     },
@@ -10818,28 +10818,28 @@
           "n": 101,
           "avgVelo": 91.5,
           "avgIvb": 15.1,
-          "avgHb": 10.6
+          "avgHb": -10.6
         },
         {
           "pitchType": "Sinker",
           "n": 806,
           "avgVelo": 90.7,
           "avgIvb": 10.0,
-          "avgHb": 16.0
+          "avgHb": -16.0
         },
         {
           "pitchType": "Cutter",
           "n": 485,
           "avgVelo": 87.9,
           "avgIvb": 12.2,
-          "avgHb": 0.8
+          "avgHb": -0.8
         },
         {
           "pitchType": "Changeup",
           "n": 501,
           "avgVelo": 83.4,
           "avgIvb": 8.2,
-          "avgHb": 14.4
+          "avgHb": -14.4
         },
         {
           "pitchType": "Curveball",
@@ -10874,7 +10874,7 @@
           "n": 168,
           "avgVelo": 81.2,
           "avgIvb": -0.1,
-          "avgHb": 13.8
+          "avgHb": -13.8
         }
       ]
     },
@@ -10909,7 +10909,7 @@
           "n": 358,
           "avgVelo": 87.5,
           "avgIvb": -1.9,
-          "avgHb": 7.2
+          "avgHb": -7.2
         }
       ]
     },
@@ -10923,7 +10923,7 @@
           "n": 115,
           "avgVelo": 97.3,
           "avgIvb": 19.1,
-          "avgHb": 6.6
+          "avgHb": -6.6
         }
       ]
     },
@@ -10937,7 +10937,7 @@
           "n": 103,
           "avgVelo": 81.5,
           "avgIvb": -8.3,
-          "avgHb": 1.9
+          "avgHb": -1.9
         }
       ]
     },
@@ -10958,7 +10958,7 @@
           "n": 129,
           "avgVelo": 82.7,
           "avgIvb": 5.0,
-          "avgHb": 14.7
+          "avgHb": -14.7
         }
       ]
     },
@@ -10986,7 +10986,7 @@
           "n": 128,
           "avgVelo": 83.2,
           "avgIvb": 3.2,
-          "avgHb": 14.9
+          "avgHb": -14.9
         }
       ]
     },
@@ -11007,7 +11007,7 @@
           "n": 148,
           "avgVelo": 84.1,
           "avgIvb": 10.2,
-          "avgHb": 8.1
+          "avgHb": -8.1
         }
       ]
     },
@@ -11021,14 +11021,14 @@
           "n": 427,
           "avgVelo": 92.7,
           "avgIvb": 17.4,
-          "avgHb": 10.2
+          "avgHb": -10.2
         },
         {
           "pitchType": "Changeup",
           "n": 271,
           "avgVelo": 82.8,
           "avgIvb": 7.8,
-          "avgHb": 16.7
+          "avgHb": -16.7
         },
         {
           "pitchType": "Curveball",
@@ -11063,21 +11063,21 @@
           "n": 524,
           "avgVelo": 93.4,
           "avgIvb": 16.1,
-          "avgHb": 14.4
+          "avgHb": -14.4
         },
         {
           "pitchType": "Sinker",
           "n": 150,
           "avgVelo": 93.4,
           "avgIvb": 10.9,
-          "avgHb": 17.4
+          "avgHb": -17.4
         },
         {
           "pitchType": "Cutter",
           "n": 116,
           "avgVelo": 88.5,
           "avgIvb": 8.5,
-          "avgHb": 0.0
+          "avgHb": -0.0
         },
         {
           "pitchType": "Slider",
@@ -11119,7 +11119,7 @@
           "n": 486,
           "avgVelo": 79.3,
           "avgIvb": 4.6,
-          "avgHb": 13.3
+          "avgHb": -13.3
         }
       ]
     },
@@ -11133,14 +11133,14 @@
           "n": 259,
           "avgVelo": 92.0,
           "avgIvb": 13.8,
-          "avgHb": 11.5
+          "avgHb": -11.5
         },
         {
           "pitchType": "Changeup",
           "n": 175,
           "avgVelo": 80.9,
           "avgIvb": 5.7,
-          "avgHb": 14.8
+          "avgHb": -14.8
         },
         {
           "pitchType": "Slider",
@@ -11161,21 +11161,21 @@
           "n": 279,
           "avgVelo": 95.4,
           "avgIvb": 13.6,
-          "avgHb": 13.0
+          "avgHb": -13.0
         },
         {
           "pitchType": "Fastball",
           "n": 380,
           "avgVelo": 94.7,
           "avgIvb": 16.3,
-          "avgHb": 7.0
+          "avgHb": -7.0
         },
         {
           "pitchType": "Cutter",
           "n": 175,
           "avgVelo": 91.4,
           "avgIvb": 9.6,
-          "avgHb": 1.4
+          "avgHb": -1.4
         },
         {
           "pitchType": "Slider",
@@ -11196,28 +11196,28 @@
           "n": 892,
           "avgVelo": 93.9,
           "avgIvb": 11.1,
-          "avgHb": 0.2
+          "avgHb": -0.2
         },
         {
           "pitchType": "Sinker",
           "n": 458,
           "avgVelo": 93.5,
           "avgIvb": 8.5,
-          "avgHb": 10.2
+          "avgHb": -10.2
         },
         {
           "pitchType": "Cutter",
           "n": 136,
           "avgVelo": 88.3,
           "avgIvb": 3.1,
-          "avgHb": 3.1
+          "avgHb": -3.1
         },
         {
           "pitchType": "Changeup",
           "n": 377,
           "avgVelo": 85.7,
           "avgIvb": 4.4,
-          "avgHb": 12.1
+          "avgHb": -12.1
         },
         {
           "pitchType": "Slider",
@@ -11273,7 +11273,7 @@
           "n": 393,
           "avgVelo": 88.2,
           "avgIvb": -0.5,
-          "avgHb": 1.8
+          "avgHb": -1.8
         },
         {
           "pitchType": "Changeup",
@@ -11301,7 +11301,7 @@
           "n": 149,
           "avgVelo": 85.0,
           "avgIvb": 3.9,
-          "avgHb": 4.4
+          "avgHb": -4.4
         }
       ]
     },
@@ -11343,7 +11343,7 @@
           "n": 135,
           "avgVelo": 85.6,
           "avgIvb": 2.2,
-          "avgHb": 2.8
+          "avgHb": -2.8
         }
       ]
     },
@@ -11371,7 +11371,7 @@
           "n": 439,
           "avgVelo": 86.9,
           "avgIvb": 0.0,
-          "avgHb": 4.2
+          "avgHb": -4.2
         }
       ]
     },
@@ -11392,7 +11392,7 @@
           "n": 254,
           "avgVelo": 83.2,
           "avgIvb": -3.7,
-          "avgHb": 16.8
+          "avgHb": -16.8
         }
       ]
     },
@@ -11427,14 +11427,14 @@
           "n": 162,
           "avgVelo": 85.7,
           "avgIvb": 1.6,
-          "avgHb": 3.7
+          "avgHb": -3.7
         },
         {
           "pitchType": "Sweeper",
           "n": 514,
           "avgVelo": 82.0,
           "avgIvb": 3.4,
-          "avgHb": 15.0
+          "avgHb": -15.0
         }
       ]
     },
@@ -11462,7 +11462,7 @@
           "n": 125,
           "avgVelo": 87.1,
           "avgIvb": -1.2,
-          "avgHb": 5.6
+          "avgHb": -5.6
         }
       ]
     },
@@ -11497,7 +11497,7 @@
           "n": 183,
           "avgVelo": 85.2,
           "avgIvb": -2.0,
-          "avgHb": 3.6
+          "avgHb": -3.6
         },
         {
           "pitchType": "Changeup",
@@ -11511,14 +11511,14 @@
           "n": 130,
           "avgVelo": 82.0,
           "avgIvb": -0.2,
-          "avgHb": 13.2
+          "avgHb": -13.2
         },
         {
           "pitchType": "Curveball",
           "n": 165,
           "avgVelo": 81.7,
           "avgIvb": -13.6,
-          "avgHb": 4.0
+          "avgHb": -4.0
         }
       ]
     },
@@ -11602,7 +11602,7 @@
           "n": 468,
           "avgVelo": 82.0,
           "avgIvb": -3.5,
-          "avgHb": 4.8
+          "avgHb": -4.8
         }
       ]
     },
@@ -11630,14 +11630,14 @@
           "n": 504,
           "avgVelo": 83.9,
           "avgIvb": -2.4,
-          "avgHb": 2.0
+          "avgHb": -2.0
         },
         {
           "pitchType": "Sweeper",
           "n": 136,
           "avgVelo": 80.7,
           "avgIvb": 0.8,
-          "avgHb": 15.7
+          "avgHb": -15.7
         }
       ]
     },
@@ -11672,7 +11672,7 @@
           "n": 240,
           "avgVelo": 84.1,
           "avgIvb": 1.4,
-          "avgHb": 2.7
+          "avgHb": -2.7
         },
         {
           "pitchType": "Changeup",
@@ -11686,7 +11686,7 @@
           "n": 212,
           "avgVelo": 75.2,
           "avgIvb": -12.0,
-          "avgHb": 12.3
+          "avgHb": -12.3
         }
       ]
     },
@@ -11714,7 +11714,7 @@
           "n": 247,
           "avgVelo": 85.3,
           "avgIvb": 3.4,
-          "avgHb": 2.7
+          "avgHb": -2.7
         }
       ]
     },
@@ -11735,14 +11735,14 @@
           "n": 255,
           "avgVelo": 92.1,
           "avgIvb": 8.3,
-          "avgHb": 2.2
+          "avgHb": -2.2
         },
         {
           "pitchType": "Curveball",
           "n": 357,
           "avgVelo": 87.8,
           "avgIvb": -7.4,
-          "avgHb": 1.3
+          "avgHb": -1.3
         }
       ]
     },
@@ -11784,7 +11784,7 @@
           "n": 656,
           "avgVelo": 86.5,
           "avgIvb": 3.1,
-          "avgHb": 3.3
+          "avgHb": -3.3
         },
         {
           "pitchType": "Changeup",
@@ -11798,14 +11798,14 @@
           "n": 111,
           "avgVelo": 80.8,
           "avgIvb": -1.4,
-          "avgHb": 12.5
+          "avgHb": -12.5
         },
         {
           "pitchType": "Curveball",
           "n": 328,
           "avgVelo": 76.3,
           "avgIvb": -14.1,
-          "avgHb": 7.9
+          "avgHb": -7.9
         }
       ]
     },
@@ -11840,21 +11840,21 @@
           "n": 270,
           "avgVelo": 87.5,
           "avgIvb": 0.9,
-          "avgHb": 4.7
+          "avgHb": -4.7
         },
         {
           "pitchType": "Sweeper",
           "n": 441,
           "avgVelo": 83.0,
           "avgIvb": -0.2,
-          "avgHb": 17.5
+          "avgHb": -17.5
         },
         {
           "pitchType": "Curveball",
           "n": 274,
           "avgVelo": 78.3,
           "avgIvb": -13.0,
-          "avgHb": 13.4
+          "avgHb": -13.4
         }
       ]
     },
@@ -11882,14 +11882,14 @@
           "n": 810,
           "avgVelo": 84.3,
           "avgIvb": -0.6,
-          "avgHb": 14.8
+          "avgHb": -14.8
         },
         {
           "pitchType": "Curveball",
           "n": 299,
           "avgVelo": 80.4,
           "avgIvb": -13.2,
-          "avgHb": 11.3
+          "avgHb": -11.3
         }
       ]
     },
@@ -11917,14 +11917,14 @@
           "n": 1168,
           "avgVelo": 92.5,
           "avgIvb": 17.6,
-          "avgHb": 5.2
+          "avgHb": -5.2
         },
         {
           "pitchType": "Splitter",
           "n": 458,
           "avgVelo": 85.6,
           "avgIvb": 8.3,
-          "avgHb": 6.9
+          "avgHb": -6.9
         },
         {
           "pitchType": "Slider",
@@ -11959,14 +11959,14 @@
           "n": 431,
           "avgVelo": 87.9,
           "avgIvb": 0.5,
-          "avgHb": 6.3
+          "avgHb": -6.3
         },
         {
           "pitchType": "Curveball",
           "n": 122,
           "avgVelo": 80.9,
           "avgIvb": -12.0,
-          "avgHb": 12.0
+          "avgHb": -12.0
         }
       ]
     },
@@ -12001,7 +12001,7 @@
           "n": 359,
           "avgVelo": 76.7,
           "avgIvb": -7.4,
-          "avgHb": 9.2
+          "avgHb": -9.2
         }
       ]
     },
@@ -12015,21 +12015,21 @@
           "n": 1266,
           "avgVelo": 92.1,
           "avgIvb": 19.2,
-          "avgHb": 4.9
+          "avgHb": -4.9
         },
         {
           "pitchType": "Cutter",
           "n": 798,
           "avgVelo": 87.5,
           "avgIvb": 8.6,
-          "avgHb": 4.6
+          "avgHb": -4.6
         },
         {
           "pitchType": "Changeup",
           "n": 274,
           "avgVelo": 83.6,
           "avgIvb": 4.3,
-          "avgHb": 13.8
+          "avgHb": -13.8
         },
         {
           "pitchType": "Sweeper",
@@ -12064,7 +12064,7 @@
           "n": 261,
           "avgVelo": 81.7,
           "avgIvb": -1.9,
-          "avgHb": 1.8
+          "avgHb": -1.8
         }
       ]
     },
@@ -12092,21 +12092,21 @@
           "n": 516,
           "avgVelo": 94.2,
           "avgIvb": 10.5,
-          "avgHb": 16.8
+          "avgHb": -16.8
         },
         {
           "pitchType": "Sinker",
           "n": 532,
           "avgVelo": 94.1,
           "avgIvb": 7.1,
-          "avgHb": 18.4
+          "avgHb": -18.4
         },
         {
           "pitchType": "Changeup",
           "n": 306,
           "avgVelo": 88.1,
           "avgIvb": 1.2,
-          "avgHb": 17.8
+          "avgHb": -17.8
         },
         {
           "pitchType": "Curveball",
@@ -12148,14 +12148,14 @@
           "n": 130,
           "avgVelo": 84.9,
           "avgIvb": 2.7,
-          "avgHb": 1.2
+          "avgHb": -1.2
         },
         {
           "pitchType": "Curveball",
           "n": 253,
           "avgVelo": 80.8,
           "avgIvb": -13.8,
-          "avgHb": 0.1
+          "avgHb": -0.1
         },
         {
           "pitchType": "Changeup",
@@ -12183,14 +12183,14 @@
           "n": 232,
           "avgVelo": 86.5,
           "avgIvb": -1.9,
-          "avgHb": 1.7
+          "avgHb": -1.7
         },
         {
           "pitchType": "Curveball",
           "n": 177,
           "avgVelo": 81.5,
           "avgIvb": -13.6,
-          "avgHb": 3.2
+          "avgHb": -3.2
         }
       ]
     },
@@ -12211,7 +12211,7 @@
           "n": 266,
           "avgVelo": 84.5,
           "avgIvb": 1.7,
-          "avgHb": 1.8
+          "avgHb": -1.8
         }
       ]
     },
@@ -12239,14 +12239,14 @@
           "n": 613,
           "avgVelo": 82.4,
           "avgIvb": 3.9,
-          "avgHb": 13.6
+          "avgHb": -13.6
         },
         {
           "pitchType": "Curveball",
           "n": 389,
           "avgVelo": 80.0,
           "avgIvb": -15.2,
-          "avgHb": 7.8
+          "avgHb": -7.8
         }
       ]
     },
@@ -12274,7 +12274,7 @@
           "n": 349,
           "avgVelo": 79.4,
           "avgIvb": 5.8,
-          "avgHb": 12.0
+          "avgHb": -12.0
         }
       ]
     },
@@ -12316,7 +12316,7 @@
           "n": 605,
           "avgVelo": 86.2,
           "avgIvb": -0.8,
-          "avgHb": 16.2
+          "avgHb": -16.2
         }
       ]
     },
@@ -12351,7 +12351,7 @@
           "n": 223,
           "avgVelo": 85.8,
           "avgIvb": 4.3,
-          "avgHb": 5.7
+          "avgHb": -5.7
         }
       ]
     },
@@ -12386,14 +12386,14 @@
           "n": 654,
           "avgVelo": 84.5,
           "avgIvb": -0.3,
-          "avgHb": 12.6
+          "avgHb": -12.6
         },
         {
           "pitchType": "Curveball",
           "n": 297,
           "avgVelo": 82.4,
           "avgIvb": -10.6,
-          "avgHb": 6.6
+          "avgHb": -6.6
         }
       ]
     },
@@ -12407,21 +12407,21 @@
           "n": 1030,
           "avgVelo": 91.5,
           "avgIvb": 10.9,
-          "avgHb": 13.9
+          "avgHb": -13.9
         },
         {
           "pitchType": "Fastball",
           "n": 166,
           "avgVelo": 91.3,
           "avgIvb": 14.4,
-          "avgHb": 7.8
+          "avgHb": -7.8
         },
         {
           "pitchType": "Cutter",
           "n": 554,
           "avgVelo": 85.7,
           "avgIvb": 4.6,
-          "avgHb": 2.1
+          "avgHb": -2.1
         },
         {
           "pitchType": "Slider",
@@ -12442,14 +12442,14 @@
           "n": 230,
           "avgVelo": 93.7,
           "avgIvb": 16.1,
-          "avgHb": 6.8
+          "avgHb": -6.8
         },
         {
           "pitchType": "Sinker",
           "n": 252,
           "avgVelo": 93.7,
           "avgIvb": 13.6,
-          "avgHb": 13.0
+          "avgHb": -13.0
         },
         {
           "pitchType": "Slider",
@@ -12463,7 +12463,7 @@
           "n": 409,
           "avgVelo": 82.9,
           "avgIvb": 9.9,
-          "avgHb": 14.2
+          "avgHb": -14.2
         },
         {
           "pitchType": "Curveball",
@@ -12512,14 +12512,14 @@
           "n": 201,
           "avgVelo": 81.3,
           "avgIvb": -4.2,
-          "avgHb": 14.8
+          "avgHb": -14.8
         },
         {
           "pitchType": "Curveball",
           "n": 124,
           "avgVelo": 79.5,
           "avgIvb": -16.3,
-          "avgHb": 7.2
+          "avgHb": -7.2
         }
       ]
     },
@@ -12540,7 +12540,7 @@
           "n": 249,
           "avgVelo": 83.1,
           "avgIvb": 7.4,
-          "avgHb": 11.9
+          "avgHb": -11.9
         }
       ]
     },
@@ -12575,21 +12575,21 @@
           "n": 132,
           "avgVelo": 86.6,
           "avgIvb": 6.8,
-          "avgHb": 1.6
+          "avgHb": -1.6
         },
         {
           "pitchType": "Sweeper",
           "n": 212,
           "avgVelo": 84.7,
           "avgIvb": 5.5,
-          "avgHb": 11.6
+          "avgHb": -11.6
         },
         {
           "pitchType": "Curveball",
           "n": 230,
           "avgVelo": 83.0,
           "avgIvb": -3.9,
-          "avgHb": 7.1
+          "avgHb": -7.1
         }
       ]
     },
@@ -12624,7 +12624,7 @@
           "n": 228,
           "avgVelo": 77.6,
           "avgIvb": -15.3,
-          "avgHb": 9.2
+          "avgHb": -9.2
         }
       ]
     },
@@ -12645,7 +12645,7 @@
           "n": 312,
           "avgVelo": 85.0,
           "avgIvb": -7.6,
-          "avgHb": 4.4
+          "avgHb": -4.4
         }
       ]
     },
@@ -12673,7 +12673,7 @@
           "n": 195,
           "avgVelo": 86.9,
           "avgIvb": 0.7,
-          "avgHb": 4.1
+          "avgHb": -4.1
         }
       ]
     },
@@ -12715,14 +12715,14 @@
           "n": 241,
           "avgVelo": 80.9,
           "avgIvb": 5.5,
-          "avgHb": 17.4
+          "avgHb": -17.4
         },
         {
           "pitchType": "Curveball",
           "n": 311,
           "avgVelo": 74.7,
           "avgIvb": -12.1,
-          "avgHb": 18.1
+          "avgHb": -18.1
         }
       ]
     },
@@ -12743,7 +12743,7 @@
           "n": 656,
           "avgVelo": 85.4,
           "avgIvb": -4.5,
-          "avgHb": 9.8
+          "avgHb": -9.8
         }
       ]
     },
@@ -12764,7 +12764,7 @@
           "n": 241,
           "avgVelo": 83.0,
           "avgIvb": -0.7,
-          "avgHb": 16.7
+          "avgHb": -16.7
         }
       ]
     },
@@ -12785,7 +12785,7 @@
           "n": 197,
           "avgVelo": 87.7,
           "avgIvb": 3.0,
-          "avgHb": 2.2
+          "avgHb": -2.2
         }
       ]
     },
@@ -12820,14 +12820,14 @@
           "n": 226,
           "avgVelo": 87.1,
           "avgIvb": 2.3,
-          "avgHb": 4.6
+          "avgHb": -4.6
         },
         {
           "pitchType": "Curveball",
           "n": 118,
           "avgVelo": 80.6,
           "avgIvb": -9.4,
-          "avgHb": 5.6
+          "avgHb": -5.6
         }
       ]
     },
@@ -12890,7 +12890,7 @@
           "n": 192,
           "avgVelo": 84.2,
           "avgIvb": 3.6,
-          "avgHb": 10.8
+          "avgHb": -10.8
         }
       ]
     },
@@ -12911,7 +12911,7 @@
           "n": 350,
           "avgVelo": 84.7,
           "avgIvb": -1.9,
-          "avgHb": 9.0
+          "avgHb": -9.0
         }
       ]
     },
@@ -12953,14 +12953,14 @@
           "n": 277,
           "avgVelo": 82.2,
           "avgIvb": -4.6,
-          "avgHb": 12.5
+          "avgHb": -12.5
         },
         {
           "pitchType": "Sweeper",
           "n": 221,
           "avgVelo": 82.2,
           "avgIvb": 1.4,
-          "avgHb": 13.4
+          "avgHb": -13.4
         }
       ]
     },
@@ -12974,28 +12974,28 @@
           "n": 461,
           "avgVelo": 91.9,
           "avgIvb": 12.3,
-          "avgHb": 5.3
+          "avgHb": -5.3
         },
         {
           "pitchType": "Sinker",
           "n": 739,
           "avgVelo": 90.8,
           "avgIvb": 5.1,
-          "avgHb": 15.2
+          "avgHb": -15.2
         },
         {
           "pitchType": "Cutter",
           "n": 285,
           "avgVelo": 86.5,
           "avgIvb": 5.2,
-          "avgHb": 3.7
+          "avgHb": -3.7
         },
         {
           "pitchType": "Changeup",
           "n": 384,
           "avgVelo": 80.0,
           "avgIvb": 1.7,
-          "avgHb": 10.7
+          "avgHb": -10.7
         },
         {
           "pitchType": "Curveball",
@@ -13016,7 +13016,7 @@
           "n": 171,
           "avgVelo": 95.2,
           "avgIvb": 15.7,
-          "avgHb": 6.7
+          "avgHb": -6.7
         },
         {
           "pitchType": "Curveball",
@@ -13065,7 +13065,7 @@
           "n": 195,
           "avgVelo": 85.0,
           "avgIvb": 1.7,
-          "avgHb": 14.1
+          "avgHb": -14.1
         }
       ]
     },
@@ -13100,14 +13100,14 @@
           "n": 515,
           "avgVelo": 84.8,
           "avgIvb": -2.2,
-          "avgHb": 5.6
+          "avgHb": -5.6
         },
         {
           "pitchType": "Curveball",
           "n": 112,
           "avgVelo": 79.0,
           "avgIvb": -13.0,
-          "avgHb": 9.9
+          "avgHb": -9.9
         }
       ]
     },
@@ -13121,7 +13121,7 @@
           "n": 660,
           "avgVelo": 93.8,
           "avgIvb": 17.9,
-          "avgHb": 8.4
+          "avgHb": -8.4
         },
         {
           "pitchType": "Slider",
@@ -13135,7 +13135,7 @@
           "n": 220,
           "avgVelo": 84.7,
           "avgIvb": 11.4,
-          "avgHb": 11.4
+          "avgHb": -11.4
         },
         {
           "pitchType": "Curveball",
@@ -13163,14 +13163,14 @@
           "n": 620,
           "avgVelo": 85.0,
           "avgIvb": -1.9,
-          "avgHb": 5.5
+          "avgHb": -5.5
         },
         {
           "pitchType": "Curveball",
           "n": 244,
           "avgVelo": 77.0,
           "avgIvb": -7.8,
-          "avgHb": 7.0
+          "avgHb": -7.0
         }
       ]
     },
@@ -13198,7 +13198,7 @@
           "n": 136,
           "avgVelo": 85.0,
           "avgIvb": -1.3,
-          "avgHb": 3.4
+          "avgHb": -3.4
         }
       ]
     },
@@ -13226,14 +13226,14 @@
           "n": 104,
           "avgVelo": 92.4,
           "avgIvb": 14.0,
-          "avgHb": 9.6
+          "avgHb": -9.6
         },
         {
           "pitchType": "Sinker",
           "n": 181,
           "avgVelo": 92.2,
           "avgIvb": 4.9,
-          "avgHb": 16.8
+          "avgHb": -16.8
         },
         {
           "pitchType": "Slider",
@@ -13289,14 +13289,14 @@
           "n": 269,
           "avgVelo": 85.0,
           "avgIvb": 1.4,
-          "avgHb": 4.9
+          "avgHb": -4.9
         },
         {
           "pitchType": "Curveball",
           "n": 101,
           "avgVelo": 77.9,
           "avgIvb": -12.1,
-          "avgHb": 8.8
+          "avgHb": -8.8
         }
       ]
     },
@@ -13310,7 +13310,7 @@
           "n": 301,
           "avgVelo": 94.1,
           "avgIvb": 18.0,
-          "avgHb": 8.8
+          "avgHb": -8.8
         },
         {
           "pitchType": "Slider",
@@ -13331,14 +13331,14 @@
           "n": 499,
           "avgVelo": 94.5,
           "avgIvb": 13.6,
-          "avgHb": 10.6
+          "avgHb": -10.6
         },
         {
           "pitchType": "Changeup",
           "n": 295,
           "avgVelo": 87.7,
           "avgIvb": 2.1,
-          "avgHb": 14.9
+          "avgHb": -14.9
         },
         {
           "pitchType": "Slider",
@@ -13429,7 +13429,7 @@
           "n": 302,
           "avgVelo": 85.8,
           "avgIvb": -2.4,
-          "avgHb": 6.4
+          "avgHb": -6.4
         }
       ]
     },
@@ -13471,7 +13471,7 @@
           "n": 830,
           "avgVelo": 86.4,
           "avgIvb": 7.7,
-          "avgHb": 2.2
+          "avgHb": -2.2
         },
         {
           "pitchType": "Changeup",
@@ -13485,7 +13485,7 @@
           "n": 258,
           "avgVelo": 80.1,
           "avgIvb": -1.5,
-          "avgHb": 9.5
+          "avgHb": -9.5
         }
       ]
     },
@@ -13506,7 +13506,7 @@
           "n": 101,
           "avgVelo": 88.5,
           "avgIvb": 4.4,
-          "avgHb": 2.2
+          "avgHb": -2.2
         }
       ]
     },
@@ -13541,7 +13541,7 @@
           "n": 182,
           "avgVelo": 84.7,
           "avgIvb": 2.7,
-          "avgHb": 2.3
+          "avgHb": -2.3
         },
         {
           "pitchType": "Changeup",
@@ -13555,7 +13555,7 @@
           "n": 117,
           "avgVelo": 76.3,
           "avgIvb": -13.1,
-          "avgHb": 6.4
+          "avgHb": -6.4
         }
       ]
     },
@@ -13576,7 +13576,7 @@
           "n": 154,
           "avgVelo": 85.2,
           "avgIvb": 0.9,
-          "avgHb": 4.9
+          "avgHb": -4.9
         }
       ]
     },
@@ -13597,7 +13597,7 @@
           "n": 345,
           "avgVelo": 85.4,
           "avgIvb": -2.0,
-          "avgHb": 4.8
+          "avgHb": -4.8
         }
       ]
     },
@@ -13625,7 +13625,7 @@
           "n": 527,
           "avgVelo": 88.6,
           "avgIvb": 4.9,
-          "avgHb": 4.1
+          "avgHb": -4.1
         },
         {
           "pitchType": "Changeup",
@@ -13639,14 +13639,14 @@
           "n": 130,
           "avgVelo": 82.7,
           "avgIvb": 1.7,
-          "avgHb": 11.7
+          "avgHb": -11.7
         },
         {
           "pitchType": "Curveball",
           "n": 260,
           "avgVelo": 79.2,
           "avgIvb": -8.4,
-          "avgHb": 9.4
+          "avgHb": -9.4
         }
       ]
     },
@@ -13674,7 +13674,7 @@
           "n": 572,
           "avgVelo": 87.3,
           "avgIvb": 2.1,
-          "avgHb": 3.2
+          "avgHb": -3.2
         }
       ]
     },
@@ -13695,7 +13695,7 @@
           "n": 449,
           "avgVelo": 89.2,
           "avgIvb": 0.9,
-          "avgHb": 4.2
+          "avgHb": -4.2
         }
       ]
     },
@@ -13723,7 +13723,7 @@
           "n": 375,
           "avgVelo": 89.0,
           "avgIvb": 8.3,
-          "avgHb": 6.4
+          "avgHb": -6.4
         },
         {
           "pitchType": "Changeup",
@@ -13751,7 +13751,7 @@
           "n": 280,
           "avgVelo": 89.6,
           "avgIvb": 2.9,
-          "avgHb": 5.0
+          "avgHb": -5.0
         },
         {
           "pitchType": "Changeup",
@@ -13765,7 +13765,7 @@
           "n": 241,
           "avgVelo": 82.4,
           "avgIvb": -11.3,
-          "avgHb": 15.6
+          "avgHb": -15.6
         }
       ]
     },
@@ -13786,7 +13786,7 @@
           "n": 251,
           "avgVelo": 79.0,
           "avgIvb": 8.4,
-          "avgHb": 13.1
+          "avgHb": -13.1
         }
       ]
     },
@@ -13807,7 +13807,7 @@
           "n": 546,
           "avgVelo": 83.9,
           "avgIvb": 2.6,
-          "avgHb": 14.9
+          "avgHb": -14.9
         }
       ]
     },
@@ -13821,21 +13821,21 @@
           "n": 554,
           "avgVelo": 95.9,
           "avgIvb": 15.1,
-          "avgHb": 12.2
+          "avgHb": -12.2
         },
         {
           "pitchType": "Sinker",
           "n": 177,
           "avgVelo": 94.6,
           "avgIvb": 10.1,
-          "avgHb": 17.4
+          "avgHb": -17.4
         },
         {
           "pitchType": "Changeup",
           "n": 368,
           "avgVelo": 86.4,
           "avgIvb": 3.8,
-          "avgHb": 13.2
+          "avgHb": -13.2
         },
         {
           "pitchType": "Sweeper",
@@ -13856,28 +13856,28 @@
           "n": 266,
           "avgVelo": 86.6,
           "avgIvb": 9.8,
-          "avgHb": 14.8
+          "avgHb": -14.8
         },
         {
           "pitchType": "Sinker",
           "n": 448,
           "avgVelo": 86.0,
           "avgIvb": 4.8,
-          "avgHb": 16.6
+          "avgHb": -16.6
         },
         {
           "pitchType": "Cutter",
           "n": 150,
           "avgVelo": 83.8,
           "avgIvb": 8.9,
-          "avgHb": 1.3
+          "avgHb": -1.3
         },
         {
           "pitchType": "Changeup",
           "n": 234,
           "avgVelo": 77.4,
           "avgIvb": 2.4,
-          "avgHb": 16.0
+          "avgHb": -16.0
         },
         {
           "pitchType": "Sweeper",
@@ -13905,7 +13905,7 @@
           "n": 149,
           "avgVelo": 83.8,
           "avgIvb": 1.8,
-          "avgHb": 3.4
+          "avgHb": -3.4
         }
       ]
     },
@@ -13933,7 +13933,7 @@
           "n": 204,
           "avgVelo": 84.2,
           "avgIvb": -1.8,
-          "avgHb": 5.5
+          "avgHb": -5.5
         },
         {
           "pitchType": "Changeup",
@@ -13947,7 +13947,7 @@
           "n": 137,
           "avgVelo": 77.8,
           "avgIvb": -7.8,
-          "avgHb": 9.2
+          "avgHb": -9.2
         }
       ]
     },
@@ -13975,7 +13975,7 @@
           "n": 162,
           "avgVelo": 88.0,
           "avgIvb": -0.1,
-          "avgHb": 3.0
+          "avgHb": -3.0
         }
       ]
     },
@@ -13989,7 +13989,7 @@
           "n": 126,
           "avgVelo": 92.2,
           "avgIvb": 15.7,
-          "avgHb": 6.5
+          "avgHb": -6.5
         }
       ]
     },
@@ -14003,7 +14003,7 @@
           "n": 116,
           "avgVelo": 95.1,
           "avgIvb": 15.1,
-          "avgHb": 8.0
+          "avgHb": -8.0
         },
         {
           "pitchType": "Curveball",
@@ -14024,7 +14024,7 @@
           "n": 269,
           "avgVelo": 94.3,
           "avgIvb": 17.0,
-          "avgHb": 5.3
+          "avgHb": -5.3
         },
         {
           "pitchType": "Slider",
@@ -14052,14 +14052,14 @@
           "n": 238,
           "avgVelo": 93.3,
           "avgIvb": 11.3,
-          "avgHb": 10.4
+          "avgHb": -10.4
         },
         {
           "pitchType": "Sinker",
           "n": 177,
           "avgVelo": 92.0,
           "avgIvb": 0.7,
-          "avgHb": 17.4
+          "avgHb": -17.4
         },
         {
           "pitchType": "Sweeper",
@@ -14080,7 +14080,7 @@
           "n": 132,
           "avgVelo": 88.7,
           "avgIvb": 6.8,
-          "avgHb": 14.5
+          "avgHb": -14.5
         }
       ]
     },
@@ -14094,7 +14094,7 @@
           "n": 364,
           "avgVelo": 92.1,
           "avgIvb": 3.4,
-          "avgHb": 14.1
+          "avgHb": -14.1
         },
         {
           "pitchType": "Slider",
@@ -14129,14 +14129,14 @@
           "n": 444,
           "avgVelo": 81.0,
           "avgIvb": 2.9,
-          "avgHb": 15.6
+          "avgHb": -15.6
         },
         {
           "pitchType": "Curveball",
           "n": 215,
           "avgVelo": 77.3,
           "avgIvb": -9.5,
-          "avgHb": 17.5
+          "avgHb": -17.5
         }
       ]
     },
@@ -14157,7 +14157,7 @@
           "n": 119,
           "avgVelo": 85.1,
           "avgIvb": 1.6,
-          "avgHb": 1.3
+          "avgHb": -1.3
         }
       ]
     },
@@ -14220,7 +14220,7 @@
           "n": 416,
           "avgVelo": 85.8,
           "avgIvb": -2.5,
-          "avgHb": 3.4
+          "avgHb": -3.4
         }
       ]
     },
@@ -14234,28 +14234,28 @@
           "n": 752,
           "avgVelo": 92.4,
           "avgIvb": 9.6,
-          "avgHb": 17.0
+          "avgHb": -17.0
         },
         {
           "pitchType": "Fastball",
           "n": 928,
           "avgVelo": 92.2,
           "avgIvb": 10.9,
-          "avgHb": 13.8
+          "avgHb": -13.8
         },
         {
           "pitchType": "Cutter",
           "n": 209,
           "avgVelo": 88.5,
           "avgIvb": 7.6,
-          "avgHb": 0.0
+          "avgHb": -0.0
         },
         {
           "pitchType": "Changeup",
           "n": 350,
           "avgVelo": 85.3,
           "avgIvb": 3.9,
-          "avgHb": 14.3
+          "avgHb": -14.3
         },
         {
           "pitchType": "Slider",
@@ -14325,14 +14325,14 @@
           "n": 232,
           "avgVelo": 89.6,
           "avgIvb": 5.2,
-          "avgHb": 4.6
+          "avgHb": -4.6
         },
         {
           "pitchType": "Sweeper",
           "n": 192,
           "avgVelo": 87.0,
           "avgIvb": 5.1,
-          "avgHb": 11.3
+          "avgHb": -11.3
         }
       ]
     },
@@ -14374,21 +14374,21 @@
           "n": 288,
           "avgVelo": 86.7,
           "avgIvb": 4.4,
-          "avgHb": 4.3
+          "avgHb": -4.3
         },
         {
           "pitchType": "Sweeper",
           "n": 112,
           "avgVelo": 82.1,
           "avgIvb": 2.9,
-          "avgHb": 13.5
+          "avgHb": -13.5
         },
         {
           "pitchType": "Curveball",
           "n": 502,
           "avgVelo": 79.8,
           "avgIvb": -14.5,
-          "avgHb": 14.6
+          "avgHb": -14.6
         }
       ]
     },
@@ -14423,7 +14423,7 @@
           "n": 267,
           "avgVelo": 79.1,
           "avgIvb": 8.1,
-          "avgHb": 13.1
+          "avgHb": -13.1
         }
       ]
     },
@@ -14451,14 +14451,14 @@
           "n": 257,
           "avgVelo": 87.3,
           "avgIvb": 3.6,
-          "avgHb": 2.1
+          "avgHb": -2.1
         },
         {
           "pitchType": "Curveball",
           "n": 247,
           "avgVelo": 83.6,
           "avgIvb": -12.9,
-          "avgHb": 7.5
+          "avgHb": -7.5
         }
       ]
     },
@@ -14521,7 +14521,7 @@
           "n": 133,
           "avgVelo": 81.4,
           "avgIvb": -16.0,
-          "avgHb": 10.9
+          "avgHb": -10.9
         }
       ]
     },
@@ -14542,7 +14542,7 @@
           "n": 175,
           "avgVelo": 88.3,
           "avgIvb": 6.3,
-          "avgHb": 4.1
+          "avgHb": -4.1
         },
         {
           "pitchType": "Splitter",
@@ -14563,14 +14563,14 @@
           "n": 1343,
           "avgVelo": 91.7,
           "avgIvb": 18.3,
-          "avgHb": 10.2
+          "avgHb": -10.2
         },
         {
           "pitchType": "Splitter",
           "n": 797,
           "avgVelo": 82.9,
           "avgIvb": 6.7,
-          "avgHb": 10.2
+          "avgHb": -10.2
         },
         {
           "pitchType": "Sweeper",
@@ -14598,7 +14598,7 @@
           "n": 716,
           "avgVelo": 86.4,
           "avgIvb": 7.1,
-          "avgHb": 6.2
+          "avgHb": -6.2
         },
         {
           "pitchType": "Changeup",
@@ -14612,7 +14612,7 @@
           "n": 213,
           "avgVelo": 76.1,
           "avgIvb": -14.8,
-          "avgHb": 5.5
+          "avgHb": -5.5
         }
       ]
     },
@@ -14661,7 +14661,7 @@
           "n": 306,
           "avgVelo": 85.1,
           "avgIvb": 0.5,
-          "avgHb": 3.1
+          "avgHb": -3.1
         },
         {
           "pitchType": "Changeup",
@@ -14675,7 +14675,7 @@
           "n": 115,
           "avgVelo": 75.3,
           "avgIvb": -12.0,
-          "avgHb": 10.8
+          "avgHb": -10.8
         }
       ]
     },
@@ -14717,14 +14717,14 @@
           "n": 501,
           "avgVelo": 84.8,
           "avgIvb": -5.6,
-          "avgHb": 15.8
+          "avgHb": -15.8
         },
         {
           "pitchType": "Curveball",
           "n": 346,
           "avgVelo": 79.9,
           "avgIvb": -14.6,
-          "avgHb": 12.1
+          "avgHb": -12.1
         }
       ]
     },
@@ -14759,14 +14759,14 @@
           "n": 270,
           "avgVelo": 80.8,
           "avgIvb": 1.7,
-          "avgHb": 14.7
+          "avgHb": -14.7
         },
         {
           "pitchType": "Curveball",
           "n": 498,
           "avgVelo": 78.4,
           "avgIvb": -8.7,
-          "avgHb": 14.6
+          "avgHb": -14.6
         }
       ]
     },
@@ -14794,7 +14794,7 @@
           "n": 183,
           "avgVelo": 81.0,
           "avgIvb": 4.0,
-          "avgHb": 14.1
+          "avgHb": -14.1
         }
       ]
     },
@@ -14815,7 +14815,7 @@
           "n": 135,
           "avgVelo": 85.3,
           "avgIvb": 4.4,
-          "avgHb": 5.2
+          "avgHb": -5.2
         }
       ]
     },
@@ -14850,7 +14850,7 @@
           "n": 375,
           "avgVelo": 87.3,
           "avgIvb": -3.1,
-          "avgHb": 3.9
+          "avgHb": -3.9
         },
         {
           "pitchType": "Splitter",
@@ -14864,7 +14864,7 @@
           "n": 275,
           "avgVelo": 80.6,
           "avgIvb": -7.1,
-          "avgHb": 8.8
+          "avgHb": -8.8
         }
       ]
     },
@@ -14892,7 +14892,7 @@
           "n": 304,
           "avgVelo": 83.8,
           "avgIvb": 5.6,
-          "avgHb": 13.9
+          "avgHb": -13.9
         }
       ]
     },
@@ -14934,14 +14934,14 @@
           "n": 450,
           "avgVelo": 93.9,
           "avgIvb": 11.7,
-          "avgHb": 15.1
+          "avgHb": -15.1
         },
         {
           "pitchType": "Changeup",
           "n": 194,
           "avgVelo": 83.3,
           "avgIvb": 0.6,
-          "avgHb": 14.7
+          "avgHb": -14.7
         }
       ]
     },
@@ -14955,7 +14955,7 @@
           "n": 146,
           "avgVelo": 93.0,
           "avgIvb": 14.5,
-          "avgHb": 7.7
+          "avgHb": -7.7
         },
         {
           "pitchType": "Slider",
@@ -14983,7 +14983,7 @@
           "n": 318,
           "avgVelo": 82.3,
           "avgIvb": 6.7,
-          "avgHb": 12.0
+          "avgHb": -12.0
         }
       ]
     },
@@ -14997,14 +14997,14 @@
           "n": 411,
           "avgVelo": 88.0,
           "avgIvb": -2.7,
-          "avgHb": 16.7
+          "avgHb": -16.7
         },
         {
           "pitchType": "Changeup",
           "n": 103,
           "avgVelo": 81.4,
           "avgIvb": -3.1,
-          "avgHb": 14.1
+          "avgHb": -14.1
         },
         {
           "pitchType": "Sweeper",
@@ -15053,14 +15053,14 @@
           "n": 242,
           "avgVelo": 85.1,
           "avgIvb": 8.5,
-          "avgHb": 5.4
+          "avgHb": -5.4
         },
         {
           "pitchType": "Curveball",
           "n": 155,
           "avgVelo": 74.7,
           "avgIvb": -10.2,
-          "avgHb": 7.2
+          "avgHb": -7.2
         }
       ]
     },
@@ -15095,7 +15095,7 @@
           "n": 205,
           "avgVelo": 79.1,
           "avgIvb": -17.5,
-          "avgHb": 6.9
+          "avgHb": -6.9
         }
       ]
     },
@@ -15109,14 +15109,14 @@
           "n": 363,
           "avgVelo": 93.6,
           "avgIvb": 15.7,
-          "avgHb": 2.6
+          "avgHb": -2.6
         },
         {
           "pitchType": "Sinker",
           "n": 102,
           "avgVelo": 92.0,
           "avgIvb": 8.5,
-          "avgHb": 12.7
+          "avgHb": -12.7
         },
         {
           "pitchType": "Slider",
@@ -15130,7 +15130,7 @@
           "n": 148,
           "avgVelo": 86.2,
           "avgIvb": 6.3,
-          "avgHb": 12.2
+          "avgHb": -12.2
         },
         {
           "pitchType": "Sweeper",
@@ -15165,7 +15165,7 @@
           "n": 184,
           "avgVelo": 82.9,
           "avgIvb": -0.2,
-          "avgHb": 16.1
+          "avgHb": -16.1
         },
         {
           "pitchType": "Changeup",
@@ -15179,7 +15179,7 @@
           "n": 173,
           "avgVelo": 80.5,
           "avgIvb": -6.6,
-          "avgHb": 13.7
+          "avgHb": -13.7
         }
       ]
     },
@@ -15200,7 +15200,7 @@
           "n": 162,
           "avgVelo": 85.2,
           "avgIvb": 3.1,
-          "avgHb": 2.9
+          "avgHb": -2.9
         },
         {
           "pitchType": "Changeup",
@@ -15235,7 +15235,7 @@
           "n": 1131,
           "avgVelo": 83.2,
           "avgIvb": -2.0,
-          "avgHb": 16.7
+          "avgHb": -16.7
         }
       ]
     },
@@ -15256,7 +15256,7 @@
           "n": 260,
           "avgVelo": 86.6,
           "avgIvb": 3.2,
-          "avgHb": 3.0
+          "avgHb": -3.0
         }
       ]
     },
@@ -15270,7 +15270,7 @@
           "n": 688,
           "avgVelo": 97.0,
           "avgIvb": 16.8,
-          "avgHb": 5.0
+          "avgHb": -5.0
         },
         {
           "pitchType": "Slider",
@@ -15291,14 +15291,14 @@
           "n": 941,
           "avgVelo": 96.9,
           "avgIvb": 16.2,
-          "avgHb": 6.5
+          "avgHb": -6.5
         },
         {
           "pitchType": "Sinker",
           "n": 584,
           "avgVelo": 96.6,
           "avgIvb": 12.3,
-          "avgHb": 14.5
+          "avgHb": -14.5
         },
         {
           "pitchType": "Slider",
@@ -15312,7 +15312,7 @@
           "n": 767,
           "avgVelo": 86.3,
           "avgIvb": 6.0,
-          "avgHb": 14.9
+          "avgHb": -14.9
         },
         {
           "pitchType": "Curveball",
@@ -15333,14 +15333,14 @@
           "n": 284,
           "avgVelo": 91.3,
           "avgIvb": 3.4,
-          "avgHb": 17.6
+          "avgHb": -17.6
         },
         {
           "pitchType": "Changeup",
           "n": 147,
           "avgVelo": 85.3,
           "avgIvb": 3.5,
-          "avgHb": 18.5
+          "avgHb": -18.5
         }
       ]
     },
@@ -15368,7 +15368,7 @@
           "n": 266,
           "avgVelo": 84.0,
           "avgIvb": -0.8,
-          "avgHb": 14.2
+          "avgHb": -14.2
         }
       ]
     },
@@ -15382,7 +15382,7 @@
           "n": 571,
           "avgVelo": 93.0,
           "avgIvb": 7.0,
-          "avgHb": 16.6
+          "avgHb": -16.6
         },
         {
           "pitchType": "Sweeper",
@@ -15417,7 +15417,7 @@
           "n": 266,
           "avgVelo": 88.3,
           "avgIvb": 3.9,
-          "avgHb": 2.4
+          "avgHb": -2.4
         }
       ]
     },
@@ -15431,14 +15431,14 @@
           "n": 246,
           "avgVelo": 95.5,
           "avgIvb": 12.7,
-          "avgHb": 8.0
+          "avgHb": -8.0
         },
         {
           "pitchType": "Sinker",
           "n": 129,
           "avgVelo": 93.9,
           "avgIvb": 2.8,
-          "avgHb": 15.2
+          "avgHb": -15.2
         },
         {
           "pitchType": "Slider",
@@ -15466,14 +15466,14 @@
           "n": 256,
           "avgVelo": 90.7,
           "avgIvb": 4.1,
-          "avgHb": 17.6
+          "avgHb": -17.6
         },
         {
           "pitchType": "Sinker",
           "n": 675,
           "avgVelo": 88.7,
           "avgIvb": -5.3,
-          "avgHb": 15.6
+          "avgHb": -15.6
         }
       ]
     },
@@ -15487,7 +15487,7 @@
           "n": 524,
           "avgVelo": 92.5,
           "avgIvb": 8.6,
-          "avgHb": 15.6
+          "avgHb": -15.6
         },
         {
           "pitchType": "Slider",
@@ -15522,7 +15522,7 @@
           "n": 455,
           "avgVelo": 85.5,
           "avgIvb": 3.4,
-          "avgHb": 4.2
+          "avgHb": -4.2
         },
         {
           "pitchType": "Changeup",
@@ -15557,21 +15557,21 @@
           "n": 122,
           "avgVelo": 90.4,
           "avgIvb": 11.4,
-          "avgHb": 14.7
+          "avgHb": -14.7
         },
         {
           "pitchType": "Fastball",
           "n": 239,
           "avgVelo": 89.8,
           "avgIvb": 15.6,
-          "avgHb": 8.1
+          "avgHb": -8.1
         },
         {
           "pitchType": "Changeup",
           "n": 124,
           "avgVelo": 83.7,
           "avgIvb": 4.4,
-          "avgHb": 13.5
+          "avgHb": -13.5
         },
         {
           "pitchType": "Curveball",
@@ -15620,7 +15620,7 @@
           "n": 121,
           "avgVelo": 84.6,
           "avgIvb": -15.4,
-          "avgHb": 12.4
+          "avgHb": -12.4
         }
       ]
     },
@@ -15641,7 +15641,7 @@
           "n": 125,
           "avgVelo": 87.1,
           "avgIvb": 1.4,
-          "avgHb": 8.9
+          "avgHb": -8.9
         }
       ]
     },
@@ -15669,7 +15669,7 @@
           "n": 128,
           "avgVelo": 75.6,
           "avgIvb": -11.3,
-          "avgHb": 14.0
+          "avgHb": -14.0
         }
       ]
     },
@@ -15697,21 +15697,21 @@
           "n": 247,
           "avgVelo": 89.8,
           "avgIvb": 4.1,
-          "avgHb": 4.0
+          "avgHb": -4.0
         },
         {
           "pitchType": "Curveball",
           "n": 137,
           "avgVelo": 82.4,
           "avgIvb": -13.1,
-          "avgHb": 9.8
+          "avgHb": -9.8
         },
         {
           "pitchType": "Sweeper",
           "n": 345,
           "avgVelo": 81.8,
           "avgIvb": 2.9,
-          "avgHb": 15.2
+          "avgHb": -15.2
         }
       ]
     },
@@ -15732,7 +15732,7 @@
           "n": 190,
           "avgVelo": 87.4,
           "avgIvb": -6.3,
-          "avgHb": 4.3
+          "avgHb": -4.3
         }
       ]
     },
@@ -15767,21 +15767,21 @@
           "n": 711,
           "avgVelo": 91.9,
           "avgIvb": 14.8,
-          "avgHb": 11.9
+          "avgHb": -11.9
         },
         {
           "pitchType": "Sinker",
           "n": 542,
           "avgVelo": 91.5,
           "avgIvb": 7.7,
-          "avgHb": 17.8
+          "avgHb": -17.8
         },
         {
           "pitchType": "Changeup",
           "n": 528,
           "avgVelo": 85.6,
           "avgIvb": 0.2,
-          "avgHb": 14.3
+          "avgHb": -14.3
         },
         {
           "pitchType": "Slider",
@@ -15823,14 +15823,14 @@
           "n": 144,
           "avgVelo": 81.3,
           "avgIvb": 3.9,
-          "avgHb": 6.1
+          "avgHb": -6.1
         },
         {
           "pitchType": "Sweeper",
           "n": 225,
           "avgVelo": 77.0,
           "avgIvb": 6.3,
-          "avgHb": 11.9
+          "avgHb": -11.9
         }
       ]
     },
@@ -15865,14 +15865,14 @@
           "n": 274,
           "avgVelo": 85.4,
           "avgIvb": 8.6,
-          "avgHb": 5.1
+          "avgHb": -5.1
         },
         {
           "pitchType": "Curveball",
           "n": 347,
           "avgVelo": 77.7,
           "avgIvb": -7.7,
-          "avgHb": 8.0
+          "avgHb": -8.0
         }
       ]
     },
@@ -15893,7 +15893,7 @@
           "n": 135,
           "avgVelo": 84.2,
           "avgIvb": -4.8,
-          "avgHb": 14.4
+          "avgHb": -14.4
         }
       ]
     },
@@ -15907,21 +15907,21 @@
           "n": 576,
           "avgVelo": 89.1,
           "avgIvb": 6.6,
-          "avgHb": 14.5
+          "avgHb": -14.5
         },
         {
           "pitchType": "Cutter",
           "n": 155,
           "avgVelo": 82.9,
           "avgIvb": 2.4,
-          "avgHb": 1.3
+          "avgHb": -1.3
         },
         {
           "pitchType": "Changeup",
           "n": 278,
           "avgVelo": 80.0,
           "avgIvb": -1.3,
-          "avgHb": 14.0
+          "avgHb": -14.0
         },
         {
           "pitchType": "Curveball",
@@ -15956,28 +15956,28 @@
           "n": 379,
           "avgVelo": 89.6,
           "avgIvb": 17.5,
-          "avgHb": 9.0
+          "avgHb": -9.0
         },
         {
           "pitchType": "Sinker",
           "n": 212,
           "avgVelo": 89.6,
           "avgIvb": 11.4,
-          "avgHb": 16.3
+          "avgHb": -16.3
         },
         {
           "pitchType": "Cutter",
           "n": 530,
           "avgVelo": 85.0,
           "avgIvb": 8.0,
-          "avgHb": 3.7
+          "avgHb": -3.7
         },
         {
           "pitchType": "Changeup",
           "n": 228,
           "avgVelo": 81.3,
           "avgIvb": 5.8,
-          "avgHb": 14.6
+          "avgHb": -14.6
         },
         {
           "pitchType": "Sweeper",
@@ -15998,21 +15998,21 @@
           "n": 1155,
           "avgVelo": 89.5,
           "avgIvb": 19.7,
-          "avgHb": 4.1
+          "avgHb": -4.1
         },
         {
           "pitchType": "Cutter",
           "n": 527,
           "avgVelo": 84.3,
           "avgIvb": 11.6,
-          "avgHb": 3.7
+          "avgHb": -3.7
         },
         {
           "pitchType": "Changeup",
           "n": 1082,
           "avgVelo": 78.9,
           "avgIvb": 12.4,
-          "avgHb": 12.5
+          "avgHb": -12.5
         }
       ]
     },
@@ -16061,7 +16061,7 @@
           "n": 198,
           "avgVelo": 84.5,
           "avgIvb": 3.0,
-          "avgHb": 10.3
+          "avgHb": -10.3
         }
       ]
     },
@@ -16089,14 +16089,14 @@
           "n": 557,
           "avgVelo": 90.0,
           "avgIvb": 0.5,
-          "avgHb": 2.5
+          "avgHb": -2.5
         },
         {
           "pitchType": "Curveball",
           "n": 374,
           "avgVelo": 83.7,
           "avgIvb": -12.0,
-          "avgHb": 3.3
+          "avgHb": -3.3
         }
       ]
     },
@@ -16110,28 +16110,28 @@
           "n": 202,
           "avgVelo": 92.0,
           "avgIvb": 16.4,
-          "avgHb": 5.7
+          "avgHb": -5.7
         },
         {
           "pitchType": "Sinker",
           "n": 292,
           "avgVelo": 91.6,
           "avgIvb": 10.4,
-          "avgHb": 14.8
+          "avgHb": -14.8
         },
         {
           "pitchType": "Cutter",
           "n": 365,
           "avgVelo": 87.6,
           "avgIvb": 7.1,
-          "avgHb": 4.2
+          "avgHb": -4.2
         },
         {
           "pitchType": "Changeup",
           "n": 253,
           "avgVelo": 83.6,
           "avgIvb": 5.0,
-          "avgHb": 14.6
+          "avgHb": -14.6
         },
         {
           "pitchType": "Sweeper",
@@ -16159,7 +16159,7 @@
           "n": 745,
           "avgVelo": 89.5,
           "avgIvb": 5.3,
-          "avgHb": 0.0
+          "avgHb": -0.0
         }
       ]
     },
@@ -16187,7 +16187,7 @@
           "n": 117,
           "avgVelo": 93.6,
           "avgIvb": 17.4,
-          "avgHb": 5.5
+          "avgHb": -5.5
         }
       ]
     },
@@ -16215,7 +16215,7 @@
           "n": 169,
           "avgVelo": 82.5,
           "avgIvb": -0.5,
-          "avgHb": 12.3
+          "avgHb": -12.3
         }
       ]
     },
@@ -16236,7 +16236,7 @@
           "n": 356,
           "avgVelo": 73.6,
           "avgIvb": 15.4,
-          "avgHb": 8.9
+          "avgHb": -8.9
         }
       ]
     },
@@ -16271,7 +16271,7 @@
           "n": 150,
           "avgVelo": 85.5,
           "avgIvb": -1.4,
-          "avgHb": 3.7
+          "avgHb": -3.7
         },
         {
           "pitchType": "Splitter",
@@ -16285,7 +16285,7 @@
           "n": 105,
           "avgVelo": 78.1,
           "avgIvb": -13.3,
-          "avgHb": 9.8
+          "avgHb": -9.8
         }
       ]
     },
@@ -16306,7 +16306,7 @@
           "n": 409,
           "avgVelo": 80.2,
           "avgIvb": 11.0,
-          "avgHb": 13.1
+          "avgHb": -13.1
         }
       ]
     },
@@ -16341,14 +16341,14 @@
           "n": 114,
           "avgVelo": 77.7,
           "avgIvb": 3.2,
-          "avgHb": 14.6
+          "avgHb": -14.6
         },
         {
           "pitchType": "Curveball",
           "n": 136,
           "avgVelo": 73.7,
           "avgIvb": -9.7,
-          "avgHb": 10.9
+          "avgHb": -10.9
         }
       ]
     },
@@ -16362,7 +16362,7 @@
           "n": 183,
           "avgVelo": 93.3,
           "avgIvb": 7.7,
-          "avgHb": 17.9
+          "avgHb": -17.9
         },
         {
           "pitchType": "Slider",
@@ -16397,7 +16397,7 @@
           "n": 270,
           "avgVelo": 84.6,
           "avgIvb": -3.6,
-          "avgHb": 2.8
+          "avgHb": -2.8
         }
       ]
     },
@@ -16446,14 +16446,14 @@
           "n": 116,
           "avgVelo": 82.6,
           "avgIvb": 1.4,
-          "avgHb": 14.8
+          "avgHb": -14.8
         },
         {
           "pitchType": "Curveball",
           "n": 256,
           "avgVelo": 78.0,
           "avgIvb": -14.7,
-          "avgHb": 10.7
+          "avgHb": -10.7
         }
       ]
     },
@@ -16467,7 +16467,7 @@
           "n": 100,
           "avgVelo": 91.5,
           "avgIvb": 8.2,
-          "avgHb": 14.8
+          "avgHb": -14.8
         },
         {
           "pitchType": "Slider",
@@ -16488,14 +16488,14 @@
           "n": 248,
           "avgVelo": 95.1,
           "avgIvb": 9.6,
-          "avgHb": 16.1
+          "avgHb": -16.1
         },
         {
           "pitchType": "Changeup",
           "n": 256,
           "avgVelo": 88.6,
           "avgIvb": 5.0,
-          "avgHb": 16.8
+          "avgHb": -16.8
         }
       ]
     },
@@ -16509,7 +16509,7 @@
           "n": 195,
           "avgVelo": 91.2,
           "avgIvb": 17.1,
-          "avgHb": 7.2
+          "avgHb": -7.2
         },
         {
           "pitchType": "Slider",
@@ -16551,7 +16551,7 @@
           "n": 251,
           "avgVelo": 86.9,
           "avgIvb": -2.6,
-          "avgHb": 6.7
+          "avgHb": -6.7
         }
       ]
     },
@@ -16579,7 +16579,7 @@
           "n": 122,
           "avgVelo": 83.1,
           "avgIvb": 2.6,
-          "avgHb": 15.9
+          "avgHb": -15.9
         }
       ]
     },
@@ -16600,7 +16600,7 @@
           "n": 219,
           "avgVelo": 84.6,
           "avgIvb": 1.8,
-          "avgHb": 6.4
+          "avgHb": -6.4
         }
       ]
     },
@@ -16635,14 +16635,14 @@
           "n": 424,
           "avgVelo": 84.6,
           "avgIvb": 2.0,
-          "avgHb": 9.2
+          "avgHb": -9.2
         },
         {
           "pitchType": "Curveball",
           "n": 157,
           "avgVelo": 78.3,
           "avgIvb": -11.9,
-          "avgHb": 13.9
+          "avgHb": -13.9
         }
       ]
     },
@@ -16677,7 +16677,7 @@
           "n": 131,
           "avgVelo": 87.1,
           "avgIvb": 0.7,
-          "avgHb": 8.6
+          "avgHb": -8.6
         }
       ]
     },
@@ -16698,7 +16698,7 @@
           "n": 135,
           "avgVelo": 84.0,
           "avgIvb": 4.4,
-          "avgHb": 6.0
+          "avgHb": -6.0
         }
       ]
     },
@@ -16719,7 +16719,7 @@
           "n": 128,
           "avgVelo": 83.6,
           "avgIvb": -3.3,
-          "avgHb": 0.2
+          "avgHb": -0.2
         }
       ]
     },
@@ -16740,7 +16740,7 @@
           "n": 121,
           "avgVelo": 84.2,
           "avgIvb": -1.3,
-          "avgHb": 11.0
+          "avgHb": -11.0
         }
       ]
     },
@@ -16768,14 +16768,14 @@
           "n": 221,
           "avgVelo": 81.6,
           "avgIvb": 3.1,
-          "avgHb": 18.0
+          "avgHb": -18.0
         },
         {
           "pitchType": "Curveball",
           "n": 109,
           "avgVelo": 81.5,
           "avgIvb": -10.8,
-          "avgHb": 13.1
+          "avgHb": -13.1
         }
       ]
     },
@@ -16796,7 +16796,7 @@
           "n": 201,
           "avgVelo": 85.2,
           "avgIvb": 4.4,
-          "avgHb": 8.9
+          "avgHb": -8.9
         }
       ]
     },
@@ -16824,7 +16824,7 @@
           "n": 340,
           "avgVelo": 78.0,
           "avgIvb": -15.8,
-          "avgHb": 11.9
+          "avgHb": -11.9
         }
       ]
     },
@@ -16866,21 +16866,21 @@
           "n": 293,
           "avgVelo": 85.9,
           "avgIvb": 0.7,
-          "avgHb": 5.3
+          "avgHb": -5.3
         },
         {
           "pitchType": "Sweeper",
           "n": 176,
           "avgVelo": 82.1,
           "avgIvb": -0.3,
-          "avgHb": 15.2
+          "avgHb": -15.2
         },
         {
           "pitchType": "Curveball",
           "n": 172,
           "avgVelo": 75.6,
           "avgIvb": -13.8,
-          "avgHb": 9.6
+          "avgHb": -9.6
         }
       ]
     },
@@ -16894,14 +16894,14 @@
           "n": 430,
           "avgVelo": 92.2,
           "avgIvb": 19.8,
-          "avgHb": 4.2
+          "avgHb": -4.2
         },
         {
           "pitchType": "Splitter",
           "n": 257,
           "avgVelo": 86.6,
           "avgIvb": 5.2,
-          "avgHb": 5.9
+          "avgHb": -5.9
         },
         {
           "pitchType": "Slider",
@@ -16929,7 +16929,7 @@
           "n": 201,
           "avgVelo": 85.4,
           "avgIvb": 1.5,
-          "avgHb": 4.2
+          "avgHb": -4.2
         }
       ]
     },
@@ -16943,7 +16943,7 @@
           "n": 1374,
           "avgVelo": 95.5,
           "avgIvb": 16.9,
-          "avgHb": 7.9
+          "avgHb": -7.9
         },
         {
           "pitchType": "Slider",
@@ -16957,7 +16957,7 @@
           "n": 325,
           "avgVelo": 86.8,
           "avgIvb": 8.6,
-          "avgHb": 12.7
+          "avgHb": -12.7
         },
         {
           "pitchType": "Curveball",
@@ -16985,7 +16985,7 @@
           "n": 219,
           "avgVelo": 86.9,
           "avgIvb": 3.0,
-          "avgHb": 5.4
+          "avgHb": -5.4
         },
         {
           "pitchType": "Changeup",
@@ -16999,7 +16999,7 @@
           "n": 695,
           "avgVelo": 81.0,
           "avgIvb": -11.1,
-          "avgHb": 4.8
+          "avgHb": -4.8
         }
       ]
     },
@@ -17041,14 +17041,14 @@
           "n": 231,
           "avgVelo": 79.7,
           "avgIvb": 2.7,
-          "avgHb": 13.2
+          "avgHb": -13.2
         },
         {
           "pitchType": "Curveball",
           "n": 461,
           "avgVelo": 78.8,
           "avgIvb": -6.5,
-          "avgHb": 11.2
+          "avgHb": -11.2
         }
       ]
     },
@@ -17069,7 +17069,7 @@
           "n": 108,
           "avgVelo": 86.2,
           "avgIvb": -2.5,
-          "avgHb": 6.6
+          "avgHb": -6.6
         }
       ]
     },
@@ -17104,7 +17104,7 @@
           "n": 260,
           "avgVelo": 82.2,
           "avgIvb": 2.5,
-          "avgHb": 17.6
+          "avgHb": -17.6
         }
       ]
     },
@@ -17132,7 +17132,7 @@
           "n": 866,
           "avgVelo": 86.6,
           "avgIvb": 7.1,
-          "avgHb": 2.5
+          "avgHb": -2.5
         },
         {
           "pitchType": "Splitter",
@@ -17146,7 +17146,7 @@
           "n": 126,
           "avgVelo": 79.5,
           "avgIvb": -3.7,
-          "avgHb": 14.2
+          "avgHb": -14.2
         }
       ]
     },
@@ -17160,7 +17160,7 @@
           "n": 113,
           "avgVelo": 90.7,
           "avgIvb": 15.4,
-          "avgHb": 7.2
+          "avgHb": -7.2
         }
       ]
     },
@@ -17202,14 +17202,14 @@
           "n": 393,
           "avgVelo": 85.0,
           "avgIvb": 4.0,
-          "avgHb": 9.8
+          "avgHb": -9.8
         },
         {
           "pitchType": "Curveball",
           "n": 317,
           "avgVelo": 81.8,
           "avgIvb": -9.0,
-          "avgHb": 8.6
+          "avgHb": -8.6
         }
       ]
     },
@@ -17237,7 +17237,7 @@
           "n": 186,
           "avgVelo": 87.2,
           "avgIvb": 2.1,
-          "avgHb": 3.9
+          "avgHb": -3.9
         }
       ]
     }

@@ -49,6 +49,23 @@ PITCH_TYPE_MAP: dict[str, str] = {
     "KC": "Curveball",  # Knuckle-curve → Curveball
 }
 
+# Savant stores pitcher_break_x as a positive MAGNITUDE for all pitches.
+# Glove-side pitches need their sign flipped to match Trackman convention
+# (positive HB = toward 1B from catcher's perspective).
+#   RHP arm-side (FF/SI/CH/FS): toward 1B  → keep positive
+#   RHP glove-side (CU/SL/ST/KC): toward 3B → negate
+#   LHP arm-side: toward 3B                 → negate
+#   LHP glove-side: toward 1B               → keep positive
+GLOVE_SIDE_ABBREVS: frozenset[str] = frozenset({"CU", "SL", "ST", "KC"})
+
+
+def savant_hb_to_trackman(magnitude: float, hand: str, abbrev: str) -> float:
+    """Convert Savant HB magnitude → signed Trackman HB (positive = toward 1B)."""
+    arm_sign = 1.0 if hand == "R" else -1.0
+    if abbrev in GLOVE_SIDE_ABBREVS:
+        return -arm_sign * magnitude   # glove-side → flip
+    return arm_sign * magnitude        # arm-side → keep or flip per hand
+
 HANDS = ["R", "L"]
 
 HEADERS = {
@@ -122,7 +139,7 @@ def find_col(row: dict[str, str], *candidates: str) -> str | None:
     return None
 
 
-def parse_rows(csv_text: str, canonical_type: str, hand: str) -> list[dict]:
+def parse_rows(csv_text: str, canonical_type: str, hand: str, abbrev: str) -> list[dict]:
     """
     Parse a Savant pitch movement CSV into a list of normalized row dicts.
 
@@ -195,6 +212,11 @@ def parse_rows(csv_text: str, canonical_type: str, hand: str) -> list[dict]:
         if avg_ivb is None and avg_hb is None:
             continue
 
+        # Convert Savant HB magnitude to Trackman-signed HB
+        signed_hb: float | None = None
+        if avg_hb is not None:
+            signed_hb = savant_hb_to_trackman(avg_hb, hand, abbrev)
+
         rows.append(
             {
                 "pitcherId": pitcher_id,
@@ -204,7 +226,7 @@ def parse_rows(csv_text: str, canonical_type: str, hand: str) -> list[dict]:
                 "n": n,
                 "avgVelo": round(avg_velo, 1) if avg_velo is not None else None,
                 "avgIvb": round(avg_ivb, 2) if avg_ivb is not None else None,
-                "avgHb": round(avg_hb, 2) if avg_hb is not None else None,
+                "avgHb": round(signed_hb, 2) if signed_hb is not None else None,
             }
         )
     return rows
@@ -287,7 +309,7 @@ def main() -> int:
                     time.sleep(args.delay)
                 continue
 
-            rows = parse_rows(csv_text, canonical, hand)
+            rows = parse_rows(csv_text, canonical, hand, abbrev)
             flat_rows.extend(rows)
             print(f"{len(rows)} pitchers")
             fetched += 1
@@ -315,7 +337,10 @@ def main() -> int:
         "updated": str(date.today()),
         "minPitches": args.min_pitches,
         "convention": {
-            "hb": "positive = toward 1B from catcher's perspective (matches Trackman HB)",
+            "hb": (
+                "signed: positive = toward 1B from catcher (Trackman convention). "
+                "Savant magnitudes converted using sign_hb(hand, abbrev)."
+            ),
             "ivb": "positive = upward (rising fastball = positive, matches Trackman IVB)",
         },
         "pitchers": pitchers,
