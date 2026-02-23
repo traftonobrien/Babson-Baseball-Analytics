@@ -16,6 +16,7 @@ import { mergeRenamedPitchTypes } from "@/lib/mergePitchTypes";
 import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
 import { getCanonicalName } from "@/lib/canonicalPlayers";
 import { handBadgeClassesCompact, parseHand } from "@/lib/handBadge";
+import MLBCompsPanel from "./MLBCompsPanel";
 
 interface IndexEntry {
   playerName: string;
@@ -509,6 +510,14 @@ export default function TrackmanPlayerPage({
                     <PitchArsenalCards pitchTypes={filtered} />
                   </div>
                 </div>
+
+                {/* MLB Comps */}
+                {normalizedHand && (
+                  <MLBCompsPanel
+                    aggregated={aggregated}
+                    hand={normalizedHand}
+                  />
+                )}
               </>
             )}
           </>
