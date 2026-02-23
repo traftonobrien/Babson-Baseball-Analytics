@@ -203,6 +203,7 @@ export default function TrackmanSessionView({
   const [summary, setSummary] = useState<TrackmanSessionSummary | null>(null);
   const [meta, setMeta] = useState<Record<string, unknown> | null>(null);
   const [viewMode, setViewMode] = useState<"pitch" | "aggregate" | null>(null);
+  const [sessionStuffPlus, setSessionStuffPlus] = useState<Map<string, number>>(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -243,6 +244,19 @@ export default function TrackmanSessionView({
         setLoading(false);
       });
 
+    // Fetch Stuff+ for this specific session
+    const dateNorm = date.replace(/-/g, "_");
+    fetch(`/api/stuff-plus/outings?playerId=${playerId}&date=${dateNorm}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((res) => {
+        if (!active || !res?.points) return;
+        const map = new Map<string, number>();
+        for (const p of res.points) {
+          map.set(p.pitchType, p.stuffPlus);
+        }
+        setSessionStuffPlus(map);
+      });
+
     return () => {
       active = false;
     };
@@ -274,9 +288,19 @@ export default function TrackmanSessionView({
 
   // Merge pitch types that auto-rename resolves to the same canonical pitch
   const mergedPitchTypes = useMemo(() => {
-    if (!hand || pitchTypes.length === 0) return pitchTypes;
-    return mergeRenamedPitchTypes(pitchTypes, hand);
-  }, [pitchTypes, hand]);
+    let result = pitchTypes;
+    if (hand && pitchTypes.length > 0) {
+      result = mergeRenamedPitchTypes(pitchTypes, hand);
+    }
+    // Merge session-specific Stuff+ grades
+    if (sessionStuffPlus.size > 0) {
+      result = result.map((p) => ({
+        ...p,
+        meanStuffPlus: sessionStuffPlus.get(p.pitchType) ?? p.meanStuffPlus,
+      }));
+    }
+    return result;
+  }, [pitchTypes, hand, sessionStuffPlus]);
 
   // All pitch types
   const allTypes = useMemo(() => {

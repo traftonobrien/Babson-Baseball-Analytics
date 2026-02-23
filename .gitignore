@@ -52,6 +52,7 @@ output/*
 
 # Local processing outputs (do not commit)
 outings/
+!web/app/api/stuff-plus/outings/
 *.npy
 *.npz
 

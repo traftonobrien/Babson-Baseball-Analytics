@@ -160,6 +160,8 @@ export const AGG_FIELD_CANDIDATES: Record<string, string[]> = {
 
 export interface TrackmanPitchTypeSummary {
   pitchType: string;
+  /** Stuff+ grade (0–130 scale, 100 = league avg). From stuff_plus_arsenal. */
+  meanStuffPlus?: number | null;
   count: number | null;
   avgVelo: number | null;
   maxVelo: number | null;

@@ -11,6 +11,7 @@ import PitchTypeFilter from "../../session/[playerId]/[date]/PitchTypeFilter";
 import PitchTypeTable from "../../session/[playerId]/[date]/PitchTypeTable";
 import MovementScatterByType from "../../session/[playerId]/[date]/MovementScatterByType";
 import PitchArsenalCards from "../../session/[playerId]/[date]/PitchArsenalCards";
+import TopPitchCard from "./TopPitchCard";
 import { mergeRenamedPitchTypes } from "@/lib/mergePitchTypes";
 
 interface IndexEntry {
@@ -292,6 +293,7 @@ export default function TrackmanPlayerPage({
   const [fromProfile, setFromProfile] = useState(false);
   const [entries, setEntries] = useState<IndexEntry[]>([]);
   const [sessionData, setSessionData] = useState<SessionPitchTypes[]>([]);
+  const [stuffPlusArsenal, setStuffPlusArsenal] = useState<{ pitchType: string; meanStuffPlus: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [activePitchTypes, setActivePitchTypes] = useState<Set<string>>(new Set());
 
@@ -327,6 +329,13 @@ export default function TrackmanPlayerPage({
         setSessionData(fetched.filter((d) => d.pitchTypes.length > 0));
         setLoading(false);
       });
+
+    // Fetch Stuff+ arsenal data
+    fetch(`/api/stuff-plus/arsenal?playerId=${slug}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((res) => {
+        if (res?.pitches) setStuffPlusArsenal(res.pitches);
+      });
   }, [slug]);
 
   const playerName = formatPlayerName(entries[0]?.playerName ?? slug);
@@ -341,9 +350,14 @@ export default function TrackmanPlayerPage({
   // Aggregate pitch types across all sessions, then merge by movement
   const aggregated = useMemo(() => {
     const raw = aggregatePitchTypes(sessionData.map((s) => s.pitchTypes));
-    if (!normalizedHand) return raw;
-    return mergeRenamedPitchTypes(raw, normalizedHand);
-  }, [sessionData, normalizedHand]);
+    const merged = normalizedHand ? mergeRenamedPitchTypes(raw, normalizedHand) : raw;
+    // Merge Stuff+ data by pitch type
+    const stuffMap = new Map(stuffPlusArsenal.map((p) => [p.pitchType, p.meanStuffPlus]));
+    return merged.map((p) => ({
+      ...p,
+      meanStuffPlus: stuffMap.get(p.pitchType) ?? p.meanStuffPlus,
+    }));
+  }, [sessionData, normalizedHand, stuffPlusArsenal]);
 
   const allTypes = useMemo(
     () => Array.from(new Set(aggregated.map((p) => p.pitchType))).sort(),
@@ -400,6 +414,11 @@ export default function TrackmanPlayerPage({
           <p className="text-zinc-400 text-sm">No sessions found for this player.</p>
         ) : (
           <>
+            {/* Top Pitch */}
+            {stuffPlusArsenal.length > 0 && (
+              <TopPitchCard arsenal={stuffPlusArsenal} />
+            )}
+
             {/* Session selector */}
             <div>
               <h3 className="text-xs uppercase tracking-wider text-zinc-500 mb-3">

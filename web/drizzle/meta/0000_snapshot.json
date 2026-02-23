@@ -1,0 +1,193 @@
+{
+  "id": "427d6db2-9cbb-43ab-8dfe-057285b1dc0e",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.stuff_plus_arsenal": {
+      "name": "stuff_plus_arsenal",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pitch_type": {
+          "name": "pitch_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "player_name": {
+          "name": "player_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "throws": {
+          "name": "throws",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mean_stuff_plus": {
+          "name": "mean_stuff_plus",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sd_stuff_plus": {
+          "name": "sd_stuff_plus",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avg_velo_mph": {
+          "name": "avg_velo_mph",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_fb_velo": {
+          "name": "max_fb_velo",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avg_ext_ft": {
+          "name": "avg_ext_ft",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "n_sessions": {
+          "name": "n_sessions",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "stuff_plus_arsenal_player_id_pitch_type_pk": {
+          "name": "stuff_plus_arsenal_player_id_pitch_type_pk",
+          "columns": [
+            "player_id",
+            "pitch_type"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.stuff_plus_outings": {
+      "name": "stuff_plus_outings",
+      "schema": "",
+      "columns": {
+        "session_key": {
+          "name": "session_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "player_name": {
+          "name": "player_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "date": {
+          "name": "date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pitch_type": {
+          "name": "pitch_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "throws": {
+          "name": "throws",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stuff_plus": {
+          "name": "stuff_plus",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avg_velo_mph": {
+          "name": "avg_velo_mph",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avg_ivb_in": {
+          "name": "avg_ivb_in",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avg_hb_in": {
+          "name": "avg_hb_in",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avg_spin_rpm": {
+          "name": "avg_spin_rpm",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avg_ext_ft": {
+          "name": "avg_ext_ft",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "stuff_plus_outings_session_key_pitch_type_pk": {
+          "name": "stuff_plus_outings_session_key_pitch_type_pk",
+          "columns": [
+            "session_key",
+            "pitch_type"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

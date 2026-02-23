@@ -26,6 +26,14 @@ function fmt(v: number | null, d = 1): string {
   return v.toFixed(d);
 }
 
+/** Stuff+ color by scouting scale */
+function stuffPlusColor(v: number): string {
+  if (v >= 110) return "bg-rose-600 text-white";
+  if (v >= 100) return "bg-orange-500/80 text-white";
+  if (v >= 90) return "bg-zinc-400 text-zinc-900";
+  return "bg-sky-500/80 text-white";
+}
+
 export default function PitchTypeTable({
   pitchTypes,
   summary,
@@ -53,6 +61,7 @@ export default function PitchTypeTable({
             <tr>
               <th className="px-3 py-2 text-left">Pitch</th>
               {showCounts && <th className="px-3 py-2 text-right">#</th>}
+              <th className="px-3 py-2 text-right">Stuff+</th>
               <th className="px-3 py-2 text-right">Avg Velo</th>
               <th className="px-3 py-2 text-right">Avg Spin</th>
               <th className="px-3 py-2 text-right">Avg IVB</th>
@@ -75,6 +84,17 @@ export default function PitchTypeTable({
                     {row.count ?? "\u2014"}
                   </td>
                 )}
+                <td className="px-3 py-1.5 text-right">
+                  {row.meanStuffPlus != null ? (
+                    <span
+                      className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium ${stuffPlusColor(row.meanStuffPlus)}`}
+                    >
+                      {row.meanStuffPlus.toFixed(1)}
+                    </span>
+                  ) : (
+                    <span className="font-mono text-zinc-500">—</span>
+                  )}
+                </td>
                 <td className="px-3 py-1.5 text-right font-mono">{fmt(row.avgVelo)}</td>
                 <td className="px-3 py-1.5 text-right font-mono">{fmt(row.avgSpin, 0)}</td>
                 <td className="px-3 py-1.5 text-right font-mono">{fmt(row.avgIvb)}</td>
@@ -90,6 +110,7 @@ export default function PitchTypeTable({
                     {summary.totalPitches ?? "\u2014"}
                   </td>
                 )}
+                <td className="px-3 py-1.5" />
                 <td className="px-3 py-1.5 text-right font-mono">
                   {fmt(summary.weightedAvgVelo)}
                 </td>
