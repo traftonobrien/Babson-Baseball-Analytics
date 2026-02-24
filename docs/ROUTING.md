@@ -26,6 +26,12 @@ Single lookup table: task → canonical doc. When in doubt, start here.
 | Trackman session UI | `docs/web/trackman_session_ui.md` | `web/app/trackman/session/` |
 | Sync D3 leaderboard (daily) | `docs/runbooks/sync_d3_leaderboard.md` | `scripts/sync_d3_leaderboard.py` |
 | Team statistics leaderboard | `docs/web/leaderboards.md` | `web/app/team-stats/page.tsx` |
+| Run a mechanics session (coach pack) | `docs/runbooks/mechanics_cv.md` | `scripts/mechanics_coach_pack.py` |
+| Publish mechanics session to web | `docs/runbooks/publish_mechanics_session.md` | `web/public/mechanics/index.json` |
+| Mechanics engine architecture | `docs/runbooks/mechanics_cv.md` | `src/mechanics/` |
+| Mechanics web UI | `docs/runbooks/publish_mechanics_session.md` | `web/app/mechanics/`, `web/lib/mechanics/` |
+| Validate phase detection accuracy | `docs/runbooks/mechanics_cv.md` | `scripts/mechanics_validate.py` |
+| Mechanics overhaul plan | `docs/Mechanics Overhaul.md` | `src/mechanics/` |
 | Troubleshooting | `docs/troubleshooting/common_failures.md` | — |
 
 ### Rules

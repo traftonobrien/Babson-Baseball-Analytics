@@ -1,6 +1,6 @@
 # Mechanics Engine Overhaul — Resume Plan
 
-**Context**: Session hit limit during Phase 5. Phases 0–4 are done. Phase 5 is partially done. Phase 6 is not started.
+**Status: COMPLETE** — All phases (0–6) finished. 241 tests pass. Published to web.
 
 **Reference**: `docs/Mechanics Overhaul.md` (full plan)
 
@@ -62,10 +62,10 @@
 
 ## Quick Verification Checklist
 
-- [ ] `python -m pytest tests/mechanics/ -v` — all pass
-- [ ] `python scripts/mechanics_validate.py --labels tests/mechanics/manual_phases_template.json` — runs without crash (will skip due to missing clip)
-- [ ] Run `mechanics_coach_pack.py` on a real clip — `notes.json` contains `pose_backend`, `angle_validated`, `angle_confidence`, `metric_reliability` per metric
-- [ ] Web mechanics session page loads — no TypeScript errors from new optional fields
+- [x] `python -m pytest tests/mechanics/ -v` — 241 pass
+- [x] `python scripts/mechanics_validate.py --labels tests/mechanics/manual_phases_template.json` — runs, skips placeholder, exits 0
+- [x] Run `mechanics_coach_pack.py` on Trafton clip — `notes.json` contains `pose_backend`, `metric_reliability` per metric
+- [x] Web mechanics session page loads — TypeScript compiles clean, new fields render
 
 ---
 

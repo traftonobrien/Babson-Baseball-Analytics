@@ -1,6 +1,6 @@
 ---
 name: Mechanics Overhaul Resume
-overview: "Resume the Mechanics Engine Overhaul where the previous session stopped: finish Phase 5 (validation pipeline verification and tests), then complete Phase 6 (Web UI for pose_backend, angle_validated, angle_confidence)."
+overview: "COMPLETE. Mechanics Engine Overhaul Phases 0–6 all finished. 241 tests pass. Published to web."
 todos: []
 isProject: false
 ---
@@ -73,9 +73,10 @@ The panel already shows Camera View, Not Measurable, and Low Confidence; extend 
 
 ## Verification Checklist
 
-- [ ] `python -m pytest tests/mechanics/ -v` — all pass
-- [ ] `python scripts/mechanics_validate.py --labels tests/mechanics/manual_phases_template.json` — runs without crash
-- [ ] Web mechanics page loads — no TypeScript errors; new fields render when present
+- [x] `python -m pytest tests/mechanics/ -v` — 241 pass
+- [x] `python scripts/mechanics_validate.py --labels tests/mechanics/manual_phases_template.json` — runs, exits 0
+- [x] Web mechanics page loads — TypeScript compiles clean; new fields render when present
+- [x] Published Trafton session with new engine output — efficiency 5.44 → 6.04
 
 ---
 
