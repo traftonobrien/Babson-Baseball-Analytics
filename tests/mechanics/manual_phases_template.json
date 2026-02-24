@@ -1,0 +1,38 @@
+{
+  "_comment": "Manual ground-truth phase annotations for mechanics validation. Copy this template for each labeled clip.",
+  "_instructions": [
+    "For each clip, fill in the frame index for each phase.",
+    "Use null for phases that cannot be identified in the clip.",
+    "The 'notes' field is for human annotations about the clip."
+  ],
+  "clips": [
+    {
+      "clip_path": "path/to/clip.mp4",
+      "hand": "R",
+      "fps": 30.0,
+      "phases": {
+        "set": {
+          "frame_idx": null,
+          "notes": ""
+        },
+        "first_movement": {
+          "frame_idx": null,
+          "notes": ""
+        },
+        "peak_leg_lift": {
+          "frame_idx": null,
+          "notes": ""
+        },
+        "foot_strike": {
+          "frame_idx": null,
+          "notes": ""
+        },
+        "ball_release": {
+          "frame_idx": null,
+          "notes": ""
+        }
+      },
+      "notes": ""
+    }
+  ]
+}

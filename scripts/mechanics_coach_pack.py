@@ -39,8 +39,9 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from src.mechanics.angle_validator import validate_open_side
 from src.mechanics.video_io import read_video_meta
-from src.mechanics.pose import PoseResult, KP, extract_poses
+from src.mechanics.pose import PoseResult, KP, extract_poses, extract_poses_auto
 from src.mechanics.phases import detect_phases, Phase, PitchPhases
 from src.mechanics.benchmarks import (
     BenchmarkReport,
@@ -83,6 +84,10 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--no-hold-review", dest="hold_review", action="store_false",
                    help="Disable hold_review.mp4 generation.")
     p.set_defaults(hold_review=None)
+    p.add_argument("--pose-backend", default=None, choices=["mediapipe", "vitpose"],
+                   help="Pose estimation backend. Default: mediapipe (or POSE_BACKEND env).")
+    p.add_argument("--strict-angle", action="store_true",
+                   help="Reject clips that fail open-side angle validation.")
     p.add_argument("--debug-metrics", action="store_true",
                    help="Include debug-only open-side metrics (balance/posture/lift/tilt + legacy trunk/extension) in notes overlays.")
     p.add_argument("--verbose", action="store_true",
@@ -634,9 +639,32 @@ def _process_single_video(video_path: Path, args: argparse.Namespace) -> Benchma
     clip_slug   = slugify(video_path.stem)
     out_dir     = Path("output/mechanics") / player_slug / clip_slug
 
+    # ---- Angle validation ----
+    angle_result = validate_open_side(video_path, hand=args.hand)
+    if angle_result.valid:
+        print(f"Angle : {angle_result.angle_class} (conf={angle_result.confidence:.2f}) — PASS")
+    else:
+        print(f"Angle : {angle_result.angle_class} (conf={angle_result.confidence:.2f}) — FAIL")
+        if angle_result.reject_reason:
+            print(f"        {angle_result.reject_reason}")
+        if getattr(args, "strict_angle", False):
+            pack_dir = out_dir / "coach_pack"
+            pack_dir.mkdir(parents=True, exist_ok=True)
+            notes_path = pack_dir / "notes.json"
+            with open(notes_path, "w") as f:
+                json.dump({
+                    "status": "rejected",
+                    "reject_reason": angle_result.reject_reason,
+                    "angle_validation": angle_result.to_dict(),
+                }, f, indent=2)
+            print(f"  Rejected (--strict-angle). Notes: {notes_path}")
+            sys.exit(1)
+
     # ---- Extract poses ----
-    print("\nExtracting poses (model auto-downloads ~3 MB on first run)...")
-    poses = extract_poses(video_path, verbose=args.verbose)
+    pose_backend = getattr(args, "pose_backend", None)
+    print(f"\nExtracting poses (backend={pose_backend or 'auto'})...")
+    poses, pose_backend_used = extract_poses_auto(video_path, backend=pose_backend, verbose=args.verbose)
+    print(f"Pose backend: {pose_backend_used}")
     valid = sum(1 for p in poses if p.valid)
     print(f"Poses : {valid}/{len(poses)} valid detections")
     if valid == 0:

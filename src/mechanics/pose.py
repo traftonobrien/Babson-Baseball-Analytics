@@ -54,6 +54,13 @@ from mediapipe.tasks.python.vision.core.vision_task_running_mode import (
 from .video_io import iter_frames, read_video_meta
 
 # ---------------------------------------------------------------------------
+# Pose backend selection
+# ---------------------------------------------------------------------------
+# Set via POSE_BACKEND env var or --pose-backend CLI flag.
+# Values: "mediapipe" (default), "vitpose"
+POSE_BACKEND = os.environ.get("POSE_BACKEND", "mediapipe").strip().lower()
+
+# ---------------------------------------------------------------------------
 # Keypoint name → landmark index mapping.
 # These indices are identical in legacy solutions and Tasks API.
 # Full list: developers.google.com/mediapipe/solutions/vision/pose_landmarker
@@ -308,3 +315,55 @@ def draw_skeleton(
             cv2.circle(out, (x, y), 4, color, -1, cv2.LINE_AA)
 
     return out
+
+
+# ---------------------------------------------------------------------------
+# Backend-aware extraction
+# ---------------------------------------------------------------------------
+
+def extract_poses_auto(
+    video_path: str | Path,
+    backend: Optional[str] = None,
+    max_frames: Optional[int] = None,
+    min_detection_confidence: float = 0.5,
+    min_tracking_confidence: float = 0.5,
+    verbose: bool = False,
+    debug_stability: bool = False,
+) -> tuple[List[PoseResult], str]:
+    """
+    Extract poses using the configured backend.
+
+    Args:
+        video_path: Path to the video file.
+        backend: Override backend ("mediapipe" or "vitpose").
+                 If None, uses POSE_BACKEND env var or default.
+        max_frames: Stop after this many frames.
+        verbose: Print progress.
+
+    Returns:
+        (poses, backend_name) tuple. backend_name is "mediapipe" or "vitpose".
+    """
+    chosen = (backend or POSE_BACKEND).strip().lower()
+
+    if chosen == "vitpose":
+        try:
+            from .pose_vitpose import extract_poses_vitpose
+            poses = extract_poses_vitpose(
+                video_path,
+                max_frames=max_frames,
+                verbose=verbose,
+            )
+            return poses, "vitpose"
+        except (ImportError, RuntimeError) as e:
+            _log.warning("ViTPose unavailable (%s), falling back to MediaPipe.", e)
+
+    # Default: MediaPipe
+    poses = extract_poses(
+        video_path,
+        max_frames=max_frames,
+        min_detection_confidence=min_detection_confidence,
+        min_tracking_confidence=min_tracking_confidence,
+        verbose=verbose,
+        debug_stability=debug_stability,
+    )
+    return poses, "mediapipe"

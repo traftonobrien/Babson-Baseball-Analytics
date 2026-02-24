@@ -619,6 +619,52 @@ output/mechanics/<player_slug>/<clip_slug>/
 
 ---
 
+## Validation — comparing detected phases to ground truth
+
+Use `scripts/mechanics_validate.py` to measure phase detection accuracy against manually labeled clips.
+
+**1. Create a labels file** by copying the template:
+
+```bash
+cp tests/mechanics/manual_phases_template.json manual_phases.json
+```
+
+**2. Fill in ground truth** for each clip — set `clip_path` to the real video, `hand` to R or L, `fps`, and the `frame_idx` for each phase you can identify (leave `null` for phases you can't pinpoint):
+
+```json
+{
+  "clips": [
+    {
+      "clip_path": "Mechanics Analysis/Player/pitch.mp4",
+      "hand": "R",
+      "fps": 30.0,
+      "phases": {
+        "set":            { "frame_idx": 12, "notes": "" },
+        "first_movement": { "frame_idx": 12, "notes": "" },
+        "peak_leg_lift":  { "frame_idx": 38, "notes": "" },
+        "foot_strike":    { "frame_idx": 55, "notes": "" },
+        "ball_release":   { "frame_idx": 62, "notes": "" }
+      }
+    }
+  ]
+}
+```
+
+**3. Run validation:**
+
+```bash
+.venv/bin/python scripts/mechanics_validate.py --labels manual_phases.json
+```
+
+Options:
+- `--pose-backend vitpose` — use ViTPose instead of MediaPipe
+- `--fail-threshold 5.0` — fail if any phase MAE exceeds N frames (default 5.0)
+- `--verbose` — print per-clip details
+
+Output is a per-phase MAE report with PASS/FAIL per threshold. Clips whose `clip_path` doesn't exist on disk are skipped.
+
+---
+
 ## Running the tests
 
 ```bash

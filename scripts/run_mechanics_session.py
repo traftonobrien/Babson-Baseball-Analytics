@@ -21,10 +21,11 @@ from src.ingest_manual.schema import load_manual_clips
 from scripts.ingest_multi_angle import run_ingest
 from scripts.mechanics_coach_pack import _top_issues, _write_hold_review_video, _write_slowmo_video
 from src.ingest.selection import candidate_quality_score
+from src.mechanics.angle_validator import validate_open_side
 from src.mechanics.benchmarks import compute_benchmarks
 from src.mechanics.coach_pack import build_coach_pack
 from src.mechanics.phases import detect_phases
-from src.mechanics.pose import KP, extract_poses
+from src.mechanics.pose import KP, extract_poses, extract_poses_auto
 from src.mechanics.utils import slugify
 from src.mechanics.video_io import read_video_meta
 
@@ -53,6 +54,9 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--no-export", action="store_true", help="With --manual-clips, skip export and use existing clips/index.")
     p.add_argument("--slowmo", action="store_true", help="Write slowmo_review.mp4.")
     p.add_argument("--hold-review", action="store_true", help="Write hold_review.mp4.")
+    p.add_argument("--pose-backend", default=None, choices=["mediapipe", "vitpose"],
+                   help="Pose estimation backend. Default: mediapipe (or POSE_BACKEND env).")
+    p.add_argument("--strict-angle", action="store_true", help="Reject clips that fail open-side angle validation.")
     p.add_argument("--debug-metrics", action="store_true", help="Include debug-only metrics in coach-pack notes.")
     p.add_argument("--verbose", action="store_true", help="Verbose logging.")
     return p.parse_args()
@@ -169,10 +173,39 @@ def _run_mechanics_for_clip(
     slowmo: bool,
     hold_review: bool,
     debug_metrics: bool,
+    strict_angle: bool = False,
+    pose_backend: Optional[str] = None,
 ) -> dict[str, Any]:
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Phase 0: Angle validation.
+    angle_validation = validate_open_side(clip_path, hand=hand)
+    if strict_angle and not angle_validation.valid:
+        notes_path = out_dir / "coach_pack" / "notes.json"
+        notes_path.parent.mkdir(parents=True, exist_ok=True)
+        rejected_notes = {
+            "status": "rejected",
+            "reject_reason": angle_validation.reject_reason,
+            "angle_validation": angle_validation.to_dict(),
+            "camera_view_unknown": not angle_validation.valid,
+        }
+        with open(notes_path, "w") as f:
+            json.dump(rejected_notes, f, indent=2)
+        return {
+            "benchmarks": None,
+            "phases": None,
+            "benchmarks_json": None,
+            "coach_pack_dir": str((out_dir / "coach_pack").resolve()),
+            "notes_json": str(notes_path.resolve()),
+            "slowmo_review_mp4": None,
+            "hold_review_mp4": None,
+            "status": "rejected",
+            "reject_reason": angle_validation.reject_reason,
+            "angle_validation": angle_validation.to_dict(),
+        }
+
     meta = read_video_meta(clip_path)
-    poses = extract_poses(clip_path, verbose=False)
+    poses, pose_backend_used = extract_poses_auto(clip_path, backend=pose_backend, verbose=False)
     phases = detect_phases(poses, fps=meta.fps, hand=hand, debug=True)
     benchmarks = compute_benchmarks(poses, phases, hand=hand, view_mode=view_mode)
 
@@ -189,6 +222,9 @@ def _run_mechanics_for_clip(
         benchmarks=benchmarks,
         out_dir=out_dir,
         include_debug_metrics=debug_metrics,
+        pose_backend=pose_backend_used,
+        angle_validated=angle_validation.valid,
+        angle_confidence=angle_validation.confidence,
     )
 
     slowmo_path = None
@@ -220,6 +256,8 @@ def _run_mechanics_for_clip(
         "notes_json": str(coach_result.notes_json.resolve()) if coach_result.notes_json else None,
         "slowmo_review_mp4": str(slowmo_path.resolve()) if slowmo_path else None,
         "hold_review_mp4": str(hold_path.resolve()) if hold_path else None,
+        "angle_validation": angle_validation.to_dict(),
+        "pose_backend": pose_backend_used,
     }
 
 
@@ -375,7 +413,25 @@ def _run_from_manual_index(args: argparse.Namespace, manual_index_path: Path, ma
             slowmo=args.slowmo or args.hold_review,
             hold_review=args.hold_review or args.slowmo,
             debug_metrics=args.debug_metrics,
+            strict_angle=getattr(args, "strict_angle", False),
+            pose_backend=getattr(args, "pose_backend", None),
         )
+        if run.get("status") == "rejected":
+            session_rows.append(
+                {
+                    "pitch_id": pitch_id,
+                    "status": "rejected",
+                    "reason": run.get("reject_reason", "angle_validation_failed"),
+                    "angle_validation": run.get("angle_validation"),
+                    "clip_path_abs": str(clip_path),
+                    "outputs": {
+                        "pitch_dir": str(pitch_out.resolve()),
+                        "coach_pack_dir": run["coach_pack_dir"],
+                        "notes_json": run["notes_json"],
+                    },
+                }
+            )
+            continue
         benchmarks = run["benchmarks"]
         top_issues = _top_issues(benchmarks, limit=3)
         session_rows.append(
@@ -391,6 +447,7 @@ def _run_from_manual_index(args: argparse.Namespace, manual_index_path: Path, ma
                 "efficiency_score": benchmarks.efficiency_score,
                 "efficiency_low_confidence": benchmarks.efficiency_low_confidence,
                 "top_issues": top_issues,
+                "angle_validation": run.get("angle_validation"),
                 "outputs": {
                     "pitch_dir": str(pitch_out.resolve()),
                     "benchmarks_json": run["benchmarks_json"],
@@ -516,7 +573,25 @@ def main() -> None:
             slowmo=args.slowmo or args.hold_review,
             hold_review=args.hold_review or args.slowmo,
             debug_metrics=args.debug_metrics,
+            strict_angle=getattr(args, "strict_angle", False),
+            pose_backend=getattr(args, "pose_backend", None),
         )
+        if run.get("status") == "rejected":
+            session_rows.append(
+                {
+                    "pitch_id": pitch_id,
+                    "status": "rejected",
+                    "reason": run.get("reject_reason", "angle_validation_failed"),
+                    "angle_validation": run.get("angle_validation"),
+                    "clip_path_abs": str(clip_path.resolve()),
+                    "outputs": {
+                        "pitch_dir": str(pitch_out.resolve()),
+                        "coach_pack_dir": run["coach_pack_dir"],
+                        "notes_json": run["notes_json"],
+                    },
+                }
+            )
+            continue
         benchmarks = run["benchmarks"]
         top_issues = _top_issues(benchmarks, limit=3)
 
@@ -533,6 +608,7 @@ def main() -> None:
                 "efficiency_score": benchmarks.efficiency_score,
                 "efficiency_low_confidence": benchmarks.efficiency_low_confidence,
                 "top_issues": top_issues,
+                "angle_validation": run.get("angle_validation"),
                 "outputs": {
                     "pitch_dir": str(pitch_out.resolve()),
                     "benchmarks_json": run["benchmarks_json"],

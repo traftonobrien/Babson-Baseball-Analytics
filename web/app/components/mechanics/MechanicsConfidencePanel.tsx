@@ -8,8 +8,11 @@ interface MechanicsConfidencePanelProps {
 
 export function MechanicsConfidencePanel({ notes }: MechanicsConfidencePanelProps) {
   const { limitations } = notes;
+  const hasMeta = !!(notes.pose_backend || notes.angle_validated !== undefined);
   const hasContent =
-    limitations.not_measurable.length > 0 || limitations.low_confidence_metrics.length > 0;
+    limitations.not_measurable.length > 0 ||
+    limitations.low_confidence_metrics.length > 0 ||
+    hasMeta;
 
   if (!hasContent) return null;
 
@@ -31,12 +34,41 @@ export function MechanicsConfidencePanel({ notes }: MechanicsConfidencePanelProp
       )}
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Camera View */}
-        <div>
-          <p className="text-[9px] uppercase tracking-wider text-zinc-600 mb-2">Camera View</p>
-          <p className="text-sm font-medium text-zinc-300 capitalize">
-            {limitations.camera_view.replace(/_/g, " ")}
-          </p>
+        {/* Camera View + Pipeline Metadata */}
+        <div className="space-y-3">
+          <div>
+            <p className="text-[9px] uppercase tracking-wider text-zinc-600 mb-2">Camera View</p>
+            <p className="text-sm font-medium text-zinc-300 capitalize">
+              {limitations.camera_view.replace(/_/g, " ")}
+            </p>
+          </div>
+
+          {notes.pose_backend && (
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center rounded bg-zinc-800 px-2 py-0.5 text-[10px] font-medium text-zinc-400">
+                Pose: {notes.pose_backend === "vitpose" ? "ViTPose" : "MediaPipe"}
+              </span>
+            </div>
+          )}
+
+          {notes.angle_validated !== undefined && (
+            <div className="flex items-center gap-2">
+              <span
+                className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-medium ${
+                  notes.angle_validated
+                    ? "bg-emerald-950/40 text-emerald-400 border border-emerald-800/40"
+                    : "bg-amber-950/30 text-amber-400 border border-amber-800/40"
+                }`}
+              >
+                {notes.angle_validated ? "Open-side validated" : "Angle not validated"}
+              </span>
+              {notes.angle_confidence !== undefined && (
+                <span className="text-[10px] text-zinc-600">
+                  {Math.round(notes.angle_confidence * 100)}%
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Not Measurable */}

@@ -1258,6 +1258,10 @@ def _build_notes(
     benchmarks: BenchmarkReport,
     phases: PitchPhases,
     include_debug_metrics: bool = False,
+    pose_backend: str = "mediapipe",
+    angle_validated: bool | None = None,
+    angle_confidence: float | None = None,
+    model_version: str = "v4",
 ) -> dict:
     """Build the notes.json dict with metric results and coaching callouts."""
     metrics_pool = list(benchmarks.all_metrics())
@@ -1298,6 +1302,7 @@ def _build_notes(
             ),
             "reasons": list(m.reasons) if getattr(m, "reasons", None) else [],
             "coaching_cues": cues[:2],
+            "metric_reliability": m.metric_reliability,
         }
 
     phase_frames = {}
@@ -1330,11 +1335,13 @@ def _build_notes(
             low_confidence.append(m.name)
             camera_limits.append(f"{m.name}: low confidence due to visibility/occlusion")
 
-    return {
+    notes = {
         "efficiency_score": benchmarks.efficiency_score,
         "efficiency_low_confidence": benchmarks.efficiency_low_confidence,
         "hand": benchmarks.hand,
         "view_mode": benchmarks.view_mode,
+        "model_version": model_version,
+        "pose_backend": pose_backend,
         "metrics": metrics_out,
         "phases": phase_frames,
         "camera_limitations": camera_limits,
@@ -1362,6 +1369,14 @@ def _build_notes(
         ),
     }
 
+    # Phase 3: Add angle validation info if available.
+    if angle_validated is not None:
+        notes["angle_validated"] = angle_validated
+    if angle_confidence is not None:
+        notes["angle_confidence"] = round(angle_confidence, 3)
+
+    return notes
+
 
 # ---------------------------------------------------------------------------
 # Public entry point
@@ -1374,6 +1389,9 @@ def build_coach_pack(
     benchmarks: BenchmarkReport,
     out_dir: Path,
     include_debug_metrics: bool = False,
+    pose_backend: str = "mediapipe",
+    angle_validated: bool | None = None,
+    angle_confidence: float | None = None,
 ) -> CoachPackResult:
     """
     Build the full coach pack: key frames, strip, cliplets, and notes.json.
@@ -1384,6 +1402,9 @@ def build_coach_pack(
         phases:      Detected pitch phases.
         benchmarks:  Computed BenchmarkReport.
         out_dir:     Output directory for the coach pack.
+        pose_backend: Which pose backend was used ("mediapipe" or "vitpose").
+        angle_validated: Whether angle validation passed (None if not run).
+        angle_confidence: Angle classifier confidence (None if not run).
 
     Returns:
         CoachPackResult with paths to all generated files.
@@ -1610,7 +1631,13 @@ def build_coach_pack(
             result.release_mp4 = clip_path
 
     # Notes
-    notes = _build_notes(benchmarks, phases, include_debug_metrics=include_debug_metrics)
+    notes = _build_notes(
+        benchmarks, phases,
+        include_debug_metrics=include_debug_metrics,
+        pose_backend=pose_backend,
+        angle_validated=angle_validated,
+        angle_confidence=angle_confidence,
+    )
     notes_path = pack_dir / "notes.json"
     with open(notes_path, "w") as f:
         json.dump(notes, f, indent=2)

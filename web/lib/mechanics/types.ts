@@ -14,6 +14,7 @@ export interface MetricResult {
   manual_review_recommended?: boolean;
   reasons?: string[];
   coaching_cues: string[];
+  metric_reliability?: string;
 }
 
 export interface PhaseFrame {
@@ -27,6 +28,9 @@ export interface NotesJson {
   hand: "R" | "L";
   view_mode: string;
   model_version?: string;
+  pose_backend?: string;
+  angle_validated?: boolean;
+  angle_confidence?: number;
   metrics: Record<string, MetricResult>;
   phases: Record<string, PhaseFrame>;
   camera_limitations: string[];

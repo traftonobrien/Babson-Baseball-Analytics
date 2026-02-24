@@ -25,6 +25,7 @@ Single lookup table: task → canonical doc. When in doubt, start here.
 | Import Trackman PDF | `docs/runbooks/import_trackman_pdf.md` | `scripts/import_trackman_pdf.py` |
 | Trackman session UI | `docs/web/trackman_session_ui.md` | `web/app/trackman/session/` |
 | Sync D3 leaderboard (daily) | `docs/runbooks/sync_d3_leaderboard.md` | `scripts/sync_d3_leaderboard.py` |
+| Team statistics leaderboard | `docs/web/leaderboards.md` | `web/app/team-stats/page.tsx` |
 | Troubleshooting | `docs/troubleshooting/common_failures.md` | — |
 
 ### Rules

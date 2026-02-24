@@ -687,6 +687,21 @@ class BenchmarkResult:
     score_eff: Optional[float] = None
     reasons: list[str] = dataclasses.field(default_factory=list)
 
+    @property
+    def metric_reliability(self) -> str:
+        """
+        Derive reliability tier from confidence and status.
+
+        Returns "high", "medium", or "low".
+        """
+        if self.status != "ok" or self.confidence is None:
+            return "low"
+        if self.confidence >= CONF_FULL:
+            return "high"
+        if self.confidence >= CONF_BLIND:
+            return "medium"
+        return "low"
+
     @classmethod
     def insufficient(cls, name: str, reason: str) -> "BenchmarkResult":
         """Convenience constructor for missing-data results."""
@@ -3369,6 +3384,29 @@ OPEN_SIDE_DEBUG_METRICS: tuple[str, ...] = (
     "front_side_closedness",
     "forward_leak_proxy",
 )
+
+
+# Per-metric flag: True if the metric is designed for open-side only.
+METRIC_OPEN_SIDE_ONLY: dict[str, bool] = {
+    "lead_leg_block_v3": True,
+    "hip_shoulder_sep_v3": True,
+    "front_side_closedness_v2": True,
+    "release_extension_v2": True,
+    "timing": False,
+    "swivel_stabilize": False,
+    "balance": False,
+    "posture": False,
+    "lift_thrust": False,
+    "trunk_stability_v2": True,
+    "stack_track": False,
+    "torque_retention": False,
+    "drift_forward": False,
+    "forward_leak_proxy": True,
+    "front_knee_flexion_fs": True,
+    "front_knee_extension_rel": True,
+    "tilt_consistency": False,
+    "release_extension_proxy": False,
+}
 
 
 def official_metric_names(view_mode: str) -> tuple[str, ...]:

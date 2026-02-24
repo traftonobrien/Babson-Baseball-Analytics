@@ -18,7 +18,12 @@ CONFIDENCE_REASONS: tuple[str, ...] = (
     "outlier_jump",
     "low_motion",
     "phase_uncertain",
+    "angle_validation_failed",
+    "pose_backend_low",
 )
+
+# When ViTPose is used and angle validation passes, confidence floor is higher.
+CONF_FULL_VITPOSE = 0.70
 
 
 @dataclasses.dataclass
@@ -72,6 +77,99 @@ def conf_from_motion(motion: float, min_motion: float) -> float:
     if min_motion <= 1e-9:
         return 1.0
     return clamp01(float(motion) / float(min_motion))
+
+
+def conf_from_pose_backend(backend: str) -> ConfidenceReport:
+    """
+    Confidence boost/penalty based on pose estimation backend.
+
+    ViTPose provides better occlusion handling → higher base confidence.
+    MediaPipe is the baseline.
+    """
+    if backend == "vitpose":
+        return ConfidenceReport(conf=0.90, components={"pose_backend": 0.90})
+    # MediaPipe: baseline, no boost.
+    return ConfidenceReport(
+        conf=0.70,
+        reasons=["pose_backend_low"],
+        components={"pose_backend": 0.70},
+    )
+
+
+def conf_from_angle_validation(
+    angle_valid: bool,
+    angle_confidence: float = 0.0,
+) -> ConfidenceReport:
+    """
+    Confidence from camera angle validation.
+
+    If validation passed: slight boost based on angle confidence.
+    If validation failed: cap confidence at 0.30 for all metrics.
+    """
+    if angle_valid:
+        conf = clamp01(0.80 + 0.20 * angle_confidence)
+        return ConfidenceReport(conf=conf, components={"angle_validation": conf})
+    return ConfidenceReport(
+        conf=min(0.30, angle_confidence),
+        reasons=["angle_validation_failed"],
+        components={"angle_validation": min(0.30, angle_confidence)},
+    )
+
+
+def conf_from_phase_quality(phases_data: dict) -> ConfidenceReport:
+    """
+    Aggregate confidence from phase detection quality.
+
+    Args:
+        phases_data: dict mapping phase name -> Phase-like dict with
+                     'confidence' and optional 'reason' fields.
+    """
+    if not phases_data:
+        return ConfidenceReport(conf=0.40, reasons=["phase_uncertain"])
+
+    confs = []
+    reasons: list[str] = []
+    for phase_name, phase in phases_data.items():
+        if phase is None:
+            reasons.append("phase_uncertain")
+            confs.append(0.0)
+            continue
+        c = float(phase.get("confidence", 0.5) if isinstance(phase, dict) else getattr(phase, "confidence", 0.5))
+        confs.append(c)
+        reason = phase.get("reason", "") if isinstance(phase, dict) else getattr(phase, "reason", "")
+        if reason and reason in CONFIDENCE_REASONS:
+            reasons.append(reason)
+
+    if not confs:
+        return ConfidenceReport(conf=0.40, reasons=["phase_uncertain"])
+
+    # Use minimum phase confidence as the aggregate.
+    conf = clamp01(min(confs))
+    return ConfidenceReport(
+        conf=conf,
+        reasons=list(set(reasons)),
+        components={"phase_quality": conf},
+    )
+
+
+def build_confidence_breakdown(
+    landmark_quality: float,
+    phase_quality: float,
+    pose_backend: float,
+    angle_validation: float,
+) -> dict[str, float]:
+    """
+    Build a confidence breakdown dict for notes.json.
+
+    Each source is a float [0, 1]. The breakdown is stored per-metric
+    so coaches can see why confidence is low.
+    """
+    return {
+        "landmark_quality": round(clamp01(landmark_quality), 3),
+        "phase_quality": round(clamp01(phase_quality), 3),
+        "pose_backend": round(clamp01(pose_backend), 3),
+        "angle_validation": round(clamp01(angle_validation), 3),
+    }
 
 
 def combine_conf(

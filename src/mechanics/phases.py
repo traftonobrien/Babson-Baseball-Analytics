@@ -51,6 +51,7 @@ class Phase:
     time_s: float
     confidence: float  # [0, 1] rough estimate of detection quality
     note: str = ""
+    reason: str = ""   # machine-readable reason tag for confidence level
 
     def to_dict(self) -> dict:
         return dataclasses.asdict(self)
@@ -511,12 +512,25 @@ def detect_phases(
     set_phase: Optional[Phase] = None
     if delivery_start is not None:
         set_idx = delivery_start
+        # Determine if there is an idle prefix before delivery start.
+        # If the clip starts with motion (no idle), confidence is lower.
+        idle_frames = set_idx  # frames before delivery start
+        idle_ratio = idle_frames / max(1, n)
+        if idle_ratio >= 0.10:
+            set_conf = 0.85
+            set_reason = ""
+            set_note = "Delivery start transition (idle -> motion) from robust motion energy"
+        else:
+            set_conf = 0.60
+            set_reason = "low_motion"
+            set_note = "Delivery start detected but minimal idle prefix (clip may start mid-motion)"
         set_phase = Phase(
             name="set",
             frame_idx=poses[set_idx].frame_idx,
             time_s=poses[set_idx].frame_idx / fps,
-            confidence=0.82,
-            note="Delivery start transition (idle -> motion) from robust motion energy",
+            confidence=set_conf,
+            note=set_note,
+            reason=set_reason,
         )
     else:
         # Fallback: min ankle motion in first third
@@ -533,8 +547,9 @@ def detect_phases(
                 name="set",
                 frame_idx=poses[set_idx].frame_idx,
                 time_s=poses[set_idx].frame_idx / fps,
-                confidence=0.3,
+                confidence=0.30,
                 note="Fallback: most-still frame in first third (min ankle motion)",
+                reason="low_motion",
             )
 
     # ---- FIRST MOVEMENT -----------------------------------------------------
@@ -551,6 +566,7 @@ def detect_phases(
             time_s=poses[first_move_idx].frame_idx / fps,
             confidence=0.82,
             note="Matches SET delivery-start transition",
+            reason="",
         )
     else:
         # Fallback: knee velocity scan
@@ -567,6 +583,7 @@ def detect_phases(
                 time_s=poses[first_move_idx].frame_idx / fps,
                 confidence=0.65,
                 note="Lead knee first moves upward at > 1.5 px/frame",
+                reason="phase_uncertain",
             )
 
     # ---- PEAK LEG LIFT -------------------------------------------------------
@@ -598,13 +615,16 @@ def detect_phases(
     # ---- FOOT STRIKE ---------------------------------------------------------
     # Heuristic: ankle velocity drops below threshold after a descent phase.
     # The lead foot descends fast, then abruptly slows when it hits the ground.
+    # Improvement: also use lead knee as fallback when ankle is occluded.
     ankle_vel  = _velocity(ankle_y)
     ankle_vel_s = _smooth(ankle_vel, window=3)
 
     foot_strike_idx: Optional[int] = None
     foot_strike_phase: Optional[Phase] = None
     fs_search_start = (peak_idx + 1) if peak_idx is not None else (set_idx + n // 4)
+    fs_reason = ""
 
+    # Primary: ankle velocity drop.
     in_descent = False
     for i in range(fs_search_start, n - 2):
         v = ankle_vel_s[i]
@@ -616,8 +636,23 @@ def detect_phases(
             foot_strike_idx = i
             break
 
-    # Fallback: if no clean slow-down found, use frame with minimum ankle
-    # velocity in the second half of the clip after peak leg lift.
+    # Fallback 1: lead knee velocity drop (robustness when ankle is occluded).
+    if foot_strike_idx is None:
+        knee_vel = _velocity(knee_y)
+        knee_vel_s = _smooth(knee_vel, window=3)
+        in_descent_knee = False
+        for i in range(fs_search_start, n - 2):
+            v = knee_vel_s[i]
+            if np.isnan(v):
+                continue
+            if v > 1.5:
+                in_descent_knee = True
+            if in_descent_knee and v < 1.0:
+                foot_strike_idx = i
+                fs_reason = "occluded"
+                break
+
+    # Fallback 2: minimum ankle velocity in the second half.
     if foot_strike_idx is None:
         fb_start = fs_search_start
         fb_end   = min(int(n * 0.88), n - 1)
@@ -625,14 +660,26 @@ def detect_phases(
             patch = ankle_vel_s[fb_start:fb_end]
             if not np.all(np.isnan(patch)):
                 foot_strike_idx = fb_start + int(np.nanargmin(patch))
+                fs_reason = "phase_uncertain"
 
     if foot_strike_idx is not None:
+        # Compute confidence based on detection method.
+        if fs_reason == "":
+            fs_conf = 0.70
+            fs_note = "Lead ankle velocity drops (foot contacts ground)"
+        elif fs_reason == "occluded":
+            fs_conf = 0.50
+            fs_note = "Lead knee velocity fallback (ankle occluded)"
+        else:
+            fs_conf = 0.40
+            fs_note = "Min ankle velocity fallback (no clean deceleration found)"
         foot_strike_phase = Phase(
             name="foot_strike",
             frame_idx=poses[foot_strike_idx].frame_idx,
             time_s=poses[foot_strike_idx].frame_idx / fps,
-            confidence=0.6,
-            note="Lead ankle velocity drops (foot contacts ground)",
+            confidence=fs_conf,
+            note=fs_note,
+            reason=fs_reason,
         )
 
     # Refine PLL for open-side robustness in the final SET→FS window.
@@ -677,12 +724,30 @@ def detect_phases(
         if not np.all(np.isnan(patch)) and np.nanmax(patch) > 0:
             local_peak = int(np.nanargmax(patch))
             release_idx = rel_search_start + local_peak
+            peak_speed = float(np.nanmax(patch))
+
+            # Assess wrist tracking quality: check visibility at release.
+            wrist_vis = poses[release_idx].visibility(throw_wrist) if release_idx < len(poses) else 0.0
+            if wrist_vis >= 0.5 and peak_speed > 3.0:
+                rel_conf = 0.60
+                rel_note = "Throwing wrist peak speed with good visibility"
+                rel_reason = ""
+            elif wrist_vis >= 0.3:
+                rel_conf = 0.45
+                rel_note = "Throwing wrist peak speed (moderate visibility; motion blur likely)"
+                rel_reason = "occluded"
+            else:
+                rel_conf = 0.30
+                rel_note = "Throwing wrist peak speed (low visibility; use ball tracker for accuracy)"
+                rel_reason = "occluded"
+
             ball_release_phase = Phase(
                 name="ball_release",
                 frame_idx=poses[release_idx].frame_idx,
                 time_s=poses[release_idx].frame_idx / fps,
-                confidence=0.55,
-                note="Throwing wrist peak speed (rough; use ball tracker for accuracy)",
+                confidence=rel_conf,
+                note=rel_note,
+                reason=rel_reason,
             )
 
     if debug:
