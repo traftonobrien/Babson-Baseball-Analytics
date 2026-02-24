@@ -2,7 +2,7 @@
 
 **Status: COMPLETE** — All phases (0–6) finished. 241 tests pass. Published to web.
 
-**Reference**: `docs/Mechanics Overhaul.md` (full plan)
+**Reference**: [`overhaul_plan.md`](overhaul_plan.md) (full plan)
 
 ---
 

@@ -9,7 +9,7 @@ isProject: false
 
 **Context**: Previous session hit its limit during Phase 5. Phases 0–4 are complete; all 232 mechanics tests pass. Phase 5 created `scripts/mechanics_validate.py` and `tests/mechanics/manual_phases_template.json` but did not verify them or add tests. Phase 6 (Web UI) is not started.
 
-**Reference**: [docs/Mechanics Overhaul.md](docs/Mechanics Overhaul.md), [docs/Mechanics Overhaul RESUME.md](docs/Mechanics Overhaul RESUME.md)
+**Reference**: [overhaul_plan.md](overhaul_plan.md), [overhaul_resume.md](overhaul_resume.md)
 
 ---
 

@@ -52,6 +52,7 @@ Legacy `mm_dd_yy` dateIds are not allowed. Normalize with `scripts/normalize_dat
 - Task routing index (agents and humans): `docs/ROUTING.md`
 - Architecture invariants: `docs/architecture/*`
 - Runbooks (publish/migrate/etc.): `docs/runbooks/*`
+- Mechanics engine (start here): `docs/mechanics/README.md`
 - Pipeline details: `docs/pipeline/*`
 - Web app conventions: `docs/web/*`
 - Auto-generated reference (CLI args, web contract): `docs/generated/*`
