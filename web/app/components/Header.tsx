@@ -21,7 +21,7 @@ import playersJson from "@/data/players.json";
 const NAV_ITEMS = [
   { href: "/", label: "Home" },
   { href: "/players", label: "Players", icon: Users },
-  { href: "/team-stats", label: "Statistics Leaderboard", icon: BarChart3 },
+  { href: "/team-stats", label: "Statistics", icon: BarChart3 },
   { href: "/trackman", label: "Trackman", icon: Activity },
   { href: "/command", label: "Command", icon: Target },
   { href: "/mechanics", label: "Mechanics", icon: Film },
