@@ -33,6 +33,11 @@ Single lookup table: task → canonical doc. When in doubt, start here.
 | Mechanics web UI | `docs/runbooks/publish_mechanics_session.md` | `web/app/mechanics/`, `web/lib/mechanics/` |
 | Validate phase detection accuracy | `docs/runbooks/mechanics_cv.md` | `scripts/mechanics_validate.py` |
 | Mechanics overhaul plan (complete) | `docs/mechanics/overhaul_plan.md` | `src/mechanics/` |
+| Export TrackMan outing averages | `docs/runbooks/export_trackman_avgs.md` | `scripts/export_trackman_outing_averages.py` |
+| Release & arm angle visuals | `docs/web/release_viz_v2.md` | `web/lib/release_viz/`, `web/app/components/` |
+| Post-game stats update | `docs/runbooks/post_game_update.md` | — |
+| Directory ownership (who owns what) | `docs/architecture/ownership_map.md` | — |
+| Documentation index (all docs) | `docs/INDEX.md` | — |
 | Troubleshooting | `docs/troubleshooting/common_failures.md` | — |
 
 ### Rules
