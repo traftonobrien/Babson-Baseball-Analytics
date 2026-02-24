@@ -22,7 +22,7 @@ const NAV_ITEMS = [
   { href: "/", label: "Home" },
   { href: "/players", label: "Players", icon: Users },
   { href: "/team-stats", label: "Statistics Leaderboard", icon: BarChart3 },
-  { href: "/trackman", label: "Trackman Hub", icon: Activity },
+  { href: "/trackman", label: "Trackman", icon: Activity },
   { href: "/command", label: "Command", icon: Target },
   { href: "/mechanics", label: "Mechanics", icon: Film },
 ];

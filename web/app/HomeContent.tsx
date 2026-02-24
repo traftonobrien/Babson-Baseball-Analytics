@@ -173,7 +173,7 @@ export default function HomeContent() {
                 <Film className="w-6 h-6 text-violet-400" />
                 <ArrowUpRight className="w-4 h-4 text-violet-400 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <h2 className="text-lg font-semibold mt-4">Mechanics</h2>
+              <h2 className="text-lg font-semibold mt-4">Mechanics Hub</h2>
               <p className="text-sm text-zinc-400 mt-1 leading-relaxed">
                 Delivery breakdowns by phase and session
               </p>
