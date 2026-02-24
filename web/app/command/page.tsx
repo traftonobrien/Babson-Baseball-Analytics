@@ -7,6 +7,8 @@ import { Target, ChevronRight, Users, Activity, Calendar } from "lucide-react";
 import Breadcrumbs from "../components/Breadcrumbs";
 import { players, type Player, type Outing } from "@/lib/dataIndex";
 import { handBadgeClassesCompact } from "@/lib/handBadge";
+import { useSelectedPlayer } from "@/lib/selectedPlayer";
+import { getCanonicalPlayerId } from "@/lib/canonicalPlayers";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -41,6 +43,8 @@ function formatDate(date: Date): string {
 
 export default function CommandPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
+  const { slug: selectedSlug } = useSelectedPlayer();
+  const selectedPlayerId = selectedSlug ? getCanonicalPlayerId(selectedSlug) : null;
 
   const stats = useMemo(() => {
     const totalPlayers = players.length;
@@ -60,7 +64,7 @@ export default function CommandPage() {
   }, []);
 
   const pitcherData = useMemo(() => {
-    return players
+    const data = players
       .map((p) => {
         const outings = [...p.outings]
           .map((o) => ({ ...o, date: parseDateFromId(o.id) }))
@@ -76,7 +80,15 @@ export default function CommandPage() {
         (a, b) =>
           (b.latestDate?.getTime() ?? 0) - (a.latestDate?.getTime() ?? 0),
       );
-  }, []);
+    if (selectedPlayerId) {
+      const idx = data.findIndex((d) => d.player.id === selectedPlayerId);
+      if (idx > 0) {
+        const [me] = data.splice(idx, 1);
+        data.unshift(me);
+      }
+    }
+    return data;
+  }, [selectedPlayerId]);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -138,6 +150,7 @@ export default function CommandPage() {
         <div className="space-y-3">
           {pitcherData.map((item, i) => {
             const isExpanded = expanded === item.player.id;
+            const isMe = item.player.id === selectedPlayerId;
             return (
               <motion.div
                 key={item.player.id}
@@ -147,7 +160,7 @@ export default function CommandPage() {
                   duration: 0.2,
                   delay: Math.min(i * 0.04, 0.4),
                 }}
-                className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden"
+                className={`bg-zinc-900 border rounded-lg overflow-hidden ${isMe ? "border-emerald-500/40" : "border-zinc-800"}`}
               >
                 {/* Pitcher header row */}
                 <button
@@ -167,6 +180,11 @@ export default function CommandPage() {
                     >
                       {item.player.throws === "L" ? "LHP" : "RHP"}
                     </span>
+                    {isMe && (
+                      <span className="text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-md px-1.5 py-0.5">
+                        You
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="text-xs text-zinc-500">

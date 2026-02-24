@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 import Breadcrumbs from "../components/Breadcrumbs";
 import { getCanonicalName, getHand } from "@/lib/canonicalPlayers";
 import { handBadgeClasses } from "@/lib/handBadge";
+import { useSelectedPlayer } from "@/lib/selectedPlayer";
 
 export interface PlayerRegistryEntry {
   slug: string;
@@ -29,6 +30,7 @@ export default function PlayersHubView({
   roster?: Record<string, RosterEntry>;
 }) {
   const [search, setSearch] = useState("");
+  const { slug: selectedSlug } = useSelectedPlayer();
 
   const filtered = useMemo(() => {
     let result = registry;
@@ -40,8 +42,16 @@ export default function PlayersHubView({
           p.slug.toLowerCase().includes(q)
       );
     }
-    return [...result].sort((a, b) => a.slug.localeCompare(b.slug));
-  }, [registry, search]);
+    const sorted = [...result].sort((a, b) => a.slug.localeCompare(b.slug));
+    if (selectedSlug) {
+      const idx = sorted.findIndex((p) => p.slug === selectedSlug);
+      if (idx > 0) {
+        const [me] = sorted.splice(idx, 1);
+        sorted.unshift(me);
+      }
+    }
+    return sorted;
+  }, [registry, search, selectedSlug]);
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -79,18 +89,26 @@ export default function PlayersHubView({
           {filtered.map((player) => {
             const hand = getHand(player.slug);
             const rosterInfo = roster[player.slug];
+            const isMe = player.slug === selectedSlug;
             return (
               <Link
                 key={player.slug}
                 href={`/players/${player.slug}`}
-                className="group relative rounded-xl border-2 border-zinc-800 bg-zinc-900 p-6 transition-smooth duration-300 hover:border-emerald-500/70 hover:bg-zinc-900/95 hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 overflow-hidden"
+                className={`group relative rounded-xl border-2 bg-zinc-900 p-6 transition-smooth duration-300 hover:border-emerald-500/70 hover:bg-zinc-900/95 hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 overflow-hidden ${
+                  isMe ? "border-emerald-500/40" : "border-zinc-800"
+                }`}
               >
                 {/* Accent bar */}
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500/0 group-hover:bg-emerald-500 transition-smooth" />
+                <div className={`absolute left-0 top-0 bottom-0 w-1 transition-smooth ${isMe ? "bg-emerald-500" : "bg-emerald-500/0 group-hover:bg-emerald-500"}`} />
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
-                    <h2 className="text-lg font-semibold text-zinc-100 truncate group-hover:text-zinc-50 transition-smooth">
+                    <h2 className="text-lg font-semibold text-zinc-100 truncate group-hover:text-zinc-50 transition-smooth flex items-center gap-2">
                       {getCanonicalName(player.name)}
+                      {isMe && (
+                        <span className="text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-md px-1.5 py-0.5 shrink-0">
+                          You
+                        </span>
+                      )}
                     </h2>
                     {(rosterInfo?.height || rosterInfo?.weight || rosterInfo?.class) && (
                       <p className="text-xs text-zinc-500 mt-2.5 flex items-center gap-2 flex-wrap">

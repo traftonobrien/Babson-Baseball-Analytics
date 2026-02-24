@@ -7,6 +7,7 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 import { pitchColor } from "@/lib/pitchColors";
 import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
 import { getCanonicalName } from "@/lib/canonicalPlayers";
+import { useSelectedPlayer } from "@/lib/selectedPlayer";
 
 interface LeaderboardEntry {
   rank: number;
@@ -101,6 +102,7 @@ export default function TrackmanLeaderboardsPage() {
   const [stuffPlusPitchFilter, setStuffPlusPitchFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [categoryPitchFilter, setCategoryPitchFilter] = useState<string>("all");
+  const { slug: selectedSlug } = useSelectedPlayer();
 
   useEffect(() => {
     Promise.all([
@@ -443,10 +445,12 @@ export default function TrackmanLeaderboardsPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {rankedStuffPlus.map((r, i) => (
+                      {rankedStuffPlus.map((r, i) => {
+                        const isMe = r.playerId === selectedSlug;
+                        return (
                         <tr
                           key={`${r.playerId}-${r.pitchType}-${i}`}
-                          className="border-b border-zinc-800/50 hover:bg-blue-500/5 transition-smooth"
+                          className={`border-b border-zinc-800/50 hover:bg-blue-500/5 transition-smooth ${isMe ? "bg-emerald-500/5" : ""}`}
                         >
                           <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>{i + 1}</td>
                           <td className="px-4 py-3 font-medium">
@@ -455,6 +459,7 @@ export default function TrackmanLeaderboardsPage() {
                               className="text-blue-400 hover:text-blue-300 transition-smooth"
                             >
                               {getCanonicalName(r.playerName ?? r.playerId ?? "")}
+                              {isMe && <span className="ml-1.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-400">You</span>}
                             </Link>
                           </td>
                           {stuffPlusPitchFilter === "all" && (
@@ -486,7 +491,8 @@ export default function TrackmanLeaderboardsPage() {
                             {r.nSessions ?? "—"}
                           </td>
                         </tr>
-                      ))}
+                      );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -546,10 +552,11 @@ export default function TrackmanLeaderboardsPage() {
                       )}
                       {entries.map((e, i) => {
                         const pitchLabel = (e as LeaderboardEntry & { pitch_type?: string }).pitch_type ?? (categoryPitchFilter !== "all" ? categoryPitchFilter : null);
+                        const isMe = e.playerSlug === selectedSlug;
                         return (
                         <tr
                           key={`${e.playerSlug}-${i}`}
-                          className="border-b border-zinc-800/50 hover:bg-blue-500/5 transition-smooth"
+                          className={`border-b border-zinc-800/50 hover:bg-blue-500/5 transition-smooth ${isMe ? "bg-emerald-500/5" : ""}`}
                         >
                           <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>{e.rank}</td>
                           <td className="px-4 py-3 font-medium">
@@ -558,6 +565,7 @@ export default function TrackmanLeaderboardsPage() {
                               className="text-blue-400 hover:text-blue-300 transition-smooth"
                             >
                               {getCanonicalName(e.playerName)}
+                              {isMe && <span className="ml-1.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-400">You</span>}
                             </Link>
                           </td>
                           {activeCategory === "max_fb_velo" && categoryPitchOptions.length > 0 && (

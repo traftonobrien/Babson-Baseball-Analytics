@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Radio, Trophy, Search } from "lucide-react";
 import { getCanonicalName } from "@/lib/canonicalPlayers";
 import { handBadgeClassesCompact, parseHand } from "@/lib/handBadge";
+import { useSelectedPlayer } from "@/lib/selectedPlayer";
 
 interface Session {
   playerName: string;
@@ -99,6 +100,7 @@ export default function TrackmanPlayersPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const { slug: selectedSlug } = useSelectedPlayer();
 
   useEffect(() => {
     const legacyFetch = fetch("/stats/trackman/sessions.json")
@@ -129,14 +131,25 @@ export default function TrackmanPlayersPage() {
   const players = useMemo(() => groupByPlayer(sessions), [sessions]);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return players;
-    const q = search.toLowerCase();
-    return players.filter(
-      (p) =>
-        getCanonicalName(p.name).toLowerCase().includes(q) ||
-        p.slug.toLowerCase().includes(q),
-    );
-  }, [players, search]);
+    let result = players;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (p) =>
+          getCanonicalName(p.name).toLowerCase().includes(q) ||
+          p.slug.toLowerCase().includes(q),
+      );
+    }
+    if (selectedSlug) {
+      const idx = result.findIndex((p) => p.slug === selectedSlug);
+      if (idx > 0) {
+        const copy = [...result];
+        const [me] = copy.splice(idx, 1);
+        return [me, ...copy];
+      }
+    }
+    return result;
+  }, [players, search, selectedSlug]);
 
   const totalSessions = sessions.length;
 
@@ -148,7 +161,7 @@ export default function TrackmanPlayersPage() {
         </Link>
         <div className="flex items-center gap-2 flex-1">
           <Radio className="w-4 h-4 text-blue-400" />
-          <h1 className="text-sm font-semibold">Trackman</h1>
+          <h1 className="text-sm font-semibold">Trackman Hub</h1>
         </div>
         <Link
           href="/trackman/leaderboards"
@@ -194,17 +207,23 @@ export default function TrackmanPlayersPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {filtered.map((p) => {
                 const hand = parseHand(p.handedness);
+                const isMe = p.slug === selectedSlug;
                 return (
                 <Link
                   key={p.slug}
                   href={`/trackman/player/${p.slug}`}
-                  className="block bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-smooth"
+                  className={`block bg-zinc-900 border rounded-lg p-4 hover:border-zinc-600 transition-smooth ${isMe ? "border-emerald-500/40" : "border-zinc-800"}`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-sm text-zinc-50">
                         {getCanonicalName(p.name)}
                       </span>
+                      {isMe && (
+                        <span className="text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-md px-1.5 py-0.5">
+                          You
+                        </span>
+                      )}
                       {hand && (
                           <span
                             className={`text-[10px] px-1.5 py-0.5 rounded font-normal ${handBadgeClassesCompact(hand)}`}

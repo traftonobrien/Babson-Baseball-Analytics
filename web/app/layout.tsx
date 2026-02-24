@@ -5,6 +5,7 @@ import "./globals.css";
 import DebugInit from "./components/DebugInit";
 import Header from "./components/Header";
 import PageTransition from "./components/PageTransition";
+import Providers from "./components/Providers";
 
 export const metadata: Metadata = {
   title: "Babson Baseball Pitching Portal",
@@ -19,11 +20,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="bg-zinc-950 text-zinc-100 antialiased">
-        <DebugInit />
-        <Header />
-        <PageTransition>{children}</PageTransition>
+        <Providers>
+          <DebugInit />
+          <Header />
+          <PageTransition>{children}</PageTransition>
+        </Providers>
 
-        {/* 👇 THIS is what turns analytics on */}
         <Analytics />
       </body>
     </html>

@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { BarChart3, Search, Download } from "lucide-react";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import LogoutButton from "@/app/components/LogoutButton";
+import { useSelectedPlayer } from "@/lib/selectedPlayer";
 
 interface BabsonPitcherRow {
   playerId: string;
@@ -73,6 +74,7 @@ export default function TeamStatsPage() {
   const [sortDesc, setSortDesc] = useState(true);
   const [year, setYear] = useState("2025");
   const [minIp, setMinIp] = useState(DEFAULT_MIN_IP);
+  const { slug: selectedSlug } = useSelectedPlayer();
 
   useEffect(() => {
     setLoading(true);
@@ -287,10 +289,13 @@ export default function TeamStatsPage() {
                 )}
                 {sorted.map((p, i) => {
                   const isQualified = p.ip >= minIp;
+                  const isMe = p.slug === selectedSlug;
                   return (
                     <tr
                       key={p.playerId}
                       className={`border-b border-zinc-800/50 transition-smooth ${
+                        isMe ? "bg-emerald-500/5" : ""
+                      } ${
                         isQualified ? "hover:bg-sky-500/5" : "opacity-60 hover:opacity-75"
                       }`}
                     >
@@ -308,6 +313,7 @@ export default function TeamStatsPage() {
                                 }`}
                               >
                                 {p.playerName}
+                                {isMe && <span className="ml-1.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-400 no-underline">You</span>}
                               </Link>
                             ) : (
                               p.playerName

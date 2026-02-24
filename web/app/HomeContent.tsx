@@ -12,8 +12,11 @@ import {
   BarChart3,
 } from "lucide-react";
 import LogoutButton from "./components/LogoutButton";
+import { useSelectedPlayer } from "@/lib/selectedPlayer";
 
 export default function HomeContent() {
+  const { slug, name } = useSelectedPlayer();
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 relative">
       {/* Logout */}
@@ -22,9 +25,35 @@ export default function HomeContent() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+        {/* ---- Personal greeting (when player selected) ---- */}
+        {slug && name && (
+          <motion.div
+            className="mt-8 mb-3"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Link href={`/players/${slug}`}>
+              <div className="group relative rounded-xl border border-emerald-500/40 bg-gradient-to-r from-emerald-500/10 via-zinc-900 to-zinc-900 p-5 transition-smooth duration-300 hover:border-emerald-500/70 hover:shadow-lg hover:shadow-emerald-500/10">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-zinc-50">
+                      Welcome back, {name.split(" ")[0]}
+                    </h2>
+                    <p className="text-sm text-zinc-400 mt-0.5">
+                      Jump into your profile
+                    </p>
+                  </div>
+                  <ArrowUpRight className="w-5 h-5 text-emerald-400 opacity-60 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </div>
+            </Link>
+          </motion.div>
+        )}
+
         {/* ---- Player Profiles (hero) ---- */}
         <motion.div
-          className="mt-8"
+          className={slug ? "mt-0" : "mt-8"}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.05 }}
