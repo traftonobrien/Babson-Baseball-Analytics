@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "view_mode": "open_side",
+  "hand": "R",
+  "manual_measurements": {
+    "front_knee_flexion_fs_deg": null,
+    "front_knee_flexion_rel_deg": null,
+    "front_knee_bracing_delta_deg": null,
+    "trunk_tilt_rel_deg": null,
+    "stride_estimate_pct_height": null
+  },
+  "notes": []
+}
