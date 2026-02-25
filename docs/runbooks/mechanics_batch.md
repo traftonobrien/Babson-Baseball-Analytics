@@ -1,56 +1,86 @@
 ## Mechanics Batch Runner
 
+`scripts/run_mechanics_batch.py` batch-processes player mechanics videos using the existing
+`scripts/mechanics_coach_pack.py` pipeline. It does not change scoring logic.
+
 ### How it works
 
-`scripts/run_mechanics_batch.py` wraps the existing single-session mechanics runner (`scripts/mechanics_coach_pack.py`) and processes each direct child player folder under a mechanics root.
+1. Discovers direct child player folders under `--root`.
+2. Builds a deterministic plan for all players.
+3. Executes only entries with `status=planned` (unless `--dry-run`).
+4. Verifies artifacts and writes a full batch audit log.
 
-Root resolution:
-1. `--root` if provided.
-2. Auto-detect in this order:
-   - `web/public/Mechanical Analysis`
-   - `web/public/Mechanics Analysis`
-   - `Mechanical Analysis`
-   - `Mechanics Analysis`
+### Defaults
 
-Per player folder:
-- Skips `Trafton OBrien` / `Trafton O’Brien` by default.
-- Finds input video with `* Mechanics.*`.
-- If multiple videos match:
-  - prefers exact `<LAST_NAME> Mechanics.*` (case-insensitive),
-  - otherwise selects the largest file by size.
-- Derives:
-  - `player_slug` from project slug utility when available (fallback slugger otherwise),
-  - `session_slug = <player_slug>_mechanics_<YYYY_MM_DD>`, using date from folder name (`YYYY-MM-DD` or `YYYY_MM_DD`) or today.
-- Reads defaults from:
+- Default root: `/Users/traftonobrien/Desktop/pitch-tracker/Mechanics Analysis`
+- By default, `Trafton OBrien` is skipped with explicit reason:
+  - `trafton_default_excluded`
+- Uses `--view open_side --slowmo --hold-review`
+- Uses hand default from:
   - `output/mechanics/trafton_obrien/trafton_mechanics_test/coach_pack/notes.json`
-  - fallback defaults: `hand=R`, `view_mode=open_side`.
-- Runs the subprocess and normalizes outputs to:
-  - `output/mechanics/<player_slug>/<session_slug>/coach_pack/`
-- Idempotent behavior:
-  - if `coach_pack/notes.json` exists, skips unless `--force`.
+  - fallback: `hand=R`
 
-After each run it verifies required artifacts and writes a batch log:
-- `output/mechanics/batch_runs/mechanics_batch_<timestamp>.json`
+### CLI
+
+```bash
+python3 scripts/run_mechanics_batch.py [options]
+```
+
+Options:
+
+- `--root <path>`
+- `--dry-run`
+- `--force`
+- `--only <token>` (repeatable; comma-separated supported)
+- `--skip <token>` (repeatable; comma-separated supported)
+- `--limit <N>` (plan all, run up to N)
+- `--print-commands`
+- `--no-trafton-skip`
 
 ### Examples
 
 ```bash
 python3 scripts/run_mechanics_batch.py --dry-run
-python3 scripts/run_mechanics_batch.py --only "burk_bobby,langan_shane"
+python3 scripts/run_mechanics_batch.py --dry-run --print-commands
+python3 scripts/run_mechanics_batch.py --root "/Users/traftonobrien/Desktop/pitch-tracker/Mechanics Analysis"
+python3 scripts/run_mechanics_batch.py --only "burk_bobby" --only "langan"
+python3 scripts/run_mechanics_batch.py --skip "trafton" --skip "vinny"
+python3 scripts/run_mechanics_batch.py --limit 3
 python3 scripts/run_mechanics_batch.py --force
 ```
 
-Additional useful flags:
+### Skip reason taxonomy
 
-```bash
-python3 scripts/run_mechanics_batch.py --skip "trafton_obrien"
-python3 scripts/run_mechanics_batch.py --limit 3
-python3 scripts/run_mechanics_batch.py --root "/absolute/path/to/Mechanical Analysis"
-```
+Every skipped player has exactly one `skip_reason`.
 
-### Where outputs live
+- `trafton_default_excluded`
+- `user_excluded_only`
+- `user_excluded_skip`
+- `missing_video`
+- `existing_notes`
+- `limit_reached` (execution-time skip when `--limit` is hit)
 
-Per player/session:
+### Video discovery and deterministic selection
+
+For each player folder, the runner attempts:
+
+1. `* Mechanics.*`
+2. `*Mechanics*`
+3. any known video extension (`.mp4`, `.mov`, `.m4v`, `.mpeg`, `.mpg`, `.avi`)
+
+If multiple candidates exist, deterministic ranking prefers:
+
+1. file name containing `Mechanics`
+2. exact last-name match (`<LAST_NAME> Mechanics.*`) when possible
+3. `.mp4` over `.mov`
+4. shortest path
+5. lexical name order
+
+All attempts and candidates are logged in JSON.
+
+### Output and resumability
+
+Per player:
 
 ```text
 output/mechanics/<player_slug>/<session_slug>/coach_pack/
@@ -62,27 +92,49 @@ Batch logs:
 output/mechanics/batch_runs/mechanics_batch_<timestamp>.json
 ```
 
+Idempotency:
+
+- If `coach_pack/notes.json` exists for planned session, player is skipped with `existing_notes` unless `--force`.
+
+### Log format (audit)
+
+Log includes:
+
+- `run_metadata` (timestamp, git hash when available, args, root, python, defaults)
+- `planned_entries` (full plan before execution)
+- `results` (per-player status)
+- `summary`
+  - status counts
+  - skip reason counts
+
+Each result row includes:
+
+- `player_slug`
+- `player_name`
+- `video_path`
+- `status` (`planned|ran|skipped|failed`)
+- `skip_reason` (required for skipped)
+- `command` (argv list)
+- `output_dir`
+- `artifacts_verified`
+- `error`
+
 ### Troubleshooting
 
-`missing ffmpeg`
-- The pipeline uses OpenCV writers, but local codec support can still fail on some machines.
-- Install ffmpeg and retry:
-  - macOS: `brew install ffmpeg`
+`missing ffmpeg`:
+- Install ffmpeg and retry (`brew install ffmpeg` on macOS).
 
-`bad video path` / `No video matching '* Mechanics.*'`
-- Confirm each player directory has a file matching `* Mechanics.*`.
-- If multiple files exist, ensure at least one follows `<LAST_NAME> Mechanics.<ext>`.
+`missing dependencies (e.g. mediapipe)`:
+- Ensure environment has required packages:
+  - `.venv/bin/python -m pip install -r requirements.txt`
 
-`no frames generated` / empty artifacts
-- Confirm source video is readable:
+`wrong root`:
+- Pass explicit root with `--root`.
+
+`missing_video`:
+- Ensure folder contains a mechanics video like `LastName Mechanics.mp4` or `.mov`.
+- Inspect `video_glob_attempts` in batch log for exact match attempts.
+
+`no frames/artifacts generated`:
+- Run single-player pipeline directly and fix underlying video/dependency issue:
   - `python3 scripts/mechanics_coach_pack.py --video "<video>" --hand R --view open_side --slowmo --hold-review`
-- If this single-run command fails, fix the underlying video/dependency issue first.
-
-`permissions` errors
-- Ensure write permission for:
-  - `output/mechanics/`
-  - `output/mechanics/batch_runs/`
-
-`manual_template.json missing in coach_pack`
-- The single-run pipeline writes `manual_template.json` at session root.
-- Batch runner copies it into `coach_pack/` for consistent artifact verification.
