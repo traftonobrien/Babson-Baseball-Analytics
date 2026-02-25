@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const MECHANICS_PASSWORD = process.env.MECHANICS_PASSWORD || "mechanics2026";
+const MECHANICS_PASSWORD = process.env.MECHANICS_PASSWORD || "mitch";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
