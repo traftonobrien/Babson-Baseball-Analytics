@@ -11,6 +11,8 @@ const PUBLIC_PREFIXES = [
   "/api/logout",
   "/api/d3db",
   "/players",
+  "/mechanics-login",
+  "/api/mechanics-login",
 ];
 
 export function middleware(request: NextRequest) {
@@ -32,7 +34,6 @@ export function middleware(request: NextRequest) {
 
   const token = request.cookies.get("pt_auth")?.value;
   if (token !== "authenticated") {
-    // API routes get 401 JSON, never a redirect to /login
     if (pathname.startsWith("/api/")) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -44,6 +45,20 @@ export function middleware(request: NextRequest) {
     loginUrl.pathname = "/login";
     loginUrl.search = "";
     return NextResponse.redirect(loginUrl);
+  }
+
+  // Mechanics pages require a separate password (remove this gate when ready to launch)
+  if (pathname.startsWith("/mechanics")) {
+    const mechanicsToken = request.cookies.get("pt_mechanics")?.value;
+    if (mechanicsToken !== "authorized") {
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      const gateUrl = request.nextUrl.clone();
+      gateUrl.pathname = "/mechanics-login";
+      gateUrl.search = "";
+      return NextResponse.redirect(gateUrl);
+    }
   }
 
   return NextResponse.next();
