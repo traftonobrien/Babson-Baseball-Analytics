@@ -1,0 +1,21 @@
+{
+  "source_video": "Mechanics Analysis/Dillon James/James Mechanics.mp4",
+  "fps": 29.634,
+  "width": 1280,
+  "height": 720,
+  "player": "Dillon James",
+  "session": "mechanics_eval",
+  "clips": [
+    {
+      "pitch_idx": 1,
+      "angle": "open_side",
+      "start_frame": 0,
+      "end_frame": 144,
+      "phase_anchors": {
+        "peak_leg_lift_s": 2.733,
+        "foot_strike_s": 3.24,
+        "ball_release_s": 3.375
+      }
+    }
+  ]
+}

@@ -45,6 +45,9 @@ class Metrics:
     hip_shoulder_sep_deg: Optional[float] = None
     arm_slot_deg: Optional[float] = None
     shoulder_width_px: Optional[float] = None
+    stride_length_inches: Optional[float] = None
+    stride_pct_height: Optional[float] = None
+    stride_direction_deg: Optional[float] = None
     notes: dict = dataclasses.field(default_factory=dict)
 
     def to_dict(self) -> dict:
@@ -62,6 +65,9 @@ class Metrics:
             "hip_shoulder_sep_deg": _fmt(self.hip_shoulder_sep_deg),
             "arm_slot_deg":         _fmt(self.arm_slot_deg),
             "shoulder_width_px":    _fmt(self.shoulder_width_px),
+            "stride_length_inches": _fmt(self.stride_length_inches),
+            "stride_pct_height":    _fmt(self.stride_pct_height),
+            "stride_direction_deg": _fmt(self.stride_direction_deg),
             "notes":                self.notes,
         }
 

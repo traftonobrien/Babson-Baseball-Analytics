@@ -21,6 +21,7 @@ from src.ingest_manual.schema import load_manual_clips
 from scripts.ingest_multi_angle import run_ingest
 from scripts.mechanics_coach_pack import _top_issues, _write_hold_review_video, _write_slowmo_video
 from src.ingest.selection import candidate_quality_score
+from src.mechanics import get_player_height_inches
 from src.mechanics.angle_validator import validate_open_side
 from src.mechanics.benchmarks import compute_benchmarks
 from src.mechanics.coach_pack import build_coach_pack
@@ -57,6 +58,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--pose-backend", default=None, choices=["mediapipe", "vitpose"],
                    help="Pose estimation backend. Default: mediapipe (or POSE_BACKEND env).")
     p.add_argument("--strict-angle", action="store_true", help="Reject clips that fail open-side angle validation.")
+    p.add_argument("--player-id", default=None, help="Player roster ID for height lookup (e.g. obrien_trafton).")
     p.add_argument("--debug-metrics", action="store_true", help="Include debug-only metrics in coach-pack notes.")
     p.add_argument("--verbose", action="store_true", help="Verbose logging.")
     return p.parse_args()
@@ -175,6 +177,8 @@ def _run_mechanics_for_clip(
     debug_metrics: bool,
     strict_angle: bool = False,
     pose_backend: Optional[str] = None,
+    player_height_inches: Optional[float] = None,
+    phase_anchors: Optional[dict[str, float]] = None,
 ) -> dict[str, Any]:
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -206,8 +210,8 @@ def _run_mechanics_for_clip(
 
     meta = read_video_meta(clip_path)
     poses, pose_backend_used = extract_poses_auto(clip_path, backend=pose_backend, verbose=False)
-    phases = detect_phases(poses, fps=meta.fps, hand=hand, debug=True)
-    benchmarks = compute_benchmarks(poses, phases, hand=hand, view_mode=view_mode)
+    phases = detect_phases(poses, fps=meta.fps, hand=hand, debug=True, phase_anchors=phase_anchors)
+    benchmarks = compute_benchmarks(poses, phases, hand=hand, view_mode=view_mode, player_height_inches=player_height_inches)
 
     bench_json = out_dir / "benchmarks.json"
     with open(bench_json, "w") as f:
@@ -361,12 +365,24 @@ def _select_open_side_manual_angle(
     return None
 
 
+def _resolve_player_height(args: argparse.Namespace) -> Optional[float]:
+    """Resolve player height in inches from --player-id flag."""
+    player_id = getattr(args, "player_id", None)
+    if not player_id:
+        return None
+    height = get_player_height_inches(player_id)
+    if height is not None:
+        print(f"[height] Resolved {player_id} → {height}″")
+    return height
+
+
 def _run_from_manual_index(args: argparse.Namespace, manual_index_path: Path, manual_index: dict[str, Any]) -> None:
     out_root = _resolve_path(args.outdir)
     player_slug = slugify(str(manual_index.get("player", "player")))
     session_slug = slugify(str(manual_index.get("session", "session")))
     session_out = out_root / player_slug / session_slug
     session_out.mkdir(parents=True, exist_ok=True)
+    player_height_inches = _resolve_player_height(args)
 
     session_rows: list[dict[str, Any]] = []
     for pitch_row in sorted(manual_index.get("clips", []), key=lambda r: int(r.get("pitch_idx", 0))):
@@ -404,7 +420,15 @@ def _run_from_manual_index(args: argparse.Namespace, manual_index_path: Path, ma
 
         vis_score = _estimate_visibility_score(clip_path)
         view_mode = "open_side"
-        pitch_out = session_out / pitch_id
+        pitch_out = session_out
+
+        # Read phase anchors from clip metadata if present.
+        clip_anchors: Optional[dict[str, float]] = None
+        angle_meta = angles.get(chosen_angle, {})
+        pa_raw = angle_meta.get("phase_anchors")
+        if isinstance(pa_raw, dict) and pa_raw:
+            clip_anchors = {str(k): float(v) for k, v in pa_raw.items()}
+
         run = _run_mechanics_for_clip(
             clip_path=clip_path,
             hand=args.hand,
@@ -415,6 +439,8 @@ def _run_from_manual_index(args: argparse.Namespace, manual_index_path: Path, ma
             debug_metrics=args.debug_metrics,
             strict_angle=getattr(args, "strict_angle", False),
             pose_backend=getattr(args, "pose_backend", None),
+            player_height_inches=player_height_inches,
+            phase_anchors=clip_anchors,
         )
         if run.get("status") == "rejected":
             session_rows.append(
@@ -502,6 +528,7 @@ def main() -> None:
     session_slug = ingest.get("session_slug") or slugify(args.session or "session")
     session_out = out_root / player_slug / session_slug
     session_out.mkdir(parents=True, exist_ok=True)
+    player_height_inches = _resolve_player_height(args)
 
     pitch_clips = {c["clip_id"]: c for c in ingest.get("pitch_clips", [])}
     groups = ingest.get("pitch_groups", [])
@@ -558,7 +585,7 @@ def main() -> None:
             verbose=args.verbose,
         )
         clip_path = Path(chosen["clip_path_abs"])
-        pitch_out = session_out / pitch_id
+        pitch_out = session_out
         if args.verbose:
             print(
                 f"[pitch] {pitch_id} chosen={chosen.get('clip_id')} angle={chosen.get('angle_class')} "
@@ -575,6 +602,7 @@ def main() -> None:
             debug_metrics=args.debug_metrics,
             strict_angle=getattr(args, "strict_angle", False),
             pose_backend=getattr(args, "pose_backend", None),
+            player_height_inches=player_height_inches,
         )
         if run.get("status") == "rejected":
             session_rows.append(

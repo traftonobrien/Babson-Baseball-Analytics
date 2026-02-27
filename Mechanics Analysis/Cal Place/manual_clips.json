@@ -1,0 +1,21 @@
+{
+  "source_video": "Mechanics Analysis/Cal Place/Place Mechanics.mp4",
+  "fps": 30.0,
+  "width": 1280,
+  "height": 720,
+  "player": "Cal Place",
+  "session": "mechanics_eval",
+  "clips": [
+    {
+      "pitch_idx": 1,
+      "angle": "open_side",
+      "start_frame": 0,
+      "end_frame": 177,
+      "phase_anchors": {
+        "peak_leg_lift_s": 3.0,
+        "foot_strike_s": 3.7,
+        "ball_release_s": 3.833
+      }
+    }
+  ]
+}

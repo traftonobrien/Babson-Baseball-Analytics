@@ -92,7 +92,10 @@ def _make_phases(
         set_pos=        _make_phase("set",            set_idx,  fps),
         first_movement= _make_phase("first_movement", 5,        fps),
         peak_leg_lift=  _make_phase("peak_leg_lift",  peak_idx, fps),
+        most_loaded=    None,
         foot_strike=    _make_phase("foot_strike",    fs_idx,   fps),
+        weight_bearing= None,
+        arm_flip_up=    None,
         ball_release=   _make_phase("ball_release",   rel_idx,  fps),
         fps=fps,
     )
@@ -668,7 +671,10 @@ class TestBuildCoachPack:
             set_pos=_make_phase("set", 0),
             first_movement=None,
             peak_leg_lift=_make_phase("peak_leg_lift", 18),
+            most_loaded=None,
             foot_strike=None,
+            weight_bearing=None,
+            arm_flip_up=None,
             ball_release=_make_phase("ball_release", 45),
             fps=30.0,
         )

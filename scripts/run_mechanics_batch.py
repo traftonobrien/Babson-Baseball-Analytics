@@ -331,8 +331,9 @@ def _build_command(
     video_path: Path,
     hand: str,
     view_mode: str,
+    player_id: Optional[str] = None,
 ) -> list[str]:
-    return [
+    cmd = [
         runner_python,
         str(runner_path),
         "--video",
@@ -344,6 +345,9 @@ def _build_command(
         "--slowmo",
         "--hold-review",
     ]
+    if player_id:
+        cmd.extend(["--player-id", player_id])
+    return cmd
 
 
 def _runner_output_dir(player_slug: str, video_path: Path) -> Path:
@@ -478,12 +482,14 @@ def _build_plan_entries(
             if video_path is None:
                 skip_reason = SKIP_MISSING_VIDEO
             else:
+                profile_slug = _profile_slug_from_slug(player_slug)
                 command = _build_command(
                     runner_python=runner_python,
                     runner_path=runner_path,
                     video_path=video_path,
                     hand=defaults["hand"],
                     view_mode=defaults["view_mode"],
+                    player_id=profile_slug,
                 )
                 if _existing_notes_path(output_dir).exists() and not force:
                     skip_reason = SKIP_EXISTING_NOTES

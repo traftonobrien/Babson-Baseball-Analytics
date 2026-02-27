@@ -3339,6 +3339,597 @@ def _score_release_extension_proxy(value: float) -> float:
 
 
 # ---------------------------------------------------------------------------
+# Stride length & direction
+# ---------------------------------------------------------------------------
+
+def _compute_stride_length(
+    poses: list[PoseResult],
+    phases: PitchPhases,
+    hand: str = "R",
+    player_height_inches: Optional[float] = None,
+) -> BenchmarkResult:
+    """
+    Stride length and direction at foot strike.
+
+    Measures pixel distance between lead ankle and drive ankle at foot strike,
+    converts to inches when player height is available, and computes stride
+    direction offset relative to the SET → FS hip midline.
+
+    Scoring:
+      Length (pct of body height): 80-90% → 10; <65% → 3; >100% → 5 (overstride)
+      Direction: ≤2° → 10; ≥10° → 3; linear between
+      Combined: 70% length + 30% direction
+    """
+    name = "stride_length"
+
+    if phases.foot_strike is None:
+        return BenchmarkResult.insufficient(name, "FOOT_STRIKE phase not detected")
+
+    fs_pose = _pose_nearest(poses, phases.foot_strike)
+    if fs_pose is None:
+        return BenchmarkResult.insufficient(name, "FOOT_STRIKE pose not found")
+
+    # Handedness-dependent keypoints
+    if hand == "R":
+        lead_ankle_kp = "LEFT_ANKLE"
+        drive_ankle_kp = "RIGHT_ANKLE"
+    else:
+        lead_ankle_kp = "RIGHT_ANKLE"
+        drive_ankle_kp = "LEFT_ANKLE"
+
+    lead_ankle = _px_safe(fs_pose, lead_ankle_kp)
+    drive_ankle = _px_safe(fs_pose, drive_ankle_kp)
+    if lead_ankle is None or drive_ankle is None:
+        return BenchmarkResult.insufficient(name, "Ankle keypoints below threshold at foot strike")
+
+    stride_px = math.dist(lead_ankle, drive_ankle)
+
+    # Body height proxy at foot strike
+    body_height_px = _body_height_proxy_px(fs_pose)
+
+    sub_values: dict[str, object] = {"stride_px": round(stride_px, 1)}
+
+    # Stride as percentage of body height
+    stride_pct_height: Optional[float] = None
+    if body_height_px is not None and body_height_px > 10.0:
+        stride_pct_height = (stride_px / body_height_px) * 100.0
+        sub_values["pct_height"] = round(stride_pct_height, 1)
+
+    # Convert to inches if player height is known
+    stride_inches: Optional[float] = None
+    if player_height_inches is not None and body_height_px is not None and body_height_px > 10.0:
+        scale_factor = player_height_inches / body_height_px
+        stride_inches = stride_px * scale_factor
+        sub_values["stride_inches"] = round(stride_inches, 1)
+
+    # --- Direction: offset from SET→FS midline ---
+    direction_deg: Optional[float] = None
+    lateral_offset_in: Optional[float] = None
+
+    set_pose = _pose_nearest(poses, phases.set_pos) if phases.set_pos is not None else None
+    if set_pose is not None:
+        # Hip midpoints at SET and FS
+        set_lh = _px_safe(set_pose, "LEFT_HIP")
+        set_rh = _px_safe(set_pose, "RIGHT_HIP")
+        fs_lh = _px_safe(fs_pose, "LEFT_HIP")
+        fs_rh = _px_safe(fs_pose, "RIGHT_HIP")
+
+        if set_lh and set_rh and fs_lh and fs_rh:
+            set_hip_mid = _midpoint(set_lh, set_rh)
+            fs_hip_mid = _midpoint(fs_lh, fs_rh)
+
+            # Midline vector: SET hip mid → FS hip mid
+            midline = (fs_hip_mid[0] - set_hip_mid[0], fs_hip_mid[1] - set_hip_mid[1])
+            midline_len = math.hypot(midline[0], midline[1])
+
+            # Stride vector: drive ankle → lead ankle
+            stride_vec = (lead_ankle[0] - drive_ankle[0], lead_ankle[1] - drive_ankle[1])
+
+            if midline_len > 5.0:
+                # Signed angle via cross product
+                cross = midline[0] * stride_vec[1] - midline[1] * stride_vec[0]
+                dot = midline[0] * stride_vec[0] + midline[1] * stride_vec[1]
+                raw_angle = math.degrees(math.atan2(cross, dot))
+
+                # Convention: positive = glove side for RHP
+                arm_sign = 1 if hand == "R" else -1
+                direction_deg = raw_angle * arm_sign
+                sub_values["direction_deg"] = round(direction_deg, 1)
+
+                # Lateral offset in inches
+                if stride_inches is not None:
+                    lateral_offset_in = stride_inches * math.sin(math.radians(abs(direction_deg)))
+                    sub_values["lateral_offset_in"] = round(lateral_offset_in, 1)
+
+    # --- Scoring ---
+    # Length score based on pct of height
+    length_score: Optional[float] = None
+    if stride_pct_height is not None:
+        if stride_pct_height <= 90.0:
+            # 65% → 3, 80% → 10 (linear), below 65 → 3
+            length_score = linear_score(stride_pct_height, 65.0, 80.0, 3.0, 10.0)
+        else:
+            # 90% → 10, 100%+ → 5 (overstride penalty)
+            length_score = linear_score(stride_pct_height, 90.0, 100.0, 10.0, 5.0)
+
+    # Direction score
+    direction_score: Optional[float] = None
+    if direction_deg is not None:
+        abs_dir = abs(direction_deg)
+        direction_score = linear_score(abs_dir, 2.0, 10.0, 10.0, 3.0)
+
+    # Combined score: 70% length + 30% direction
+    score_raw: Optional[float] = None
+    if length_score is not None and direction_score is not None:
+        score_raw = 0.70 * length_score + 0.30 * direction_score
+    elif length_score is not None:
+        score_raw = length_score
+    elif direction_score is not None:
+        score_raw = direction_score
+
+    sub_values["length_score"] = round(length_score, 2) if length_score is not None else None
+    sub_values["direction_score"] = round(direction_score, 2) if direction_score is not None else None
+
+    # --- Confidence ---
+    vis = _visibility_confidence(fs_pose, [lead_ankle_kp, drive_ankle_kp])
+    phase_conf = _phase_confidence([phases.foot_strike])
+    body_proxy_conf = 0.9 if (body_height_px is not None and body_height_px > 10.0) else 0.4
+    conf = _combine_confidence(vis, phase_conf, body_proxy_conf)
+
+    reasons = _metric_reasons_from_quality(
+        coverage=1.0,
+        visibility=vis,
+        jitter_penalty=0.0,
+        phase_conf=phase_conf,
+    )
+
+    # Primary raw value: inches if available, else px
+    raw_value = stride_inches if stride_inches is not None else stride_px
+    unit = "in" if stride_inches is not None else "px"
+
+    note = "Stride length and direction at foot strike"
+
+    return _finalize_confidence_scored_metric(
+        name=name,
+        raw_value=raw_value,
+        unit=unit,
+        score_raw=score_raw,
+        conf=conf,
+        sub_values=sub_values,
+        note=note,
+        reasons=reasons,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Arm positioning & timing
+# ---------------------------------------------------------------------------
+
+def _compute_arm_alignment(
+    poses: list[PoseResult],
+    phases: PitchPhases,
+    hand: str = "R",
+) -> BenchmarkResult:
+    """
+    Arm positioning at the arm-flip-up (arm cocked) frame.
+
+    Measures:
+      1. Elbow-shoulder alignment: angle between shoulder line and throwing
+         shoulder→elbow line.  Pass = within ±5° of 180° (in-line).
+      2. Elbow flexion: shoulder→elbow→wrist angle.  ≤90° = ideal.
+
+    Composite: 0.5 × alignment + 0.5 × flexion.
+    """
+    name = "arm_positioning"
+
+    if phases.arm_flip_up is None:
+        return BenchmarkResult.insufficient(name, "ARM_FLIP_UP phase not detected")
+
+    afu_pose = _pose_nearest(poses, phases.arm_flip_up)
+    if afu_pose is None:
+        return BenchmarkResult.insufficient(name, "ARM_FLIP_UP pose not found")
+
+    # Handedness-dependent keypoints
+    throw_sho_kp = "RIGHT_SHOULDER" if hand == "R" else "LEFT_SHOULDER"
+    throw_elb_kp = "RIGHT_ELBOW" if hand == "R" else "LEFT_ELBOW"
+    throw_wri_kp = "RIGHT_WRIST" if hand == "R" else "LEFT_WRIST"
+
+    throw_sho = _px_safe(afu_pose, throw_sho_kp)
+    throw_elb = _px_safe(afu_pose, throw_elb_kp)
+    throw_wri = _px_safe(afu_pose, throw_wri_kp)
+    ls = _px_safe(afu_pose, "LEFT_SHOULDER")
+    rs = _px_safe(afu_pose, "RIGHT_SHOULDER")
+
+    if throw_sho is None or throw_elb is None:
+        return BenchmarkResult.insufficient(name, "Throwing shoulder/elbow below threshold at arm flip-up")
+    if ls is None or rs is None:
+        return BenchmarkResult.insufficient(name, "Shoulder keypoints below threshold at arm flip-up")
+
+    sub_values: dict[str, object] = {}
+    components: dict[str, MetricComponent] = {}
+    comp_weights = {"alignment": 0.5, "flexion": 0.5}
+
+    # --- Component A: Elbow-shoulder alignment ---
+    # Shoulder line vector (left → right)
+    sho_vec = (rs[0] - ls[0], rs[1] - ls[1])
+    # Throwing shoulder → elbow vector
+    arm_vec = (throw_elb[0] - throw_sho[0], throw_elb[1] - throw_sho[1])
+
+    alignment_angle = _angle_between_vectors_deg(sho_vec, arm_vec)
+    if alignment_angle is not None:
+        # Offset from 180° = perfectly in-line
+        alignment_offset = abs(180.0 - alignment_angle)
+        alignment_score = linear_score(alignment_offset, 5.0, 15.0, 10.0, 3.0)
+        alignment_vis = _visibility_confidence(afu_pose, [throw_sho_kp, throw_elb_kp, "LEFT_SHOULDER", "RIGHT_SHOULDER"])
+        alignment_conf = _combine_confidence(alignment_vis, _phase_confidence([phases.arm_flip_up]))
+
+        components["alignment"] = MetricComponent(alignment_offset, alignment_score, alignment_conf)
+        sub_values["alignment_angle_deg"] = round(alignment_angle, 1)
+        sub_values["alignment_offset_deg"] = round(alignment_offset, 1)
+        sub_values["alignment_score"] = round(alignment_score, 2)
+    else:
+        components["alignment"] = MetricComponent(None, None, 0.0, ["missing_landmarks"])
+
+    # --- Component B: Elbow flexion ---
+    if throw_wri is not None:
+        # Shoulder→elbow→wrist angle
+        v_se = (throw_sho[0] - throw_elb[0], throw_sho[1] - throw_elb[1])
+        v_ew = (throw_wri[0] - throw_elb[0], throw_wri[1] - throw_elb[1])
+        flexion_angle = _angle_between_vectors_deg(v_se, v_ew)
+
+        if flexion_angle is not None:
+            # Score: ≤90° → 10, 90–110° → 10→6, >120° → 3
+            if flexion_angle <= 90.0:
+                flexion_score = 10.0
+            elif flexion_angle <= 110.0:
+                flexion_score = linear_score(flexion_angle, 90.0, 110.0, 10.0, 6.0)
+            elif flexion_angle <= 120.0:
+                flexion_score = linear_score(flexion_angle, 110.0, 120.0, 6.0, 3.0)
+            else:
+                flexion_score = 3.0
+
+            flexion_vis = _visibility_confidence(afu_pose, [throw_sho_kp, throw_elb_kp, throw_wri_kp])
+            flexion_conf = _combine_confidence(flexion_vis, _phase_confidence([phases.arm_flip_up]))
+
+            components["flexion"] = MetricComponent(flexion_angle, flexion_score, flexion_conf)
+            sub_values["flexion_angle_deg"] = round(flexion_angle, 1)
+            sub_values["flexion_score"] = round(flexion_score, 2)
+        else:
+            components["flexion"] = MetricComponent(None, None, 0.0, ["missing_landmarks"])
+    else:
+        components["flexion"] = MetricComponent(None, None, 0.0, ["missing_landmarks"])
+
+    # --- Aggregate ---
+    score_raw, conf, reasons, used = _aggregate_components(
+        components, comp_weights, min_valid_components=1,
+    )
+    if score_raw is None or conf is None:
+        result = BenchmarkResult.insufficient(name, "Arm positioning cannot be estimated reliably")
+        result.confidence = 0.0
+        result.reasons = reasons
+        return result
+
+    sub_values["components_used"] = used
+
+    return _finalize_confidence_scored_metric(
+        name=name,
+        raw_value=sub_values.get("alignment_offset_deg"),
+        unit="°",
+        score_raw=max(0.0, min(10.0, score_raw)),
+        conf=conf,
+        sub_values=sub_values,
+        note="Arm positioning at arm flip-up: elbow-shoulder alignment and elbow flexion.",
+        reasons=reasons,
+    )
+
+
+def _compute_arm_timing(
+    poses: list[PoseResult],
+    phases: PitchPhases,
+    hand: str = "R",
+) -> BenchmarkResult:
+    """
+    Arm timing: arm flip-up vs weight-bearing frame comparison.
+
+    Classification:
+      On time:  arm flip at or within 2 frames before weight bearing
+      Early:    arm flip more than 2 frames before weight bearing
+      Late:     arm flip after weight bearing
+
+    Scoring (0-10):
+      On time (delta 0 to -2):  10
+      Slightly early (-3 to -5): linear 10→7
+      Slightly late (+1 to +3):  linear 8→5
+      Very late (>+3): 3
+    """
+    name = "arm_timing"
+
+    if phases.weight_bearing is None:
+        return BenchmarkResult.insufficient(name, "WEIGHT_BEARING phase not detected")
+    if phases.arm_flip_up is None:
+        return BenchmarkResult.insufficient(name, "ARM_FLIP_UP phase not detected")
+
+    delta_frames = phases.arm_flip_up.frame_idx - phases.weight_bearing.frame_idx
+    delta_ms = delta_frames / phases.fps * 1000.0
+
+    # Classification
+    if -2 <= delta_frames <= 0:
+        classification = "on_time"
+    elif delta_frames < -2:
+        classification = "early"
+    else:
+        classification = "late"
+
+    # Scoring
+    if -2 <= delta_frames <= 0:
+        score_raw = 10.0
+    elif -5 <= delta_frames < -2:
+        # -3 → 10, -5 → 7
+        score_raw = linear_score(float(delta_frames), -5.0, -2.0, 7.0, 10.0)
+    elif delta_frames < -5:
+        score_raw = linear_score(float(delta_frames), -8.0, -5.0, 4.0, 7.0)
+    elif 1 <= delta_frames <= 3:
+        # +1 → 8, +3 → 5
+        score_raw = linear_score(float(delta_frames), 1.0, 3.0, 8.0, 5.0)
+    else:
+        # > +3
+        score_raw = 3.0
+
+    # Confidence based on phase detection quality
+    conf = _combine_confidence(
+        _phase_confidence([phases.weight_bearing, phases.arm_flip_up]),
+    )
+
+    # Add arm keypoint visibility at both phase frames for additional confidence
+    throw_sho_kp = "RIGHT_SHOULDER" if hand == "R" else "LEFT_SHOULDER"
+    throw_elb_kp = "RIGHT_ELBOW" if hand == "R" else "LEFT_ELBOW"
+    throw_wri_kp = "RIGHT_WRIST" if hand == "R" else "LEFT_WRIST"
+
+    arm_kps = [throw_sho_kp, throw_elb_kp, throw_wri_kp]
+    flip_pose = _pose_nearest(poses, phases.arm_flip_up)
+    if flip_pose is not None:
+        arm_vis = _visibility_confidence(flip_pose, arm_kps)
+        conf = _combine_confidence(conf, arm_vis)
+
+    sub_values: dict[str, object] = {
+        "delta_frames": delta_frames,
+        "delta_ms": round(delta_ms, 1),
+        "classification": classification,
+    }
+
+    reasons = _metric_reasons_from_quality(
+        coverage=1.0,
+        visibility=conf,
+        jitter_penalty=0.0,
+        phase_conf=_phase_confidence([phases.weight_bearing, phases.arm_flip_up]),
+    )
+
+    return _finalize_confidence_scored_metric(
+        name=name,
+        raw_value=delta_ms,
+        unit="ms",
+        score_raw=max(0.0, min(10.0, score_raw)),
+        conf=conf,
+        sub_values=sub_values,
+        note="Arm timing: arm flip-up relative to weight bearing.",
+        reasons=reasons,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Loading profile (most-loaded checkpoint)
+# ---------------------------------------------------------------------------
+
+def _compute_loading_profile(
+    poses: list[PoseResult],
+    phases: PitchPhases,
+    hand: str = "R",
+    player_height_inches: Optional[float] = None,
+) -> BenchmarkResult:
+    """
+    Loading profile at the most-loaded checkpoint (between PLL and FS).
+
+    Sub-measurements:
+      1. Hip hinge angle (shoulder_mid → hip_mid → drive_knee)
+      2. Trunk lean (hip_mid → shoulder_mid vs vertical)
+      3. Shoulder counter-rotation from SET baseline
+      4. COM drift from PLL → most_loaded (% of body height)
+
+    Composite: weighted average via _aggregate_components.
+    """
+    name = "loading_profile"
+
+    if phases.most_loaded is None:
+        return BenchmarkResult.insufficient(name, "MOST_LOADED phase not detected")
+
+    ml_pose = _pose_nearest(poses, phases.most_loaded)
+    if ml_pose is None:
+        return BenchmarkResult.insufficient(name, "MOST_LOADED pose not found")
+
+    sub_values: dict[str, object] = {}
+    components: dict[str, MetricComponent] = {}
+    comp_weights = {
+        "hip_hinge": 0.35,
+        "counter_rotation": 0.25,
+        "trunk_lean": 0.15,
+        "com_drift": 0.25,
+    }
+
+    # --- Shared keypoints at most-loaded frame ---
+    ls_ml = _px_safe(ml_pose, "LEFT_SHOULDER")
+    rs_ml = _px_safe(ml_pose, "RIGHT_SHOULDER")
+    lh_ml = _px_safe(ml_pose, "LEFT_HIP")
+    rh_ml = _px_safe(ml_pose, "RIGHT_HIP")
+    sho_mid_ml = _midpoint(ls_ml, rs_ml) if (ls_ml and rs_ml) else None
+    hip_mid_ml = _midpoint(lh_ml, rh_ml) if (lh_ml and rh_ml) else None
+
+    # --- Component A: Hip hinge ---
+    drive_knee_kp = "RIGHT_KNEE" if hand == "R" else "LEFT_KNEE"
+    dk = _px_safe(ml_pose, drive_knee_kp)
+
+    if sho_mid_ml and hip_mid_ml and dk:
+        v_sho = (sho_mid_ml[0] - hip_mid_ml[0], sho_mid_ml[1] - hip_mid_ml[1])
+        v_knee = (dk[0] - hip_mid_ml[0], dk[1] - hip_mid_ml[1])
+        hinge_angle = _angle_between_vectors_deg(v_sho, v_knee)
+
+        if hinge_angle is not None:
+            # Score: 40-55° → 10 (well loaded), <25° → 5, >70° → 5
+            if hinge_angle <= 25.0:
+                hinge_score = 5.0
+            elif hinge_angle <= 40.0:
+                hinge_score = linear_score(hinge_angle, 25.0, 40.0, 5.0, 10.0)
+            elif hinge_angle <= 55.0:
+                hinge_score = 10.0
+            elif hinge_angle <= 70.0:
+                hinge_score = linear_score(hinge_angle, 55.0, 70.0, 10.0, 5.0)
+            else:
+                hinge_score = 5.0
+
+            hinge_vis = _visibility_confidence(ml_pose, ["LEFT_SHOULDER", "RIGHT_SHOULDER", "LEFT_HIP", "RIGHT_HIP", drive_knee_kp])
+            hinge_conf = _combine_confidence(hinge_vis, _phase_confidence([phases.most_loaded]))
+
+            components["hip_hinge"] = MetricComponent(hinge_angle, hinge_score, hinge_conf)
+            sub_values["hip_hinge_deg"] = round(hinge_angle, 1)
+            sub_values["hip_hinge_score"] = round(hinge_score, 2)
+        else:
+            components["hip_hinge"] = MetricComponent(None, None, 0.0, ["missing_landmarks"])
+    else:
+        components["hip_hinge"] = MetricComponent(None, None, 0.0, ["missing_landmarks"])
+
+    # --- Component B: Counter-rotation ---
+    set_pose = _pose_nearest(poses, phases.set_pos) if phases.set_pos else None
+    if set_pose is not None and ls_ml and rs_ml:
+        ml_sho_angle = shoulder_line_angle_deg(ml_pose)
+        set_sho_angle = shoulder_line_angle_deg(set_pose)
+
+        if ml_sho_angle is not None and set_sho_angle is not None:
+            counter_rot = _angle_diff_signed_deg(ml_sho_angle, set_sho_angle)
+            # For RHP: positive rotation away from plate = good coil
+            # Use absolute value for scoring
+            abs_counter = abs(counter_rot)
+
+            if abs_counter < 5.0:
+                cr_score = 5.0
+            elif abs_counter <= 10.0:
+                cr_score = linear_score(abs_counter, 5.0, 10.0, 5.0, 10.0)
+            elif abs_counter <= 25.0:
+                cr_score = 10.0
+            elif abs_counter <= 35.0:
+                cr_score = linear_score(abs_counter, 25.0, 35.0, 10.0, 6.0)
+            else:
+                cr_score = 6.0
+
+            cr_vis = _visibility_confidence(ml_pose, ["LEFT_SHOULDER", "RIGHT_SHOULDER"])
+            cr_conf = _combine_confidence(cr_vis, _phase_confidence([phases.most_loaded, phases.set_pos]))
+
+            components["counter_rotation"] = MetricComponent(abs_counter, cr_score, cr_conf)
+            sub_values["counter_rotation_deg"] = round(counter_rot, 1)
+            sub_values["counter_rotation_abs_deg"] = round(abs_counter, 1)
+            sub_values["counter_rotation_score"] = round(cr_score, 2)
+        else:
+            components["counter_rotation"] = MetricComponent(None, None, 0.0, ["missing_landmarks"])
+    else:
+        components["counter_rotation"] = MetricComponent(None, None, 0.0, ["missing_landmarks"])
+
+    # --- Component C: Trunk lean ---
+    if sho_mid_ml and hip_mid_ml:
+        trunk_dx = sho_mid_ml[0] - hip_mid_ml[0]
+        trunk_dy = sho_mid_ml[1] - hip_mid_ml[1]
+        trunk_lean = angle_from_vertical_deg(trunk_dx, trunk_dy)
+
+        # At most-loaded, some forward lean is normal (10-25° from vertical)
+        if trunk_lean <= 10.0:
+            lean_score = linear_score(trunk_lean, 0.0, 10.0, 7.0, 10.0)
+        elif trunk_lean <= 25.0:
+            lean_score = 10.0
+        elif trunk_lean <= 40.0:
+            lean_score = linear_score(trunk_lean, 25.0, 40.0, 10.0, 5.0)
+        else:
+            lean_score = 5.0
+
+        lean_vis = _visibility_confidence(ml_pose, ["LEFT_SHOULDER", "RIGHT_SHOULDER", "LEFT_HIP", "RIGHT_HIP"])
+        lean_conf = _combine_confidence(lean_vis, _phase_confidence([phases.most_loaded]))
+
+        components["trunk_lean"] = MetricComponent(trunk_lean, lean_score, lean_conf)
+        sub_values["trunk_lean_deg"] = round(trunk_lean, 1)
+        sub_values["trunk_lean_score"] = round(lean_score, 2)
+    else:
+        components["trunk_lean"] = MetricComponent(None, None, 0.0, ["missing_landmarks"])
+
+    # --- Component D: COM drift (PLL → most loaded) ---
+    pll_pose = _pose_nearest(poses, phases.peak_leg_lift) if phases.peak_leg_lift else None
+    if pll_pose is not None and sho_mid_ml and hip_mid_ml:
+        ls_pll = _px_safe(pll_pose, "LEFT_SHOULDER")
+        rs_pll = _px_safe(pll_pose, "RIGHT_SHOULDER")
+        lh_pll = _px_safe(pll_pose, "LEFT_HIP")
+        rh_pll = _px_safe(pll_pose, "RIGHT_HIP")
+        sho_mid_pll = _midpoint(ls_pll, rs_pll) if (ls_pll and rs_pll) else None
+        hip_mid_pll = _midpoint(lh_pll, rh_pll) if (lh_pll and rh_pll) else None
+
+        if sho_mid_pll and hip_mid_pll:
+            com_pll = _midpoint(sho_mid_pll, hip_mid_pll)
+            com_ml = _midpoint(sho_mid_ml, hip_mid_ml)
+            drift_px = com_ml[0] - com_pll[0]
+            body_height_px = _body_height_proxy_px(ml_pose)
+
+            if body_height_px and body_height_px > 10.0:
+                drift_pct = abs(drift_px) / body_height_px * 100.0
+
+                # Score: 20-40% of body height → 10, <10% → 5, >50% → 4
+                if drift_pct < 10.0:
+                    drift_score = linear_score(drift_pct, 0.0, 10.0, 3.0, 5.0)
+                elif drift_pct <= 20.0:
+                    drift_score = linear_score(drift_pct, 10.0, 20.0, 5.0, 10.0)
+                elif drift_pct <= 40.0:
+                    drift_score = 10.0
+                elif drift_pct <= 50.0:
+                    drift_score = linear_score(drift_pct, 40.0, 50.0, 10.0, 4.0)
+                else:
+                    drift_score = 4.0
+
+                drift_vis = _visibility_confidence(pll_pose, ["LEFT_SHOULDER", "RIGHT_SHOULDER", "LEFT_HIP", "RIGHT_HIP"])
+                drift_conf = _combine_confidence(drift_vis, _phase_confidence([phases.peak_leg_lift, phases.most_loaded]))
+
+                components["com_drift"] = MetricComponent(drift_pct, drift_score, drift_conf)
+                sub_values["drift_px"] = round(drift_px, 1)
+                sub_values["drift_pct_height"] = round(drift_pct, 1)
+                sub_values["drift_score"] = round(drift_score, 2)
+
+                if player_height_inches and body_height_px > 10.0:
+                    drift_inches = abs(drift_px) * (player_height_inches / body_height_px)
+                    sub_values["drift_inches"] = round(drift_inches, 1)
+            else:
+                components["com_drift"] = MetricComponent(None, None, 0.0, ["missing_landmarks"])
+        else:
+            components["com_drift"] = MetricComponent(None, None, 0.0, ["missing_landmarks"])
+    else:
+        components["com_drift"] = MetricComponent(None, None, 0.0, ["missing_landmarks"])
+
+    # --- Aggregate ---
+    score_raw, conf, reasons, used = _aggregate_components(
+        components, comp_weights, min_valid_components=1,
+    )
+    if score_raw is None or conf is None:
+        result = BenchmarkResult.insufficient(name, "Loading profile cannot be estimated reliably")
+        result.confidence = 0.0
+        result.reasons = reasons
+        return result
+
+    sub_values["components_used"] = used
+
+    return _finalize_confidence_scored_metric(
+        name=name,
+        raw_value=sub_values.get("hip_hinge_deg"),
+        unit="°",
+        score_raw=max(0.0, min(10.0, score_raw)),
+        conf=conf,
+        sub_values=sub_values,
+        note="Loading profile at most-loaded checkpoint: hip hinge, counter-rotation, trunk lean, COM drift.",
+        reasons=reasons,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Efficiency scoring
 # ---------------------------------------------------------------------------
 
@@ -3347,6 +3938,10 @@ OPEN_SIDE_METRIC_ORDER: tuple[str, ...] = (
     "hip_shoulder_sep_v3",
     "front_side_closedness_v2",
     "release_extension_v2",
+    "stride_length",
+    "arm_positioning",
+    "arm_timing",
+    "loading_profile",
     "timing",
     "swivel_stabilize",
 )
@@ -3406,6 +4001,10 @@ METRIC_OPEN_SIDE_ONLY: dict[str, bool] = {
     "front_knee_extension_rel": True,
     "tilt_consistency": False,
     "release_extension_proxy": False,
+    "stride_length": True,
+    "arm_positioning": True,
+    "arm_timing": True,
+    "loading_profile": True,
 }
 
 
@@ -3430,6 +4029,10 @@ _COMMON_WEIGHTS: dict[str, float] = {
     "lead_leg_block_v3": 1.0,
     "hip_shoulder_sep_v3": 1.0,
     "front_side_closedness_v2": 1.0,
+    "stride_length": 1.0,
+    "arm_positioning": 1.0,
+    "arm_timing": 1.0,
+    "loading_profile": 1.0,
 }
 
 _OPEN_SIDE_WEIGHTS: dict[str, float] = {
@@ -3437,6 +4040,10 @@ _OPEN_SIDE_WEIGHTS: dict[str, float] = {
     "hip_shoulder_sep_v3": 1.8,
     "front_side_closedness_v2": 1.6,
     "release_extension_v2": 1.0,
+    "stride_length": 1.0,
+    "arm_positioning": 1.2,
+    "arm_timing": 1.3,
+    "loading_profile": 1.0,
     "timing": 0.7,
     "swivel_stabilize": 0.5,
 }
@@ -3513,6 +4120,7 @@ def compute_benchmarks(
     phases: PitchPhases,
     hand: str = "R",
     view_mode: str = "open_side",
+    player_height_inches: Optional[float] = None,
 ) -> BenchmarkReport:
     """
     Compute all 7 mechanical benchmarks from poses + phases.
@@ -3567,6 +4175,10 @@ def compute_benchmarks(
         _compute_trunk_stability(poses, phases),  # legacy debug metric
         _compute_tilt_consistency_release(poses, phases),
         _compute_release_extension_proxy(poses, phases, hand),  # legacy debug metric
+        _compute_stride_length(poses, phases, hand, player_height_inches),
+        _compute_arm_alignment(poses, phases, hand),
+        _compute_arm_timing(poses, phases, hand),
+        _compute_loading_profile(poses, phases, hand, player_height_inches),
     ]
 
     if view_mode == "open_side":

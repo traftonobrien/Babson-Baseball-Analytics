@@ -195,7 +195,10 @@ def _load_phases_from_json(path: Path) -> PitchPhases:
         set_pos=       _phase(pd.get("set")),
         first_movement=_phase(pd.get("first_movement")),
         peak_leg_lift= _phase(pd.get("peak_leg_lift")),
+        most_loaded=   _phase(pd.get("most_loaded")),
         foot_strike=   _phase(pd.get("foot_strike")),
+        weight_bearing=_phase(pd.get("weight_bearing")),
+        arm_flip_up=   _phase(pd.get("arm_flip_up")),
         ball_release=  _phase(pd.get("ball_release")),
         fps=           data["fps"],
     )

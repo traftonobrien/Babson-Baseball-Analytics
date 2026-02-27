@@ -1,0 +1,21 @@
+{
+  "source_video": "Mechanics Analysis/Shane Langan/Langan Mechanics.mp4",
+  "fps": 30.0,
+  "width": 1280,
+  "height": 720,
+  "player": "Shane Langan",
+  "session": "mechanics_eval",
+  "clips": [
+    {
+      "pitch_idx": 1,
+      "angle": "open_side",
+      "start_frame": 0,
+      "end_frame": 155,
+      "phase_anchors": {
+        "peak_leg_lift_s": 2.733,
+        "foot_strike_s": 3.4,
+        "ball_release_s": 3.533
+      }
+    }
+  ]
+}

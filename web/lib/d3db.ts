@@ -1,12 +1,30 @@
 /**
  * D3 Dashboard API helpers.
  *
- * Server-side code (RSC, route handlers) calls the D3 API directly using
- * the server-only API key. The /api/d3db proxy is kept for client-side
- * fetches and external curl testing.
+ * Server-side code (RSC, route handlers) prefers cached data from
+ * web/public/d3/{year}.json (updated daily by GitHub Actions), falling back
+ * to the live D3 API when cache is missing or stale.
  */
 
+import { readFile } from "fs/promises";
+import path from "path";
+
 const D3_BASE = "https://d3-dashboard.com/api";
+
+// ---------------------------------------------------------------------------
+// Cache (daily sync via .github/workflows/sync-d3-daily.yml)
+// ---------------------------------------------------------------------------
+
+async function readCachedLeaderboard(year: string): Promise<unknown | null> {
+  try {
+    const cwd = process.cwd();
+    const cachePath = path.join(cwd, "public", "d3", `${year}.json`);
+    const raw = await readFile(cachePath, "utf-8");
+    return JSON.parse(raw) as unknown;
+  } catch {
+    return null;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Server-direct helpers (used by RSC pages — no self-fetch needed)
@@ -67,6 +85,9 @@ export async function fetchPitchingLeaderboard(
   year: string,
   division = 3,
 ): Promise<unknown> {
+  const cached = await readCachedLeaderboard(year);
+  if (cached != null) return cached;
+
   return fetchD3Direct("pitching", {
     years: year,
     division: String(division),

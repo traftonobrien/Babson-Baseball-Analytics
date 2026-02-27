@@ -97,6 +97,8 @@ def build_manual_index(
         }
         if clip.get("order") is not None:
             angle_row["order"] = int(clip["order"])
+        if clip.get("phase_anchors"):
+            angle_row["phase_anchors"] = dict(clip["phase_anchors"])
         by_pitch[pitch_idx]["angles"][angle] = angle_row
 
     rows: list[dict[str, Any]] = []

@@ -92,8 +92,7 @@ cat(sprintf("[read_data] After dropping NA critical rows: %d\n", nrow(dt)))
 dt[, throws := fifelse(grepl("L", handedness, ignore.case = TRUE), "L", "R")]
 
 # Ensure session_date is Date
-if ("session_date" %in% names(dt)) dt[, session_date := as.Date(session_date)]
-
+if ("session_date" %in% names(dt)) dt[, session_date := as.Date(session_date, format = "%m/%d/%y")]
 
 ## ----max-velo--------------------------------------------------------------------------
 # Read max velo data — player_id formats differ so we join on last name

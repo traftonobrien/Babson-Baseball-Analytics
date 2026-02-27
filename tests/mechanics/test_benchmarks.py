@@ -101,7 +101,10 @@ def _make_phases(
         set_pos=        _make_phase("set",          set_idx,  fps),
         first_movement= _make_phase("first_movement", 5,      fps),
         peak_leg_lift=  _make_phase("peak_leg_lift", peak_idx, fps),
+        most_loaded=    None,
         foot_strike=    _make_phase("foot_strike",   fs_idx,  fps),
+        weight_bearing= None,
+        arm_flip_up=    None,
         ball_release=   _make_phase("ball_release",  rel_idx, fps),
         fps=fps,
     )
@@ -447,13 +450,13 @@ class TestTiming:
         assert result.pass_fail is False
 
     def test_missing_set_returns_insufficient(self):
-        phases = PitchPhases(None, None, None,
-                             _make_phase("foot_strike", 30), None, fps=30.0)
+        phases = PitchPhases(None, None, None, None,
+                             _make_phase("foot_strike", 30), None, None, None, fps=30.0)
         result = _compute_timing(phases)
         assert result.status == "insufficient_data"
 
     def test_missing_foot_strike_returns_insufficient(self):
-        phases = PitchPhases(_make_phase("set", 0), None, None, None, None, fps=30.0)
+        phases = PitchPhases(_make_phase("set", 0), None, None, None, None, None, None, None, fps=30.0)
         result = _compute_timing(phases)
         assert result.status == "insufficient_data"
 
@@ -595,7 +598,7 @@ class TestComputeBenchmarks:
         assert high_conf < low_conf
 
     def test_empty_poses_returns_all_insufficient(self):
-        empty_phases = PitchPhases(None, None, None, None, None, fps=30.0)
+        empty_phases = PitchPhases(None, None, None, None, None, None, None, None, fps=30.0)
         report = compute_benchmarks([], empty_phases, hand="R")
         for bm in report.primary_metrics():
             assert bm.status == "insufficient_data"
@@ -632,6 +635,10 @@ class TestOpenSideViewMode:
             "hip_shoulder_sep_v3",
             "front_side_closedness_v2",
             "release_extension_v2",
+            "stride_length",
+            "arm_positioning",
+            "arm_timing",
+            "loading_profile",
             "timing",
             "swivel_stabilize",
         )

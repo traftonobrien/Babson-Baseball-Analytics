@@ -23,6 +23,7 @@ class ManualClip:
     end_frame: int
     order: int | None = None
     notes: str = ""
+    phase_anchors: dict[str, float] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         out = {
@@ -35,6 +36,8 @@ class ManualClip:
             out["order"] = int(self.order)
         if self.notes:
             out["notes"] = self.notes
+        if self.phase_anchors:
+            out["phase_anchors"] = dict(self.phase_anchors)
         return out
 
 
@@ -102,6 +105,8 @@ def manual_doc_from_dict(data: dict[str, Any]) -> ManualClipsDoc:
     validate_manual_clips_dict(data)
     clips: list[ManualClip] = []
     for clip in data["clips"]:
+        pa_raw = clip.get("phase_anchors")
+        pa = {str(k): float(v) for k, v in pa_raw.items()} if isinstance(pa_raw, dict) else None
         clips.append(
             ManualClip(
                 pitch_idx=int(clip["pitch_idx"]),
@@ -110,6 +115,7 @@ def manual_doc_from_dict(data: dict[str, Any]) -> ManualClipsDoc:
                 end_frame=int(clip["end_frame"]),
                 order=int(clip["order"]) if clip.get("order") is not None else None,
                 notes=str(clip.get("notes", "")),
+                phase_anchors=pa,
             )
         )
     return ManualClipsDoc(

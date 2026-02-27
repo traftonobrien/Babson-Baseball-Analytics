@@ -1,0 +1,57 @@
+# Phase 0 Walkthrough — Foundation Layer
+
+## What Was Built
+
+### 1. Frame Labeling Tool
+**[NEW]** [frame_labeler.py](file:///Users/traftonobrien/Desktop/pitch-tracker/scripts/frame_labeler.py)
+
+OpenCV frame-scrubbing tool for annotating ground-truth phase frames:
+- Trackbar for frame navigation, keyboard shortcuts for 8 phases
+- HUD overlay showing frame info, labeled phases, and keyboard legend
+- Undo support, auto-loads existing labels, outputs `labels.json`
+
+### 2. Player Height Lookup
+**[MODIFY]** [__init__.py](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/__init__.py)
+
+Added [get_player_height_inches()](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/__init__.py#28-55) that reads [roster.json](file:///Users/traftonobrien/Desktop/pitch-tracker/web/data/roster.json) and converts `"6'2\""` → `74.0` inches.
+
+### 3. New Phase Detectors
+**[MODIFY]** [phases.py](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/phases.py)
+
+| Phase | Detection Method |
+|---|---|
+| **most_loaded** | Composite: lead knee at lowest y + maximum hip hinge angle (shoulder→hip→knee), between PLL and FS |
+| **foot_strike** (refined) | Full foot plant: both HEEL and FOOT_INDEX velocity stable simultaneously after descent. Falls back to original ankle velocity method |
+| **weight_bearing** | Hip midpoint x-position closest to lead ankle x-position, after foot strike |
+| **arm_flip_up** | Forearm angle ≥45° above horizontal AND wrist above shoulder |
+
+### 4. PitchPhases Dataclass Expansion
+
+Added 3 new `Optional[Phase]` fields: [most_loaded](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/phases.py#505-592), [weight_bearing](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/phases.py#664-733), [arm_flip_up](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/phases.py#739-793)
+
+### 5. Caller Updates
+
+Updated PitchPhases constructors in **8 files**:
+
+| File | Change |
+|---|---|
+| [phases.py](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/phases.py) | Core dataclass + detect_phases |
+| [mechanics_coach_pack.py](file:///Users/traftonobrien/Desktop/pitch-tracker/scripts/mechanics_coach_pack.py) | _load_phases JSON loader |
+| [mechanics_benchmarks.py](file:///Users/traftonobrien/Desktop/pitch-tracker/scripts/mechanics_benchmarks.py) | _load_phases JSON loader |
+| [mechanics_extract_metrics.py](file:///Users/traftonobrien/Desktop/pitch-tracker/scripts/mechanics_extract_metrics.py) | _load_phases_from_json |
+| [test_mechanics_scripts.py](file:///Users/traftonobrien/Desktop/pitch-tracker/tests/mechanics/test_mechanics_scripts.py) | _phases() helper |
+| [test_coach_pack.py](file:///Users/traftonobrien/Desktop/pitch-tracker/tests/mechanics/test_coach_pack.py) | _make_phases() + missing_phase test |
+| [test_benchmarks.py](file:///Users/traftonobrien/Desktop/pitch-tracker/tests/mechanics/test_benchmarks.py) | _make_phases() + 3 inline constructors |
+
+## Verification
+
+| Check | Result |
+|---|---|
+| All 8 files compile | ✅ |
+| Height parsing `"6'2\""` → 74.0 | ✅ |
+| Height lookup `obrien_trafton` | ✅ 74.0 |
+| Height lookup nonexistent player | ✅ None |
+| Full pytest suite | ⚠️ Cannot run locally (mediapipe not installed) |
+
+> [!NOTE]
+> Full test suite requires mediapipe which is not installed in the local Python 3.13 environment. All changes are backward-compatible — new phases are `None` by default when not detected, so existing callers continue working.

@@ -1,0 +1,391 @@
+# Mechanics Module V5 — Implementation Plan
+
+Next-generation mechanics evaluation adding stride length/direction, arm positioning/timing, and a new "most loaded" checkpoint with full loading profile — all from 2D open-side video.
+
+## Design Decisions Summary
+
+| Decision | Answer |
+|---|---|
+| 3D vs 2D | **2D only** — no 3D tech |
+| Distance calibration | **Player height** from [roster.json](file:///Users/traftonobrien/Desktop/pitch-tracker/web/data/roster.json) |
+| Stride output | Feet/inches + % body height + direction angle |
+| Foot strike definition | **Full foot plant** — both heel AND toe grounded |
+| "Weight bearing" | New sub-phase: weight fully transferred to lead leg (after FS) |
+| Arm alignment view | 2D open-side projection (with confidence caveat) |
+| Elbow flexion | Shoulder→elbow→wrist angle at weight bearing |
+| Arm flip timing | 45-90° external rotation, scored 0-10 vs weight bearing |
+| "Most loaded" | Composite: lead knee lowest + maximum hip hinge, between PLL and FS |
+| Pelvis/loading | Full profile: hip hinge + hip-to-knee + trunk lean |
+| Counter rotation | Shoulder rotation from SET baseline + hip-shoulder sep |
+| COM estimation | Simple proxy (hip+shoulder midpoint), upgrade later |
+| Drift thresholds | General baseball biomechanics guidelines |
+| Efficiency score | Add all new metrics immediately as official |
+| Coach pack | 5th "most loaded" panel + annotations on existing panels |
+| Web display | Backend only — no web changes this iteration |
+
+---
+
+## Proposed Changes
+
+### Phase 0: Foundation Layer
+
+Shared infrastructure needed by all three features. This is the critical path.
+
+---
+
+#### [NEW] [frame_labeler.py](file:///Users/traftonobrien/Desktop/pitch-tracker/scripts/frame_labeler.py)
+
+Simple frame-scrubbing labeling tool for annotating ground-truth phase frames.
+
+- **UI**: OpenCV `imshow` window with trackbar for frame scrubbing
+- **Workflow**: Opens a video, lets user scrub through frames. Keyboard shortcuts to mark phases:
+  - `s` = SET, `p` = PEAK LEG LIFT, `l` = MOST LOADED, `f` = FOOT STRIKE, `w` = WEIGHT BEARING, `r` = BALL RELEASE, `a` = ARM FLIP-UP
+- **Output**: Writes `labels.json` alongside the video with `{ "phase_name": frame_idx }` for each labeled frame
+- **Purpose**: Validate new phase detectors; provides ground-truth for testing
+
+---
+
+#### [MODIFY] [phases.py](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/phases.py)
+
+Add three new phase detectors and refine the existing foot strike detector.
+
+**Refined foot strike detection** — replace current ankle-velocity heuristic:
+- Track both `HEEL` and `FOOT_INDEX` keypoints on the lead foot
+- Detect the frame where both have stabilized at their lowest vertical position (y-velocity ≈ 0 for both simultaneously)
+- Use a small smoothing window (3-5 frames) to handle jitter
+- Fall back to current ankle-based detection if heel/toe keypoints have low visibility
+
+**New phase: `most_loaded`** — between [peak_leg_lift](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/phases.py#366-453) and [foot_strike](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/report_benchmarks.py#238-268):
+- Search for frame where lead knee y-position is at/near its lowest point in the PLL→FS window
+- Simultaneously compute hip hinge angle (shoulder-hip-knee) per frame in that window
+- Select the frame that maximizes a composite score: `0.5 * normalized_knee_low + 0.5 * normalized_hip_hinge`
+- Assign confidence based on keypoint visibility and the sharpness of the minimum
+
+**New phase: `weight_bearing`** — shortly after [foot_strike](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/report_benchmarks.py#238-268):
+- After foot strike, track the hip midpoint x-position relative to the lead ankle x-position
+- Detect the first frame where the hip midpoint passes over (or reaches closest to) the lead ankle — this is when weight has shifted onto the front leg
+- Search window: foot strike → ball release
+- Fall back to foot_strike + 2-3 frames if keypoints are insufficient
+
+**New phase: `arm_flip_up`** — when the forearm reaches the cocked position:
+- Track the forearm angle: compute the angle of the elbow→wrist vector relative to horizontal
+- In the delivery, the forearm transitions from pointing down/back to pointing up (external rotation)
+- Detect the first frame (after first_movement) where the forearm angle exceeds 45° above shoulder height
+- Assign confidence based on throwing-arm keypoint visibility (shoulder, elbow, wrist)
+
+**Update [PitchPhases](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/phases.py#60-78) dataclass** to include:
+```python
+most_loaded: Optional[Phase]
+weight_bearing: Optional[Phase]
+arm_flip_up: Optional[Phase]
+```
+
+---
+
+#### [MODIFY] [__init__.py](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/__init__.py)
+
+Add a height lookup utility function:
+
+```python
+def get_player_height_inches(player_id: str) -> Optional[float]:
+    """Look up player height from roster.json, return in inches."""
+```
+
+- Parse the `"6'2\""` format from [roster.json](file:///Users/traftonobrien/Desktop/pitch-tracker/web/data/roster.json)
+- Convert to inches (e.g., 74.0)
+- Return `None` if player not found (metrics fall back to body-height proxy from pose)
+
+---
+
+### Phase 1: Stride Length & Direction
+
+---
+
+#### [MODIFY] [benchmarks.py](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/benchmarks.py)
+
+Add `_compute_stride_length` function:
+
+**Stride length computation:**
+- At the *refined* foot strike frame, get pixel positions of lead ankle and drive ankle
+- Compute pixel distance between them
+- Estimate body height in pixels using the pose (nose-to-ankle proxy, already exists as [_body_height_proxy_px](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/benchmarks.py#531-571))
+- Given the player's known height in inches (from roster), compute: `scale = known_height_inches / body_height_px`
+- `stride_length_inches = pixel_distance * scale`
+- `stride_length_pct_height = pixel_distance / body_height_px * 100`
+
+**Stride direction computation:**
+- Compute the vector from drive ankle to lead ankle at foot strike
+- Compute the pitcher's midline vector (hip midpoint at SET → hip midpoint at foot strike)
+- Angle between the stride vector and the midline = stride direction offset
+- Positive = glove side, negative = arm side (for RHP)
+- Convert the lateral offset to inches using the same scale factor
+
+**Scoring (0-10):**
+- Stride length: 80-90% of body height → 10; <65% → 3; >100% → 5 (overstride penalty); linear interpolation between
+- Direction: ≤2° offset → 10; ≥10° → 3; linear between
+
+**Output [BenchmarkResult](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/benchmarks.py#662-736):**
+- [name](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/benchmarks.py#765-770): `"stride_length"`
+- `raw_value`: stride in inches
+- `unit`: `"in"`
+- `sub_values`: `{ "pct_height": 84.2, "direction_deg": 3.1, "lateral_offset_in": 2.4 }`
+
+**Confidence model:**
+- Visibility of both ankles at foot strike
+- Foot strike phase confidence
+- Body height proxy reliability (coverage of nose + ankle keypoints)
+- Player height lookup success (slight penalty if falling back to pose-only proxy)
+
+---
+
+#### [MODIFY] [coach_pack.py](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/coach_pack.py)
+
+Add stride annotations to the **foot strike** key frame panel:
+- Draw a line from drive ankle to lead ankle, colored by score
+- Display stride length (inches + % height) as a callout
+- Draw direction offset as a small angle arc from the midline
+- Add to `CALLOUT_TABLE` with coaching cues for short/long/misdirected strides
+- Add `"stride_length"` to `_PHASE_METRICS_BY_VIEW["open_side"]["foot_strike"]`
+
+---
+
+### Phase 2: Arm Positioning & Timing
+
+---
+
+#### [MODIFY] [benchmarks.py](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/benchmarks.py)
+
+Add two new compute functions:
+
+**`_compute_arm_alignment`:**
+- At the weight-bearing frame, compute:
+  1. **Elbow-shoulder alignment**: angle between the line connecting both shoulders and the line from throwing shoulder to throwing elbow. Pass = within ±5° of 180° (i.e., elbow in line with shoulder plane).
+  2. **Elbow flexion**: shoulder→elbow→wrist angle. Report exact degrees. Score based on ≤90° = ideal.
+- Scoring (0-10):
+  - Alignment: ≤5° off = 10; ≥15° off = 3; linear between
+  - Flexion: ≤90° = 10; 90-110° = linear 10→6; >120° = 3
+  - Composite = weighted average (0.5 alignment + 0.5 flexion)
+- Output as [BenchmarkResult](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/benchmarks.py#662-736) with `name: "arm_positioning"`
+
+**`_compute_arm_timing`:**
+- Compare the `arm_flip_up` phase frame to the `weight_bearing` phase frame
+- `delta_frames = arm_flip_up.frame_idx - weight_bearing.frame_idx`
+- `delta_ms = delta_frames / fps * 1000`
+- Classification:
+  - On time: arm flip at or within 2 frames before weight bearing
+  - Early: arm flip more than 2 frames before weight bearing
+  - Late: arm flip after weight bearing
+- Scoring (0-10):
+  - On time (delta 0 to -2 frames): 10
+  - Slightly early (-3 to -5 frames): linear 10→7
+  - Slightly late (+1 to +3 frames): linear 8→5
+  - Very late (>+3 frames): 3
+- Output as [BenchmarkResult](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/benchmarks.py#662-736) with `name: "arm_timing"`, `sub_values: { "delta_ms": ..., "classification": "on_time" }`
+
+**Confidence model for both:**
+- Throwing arm keypoint visibility (shoulder, elbow, wrist) at weight bearing
+- Weight bearing phase confidence
+- Arm flip-up phase detection confidence
+
+---
+
+#### [MODIFY] [coach_pack.py](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/coach_pack.py)
+
+Add arm annotations to the **foot strike** or **release** panel (whichever is closest to weight bearing):
+- Draw the shoulder line (left shoulder → right shoulder) as a reference
+- Draw the upper arm (shoulder → elbow) and forearm (elbow → wrist) of the throwing arm
+- Display the elbow-shoulder alignment angle as an arc overlay
+- Display the elbow flexion angle as an arc at the elbow joint
+- Color-code: green if in range, red if out
+- Add arm timing badge on the panel showing "On Time" / "Early" / "Late" + delta ms
+- Add to `CALLOUT_TABLE` with coaching cues for late arm, excessive flexion, misalignment
+- Add `"arm_positioning"` and `"arm_timing"` to `_PHASE_METRICS_BY_VIEW["open_side"]`
+
+---
+
+### Phase 3: Most Loaded Checkpoint & Loading Profile
+
+---
+
+#### [MODIFY] [benchmarks.py](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/benchmarks.py)
+
+Add `_compute_loading_profile` function:
+
+**Measurements at the most-loaded frame:**
+1. **Hip hinge angle**: shoulder_mid → hip_mid → knee (drive leg). Small angle = more hinged/loaded.
+2. **Hip-to-knee angle** (pelvic tilt proxy): angle of hip→knee vector relative to vertical.
+3. **Trunk lean**: mid-hip → mid-shoulder angle from vertical (reuse existing geometry).
+4. **Shoulder counter-rotation**: shoulder line angle at most-loaded minus shoulder line angle at SET. Positive = rotated away from home plate.
+5. **Hip-shoulder separation**: hip axis vs shoulder axis angle at most-loaded (same method as current [hip_shoulder_sep_v3](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/benchmarks.py#2284-2590) but measured at this earlier phase).
+
+**COM drift measurement (PLL → most loaded):**
+- COM proxy = midpoint of (hip_midpoint, shoulder_midpoint) at each frame
+- Track COM x-position from peak_leg_lift to most_loaded
+- `drift_px = COM_x_at_most_loaded - COM_x_at_PLL`
+- Normalize by body height px → `drift_pct_height`
+- Convert to inches using player height scale factor
+
+**Scoring (0-10) based on baseball biomechanics guidelines:**
+- Hip hinge: 40-55° → 10 (well loaded); <25° → 5 (too upright); >70° → 5 (excessive); linear between
+- Counter rotation: 10-25° → 10 (good coil); <5° → 5 (no coil); >35° → 6 (excessive); linear
+- Drift: 20-40% of total stride length → 10 (sweet spot); <10% → 5 (static); >50% → 4 (rushing); linear
+- **Composite loading score** = weighted average of sub-scores
+
+**Output as [BenchmarkResult](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/benchmarks.py#662-736):**
+- `name: "loading_profile"`
+- `raw_value`: composite score
+- `sub_values`: `{ "hip_hinge_deg", "hip_knee_deg", "trunk_lean_deg", "counter_rotation_deg", "hip_shoulder_sep_deg", "drift_pct_height", "drift_inches" }`
+
+**Confidence model:**
+- Visibility of hip, knee, shoulder, ankle keypoints at the most-loaded frame
+- Most-loaded phase detection confidence
+- Stability of measurements across a ±2 frame window
+
+---
+
+#### [MODIFY] [coach_pack.py](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/coach_pack.py)
+
+**New 5th key frame panel for "MOST LOADED":**
+- Extract the frame at the `most_loaded` phase
+- Draw skeleton overlay
+- Draw hip hinge angle arc (shoulder→hip→knee) with degree label
+- Draw trunk lean vector (hip→shoulder) from vertical
+- Draw shoulder line with counter-rotation angle annotation
+- Draw COM marker (filled circle at COM proxy location)
+- Draw drift line from PLL COM position to current COM position, labeled with inches/% height
+- Score callout badge in corner
+
+**Update layout:**
+- Current layout: 2×2 grid (SET, PLL, FS, REL) + summary strip
+- New layout:
+  ```
+  [ SET           | PEAK LEG LIFT  | MOST LOADED ]
+  [ FOOT STRIKE   | BALL RELEASE   |             ]
+  [              metrics summary strip             ]
+  ```
+  Or a 2×3 grid with the 6th cell as a mini-summary, or keep 2×2 and add a 5th row — depends on best visual fit
+
+> [!IMPORTANT]
+> The exact layout of the 5-panel coach pack will need iteration. Suggest starting with a 3-2 layout (3 panels top row, 2 bottom) and adjusting based on visual review.
+
+**Add coaching cues to `CALLOUT_TABLE`:**
+- `"loading_profile"`: "Insufficient loading at the hinge point. Work on getting deeper into the hip hinge before driving forward."
+
+---
+
+### Phase 4: Integration
+
+---
+
+#### [MODIFY] [benchmarks.py](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/benchmarks.py)
+
+**Update [compute_benchmarks()](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/benchmarks.py#3511-3596):**
+- Call `_compute_stride_length()`, `_compute_arm_alignment()`, `_compute_arm_timing()`, `_compute_loading_profile()`
+- Accept `player_height_inches: Optional[float] = None` parameter
+- Pass height to stride computation
+
+**Update [BenchmarkReport](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/benchmarks.py#738-778):**
+- Add fields: `stride_length`, `arm_positioning`, `arm_timing`, `loading_profile`
+
+**Update efficiency score weights (`_COMMON_WEIGHTS`):**
+- `"stride_length": 1.0`
+- `"arm_positioning": 1.2` (high importance — injury prevention)
+- `"arm_timing": 1.3` (high importance — velocity + injury)
+- `"loading_profile": 1.0`
+
+**Update `OPEN_SIDE_METRIC_ORDER`:**
+- Add all 4 new metrics to the official open-side set
+
+---
+
+#### [MODIFY] [run_mechanics_session.py](file:///Users/traftonobrien/Desktop/pitch-tracker/scripts/run_mechanics_session.py)
+
+- Import height lookup utility
+- Resolve player height from roster.json using the player slug
+- Pass `player_height_inches` to [compute_benchmarks()](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/benchmarks.py#3511-3596)
+
+---
+
+#### [MODIFY] [metrics.py](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/metrics.py)
+
+- Update [Metrics](file:///Users/traftonobrien/Desktop/pitch-tracker/src/mechanics/metrics.py#40-67) dataclass to include:
+  - `stride_length_inches: Optional[float]`
+  - `stride_pct_height: Optional[float]`
+  - `stride_direction_deg: Optional[float]`
+- These are the basic-metric-layer values that the benchmarks layer builds upon
+
+---
+
+## Verification Plan
+
+### Automated Tests
+
+All tests run from the repo root with:
+```bash
+python -m pytest tests/mechanics/ -v
+```
+
+#### Existing tests to verify no regressions:
+
+| Test file | What it covers |
+|---|---|
+| [test_phases.py](file:///Users/traftonobrien/Desktop/pitch-tracker/tests/mechanics/test_phases.py) | Phase detection logic |
+| [test_benchmarks.py](file:///Users/traftonobrien/Desktop/pitch-tracker/tests/mechanics/test_benchmarks.py) | Benchmark scoring functions |
+| [test_confidence.py](file:///Users/traftonobrien/Desktop/pitch-tracker/tests/mechanics/test_confidence.py) | Confidence model |
+| [test_coach_pack.py](file:///Users/traftonobrien/Desktop/pitch-tracker/tests/mechanics/test_coach_pack.py) | Coach pack generation |
+| [test_mechanics_scripts.py](file:///Users/traftonobrien/Desktop/pitch-tracker/tests/mechanics/test_mechanics_scripts.py) | End-to-end script tests |
+
+#### New tests to write:
+
+**[NEW] `tests/mechanics/test_phases_v5.py`:**
+- Test refined foot strike detection with synthetic pose sequences (both heel + toe grounded)
+- Test `most_loaded` detection with known hip-hinge + knee-low sequences
+- Test `weight_bearing` detection with synthetic COM-over-ankle sequences
+- Test `arm_flip_up` detection with synthetic forearm angle sequences
+- Test fallback behavior when keypoints have low visibility
+
+**[NEW] `tests/mechanics/test_stride.py`:**
+- Test stride length computation with known pixel distances and known height
+- Test inches conversion accuracy (e.g., 74-inch player with known pixel-to-body ratio)
+- Test stride direction angle computation
+- Test scoring thresholds (80-90% → 10, <65% → 3, etc.)
+- Test edge cases: missing ankle keypoints, missing height data
+
+**[NEW] `tests/mechanics/test_arm_metrics.py`:**
+- Test elbow-shoulder alignment angle computation with synthetic poses
+- Test elbow flexion angle computation
+- Test arm timing scoring (early/on-time/late classification)
+- Test composite arm_positioning score
+- Test with both RHP and LHP handedness
+
+**[NEW] `tests/mechanics/test_loading_profile.py`:**
+- Test hip hinge angle computation at most-loaded frame
+- Test counter-rotation measurement from SET baseline
+- Test COM drift computation (PLL → most loaded)
+- Test scoring thresholds for each sub-component
+- Test composite loading score with all sub-values present / partially missing
+
+**[NEW] `tests/mechanics/test_height_lookup.py`:**
+- Test height parsing (`"6'2\""` → 74.0 inches)
+- Test player not found → returns None
+- Test fallback to body-height proxy when height unavailable
+
+### Manual Verification
+
+After automated tests pass, run the full pipeline on a real video:
+
+```bash
+python scripts/run_mechanics_session.py \
+  --video "Mechanics Analysis/Trafton OBrien/OBrien Mechanics.mov" \
+  --hand R --debug-metrics
+```
+
+Then verify:
+1. **[notes.json](file:///Users/traftonobrien/Desktop/pitch-tracker/web/public/mechanics/tj_flack/mechanics_latest/notes.json)** contains the 4 new metrics (`stride_length`, `arm_positioning`, `arm_timing`, `loading_profile`) with reasonable values
+2. **Coach pack images** show:
+   - Stride line on foot strike panel
+   - Arm overlays near weight bearing
+   - New 5th "MOST LOADED" panel with hip hinge + COM annotations
+3. **Efficiency score** incorporates the new metrics (score should change from v4 baseline)
+4. **Frame labeling tool** opens and allows marking phases, writes `labels.json`
+5. Compare auto-detected foot strike frame against labeled ground truth — should be within ±1 frame

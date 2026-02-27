@@ -109,19 +109,35 @@ CALLOUT_TABLE: dict[str, str] = {
     "lead_leg_block_v3": (
         "Lead leg block is soft through release. Land on a firm post and reduce forward leak after foot strike."
     ),
+    "stride_length": (
+        "Stride length is outside the ideal range. Aim for 80-90% of body height "
+        "with direction straight toward home plate."
+    ),
     "hip_shoulder_sep_v3": (
         "Shoulder acceleration is not lagging pelvis enough. Delay upper-body rotation and avoid early pelvis collapse."
     ),
     "front_side_closedness_v2": (
         "Front side is opening early. Keep the glove side contained into foot strike before stabilizing at release."
     ),
+    "arm_positioning": (
+        "Arm alignment is off at arm cocked position. Work on getting the elbow in line with the shoulders "
+        "and maintaining proper flexion through the delivery."
+    ),
+    "arm_timing": (
+        "Arm timing is off relative to weight bearing. The arm should reach the cocked position "
+        "at or just before weight transfers to the front leg."
+    ),
+    "loading_profile": (
+        "Loading is insufficient at the hinge point. Work on getting deeper into the hip hinge "
+        "and building counter-rotation before driving forward."
+    ),
 }
 
 _PHASE_METRICS_BY_VIEW: dict[str, dict[str, list[str]]] = {
     "open_side": {
         "set": ["timing"],
-        "peak_leg_lift": [],
-        "foot_strike": ["hip_shoulder_sep_v3", "front_side_closedness_v2", "lead_leg_block_v3"],
+        "peak_leg_lift": ["loading_profile"],
+        "foot_strike": ["hip_shoulder_sep_v3", "front_side_closedness_v2", "lead_leg_block_v3", "stride_length", "arm_positioning", "arm_timing"],
         "ball_release": [
             "lead_leg_block_v3",
             "hip_shoulder_sep_v3",
@@ -216,6 +232,10 @@ _METRIC_SECTION: dict[str, str] = {
     "release_extension_v2": "Release",
     "release_extension_proxy": "Release",
     "torque_retention": "Release",
+    "stride_length": "Lower Half",
+    "arm_positioning": "Release",
+    "arm_timing": "Release",
+    "loading_profile": "Lower Half",
 }
 
 _METRIC_SHORT: dict[str, str] = {
@@ -238,6 +258,10 @@ _METRIC_SHORT: dict[str, str] = {
     "lead_leg_block_v3": "Block",
     "drift_forward": "Drift",
     "forward_leak_proxy": "Leak",
+    "stride_length": "Stride",
+    "arm_positioning": "ArmPos",
+    "arm_timing": "ArmTime",
+    "loading_profile": "Load",
 }
 
 ELIGIBLE_CONF_THRESHOLD = CONF_BLIND
@@ -405,11 +429,12 @@ def _draw_badge_bar(
     metric_names: list[str],
     y_bottom: int,
 ) -> None:
-    """Draw grouped metric badges near y_bottom."""
+    """Draw grouped metric badges near y_bottom, wrapping to additional rows."""
     if not metric_names:
         return
 
     scale = _scale_factor(frame)
+    h, w = frame.shape[:2]
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.40 * scale
     section_scale = 0.36 * scale
@@ -418,10 +443,13 @@ def _draw_badge_bar(
     pad_y = _sc(5, scale)
     gap = _sc(6, scale)
     section_gap = _sc(14, scale)
+    row_height = _sc(32, scale)
+    max_x = int(w * 0.95)
 
     all_metrics = {m.name: m for m in benchmarks.all_metrics()}
     x = _sc(10, scale)
     y = y_bottom
+    row_start_x = x
 
     sections = ["Tempo", "Stability", "Lower Half", "Release"]
     for section in sections:
@@ -429,12 +457,26 @@ def _draw_badge_bar(
         if not names:
             continue
 
+        # Check if section header fits; wrap if needed
+        (sw, _sh), _ = cv2.getTextSize(section, font, section_scale, thickness)
+        if x + sw > max_x and x > row_start_x:
+            y -= row_height
+            x = row_start_x
+
         cv2.putText(frame, section, (x, y - _sc(24, scale)), font, section_scale,
                     (180, 180, 180), thickness, cv2.LINE_AA)
 
         for name in names:
             m = all_metrics.get(name)
             if m is None:
+                continue
+            # Hide metrics with insufficient data from badge bar.
+            if m.status == "insufficient_data" or m.status == "requires_front_view":
+                continue
+            # Hide debug-only metrics that have very low confidence (< 0.3) —
+            # these are front-view metrics computed on open-side with no signal.
+            is_debug = name not in official_metric_names("open_side")
+            if is_debug and m.confidence is not None and m.confidence < 0.3:
                 continue
 
             label_name = _METRIC_SHORT.get(name, name)
@@ -453,6 +495,12 @@ def _draw_badge_bar(
 
             color = _badge_color(m)
             (tw, th), bl = cv2.getTextSize(label, font, font_scale, thickness)
+            badge_w = tw + pad_x * 2
+
+            # Wrap to new row if this badge would overflow
+            if x + badge_w > max_x and x > row_start_x:
+                y -= row_height
+                x = row_start_x
 
             cv2.rectangle(
                 frame,
@@ -1079,6 +1127,40 @@ def _build_key_frame(
                     f"Front Side {closed.score:.1f}" if closed.score is not None else "Front Side",
                     (gw[0] + _sc(8, scale), gw[1] - _sc(10, scale)),
                     closed.score,
+                )
+
+        # Stride length line from drive ankle to lead ankle
+        stride_metric = benchmarks.metric_by_name("stride_length")
+        if stride_metric and stride_metric.status == "ok":
+            la_kp = "LEFT_ANKLE" if benchmarks.hand == "R" else "RIGHT_ANKLE"
+            da_kp = "RIGHT_ANKLE" if benchmarks.hand == "R" else "LEFT_ANKLE"
+            la_pt = pose.pixel(la_kp)
+            da_pt = pose.pixel(da_kp)
+            if la_pt and da_pt:
+                stride_color = score_color_bgr(stride_metric.score)
+                cv2.line(
+                    frame,
+                    (int(da_pt[0]), int(da_pt[1])),
+                    (int(la_pt[0]), int(la_pt[1])),
+                    stride_color,
+                    _fs_thick,
+                    cv2.LINE_AA,
+                )
+                # Text callout near midpoint
+                mid_x = int((da_pt[0] + la_pt[0]) / 2)
+                mid_y = int((da_pt[1] + la_pt[1]) / 2)
+                sv = stride_metric.sub_values
+                if sv.get("stride_inches") is not None and sv.get("pct_height") is not None:
+                    stride_text = f"Stride: {sv['stride_inches']:.1f}in ({sv['pct_height']:.0f}% ht)"
+                elif sv.get("pct_height") is not None:
+                    stride_text = f"Stride: {sv['pct_height']:.0f}% ht"
+                else:
+                    stride_text = f"Stride: {sv.get('stride_px', 0):.0f}px"
+                _overlay_angle_badge(
+                    frame,
+                    stride_text,
+                    (mid_x + _sc(8, scale), mid_y + _sc(14, scale)),
+                    stride_metric.score,
                 )
 
         if hip_path and allowed_metric_names and "drift_forward" in allowed_metric_names:

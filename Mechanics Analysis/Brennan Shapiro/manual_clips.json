@@ -1,0 +1,21 @@
+{
+  "source_video": "Mechanics Analysis/Brennan Shapiro/Shapiro Mechanics.mp4",
+  "fps": 29.758,
+  "width": 1280,
+  "height": 720,
+  "player": "Brennan Shapiro",
+  "session": "mechanics_eval",
+  "clips": [
+    {
+      "pitch_idx": 1,
+      "angle": "open_side",
+      "start_frame": 0,
+      "end_frame": 119,
+      "phase_anchors": {
+        "peak_leg_lift_s": 2.285,
+        "foot_strike_s": 2.957,
+        "ball_release_s": 3.125
+      }
+    }
+  ]
+}

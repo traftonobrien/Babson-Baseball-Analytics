@@ -156,6 +156,7 @@ def export_manual_clips(
                 "end_frame": int(clip.end_frame),
                 "order": int(clip.order) if getattr(clip, "order", None) is not None else None,
                 "path": str(rel.as_posix()),
+                "phase_anchors": dict(clip.phase_anchors) if clip.phase_anchors else None,
             }
         )
 

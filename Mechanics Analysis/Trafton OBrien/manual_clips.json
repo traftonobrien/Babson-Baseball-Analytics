@@ -1,0 +1,16 @@
+{
+  "source_video": "Mechanics Analysis/Trafton OBrien/OBrien Mechanics.mov",
+  "fps": 29.94,
+  "width": 1280,
+  "height": 720,
+  "player": "Trafton OBrien",
+  "session": "mechanics_eval",
+  "clips": [
+    {
+      "pitch_idx": 1,
+      "angle": "open_side",
+      "start_frame": 0,
+      "end_frame": 145
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "source_video": "Mechanics Analysis/Jason Finkelstein/Finkelstein Mechanics.mp4",
+  "fps": 30.0,
+  "width": 1280,
+  "height": 720,
+  "player": "Jason Finkelstein",
+  "session": "mechanics_eval",
+  "clips": [
+    {
+      "pitch_idx": 1,
+      "angle": "open_side",
+      "start_frame": 0,
+      "end_frame": 213,
+      "phase_anchors": {
+        "peak_leg_lift_s": 3.967,
+        "foot_strike_s": 4.633,
+        "ball_release_s": 4.767
+      }
+    }
+  ]
+}

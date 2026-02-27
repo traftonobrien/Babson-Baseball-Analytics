@@ -100,7 +100,10 @@ def _phases() -> PitchPhases:
         set_pos=_phase("set", 2),
         first_movement=_phase("first_movement", 2),
         peak_leg_lift=_phase("peak_leg_lift", 6),
+        most_loaded=None,
         foot_strike=_phase("foot_strike", 10),
+        weight_bearing=None,
+        arm_flip_up=None,
         ball_release=_phase("ball_release", 14),
         fps=10.0,
     )

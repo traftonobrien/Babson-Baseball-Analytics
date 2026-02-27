@@ -1,0 +1,21 @@
+{
+  "source_video": "Mechanics Analysis/Vinny Purpura/Purpura Mechanics.mp4",
+  "fps": 29.663,
+  "width": 1280,
+  "height": 720,
+  "player": "Vinny Purpura",
+  "session": "mechanics_eval",
+  "clips": [
+    {
+      "pitch_idx": 1,
+      "angle": "open_side",
+      "start_frame": 0,
+      "end_frame": 145,
+      "phase_anchors": {
+        "peak_leg_lift_s": 2.495,
+        "foot_strike_s": 3.135,
+        "ball_release_s": 3.27
+      }
+    }
+  ]
+}
