@@ -253,16 +253,28 @@ export default function TrackmanLeaderboardsPage() {
   }, [stuffPlusRows, stuffPlusPitchFilter, search]);
 
   const exportCsv = useCallback(() => {
-    if (activeCategory === "") {
-      const headers = ["Rank", "Player", "Pitch", "Stuff+", "Velo (mph)", "Sessions"];
-      const rows = rankedStuffPlus.map((r, i) => [
-        i + 1,
-        getCanonicalName(r.playerName ?? r.playerId ?? ""),
-        getStuffPlusDisplayPitchType(r.playerId, r.pitchType),
-        r.meanStuffPlus.toFixed(1),
-        r.avgVeloMph != null ? r.avgVeloMph.toFixed(1) : "",
-        r.nSessions ?? "",
-      ]);
+    if (activeCategory === "stuff_plus" || activeCategory === "") {
+      const includeVelo = stuffPlusPitchFilter !== "total";
+      const headers = includeVelo
+        ? ["Rank", "Player", "Pitch", "Stuff+", "Velo (mph)", "Sessions"]
+        : ["Rank", "Player", "Stuff+", "Sessions"];
+      const rows = rankedStuffPlus.map((r, i) =>
+        includeVelo
+          ? [
+              i + 1,
+              getCanonicalName(r.playerName ?? r.playerId ?? ""),
+              getStuffPlusDisplayPitchType(r.playerId, r.pitchType),
+              r.meanStuffPlus.toFixed(1),
+              r.avgVeloMph != null ? r.avgVeloMph.toFixed(1) : "",
+              r.nSessions ?? "",
+            ]
+          : [
+              i + 1,
+              getCanonicalName(r.playerName ?? r.playerId ?? ""),
+              r.meanStuffPlus.toFixed(1),
+              r.nSessions ?? "",
+            ]
+      );
       const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
@@ -292,7 +304,7 @@ export default function TrackmanLeaderboardsPage() {
       a.click();
       URL.revokeObjectURL(url);
     }
-  }, [activeCategory, rankedStuffPlus, entries, categoryPitchFilter, categoryPitchOptions.length]);
+  }, [activeCategory, rankedStuffPlus, entries, categoryPitchFilter, categoryPitchOptions.length, stuffPlusPitchFilter]);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6">
@@ -455,7 +467,9 @@ export default function TrackmanLeaderboardsPage() {
                           <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Pitch</th>
                         )}
                         <th className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider" title={CATEGORY_TOOLTIPS.stuff_plus}>Stuff+</th>
-                        <th className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Velo</th>
+                        {stuffPlusPitchFilter !== "total" && (
+                          <th className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Velo</th>
+                        )}
                         <th className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Sessions</th>
                       </tr>
                     </thead>
@@ -499,9 +513,11 @@ export default function TrackmanLeaderboardsPage() {
                               {r.meanStuffPlus.toFixed(1)}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-right font-mono text-zinc-400">
-                            {r.avgVeloMph != null ? `${r.avgVeloMph.toFixed(1)} mph` : "—"}
-                          </td>
+                          {stuffPlusPitchFilter !== "total" && (
+                            <td className="px-4 py-3 text-right font-mono text-zinc-400">
+                              {r.avgVeloMph != null ? `${r.avgVeloMph.toFixed(1)} mph` : "—"}
+                            </td>
+                          )}
                           <td className="px-4 py-3 text-right font-mono text-zinc-500">
                             {r.nSessions ?? "—"}
                           </td>
