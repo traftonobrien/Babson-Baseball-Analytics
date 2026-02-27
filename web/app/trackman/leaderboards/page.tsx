@@ -8,6 +8,7 @@ import { pitchColor } from "@/lib/pitchColors";
 import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
 import { getCanonicalName } from "@/lib/canonicalPlayers";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
+import { computeTotalStuffPlus, stuffPlusBadgeClass } from "@/lib/stuffPlusUtils";
 
 interface LeaderboardEntry {
   rank: number;
@@ -85,13 +86,6 @@ function rankColor(i: number): string {
   if (i === 1) return `text-zinc-400 ${glow}`; // silver
   if (i === 2) return `text-amber-600 ${glow}`; // bronze
   return "text-zinc-500";
-}
-
-function stuffPlusBadgeClass(v: number): string {
-  if (v >= 110) return "bg-rose-600 text-white";
-  if (v >= 100) return "bg-orange-500/80 text-white";
-  if (v >= 90) return "bg-zinc-400 text-zinc-900";
-  return "bg-sky-500/80 text-white";
 }
 
 export default function TrackmanLeaderboardsPage() {
@@ -222,7 +216,18 @@ export default function TrackmanLeaderboardsPage() {
 
   const rankedStuffPlus = useMemo(() => {
     let d = stuffPlusRows;
-    if (stuffPlusPitchFilter !== "all") {
+    if (stuffPlusPitchFilter === "total") {
+      // Group by player and average all pitch type scores
+      const byPlayer = new Map<string, StuffPlusRow[]>();
+      for (const r of d) {
+        if (!byPlayer.has(r.playerId)) byPlayer.set(r.playerId, []);
+        byPlayer.get(r.playerId)!.push(r);
+      }
+      d = Array.from(byPlayer.entries()).map(([, rows]) => {
+        const avg = computeTotalStuffPlus(rows)!;
+        return { ...rows[0], pitchType: "Total", meanStuffPlus: avg, avgVeloMph: null };
+      });
+    } else if (stuffPlusPitchFilter !== "all") {
       d = d.filter(
         (r) => getStuffPlusDisplayPitchType(r.playerId, r.pitchType) === stuffPlusPitchFilter
       );
@@ -402,6 +407,16 @@ export default function TrackmanLeaderboardsPage() {
             {activeCategory && activeCategory === "stuff_plus" ? (
               <>
                 <div className="flex flex-wrap gap-2 mb-4">
+                  <button
+                    onClick={() => setStuffPlusPitchFilter("total")}
+                    className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-smooth ${
+                      stuffPlusPitchFilter === "total"
+                        ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                        : "bg-zinc-900/60 border border-zinc-700/80 text-zinc-400 hover:border-zinc-600"
+                    }`}
+                  >
+                    Total Stuff+
+                  </button>
                   <button
                     onClick={() => setStuffPlusPitchFilter("all")}
                     className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-smooth ${

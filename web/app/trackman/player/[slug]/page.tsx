@@ -11,12 +11,12 @@ import PitchTypeFilter from "../../session/[playerId]/[date]/PitchTypeFilter";
 import PitchTypeTable from "../../session/[playerId]/[date]/PitchTypeTable";
 import MovementScatterByType from "../../session/[playerId]/[date]/MovementScatterByType";
 import PitchArsenalCards from "../../session/[playerId]/[date]/PitchArsenalCards";
-import TopPitchCard from "./TopPitchCard";
 import { mergeRenamedPitchTypes } from "@/lib/mergePitchTypes";
 import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
 import { getCanonicalName } from "@/lib/canonicalPlayers";
 import { handBadgeClassesCompact, parseHand } from "@/lib/handBadge";
 import MLBCompsPanel from "./MLBCompsPanel";
+import StuffPlusSummaryCard from "./StuffPlusSummaryCard";
 
 interface IndexEntry {
   playerName: string;
@@ -211,9 +211,9 @@ function TrendLine({
     .join(" ");
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3">
-      <h4 className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2">{label}</h4>
-      <svg viewBox={`0 0 ${TREND_W} ${TREND_H}`} className="w-full">
+    <div className="h-full min-h-[200px] flex flex-col bg-zinc-900 border border-zinc-800 rounded-lg p-3">
+      <h4 className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2 shrink-0">{label}</h4>
+      <svg viewBox={`0 0 ${TREND_W} ${TREND_H}`} className="w-full flex-1 min-h-0">
         <rect x={TPAD.left} y={TPAD.top} width={TPW} height={TPH} fill="#18181b" rx={3} />
 
         {/* Y axis labels */}
@@ -419,11 +419,6 @@ export default function TrackmanPlayerPage({
           <p className="text-zinc-400 text-sm">No sessions found for this player.</p>
         ) : (
           <>
-            {/* Top Pitch */}
-            {stuffPlusArsenal.length > 0 && (
-              <TopPitchCard arsenal={stuffPlusArsenal} playerId={slug} />
-            )}
-
             {/* Session selector */}
             <div>
               <h3 className="text-xs uppercase tracking-wider text-zinc-500 mb-3">
@@ -454,25 +449,32 @@ export default function TrackmanPlayerPage({
               </div>
             </div>
 
-            {/* Trend lines */}
-            {(fbVeloTrend.length > 1 || bbSpinTrend.length > 1) && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {fbVeloTrend.length > 1 && (
-                  <TrendLine
-                    points={fbVeloTrend}
-                    label="Avg Fastball Velocity Over Time"
-                    unit="mph"
-                    color="#3b82f6"
-                  />
+            {/* Stuff+ + Velocity + Spin — Stuff+ compact on left, charts flex to fill */}
+            {(stuffPlusArsenal.length > 0 || fbVeloTrend.length > 1 || bbSpinTrend.length > 1) && (
+              <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+                {stuffPlusArsenal.length > 0 && (
+                  <div className="lg:w-[200px] lg:shrink-0">
+                    <StuffPlusSummaryCard arsenal={stuffPlusArsenal} playerId={slug} />
+                  </div>
                 )}
-                {bbSpinTrend.length > 1 && (
-                  <TrendLine
-                    points={bbSpinTrend}
-                    label="Avg Breaking Ball Spin Over Time"
-                    unit="rpm"
-                    color="#60a5fa"
-                  />
-                )}
+                <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {fbVeloTrend.length > 1 && (
+                    <TrendLine
+                      points={fbVeloTrend}
+                      label="Avg Fastball Velocity Over Time"
+                      unit="mph"
+                      color="#3b82f6"
+                    />
+                  )}
+                  {bbSpinTrend.length > 1 && (
+                    <TrendLine
+                      points={bbSpinTrend}
+                      label="Avg Breaking Ball Spin Over Time"
+                      unit="rpm"
+                      color="#60a5fa"
+                    />
+                  )}
+                </div>
               </div>
             )}
 
