@@ -1,5 +1,5 @@
 {
-  "efficiency_score": 4.21,
+  "efficiency_score": 4.03,
   "efficiency_low_confidence": false,
   "hand": "R",
   "view_mode": "open_side",
@@ -8,14 +8,14 @@
   "metrics": {
     "timing": {
       "status": "ok",
-      "raw_value": 0.27,
+      "raw_value": 0.913,
       "unit": "s",
       "score": 10.0,
       "score_raw": 10.0,
       "score_eff": 10.0,
       "pass_fail": true,
       "callout": null,
-      "confidence": 0.87,
+      "confidence": 0.94,
       "low_confidence": false,
       "manual_review_recommended": false,
       "reasons": [],
@@ -24,97 +24,190 @@
       ],
       "metric_reliability": "high"
     },
-    "swivel_stabilize": {
+    "balance": {
       "status": "ok",
-      "raw_value": 0.0,
-      "unit": "boolean",
-      "score": 2.82,
-      "score_raw": 3.0,
-      "score_eff": 2.82,
-      "pass_fail": false,
-      "callout": "Glove arm is flying out past the torso frame at release. Pull the glove to the chest to stabilise rotation.",
-      "confidence": 0.57,
+      "raw_value": 17.392,
+      "unit": "\u00b0",
+      "score": 6.65,
+      "score_raw": 6.65,
+      "score_eff": 6.65,
+      "pass_fail": true,
+      "callout": null,
+      "confidence": 0.01,
       "low_confidence": true,
       "manual_review_recommended": true,
       "reasons": [],
+      "coaching_cues": [
+        "Trunk angle from vertical at release"
+      ],
+      "metric_reliability": "low"
+    },
+    "posture": {
+      "status": "ok",
+      "raw_value": 36.098,
+      "unit": "%",
+      "score": 0.0,
+      "score_raw": 0.0,
+      "score_eff": 0.0,
+      "pass_fail": false,
+      "callout": "Head is bobbing through the delivery. Keep eyes level from SET to release for better command and deception.",
+      "confidence": 0.0,
+      "low_confidence": true,
+      "manual_review_recommended": true,
+      "reasons": [],
+      "coaching_cues": [
+        "Head is bobbing through the delivery",
+        "Head vertical travel as % of body-height proxy (lower = better)"
+      ],
+      "metric_reliability": "low"
+    },
+    "lift_thrust": {
+      "status": "ok",
+      "raw_value": 62.201,
+      "unit": "\u00b0",
+      "score": 10.0,
+      "score_raw": 10.0,
+      "score_eff": 10.0,
+      "pass_fail": true,
+      "callout": null,
+      "confidence": 0.96,
+      "low_confidence": false,
+      "manual_review_recommended": false,
+      "reasons": [],
+      "coaching_cues": [
+        "Energy vector (RIGHT_ANKLE \u2192 LEFT_HIP) angle above horizontal"
+      ],
+      "metric_reliability": "high"
+    },
+    "swivel_stabilize": {
+      "status": "ok",
+      "raw_value": 1.0,
+      "unit": "boolean",
+      "score": 2.2,
+      "score_raw": 10.0,
+      "score_eff": 2.2,
+      "pass_fail": false,
+      "callout": "Glove arm is flying out past the torso frame at release. Pull the glove to the chest to stabilise rotation.",
+      "confidence": 0.25,
+      "low_confidence": true,
+      "manual_review_recommended": true,
+      "reasons": [
+        "high_jitter"
+      ],
       "coaching_cues": [
         "Glove arm is flying out past the torso frame at release",
         "Glove (LEFT_WRIST) x-position inside torso x-bounds at release"
       ],
       "metric_reliability": "medium"
     },
+    "trunk_stability_v2": {
+      "status": "ok",
+      "raw_value": 27.156,
+      "unit": "\u00b0",
+      "score": 0.0,
+      "score_raw": 0.0,
+      "score_eff": 0.0,
+      "pass_fail": false,
+      "callout": "Trunk-angle proxy is unstable through release. Use this as a secondary cue only if confidence is strong.",
+      "confidence": 0.78,
+      "low_confidence": false,
+      "manual_review_recommended": false,
+      "reasons": [],
+      "coaching_cues": [
+        "Trunk-angle proxy is unstable through release",
+        "Trunk-angle change FS->REL from robust fitted windows"
+      ],
+      "metric_reliability": "high"
+    },
+    "torque_retention": {
+      "status": "requires_front_view",
+      "raw_value": null,
+      "unit": "",
+      "score": null,
+      "score_raw": null,
+      "score_eff": null,
+      "pass_fail": null,
+      "callout": null,
+      "confidence": 0.0,
+      "low_confidence": false,
+      "manual_review_recommended": false,
+      "reasons": [],
+      "coaching_cues": [
+        "Not measurable from this view (open_side)"
+      ],
+      "metric_reliability": "low"
+    },
     "lead_leg_block_v3": {
       "status": "ok",
-      "raw_value": 3.969,
+      "raw_value": 4.327,
       "unit": "score",
-      "score": 3.76,
-      "score_raw": 3.97,
-      "score_eff": 3.76,
+      "score": 4.33,
+      "score_raw": 4.33,
+      "score_eff": 4.33,
       "pass_fail": false,
       "callout": "Lead leg block is soft through release. Land on a firm post and reduce forward leak after foot strike.",
-      "confidence": 0.58,
-      "low_confidence": true,
-      "manual_review_recommended": true,
-      "reasons": [
-        "phase_uncertain"
-      ],
+      "confidence": 0.96,
+      "low_confidence": false,
+      "manual_review_recommended": false,
+      "reasons": [],
       "coaching_cues": [
         "Lead leg block is soft through release",
         "Lead leg leaked/collapsed through release"
       ],
-      "metric_reliability": "medium"
+      "metric_reliability": "high"
     },
     "hip_shoulder_sep_v3": {
       "status": "ok",
-      "raw_value": 0.303,
+      "raw_value": -0.068,
       "unit": "s",
-      "score": 8.64,
-      "score_raw": 10.0,
-      "score_eff": 8.64,
-      "pass_fail": true,
-      "callout": null,
-      "confidence": 0.54,
+      "score": 1.45,
+      "score_raw": 1.61,
+      "score_eff": 1.45,
+      "pass_fail": false,
+      "callout": "Shoulder acceleration is not lagging pelvis enough. Delay upper-body rotation and avoid early pelvis collapse.",
+      "confidence": 0.55,
       "low_confidence": true,
       "manual_review_recommended": true,
       "reasons": [
-        "phase_uncertain"
+        "high_jitter"
       ],
       "coaching_cues": [
+        "Shoulder acceleration is not lagging pelvis enough",
         "Open-side separation proxy from shoulder-vs-pelvis burst timing"
       ],
       "metric_reliability": "medium"
     },
     "front_side_closedness_v2": {
       "status": "ok",
-      "raw_value": 0.0,
+      "raw_value": 2.886,
       "unit": "score",
-      "score": 0.0,
-      "score_raw": 0.0,
-      "score_eff": 0.0,
+      "score": 2.89,
+      "score_raw": 2.89,
+      "score_eff": 2.89,
       "pass_fail": false,
       "callout": "Front side is opening early. Keep the glove side contained into foot strike before stabilizing at release.",
-      "confidence": 0.55,
-      "low_confidence": true,
-      "manual_review_recommended": true,
+      "confidence": 0.94,
+      "low_confidence": false,
+      "manual_review_recommended": false,
       "reasons": [],
       "coaching_cues": [
         "Front side is opening early",
         "Front-side containment through FS->REL using glove/torso open-side proxies"
       ],
-      "metric_reliability": "medium"
+      "metric_reliability": "high"
     },
     "release_extension_v2": {
       "status": "ok",
-      "raw_value": 0.203,
+      "raw_value": 0.405,
       "unit": "x shoulder",
-      "score": 0.5,
-      "score_raw": 0.5,
-      "score_eff": 0.5,
+      "score": 4.34,
+      "score_raw": 4.34,
+      "score_eff": 4.34,
       "pass_fail": false,
       "callout": "Release extension is limited. Finish further out front with intent while keeping a clean arm path.",
-      "confidence": 0.6,
-      "low_confidence": true,
-      "manual_review_recommended": true,
+      "confidence": 0.82,
+      "low_confidence": false,
+      "manual_review_recommended": false,
       "reasons": [
         "high_jitter"
       ],
@@ -122,35 +215,239 @@
         "Release extension is limited",
         "Composite release extension proxy from reach, release-angle, and forward-intent cues"
       ],
-      "metric_reliability": "medium"
+      "metric_reliability": "high"
+    },
+    "drift_forward": {
+      "status": "ok",
+      "raw_value": 37.316,
+      "unit": "% height",
+      "score": 4.69,
+      "score_raw": 4.69,
+      "score_eff": 4.69,
+      "pass_fail": false,
+      "callout": "Hip drift timing is off. Start moving the hips forward earlier without collapsing into foot strike.",
+      "confidence": 0.0,
+      "low_confidence": true,
+      "manual_review_recommended": true,
+      "reasons": [],
+      "coaching_cues": [
+        "Hip drift timing is off",
+        "Hip midpoint drift profile SET->PLL->FS"
+      ],
+      "metric_reliability": "low"
+    },
+    "forward_leak_proxy": {
+      "status": "ok",
+      "raw_value": 0.808,
+      "unit": "norm",
+      "score": null,
+      "score_raw": null,
+      "score_eff": null,
+      "pass_fail": null,
+      "callout": null,
+      "confidence": 0.87,
+      "low_confidence": false,
+      "manual_review_recommended": false,
+      "reasons": [],
+      "coaching_cues": [
+        "Informational only: lead-hip x relative to lead-ankle x at release"
+      ],
+      "metric_reliability": "high"
+    },
+    "front_knee_flexion_fs": {
+      "status": "ok",
+      "raw_value": 39.804,
+      "unit": "\u00b0 flexion",
+      "score": 10.0,
+      "score_raw": 10.0,
+      "score_eff": 10.0,
+      "pass_fail": true,
+      "callout": null,
+      "confidence": 0.94,
+      "low_confidence": false,
+      "manual_review_recommended": false,
+      "reasons": [],
+      "coaching_cues": [
+        "Lead knee flexion at foot strike (firm but not locked)"
+      ],
+      "metric_reliability": "high"
+    },
+    "front_knee_extension_rel": {
+      "status": "ok",
+      "raw_value": 4.324,
+      "unit": "\u00b0 delta",
+      "score": 1.32,
+      "score_raw": 1.32,
+      "score_eff": 1.32,
+      "pass_fail": false,
+      "callout": "Lead leg is not bracing into release. Land firm and reduce knee collapse after foot strike.",
+      "confidence": 0.94,
+      "low_confidence": false,
+      "manual_review_recommended": false,
+      "reasons": [],
+      "coaching_cues": [
+        "Lead leg is not bracing into release",
+        "Lead-knee bracing FS->REL using flexion delta, brace rate, and knee-over-ankle leak control"
+      ],
+      "metric_reliability": "high"
+    },
+    "trunk_stability": {
+      "status": "insufficient_data",
+      "raw_value": null,
+      "unit": "",
+      "score": null,
+      "score_raw": null,
+      "score_eff": null,
+      "pass_fail": null,
+      "callout": null,
+      "confidence": 0.0,
+      "low_confidence": false,
+      "manual_review_recommended": false,
+      "reasons": [],
+      "coaching_cues": [
+        "Trunk jitter too high for reliable score (fs_mad=10"
+      ],
+      "metric_reliability": "low"
+    },
+    "tilt_consistency": {
+      "status": "ok",
+      "raw_value": 3.644,
+      "unit": "\u00b0",
+      "score": 10.0,
+      "score_raw": 10.0,
+      "score_eff": 10.0,
+      "pass_fail": true,
+      "callout": null,
+      "confidence": 0.0,
+      "low_confidence": true,
+      "manual_review_recommended": true,
+      "reasons": [],
+      "coaching_cues": [
+        "Shoulder vs hip tilt gap at release"
+      ],
+      "metric_reliability": "low"
+    },
+    "release_extension_proxy": {
+      "status": "ok",
+      "raw_value": 3.343,
+      "unit": "x shoulder",
+      "score": 0.0,
+      "score_raw": 0.0,
+      "score_eff": 0.0,
+      "pass_fail": false,
+      "callout": "Release reach is short. Finish with the throwing hand further out front for better extension.",
+      "confidence": 0.97,
+      "low_confidence": false,
+      "manual_review_recommended": false,
+      "reasons": [],
+      "coaching_cues": [
+        "Release reach is short",
+        "Side-view proxy for release reach (wrist vs drive hip) normalised by shoulder width"
+      ],
+      "metric_reliability": "high"
+    },
+    "stride_length": {
+      "status": "ok",
+      "raw_value": 346.36,
+      "unit": "px",
+      "score": 4.4,
+      "score_raw": 4.4,
+      "score_eff": 4.4,
+      "pass_fail": false,
+      "callout": "Stride length is outside the ideal range. Aim for 80-90% of body height with direction straight toward home plate.",
+      "confidence": 0.9,
+      "low_confidence": false,
+      "manual_review_recommended": false,
+      "reasons": [],
+      "coaching_cues": [
+        "Stride length is outside the ideal range",
+        "Stride length and direction at foot strike"
+      ],
+      "metric_reliability": "high"
+    },
+    "arm_positioning": {
+      "status": "insufficient_data",
+      "raw_value": null,
+      "unit": "",
+      "score": null,
+      "score_raw": null,
+      "score_eff": null,
+      "pass_fail": null,
+      "callout": null,
+      "confidence": 0.0,
+      "low_confidence": false,
+      "manual_review_recommended": false,
+      "reasons": [],
+      "coaching_cues": [
+        "ARM_FLIP_UP phase not detected"
+      ],
+      "metric_reliability": "low"
+    },
+    "arm_timing": {
+      "status": "insufficient_data",
+      "raw_value": null,
+      "unit": "",
+      "score": null,
+      "score_raw": null,
+      "score_eff": null,
+      "pass_fail": null,
+      "callout": null,
+      "confidence": 0.0,
+      "low_confidence": false,
+      "manual_review_recommended": false,
+      "reasons": [],
+      "coaching_cues": [
+        "ARM_FLIP_UP phase not detected"
+      ],
+      "metric_reliability": "low"
+    },
+    "loading_profile": {
+      "status": "ok",
+      "raw_value": 108.0,
+      "unit": "\u00b0",
+      "score": 5.98,
+      "score_raw": 5.98,
+      "score_eff": 5.98,
+      "pass_fail": false,
+      "callout": "Loading is insufficient at the hinge point. Work on getting deeper into the hip hinge and building counter-rotation before driving forward.",
+      "confidence": 0.89,
+      "low_confidence": false,
+      "manual_review_recommended": false,
+      "reasons": [],
+      "coaching_cues": [
+        "Loading is insufficient at the hinge point",
+        "Loading profile at most-loaded checkpoint: hip hinge, counter-rotation, trunk lean, COM drift"
+      ],
+      "metric_reliability": "high"
     }
   },
   "phases": {
     "set": {
       "frame_idx": 66,
-      "time_s": 2.225
+      "time_s": 2.232
     },
     "peak_leg_lift": {
-      "frame_idx": 71,
-      "time_s": 2.394
+      "frame_idx": 74,
+      "time_s": 2.503
     },
     "foot_strike": {
-      "frame_idx": 74,
-      "time_s": 2.495
+      "frame_idx": 93,
+      "time_s": 3.145
     },
     "ball_release": {
-      "frame_idx": 83,
-      "time_s": 2.798
+      "frame_idx": 97,
+      "time_s": 3.281
     }
   },
   "camera_limitations": [
     "stack_track: Not measurable from this view (open_side)",
     "torque_retention: Not measurable from this view (open_side)",
+    "balance: low confidence due to visibility/occlusion",
+    "posture: low confidence due to visibility/occlusion",
     "swivel_stabilize: low confidence due to visibility/occlusion",
-    "lead_leg_block_v3: low confidence due to visibility/occlusion",
     "hip_shoulder_sep_v3: low confidence due to visibility/occlusion",
-    "front_side_closedness_v2: low confidence due to visibility/occlusion",
-    "release_extension_v2: low confidence due to visibility/occlusion"
+    "drift_forward: low confidence due to visibility/occlusion",
+    "tilt_consistency: low confidence due to visibility/occlusion"
   ],
   "limitations": {
     "camera_view": "open_side",
@@ -159,11 +456,12 @@
       "torque_retention"
     ],
     "low_confidence_metrics": [
-      "front_side_closedness_v2",
+      "balance",
+      "drift_forward",
       "hip_shoulder_sep_v3",
-      "lead_leg_block_v3",
-      "release_extension_v2",
-      "swivel_stabilize"
+      "posture",
+      "swivel_stabilize",
+      "tilt_consistency"
     ]
   },
   "official_metric_set": "open_side_pro_v3",
@@ -172,6 +470,10 @@
     "hip_shoulder_sep_v3",
     "front_side_closedness_v2",
     "release_extension_v2",
+    "stride_length",
+    "arm_positioning",
+    "arm_timing",
+    "loading_profile",
     "timing",
     "swivel_stabilize"
   ],
@@ -180,6 +482,10 @@
     "hip_shoulder_sep_v3",
     "front_side_closedness_v2",
     "release_extension_v2",
+    "stride_length",
+    "arm_positioning",
+    "arm_timing",
+    "loading_profile",
     "timing",
     "swivel_stabilize"
   ],
@@ -201,5 +507,7 @@
     "forward_leak_proxy": "debug-only",
     "stack_track": "front-view-only",
     "torque_retention": "front-view-only"
-  }
+  },
+  "angle_validated": false,
+  "angle_confidence": 0.826
 }

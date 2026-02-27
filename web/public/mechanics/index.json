@@ -8,16 +8,17 @@
       "sessions": [
         {
           "slug": "mechanics_latest",
-          "date": "2026-02-25",
+          "date": "2026-02-27",
           "label": "Mechanics Latest",
-          "efficiency_score": 5.84,
+          "efficiency_score": 6.56,
           "efficiency_low_confidence": false,
           "hand": "R",
           "view_mode": "open_side",
-          "pass_count": 3,
-          "fail_count": 3,
-          "avg_confidence": 0.52,
-          "low_confidence_count": 3
+          "pass_count": 0,
+          "fail_count": 0,
+          "avg_confidence": 0.852,
+          "low_confidence_count": 3,
+          "angle_validated": false
         }
       ]
     },
@@ -29,16 +30,17 @@
       "sessions": [
         {
           "slug": "mechanics_latest",
-          "date": "2026-02-25",
+          "date": "2026-02-27",
           "label": "Mechanics Latest",
-          "efficiency_score": 2.92,
+          "efficiency_score": 4.36,
           "efficiency_low_confidence": false,
           "hand": "R",
           "view_mode": "open_side",
           "pass_count": 0,
-          "fail_count": 6,
-          "avg_confidence": 0.49,
-          "low_confidence_count": 2
+          "fail_count": 0,
+          "avg_confidence": 0.856,
+          "low_confidence_count": 2,
+          "angle_validated": false
         }
       ]
     },
@@ -50,16 +52,17 @@
       "sessions": [
         {
           "slug": "mechanics_latest",
-          "date": "2026-02-25",
+          "date": "2026-02-27",
           "label": "Mechanics Latest",
-          "efficiency_score": 2.76,
+          "efficiency_score": 5.77,
           "efficiency_low_confidence": false,
           "hand": "R",
           "view_mode": "open_side",
-          "pass_count": 1,
-          "fail_count": 5,
-          "avg_confidence": 0.54,
-          "low_confidence_count": 3
+          "pass_count": 0,
+          "fail_count": 0,
+          "avg_confidence": 0.705,
+          "low_confidence_count": 3,
+          "angle_validated": false
         }
       ]
     },
@@ -71,16 +74,17 @@
       "sessions": [
         {
           "slug": "mechanics_latest",
-          "date": "2026-02-25",
+          "date": "2026-02-27",
           "label": "Mechanics Latest",
-          "efficiency_score": 5.98,
+          "efficiency_score": 6.32,
           "efficiency_low_confidence": false,
           "hand": "R",
           "view_mode": "open_side",
-          "pass_count": 2,
-          "fail_count": 3,
-          "avg_confidence": 0.47,
-          "low_confidence_count": 4
+          "pass_count": 0,
+          "fail_count": 0,
+          "avg_confidence": 0.853,
+          "low_confidence_count": 4,
+          "angle_validated": false
         }
       ]
     },
@@ -92,16 +96,17 @@
       "sessions": [
         {
           "slug": "mechanics_latest",
-          "date": "2026-02-25",
+          "date": "2026-02-27",
           "label": "Mechanics Latest",
-          "efficiency_score": 6.12,
+          "efficiency_score": 6.09,
           "efficiency_low_confidence": false,
           "hand": "R",
           "view_mode": "open_side",
-          "pass_count": 5,
-          "fail_count": 1,
-          "avg_confidence": 0.59,
-          "low_confidence_count": 1
+          "pass_count": 0,
+          "fail_count": 0,
+          "avg_confidence": 0.858,
+          "low_confidence_count": 1,
+          "angle_validated": false
         }
       ]
     },
@@ -113,16 +118,17 @@
       "sessions": [
         {
           "slug": "mechanics_latest",
-          "date": "2026-02-25",
+          "date": "2026-02-27",
           "label": "Mechanics Latest",
-          "efficiency_score": 3.06,
+          "efficiency_score": 4.86,
           "efficiency_low_confidence": false,
           "hand": "R",
           "view_mode": "open_side",
-          "pass_count": 2,
-          "fail_count": 4,
-          "avg_confidence": 0.55,
-          "low_confidence_count": 1
+          "pass_count": 0,
+          "fail_count": 0,
+          "avg_confidence": 0.858,
+          "low_confidence_count": 1,
+          "angle_validated": false
         }
       ]
     },
@@ -134,16 +140,17 @@
       "sessions": [
         {
           "slug": "mechanics_latest",
-          "date": "2026-02-25",
+          "date": "2026-02-27",
           "label": "Mechanics Latest",
-          "efficiency_score": 3.88,
+          "efficiency_score": 5.24,
           "efficiency_low_confidence": false,
           "hand": "R",
           "view_mode": "open_side",
-          "pass_count": 1,
-          "fail_count": 5,
-          "avg_confidence": 0.55,
-          "low_confidence_count": 1
+          "pass_count": 0,
+          "fail_count": 0,
+          "avg_confidence": 0.862,
+          "low_confidence_count": 1,
+          "angle_validated": false
         }
       ]
     },
@@ -155,16 +162,17 @@
       "sessions": [
         {
           "slug": "mechanics_latest",
-          "date": "2026-02-25",
+          "date": "2026-02-27",
           "label": "Mechanics Latest",
-          "efficiency_score": 3.47,
+          "efficiency_score": 5.68,
           "efficiency_low_confidence": false,
           "hand": "R",
           "view_mode": "open_side",
-          "pass_count": 1,
-          "fail_count": 5,
-          "avg_confidence": 0.59,
-          "low_confidence_count": 0
+          "pass_count": 0,
+          "fail_count": 0,
+          "avg_confidence": 0.86,
+          "low_confidence_count": 0,
+          "angle_validated": false
         }
       ]
     },
@@ -176,16 +184,17 @@
       "sessions": [
         {
           "slug": "mechanics_latest",
-          "date": "2026-02-25",
+          "date": "2026-02-27",
           "label": "Mechanics Latest",
-          "efficiency_score": 4.05,
+          "efficiency_score": 5.25,
           "efficiency_low_confidence": false,
           "hand": "R",
           "view_mode": "open_side",
-          "pass_count": 1,
-          "fail_count": 5,
-          "avg_confidence": 0.52,
-          "low_confidence_count": 1
+          "pass_count": 0,
+          "fail_count": 0,
+          "avg_confidence": 0.704,
+          "low_confidence_count": 1,
+          "angle_validated": false
         }
       ]
     },
@@ -197,16 +206,17 @@
       "sessions": [
         {
           "slug": "mechanics_latest",
-          "date": "2026-02-25",
+          "date": "2026-02-27",
           "label": "Mechanics Latest",
-          "efficiency_score": 6.04,
+          "efficiency_score": 7.09,
           "efficiency_low_confidence": false,
           "hand": "R",
           "view_mode": "open_side",
-          "pass_count": 3,
-          "fail_count": 3,
-          "avg_confidence": 0.57,
-          "low_confidence_count": 1
+          "pass_count": 0,
+          "fail_count": 0,
+          "avg_confidence": 0.859,
+          "low_confidence_count": 1,
+          "angle_validated": false
         }
       ]
     },
@@ -218,16 +228,17 @@
       "sessions": [
         {
           "slug": "mechanics_latest",
-          "date": "2026-02-25",
+          "date": "2026-02-27",
           "label": "Mechanics Latest",
-          "efficiency_score": 4.21,
+          "efficiency_score": 4.03,
           "efficiency_low_confidence": false,
           "hand": "R",
           "view_mode": "open_side",
-          "pass_count": 2,
-          "fail_count": 4,
-          "avg_confidence": 0.62,
-          "low_confidence_count": 0
+          "pass_count": 0,
+          "fail_count": 0,
+          "avg_confidence": 0.826,
+          "low_confidence_count": 0,
+          "angle_validated": false
         }
       ]
     }
