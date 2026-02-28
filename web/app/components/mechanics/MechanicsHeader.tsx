@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { BookOpen } from "lucide-react";
 import { scoreColor } from "@/lib/mechanics/labels";
 import { handBadgeClassesCompact } from "@/lib/handBadge";
 import type { NotesJson } from "@/lib/mechanics/types";
@@ -24,16 +26,21 @@ export function MechanicsHeader({ notes, playerName, sessionLabel }: MechanicsHe
         {/* Top row */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Mechanics Analysis</p>
+            <div className="flex items-center gap-4 mb-1">
+              <p className="text-[10px] uppercase tracking-widest text-zinc-500">Mechanics Analysis</p>
+              <Link href="/mechanics/faq" className="flex items-center gap-1.5 text-[9px] text-violet-400/80 hover:text-violet-300 transition-colors uppercase tracking-widest font-medium group">
+                <BookOpen className="w-3 h-3 group-hover:-translate-y-0.5 transition-transform" /> Metrics FAQ
+              </Link>
+            </div>
             <h1 className="text-xl font-bold tracking-tight text-zinc-50">{playerName}</h1>
             <div className="flex items-center gap-3 mt-1 text-xs text-zinc-500">
               <span>{sessionLabel}</span>
               <span className="w-px h-3 bg-zinc-700" />
               <span
-              className={`text-[10px] px-1.5 py-0.5 rounded font-normal ${handBadgeClassesCompact(notes.hand)}`}
-            >
-              {notes.hand === "R" ? "RHP" : "LHP"}
-            </span>
+                className={`text-[10px] px-1.5 py-0.5 rounded font-normal ${handBadgeClassesCompact(notes.hand)}`}
+              >
+                {notes.hand === "R" ? "RHP" : "LHP"}
+              </span>
               <span className="w-px h-3 bg-zinc-700" />
               <span className="capitalize">{notes.view_mode.replace(/_/g, " ")} view</span>
               <span className="w-px h-3 bg-zinc-700" />

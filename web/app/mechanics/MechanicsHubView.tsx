@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Search, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { Search, ArrowRight, BookOpen } from "lucide-react";
 import { scoreColor, confidenceLabel } from "@/lib/mechanics/labels";
 import {
   getLatestSession,
@@ -141,24 +142,34 @@ export default function MechanicsHubView({ index }: { index: MechanicsIndex }) {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-20">
       {/* Header */}
-      <div className="border-b border-zinc-800/50 px-6 py-8">
-        <div className="max-w-6xl mx-auto">
-          <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">
-            Analysis Portal
-          </p>
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-50 mb-1">Mechanics Hub</h1>
-          <p className="text-sm text-zinc-500 mb-4">
-            Video-first mechanics snapshots and session history
-          </p>
-          <div className="flex items-center gap-3 text-[11px] text-zinc-600">
-            <span>
-              {index.players.length} pitcher{index.players.length !== 1 ? "s" : ""}
-            </span>
-            <span>·</span>
-            <span>
-              {totalSessions} session{totalSessions !== 1 ? "s" : ""}
-            </span>
+      <div className="border-b border-zinc-800/50 px-6 py-8 relative">
+        <div className="max-w-6xl mx-auto flex justify-between items-start">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">
+              Analysis Portal
+            </p>
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-50 mb-1">Mechanics Hub</h1>
+            <p className="text-sm text-zinc-500 mb-4">
+              Video-first mechanics snapshots and session history
+            </p>
+            <div className="flex items-center gap-3 text-[11px] text-zinc-600">
+              <span>
+                {index.players.length} pitcher{index.players.length !== 1 ? "s" : ""}
+              </span>
+              <span>·</span>
+              <span>
+                {totalSessions} session{totalSessions !== 1 ? "s" : ""}
+              </span>
+            </div>
           </div>
+
+          <Link
+            href="/mechanics/faq"
+            className="hidden sm:flex items-center gap-2 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-violet-500/50 hover:bg-zinc-800 text-sm text-zinc-300 hover:text-white transition-all shadow-sm group"
+          >
+            <BookOpen className="w-4 h-4 text-violet-400 group-hover:text-violet-300" />
+            Metrics Documentation
+          </Link>
         </div>
       </div>
 
@@ -192,11 +203,10 @@ export default function MechanicsHubView({ index }: { index: MechanicsIndex }) {
           {/* Low confidence filter toggle */}
           <button
             onClick={() => setFilterLowConf(!filterLowConf)}
-            className={`text-[11px] px-3 py-2 rounded-lg border transition-smooth whitespace-nowrap ${
-              filterLowConf
-                ? "bg-amber-950/50 border-amber-800/60 text-amber-400"
-                : "bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-700"
-            }`}
+            className={`text-[11px] px-3 py-2 rounded-lg border transition-smooth whitespace-nowrap ${filterLowConf
+              ? "bg-amber-950/50 border-amber-800/60 text-amber-400"
+              : "bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-700"
+              }`}
           >
             Low confidence only
           </button>
