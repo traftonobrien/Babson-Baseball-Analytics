@@ -13,7 +13,8 @@ import VideoPlayer from "../../components/VideoPlayer";
 import StrikeZoneScatter from "../../components/StrikeZoneScatter";
 import LaneReport from "../../components/LaneReport";
 import PitchTypeSummaryCards from "../../components/PitchTypeSummaryCards";
-import MLBAveragesBar from "../../components/MLBAveragesBar";
+// Legacy: MLB averages bar hidden for now — re-enable by uncommenting
+// import MLBAveragesBar from "../../components/MLBAveragesBar";
 import MissHeatmap from "../../components/MissHeatmap";
 import LogoutButton from "../../components/LogoutButton";
 import OutingSelect from "./OutingSelect";
@@ -417,8 +418,8 @@ export default function PlayerDashboard({
             <GameStatsSection meta={outingMeta} statsByGame={statsByGame} />
           )}
 
-          {/* MLB averages bar */}
-          <MLBAveragesBar />
+          {/* Legacy: MLB averages bar — uncomment to re-enable */}
+          {/* <MLBAveragesBar /> */}
 
           {/* Per-pitch-type summary */}
           {laneFiltered.length > 0 && (

@@ -1,0 +1,39 @@
+{
+  "batting": {
+    "ab": 0,
+    "avg": null,
+    "bb": 0,
+    "h": 0,
+    "hbp": null,
+    "hr": null,
+    "name": "James Clark",
+    "pos": "p",
+    "r": 0,
+    "rbi": 0,
+    "sb": null,
+    "so": 0
+  },
+  "gameId": "16011",
+  "pitching": {
+    "bb": 1,
+    "bf": 14,
+    "er": 5,
+    "era": null,
+    "h": 6,
+    "hr": null,
+    "ip": "2.0",
+    "name": "James Clark",
+    "pitches": 44,
+    "r": 5,
+    "so": 2,
+    "strikes": null
+  },
+  "playerDisplay": "James Clark",
+  "playerKey": "james_clark",
+  "season": 2026,
+  "source": {
+    "importedAt": "2026-02-28T23:47:49Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2026/-1-6-trinity-texas-/boxscore/16011"
+  },
+  "team": "babson"
+}

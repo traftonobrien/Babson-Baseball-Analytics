@@ -249,7 +249,7 @@ function KpiCells({
 
 export default function LeaderboardsPage() {
   const [mode, setMode] = useState<LeaderboardMode>("outings");
-  const [seasonFilter, setSeasonFilter] = useState<SeasonFilter>("both");
+  const [seasonFilter, setSeasonFilter] = useState<SeasonFilter>(2026);
   const [handFilter, setHandFilter] = useState<HandFilter>("ALL");
   const [pitchGroup, setPitchGroup] = useState<PitchGroup>("ALL");
   const [outingRows, setOutingRows] = useState<OutingLeaderboardRow[]>([]);

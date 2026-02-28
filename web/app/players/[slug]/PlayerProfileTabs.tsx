@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Activity, Target, ArrowRight, ScanLine } from "lucide-react";
 import SavantPercentileBar from "./SavantPercentileBar";
 import MechanicsProfileCard from "@/app/components/mechanics/MechanicsProfileCard";
+import Segment from "@/app/components/Segment";
+import { seasonFromDateId } from "@/lib/season";
 import type { HubPlayerEntry } from "@/lib/mechanics/hub";
 
 const TABS = ["Overview", "Trackman", "Command", "Mechanics"] as const;
@@ -78,10 +80,26 @@ export default function PlayerProfileTabs({
   mechanicsEntry,
 }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>(resolveInitialTab(initialTab));
+  const [commandSeasonFilter, setCommandSeasonFilter] = useState<string>("2026");
 
   const sortedSessions = useMemo(() => {
     return [...trackmanSessions].sort((a, b) => b.date.localeCompare(a.date));
   }, [trackmanSessions]);
+
+  const commandSeasons = useMemo(() => {
+    const s = new Set<number>();
+    for (const o of commandOutings) {
+      const yr = seasonFromDateId(o.dateId);
+      if (yr) s.add(yr);
+    }
+    return Array.from(s).sort((a, b) => b - a);
+  }, [commandOutings]);
+
+  const filteredCommandOutings = useMemo(() => {
+    if (commandSeasonFilter === "all" || commandSeasons.length <= 1) return commandOutings;
+    const yr = Number(commandSeasonFilter);
+    return commandOutings.filter((o) => seasonFromDateId(o.dateId) === yr);
+  }, [commandOutings, commandSeasonFilter, commandSeasons]);
 
   return (
     <div className="mt-6">
@@ -272,15 +290,28 @@ export default function PlayerProfileTabs({
             </div>
           </Link>
 
-          <h2 className="mt-10 text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
-            Outings
-          </h2>
+          <div className="mt-10 flex items-center justify-between">
+            <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
+              Outings
+            </h2>
+            {commandSeasons.length > 1 && (
+              <Segment
+                label="Season"
+                options={[
+                  ...commandSeasons.map((yr) => ({ value: String(yr), display: String(yr) })),
+                  { value: "all", display: "All" },
+                ]}
+                selected={commandSeasonFilter}
+                onChange={setCommandSeasonFilter}
+              />
+            )}
+          </div>
 
-          {commandOutings.length === 0 ? (
+          {filteredCommandOutings.length === 0 ? (
             <p className="mt-6 text-sm text-zinc-600">No outings yet.</p>
           ) : (
             <ul className="mt-5 divide-y divide-zinc-800/40">
-              {commandOutings.map((o) => (
+              {filteredCommandOutings.map((o) => (
                 <li key={o.outingId}>
                   <Link
                     href={`/player/${o.playerId}?from=profile&slug=${playerSlug}`}

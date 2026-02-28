@@ -49,6 +49,11 @@ export const players: Player[] = [
   throws: "R",
   outings: [
     {
+        id: "JClark1/2026_02_27",
+        label: "Feb 27, 2026 – Clark (43 pitches)",
+        ...buildDataPaths("JClark1", "2026_02_27"),
+      },
+    {
         id: "JClark1/2025_04_09",
         label: "Apr 9, 2025 – Clark (55 pitches)",
         ...buildDataPaths("JClark1", "2025_04_09"),
@@ -57,7 +62,7 @@ export const players: Player[] = [
         id: "JClark1/2025_04_27",
         label: "Apr 27, 2025 – Clark (13 pitches)",
         ...buildDataPaths("JClark1", "2025_04_27"),
-      }, 
+      },
  ],
 },
   {
