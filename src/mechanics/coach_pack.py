@@ -1415,7 +1415,21 @@ def _build_notes(
             camera_limits.append(f"{m.name}: Not measurable from this view")
         elif m in metrics_pool and m.confidence is not None and m.confidence < LOW_CONF_THRESHOLD:
             low_confidence.append(m.name)
-            camera_limits.append(f"{m.name}: low confidence due to visibility/occlusion")
+            
+            reasons = getattr(m, "reasons", []) or []
+            reason_str = "visibility/occlusion"
+            
+            trans = []
+            if "high_jitter" in reasons: trans.append("tracking jitter")
+            if "occluded" in reasons: trans.append("body occlusion")
+            if "phase_uncertain" in reasons: trans.append("unclear phase timing")
+            if "outlier_jump" in reasons: trans.append("tracking jumps")
+            if "window_too_small" in reasons: trans.append("insufficient frame data")
+            
+            if trans:
+                reason_str = " and ".join(trans)
+
+            camera_limits.append(f"{m.name}: low confidence due to {reason_str}")
 
     notes = {
         "efficiency_score": benchmarks.efficiency_score,

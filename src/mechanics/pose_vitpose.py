@@ -47,7 +47,7 @@ _log = logging.getLogger(__name__)
 # official ViTPose checkpoint. The URL can be overridden via environment.
 _DEFAULT_MODEL_URL = os.environ.get(
     "VITPOSE_MODEL_URL",
-    "https://huggingface.co/nickmuchi/vitpose-base-simple/resolve/main/model.onnx",
+    "https://huggingface.co/onnx-community/vitpose-base-simple/resolve/main/onnx/model.onnx",
 )
 
 _DEFAULT_MODEL_CACHE = Path(
@@ -206,8 +206,10 @@ class ViTPoseSession:
         self._input_name = self._session.get_inputs()[0].name
         input_shape = self._session.get_inputs()[0].shape
         # Expected input: (1, 3, H, W) — typically (1, 3, 256, 192)
-        self._input_h = input_shape[2] if len(input_shape) == 4 else 256
-        self._input_w = input_shape[3] if len(input_shape) == 4 else 192
+        _h = input_shape[2] if len(input_shape) == 4 else 256
+        _w = input_shape[3] if len(input_shape) == 4 else 192
+        self._input_h = _h if isinstance(_h, int) else 256
+        self._input_w = _w if isinstance(_w, int) else 192
 
         _log.info(
             "ViTPose session: model=%s, input=%dx%d, providers=%s",

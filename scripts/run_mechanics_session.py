@@ -55,8 +55,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--no-export", action="store_true", help="With --manual-clips, skip export and use existing clips/index.")
     p.add_argument("--slowmo", action="store_true", help="Write slowmo_review.mp4.")
     p.add_argument("--hold-review", action="store_true", help="Write hold_review.mp4.")
-    p.add_argument("--pose-backend", default=None, choices=["mediapipe", "vitpose"],
-                   help="Pose estimation backend. Default: mediapipe (or POSE_BACKEND env).")
+    p.add_argument("--pose-backend", default="vitpose", choices=["mediapipe", "vitpose"],
+                   help="Pose estimation backend. Default: vitpose (or POSE_BACKEND env).")
     p.add_argument("--strict-angle", action="store_true", help="Reject clips that fail open-side angle validation.")
     p.add_argument("--player-id", default=None, help="Player roster ID for height lookup (e.g. obrien_trafton).")
     p.add_argument("--debug-metrics", action="store_true", help="Include debug-only metrics in coach-pack notes.")
@@ -211,7 +211,10 @@ def _run_mechanics_for_clip(
     meta = read_video_meta(clip_path)
     poses, pose_backend_used = extract_poses_auto(clip_path, backend=pose_backend, verbose=False)
     phases = detect_phases(poses, fps=meta.fps, hand=hand, debug=True, phase_anchors=phase_anchors)
-    benchmarks = compute_benchmarks(poses, phases, hand=hand, view_mode=view_mode, player_height_inches=player_height_inches)
+    benchmarks = compute_benchmarks(
+        poses, phases, hand=hand, view_mode=view_mode, 
+        player_height_inches=player_height_inches, video_path=str(clip_path)
+    )
 
     bench_json = out_dir / "benchmarks.json"
     with open(bench_json, "w") as f:

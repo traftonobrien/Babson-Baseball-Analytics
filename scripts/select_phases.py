@@ -164,7 +164,6 @@ def _draw_overlay(
 def _on_trackbar(_val: int) -> None:
     pass  # Handled in main loop
 
-
 def _preload_frames(video_path: Path, start: int, max_count: int) -> list[np.ndarray]:
     """
     Preload clip frames by reading the video sequentially (no seeking).

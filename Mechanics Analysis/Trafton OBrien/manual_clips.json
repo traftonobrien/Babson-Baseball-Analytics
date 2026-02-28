@@ -10,7 +10,12 @@
       "pitch_idx": 1,
       "angle": "open_side",
       "start_frame": 0,
-      "end_frame": 145
+      "end_frame": 145,
+      "phase_anchors": {
+        "peak_leg_lift_s": 2.238,
+        "foot_strike_s": 2.739,
+        "ball_release_s": 2.906
+      }
     }
   ]
 }

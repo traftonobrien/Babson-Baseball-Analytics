@@ -169,7 +169,7 @@ def main() -> None:
 
     # ---- Benchmarks ----
     print(f"\nComputing benchmarks (view_mode={args.view})…")
-    benchmarks = compute_benchmarks(poses, phases, hand=args.hand, view_mode=args.view)
+    benchmarks = compute_benchmarks(poses, phases, hand=args.hand, view_mode=args.view, video_path=str(video_path))
 
     # ---- Print results table ----
     print()

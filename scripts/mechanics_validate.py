@@ -53,7 +53,7 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("--labels", required=True, help="Path to manual_phases.json with ground truth.")
     p.add_argument("--hand", default=None, help="Override hand for all clips (R or L).")
-    p.add_argument("--pose-backend", default=None, choices=["mediapipe", "vitpose"],
+    p.add_argument("--pose-backend", default="vitpose", choices=["mediapipe", "vitpose"],
                    help="Pose estimation backend.")
     p.add_argument("--fail-threshold", type=float, default=5.0,
                    help="Fail if any phase MAE (frames) exceeds this threshold. Default: 5.0")

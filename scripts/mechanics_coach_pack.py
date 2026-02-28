@@ -84,8 +84,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--no-hold-review", dest="hold_review", action="store_false",
                    help="Disable hold_review.mp4 generation.")
     p.set_defaults(hold_review=None)
-    p.add_argument("--pose-backend", default=None, choices=["mediapipe", "vitpose"],
-                   help="Pose estimation backend. Default: mediapipe (or POSE_BACKEND env).")
+    p.add_argument("--pose-backend", default="vitpose", choices=["mediapipe", "vitpose"],
+                   help="Pose estimation backend. Default: vitpose (or POSE_BACKEND env).")
     p.add_argument("--strict-angle", action="store_true",
                    help="Reject clips that fail open-side angle validation.")
     p.add_argument("--debug-metrics", action="store_true",
@@ -683,7 +683,7 @@ def _process_single_video(video_path: Path, args: argparse.Namespace) -> Benchma
 
     # ---- Benchmarks ----
     print(f"\nComputing benchmarks (view_mode={args.view})...")
-    benchmarks = compute_benchmarks(poses, phases, hand=args.hand, view_mode=args.view)
+    benchmarks = compute_benchmarks(poses, phases, hand=args.hand, view_mode=args.view, video_path=str(args.video))
 
     hold_review_enabled = args.hold_review
     if hold_review_enabled is None:

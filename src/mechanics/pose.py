@@ -58,7 +58,7 @@ from .video_io import iter_frames, read_video_meta
 # ---------------------------------------------------------------------------
 # Set via POSE_BACKEND env var or --pose-backend CLI flag.
 # Values: "mediapipe" (default), "vitpose"
-POSE_BACKEND = os.environ.get("POSE_BACKEND", "mediapipe").strip().lower()
+POSE_BACKEND = os.environ.get("POSE_BACKEND", "vitpose").strip().lower()
 
 # ---------------------------------------------------------------------------
 # Keypoint name → landmark index mapping.

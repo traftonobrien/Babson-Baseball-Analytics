@@ -8,7 +8,9 @@ and issue prioritisation.
 from __future__ import annotations
 
 import dataclasses
+import json
 import math
+from pathlib import Path
 from typing import Optional, Iterable, List
 
 import numpy as np
@@ -3347,6 +3349,7 @@ def _compute_stride_length(
     phases: PitchPhases,
     hand: str = "R",
     player_height_inches: Optional[float] = None,
+    video_path: Optional[str] = None,
 ) -> BenchmarkResult:
     """
     Stride length and direction at foot strike.
@@ -3378,11 +3381,57 @@ def _compute_stride_length(
         drive_ankle_kp = "LEFT_ANKLE"
 
     lead_ankle = _px_safe(fs_pose, lead_ankle_kp)
-    drive_ankle = _px_safe(fs_pose, drive_ankle_kp)
-    if lead_ankle is None or drive_ankle is None:
-        return BenchmarkResult.insufficient(name, "Ankle keypoints below threshold at foot strike")
 
-    stride_px = math.dist(lead_ankle, drive_ankle)
+    # --- Camera Pan Compensation ---
+    # The user specifically requested measuring from "the start point of the back foot
+    # at set to the landing plant foot at foot plant".
+    # Because AWRE's camera digitally pans to track the pitcher (often moving tens of pixels
+    # across the frame), we CANNOT simply measure absolute [fs_lead_ankle_x] - [set_drive_ankle_x].
+    # Instead, we measure the set_drive_ankle's distance from the pitcher's set_pelvis_midpoint,
+    # and then apply that offset to the fs_pelvis_midpoint at foot strike to find where the 
+    # original drive ankle *would* be if the camera hadn't moved.
+    
+    set_pose = None
+    if phases.set_pos is not None:
+        set_pose = _pose_nearest(poses, phases.set_pos)
+        
+    stride_px_x = None
+    stride_px_y = None
+    
+    if set_pose is not None:
+        set_drive_ankle = _px_safe(set_pose, drive_ankle_kp)
+        set_lh = _px_safe(set_pose, "LEFT_HIP")
+        set_rh = _px_safe(set_pose, "RIGHT_HIP")
+        
+        fs_lh = _px_safe(fs_pose, "LEFT_HIP")
+        fs_rh = _px_safe(fs_pose, "RIGHT_HIP")
+        
+        if set_drive_ankle and set_lh and set_rh and fs_lh and fs_rh:
+            set_pelvis = _midpoint(set_lh, set_rh)
+            fs_pelvis = _midpoint(fs_lh, fs_rh)
+            
+            # Vector from Pelvis to Drive Ankle at SET phase
+            dx_pelvis_to_ankle = set_drive_ankle[0] - set_pelvis[0]
+            dy_pelvis_to_ankle = set_drive_ankle[1] - set_pelvis[1]
+            
+            # Projected Virtual Set Drive Ankle at FOOT STRIKE phase (compensating for pan)
+            virtual_drive_ankle_x = fs_pelvis[0] + dx_pelvis_to_ankle
+            virtual_drive_ankle_y = fs_pelvis[1] + dy_pelvis_to_ankle
+            
+            stride_px_x = abs(lead_ankle[0] - virtual_drive_ankle_x)
+            stride_px_y = lead_ankle[1] - virtual_drive_ankle_y
+            
+    # Fallback to ankle-to-ankle if set phase or hips are missing
+    if stride_px_x is None or stride_px_y is None:
+        drive_ankle = _px_safe(fs_pose, drive_ankle_kp)
+        if drive_ankle is None:
+            return BenchmarkResult.insufficient(name, "Ankle keypoints below threshold at foot strike / set")
+        stride_px_x = abs(lead_ankle[0] - drive_ankle[0])
+        stride_px_y = lead_ankle[1] - drive_ankle[1]
+        virtual_drive_ankle_x, virtual_drive_ankle_y = drive_ankle[0], drive_ankle[1]
+    
+    # Calculate the true straight-line stride distance
+    stride_px = math.hypot(stride_px_x, stride_px_y)
 
     # Body height proxy at foot strike
     body_height_px = _body_height_proxy_px(fs_pose)
@@ -3395,10 +3444,11 @@ def _compute_stride_length(
         stride_pct_height = (stride_px / body_height_px) * 100.0
         sub_values["pct_height"] = round(stride_pct_height, 1)
 
-    # Convert to inches if player height is known
+    # Convert to inches (fallback to 74.0 in / 6'2" if unknown)
     stride_inches: Optional[float] = None
-    if player_height_inches is not None and body_height_px is not None and body_height_px > 10.0:
-        scale_factor = player_height_inches / body_height_px
+    eff_player_height = player_height_inches if player_height_inches is not None else 74.0
+    if body_height_px is not None and body_height_px > 10.0:
+        scale_factor = eff_player_height / body_height_px
         stride_inches = stride_px * scale_factor
         sub_values["stride_inches"] = round(stride_inches, 1)
 
@@ -3422,8 +3472,8 @@ def _compute_stride_length(
             midline = (fs_hip_mid[0] - set_hip_mid[0], fs_hip_mid[1] - set_hip_mid[1])
             midline_len = math.hypot(midline[0], midline[1])
 
-            # Stride vector: drive ankle → lead ankle
-            stride_vec = (lead_ankle[0] - drive_ankle[0], lead_ankle[1] - drive_ankle[1])
+            # Stride vector: virtual drive ankle → lead ankle
+            stride_vec = (lead_ankle[0] - virtual_drive_ankle_x, lead_ankle[1] - virtual_drive_ankle_y)
 
             if midline_len > 5.0:
                 # Signed angle via cross product
@@ -4120,7 +4170,8 @@ def compute_benchmarks(
     phases: PitchPhases,
     hand: str = "R",
     view_mode: str = "open_side",
-    player_height_inches: Optional[float] = None,
+    player_height_inches: float | None = None,
+    video_path: str | None = None,
 ) -> BenchmarkReport:
     """
     Compute all 7 mechanical benchmarks from poses + phases.
@@ -4175,7 +4226,8 @@ def compute_benchmarks(
         _compute_trunk_stability(poses, phases),  # legacy debug metric
         _compute_tilt_consistency_release(poses, phases),
         _compute_release_extension_proxy(poses, phases, hand),  # legacy debug metric
-        _compute_stride_length(poses, phases, hand, player_height_inches),
+        # Stride length disabled because panning cameras falsify absolute pixel coordinate distances
+        # _compute_stride_length(poses, phases, hand, player_height_inches, video_path),
         _compute_arm_alignment(poses, phases, hand),
         _compute_arm_timing(poses, phases, hand),
         _compute_loading_profile(poses, phases, hand, player_height_inches),
