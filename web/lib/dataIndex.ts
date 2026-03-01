@@ -137,6 +137,18 @@ export const players: Player[] = [
       },
     ],
   },
+  {
+    id: "BValente1",
+    name: "Ben Valente",
+    throws: "R",
+    outings: [
+      {
+        id: "BValente1/2026_02_27",
+        label: "Feb 27, 2026 – Valente (15 pitches)",
+        ...buildDataPaths("BValente1", "2026_02_27"),
+      },
+    ],
+  },
 ];
 
 export function getPlayer(id: string): Player | undefined {

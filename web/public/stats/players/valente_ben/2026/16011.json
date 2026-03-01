@@ -1,0 +1,39 @@
+{
+  "batting": {
+    "ab": 0,
+    "avg": null,
+    "bb": 0,
+    "h": 0,
+    "hbp": null,
+    "hr": null,
+    "name": "Ben Valente",
+    "pos": "p",
+    "r": 0,
+    "rbi": 0,
+    "sb": null,
+    "so": 0
+  },
+  "gameId": "16011",
+  "pitching": {
+    "bb": 0,
+    "bf": 3,
+    "er": 0,
+    "era": null,
+    "h": 0,
+    "hr": null,
+    "ip": "1.0",
+    "name": "Ben Valente",
+    "pitches": 16,
+    "r": 0,
+    "so": 1,
+    "strikes": null
+  },
+  "playerDisplay": "Ben Valente",
+  "playerKey": "valente_ben",
+  "season": 2026,
+  "source": {
+    "importedAt": "2026-03-01T05:52:21Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2026/-1-6-trinity-texas-/boxscore/16011"
+  },
+  "team": "babson"
+}
