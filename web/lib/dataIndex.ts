@@ -113,6 +113,18 @@ export const players: Player[] = [
       },
     ],
   },
+  {
+    id: "SLangan1",
+    name: "Shane Langan",
+    throws: "R",
+    outings: [
+      {
+        id: "SLangan1/2026_02_27",
+        label: "Feb 27, 2026 – Langan (56 pitches)",
+        ...buildDataPaths("SLangan1", "2026_02_27"),
+      },
+    ],
+  },
 ];
 
 export function getPlayer(id: string): Player | undefined {
