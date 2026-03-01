@@ -105,6 +105,23 @@ export default function LeaderboardsFaqView() {
                             </p>
                         </div>
 
+                        <div className="bg-orange-950/20 border border-orange-500/20 rounded-xl p-6">
+                            <h3 className="text-lg font-bold text-orange-400 mb-2">Command+</h3>
+                            <div className="space-y-4">
+                                <p className="text-sm text-orange-200/70 leading-relaxed">
+                                    Command+ is a pitch-weighted metric that compares a pitcher's command relative to the team's average for that specific season. An overall Command+ score of 100 means the pitcher has exactly average command across their arsenal. Higher is better.
+                                </p>
+                                <div className="bg-orange-950/40 border border-orange-900/50 rounded-lg p-4 mt-4">
+                                    <h4 className="text-sm font-semibold text-orange-300 mb-2">The Math Behind the Metric</h4>
+                                    <ul className="list-disc list-inside text-sm text-orange-200/60 space-y-2">
+                                        <li><strong>Pitch-Specific Baseline:</strong> First, we calculate the team's average absolute miss distance for every pitch type (e.g., the team averages 12&quot; of miss on Fastballs and 18&quot; on Curveballs).</li>
+                                        <li><strong>Relative Ratio:</strong> We divide the Team Baseline by the Pitcher's Average Miss for that specific pitch type, then multiply by 100. If the team averages 15&quot; on Sliders and the pitcher averages 10&quot;, their Slider Command+ is <code className="bg-orange-950 px-1 py-0.5 rounded text-orange-300">15 / 10 * 100 = 150</code>.</li>
+                                        <li><strong>Usage Weighting:</strong> Finally, to get their global Command+ score, we weight each pitch's individual score by how often the pitcher throws it. A pitcher receives far more credit for having elite command of their primary 60%-usage fastball than they do on a 5%-usage curveball.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </section>
 
