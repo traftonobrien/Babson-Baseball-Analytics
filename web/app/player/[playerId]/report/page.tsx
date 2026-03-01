@@ -17,6 +17,9 @@ import { hDirectionLabel } from "@/lib/handedness";
 import { handBadgeClassesCompact, parseHand } from "@/lib/handBadge";
 import { useAllPitchData } from "@/app/hooks/useAllPitchData";
 import LogoutButton from "@/app/components/LogoutButton";
+import { globalTeamAvgMiss, loadAllOutingData } from "@/lib/leaderboards/load";
+import { seasonFromDateId } from "@/lib/season";
+import type { SeasonFilter } from "@/lib/leaderboards/types";
 
 /* ================================================================== */
 /*  Inner component                                                    */
@@ -63,6 +66,23 @@ function ReportInner() {
     });
   };
 
+  /* ---- Load baselines for Command+ ---- */
+  const season = outingId ? seasonFromDateId(outingId.split("/")[1]) : null;
+  const [baselinesLoaded, setBaselinesLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!season) {
+      setBaselinesLoaded(true);
+      return;
+    }
+    if (globalTeamAvgMiss[season]) {
+      setBaselinesLoaded(true);
+    } else {
+      // Fetch baselines if navigating directly to a report page
+      loadAllOutingData({ seasonFilter: season as SeasonFilter }).then(() => setBaselinesLoaded(true));
+    }
+  }, [season]);
+
   const report = useMemo(() => {
     if (pitches.length === 0) return null;
     const label =
@@ -78,6 +98,28 @@ function ReportInner() {
       { excludeOutliers },
     );
   }, [pitches, player, outing, scope, excludeOutliers, pitcherHand]);
+
+  const commandPlus = useMemo(() => {
+    if (!report || !season || !baselinesLoaded || scope === "overall") return null;
+    const seasonBaselines = globalTeamAvgMiss[season];
+    if (!seasonBaselines) return null;
+
+    let totalWeight = 0;
+    let weightedScores = 0;
+
+    for (const pt of report.perPitchType) {
+      if (pt.count === 0) continue;
+      const baseline = seasonBaselines[pt.pitchType];
+      if (baseline && baseline > 0 && pt.avgMiss > 0) {
+        const pitchCommandPlus = (baseline / pt.avgMiss) * 100;
+        weightedScores += pitchCommandPlus * pt.count;
+        totalWeight += pt.count;
+      }
+    }
+
+    if (totalWeight === 0) return null;
+    return weightedScores / totalWeight;
+  }, [report, season, baselinesLoaded, scope]);
 
   if (!player || (!outing && scope === "outing")) return <Msg text="Player or outing not found." error />;
   if (loading) return <Msg text="Loading pitch data..." />;
@@ -183,7 +225,7 @@ function ReportInner() {
       {/* ============================================================ */}
       {/*  KPI CARDS                                                    */}
       {/* ============================================================ */}
-      <div className="report-kpis grid grid-cols-6 gap-1.5 mb-3">
+      <div className={`report-kpis grid gap-1.5 mb-3 ${commandPlus !== null ? "grid-cols-7" : "grid-cols-6"}`}>
         <KPICard label="Avg Miss" value={report.kpis.avgMiss.toFixed(1)} unit="in" />
         <KPICard label="Median" value={report.kpis.medianMiss.toFixed(1)} unit="in" />
         <KPICard
@@ -205,6 +247,14 @@ function ReportInner() {
           unit="in"
           subtitle="std dev"
         />
+        {commandPlus !== null && (
+          <KPICard
+            label="Command+"
+            value={commandPlus.toFixed(0)}
+            subtitle="vs team avg"
+            highlight={commandPlus >= 105 ? "good" : commandPlus <= 95 ? "bad" : undefined}
+          />
+        )}
         <KPICard
           label="Best Pitch"
           value={report.kpis.bestPitchType ?? "—"}
@@ -519,13 +569,12 @@ function HorizontalLanesSection({
               </div>
               <div className="flex items-center justify-between mt-[3px]">
                 <span
-                  className={`text-[8px] font-mono font-bold px-1 py-[1px] rounded-sm ${
-                    l.onTargetPct >= 50
-                      ? "bg-green-900/40 text-green-400 print:bg-green-100 print:text-green-800"
-                      : l.onTargetPct < 35
-                        ? "bg-red-900/40 text-red-400 print:bg-red-100 print:text-red-800"
-                        : "bg-zinc-800 text-zinc-300 print:bg-zinc-100 print:text-zinc-700"
-                  }`}
+                  className={`text-[8px] font-mono font-bold px-1 py-[1px] rounded-sm ${l.onTargetPct >= 50
+                    ? "bg-green-900/40 text-green-400 print:bg-green-100 print:text-green-800"
+                    : l.onTargetPct < 35
+                      ? "bg-red-900/40 text-red-400 print:bg-red-100 print:text-red-800"
+                      : "bg-zinc-800 text-zinc-300 print:bg-zinc-100 print:text-zinc-700"
+                    }`}
                 >
                   {l.onTargetPct.toFixed(0)}% on target
                 </span>
@@ -626,13 +675,12 @@ function PitchGroupCommandSection({ data, pitcherHand }: { data: PitchGroupHoriz
               </div>
               <div className="flex items-center justify-between mt-[2px]">
                 <span
-                  className={`text-[8px] font-mono font-bold px-1 py-[1px] rounded-sm ${
-                    l.onTargetPct >= 50
-                      ? "bg-green-900/40 text-green-400 print:bg-green-100 print:text-green-800"
-                      : l.onTargetPct < 35
-                        ? "bg-red-900/40 text-red-400 print:bg-red-100 print:text-red-800"
-                        : "bg-zinc-800 text-zinc-300 print:bg-zinc-100 print:text-zinc-700"
-                  }`}
+                  className={`text-[8px] font-mono font-bold px-1 py-[1px] rounded-sm ${l.onTargetPct >= 50
+                    ? "bg-green-900/40 text-green-400 print:bg-green-100 print:text-green-800"
+                    : l.onTargetPct < 35
+                      ? "bg-red-900/40 text-red-400 print:bg-red-100 print:text-red-800"
+                      : "bg-zinc-800 text-zinc-300 print:bg-zinc-100 print:text-zinc-700"
+                    }`}
                 >
                   {l.onTargetPct.toFixed(0)}% on target
                 </span>
