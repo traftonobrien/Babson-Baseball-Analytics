@@ -13,6 +13,7 @@ import VideoPlayer from "../../components/VideoPlayer";
 import StrikeZoneScatter from "../../components/StrikeZoneScatter";
 import LaneReport from "../../components/LaneReport";
 import PitchTypeSummaryCards from "../../components/PitchTypeSummaryCards";
+import CommandPlusSection from "../../components/CommandPlusSection";
 // Legacy: MLB averages bar hidden for now — re-enable by uncommenting
 // import MLBAveragesBar from "../../components/MLBAveragesBar";
 import MissHeatmap from "../../components/MissHeatmap";
@@ -420,6 +421,11 @@ export default function PlayerDashboard({
 
           {/* Legacy: MLB averages bar — uncomment to re-enable */}
           {/* <MLBAveragesBar /> */}
+
+          {/* Command+ */}
+          {laneFiltered.length > 0 && (
+            <CommandPlusSection pitches={laneFiltered} outingId={outing.id} />
+          )}
 
           {/* Per-pitch-type summary */}
           {laneFiltered.length > 0 && (
