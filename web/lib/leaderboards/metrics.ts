@@ -36,6 +36,7 @@ export interface ComputeOptions {
 export function computeOutingKpis(
   pitches: Pitch[],
   pitcherHand: "R" | "L",
+  season: number,
   options?: ComputeOptions,
 ): OutingKpis {
   const group = options?.pitchGroup ?? "ALL";
@@ -91,8 +92,8 @@ export function computeOutingKpis(
     const ptPitches = filtered.filter(p => p.pitch_type === pt);
     if (ptPitches.length === 0) continue;
 
-    // Team avg miss for this pitch type, fallback to 15.0 if unknown
-    const teamAvg = globalTeamAvgMiss[pt] || 15.0;
+    // Team avg miss for this pitch type derived from the season, fallback to 15.0 if unknown
+    const teamAvg = globalTeamAvgMiss[season]?.[pt] || 15.0;
 
     // Player avg miss for this pitch type
     const ptAvgMiss = ptPitches.reduce((sum, p) => sum + p.total_miss_inches, 0) / ptPitches.length;
@@ -160,8 +161,20 @@ export function mergeKpis(kpisList: OutingKpis[]): OutingKpis {
       avgVAbsIn: 0,
       avgHAbsIn: 0,
       consistencyStdIn: 0,
+      commandPlus: 100,
     };
   }
+
+  // Calculate weighted Command+ for the aggregated player row
+  // For aggregate, we must rebuild the pitch types array to get usage% over all outings,
+  // but we aren't storing pitch_types in OutingKpis. For a true usage-weighted calc,
+  // we would need all pitches, which breaks the pre-computed KPI model.
+  // Approximation: average the Outing 'commandPlus' weighted by pitch count.
+  let commandPlusSum = 0;
+  for (const k of kpisList) {
+    commandPlusSum += k.commandPlus * k.pitchCount;
+  }
+  const aggCommandPlus = commandPlusSum / totalPitches;
 
   return {
     pitchCount: totalPitches,
@@ -177,6 +190,6 @@ export function mergeKpis(kpisList: OutingKpis[]): OutingKpis {
     avgVAbsIn: totalVAbsSum / totalPitches,
     avgHAbsIn: totalHAbsSum / totalPitches,
     consistencyStdIn: stdDev(allMisses),
-    commandPlus: 100, // Will be re-calculated for aggregates below
+    commandPlus: aggCommandPlus || 100,
   };
 }

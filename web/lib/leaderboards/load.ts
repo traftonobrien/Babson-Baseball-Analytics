@@ -67,7 +67,7 @@ interface CachedOutingTask {
 
 const outingCache = new Map<string, CachedOuting>();
 let loadedTasks: CachedOutingTask[] | null = null;
-export let globalTeamAvgMiss: Record<string, number> = {};
+export let globalTeamAvgMiss: Record<number, Record<string, number>> = {};
 
 /* ------------------------------------------------------------------ */
 /*  Concurrency limiter                                                */
@@ -221,24 +221,31 @@ export async function loadAllOutingData(
   loadedTasks = tasks;
 
   // Build Team Baseline Averages for Command+
-  const sums: Record<string, { miss: number; count: number }> = {};
+  const sums: Record<number, Record<string, { miss: number; count: number }>> = {};
   for (const task of tasks) {
-    if (task.season !== 2025) continue; // Only use 2025 data for the baseline
+    if (!task.season) continue;
+    if (!sums[task.season]) sums[task.season] = {};
+    const seasonSums = sums[task.season];
+
     const cached = outingCache.get(task.outingId);
     if (!cached) continue;
     for (const p of cached.pitches) {
       if (!p.pitch_type) continue;
       const t = p.pitch_type;
-      if (!sums[t]) sums[t] = { miss: 0, count: 0 };
-      sums[t].miss += p.total_miss_inches;
-      sums[t].count++;
+      if (!seasonSums[t]) seasonSums[t] = { miss: 0, count: 0 };
+      seasonSums[t].miss += p.total_miss_inches;
+      seasonSums[t].count++;
     }
   }
 
-  const newTeamAverages: Record<string, number> = {};
-  for (const [pt, data] of Object.entries(sums)) {
-    if (data.count > 0) {
-      newTeamAverages[pt] = data.miss / data.count;
+  const newTeamAverages: Record<number, Record<string, number>> = {};
+  for (const [seasonStr, ptData] of Object.entries(sums)) {
+    const season = Number(seasonStr);
+    newTeamAverages[season] = {};
+    for (const [pt, data] of Object.entries(ptData)) {
+      if (data.count > 0) {
+        newTeamAverages[season][pt] = data.miss / data.count;
+      }
     }
   }
   globalTeamAvgMiss = newTeamAverages;
@@ -278,7 +285,8 @@ export function computeLeaderboardRows(
       if (cached.pitcherHand !== handFilter) continue;
     }
 
-    const kpis = computeOutingKpis(cached.pitches, cached.pitcherHand, computeOpts);
+    if (!task.season) continue;
+    const kpis = computeOutingKpis(cached.pitches, cached.pitcherHand, task.season, computeOpts);
 
     if (kpis.pitchCount < minPitches) continue;
 
@@ -330,7 +338,7 @@ export function computePlayerAggregateRows(
     playerName: string;
     pitcherHand: "R" | "L";
     handUnknown: boolean;
-    outingIds: string[];
+    outings: { id: string; season: number }[];
   }>();
 
   for (const task of loadedTasks) {
@@ -351,11 +359,13 @@ export function computePlayerAggregateRows(
         playerName: task.playerName,
         pitcherHand: cached.pitcherHand,
         handUnknown: cached.handUnknown,
-        outingIds: [],
+        outings: [],
       };
       playerGroups.set(task.playerId, group);
     }
-    group.outingIds.push(task.outingId);
+    if (task.season) {
+      group.outings.push({ id: task.outingId, season: task.season });
+    }
   }
 
   const rows: PlayerAggregateRow[] = [];
@@ -365,10 +375,10 @@ export function computePlayerAggregateRows(
     const kpisList = [];
     let qualifiedOutings = 0;
 
-    for (const outingId of group.outingIds) {
-      const cached = outingCache.get(outingId);
+    for (const outing of group.outings) {
+      const cached = outingCache.get(outing.id);
       if (!cached) continue;
-      const kpis = computeOutingKpis(cached.pitches, cached.pitcherHand, computeOpts);
+      const kpis = computeOutingKpis(cached.pitches, cached.pitcherHand, outing.season, computeOpts);
       if (kpis.pitchCount >= minPitches) qualifiedOutings++;
       if (kpis.pitchCount > 0) kpisList.push(kpis);
     }
