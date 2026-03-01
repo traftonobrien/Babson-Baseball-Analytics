@@ -12,7 +12,9 @@ batch_process.py      →   Click target & ball, compute miss distances
 
 ## Step 1: Segment Pitches (Tag Release & Arrival)
 
-Open the scrubber UI to mark target (T) and arrival (A) frames for each pitch.
+### Manual Mode (default)
+
+Open the scrubber UI to mark target (T) and arrival (A) frames for each pitch. Clips are auto-cut immediately on finalize.
 
 ```bash
 python3 src/segment_pitches.py \
@@ -32,7 +34,35 @@ python3 src/segment_pitches.py \
 
 **Hotkeys:** `T` = target frame, `A` = arrival frame, `N` = finalize pitch, `U` = undo, `Q` = quit and save
 
-Outputs: `clips/pitch_NNN.mp4` files and `clips/pitch_log.json`
+### Auto Mode
+
+Detect pitches automatically via motion analysis and cut clips without manual marking.
+
+```bash
+python3 src/segment_pitches.py \
+    --auto \
+    --video sourcevideo/inning.mov \
+    --output-dir outings/DJames1/2025_03_26 \
+    --player-id DJames1
+```
+
+Add `--review` to preview each auto-detected clip before accepting/rejecting it (y/n/q).
+
+```bash
+python3 src/segment_pitches.py \
+    --auto --review \
+    --video sourcevideo/inning.mov \
+    --output-dir outings/DJames1/2025_03_26 \
+    --player-id DJames1
+```
+
+Tuning flags: `--min-gap 3.0` (seconds between pitches), `--threshold-pct 30` (motion sensitivity, lower = more sensitive), `--roi X Y W H` (mound region).
+
+**Note:** Auto mode pitch_log entries lack `target_frame` and `arrival_frame`, so `batch_process.py` will open its scrubber to let you mark T/A frames on the auto-cut clips.
+
+### Outputs
+
+`clips/pitch_NNN.mp4` files and `clips/pitch_log.json`
 
 ---
 
