@@ -110,13 +110,13 @@ export default function PitchTable({
                   )}
                 </td>
                 <td className="px-2 py-1.5 text-right font-mono">
-                  {p.total_miss_inches.toFixed(1)}&quot;
+                  {Number.isFinite(p.total_miss_inches) ? `${p.total_miss_inches.toFixed(1)}"` : "—"}
                 </td>
                 <td className="px-2 py-1.5 text-zinc-400">
-                  {p.h_miss_inches.toFixed(1)}&quot; {hDirectionLabel(pitchArmSideX(p, pitcherHand))}
+                  {Number.isFinite(p.h_miss_inches) ? `${p.h_miss_inches.toFixed(1)}" ${hDirectionLabel(pitchArmSideX(p, pitcherHand))}` : "—"}
                 </td>
                 <td className="px-2 py-1.5 text-zinc-400">
-                  {p.v_miss_inches.toFixed(1)}&quot; {p.v_direction}
+                  {Number.isFinite(p.v_miss_inches) ? `${p.v_miss_inches.toFixed(1)}" ${p.v_direction}` : "—"}
                 </td>
                 {onEditPitchType && (
                   <td className="px-1 py-1.5 text-center">

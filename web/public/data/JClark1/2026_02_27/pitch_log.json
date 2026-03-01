@@ -32,28 +32,12 @@
     },
     {
       "pitch": 3,
-      "clip": "pitch_003.mp4",
-      "target_frame": 10,
-      "arrival_frame": 52,
-      "source_video": "inning1.mp4",
-      "target_frame_abs": 1190,
-      "arrival_frame_abs": 1232,
-      "clip_start_frame_abs": 1180,
-      "clip_end_frame_abs": 1242,
-      "fps": 29.97,
+      "no_read": true,
       "pitch_type": "FF"
     },
     {
       "pitch": 4,
-      "clip": "pitch_004.mp4",
-      "target_frame": 10,
-      "arrival_frame": 57,
-      "source_video": "inning1.mp4",
-      "target_frame_abs": 1572,
-      "arrival_frame_abs": 1619,
-      "clip_start_frame_abs": 1562,
-      "clip_end_frame_abs": 1629,
-      "fps": 29.97,
+      "no_read": true,
       "pitch_type": "FF"
     },
     {

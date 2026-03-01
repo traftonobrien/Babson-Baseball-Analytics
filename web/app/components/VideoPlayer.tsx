@@ -93,12 +93,11 @@ export default function VideoPlayer({ pitch, overlayDir, clipsDir, pitcherHand }
       {/* Header bar */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-zinc-800 text-xs text-zinc-400">
         <span>
-          Pitch #{pitch.pitch_number} &middot; {pitch.pitch_type} &middot;{" "}
-          {pitch.total_miss_inches.toFixed(1)}&quot; miss
+          Pitch #{pitch.pitch_number} &middot; {pitch.pitch_type}
+          {Number.isFinite(pitch.total_miss_inches) ? <> &middot; {pitch.total_miss_inches.toFixed(1)}&quot; miss</> : <> &middot; no read</>}
         </span>
         <span>
-          {pitch.h_miss_inches.toFixed(1)}&quot; {hDirectionLabel(pitchArmSideX(pitch, pitcherHand))},{" "}
-          {pitch.v_miss_inches.toFixed(1)}&quot; {pitch.v_direction}
+          {Number.isFinite(pitch.h_miss_inches) ? <>{pitch.h_miss_inches.toFixed(1)}&quot; {hDirectionLabel(pitchArmSideX(pitch, pitcherHand))},{" "}{pitch.v_miss_inches.toFixed(1)}&quot; {pitch.v_direction}</> : null}
         </span>
       </div>
 

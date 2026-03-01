@@ -227,8 +227,8 @@ export function buildReport(
   const includedPitchCount = includedPitches.length;
   const outlierCount = allPitchCount - includedPitchCount;
 
-  // All downstream computations use includedPitches
-  const pitchesForCalc = includedPitches;
+  // All downstream computations use includedPitches, excluding no-read pitches
+  const pitchesForCalc = includedPitches.filter((p) => Number.isFinite(p.total_miss_inches));
   const totalPitches = pitchesForCalc.length;
   const misses = pitchesForCalc.map((p) => p.total_miss_inches);
   const avgMiss = avg(misses);

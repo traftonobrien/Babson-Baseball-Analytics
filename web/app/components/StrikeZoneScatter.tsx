@@ -32,7 +32,7 @@ export default function StrikeZoneScatter({
         <ScatterOverlay throwsHand={throwsHand} />
 
         {/* Pitch dots */}
-        {pitches.map((p) => {
+        {pitches.filter((p) => Number.isFinite(p.total_miss_inches)).map((p) => {
           const px = toSvg(pitchPhysicalX(p));
           const py = toSvg(p.v_miss_signed);
           const isSel = selected?.pitch_number === p.pitch_number;
