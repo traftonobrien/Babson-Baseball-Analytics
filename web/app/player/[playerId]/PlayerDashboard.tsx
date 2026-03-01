@@ -199,9 +199,11 @@ export default function PlayerDashboard({
   }, [outing]);
 
   const filtered = applyFilters(pitches, filters);
+  // Exclude no-read pitches (NaN measurements) from visualizations and calculations
+  const measurable = filtered.filter((p) => Number.isFinite(p.total_miss_inches));
   const laneFiltered = activeLane
-    ? filtered.filter((p) => laneOf(p, pitcherHand) === (activeLane as string))
-    : filtered;
+    ? measurable.filter((p) => laneOf(p, pitcherHand) === (activeLane as string))
+    : measurable;
 
   // Unique pitch types present in the filtered data (for heatmap selector)
   const heatmapPitchTypes = useMemo(() => {
@@ -341,7 +343,7 @@ export default function PlayerDashboard({
             </div>
           )}
           <PitchTable
-            pitches={laneFiltered}
+            pitches={activeLane ? laneFiltered : filtered}
             selected={selected}
             onSelect={setSelected}
             pitcherHand={pitcherHand}
@@ -433,9 +435,9 @@ export default function PlayerDashboard({
           )}
 
           {/* Lane Report — receives un-lane-filtered list so counts don't disappear */}
-          {filtered.length > 0 && (
+          {measurable.length > 0 && (
             <LaneReport
-              pitches={filtered}
+              pitches={measurable}
               throwsHand={pitcherHand}
               activeLane={activeLane}
               onSelectLane={toggleLane}
