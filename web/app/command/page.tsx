@@ -152,17 +152,29 @@ export default function CommandPage() {
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="mb-6"
+          className="mb-8"
         >
           <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Command Hub" }]} />
-          <div className="flex items-center gap-3 mt-2">
-            <h1 className="text-2xl font-semibold flex items-center gap-2">
-              <Target className="w-5 h-5 text-orange-400" />
-              Command Hub
-            </h1>
-            <p className="text-sm text-zinc-400 mt-0.5">
-              All command tracking outings by pitcher
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2">
+            <div>
+              <h1 className="text-2xl font-semibold flex items-center gap-2">
+                <Target className="w-5 h-5 text-orange-400" />
+                Command Hub
+              </h1>
+              <p className="text-sm text-zinc-400 mt-1">
+                All command tracking outings by pitcher
+              </p>
+            </div>
+
+            {/* Leaderboards Link Button */}
+            <Link
+              href="/leaderboards"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm font-medium text-zinc-300 hover:text-orange-400 hover:border-orange-500/30 transition-all hover:bg-orange-500/5 group"
+            >
+              <Target className="w-4 h-4 text-orange-500 group-hover:scale-110 transition-transform" />
+              View Command Leaderboards
+              <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-orange-400 transition-colors" />
+            </Link>
           </div>
         </motion.div>
 
@@ -246,9 +258,8 @@ export default function CommandPage() {
                 >
                   <Link
                     href={`/player/${row.player.id}?outingId=${row.outing.id}&from=command`}
-                    className={`flex items-center justify-between px-4 py-3 rounded-lg border hover:bg-zinc-800/50 transition-smooth ${
-                      isMe ? "border-emerald-500/40 bg-zinc-900" : "border-zinc-800 bg-zinc-900"
-                    }`}
+                    className={`flex items-center justify-between px-4 py-3 rounded-lg border hover:bg-zinc-800/50 transition-smooth ${isMe ? "border-emerald-500/40 bg-zinc-900" : "border-zinc-800 bg-zinc-900"
+                      }`}
                   >
                     <div className="flex items-center gap-4">
                       <span className="text-sm font-medium text-zinc-100 min-w-[120px]">
@@ -341,9 +352,8 @@ export default function CommandPage() {
                         </span>
                       )}
                       <ChevronRight
-                        className={`w-4 h-4 text-zinc-600 transition-transform ${
-                          isExpanded ? "rotate-90" : ""
-                        }`}
+                        className={`w-4 h-4 text-zinc-600 transition-transform ${isExpanded ? "rotate-90" : ""
+                          }`}
                       />
                     </div>
                   </button>
