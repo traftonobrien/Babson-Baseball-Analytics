@@ -1,6 +1,6 @@
 pitch_number,pitcher_name,pitcher_hand,pitch_type,target_frame,arrival_frame,target_x,target_y,ball_x,ball_y,total_miss_px,total_miss_inches,h_miss_px,h_miss_inches,h_direction,h_miss_signed,v_miss_px,v_miss_inches,v_direction,v_miss_signed,target_quadrant,result_quadrant,target_zone,timestamp
-1,JClark1,R,SL,10,87,1193.5,636.1,1103.3,570.1,111.7,19.18,90.2,15.49,glove-side,15.49,65.9,11.32,high,-11.32,DM,,outside,2.900
-2,JClark1,R,FF,10,60,1157.0,628.4,1235.2,521.3,132.6,22.76,78.2,13.43,arm-side,-13.43,107.0,18.38,high,-18.38,DM,,outside,2.000
+1,JClark1,R,FF,10,87,1193.5,636.1,1103.3,570.1,111.7,19.18,90.2,15.49,glove-side,15.49,65.9,11.32,high,-11.32,DM,,outside,2.900
+2,JClark1,R,SL,10,60,1157.0,628.4,1235.2,521.3,132.6,22.76,78.2,13.43,arm-side,-13.43,107.0,18.38,high,-18.38,DM,,outside,2.000
 3,JClark1,R,FF,,,,,,,,,,,,,,,,,,,,
 4,JClark1,R,FF,,,,,,,,,,,,,,,,,,,,
 5,JClark1,R,FF,10,50,1182.5,618.3,1174.4,522.4,96.2,16.51,8.1,1.39,glove-side,1.39,95.8,16.45,high,-16.45,DM,,outside,1.667
