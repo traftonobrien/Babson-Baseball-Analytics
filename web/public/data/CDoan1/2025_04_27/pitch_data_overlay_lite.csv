@@ -1,7 +1,7 @@
 pitch_number,pitcher_name,pitcher_hand,pitch_type,target_frame,arrival_frame,target_x,target_y,ball_x,ball_y,total_miss_px,total_miss_inches,h_miss_px,h_miss_inches,h_direction,h_miss_signed,v_miss_px,v_miss_inches,v_direction,v_miss_signed,target_quadrant,result_quadrant,target_zone,timestamp
-1,CDoan1,R,FF,10,52,695.3,376.5,764.2,272.1,125.1,21.47,68.9,11.83,arm-side,-11.83,104.4,17.92,high,-17.92,DM,,inside,1.733
+1,CDoan1,R,FF,10,52,695.3,376.5,764.2,272.1,125.1,19.99,68.9,11.83,arm-side,-11.83,104.4,17.92,high,-17.92,DM,,inside,1.733
 2,CDoan1,R,FF,10,48,691.5,361.5,722.7,364.6,31.4,5.38,31.2,5.36,arm-side,-5.36,3.2,0.54,low,0.54,DM,DA,inside,1.600
-3,CDoan1,R,SL,10,52,679.2,358.9,551.7,398.4,133.4,22.91,127.4,21.88,glove-side,21.88,39.6,6.79,low,6.79,DM,,inside,1.733
+3,CDoan1,R,SL,10,52,679.2,358.9,551.7,398.4,133.4,19.99,127.4,21.88,glove-side,21.88,39.6,6.79,low,6.79,DM,,inside,1.733
 4,CDoan1,R,SL,10,49,679.8,356.7,625.2,396.6,67.7,11.61,54.6,9.38,glove-side,9.38,39.9,6.85,low,6.85,DM,,inside,1.633
 5,CDoan1,R,SL,10,44,679.6,353.4,689.4,380.4,28.6,4.92,9.8,1.67,arm-side,-1.67,26.9,4.62,low,4.62,DM,DM,inside,1.467
 6,CDoan1,R,CH,10,35,695.3,367.4,801.9,380.1,107.4,18.45,106.7,18.32,arm-side,-18.32,12.7,2.18,low,2.18,DM,,inside,1.167

@@ -66,7 +66,7 @@ pitch_number,pitcher_name,pitcher_hand,pitch_type,target_frame,arrival_frame,tar
 65,JFinkelstein1,R,FF,10,39,681.8,391.7,637.5,431.1,59.2,10.17,44.2,7.59,glove-side,7.59,39.4,6.76,low,6.76,DM,DI,inside,1.300,pitch_065.mp4
 66,JFinkelstein1,R,FF,10,48,686.5,385.8,661.7,385.3,24.7,4.24,24.7,4.24,glove-side,4.24,0.5,0.09,high,-0.09,DM,DI,inside,1.600,pitch_066.mp4
 67,JFinkelstein1,R,SL,10,48,679.4,400.4,614.0,441.7,77.4,13.28,65.4,11.23,glove-side,11.23,41.4,7.10,low,7.10,DM,,inside,1.600,pitch_067.mp4
-68,JFinkelstein1,R,FF,10,47,680.3,390.4,565.4,344.1,123.8,21.26,114.9,19.72,glove-side,19.72,46.3,7.94,high,-7.94,DM,,inside,1.567,pitch_068.mp4
+68,JFinkelstein1,R,FF,10,47,680.3,390.4,565.4,344.1,123.8,19.99,114.9,19.72,glove-side,19.72,46.3,7.94,high,-7.94,DM,,inside,1.567,pitch_068.mp4
 69,JFinkelstein1,R,SL,10,35,672.0,397.9,590.1,471.2,109.9,18.87,81.8,14.05,glove-side,14.05,73.3,12.59,low,12.59,DM,,inside,1.167,pitch_069.mp4
 70,JFinkelstein1,R,FF,10,66,680.6,421.6,663.3,361.5,62.6,10.75,17.3,2.96,glove-side,2.96,60.2,10.33,high,-10.33,DM,UI,inside,2.200,pitch_070.mp4
 71,JFinkelstein1,R,SL,10,47,678.1,398.0,645.5,427.3,43.8,7.52,32.6,5.59,glove-side,5.59,29.3,5.02,low,5.02,DM,DI,inside,1.567,pitch_071.mp4
