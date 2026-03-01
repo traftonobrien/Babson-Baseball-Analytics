@@ -35,7 +35,8 @@ type CommonSortKey =
   | "outlierPct"
   | "consistencyStdIn"
   | "pitchCount"
-  | "playerName";
+  | "playerName"
+  | "commandPlus";
 
 interface SortState {
   key: CommonSortKey;
@@ -213,7 +214,7 @@ function KpiCells({
   onTargetMin,
   onTargetMax,
 }: {
-  row: { pitchCount: number; onTargetPct: number; avgMissIn: number; avgHAbsIn: number; avgVAbsIn: number; outlierPct: number; consistencyStdIn: number };
+  row: { pitchCount: number; onTargetPct: number; avgMissIn: number; avgHAbsIn: number; avgVAbsIn: number; outlierPct: number; consistencyStdIn: number; commandPlus: number };
   onTargetMin: number;
   onTargetMax: number;
 }) {
@@ -238,6 +239,11 @@ function KpiCells({
       <td className="px-4 py-3 font-mono text-zinc-300 text-sm">{fmtIn(row.avgVAbsIn)}</td>
       <td className="px-4 py-3 font-mono text-zinc-400 text-sm">{fmtPct(row.outlierPct)}</td>
       <td className="px-4 py-3 font-mono text-zinc-400 text-sm">{fmtIn(row.consistencyStdIn)}</td>
+      <td className="px-4 py-3">
+        <span className={`inline-block font-mono font-bold text-[11px] px-2 py-0.5 rounded ${row.commandPlus >= 100 ? 'bg-orange-500/20 text-orange-400' : 'bg-rose-500/20 text-rose-400'}`}>
+          {row.commandPlus.toFixed(0)}
+        </span>
+      </td>
     </>
   );
 }
@@ -347,8 +353,8 @@ export default function LeaderboardsPage() {
   const exportCsv = useCallback(() => {
     const headers =
       mode === "outings"
-        ? ["Rank", "Player", "Date", "Pitches", "On-target %", "Avg Miss (in)", "Avg H (in)", "Avg V (in)", "Outlier %", "Consistency (in)"]
-        : ["Rank", "Player", "Outings", "Pitches", "On-target %", "Avg Miss (in)", "Avg H (in)", "Avg V (in)", "Outlier %", "Consistency (in)"];
+        ? ["Rank", "Player", "Date", "Pitches", "On-target %", "Avg Miss (in)", "Avg H (in)", "Avg V (in)", "Outlier %", "Consistency (in)", "Command+"]
+        : ["Rank", "Player", "Outings", "Pitches", "On-target %", "Avg Miss (in)", "Avg H (in)", "Avg V (in)", "Outlier %", "Consistency (in)", "Command+"];
     const rows =
       mode === "outings"
         ? displayedOutings.map((r, i) => [
@@ -362,6 +368,7 @@ export default function LeaderboardsPage() {
           r.avgVAbsIn.toFixed(1),
           r.outlierPct.toFixed(1),
           r.consistencyStdIn.toFixed(1),
+          r.commandPlus.toFixed(0),
         ])
         : displayedPlayers.map((r, i) => [
           i + 1,
@@ -374,6 +381,7 @@ export default function LeaderboardsPage() {
           r.avgVAbsIn.toFixed(1),
           r.outlierPct.toFixed(1),
           r.consistencyStdIn.toFixed(1),
+          r.commandPlus.toFixed(0),
         ]);
     const csv = [headers.map(escapeCsv).join(","), ...rows.map((r) => r.map(escapeCsv).join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -529,6 +537,7 @@ export default function LeaderboardsPage() {
               <Col label="Avg V" sortKey="avgVAbsIn" sort={sort} onSort={handleSort} title="Average vertical miss (inches, absolute)" />
               <Col label="Outlier %" sortKey="outlierPct" sort={sort} onSort={handleSort} title="Pitches beyond 20 inches" />
               <Col label="Consistency" sortKey="consistencyStdIn" sort={sort} onSort={handleSort} title="Std dev of total miss (lower = more consistent)" />
+              <Col label="Command+" sortKey="commandPlus" sort={sort} onSort={handleSort} title="Pitch-weighted command relative to team average (100 = average, >100 is better)" />
             </tr>
           </thead>
           <tbody>

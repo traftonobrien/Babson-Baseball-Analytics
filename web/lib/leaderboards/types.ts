@@ -18,6 +18,7 @@ export interface OutingLeaderboardRow {
   avgVAbsIn: number;
   avgHAbsIn: number;
   consistencyStdIn: number;
+  commandPlus: number;
 }
 
 export interface PitcherSeasonRow {
@@ -33,6 +34,7 @@ export interface PitcherSeasonRow {
   avgHAbsIn: number;
   consistencyStdIn: number;
   outingCount: number;
+  commandPlus: number;
 }
 
 /** Intermediate KPI bag produced by metrics engine. */
@@ -50,6 +52,7 @@ export interface OutingKpis {
   avgVAbsIn: number;
   avgHAbsIn: number;
   consistencyStdIn: number;
+  commandPlus: number;
 }
 
 export interface PlayerAggregateRow {
@@ -65,6 +68,7 @@ export interface PlayerAggregateRow {
   avgVAbsIn: number;
   avgHAbsIn: number;
   consistencyStdIn: number;
+  commandPlus: number;
 }
 
 export type LeaderboardMode = "outings" | "players";

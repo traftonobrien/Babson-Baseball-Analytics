@@ -67,6 +67,7 @@ interface CachedOutingTask {
 
 const outingCache = new Map<string, CachedOuting>();
 let loadedTasks: CachedOutingTask[] | null = null;
+export let globalTeamAvgMiss: Record<string, number> = {};
 
 /* ------------------------------------------------------------------ */
 /*  Concurrency limiter                                                */
@@ -218,6 +219,28 @@ export async function loadAllOutingData(
   });
 
   loadedTasks = tasks;
+
+  // Build Team Baseline Averages for Command+
+  const sums: Record<string, { miss: number; count: number }> = {};
+  for (const task of tasks) {
+    const cached = outingCache.get(task.outingId);
+    if (!cached) continue;
+    for (const p of cached.pitches) {
+      if (!p.pitch_type) continue;
+      const t = p.pitch_type;
+      if (!sums[t]) sums[t] = { miss: 0, count: 0 };
+      sums[t].miss += p.total_miss_inches;
+      sums[t].count++;
+    }
+  }
+
+  const newTeamAverages: Record<string, number> = {};
+  for (const [pt, data] of Object.entries(sums)) {
+    if (data.count > 0) {
+      newTeamAverages[pt] = data.miss / data.count;
+    }
+  }
+  globalTeamAvgMiss = newTeamAverages;
 }
 
 /**
@@ -274,6 +297,7 @@ export function computeLeaderboardRows(
       avgVAbsIn: kpis.avgVAbsIn,
       avgHAbsIn: kpis.avgHAbsIn,
       consistencyStdIn: kpis.consistencyStdIn,
+      commandPlus: kpis.commandPlus,
     });
   }
 
@@ -366,6 +390,7 @@ export function computePlayerAggregateRows(
       avgVAbsIn: merged.avgVAbsIn,
       avgHAbsIn: merged.avgHAbsIn,
       consistencyStdIn: merged.consistencyStdIn,
+      commandPlus: merged.commandPlus,
     });
   }
 
