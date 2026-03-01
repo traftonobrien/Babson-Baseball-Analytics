@@ -125,6 +125,18 @@ export const players: Player[] = [
       },
     ],
   },
+  {
+    id: "TPearl1",
+    name: "Tristan Pearl",
+    throws: "L",
+    outings: [
+      {
+        id: "TPearl1/2026_02_27",
+        label: "Feb 27, 2026 – Pearl (45 pitches)",
+        ...buildDataPaths("TPearl1", "2026_02_27"),
+      },
+    ],
+  },
 ];
 
 export function getPlayer(id: string): Player | undefined {
