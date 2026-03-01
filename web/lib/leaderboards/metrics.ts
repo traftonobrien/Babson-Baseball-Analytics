@@ -40,9 +40,10 @@ export function computeOutingKpis(
   options?: ComputeOptions,
 ): OutingKpis {
   const group = options?.pitchGroup ?? "ALL";
-  const filtered = group === "ALL"
+  const filtered = (group === "ALL"
     ? pitches
-    : pitches.filter((p) => pitchMatchesGroup(p.pitch_type, group));
+    : pitches.filter((p) => pitchMatchesGroup(p.pitch_type, group))
+  ).filter((p) => Number.isFinite(p.total_miss_inches));
 
   const n = filtered.length;
   if (n === 0) {

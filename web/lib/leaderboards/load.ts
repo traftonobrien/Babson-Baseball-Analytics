@@ -230,7 +230,7 @@ export async function loadAllOutingData(
     const cached = outingCache.get(task.outingId);
     if (!cached) continue;
     for (const p of cached.pitches) {
-      if (!p.pitch_type) continue;
+      if (!p.pitch_type || !Number.isFinite(p.total_miss_inches)) continue;
       const t = p.pitch_type;
       if (!seasonSums[t]) seasonSums[t] = { miss: 0, count: 0 };
       seasonSums[t].miss += p.total_miss_inches;
