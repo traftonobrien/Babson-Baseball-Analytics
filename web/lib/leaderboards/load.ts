@@ -223,6 +223,7 @@ export async function loadAllOutingData(
   // Build Team Baseline Averages for Command+
   const sums: Record<string, { miss: number; count: number }> = {};
   for (const task of tasks) {
+    if (task.season !== 2025) continue; // Only use 2025 data for the baseline
     const cached = outingCache.get(task.outingId);
     if (!cached) continue;
     for (const p of cached.pitches) {
