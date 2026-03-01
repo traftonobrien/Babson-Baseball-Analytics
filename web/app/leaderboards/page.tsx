@@ -22,9 +22,13 @@ import { handBadgeClassesCompact } from "@/lib/handBadge";
 import { savantColorAt } from "@/lib/savantColors";
 import LogoutButton from "@/app/components/LogoutButton";
 
-/* ------------------------------------------------------------------ */
-/*  Sort helpers                                                       */
-/* ------------------------------------------------------------------ */
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 /** Fields common to both row types that are sortable. */
 type CommonSortKey =
@@ -146,7 +150,7 @@ function Col({ label, sortKey, sort, onSort, title }: ColProps) {
   const active = sort.key === sortKey;
   return (
     <th
-      className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider cursor-pointer select-none hover:text-orange-400/80 whitespace-nowrap transition-smooth"
+      className="px-2 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider cursor-pointer select-none hover:text-orange-400/80 whitespace-nowrap transition-smooth"
       onClick={() => onSort(sortKey)}
       title={title}
     >
@@ -225,22 +229,22 @@ function KpiCells({
   const onTargetStyle = savantColorAt(pctForColor);
   return (
     <>
-      <td className="px-4 py-3 text-zinc-300 font-mono text-sm">{row.pitchCount}</td>
-      <td className="px-4 py-3">
+      <td className="px-2 py-3 text-zinc-300 font-mono text-[11px]">{row.pitchCount}</td>
+      <td className="px-2 py-3">
         <span
-          className="inline-block font-mono font-bold text-[11px] px-2 py-0.5 rounded"
+          className="inline-block font-mono font-bold text-[10px] px-1.5 py-0.5 rounded"
           style={{ backgroundColor: onTargetStyle.bg, color: onTargetStyle.text }}
         >
           {fmtPct(row.onTargetPct)}
         </span>
       </td>
-      <td className="px-4 py-3 font-mono text-zinc-300 text-sm">{fmtIn(row.avgMissIn)}</td>
-      <td className="px-4 py-3 font-mono text-zinc-300 text-sm">{fmtIn(row.avgHAbsIn)}</td>
-      <td className="px-4 py-3 font-mono text-zinc-300 text-sm">{fmtIn(row.avgVAbsIn)}</td>
-      <td className="px-4 py-3 font-mono text-zinc-400 text-sm">{fmtPct(row.outlierPct)}</td>
-      <td className="px-4 py-3 font-mono text-zinc-400 text-sm">{fmtIn(row.consistencyStdIn)}</td>
-      <td className="px-4 py-3">
-        <span className={`inline-block font-mono font-bold text-[11px] px-2 py-0.5 rounded ${row.commandPlus >= 100 ? 'bg-orange-500/20 text-orange-400' : 'bg-rose-500/20 text-rose-400'}`}>
+      <td className="px-2 py-3 font-mono text-zinc-300 text-[11px]">{fmtIn(row.avgMissIn)}</td>
+      <td className="px-2 py-3 font-mono text-zinc-300 text-[11px]">{fmtIn(row.avgHAbsIn)}</td>
+      <td className="px-2 py-3 font-mono text-zinc-300 text-[11px]">{fmtIn(row.avgVAbsIn)}</td>
+      <td className="px-2 py-3 font-mono text-zinc-400 text-[11px]">{fmtPct(row.outlierPct)}</td>
+      <td className="px-2 py-3 font-mono text-zinc-400 text-[11px]">{fmtIn(row.consistencyStdIn)}</td>
+      <td className="px-2 py-3">
+        <span className={`inline-block font-mono font-bold text-[10px] px-1.5 py-0.5 rounded ${row.commandPlus >= 100 ? 'bg-orange-500/20 text-orange-400' : 'bg-rose-500/20 text-rose-400'}`}>
           {row.commandPlus.toFixed(0)}
         </span>
       </td>
@@ -437,8 +441,9 @@ export default function LeaderboardsPage() {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-4 mb-6 p-4 rounded-xl bg-zinc-900/50 border border-zinc-800/60">
+      {/* Filters Top Bar */}
+      <div
+        className="flex flex-wrap items-center justify-between gap-4 mt-8 mb-6 p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/60">
         <Segment<LeaderboardMode>
           label="Mode"
           options={[
@@ -516,17 +521,17 @@ export default function LeaderboardsPage() {
       <div className="overflow-x-auto rounded-xl border border-zinc-800/80 bg-zinc-900/30 shadow-xl shadow-black/20 max-h-[70vh] overflow-y-auto">
         <table className="w-full text-sm">
           <thead className="sticky top-0 z-10 bg-zinc-900/95 backdrop-blur-sm">
-            <tr>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-12">
+            <tr className="bg-zinc-900/80 border-y border-zinc-800/60">
+              <th className="px-2 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-12">
                 #
               </th>
               <Col label="Player" sortKey="playerName" sort={sort} onSort={handleSort} />
               {mode === "outings" ? (
-                <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                <th className="px-2 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                   Date
                 </th>
               ) : (
-                <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                <th className="px-2 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                   Outings
                 </th>
               )}
@@ -573,10 +578,10 @@ export default function LeaderboardsPage() {
                   key={row.outingId}
                   className="border-b border-zinc-800/50 hover:bg-orange-500/5 transition-smooth cursor-pointer group"
                 >
-                  <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>
+                  <td className={`px-2 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>
                     {i + 1}
                   </td>
-                  <td className="px-4 py-3 font-medium whitespace-nowrap">
+                  <td className="px-2 py-3 font-medium whitespace-nowrap">
                     <Link
                       href={`/player/${row.playerId}/report?outingId=${row.outingId}`}
                       className="hover:text-orange-400 transition-smooth"
@@ -585,7 +590,7 @@ export default function LeaderboardsPage() {
                     </Link>
                     <HandBadge hand={row.pitcherHand} unknown={row.handUnknown} />
                   </td>
-                  <td className="px-4 py-3 text-zinc-400 whitespace-nowrap">
+                  <td className="px-2 py-3 text-zinc-400 whitespace-nowrap">
                     <Link
                       href={`/player/${row.playerId}/report?outingId=${row.outingId}`}
                       className="hover:text-zinc-200 transition-smooth"
