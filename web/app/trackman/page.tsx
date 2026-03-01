@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeft, Radio, Trophy, Search } from "lucide-react";
+import { ArrowLeft, Radio, Trophy, Search, BookOpen } from "lucide-react";
 import { getCanonicalName } from "@/lib/canonicalPlayers";
 import { handBadgeClassesCompact, parseHand } from "@/lib/handBadge";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
@@ -163,13 +163,23 @@ export default function TrackmanPlayersPage() {
           <Radio className="w-4 h-4 text-blue-400" />
           <h1 className="text-sm font-semibold">Trackman Hub</h1>
         </div>
-        <Link
-          href="/trackman/leaderboards"
-          className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-smooth"
-        >
-          <Trophy className="w-3.5 h-3.5" />
-          Leaderboards
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/trackman/faq"
+            className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-smooth"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            Dictionary
+          </Link>
+          <div className="w-px h-3 bg-zinc-800" />
+          <Link
+            href="/trackman/leaderboards"
+            className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-smooth"
+          >
+            <Trophy className="w-3.5 h-3.5" />
+            Leaderboards
+          </Link>
+        </div>
       </header>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
@@ -209,41 +219,41 @@ export default function TrackmanPlayersPage() {
                 const hand = parseHand(p.handedness);
                 const isMe = p.slug === selectedSlug;
                 return (
-                <Link
-                  key={p.slug}
-                  href={`/trackman/player/${p.slug}`}
-                  className={`block bg-zinc-900 border rounded-lg p-4 hover:border-zinc-600 transition-smooth ${isMe ? "border-emerald-500/40" : "border-zinc-800"}`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm text-zinc-50">
-                        {getCanonicalName(p.name)}
-                      </span>
-                      {isMe && (
-                        <span className="text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-md px-1.5 py-0.5">
-                          You
+                  <Link
+                    key={p.slug}
+                    href={`/trackman/player/${p.slug}`}
+                    className={`block bg-zinc-900 border rounded-lg p-4 hover:border-zinc-600 transition-smooth ${isMe ? "border-emerald-500/40" : "border-zinc-800"}`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm text-zinc-50">
+                          {getCanonicalName(p.name)}
                         </span>
-                      )}
-                      {hand && (
+                        {isMe && (
+                          <span className="text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-md px-1.5 py-0.5">
+                            You
+                          </span>
+                        )}
+                        {hand && (
                           <span
                             className={`text-[10px] px-1.5 py-0.5 rounded font-normal ${handBadgeClassesCompact(hand)}`}
                           >
                             {hand === "L" ? "LHP" : "RHP"}
                           </span>
                         )}
+                      </div>
+                      <span className="text-xs text-zinc-500 font-mono">
+                        {p.sessionCount} session{p.sessionCount !== 1 ? "s" : ""}
+                      </span>
                     </div>
-                    <span className="text-xs text-zinc-500 font-mono">
-                      {p.sessionCount} session{p.sessionCount !== 1 ? "s" : ""}
-                    </span>
-                  </div>
 
-                  <div className="flex items-center gap-3 text-xs text-zinc-400">
-                    <span className="text-zinc-600">
-                      Last: {formatDate(p.latestDate)}
-                    </span>
-                  </div>
-                </Link>
-              );
+                    <div className="flex items-center gap-3 text-xs text-zinc-400">
+                      <span className="text-zinc-600">
+                        Last: {formatDate(p.latestDate)}
+                      </span>
+                    </div>
+                  </Link>
+                );
               })}
               {filtered.length === 0 && (
                 <p className="text-zinc-500 text-sm text-center py-4 col-span-2">

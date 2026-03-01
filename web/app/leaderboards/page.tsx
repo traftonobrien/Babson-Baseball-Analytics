@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Target, Download } from "lucide-react";
+import { Target, Download, BookOpen } from "lucide-react";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import {
   loadAllOutingData,
@@ -179,11 +179,10 @@ function Segment<T extends string>({ label, options, selected, onChange }: Segme
           <button
             key={opt.value}
             onClick={() => onChange(opt.value)}
-            className={`px-3 py-1.5 text-sm font-medium transition-smooth rounded-md ${
-              selected === opt.value
-                ? "bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-sm"
-                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60"
-            }`}
+            className={`px-3 py-1.5 text-sm font-medium transition-smooth rounded-md ${selected === opt.value
+              ? "bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-sm"
+              : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60"
+              }`}
           >
             {opt.display}
           </button>
@@ -353,29 +352,29 @@ export default function LeaderboardsPage() {
     const rows =
       mode === "outings"
         ? displayedOutings.map((r, i) => [
-            i + 1,
-            r.playerName,
-            dateLabel(r.dateId),
-            r.pitchCount,
-            r.onTargetPct.toFixed(1),
-            r.avgMissIn.toFixed(1),
-            r.avgHAbsIn.toFixed(1),
-            r.avgVAbsIn.toFixed(1),
-            r.outlierPct.toFixed(1),
-            r.consistencyStdIn.toFixed(1),
-          ])
+          i + 1,
+          r.playerName,
+          dateLabel(r.dateId),
+          r.pitchCount,
+          r.onTargetPct.toFixed(1),
+          r.avgMissIn.toFixed(1),
+          r.avgHAbsIn.toFixed(1),
+          r.avgVAbsIn.toFixed(1),
+          r.outlierPct.toFixed(1),
+          r.consistencyStdIn.toFixed(1),
+        ])
         : displayedPlayers.map((r, i) => [
-            i + 1,
-            r.playerName,
-            r.outingCount,
-            r.pitchCount,
-            r.onTargetPct.toFixed(1),
-            r.avgMissIn.toFixed(1),
-            r.avgHAbsIn.toFixed(1),
-            r.avgVAbsIn.toFixed(1),
-            r.outlierPct.toFixed(1),
-            r.consistencyStdIn.toFixed(1),
-          ]);
+          i + 1,
+          r.playerName,
+          r.outingCount,
+          r.pitchCount,
+          r.onTargetPct.toFixed(1),
+          r.avgMissIn.toFixed(1),
+          r.avgHAbsIn.toFixed(1),
+          r.avgVAbsIn.toFixed(1),
+          r.outlierPct.toFixed(1),
+          r.consistencyStdIn.toFixed(1),
+        ]);
     const csv = [headers.map(escapeCsv).join(","), ...rows.map((r) => r.map(escapeCsv).join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -404,9 +403,9 @@ export default function LeaderboardsPage() {
 
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Command", href: "/command" }, { label: "Leaderboards" }]} />
-          <div className="flex items-center gap-3 mt-2">
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Command", href: "/command" }, { label: "Leaderboards" }]} />
+        <div className="flex items-start justify-between gap-4 mt-2">
+          <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-orange-500/10 border border-orange-500/20">
               <Target className="w-6 h-6 text-orange-400" />
             </div>
@@ -419,203 +418,211 @@ export default function LeaderboardsPage() {
               </p>
             </div>
           </div>
+
+          <Link
+            href="/leaderboards/faq"
+            className="flex items-center gap-2 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-orange-500/50 hover:bg-zinc-800 text-sm text-zinc-300 hover:text-white transition-all shadow-sm group"
+          >
+            <BookOpen className="w-4 h-4 text-orange-400 group-hover:text-orange-300" />
+            Metrics Dictionary
+          </Link>
         </div>
+      </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap items-center gap-4 mb-6 p-4 rounded-xl bg-zinc-900/50 border border-zinc-800/60">
-          <Segment<LeaderboardMode>
-            label="Mode"
-            options={[
-              { value: "outings", display: "Outings" },
-              { value: "players", display: "Players" },
-            ]}
-            selected={mode}
-            onChange={setMode}
-          />
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-4 mb-6 p-4 rounded-xl bg-zinc-900/50 border border-zinc-800/60">
+        <Segment<LeaderboardMode>
+          label="Mode"
+          options={[
+            { value: "outings", display: "Outings" },
+            { value: "players", display: "Players" },
+          ]}
+          selected={mode}
+          onChange={setMode}
+        />
 
-          <Segment
-            label="Season"
-            options={[
-              { value: "2025", display: "2025" },
-              { value: "2026", display: "2026" },
-              { value: "both", display: "Both" },
-            ]}
-            selected={String(seasonFilter)}
-            onChange={(v) => setSeasonFilter(v === "both" ? "both" : (Number(v) as SeasonFilter))}
-          />
+        <Segment
+          label="Season"
+          options={[
+            { value: "2025", display: "2025" },
+            { value: "2026", display: "2026" },
+            { value: "both", display: "Both" },
+          ]}
+          selected={String(seasonFilter)}
+          onChange={(v) => setSeasonFilter(v === "both" ? "both" : (Number(v) as SeasonFilter))}
+        />
 
-          <Segment
-            label="Hand"
-            options={[
-              { value: "ALL", display: "All" },
-              { value: "R", display: "RHP" },
-              { value: "L", display: "LHP" },
-            ]}
-            selected={handFilter}
-            onChange={setHandFilter}
-          />
+        <Segment
+          label="Hand"
+          options={[
+            { value: "ALL", display: "All" },
+            { value: "R", display: "RHP" },
+            { value: "L", display: "LHP" },
+          ]}
+          selected={handFilter}
+          onChange={setHandFilter}
+        />
 
-          <Segment
-            label="Pitches"
-            options={[
-              { value: "ALL", display: "Overall" },
-              { value: "FASTBALL", display: "Fastballs" },
-              { value: "BREAKING", display: "Breaking Balls" },
-            ]}
-            selected={pitchGroup}
-            onChange={setPitchGroup}
-          />
+        <Segment
+          label="Pitches"
+          options={[
+            { value: "ALL", display: "Overall" },
+            { value: "FASTBALL", display: "Fastballs" },
+            { value: "BREAKING", display: "Breaking Balls" },
+          ]}
+          selected={pitchGroup}
+          onChange={setPitchGroup}
+        />
 
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search player..."
-            className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 w-48 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20 transition-smooth"
-          />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search player..."
+          className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 w-48 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20 transition-smooth"
+        />
 
-          {loading && progress.total > 0 && (
-            <span className="text-xs text-zinc-500 font-medium">
-              Loading {progress.loaded}/{progress.total} outings...
-            </span>
-          )}
-          {!loading && (
-            <span className="text-xs font-semibold text-orange-400/80">
-              {rowCount} {mode === "outings" ? "outing" : "player"}{rowCount !== 1 ? "s" : ""}
-            </span>
-          )}
-          {!loading && rowCount > 0 && (
-            <button
-              type="button"
-              onClick={exportCsv}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100 transition-smooth text-xs font-medium"
-            >
-              <Download className="w-3.5 h-3.5" />
-              Export CSV
-            </button>
-          )}
-        </div>
-
-        {/* Table */}
-        <div className="overflow-x-auto rounded-xl border border-zinc-800/80 bg-zinc-900/30 shadow-xl shadow-black/20 max-h-[70vh] overflow-y-auto">
-          <table className="w-full text-sm">
-            <thead className="sticky top-0 z-10 bg-zinc-900/95 backdrop-blur-sm">
-              <tr>
-                <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-12">
-                  #
-                </th>
-                <Col label="Player" sortKey="playerName" sort={sort} onSort={handleSort} />
-                {mode === "outings" ? (
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Date
-                  </th>
-                ) : (
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Outings
-                  </th>
-                )}
-                <Col label="Pitches" sortKey="pitchCount" sort={sort} onSort={handleSort} />
-                <Col label="On-target %" sortKey="onTargetPct" sort={sort} onSort={handleSort} title="Pitches within 8 inches" />
-                <Col label="Avg Miss" sortKey="avgMissIn" sort={sort} onSort={handleSort} title="Average total miss (inches)" />
-                <Col label="Avg H" sortKey="avgHAbsIn" sort={sort} onSort={handleSort} title="Average horizontal miss (inches, absolute)" />
-                <Col label="Avg V" sortKey="avgVAbsIn" sort={sort} onSort={handleSort} title="Average vertical miss (inches, absolute)" />
-                <Col label="Outlier %" sortKey="outlierPct" sort={sort} onSort={handleSort} title="Pitches beyond 20 inches" />
-                <Col label="Consistency" sortKey="consistencyStdIn" sort={sort} onSort={handleSort} title="Std dev of total miss (lower = more consistent)" />
-              </tr>
-            </thead>
-            <tbody>
-              {loading &&
-                Array.from({ length: 8 }, (_, i) => (
-                  <SkeletonRow key={i} i={i} cols={9} />
-                ))}
-              {!loading && rowCount === 0 && (
-                <tr>
-                  <td colSpan={10} className="px-4 py-12 text-center">
-                    <div className="flex flex-col items-center gap-2">
-                      <span className="text-zinc-500">
-                        No {mode === "outings" ? "outings" : "players"} found for the selected filters.
-                      </span>
-                      {search.trim() && (
-                        <button
-                          type="button"
-                          onClick={() => setSearch("")}
-                          className="text-sm font-medium text-orange-400 hover:text-orange-300 transition-smooth"
-                        >
-                          Clear filters
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              )}
-
-              {/* Outings mode */}
-              {!loading && mode === "outings" &&
-                displayedOutings.map((row, i) => (
-                  <tr
-                    key={row.outingId}
-                    className="border-b border-zinc-800/50 hover:bg-orange-500/5 transition-smooth cursor-pointer group"
-                  >
-                    <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>
-                      {i + 1}
-                    </td>
-                    <td className="px-4 py-3 font-medium whitespace-nowrap">
-                      <Link
-                        href={`/player/${row.playerId}/report?outingId=${row.outingId}`}
-                        className="hover:text-orange-400 transition-smooth"
-                      >
-                        {row.playerName}
-                      </Link>
-                      <HandBadge hand={row.pitcherHand} unknown={row.handUnknown} />
-                    </td>
-                    <td className="px-4 py-3 text-zinc-400 whitespace-nowrap">
-                      <Link
-                        href={`/player/${row.playerId}/report?outingId=${row.outingId}`}
-                        className="hover:text-zinc-200 transition-smooth"
-                      >
-                        {dateLabel(row.dateId)}
-                      </Link>
-                    </td>
-                    <KpiCells row={row} onTargetMin={onTargetMin} onTargetMax={onTargetMax} />
-                  </tr>
-                ))}
-
-              {/* Players mode */}
-              {!loading && mode === "players" &&
-                displayedPlayers.map((row, i) => (
-                  <tr
-                    key={row.playerId}
-                    className="border-b border-zinc-800/50 hover:bg-orange-500/5 transition-smooth cursor-pointer group"
-                  >
-                    <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>
-                      {i + 1}
-                    </td>
-                    <td className="px-4 py-3 font-medium whitespace-nowrap">
-                      <Link
-                        href={`/player/${row.playerId}`}
-                        className="hover:text-orange-400 transition-smooth"
-                      >
-                        {row.playerName}
-                      </Link>
-                      <HandBadge hand={row.pitcherHand} unknown={row.handUnknown} />
-                    </td>
-                    <td className="px-4 py-3 text-zinc-400 font-mono">
-                      {row.outingCount}
-                    </td>
-                    <KpiCells row={row} onTargetMin={onTargetMin} onTargetMax={onTargetMax} />
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Aggregate subtext */}
-        {!loading && mode === "players" && displayedPlayers.length > 0 && (
-          <p className="mt-4 text-xs text-zinc-500">
-            Aggregated across all outings matching filters. Consistency is exact standard deviation across all pitches.
-          </p>
+        {loading && progress.total > 0 && (
+          <span className="text-xs text-zinc-500 font-medium">
+            Loading {progress.loaded}/{progress.total} outings...
+          </span>
+        )}
+        {!loading && (
+          <span className="text-xs font-semibold text-orange-400/80">
+            {rowCount} {mode === "outings" ? "outing" : "player"}{rowCount !== 1 ? "s" : ""}
+          </span>
+        )}
+        {!loading && rowCount > 0 && (
+          <button
+            type="button"
+            onClick={exportCsv}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100 transition-smooth text-xs font-medium"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Export CSV
+          </button>
         )}
       </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto rounded-xl border border-zinc-800/80 bg-zinc-900/30 shadow-xl shadow-black/20 max-h-[70vh] overflow-y-auto">
+        <table className="w-full text-sm">
+          <thead className="sticky top-0 z-10 bg-zinc-900/95 backdrop-blur-sm">
+            <tr>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-12">
+                #
+              </th>
+              <Col label="Player" sortKey="playerName" sort={sort} onSort={handleSort} />
+              {mode === "outings" ? (
+                <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                  Date
+                </th>
+              ) : (
+                <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                  Outings
+                </th>
+              )}
+              <Col label="Pitches" sortKey="pitchCount" sort={sort} onSort={handleSort} />
+              <Col label="On-target %" sortKey="onTargetPct" sort={sort} onSort={handleSort} title="Pitches within 8 inches" />
+              <Col label="Avg Miss" sortKey="avgMissIn" sort={sort} onSort={handleSort} title="Average total miss (inches)" />
+              <Col label="Avg H" sortKey="avgHAbsIn" sort={sort} onSort={handleSort} title="Average horizontal miss (inches, absolute)" />
+              <Col label="Avg V" sortKey="avgVAbsIn" sort={sort} onSort={handleSort} title="Average vertical miss (inches, absolute)" />
+              <Col label="Outlier %" sortKey="outlierPct" sort={sort} onSort={handleSort} title="Pitches beyond 20 inches" />
+              <Col label="Consistency" sortKey="consistencyStdIn" sort={sort} onSort={handleSort} title="Std dev of total miss (lower = more consistent)" />
+            </tr>
+          </thead>
+          <tbody>
+            {loading &&
+              Array.from({ length: 8 }, (_, i) => (
+                <SkeletonRow key={i} i={i} cols={9} />
+              ))}
+            {!loading && rowCount === 0 && (
+              <tr>
+                <td colSpan={10} className="px-4 py-12 text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="text-zinc-500">
+                      No {mode === "outings" ? "outings" : "players"} found for the selected filters.
+                    </span>
+                    {search.trim() && (
+                      <button
+                        type="button"
+                        onClick={() => setSearch("")}
+                        className="text-sm font-medium text-orange-400 hover:text-orange-300 transition-smooth"
+                      >
+                        Clear filters
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            )}
+
+            {/* Outings mode */}
+            {!loading && mode === "outings" &&
+              displayedOutings.map((row, i) => (
+                <tr
+                  key={row.outingId}
+                  className="border-b border-zinc-800/50 hover:bg-orange-500/5 transition-smooth cursor-pointer group"
+                >
+                  <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>
+                    {i + 1}
+                  </td>
+                  <td className="px-4 py-3 font-medium whitespace-nowrap">
+                    <Link
+                      href={`/player/${row.playerId}/report?outingId=${row.outingId}`}
+                      className="hover:text-orange-400 transition-smooth"
+                    >
+                      {row.playerName}
+                    </Link>
+                    <HandBadge hand={row.pitcherHand} unknown={row.handUnknown} />
+                  </td>
+                  <td className="px-4 py-3 text-zinc-400 whitespace-nowrap">
+                    <Link
+                      href={`/player/${row.playerId}/report?outingId=${row.outingId}`}
+                      className="hover:text-zinc-200 transition-smooth"
+                    >
+                      {dateLabel(row.dateId)}
+                    </Link>
+                  </td>
+                  <KpiCells row={row} onTargetMin={onTargetMin} onTargetMax={onTargetMax} />
+                </tr>
+              ))}
+
+            {/* Players mode */}
+            {!loading && mode === "players" &&
+              displayedPlayers.map((row, i) => (
+                <tr
+                  key={row.playerId}
+                  className="border-b border-zinc-800/50 hover:bg-orange-500/5 transition-smooth cursor-pointer group"
+                >
+                  <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>
+                    {i + 1}
+                  </td>
+                  <td className="px-4 py-3 font-medium whitespace-nowrap">
+                    <Link
+                      href={`/player/${row.playerId}`}
+                      className="hover:text-orange-400 transition-smooth"
+                    >
+                      {row.playerName}
+                    </Link>
+                    <HandBadge hand={row.pitcherHand} unknown={row.handUnknown} />
+                  </td>
+                  <td className="px-4 py-3 text-zinc-400 font-mono">
+                    {row.outingCount}
+                  </td>
+                  <KpiCells row={row} onTargetMin={onTargetMin} onTargetMax={onTargetMax} />
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Aggregate subtext */}
+      {!loading && mode === "players" && displayedPlayers.length > 0 && (
+        <p className="mt-4 text-xs text-zinc-500">
+          Aggregated across all outings matching filters. Consistency is exact standard deviation across all pitches.
+        </p>
+      )}
     </div>
   );
 }

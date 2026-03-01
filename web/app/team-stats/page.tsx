@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { BarChart3, Search, Download } from "lucide-react";
+import { BarChart3, Search, Download, BookOpen } from "lucide-react";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import LogoutButton from "@/app/components/LogoutButton";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
@@ -159,18 +159,28 @@ export default function TeamStatsPage() {
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Statistics Leaderboard" }]} />
-          <div className="flex items-center gap-3 mt-2">
-            <div className="p-2 rounded-xl bg-sky-500/10 border border-sky-500/20">
-              <BarChart3 className="w-6 h-6 text-sky-400" />
+          <div className="flex items-start justify-between gap-4 mt-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-sky-500/10 border border-sky-500/20">
+                <BarChart3 className="w-6 h-6 text-sky-400" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-zinc-50">
+                  Statistics Leaderboard
+                </h1>
+                <p className="text-sm text-zinc-500 mt-0.5">
+                  Babson pitchers ranked by D3 stats ({year})
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-50">
-                Statistics Leaderboard
-              </h1>
-              <p className="text-sm text-zinc-500 mt-0.5">
-                Babson pitchers ranked by D3 stats ({year})
-              </p>
-            </div>
+
+            <Link
+              href="/team-stats/faq"
+              className="flex items-center gap-2 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-sky-500/50 hover:bg-zinc-800 text-sm text-zinc-300 hover:text-white transition-all shadow-sm group"
+            >
+              <BookOpen className="w-4 h-4 text-sky-400 group-hover:text-sky-300" />
+              Metrics Dictionary
+            </Link>
           </div>
         </div>
 
@@ -180,11 +190,10 @@ export default function TeamStatsPage() {
               <button
                 key={y}
                 onClick={() => setYear(y)}
-                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-smooth ${
-                  year === y
-                    ? "bg-sky-500/20 text-sky-400 border border-sky-500/30"
-                    : "bg-zinc-900/60 border border-zinc-700/80 text-zinc-400 hover:border-zinc-600"
-                }`}
+                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-smooth ${year === y
+                  ? "bg-sky-500/20 text-sky-400 border border-sky-500/30"
+                  : "bg-zinc-900/60 border border-zinc-700/80 text-zinc-400 hover:border-zinc-600"
+                  }`}
               >
                 {y}
               </button>
@@ -293,11 +302,9 @@ export default function TeamStatsPage() {
                   return (
                     <tr
                       key={p.playerId}
-                      className={`border-b border-zinc-800/50 transition-smooth ${
-                        isMe ? "bg-emerald-500/5" : ""
-                      } ${
-                        isQualified ? "hover:bg-sky-500/5" : "opacity-60 hover:opacity-75"
-                      }`}
+                      className={`border-b border-zinc-800/50 transition-smooth ${isMe ? "bg-emerald-500/5" : ""
+                        } ${isQualified ? "hover:bg-sky-500/5" : "opacity-60 hover:opacity-75"
+                        }`}
                     >
                       <td className={`px-4 py-3 font-mono text-xs font-semibold ${isQualified ? rankColor(i) : "text-zinc-500"}`}>
                         {i + 1}
@@ -308,9 +315,8 @@ export default function TeamStatsPage() {
                             {p.slug ? (
                               <Link
                                 href={`/players/${p.slug}`}
-                                className={`transition-smooth underline decoration-sky-500/30 underline-offset-2 hover:decoration-sky-400 ${
-                                  isQualified ? "text-sky-400 hover:text-sky-300" : "text-zinc-400 hover:text-zinc-300"
-                                }`}
+                                className={`transition-smooth underline decoration-sky-500/30 underline-offset-2 hover:decoration-sky-400 ${isQualified ? "text-sky-400 hover:text-sky-300" : "text-zinc-400 hover:text-zinc-300"
+                                  }`}
                               >
                                 {p.playerName}
                                 {isMe && <span className="ml-1.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-400 no-underline">You</span>}

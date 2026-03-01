@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Search, BookOpen } from "lucide-react";
 import Breadcrumbs from "../components/Breadcrumbs";
 import { getCanonicalName, getHand } from "@/lib/canonicalPlayers";
 import { handBadgeClasses } from "@/lib/handBadge";
@@ -58,17 +58,30 @@ export default function PlayersHubView({
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10">
         <header className="space-y-2">
           <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Players" }]} />
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-50 mt-2">
-            Pitching Hub
-          </h1>
-          <p className="max-w-2xl text-sm text-zinc-500">
-            Official season performance paired with Trackman development data.
-            Click a player to open the profile view.
-          </p>
-          <div className="flex items-center gap-3 text-[11px] text-zinc-600 pt-1">
-            <span>
-              {registry.length} pitcher{registry.length !== 1 ? "s" : ""}
-            </span>
+
+          <div className="flex items-start justify-between gap-4 mt-2">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-zinc-50">
+                Pitching Hub
+              </h1>
+              <p className="max-w-2xl text-sm text-zinc-500 mt-1">
+                Official season performance paired with Trackman development data.
+                Click a player to open the profile view.
+              </p>
+              <div className="flex items-center gap-3 text-[11px] text-zinc-600 pt-2">
+                <span>
+                  {registry.length} pitcher{registry.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+            </div>
+
+            <Link
+              href="/players/faq"
+              className="flex items-center gap-2 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-indigo-500/50 hover:bg-zinc-800 text-sm text-zinc-300 hover:text-white transition-all shadow-sm group shrink-0"
+            >
+              <BookOpen className="w-4 h-4 text-indigo-400 group-hover:text-indigo-300" />
+              Platform Guide
+            </Link>
           </div>
         </header>
 
@@ -94,9 +107,8 @@ export default function PlayersHubView({
               <Link
                 key={player.slug}
                 href={`/players/${player.slug}`}
-                className={`group relative rounded-xl border-2 bg-zinc-900 p-6 transition-smooth duration-300 hover:border-emerald-500/70 hover:bg-zinc-900/95 hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 overflow-hidden ${
-                  isMe ? "border-emerald-500/40" : "border-zinc-800"
-                }`}
+                className={`group relative rounded-xl border-2 bg-zinc-900 p-6 transition-smooth duration-300 hover:border-emerald-500/70 hover:bg-zinc-900/95 hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 overflow-hidden ${isMe ? "border-emerald-500/40" : "border-zinc-800"
+                  }`}
               >
                 {/* Accent bar */}
                 <div className={`absolute left-0 top-0 bottom-0 w-1 transition-smooth ${isMe ? "bg-emerald-500" : "bg-emerald-500/0 group-hover:bg-emerald-500"}`} />
