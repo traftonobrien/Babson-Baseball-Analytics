@@ -12,10 +12,13 @@ interface Props {
     outingId: string;
 }
 
+const MIN_PITCH_COUNT = 3;
+
 interface PitchPlus {
     type: string;
     count: number;
     score: number;
+    qualified: boolean;
 }
 
 export default function CommandPlusSection({ pitches, outingId }: Props) {
@@ -63,13 +66,12 @@ export default function CommandPlusSection({ pitches, outingId }: Props) {
                 weightedScores += pitchCommandPlus * group.length;
                 totalWeight += group.length;
 
-                if (group.length >= 5) {
-                    pPlus.push({
-                        type,
-                        count: group.length,
-                        score: pitchCommandPlus
-                    });
-                }
+                pPlus.push({
+                    type,
+                    count: group.length,
+                    score: pitchCommandPlus,
+                    qualified: group.length >= MIN_PITCH_COUNT,
+                });
             }
         }
 
@@ -110,18 +112,21 @@ export default function CommandPlusSection({ pitches, outingId }: Props) {
                 <div className="flex flex-wrap gap-2 pt-3 border-t border-zinc-700/50 mt-1">
                     {pitchBreakdown.map(pb => {
                         const pColor = pitchColor(pb.type);
-                        const pGood = pb.score >= 105;
-                        const pBad = pb.score <= 95;
-                        const scoreColor = pGood ? "text-green-400" : pBad ? "text-red-400" : "text-zinc-100";
+                        const pGood = pb.qualified && pb.score >= 105;
+                        const pBad = pb.qualified && pb.score <= 95;
+                        const scoreColor = !pb.qualified ? "text-zinc-600" : pGood ? "text-green-400" : pBad ? "text-red-400" : "text-zinc-100";
                         return (
-                            <div key={pb.type} className="flex items-center gap-2 bg-zinc-950/40 rounded border border-zinc-800/80 px-2 py-1">
+                            <div key={pb.type} className={`flex items-center gap-2 bg-zinc-950/40 rounded border border-zinc-800/80 px-2 py-1 ${!pb.qualified ? "opacity-50" : ""}`}>
                                 <span className="flex items-center gap-1.5">
-                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: pColor }} />
-                                    <span className="font-mono text-[11px] font-bold text-zinc-300">{pb.type}</span>
+                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: pb.qualified ? pColor : "#52525b" }} />
+                                    <span className={`font-mono text-[11px] font-bold ${pb.qualified ? "text-zinc-300" : "text-zinc-600"}`}>{pb.type}</span>
                                 </span>
                                 <span className={`font-mono text-sm font-extrabold ${scoreColor}`}>
                                     {pb.score.toFixed(0)}
                                 </span>
+                                {!pb.qualified && (
+                                    <span className="text-[8px] text-zinc-600 font-medium">NQ</span>
+                                )}
                             </div>
                         );
                     })}
