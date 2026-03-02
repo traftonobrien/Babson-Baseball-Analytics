@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { asc, isNotNull } from "drizzle-orm";
+import { and, asc, isNotNull, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { stuffPlusArsenal } from "@/db/schema";
 
@@ -15,7 +15,7 @@ export async function GET() {
         nSessions: stuffPlusArsenal.nSessions,
       })
       .from(stuffPlusArsenal)
-      .where(isNotNull(stuffPlusArsenal.meanStuffPlus))
+      .where(and(isNotNull(stuffPlusArsenal.meanStuffPlus), ne(stuffPlusArsenal.pitchType, "Other")))
       .orderBy(asc(stuffPlusArsenal.playerId), asc(stuffPlusArsenal.pitchType));
 
     return NextResponse.json({ rows });

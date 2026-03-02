@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { stuffPlusArsenal } from "@/db/schema";
 
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const rows = await db
       .select()
       .from(stuffPlusArsenal)
-      .where(eq(stuffPlusArsenal.playerId, playerId.trim()));
+      .where(and(eq(stuffPlusArsenal.playerId, playerId.trim()), ne(stuffPlusArsenal.pitchType, "Other")));
 
     const playerName = rows[0]?.playerName ?? null;
     const pitches = rows.map((r) => ({

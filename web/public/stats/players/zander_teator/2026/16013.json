@@ -1,0 +1,26 @@
+{
+  "batting": null,
+  "gameId": "16013",
+  "pitching": {
+    "bb": 4,
+    "bf": 7,
+    "er": 1,
+    "era": null,
+    "h": 0,
+    "hr": null,
+    "ip": "1.0",
+    "name": "Zander Teator",
+    "pitches": 35,
+    "r": 1,
+    "so": 3,
+    "strikes": null
+  },
+  "playerDisplay": "Zander Teator",
+  "playerKey": "zander_teator",
+  "season": 2026,
+  "source": {
+    "importedAt": "2026-03-02T05:40:01Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2026/-1-6-trinity-texas-/boxscore/16013"
+  },
+  "team": "babson"
+}

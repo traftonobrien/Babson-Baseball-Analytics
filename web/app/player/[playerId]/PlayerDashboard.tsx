@@ -14,11 +14,13 @@ import StrikeZoneScatter from "../../components/StrikeZoneScatter";
 import LaneReport from "../../components/LaneReport";
 import PitchTypeSummaryCards from "../../components/PitchTypeSummaryCards";
 import CommandPlusSection from "../../components/CommandPlusSection";
+import PitchingPlusSection from "../../components/PitchingPlusSection";
 import MissHeatmap from "../../components/MissHeatmap";
 import LogoutButton from "../../components/LogoutButton";
 import OutingSelect from "./OutingSelect";
 import GameStatsSection from "@/lib/stats/GameStatsSection";
 import { MechanicsProfileSection } from "@/app/components/mechanics/MechanicsProfileSection";
+import { seasonFromDateId } from "@/lib/season";
 import {
   loadOutingMeta,
   loadPlayerGameStats,
@@ -154,6 +156,20 @@ export default function PlayerDashboard({
     () => applyOverrides(rawPitches, overrides),
     [rawPitches, overrides],
   );
+
+  const otherSeasonCsvPaths = useMemo(() => {
+    const dateId = outing.id.split("/")[1];
+    const season = seasonFromDateId(dateId);
+    if (!season) return [];
+
+    return player.outings
+      .filter((entry) => {
+        if (entry.id === outing.id) return false;
+        const entryDateId = entry.id.split("/")[1];
+        return seasonFromDateId(entryDateId) === season;
+      })
+      .map((entry) => entry.csvPath);
+  }, [outing.id, player.outings]);
 
   // Set of edited pitch numbers (for UI badge)
   const editedPitches = useMemo(
@@ -417,6 +433,16 @@ export default function PlayerDashboard({
           {/* Game stats (linked boxscore) */}
           {outingMeta && (
             <GameStatsSection meta={outingMeta} statsByGame={statsByGame} />
+          )}
+
+          {/* Pitching+ */}
+          {pitches.length > 0 && (
+            <PitchingPlusSection
+              playerId={player.id}
+              outingId={outing.id}
+              currentOutingPitches={pitches}
+              otherSeasonCsvPaths={otherSeasonCsvPaths}
+            />
           )}
 
           {/* Command+ */}

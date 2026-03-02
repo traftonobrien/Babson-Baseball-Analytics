@@ -7,7 +7,7 @@ const NUM_FIELDS = new Set([
   "total_miss_px", "total_miss_inches",
   "h_miss_px", "h_miss_inches", "h_miss_signed",
   "v_miss_px", "v_miss_inches", "v_miss_signed",
-  "timestamp",
+  "timestamp", "is_outlier",
 ]);
 
 export function parsePitchCsvText(text: string): Pitch[] {

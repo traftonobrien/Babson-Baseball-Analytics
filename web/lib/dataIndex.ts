@@ -80,6 +80,11 @@ export const players: Player[] = [
         label: "Apr 27, 2025 – Teator (17 pitches)",
         ...buildDataPaths("ZTeator1", "2025_04_27"),
       },
+      {
+        id: "ZTeator1/2026_03_01",
+        label: "Mar 1, 2026 – Teator (35 pitches)",
+        ...buildDataPaths("ZTeator1", "2026_03_01"),
+      },
     ],
   },
   {
@@ -120,6 +125,23 @@ export const players: Player[] = [
         id: "CBurrows1/2025_03_26",
         label: "Mar 26, 2025 – Burrows (25 pitches)",
         ...buildDataPaths("CBurrows1", "2025_03_26"),
+      },
+      {
+        id: "CBurrows1/2026_03_01",
+        label: "Mar 1, 2026 – Burrows (79 pitches)",
+        ...buildDataPaths("CBurrows1", "2026_03_01"),
+      },
+    ],
+  },
+  {
+    id: "JCarrea1",
+    name: "Joe Carrea",
+    throws: "R",
+    outings: [
+      {
+        id: "JCarrea1/2026_03_01",
+        label: "Mar 1, 2026 – Carrea (32 pitches)",
+        ...buildDataPaths("JCarrea1", "2026_03_01"),
       },
     ],
   },

@@ -1,0 +1,39 @@
+{
+  "batting": {
+    "ab": 0,
+    "avg": null,
+    "bb": 0,
+    "h": 0,
+    "hbp": null,
+    "hr": null,
+    "name": "Chase Burrows",
+    "pos": "p",
+    "r": 0,
+    "rbi": 0,
+    "sb": null,
+    "so": 0
+  },
+  "gameId": "16013",
+  "pitching": {
+    "bb": 2,
+    "bf": 40,
+    "er": 4,
+    "era": null,
+    "h": 11,
+    "hr": null,
+    "ip": "8.0",
+    "name": "Chase Burrows",
+    "pitches": 118,
+    "r": 4,
+    "so": 8,
+    "strikes": null
+  },
+  "playerDisplay": "Chase Burrows",
+  "playerKey": "chase_burrows",
+  "season": 2026,
+  "source": {
+    "importedAt": "2026-03-02T05:40:01Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2026/-1-6-trinity-texas-/boxscore/16013"
+  },
+  "team": "babson"
+}

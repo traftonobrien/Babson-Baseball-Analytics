@@ -709,6 +709,7 @@ export default async function PlayerProfilePage({
       playerId: diPlayer!.id,
       dateId,
       label: o.label,
+      csvPath: o.csvPath,
     };
   });
 
@@ -773,6 +774,7 @@ export default async function PlayerProfilePage({
           d3Percentiles={d3Percentiles}
           trackmanSessions={trackmanSessions}
           commandOutings={commandOutings}
+          commandPlayerId={diPlayer?.id ?? null}
           playerSlug={player.slug}
           initialTab={initialTab}
           mechanicsEntry={mechanicsEntry ?? null}

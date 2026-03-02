@@ -3,12 +3,8 @@
 import { useState } from "react";
 import type { Pitch } from "../types";
 import { pitchColor } from "../utils";
-import { OUTLIER_MISS_THRESHOLD_IN } from "@/lib/reportModel";
+import { isOutlier as isOutlierPitch, OUTLIER_MISS_THRESHOLD_IN } from "@/lib/reportModel";
 import { pitchArmSideX, hDirectionLabel } from "@/lib/handedness";
-
-const isOutlierPitch = (p: Pitch) =>
-  Number.isFinite(p.total_miss_inches) &&
-  p.total_miss_inches > OUTLIER_MISS_THRESHOLD_IN;
 
 interface Props {
   pitches: Pitch[];

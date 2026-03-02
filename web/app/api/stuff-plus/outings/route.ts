@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       .orderBy(asc(stuffPlusOutings.date));
 
     const points = rows
-      .filter((r) => r.stuffPlus != null)
+      .filter((r) => r.stuffPlus != null && r.pitchType !== "Other")
       .map((r) => ({
         date: r.date,
         pitchType: r.pitchType,

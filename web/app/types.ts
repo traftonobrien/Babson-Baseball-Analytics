@@ -24,6 +24,7 @@ export interface Pitch {
   result_quadrant: string;
   target_zone: string;
   timestamp: number;
+  is_outlier?: number;
 }
 
 export interface Filters {

@@ -11,6 +11,7 @@ export const ON_TARGET_THRESHOLD_IN = 8;
 export const OUTLIER_MISS_THRESHOLD_IN = 20;
 
 export function isOutlier(p: Pitch): boolean {
+  if (p.is_outlier !== undefined) return p.is_outlier === 1;
   return Number.isFinite(p.total_miss_inches) && p.total_miss_inches > OUTLIER_MISS_THRESHOLD_IN;
 }
 
