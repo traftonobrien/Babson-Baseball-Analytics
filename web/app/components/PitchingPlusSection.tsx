@@ -250,7 +250,7 @@ export default function PitchingPlusSection({
               href="/pitching-plus"
               className="text-cyan-400 hover:text-cyan-300 transition-smooth"
             >
-              Methodology
+              Plus Models
             </Link>
           </div>
           <p className="text-[11px] text-zinc-500 mt-1.5">

@@ -81,7 +81,7 @@ export default function PitchingPlusModelCard({
           href="/pitching-plus"
           className="text-cyan-400 transition-smooth hover:text-cyan-300"
         >
-          Full Methodology
+          Plus Models
         </Link>
       </div>
 
