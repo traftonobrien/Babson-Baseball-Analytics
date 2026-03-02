@@ -13,6 +13,8 @@ import {
   ChevronDown,
   UserCircle,
   X,
+  BookOpen,
+  Trophy,
 } from "lucide-react";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
 import { getCanonicalName } from "@/lib/canonicalPlayers";
@@ -131,7 +133,7 @@ export default function Header() {
 
   return (
     <header className="bg-zinc-900/80 backdrop-blur-sm border-b border-zinc-800 sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-4 min-h-0">
         <Link
           href="/"
           className="flex items-center gap-3 py-2.5 w-fit group transition-opacity hover:opacity-80 shrink-0"
@@ -149,28 +151,56 @@ export default function Header() {
           </span>
         </Link>
 
-        <div className="flex items-center gap-2">
-          <nav className="flex items-center gap-1 overflow-x-auto py-2 scrollbar-hide">
-            {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-              const active = isActive(pathname, href);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-smooth whitespace-nowrap ${
-                    active
-                      ? "bg-zinc-700 text-zinc-100"
-                      : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60"
-                  }`}
-                >
-                  {Icon && <Icon className="w-3.5 h-3.5 shrink-0" />}
-                  {label}
-                </Link>
-              );
-            })}
-          </nav>
-          <div className="w-px h-5 bg-zinc-700/50 shrink-0" />
-          <PlayerPicker />
+        <div className="flex-1 min-w-0 overflow-x-auto overflow-y-hidden py-2 scrollbar-hide">
+          <div className="flex items-center gap-2 min-w-max">
+            <nav className="flex items-center gap-1">
+              {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+                const active = isActive(pathname, href);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-smooth whitespace-nowrap shrink-0 ${
+                      active
+                        ? "bg-zinc-700 text-zinc-100"
+                        : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60"
+                    }`}
+                  >
+                    {Icon && <Icon className="w-3.5 h-3.5 shrink-0" />}
+                    {label}
+                  </Link>
+                );
+              })}
+            </nav>
+            <div className="w-px h-5 bg-zinc-700/50 shrink-0" />
+            <Link
+              href="/dictionary"
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-smooth whitespace-nowrap shrink-0 border ${
+                pathname === "/dictionary" ||
+                pathname.includes("/faq")
+                  ? "border-blue-500/50 bg-blue-500/10 text-blue-400"
+                  : "border-zinc-700 bg-zinc-800/60 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5 shrink-0" />
+              Dictionary
+            </Link>
+            <Link
+              href="/leaderboards-hub"
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-smooth whitespace-nowrap shrink-0 border ${
+                pathname === "/leaderboards-hub" ||
+                pathname === "/leaderboards" ||
+                pathname.startsWith("/trackman/leaderboards") ||
+                pathname === "/team-stats"
+                  ? "border-orange-500/50 bg-orange-500/10 text-orange-400"
+                  : "border-zinc-700 bg-zinc-800/60 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+              }`}
+            >
+              <Trophy className="w-3.5 h-3.5 shrink-0" />
+              Leaderboards
+            </Link>
+            <PlayerPicker />
+          </div>
         </div>
       </div>
     </header>

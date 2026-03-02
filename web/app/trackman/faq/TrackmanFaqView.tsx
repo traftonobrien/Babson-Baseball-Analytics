@@ -10,10 +10,10 @@ export default function TrackmanFaqView() {
             <div className="border-b border-zinc-800/50 bg-zinc-900/50 px-6 py-8">
                 <div className="max-w-4xl mx-auto">
                     <Link
-                        href="/trackman"
+                        href="/dictionary"
                         className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-300 mb-8 transition-colors"
                     >
-                        <ArrowLeft className="w-4 h-4" /> Back to Trackman Hub
+                        <ArrowLeft className="w-4 h-4" /> Back to Dictionary
                     </Link>
 
                     <div className="flex items-center gap-3 mb-3">

@@ -415,7 +415,7 @@ export default function LeaderboardsPage() {
 
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Command", href: "/command" }, { label: "Leaderboards" }]} />
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Leaderboards", href: "/leaderboards-hub" }, { label: "Command" }]} />
         <div className="flex items-start justify-between gap-4 mt-2">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-orange-500/10 border border-orange-500/20">

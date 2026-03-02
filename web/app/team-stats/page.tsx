@@ -158,7 +158,7 @@ export default function TeamStatsPage() {
 
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Statistics Leaderboard" }]} />
+          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Leaderboards", href: "/leaderboards-hub" }, { label: "Team Stats" }]} />
           <div className="flex items-start justify-between gap-4 mt-2">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-xl bg-sky-500/10 border border-sky-500/20">

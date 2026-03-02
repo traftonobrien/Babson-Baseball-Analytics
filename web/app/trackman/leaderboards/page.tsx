@@ -311,7 +311,7 @@ export default function TrackmanLeaderboardsPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Trackman", href: "/trackman" }, { label: "Leaderboards" }]} />
+          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Leaderboards", href: "/leaderboards-hub" }, { label: "Trackman" }]} />
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20">
               <Trophy className="w-6 h-6 text-blue-400" />
