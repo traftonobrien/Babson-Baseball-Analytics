@@ -92,6 +92,11 @@ export const players: Player[] = [
         label: "Apr 27, 2025 – Doan (10 pitches)",
         ...buildDataPaths("CDoan1", "2025_04_27"),
       },
+      {
+        id: "CDoan1/2026_02_28",
+        label: "Feb 28, 2026 – Doan (23 pitches)",
+        ...buildDataPaths("CDoan1", "2026_02_28"),
+      },
     ],
   },
   {

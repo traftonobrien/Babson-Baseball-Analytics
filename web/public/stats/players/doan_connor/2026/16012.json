@@ -1,0 +1,39 @@
+{
+  "batting": {
+    "ab": 0,
+    "avg": null,
+    "bb": 0,
+    "h": 0,
+    "hbp": null,
+    "hr": null,
+    "name": "Connor Doan",
+    "pos": "p",
+    "r": 0,
+    "rbi": 0,
+    "sb": null,
+    "so": 0
+  },
+  "gameId": "16012",
+  "pitching": {
+    "bb": 1,
+    "bf": 6,
+    "er": 1,
+    "era": null,
+    "h": 2,
+    "hr": null,
+    "ip": "1.0",
+    "name": "Connor Doan",
+    "pitches": 23,
+    "r": 1,
+    "so": 1,
+    "strikes": null
+  },
+  "playerDisplay": "Connor Doan",
+  "playerKey": "doan_connor",
+  "season": 2026,
+  "source": {
+    "importedAt": "2026-03-02T02:32:54Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2026/-1-6-trinity-texas-/boxscore/16012"
+  },
+  "team": "babson"
+}
