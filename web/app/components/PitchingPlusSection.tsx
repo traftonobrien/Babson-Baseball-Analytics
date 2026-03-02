@@ -19,6 +19,10 @@ import type { SeasonFilter } from "@/lib/leaderboards/types";
 import { plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
 import { loadPlayerSlugIndex } from "@/lib/stats";
 import { pitchColor } from "@/lib/pitchColors";
+import {
+  buildStuffPlusLookupCandidates,
+  fetchStuffPlusByCandidates,
+} from "@/lib/stuffPlusLookup";
 
 interface Props {
   playerId: string;
@@ -122,66 +126,18 @@ export default function PitchingPlusSection({
       });
 
       const slugIndex = await loadPlayerSlugIndex();
-      const candidates = Array.from(
-        new Set(
-          [slugIndex?.[playerId], playerId].filter(
-            (value): value is string => Boolean(value?.trim()),
-          ),
-        ),
+      const candidates = buildStuffPlusLookupCandidates(
+        [slugIndex?.[playerId], playerId],
       );
-
-      let lastError: string | null = null;
-
-      for (const candidate of candidates) {
-        try {
-          const response = await fetch(
-            `/api/stuff-plus/arsenal?playerId=${encodeURIComponent(candidate)}`,
-            { cache: "no-store" },
-          );
-          if (!response.ok) {
-            lastError = `stuff_plus_${response.status}`;
-            continue;
-          }
-
-          const payload = (await response.json()) as {
-            pitches?: Array<{ pitchType?: string; meanStuffPlus?: number | null }>;
-          };
-
-          const pitches = Array.isArray(payload?.pitches)
-            ? payload.pitches
-                .map((row) => ({
-                  pitchType: row.pitchType?.trim() ?? "",
-                  meanStuffPlus:
-                    typeof row.meanStuffPlus === "number"
-                      ? row.meanStuffPlus
-                      : null,
-                }))
-                .filter((row) => row.pitchType.length > 0)
-            : [];
-
-          if (!active) return;
-
-          if (pitches.length > 0) {
-            setStuffState({
-              loading: false,
-              error: null,
-              lookupPlayerId: candidate,
-              pitches,
-            });
-            return;
-          }
-        } catch (err) {
-          lastError = err instanceof Error ? err.message : "stuff_load_error";
-        }
-      }
+      const lookup = await fetchStuffPlusByCandidates(candidates);
 
       if (!active) return;
 
       setStuffState({
         loading: false,
-        error: lastError,
-        lookupPlayerId: candidates[0] ?? playerId,
-        pitches: [],
+        error: lookup.error,
+        lookupPlayerId: lookup.lookupPlayerId ?? playerId,
+        pitches: lookup.pitches,
       });
     };
 

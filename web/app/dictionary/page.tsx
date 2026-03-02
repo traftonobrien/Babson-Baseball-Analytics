@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, Activity, Target, Users, Film, BarChart3, ArrowRight } from "lucide-react";
+import { BookOpen, Activity, Target, Users, Film, BarChart3, Sparkles, ArrowRight } from "lucide-react";
 import Breadcrumbs from "../components/Breadcrumbs";
 
 const DICTIONARY_ITEMS = [
+  { href: "/pitching-plus", label: "Plus Models", description: "Pitching+, Command+, and Stuff+ in one place", icon: Sparkles, color: "amber" },
   { href: "/trackman/faq", label: "Trackman", description: "Stuff+, velocity, spin, and movement metrics", icon: Activity, color: "blue" },
   { href: "/leaderboards/faq", label: "Command", description: "On-target %, avg miss, consistency", icon: Target, color: "orange" },
   { href: "/players/faq", label: "Players", description: "Roster, profiles, and D3 stats", icon: Users, color: "emerald" },
@@ -13,6 +14,7 @@ const DICTIONARY_ITEMS = [
 ];
 
 const COLOR_CLASSES: Record<string, string> = {
+  amber: "border-amber-500/30 hover:border-amber-500/60 text-amber-400",
   blue: "border-blue-500/30 hover:border-blue-500/60 text-blue-400",
   orange: "border-orange-500/30 hover:border-orange-500/60 text-orange-400",
   emerald: "border-emerald-500/30 hover:border-emerald-500/60 text-emerald-400",

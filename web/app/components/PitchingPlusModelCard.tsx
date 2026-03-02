@@ -19,6 +19,12 @@ export default function PitchingPlusModelCard({
   result,
 }: Props) {
   const ready = Boolean(result?.ready && result.overall != null);
+  const excludedRows = (result?.pitchTypeRows ?? []).filter((row) => !row.included);
+  const excludedLivePitchCount = excludedRows.reduce(
+    (sum, row) => sum + row.commandCount,
+    0,
+  );
+  const excludedPitchTypes = excludedRows.map((row) => row.commandPitchType).join(", ");
 
   return (
     <section className="rounded-3xl border border-zinc-800/80 bg-gradient-to-br from-amber-500/8 via-zinc-950/95 to-zinc-950 p-6 shadow-2xl shadow-black/20">
@@ -40,6 +46,12 @@ export default function PitchingPlusModelCard({
           <p className="mt-2 max-w-3xl text-sm leading-7 text-zinc-400">
             Pitching+ combines team-centered Stuff+ with live Command+, then rolls
             the matched arsenal up with a hybrid weighting model.
+          </p>
+          <p className="mt-2 max-w-3xl text-xs leading-6 text-zinc-500">
+            <span className="font-mono text-zinc-400">Command Core</span> is not
+            the same as the standalone <span className="font-mono text-zinc-400">Command+</span>
+            {" "}tile. It only reflects the command scores from pitch types that also
+            have a clean Stuff+ match inside Pitching+.
           </p>
           <p className="mt-2 text-[11px] leading-6 text-zinc-500">{note}</p>
         </div>
@@ -90,6 +102,9 @@ export default function PitchingPlusModelCard({
           <p className="mt-2 font-mono text-3xl font-black tracking-tight text-zinc-100">
             {ready && result?.commandComponent != null ? result.commandComponent.toFixed(1) : "--"}
           </p>
+          <p className="mt-1 text-[11px] text-zinc-500">
+            Pitching+-only command average across the matched overlap set
+          </p>
         </div>
 
         <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/50 px-4 py-3">
@@ -106,6 +121,18 @@ export default function PitchingPlusModelCard({
           </p>
         </div>
       </div>
+
+      {ready && excludedRows.length > 0 && (
+        <div className="mt-5 rounded-2xl border border-zinc-800/80 bg-zinc-950/35 px-4 py-3 text-[12px] leading-6 text-zinc-400">
+          Standalone <span className="font-mono text-zinc-300">Command+</span> can
+          read higher or lower than <span className="font-mono text-zinc-300">Command Core</span>
+          {" "}because <span className="font-mono text-zinc-300">Command Core</span>
+          {" "}excludes pitch types without a clean Stuff+ match.
+          {" "}
+          {excludedLivePitchCount} live pitch{excludedLivePitchCount === 1 ? "" : "es"}
+          {" "}from {excludedPitchTypes} are excluded from the Pitching+ core blend.
+        </div>
+      )}
 
       <div className="mt-6">
         <div className="flex flex-wrap gap-2">

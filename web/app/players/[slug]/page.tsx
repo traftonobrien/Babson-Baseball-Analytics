@@ -3,13 +3,28 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import path from "path";
 import { promises as fs } from "fs";
+import { and, eq, ne } from "drizzle-orm";
 import players from "@/data/players.json";
 import rosterData from "@/data/roster.json";
+import { db } from "@/db";
+import { stuffPlusArsenal } from "@/db/schema";
 import { fetchPitchingLeaderboard } from "@/lib/d3db";
 import { getHand } from "@/lib/canonicalPlayers";
+import {
+  buildCommandPlusBaselines,
+  computeCommandPlus,
+  type CommandPlusResult,
+} from "@/lib/commandPlus";
 import { handBadgeClasses } from "@/lib/handBadge";
 import { players as dataIndexPlayers } from "@/lib/dataIndex";
 import { readMechanicsIndex, getMechanicsForPlayer } from "@/lib/mechanics/registry";
+import { parsePitchCsvText } from "@/lib/pitchCsv";
+import {
+  computePitchingPlus,
+  type PitchingPlusResult,
+} from "@/lib/pitchingPlus";
+import { seasonFromDateId } from "@/lib/season";
+import { buildStuffPlusLookupCandidates } from "@/lib/stuffPlusLookup";
 import PlayerProfileTabs from "./PlayerProfileTabs";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +55,32 @@ type TrackmanIndexEntry = {
   playerSlug?: string;
   date?: string;
   sessionType?: string | null;
+};
+
+type StuffPlusProfilePitch = {
+  pitchType: string;
+  meanStuffPlus: number | null;
+  nSessions: number | null;
+};
+
+type StuffPlusProfileData = {
+  lookupPlayerId: string | null;
+  pitches: StuffPlusProfilePitch[];
+};
+
+type CommandHeroSummary = {
+  playerId: string;
+  score: number | null;
+  season: number | null;
+  outingCount: number;
+  pitchCount: number;
+};
+
+type PitchingProfileModel = {
+  ready: boolean;
+  overall: number | null;
+  note: string;
+  result: PitchingPlusResult | null;
 };
 
 type MetricDefinition = {
@@ -550,6 +591,68 @@ const loadTrackmanIndex = cache(async (): Promise<TrackmanIndexEntry[]> => {
   }
 });
 
+async function loadStuffPlusProfileData(
+  candidates: string[],
+): Promise<StuffPlusProfileData> {
+  for (const candidate of candidates) {
+    try {
+      const rows = await db
+        .select()
+        .from(stuffPlusArsenal)
+        .where(
+          and(
+            eq(stuffPlusArsenal.playerId, candidate),
+            ne(stuffPlusArsenal.pitchType, "Other"),
+          ),
+        );
+
+      if (rows.length === 0) continue;
+
+      return {
+        lookupPlayerId: candidate,
+        pitches: rows.map((row) => ({
+          pitchType: row.pitchType,
+          meanStuffPlus: row.meanStuffPlus,
+          nSessions: row.nSessions,
+        })),
+      };
+    } catch (error) {
+      console.error("[PlayerProfile] stuff+ load failed:", candidate, error);
+    }
+  }
+
+  return {
+    lookupPlayerId: candidates[0] ?? null,
+    pitches: [],
+  };
+}
+
+const loadPublicPitchCsv = cache(async (publicPath: string) => {
+  try {
+    const relativePath = publicPath.replace(/^\/+/, "");
+    const filePath = path.join(process.cwd(), "public", relativePath);
+    const raw = await fs.readFile(filePath, "utf-8");
+    return parsePitchCsvText(raw);
+  } catch (error) {
+    console.error("[PlayerProfile] command csv load failed:", publicPath, error);
+    return [];
+  }
+});
+
+const loadSeasonCommandBaselines = cache(async (season: number) => {
+  const seasonCsvPaths = dataIndexPlayers.flatMap((player) =>
+    player.outings
+      .filter((outing) => {
+        const dateId = outing.id.split("/")[1] ?? "";
+        return seasonFromDateId(dateId) === season;
+      })
+      .map((outing) => outing.csvPath),
+  );
+
+  const arrays = await Promise.all(seasonCsvPaths.map((csvPath) => loadPublicPitchCsv(csvPath)));
+  return buildCommandPlusBaselines(arrays.flat());
+});
+
 function getD3PlayerId(player: PlayerRegistryEntry): string | null {
   return player.d3_player_id != null ? String(player.d3_player_id) : null;
 }
@@ -712,6 +815,77 @@ export default async function PlayerProfilePage({
       csvPath: o.csvPath,
     };
   });
+  const stuffPlusCandidates = buildStuffPlusLookupCandidates([
+    player.slug,
+    diPlayer?.id ?? null,
+  ]);
+  const initialStuff = await loadStuffPlusProfileData(stuffPlusCandidates);
+  const latestCommandSeason =
+    commandOutings
+      .map((outing) => seasonFromDateId(outing.dateId))
+      .filter((season): season is number => season != null)
+      .sort((a, b) => b - a)[0] ?? null;
+
+  let initialCommandHero: CommandHeroSummary | null = null;
+  let initialCommandResult: CommandPlusResult | null = null;
+  let initialPitchingModel: PitchingProfileModel = {
+    ready: false,
+    overall: null,
+    note: commandOutings.length > 0 ? "Missing live command variable" : "No live command outings yet",
+    result: null,
+  };
+
+  if (diPlayer?.id && latestCommandSeason != null) {
+    const latestSeasonOutings = commandOutings.filter(
+      (outing) => seasonFromDateId(outing.dateId) === latestCommandSeason,
+    );
+    const latestSeasonPitchArrays = await Promise.all(
+      latestSeasonOutings.map((outing) => loadPublicPitchCsv(outing.csvPath)),
+    );
+    const latestSeasonPitches = latestSeasonPitchArrays.flat();
+    const latestSeasonBaselines = await loadSeasonCommandBaselines(latestCommandSeason);
+    const commandResult = computeCommandPlus(latestSeasonPitches, latestSeasonBaselines);
+    initialCommandResult = commandResult;
+    const measuredPitchCount = commandResult.pitchTypeScores.reduce(
+      (sum, row) => sum + row.subjectCount,
+      0,
+    );
+
+    initialCommandHero = {
+      playerId: diPlayer.id,
+      score: commandResult.overall,
+      season: latestCommandSeason,
+      outingCount: latestSeasonOutings.length,
+      pitchCount: measuredPitchCount,
+    };
+
+    const pitchingResult = computePitchingPlus(
+      initialStuff.lookupPlayerId ?? player.slug,
+      commandResult,
+      initialStuff.pitches,
+    );
+
+    if (!pitchingResult.ready || pitchingResult.overall == null) {
+      initialPitchingModel = {
+        ready: false,
+        overall: null,
+        note:
+          pitchingResult.reason === "missing_live_command"
+            ? "Missing live command variable"
+            : pitchingResult.reason === "missing_stuff"
+              ? "Missing Stuff+ variable"
+              : "No clean pitch overlap yet",
+        result: pitchingResult,
+      };
+    } else {
+      initialPitchingModel = {
+        ready: true,
+        overall: pitchingResult.overall,
+        note: `${pitchingResult.overlapPitchTypeCount} pitch type${pitchingResult.overlapPitchTypeCount === 1 ? "" : "s"} | ${pitchingResult.overlapPitchCount} live pitch${pitchingResult.overlapPitchCount === 1 ? "" : "es"} in ${latestCommandSeason}`,
+        result: pitchingResult,
+      };
+    }
+  }
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -776,6 +950,11 @@ export default async function PlayerProfilePage({
           commandOutings={commandOutings}
           commandPlayerId={diPlayer?.id ?? null}
           playerSlug={player.slug}
+          initialCommandHero={initialCommandHero}
+          initialCommandResult={initialCommandResult}
+          initialPitchingModel={initialPitchingModel}
+          initialStuffLookupPlayerId={initialStuff.lookupPlayerId}
+          initialStuffPitches={initialStuff.pitches}
           initialTab={initialTab}
           mechanicsEntry={mechanicsEntry ?? null}
         />

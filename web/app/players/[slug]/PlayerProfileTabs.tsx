@@ -1,21 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Activity, Target, ArrowRight, ScanLine } from "lucide-react";
+import { Activity, Target, ArrowRight, ScanLine, ChevronDown, ChevronUp } from "lucide-react";
 import SavantPercentileBar from "./SavantPercentileBar";
 import MechanicsProfileCard from "@/app/components/mechanics/MechanicsProfileCard";
 import Segment from "@/app/components/Segment";
-import { useAllPitchData } from "@/app/hooks/useAllPitchData";
-import {
-  computeCommandPlus,
-  type CommandPlusBaselines,
-} from "@/lib/commandPlus";
-import type { SeasonFilter } from "@/lib/leaderboards/types";
+import CommandPlusModelCard from "@/app/components/CommandPlusModelCard";
+import PitchingPlusModelCard from "@/app/components/PitchingPlusModelCard";
+import StuffPlusModelCard from "@/app/components/StuffPlusModelCard";
 import { seasonFromDateId } from "@/lib/season";
 import { computeTotalStuffPlus, plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
-import { computePitchingPlus } from "@/lib/pitchingPlus";
+import type { CommandPlusResult } from "@/lib/commandPlus";
+import type { PitchingPlusResult } from "@/lib/pitchingPlus";
 import type { HubPlayerEntry } from "@/lib/mechanics/hub";
 
 const TABS = ["Overview", "Trackman", "Command", "Mechanics"] as const;
@@ -54,6 +52,9 @@ interface HeroTileConfig {
   note: string;
   tone: HeroTone;
   badgeStyle?: CSSProperties;
+  onClick?: () => void;
+  active?: boolean;
+  featured?: boolean;
 }
 
 interface CommandHeroState {
@@ -72,10 +73,18 @@ interface StuffPlusApiPitch {
 
 interface StuffHeroState {
   playerSlug: string;
+  lookupPlayerId: string | null;
   total: number | null;
   pitchTypeCount: number;
   sessionCount: number | null;
   pitches: { pitchType: string; meanStuffPlus: number | null }[];
+}
+
+interface PitchingHeroState {
+  ready: boolean;
+  overall: number | null;
+  note: string;
+  result: PitchingPlusResult | null;
 }
 
 interface Props {
@@ -87,6 +96,11 @@ interface Props {
   commandOutings: CommandOuting[];
   commandPlayerId?: string | null;
   playerSlug: string;
+  initialCommandHero: CommandHeroState | null;
+  initialCommandResult: CommandPlusResult | null;
+  initialPitchingModel: PitchingHeroState;
+  initialStuffLookupPlayerId: string | null;
+  initialStuffPitches: StuffPlusApiPitch[];
   initialTab?: string;
   mechanicsEntry?: HubPlayerEntry | null;
 }
@@ -158,43 +172,135 @@ function ProfileHeroTile({
   note,
   tone,
   badgeStyle,
+  onClick,
+  active = false,
+  featured = false,
 }: HeroTileConfig & { index: number }) {
   const toneStyles = HERO_TONE_STYLES[tone];
+  const interactive = typeof onClick === "function";
 
-  return (
+  const valueNode = badgeStyle ? (
+    <span
+      className={`inline-flex items-center justify-center rounded-2xl font-mono font-black tracking-tight ${
+        featured
+          ? "min-h-[4.75rem] min-w-[8rem] px-6 py-3 text-[44px]"
+          : "min-h-[3rem] min-w-[5.5rem] px-4 py-2 text-[30px]"
+      }`}
+      style={badgeStyle}
+    >
+      {value}
+    </span>
+  ) : (
+    <span
+      className={`font-mono font-black tracking-tight ${toneStyles.value} ${
+        featured ? "text-[44px]" : "text-[30px]"
+      }`}
+    >
+      {value}
+    </span>
+  );
+
+  const content = featured ? (
+    <>
+      <div className={`absolute inset-y-4 left-0 w-[4px] rounded-full ${toneStyles.rail}`} />
+      <div className={`pointer-events-none absolute -right-2 top-1/2 h-28 w-28 -translate-y-1/2 rounded-full blur-3xl ${toneStyles.glow}`} />
+
+      <div className="relative z-10 flex items-center justify-between gap-6 pl-5">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-3">
+            <p className={`text-[11px] font-black uppercase tracking-[0.24em] ${toneStyles.label}`}>
+              {label}
+            </p>
+            {interactive && (
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/20 text-zinc-300">
+                {active ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </span>
+            )}
+          </div>
+          <p className={`mt-3 max-w-xl text-[12px] sm:text-[13px] ${toneStyles.note}`}>
+            {note}
+          </p>
+        </div>
+
+        <div className="relative shrink-0">{valueNode}</div>
+      </div>
+    </>
+  ) : (
+    <>
+      <div className={`absolute inset-y-4 left-0 w-[3px] rounded-full ${toneStyles.rail}`} />
+      <div className={`pointer-events-none absolute -right-6 -top-8 h-24 w-24 rounded-full blur-3xl ${toneStyles.glow}`} />
+
+      <div className="relative z-10 flex items-start justify-between gap-3">
+        <p className={`pl-4 text-[10px] font-black uppercase tracking-[0.18em] ${toneStyles.label}`}>
+          {label}
+        </p>
+        {interactive && (
+          <span className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-black/20 text-zinc-300">
+            {active ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </span>
+        )}
+      </div>
+
+      <div className="relative z-10 mt-4 pl-4">{valueNode}</div>
+
+      <p className={`relative z-10 mt-3 pl-4 text-[11px] ${toneStyles.note}`}>
+        {note}
+      </p>
+    </>
+  );
+
+  const sharedClassName =
+    `group relative overflow-hidden rounded-2xl border ${toneStyles.border} bg-gradient-to-br ${toneStyles.surface} opacity-0 backdrop-blur-sm ${
+      featured ? "p-5 sm:p-6" : "p-4"
+    }`;
+
+  return interactive ? (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`${sharedClassName} w-full text-left transition-smooth hover:border-white/15`}
+      style={{
+        animation: `savantFadeIn 0.4s ease-out ${index * 60}ms forwards`,
+      }}
+      aria-expanded={active}
+      aria-label={`${label} breakdown`}
+    >
+      {content}
+    </button>
+  ) : (
     <div
       className={`relative overflow-hidden rounded-2xl border ${toneStyles.border} bg-gradient-to-br ${toneStyles.surface} p-4 opacity-0 backdrop-blur-sm`}
       style={{
         animation: `savantFadeIn 0.4s ease-out ${index * 60}ms forwards`,
       }}
     >
-      <div className={`absolute inset-y-4 left-0 w-[3px] rounded-full ${toneStyles.rail}`} />
-      <div className={`pointer-events-none absolute -right-6 -top-8 h-24 w-24 rounded-full blur-3xl ${toneStyles.glow}`} />
-
-      <p className={`pl-4 text-[10px] font-black uppercase tracking-[0.18em] ${toneStyles.label}`}>
-        {label}
-      </p>
-
-      <div className="mt-4 pl-4">
-        {badgeStyle ? (
-          <span
-            className="inline-flex min-h-[3rem] min-w-[5.5rem] items-center justify-center rounded-2xl px-4 py-2 font-mono text-[30px] font-black tracking-tight"
-            style={badgeStyle}
-          >
-            {value}
-          </span>
-        ) : (
-          <span className={`font-mono text-[30px] font-black tracking-tight ${toneStyles.value}`}>
-            {value}
-          </span>
-        )}
-      </div>
-
-      <p className={`mt-3 pl-4 text-[11px] ${toneStyles.note}`}>
-        {note}
-      </p>
+      {content}
     </div>
   );
+}
+
+function buildStuffHeroState(
+  playerSlug: string,
+  lookupPlayerId: string | null,
+  pitches: StuffPlusApiPitch[],
+): StuffHeroState {
+  const validPitchCount = pitches.filter((pitch) => pitch.meanStuffPlus != null).length;
+  const sessionCount = pitches.reduce((max, pitch) => {
+    if (typeof pitch.nSessions !== "number") return max;
+    return Math.max(max, pitch.nSessions);
+  }, 0);
+
+  return {
+    playerSlug,
+    lookupPlayerId,
+    total: computeTotalStuffPlus(pitches),
+    pitchTypeCount: validPitchCount,
+    sessionCount: sessionCount > 0 ? sessionCount : null,
+    pitches: pitches.map((pitch) => ({
+      pitchType: pitch.pitchType ?? "",
+      meanStuffPlus: pitch.meanStuffPlus ?? null,
+    })),
+  };
 }
 
 export default function PlayerProfileTabs({
@@ -205,17 +311,17 @@ export default function PlayerProfileTabs({
   commandOutings,
   commandPlayerId,
   playerSlug,
+  initialCommandHero,
+  initialCommandResult,
+  initialPitchingModel,
+  initialStuffLookupPlayerId,
+  initialStuffPitches,
   initialTab,
   mechanicsEntry,
 }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>(resolveInitialTab(initialTab));
   const [commandSeasonFilter, setCommandSeasonFilter] = useState<string>("2026");
-  const [commandHero, setCommandHero] = useState<CommandHeroState | null>(null);
-  const [stuffHero, setStuffHero] = useState<StuffHeroState | null>(null);
-  const [commandBaselines, setCommandBaselines] = useState<{
-    season: number;
-    baselines: CommandPlusBaselines | null;
-  } | null>(null);
+  const [expandedMetric, setExpandedMetric] = useState<"pitching" | "command" | "stuff" | null>(null);
 
   const sortedSessions = useMemo(() => {
     return [...trackmanSessions].sort((a, b) => b.date.localeCompare(a.date));
@@ -237,222 +343,20 @@ export default function PlayerProfileTabs({
   }, [commandOutings, commandSeasonFilter, commandSeasons]);
 
   const latestCommandSeason = commandSeasons[0] ?? null;
-  const latestSeasonCsvPaths = useMemo(() => {
-    if (latestCommandSeason == null) return [];
-    return commandOutings
-      .filter((o) => seasonFromDateId(o.dateId) === latestCommandSeason)
-      .map((o) => o.csvPath);
-  }, [commandOutings, latestCommandSeason]);
-  const latestCommandOutingCount = useMemo(() => {
-    if (latestCommandSeason == null) return 0;
-    return commandOutings.filter((o) => seasonFromDateId(o.dateId) === latestCommandSeason).length;
-  }, [commandOutings, latestCommandSeason]);
-  const {
-    pitches: latestSeasonPitches,
-    loading: latestSeasonPitchesLoading,
-  } = useAllPitchData(latestSeasonCsvPaths, commandPlayerId ?? playerSlug);
+  const isCommandHeroLoading = false;
+  const currentCommandHero = initialCommandHero;
+  const isStuffHeroLoading = false;
+  const currentStuffHero = useMemo(
+    () => buildStuffHeroState(playerSlug, initialStuffLookupPlayerId, initialStuffPitches),
+    [initialStuffLookupPlayerId, initialStuffPitches, playerSlug],
+  );
+  const isPitchingHeroLoading = false;
+  const pitchingModel = initialPitchingModel;
+  const toggleMetric = (metric: "pitching" | "command" | "stuff") => {
+    setExpandedMetric((current) => (current === metric ? null : metric));
+  };
 
-  useEffect(() => {
-    let cancelled = false;
-
-    if (!commandPlayerId || latestCommandSeason == null) {
-      setCommandBaselines(null);
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    const seasonFilter = latestCommandSeason as SeasonFilter;
-
-    void (async () => {
-      try {
-        const {
-          computePlayerAggregateRows,
-          globalCommandPlusBaselines,
-          loadAllOutingData,
-        } = await import("@/lib/leaderboards/load");
-
-        if (!globalCommandPlusBaselines[latestCommandSeason]) {
-          await loadAllOutingData({ seasonFilter });
-        }
-
-        const rows = computePlayerAggregateRows({ seasonFilter, minPitches: 1 });
-        const row = rows.find((candidate) => candidate.playerId === commandPlayerId) ?? null;
-        const baselines = globalCommandPlusBaselines[latestCommandSeason] ?? null;
-
-        if (cancelled) return;
-
-        setCommandBaselines({
-          season: latestCommandSeason,
-          baselines,
-        });
-        setCommandHero({
-          playerId: commandPlayerId,
-          score: row?.commandPlus ?? null,
-          season: latestCommandSeason,
-          outingCount: row?.outingCount ?? latestCommandOutingCount,
-          pitchCount: row?.pitchCount ?? 0,
-        });
-      } catch (error) {
-        console.error("[PlayerProfileTabs] command hero failed:", error);
-
-        if (cancelled) return;
-
-        setCommandBaselines({
-          season: latestCommandSeason,
-          baselines: null,
-        });
-        setCommandHero({
-          playerId: commandPlayerId,
-          score: null,
-          season: latestCommandSeason,
-          outingCount: latestCommandOutingCount,
-          pitchCount: 0,
-        });
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [commandPlayerId, latestCommandOutingCount, latestCommandSeason]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    if (!playerSlug) {
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    void fetch(`/api/stuff-plus/arsenal?playerId=${encodeURIComponent(playerSlug)}`)
-      .then(async (response) => {
-        if (!response.ok) return null;
-        return (await response.json()) as { pitches?: StuffPlusApiPitch[] };
-      })
-      .then((payload) => {
-        if (cancelled) return;
-
-        const pitches = Array.isArray(payload?.pitches) ? payload.pitches : [];
-        const validPitchCount = pitches.filter((pitch) => pitch.meanStuffPlus != null).length;
-        const sessionCount = pitches.reduce((max, pitch) => {
-          if (typeof pitch.nSessions !== "number") return max;
-          return Math.max(max, pitch.nSessions);
-        }, 0);
-
-        setStuffHero({
-          playerSlug,
-          total: computeTotalStuffPlus(pitches),
-          pitchTypeCount: validPitchCount,
-          sessionCount: sessionCount > 0 ? sessionCount : null,
-          pitches: pitches.map((pitch) => ({
-            pitchType: pitch.pitchType ?? "",
-            meanStuffPlus: pitch.meanStuffPlus ?? null,
-          })),
-        });
-      })
-      .catch((error) => {
-        console.error("[PlayerProfileTabs] stuff hero failed:", error);
-
-        if (cancelled) return;
-
-        setStuffHero({
-          playerSlug,
-          total: null,
-          pitchTypeCount: 0,
-          sessionCount: null,
-          pitches: [],
-        });
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [playerSlug]);
-
-  const isCommandHeroLoading =
-    commandPlayerId != null &&
-    latestCommandSeason != null &&
-    (commandHero?.playerId !== commandPlayerId || commandHero?.season !== latestCommandSeason);
-  const currentCommandHero =
-    commandHero?.playerId === commandPlayerId && commandHero?.season === latestCommandSeason
-      ? commandHero
-      : null;
-
-  const isStuffHeroLoading =
-    Boolean(playerSlug) && stuffHero?.playerSlug !== playerSlug;
-  const currentStuffHero =
-    stuffHero?.playerSlug === playerSlug
-      ? stuffHero
-      : null;
-  const currentCommandBaselines =
-    commandBaselines?.season === latestCommandSeason
-      ? commandBaselines.baselines
-      : null;
-  const isPitchingHeroLoading =
-    commandPlayerId != null &&
-    latestCommandSeason != null &&
-    (isCommandHeroLoading || latestSeasonPitchesLoading || isStuffHeroLoading);
-  const pitchingHero = useMemo(() => {
-    if (!commandPlayerId || latestCommandSeason == null) {
-      return { overall: null, note: "No live command outings yet", ready: false };
-    }
-
-    if (isPitchingHeroLoading) {
-      return { overall: null, note: "Blending live season inputs", ready: false };
-    }
-
-    if (!currentCommandBaselines) {
-      return {
-        overall: null,
-        note: "Missing live command variable",
-        ready: false,
-      };
-    }
-
-    const commandResult = computeCommandPlus(latestSeasonPitches, currentCommandBaselines);
-    const result = computePitchingPlus(playerSlug, commandResult, currentStuffHero?.pitches ?? []);
-
-    if (!result.ready || result.overall == null) {
-      const note =
-        result.reason === "missing_live_command"
-          ? "Missing live command variable"
-          : result.reason === "missing_stuff"
-            ? "Missing Stuff+ variable"
-            : "No clean pitch overlap yet";
-      return {
-        overall: null,
-        note,
-        ready: false,
-      };
-    }
-
-    return {
-      overall: result.overall,
-      note: `${result.overlapPitchTypeCount} pitch type${result.overlapPitchTypeCount === 1 ? "" : "s"} | ${result.overlapPitchCount} live pitch${result.overlapPitchCount === 1 ? "" : "es"} in ${latestCommandSeason}`,
-      ready: true,
-    };
-  }, [
-    commandPlayerId,
-    currentCommandBaselines,
-    currentStuffHero?.pitches,
-    isPitchingHeroLoading,
-    latestCommandSeason,
-    latestSeasonPitches,
-    playerSlug,
-  ]);
-
-  const heroTiles = useMemo<HeroTileConfig[]>(() => {
-    const pitchingValue = isPitchingHeroLoading
-      ? "..."
-      : pitchingHero.ready && pitchingHero.overall != null
-        ? pitchingHero.overall.toFixed(0)
-        : "NR";
-    const pitchingNote = isPitchingHeroLoading
-      ? "Building live-season blend"
-      : pitchingHero.note;
-
+  const heroTiles = useMemo(() => {
     const commandValue = isCommandHeroLoading
       ? "..."
       : currentCommandHero?.score != null
@@ -481,44 +385,57 @@ export default function PlayerProfileTabs({
           ? "Trackman sessions found, no Stuff+ grade yet"
           : "No Trackman arsenal yet";
 
-    return [
-      {
+    const pitchingTile: HeroTileConfig = {
         label: "Pitching+",
-        value: pitchingValue,
-        note: pitchingNote,
+        value: isPitchingHeroLoading
+          ? "..."
+          : pitchingModel.ready && pitchingModel.overall != null
+            ? pitchingModel.overall.toFixed(0)
+            : "NR",
+        note: isPitchingHeroLoading ? "Building live-season blend" : pitchingModel.note,
         tone: "amber",
+        onClick: () => toggleMetric("pitching"),
+        active: expandedMetric === "pitching",
         badgeStyle:
-          pitchingHero.ready && pitchingHero.overall != null
-            ? plusMetricBadgeStyle(pitchingHero.overall)
+          pitchingModel.ready && pitchingModel.overall != null
+            ? plusMetricBadgeStyle(pitchingModel.overall)
             : undefined,
-      },
-      {
+        featured: true,
+      };
+
+    const commandTile: HeroTileConfig = {
         label: "Command+",
         value: commandValue,
         note: commandNote,
         tone: "orange",
+        onClick: () => toggleMetric("command"),
+        active: expandedMetric === "command",
         badgeStyle: currentCommandHero?.score != null ? plusMetricBadgeStyle(currentCommandHero.score) : undefined,
-      },
-      {
+      };
+
+    const stuffTile: HeroTileConfig = {
         label: "Stuff+",
         value: stuffValue,
         note: stuffNote,
         tone: "blue",
+        onClick: () => toggleMetric("stuff"),
+        active: expandedMetric === "stuff",
         badgeStyle: currentStuffHero?.total != null ? plusMetricBadgeStyle(currentStuffHero.total) : undefined,
-      },
-    ];
+      };
+
+    return {
+      pitchingTile,
+      secondaryTiles: [commandTile, stuffTile],
+    };
   }, [
     currentCommandHero,
-    currentCommandBaselines,
     currentStuffHero,
     isCommandHeroLoading,
     isPitchingHeroLoading,
     isStuffHeroLoading,
     latestCommandSeason,
-    latestSeasonPitches,
-    latestSeasonPitchesLoading,
-    pitchingHero,
-    playerSlug,
+    expandedMetric,
+    pitchingModel,
     trackmanSessions.length,
   ]);
 
@@ -558,27 +475,99 @@ export default function PlayerProfileTabs({
             className="mt-12 space-y-16"
           >
           <section>
-            <div className="grid gap-3 md:grid-cols-3">
-              {heroTiles.map((tile, index) => (
-                <ProfileHeroTile
-                  key={tile.label}
-                  index={index}
-                  label={tile.label}
-                  value={tile.value}
-                  note={tile.note}
-                  tone={tile.tone}
-                  badgeStyle={tile.badgeStyle}
-                />
-              ))}
+            <div className="space-y-3">
+              <ProfileHeroTile
+                index={0}
+                label={heroTiles.pitchingTile.label}
+                value={heroTiles.pitchingTile.value}
+                note={heroTiles.pitchingTile.note}
+                tone={heroTiles.pitchingTile.tone}
+                badgeStyle={heroTiles.pitchingTile.badgeStyle}
+                onClick={heroTiles.pitchingTile.onClick}
+                active={heroTiles.pitchingTile.active}
+                featured={heroTiles.pitchingTile.featured}
+              />
+
+              <div className="grid gap-3 md:grid-cols-2">
+                {heroTiles.secondaryTiles.map((tile, index) => (
+                  <ProfileHeroTile
+                    key={tile.label}
+                    index={index + 1}
+                    label={tile.label}
+                    value={tile.value}
+                    note={tile.note}
+                    tone={tile.tone}
+                    badgeStyle={tile.badgeStyle}
+                    onClick={tile.onClick}
+                    active={tile.active}
+                    featured={tile.featured}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="mt-3 flex justify-end">
-              <Link
-                href="/pitching-plus"
-                className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-600 transition-smooth hover:text-zinc-300"
-              >
-                Pitching+ Methodology
-              </Link>
-            </div>
+            <AnimatePresence initial={false} mode="wait">
+              {expandedMetric === "pitching" && (
+                <motion.div
+                  key="pitching-plus-model"
+                  initial={{ opacity: 0, y: -8, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: "auto" }}
+                  exit={{ opacity: 0, y: -6, height: 0 }}
+                  transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                  className="mt-4 overflow-hidden"
+                >
+                  <PitchingPlusModelCard
+                    season={latestCommandSeason}
+                    loading={isPitchingHeroLoading}
+                    note={pitchingModel.note}
+                    result={pitchingModel.result}
+                  />
+                </motion.div>
+              )}
+              {expandedMetric === "command" && (
+                <motion.div
+                  key="command-plus-model"
+                  initial={{ opacity: 0, y: -8, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: "auto" }}
+                  exit={{ opacity: 0, y: -6, height: 0 }}
+                  transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                  className="mt-4 overflow-hidden"
+                >
+                  <CommandPlusModelCard
+                    season={latestCommandSeason}
+                    note={
+                      currentCommandHero?.score != null && currentCommandHero.season != null
+                        ? `${currentCommandHero.outingCount} outing${currentCommandHero.outingCount === 1 ? "" : "s"} | ${currentCommandHero.pitchCount} pitch${currentCommandHero.pitchCount === 1 ? "" : "es"} in ${currentCommandHero.season}`
+                        : latestCommandSeason != null
+                          ? `No qualified score yet for ${latestCommandSeason}`
+                          : "No command outings yet"
+                    }
+                    result={initialCommandResult}
+                  />
+                </motion.div>
+              )}
+              {expandedMetric === "stuff" && (
+                <motion.div
+                  key="stuff-plus-model"
+                  initial={{ opacity: 0, y: -8, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: "auto" }}
+                  exit={{ opacity: 0, y: -6, height: 0 }}
+                  transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                  className="mt-4 overflow-hidden"
+                >
+                  <StuffPlusModelCard
+                    note={
+                      currentStuffHero?.total != null
+                        ? `${currentStuffHero.pitchTypeCount} pitch type${currentStuffHero.pitchTypeCount === 1 ? "" : "s"} across ${currentStuffHero.sessionCount ?? 0} session${currentStuffHero.sessionCount === 1 ? "" : "s"}`
+                        : trackmanSessions.length > 0
+                          ? "Trackman sessions found, no Stuff+ grade yet"
+                          : "No Trackman arsenal yet"
+                    }
+                    overall={currentStuffHero?.total ?? null}
+                    pitches={initialStuffPitches}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </section>
 
           {seasonStats.length === 0 && d3Percentiles.length === 0 ? (
