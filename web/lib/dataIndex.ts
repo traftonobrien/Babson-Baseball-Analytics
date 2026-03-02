@@ -20,6 +20,11 @@ export const players: Player[] = [
     throws: "R",
     outings: [
       {
+        id: "TOBrien1/2026_02_28",
+        label: "Feb 28, 2026 – O'Brien (4 pitches)",
+        ...buildDataPaths("TOBrien1", "2026_02_28"),
+      },
+      {
         id: "TOBrien1/2025_10_04",
         label: "Oct 4, 2025 – O'Brien (27 pitches)",
         ...buildDataPaths("TOBrien1", "2025_10_04"),
@@ -146,6 +151,30 @@ export const players: Player[] = [
         id: "BValente1/2026_02_27",
         label: "Feb 27, 2026 – Valente (15 pitches)",
         ...buildDataPaths("BValente1", "2026_02_27"),
+      },
+    ],
+  },
+  {
+    id: "CSmith1",
+    name: "Cooper Smith",
+    throws: "L",
+    outings: [
+      {
+        id: "CSmith1/2026_02_28",
+        label: "Feb 28, 2026 – Smith (75 pitches)",
+        ...buildDataPaths("CSmith1", "2026_02_28"),
+      },
+    ],
+  },
+  {
+    id: "MCamardi1",
+    name: "Michael Camardi",
+    throws: "L",
+    outings: [
+      {
+        id: "MCamardi1/2026_02_28",
+        label: "Feb 28, 2026 – Camardi (20 pitches)",
+        ...buildDataPaths("MCamardi1", "2026_02_28"),
       },
     ],
   },
