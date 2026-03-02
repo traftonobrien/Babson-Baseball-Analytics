@@ -93,7 +93,10 @@ export default function PitchingPlusPage() {
               <div className="rounded-2xl border border-zinc-800 bg-zinc-950/50 p-5">
                 <h3 className="text-lg font-bold text-zinc-100">Rollup Weighting</h3>
                 <pre className="mt-4 overflow-x-auto rounded-xl border border-zinc-800 bg-black/30 p-4 text-xs text-cyan-300">
-{`w_p = ${PITCHING_PLUS_EQUAL_SHARE_WEIGHT.toFixed(2)} * (1 / K) + ${PITCHING_PLUS_USAGE_WEIGHT.toFixed(2)} * usage_p
+{`K        = number of overlapping pitch types
+usage_p  = share of tracked pitches thrown of type p
+
+w_p = ${PITCHING_PLUS_EQUAL_SHARE_WEIGHT.toFixed(2)} * (1 / K) + ${PITCHING_PLUS_USAGE_WEIGHT.toFixed(2)} * usage_p
 
 Overall Pitching+ = Σ (w_p * Pitching+_p)`}
                 </pre>
@@ -131,6 +134,18 @@ Overall Pitching+ = Σ (w_p * Pitching+_p)`}
                   from the standalone Command+ and Stuff+ tiles.
                 </p>
               </div>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-amber-500/15 bg-black/20 p-5">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-amber-300/70">
+                Example
+              </p>
+              <p className="mt-2 text-sm leading-7 text-zinc-300">
+                A pitcher with a <span className="font-semibold text-amber-200">Pitching+ of 108</span> is
+                performing 8% above team average on the combined stuff-and-command grade across their
+                overlapping pitch types. That means their raw stuff grades and their live miss distances
+                together land 8 points above what a typical team pitcher produces with the same arsenal.
+              </p>
             </div>
           </section>
 
