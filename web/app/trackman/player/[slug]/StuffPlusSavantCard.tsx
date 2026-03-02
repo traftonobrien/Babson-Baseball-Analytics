@@ -4,8 +4,8 @@ import { useState, useEffect, useMemo } from "react";
 import { pitchColor } from "@/lib/pitchColors";
 import {
   computeTotalStuffPlus,
-  stuffPlusBadgeClass,
   stuffPlusAccentClass,
+  plusMetricBadgeStyle,
 } from "@/lib/stuffPlusUtils";
 import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
 import { savantColorAt } from "@/lib/savantColors";
@@ -179,7 +179,8 @@ export default function StuffPlusSavantCard({ arsenal, playerId }: Props) {
               Total Stuff+
             </p>
             <div
-              className={`inline-flex items-center justify-center min-w-[5rem] px-5 py-2.5 rounded-xl font-mono text-4xl font-bold tracking-tight ${stuffPlusBadgeClass(total)}`}
+              className="inline-flex items-center justify-center min-w-[5rem] rounded-xl px-5 py-2.5 font-mono text-4xl font-bold tracking-tight"
+              style={plusMetricBadgeStyle(total)}
             >
               {total.toFixed(1)}
             </div>

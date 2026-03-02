@@ -9,42 +9,25 @@
  *   - Arsenals-based handedness with "R" fallback + warning
  */
 
-import Papa from "papaparse";
 import type { Pitch } from "@/app/types";
 import { players } from "@/lib/dataIndex";
 import { getPlayerMeta, getPlayerArsenal } from "@/lib/arsenals";
 import { assignPitchTypes } from "@/lib/assignPitchType";
+import {
+  buildCommandPlusBaselines,
+  computeCommandPlus,
+  type CommandPlusBaselines,
+} from "@/lib/commandPlus";
 import { seasonFromDateId } from "@/lib/season";
-import { computeOutingKpis, mergeKpis, type ComputeOptions } from "./metrics";
+import {
+  computeOutingKpis,
+  filterPitchesForKpis,
+  mergeKpis,
+  type ComputeOptions,
+} from "./metrics";
 import type { OutingLeaderboardRow, PlayerAggregateRow, SeasonFilter } from "./types";
 import type { PitchGroup } from "./pitchGroups";
-
-/* ------------------------------------------------------------------ */
-/*  CSV parser (reuses pattern from useAllPitchData)                   */
-/* ------------------------------------------------------------------ */
-
-const NUM_FIELDS = new Set([
-  "pitch_number", "target_frame", "arrival_frame",
-  "target_x", "target_y", "ball_x", "ball_y",
-  "total_miss_px", "total_miss_inches",
-  "h_miss_px", "h_miss_inches", "h_miss_signed",
-  "v_miss_px", "v_miss_inches", "v_miss_signed",
-  "timestamp",
-]);
-
-function parseCsvText(text: string): Pitch[] {
-  const result = Papa.parse<Record<string, string>>(text, {
-    header: true,
-    skipEmptyLines: true,
-  });
-  return result.data.map((row) => {
-    const out: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(row)) {
-      out[k] = NUM_FIELDS.has(k) ? parseFloat(v) : v;
-    }
-    return out as unknown as Pitch;
-  });
-}
+import { parsePitchCsvText } from "@/lib/pitchCsv";
 
 /* ------------------------------------------------------------------ */
 /*  In-memory cache                                                    */
@@ -67,7 +50,7 @@ interface CachedOutingTask {
 
 const outingCache = new Map<string, CachedOuting>();
 let loadedTasks: CachedOutingTask[] | null = null;
-export let globalTeamAvgMiss: Record<number, Record<string, number>> = {};
+export let globalCommandPlusBaselines: Record<number, CommandPlusBaselines> = {};
 
 /* ------------------------------------------------------------------ */
 /*  Concurrency limiter                                                */
@@ -121,7 +104,7 @@ async function loadSingleOuting(
   }
 
   const text = await res.text();
-  let pitches = parseCsvText(text);
+  let pitches = parsePitchCsvText(text);
   pitches = assignPitchTypes(pitches, playerId, arsenal);
 
   let pitcherHand: "R" | "L" = "R";
@@ -220,35 +203,22 @@ export async function loadAllOutingData(
 
   loadedTasks = tasks;
 
-  // Build Team Baseline Averages for Command+
-  const sums: Record<number, Record<string, { miss: number; count: number }>> = {};
+  // Build live season-relative baselines for Command+
+  const seasonPitches: Record<number, Pitch[]> = {};
   for (const task of tasks) {
     if (!task.season) continue;
-    if (!sums[task.season]) sums[task.season] = {};
-    const seasonSums = sums[task.season];
-
     const cached = outingCache.get(task.outingId);
     if (!cached) continue;
-    for (const p of cached.pitches) {
-      if (!p.pitch_type || !Number.isFinite(p.total_miss_inches)) continue;
-      const t = p.pitch_type;
-      if (!seasonSums[t]) seasonSums[t] = { miss: 0, count: 0 };
-      seasonSums[t].miss += p.total_miss_inches;
-      seasonSums[t].count++;
-    }
+    seasonPitches[task.season] ??= [];
+    seasonPitches[task.season].push(...cached.pitches);
   }
 
-  const newTeamAverages: Record<number, Record<string, number>> = {};
-  for (const [seasonStr, ptData] of Object.entries(sums)) {
+  const newBaselines: Record<number, CommandPlusBaselines> = {};
+  for (const [seasonStr, pitches] of Object.entries(seasonPitches)) {
     const season = Number(seasonStr);
-    newTeamAverages[season] = {};
-    for (const [pt, data] of Object.entries(ptData)) {
-      if (data.count > 0) {
-        newTeamAverages[season][pt] = data.miss / data.count;
-      }
-    }
+    newBaselines[season] = buildCommandPlusBaselines(pitches);
   }
-  globalTeamAvgMiss = newTeamAverages;
+  globalCommandPlusBaselines = newBaselines;
 }
 
 /**
@@ -286,7 +256,8 @@ export function computeLeaderboardRows(
     }
 
     if (!task.season) continue;
-    const kpis = computeOutingKpis(cached.pitches, cached.pitcherHand, task.season, computeOpts);
+    const baselines = globalCommandPlusBaselines[task.season] ?? null;
+    const kpis = computeOutingKpis(cached.pitches, cached.pitcherHand, baselines, computeOpts);
 
     if (kpis.pitchCount < minPitches) continue;
 
@@ -374,11 +345,19 @@ export function computePlayerAggregateRows(
     // Compute KPIs per outing then merge for exact stddev
     const kpisList = [];
     let qualifiedOutings = 0;
+    const seasonPitchBuckets = new Map<number, Pitch[]>();
 
     for (const outing of group.outings) {
       const cached = outingCache.get(outing.id);
       if (!cached) continue;
-      const kpis = computeOutingKpis(cached.pitches, cached.pitcherHand, outing.season, computeOpts);
+      const baselines = globalCommandPlusBaselines[outing.season] ?? null;
+      const filteredPitches = filterPitchesForKpis(cached.pitches, computeOpts);
+      if (filteredPitches.length > 0) {
+        const seasonPitches = seasonPitchBuckets.get(outing.season) ?? [];
+        seasonPitches.push(...filteredPitches);
+        seasonPitchBuckets.set(outing.season, seasonPitches);
+      }
+      const kpis = computeOutingKpis(cached.pitches, cached.pitcherHand, baselines, computeOpts);
       if (kpis.pitchCount >= minPitches) qualifiedOutings++;
       if (kpis.pitchCount > 0) kpisList.push(kpis);
     }
@@ -387,6 +366,20 @@ export function computePlayerAggregateRows(
 
     const merged = mergeKpis(kpisList);
     if (merged.pitchCount < minPitches) continue;
+
+    let commandPlusWeightedSum = 0;
+    let commandPlusWeight = 0;
+    for (const [season, pitches] of seasonPitchBuckets) {
+      const baselines = globalCommandPlusBaselines[season];
+      if (!baselines) continue;
+      const result = computeCommandPlus(pitches, baselines);
+      if (result.overall === null || result.qualifiedPitchCount === 0) continue;
+      commandPlusWeightedSum += result.overall * result.qualifiedPitchCount;
+      commandPlusWeight += result.qualifiedPitchCount;
+    }
+
+    const commandPlus =
+      commandPlusWeight > 0 ? commandPlusWeightedSum / commandPlusWeight : null;
 
     rows.push({
       playerId,
@@ -401,7 +394,7 @@ export function computePlayerAggregateRows(
       avgVAbsIn: merged.avgVAbsIn,
       avgHAbsIn: merged.avgHAbsIn,
       consistencyStdIn: merged.consistencyStdIn,
-      commandPlus: merged.commandPlus,
+      commandPlus,
     });
   }
 
@@ -412,4 +405,5 @@ export function computePlayerAggregateRows(
 export function clearCache(): void {
   outingCache.clear();
   loadedTasks = null;
+  globalCommandPlusBaselines = {};
 }

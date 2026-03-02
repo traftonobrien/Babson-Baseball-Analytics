@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Target, Download, BookOpen } from "lucide-react";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import {
@@ -20,6 +21,7 @@ import type {
 import type { PitchGroup } from "@/lib/leaderboards/pitchGroups";
 import { handBadgeClassesCompact } from "@/lib/handBadge";
 import { savantColorAt } from "@/lib/savantColors";
+import { plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
 import LogoutButton from "@/app/components/LogoutButton";
 
 // ---------------------------------------------------------------------------
@@ -47,7 +49,7 @@ interface SortState {
   desc: boolean;
 }
 
-const DEFAULT_SORT: SortState = { key: "onTargetPct", desc: true };
+const DEFAULT_SORT: SortState = { key: "commandPlus", desc: true };
 
 /** Lower-is-better metrics: default sort ascending when first clicked. */
 const ASC_DEFAULT_KEYS = new Set<CommonSortKey>([
@@ -60,6 +62,10 @@ function compareOutings(a: OutingLeaderboardRow, b: OutingLeaderboardRow, s: Sor
   if (typeof av === "string" && typeof bv === "string") {
     return s.desc ? bv.localeCompare(av) : av.localeCompare(bv);
   }
+  if (av == null || bv == null) {
+    if (av == null && bv == null) return 0;
+    return av == null ? 1 : -1;
+  }
   const diff = (av as number) - (bv as number);
   return s.desc ? -diff : diff;
 }
@@ -69,6 +75,10 @@ function comparePlayers(a: PlayerAggregateRow, b: PlayerAggregateRow, s: SortSta
   const bv = b[s.key as keyof PlayerAggregateRow];
   if (typeof av === "string" && typeof bv === "string") {
     return s.desc ? bv.localeCompare(av) : av.localeCompare(bv);
+  }
+  if (av == null || bv == null) {
+    if (av == null && bv == null) return 0;
+    return av == null ? 1 : -1;
   }
   const diff = (av as number) - (bv as number);
   return s.desc ? -diff : diff;
@@ -91,6 +101,37 @@ function dateLabel(dateId: string): string {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const mi = parseInt(m, 10) - 1;
   return `${months[mi] ?? m} ${parseInt(d, 10)}, ${y}`;
+}
+
+function outingDashboardHref(playerId: string, outingId: string): string {
+  return `/player/${playerId}?outingId=${outingId}&from=leaderboards`;
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+  const normalized = hex.replace("#", "");
+  const full = normalized.length === 3
+    ? normalized.split("").map((c) => `${c}${c}`).join("")
+    : normalized;
+  const value = parseInt(full, 16);
+  const r = (value >> 16) & 255;
+  const g = (value >> 8) & 255;
+  const b = value & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function glowingBadgeStyle(style: { bg: string; text: string }) {
+  return {
+    color: style.text,
+    background: `linear-gradient(180deg, ${hexToRgba(style.bg, 0.98)} 0%, ${hexToRgba(style.bg, 0.84)} 100%)`,
+    border: `1px solid ${hexToRgba(style.bg, 0.6)}`,
+    boxShadow: [
+      `inset 0 1px 0 ${hexToRgba("#ffffff", 0.18)}`,
+      `0 0 0 1px ${hexToRgba(style.bg, 0.12)}`,
+      `0 0 16px ${hexToRgba(style.bg, 0.32)}`,
+      `0 0 28px ${hexToRgba(style.bg, 0.14)}`,
+    ].join(", "),
+    textShadow: style.text === "#ffffff" ? "0 1px 1px rgba(0, 0, 0, 0.28)" : "none",
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -218,7 +259,7 @@ function KpiCells({
   onTargetMin,
   onTargetMax,
 }: {
-  row: { pitchCount: number; onTargetPct: number; avgMissIn: number; avgHAbsIn: number; avgVAbsIn: number; outlierPct: number; consistencyStdIn: number; commandPlus: number };
+  row: { pitchCount: number; onTargetPct: number; avgMissIn: number; avgHAbsIn: number; avgVAbsIn: number; outlierPct: number; consistencyStdIn: number; commandPlus: number | null };
   onTargetMin: number;
   onTargetMax: number;
 }) {
@@ -227,27 +268,39 @@ function KpiCells({
       ? ((row.onTargetPct - onTargetMin) / (onTargetMax - onTargetMin)) * 100
       : 50;
   const onTargetStyle = savantColorAt(pctForColor);
+  const onTargetBadgeStyle = glowingBadgeStyle(onTargetStyle);
+  const commandPlusStyle =
+    row.commandPlus === null ? null : plusMetricBadgeStyle(row.commandPlus);
   return (
     <>
       <td className="px-2 py-3 text-zinc-300 font-mono text-[11px]">{row.pitchCount}</td>
       <td className="px-2 py-3">
         <span
-          className="inline-block font-mono font-bold text-[10px] px-1.5 py-0.5 rounded"
-          style={{ backgroundColor: onTargetStyle.bg, color: onTargetStyle.text }}
+          className="inline-flex min-w-[70px] items-center justify-center rounded-lg px-2 py-1 font-mono text-[11px] font-extrabold tracking-tight"
+          style={onTargetBadgeStyle}
         >
           {fmtPct(row.onTargetPct)}
         </span>
+      </td>
+      <td className="px-2 py-3">
+        {row.commandPlus === null ? (
+          <span className="inline-flex min-w-[52px] items-center justify-center rounded-md bg-zinc-800 px-2 py-1 font-mono text-[11px] font-bold text-zinc-500 shadow-sm">
+            --
+          </span>
+        ) : (
+          <span
+            className="inline-flex min-w-[52px] items-center justify-center rounded-lg px-2 py-1 font-mono text-[11px] font-extrabold tracking-tight"
+            style={commandPlusStyle ?? undefined}
+          >
+            {row.commandPlus.toFixed(0)}
+          </span>
+        )}
       </td>
       <td className="px-2 py-3 font-mono text-zinc-300 text-[11px]">{fmtIn(row.avgMissIn)}</td>
       <td className="px-2 py-3 font-mono text-zinc-300 text-[11px]">{fmtIn(row.avgHAbsIn)}</td>
       <td className="px-2 py-3 font-mono text-zinc-300 text-[11px]">{fmtIn(row.avgVAbsIn)}</td>
       <td className="px-2 py-3 font-mono text-zinc-400 text-[11px]">{fmtPct(row.outlierPct)}</td>
       <td className="px-2 py-3 font-mono text-zinc-400 text-[11px]">{fmtIn(row.consistencyStdIn)}</td>
-      <td className="px-2 py-3">
-        <span className={`inline-block font-mono font-bold text-[10px] px-1.5 py-0.5 rounded ${row.commandPlus >= 100 ? 'bg-orange-500/20 text-orange-400' : 'bg-rose-500/20 text-rose-400'}`}>
-          {row.commandPlus.toFixed(0)}
-        </span>
-      </td>
     </>
   );
 }
@@ -257,6 +310,7 @@ function KpiCells({
 /* ------------------------------------------------------------------ */
 
 export default function LeaderboardsPage() {
+  const router = useRouter();
   const [mode, setMode] = useState<LeaderboardMode>("outings");
   const [seasonFilter, setSeasonFilter] = useState<SeasonFilter>(2026);
   const [handFilter, setHandFilter] = useState<HandFilter>("ALL");
@@ -357,8 +411,8 @@ export default function LeaderboardsPage() {
   const exportCsv = useCallback(() => {
     const headers =
       mode === "outings"
-        ? ["Rank", "Player", "Date", "Pitches", "On-target %", "Avg Miss (in)", "Avg H (in)", "Avg V (in)", "Outlier %", "Consistency (in)", "Command+"]
-        : ["Rank", "Player", "Outings", "Pitches", "On-target %", "Avg Miss (in)", "Avg H (in)", "Avg V (in)", "Outlier %", "Consistency (in)", "Command+"];
+        ? ["Rank", "Player", "Date", "Pitches", "On-target %", "Command+", "Avg Miss (in)", "Avg H (in)", "Avg V (in)", "Outlier %", "Consistency (in)"]
+        : ["Rank", "Player", "Outings", "Pitches", "On-target %", "Command+", "Avg Miss (in)", "Avg H (in)", "Avg V (in)", "Outlier %", "Consistency (in)"];
     const rows =
       mode === "outings"
         ? displayedOutings.map((r, i) => [
@@ -367,12 +421,12 @@ export default function LeaderboardsPage() {
           dateLabel(r.dateId),
           r.pitchCount,
           r.onTargetPct.toFixed(1),
+          r.commandPlus == null ? "" : r.commandPlus.toFixed(0),
           r.avgMissIn.toFixed(1),
           r.avgHAbsIn.toFixed(1),
           r.avgVAbsIn.toFixed(1),
           r.outlierPct.toFixed(1),
           r.consistencyStdIn.toFixed(1),
-          r.commandPlus.toFixed(0),
         ])
         : displayedPlayers.map((r, i) => [
           i + 1,
@@ -380,12 +434,12 @@ export default function LeaderboardsPage() {
           r.outingCount,
           r.pitchCount,
           r.onTargetPct.toFixed(1),
+          r.commandPlus == null ? "" : r.commandPlus.toFixed(0),
           r.avgMissIn.toFixed(1),
           r.avgHAbsIn.toFixed(1),
           r.avgVAbsIn.toFixed(1),
           r.outlierPct.toFixed(1),
           r.consistencyStdIn.toFixed(1),
-          r.commandPlus.toFixed(0),
         ]);
     const csv = [headers.map(escapeCsv).join(","), ...rows.map((r) => r.map(escapeCsv).join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -537,12 +591,12 @@ export default function LeaderboardsPage() {
               )}
               <Col label="Pitches" sortKey="pitchCount" sort={sort} onSort={handleSort} />
               <Col label="On-target %" sortKey="onTargetPct" sort={sort} onSort={handleSort} title="Pitches within 8 inches" />
+              <Col label="Command+" sortKey="commandPlus" sort={sort} onSort={handleSort} title="Pitch-weighted command relative to team average (100 = average, >100 is better)" />
               <Col label="Avg Miss" sortKey="avgMissIn" sort={sort} onSort={handleSort} title="Average total miss (inches)" />
               <Col label="Avg H" sortKey="avgHAbsIn" sort={sort} onSort={handleSort} title="Average horizontal miss (inches, absolute)" />
               <Col label="Avg V" sortKey="avgVAbsIn" sort={sort} onSort={handleSort} title="Average vertical miss (inches, absolute)" />
               <Col label="Outlier %" sortKey="outlierPct" sort={sort} onSort={handleSort} title="Pitches beyond 20 inches" />
               <Col label="Consistency" sortKey="consistencyStdIn" sort={sort} onSort={handleSort} title="Std dev of total miss (lower = more consistent)" />
-              <Col label="Command+" sortKey="commandPlus" sort={sort} onSort={handleSort} title="Pitch-weighted command relative to team average (100 = average, >100 is better)" />
             </tr>
           </thead>
           <tbody>
@@ -577,13 +631,23 @@ export default function LeaderboardsPage() {
                 <tr
                   key={row.outingId}
                   className="border-b border-zinc-800/50 hover:bg-orange-500/5 transition-smooth cursor-pointer group"
+                  onClick={() => router.push(outingDashboardHref(row.playerId, row.outingId))}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      router.push(outingDashboardHref(row.playerId, row.outingId));
+                    }
+                  }}
+                  tabIndex={0}
+                  role="link"
+                  aria-label={`${row.playerName} ${dateLabel(row.dateId)} outing`}
                 >
                   <td className={`px-2 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>
                     {i + 1}
                   </td>
                   <td className="px-2 py-3 font-medium whitespace-nowrap">
                     <Link
-                      href={`/player/${row.playerId}/report?outingId=${row.outingId}`}
+                      href={outingDashboardHref(row.playerId, row.outingId)}
                       className="hover:text-orange-400 transition-smooth"
                     >
                       {row.playerName}
@@ -592,7 +656,7 @@ export default function LeaderboardsPage() {
                   </td>
                   <td className="px-2 py-3 text-zinc-400 whitespace-nowrap">
                     <Link
-                      href={`/player/${row.playerId}/report?outingId=${row.outingId}`}
+                      href={outingDashboardHref(row.playerId, row.outingId)}
                       className="hover:text-zinc-200 transition-smooth"
                     >
                       {dateLabel(row.dateId)}

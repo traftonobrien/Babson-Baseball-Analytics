@@ -3,6 +3,7 @@ export interface Pitch {
   pitcher_name: string;
   pitcher_hand: string;
   pitch_type: string;
+  raw_pitch_type?: string;
   target_frame: number;
   arrival_frame: number;
   target_x: number;

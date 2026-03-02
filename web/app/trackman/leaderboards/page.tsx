@@ -8,7 +8,7 @@ import { pitchColor } from "@/lib/pitchColors";
 import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
 import { getCanonicalName } from "@/lib/canonicalPlayers";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
-import { computeTotalStuffPlus, stuffPlusBadgeClass } from "@/lib/stuffPlusUtils";
+import { computeTotalStuffPlus, plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
 
 interface LeaderboardEntry {
   rank: number;
@@ -508,7 +508,8 @@ export default function TrackmanLeaderboardsPage() {
                           )}
                           <td className="px-4 py-3 text-right">
                             <span
-                              className={`inline-block px-2 py-0.5 rounded text-[11px] font-mono font-bold ${stuffPlusBadgeClass(r.meanStuffPlus)}`}
+                              className="inline-flex items-center justify-center rounded-lg px-2 py-0.5 font-mono text-[11px] font-bold tracking-tight"
+                              style={plusMetricBadgeStyle(r.meanStuffPlus)}
                             >
                               {r.meanStuffPlus.toFixed(1)}
                             </span>

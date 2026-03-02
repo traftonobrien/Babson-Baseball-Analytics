@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { pitchColor } from "@/lib/pitchColors";
+import { plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
 import type { TrackmanPitchTypeSummary, TrackmanSessionSummary } from "@/lib/trackman/metrics";
 
 const PITCH_NAMES: Record<string, string> = {
@@ -24,14 +25,6 @@ function pitchName(abbr: string): string {
 function fmt(v: number | null, d = 1): string {
   if (v === null) return "\u2014";
   return v.toFixed(d);
-}
-
-/** Stuff+ color by scouting scale */
-function stuffPlusColor(v: number): string {
-  if (v >= 110) return "bg-rose-600 text-white";
-  if (v >= 100) return "bg-orange-500/80 text-white";
-  if (v >= 90) return "bg-zinc-400 text-zinc-900";
-  return "bg-sky-500/80 text-white";
 }
 
 export default function PitchTypeTable({
@@ -87,7 +80,8 @@ export default function PitchTypeTable({
                 <td className="px-3 py-1.5 text-right">
                   {row.meanStuffPlus != null ? (
                     <span
-                      className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium ${stuffPlusColor(row.meanStuffPlus)}`}
+                      className="inline-flex items-center justify-center rounded-md px-1.5 py-0.5 font-mono text-[10px] font-medium tracking-tight"
+                      style={plusMetricBadgeStyle(row.meanStuffPlus)}
                     >
                       {row.meanStuffPlus.toFixed(1)}
                     </span>

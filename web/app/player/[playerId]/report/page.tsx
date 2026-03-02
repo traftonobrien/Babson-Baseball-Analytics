@@ -17,7 +17,8 @@ import { hDirectionLabel } from "@/lib/handedness";
 import { handBadgeClassesCompact, parseHand } from "@/lib/handBadge";
 import { useAllPitchData } from "@/app/hooks/useAllPitchData";
 import LogoutButton from "@/app/components/LogoutButton";
-import { globalTeamAvgMiss, loadAllOutingData } from "@/lib/leaderboards/load";
+import { computeCommandPlus } from "@/lib/commandPlus";
+import { globalCommandPlusBaselines, loadAllOutingData } from "@/lib/leaderboards/load";
 import { seasonFromDateId } from "@/lib/season";
 import type { SeasonFilter } from "@/lib/leaderboards/types";
 
@@ -75,7 +76,7 @@ function ReportInner() {
       setBaselinesLoaded(true);
       return;
     }
-    if (globalTeamAvgMiss[season]) {
+    if (globalCommandPlusBaselines[season]) {
       setBaselinesLoaded(true);
     } else {
       // Fetch baselines if navigating directly to a report page
@@ -101,25 +102,10 @@ function ReportInner() {
 
   const commandPlus = useMemo(() => {
     if (!report || !season || !baselinesLoaded || scope === "overall") return null;
-    const seasonBaselines = globalTeamAvgMiss[season];
+    const seasonBaselines = globalCommandPlusBaselines[season];
     if (!seasonBaselines) return null;
-
-    let totalWeight = 0;
-    let weightedScores = 0;
-
-    for (const pt of report.perPitchType) {
-      if (pt.count === 0) continue;
-      const baseline = seasonBaselines[pt.pitchType];
-      if (baseline && baseline > 0 && pt.avgMiss > 0) {
-        const pitchCommandPlus = (baseline / pt.avgMiss) * 100;
-        weightedScores += pitchCommandPlus * pt.count;
-        totalWeight += pt.count;
-      }
-    }
-
-    if (totalWeight === 0) return null;
-    return weightedScores / totalWeight;
-  }, [report, season, baselinesLoaded, scope]);
+    return computeCommandPlus(pitches, seasonBaselines).overall;
+  }, [report, pitches, season, baselinesLoaded, scope]);
 
   if (!player || (!outing && scope === "outing")) return <Msg text="Player or outing not found." error />;
   if (loading) return <Msg text="Loading pitch data..." />;

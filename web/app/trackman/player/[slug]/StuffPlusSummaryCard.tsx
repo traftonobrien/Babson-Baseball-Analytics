@@ -2,8 +2,8 @@
 
 import {
   computeTotalStuffPlus,
-  stuffPlusBadgeClass,
   stuffPlusAccentClass,
+  plusMetricBadgeStyle,
 } from "@/lib/stuffPlusUtils";
 
 interface StuffPlusPitch {
@@ -36,7 +36,8 @@ export default function StuffPlusSummaryCard({ arsenal, playerId }: Props) {
             Total Stuff+
           </p>
           <div
-            className={`inline-flex items-center justify-center min-w-[4rem] px-4 py-2 rounded-xl font-mono text-3xl font-bold tracking-tight ${stuffPlusBadgeClass(total)}`}
+            className="inline-flex items-center justify-center min-w-[4rem] rounded-xl px-4 py-2 font-mono text-3xl font-bold tracking-tight"
+            style={plusMetricBadgeStyle(total)}
           >
             {total.toFixed(1)}
           </div>
