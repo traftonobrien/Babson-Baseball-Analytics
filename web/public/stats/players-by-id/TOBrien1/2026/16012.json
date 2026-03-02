@@ -1,0 +1,39 @@
+{
+  "batting": {
+    "ab": 0,
+    "avg": null,
+    "bb": 0,
+    "h": 0,
+    "hbp": null,
+    "hr": null,
+    "name": "Trafton O'Brien",
+    "pos": "p",
+    "r": 0,
+    "rbi": 0,
+    "sb": null,
+    "so": 0
+  },
+  "gameId": "16012",
+  "pitching": {
+    "bb": 0,
+    "bf": 1,
+    "er": 0,
+    "era": null,
+    "h": 0,
+    "hr": null,
+    "ip": "0.1",
+    "name": "Trafton O'Brien",
+    "pitches": 4,
+    "r": 0,
+    "so": 1,
+    "strikes": null
+  },
+  "playerDisplay": "Trafton O'Brien",
+  "playerId": "TOBrien1",
+  "season": 2026,
+  "source": {
+    "importedAt": "2026-03-02T01:56:22Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2026/-1-6-trinity-texas-/boxscore/16012"
+  },
+  "team": "babson"
+}

@@ -17,7 +17,7 @@ import { globalCommandPlusBaselines, loadAllOutingData } from "@/lib/leaderboard
 import { seasonFromDateId } from "@/lib/season";
 import type { SeasonFilter } from "@/lib/leaderboards/types";
 import { plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
-import { loadPlayerSlugIndex } from "@/lib/stats";
+import { getSlugForPlayerId } from "@/lib/canonicalPlayers";
 import { pitchColor } from "@/lib/pitchColors";
 import {
   buildStuffPlusLookupCandidates,
@@ -125,9 +125,8 @@ export default function PitchingPlusSection({
         pitches: [],
       });
 
-      const slugIndex = await loadPlayerSlugIndex();
       const candidates = buildStuffPlusLookupCandidates(
-        [slugIndex?.[playerId], playerId],
+        [getSlugForPlayerId(playerId), playerId],
       );
       const lookup = await fetchStuffPlusByCandidates(candidates);
 

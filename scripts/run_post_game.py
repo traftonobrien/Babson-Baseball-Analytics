@@ -101,9 +101,6 @@ def step_git_commit_push(args: argparse.Namespace, game_id: str) -> str | None:
         # Outing meta
         if path.endswith("outing_meta.json") and path.startswith("web/public/data/"):
             to_stage.append(path)
-        # Slug index
-        if path == "web/public/stats/players/index.json":
-            to_stage.append(path)
 
     if not to_stage:
         print("\nNo files to commit.")

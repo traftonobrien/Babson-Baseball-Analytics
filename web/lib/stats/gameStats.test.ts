@@ -14,7 +14,7 @@ const meta: OutingMeta = {
 const stats: PlayerGameStats = {
   season: 2025,
   gameId: "14570",
-  playerKey: "chase_burrows",
+  playerId: "CBurrows1",
   playerDisplay: "Chase Burrows",
   team: "babson",
   batting: null,

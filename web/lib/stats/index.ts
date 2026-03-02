@@ -44,7 +44,7 @@ export type PitchingLine = {
 export type PlayerGameStats = {
   season: number;
   gameId: string;
-  playerKey: string;
+  playerId: string | null;
   playerDisplay: string;
   team: "babson" | "opponent";
   batting: BattingLine | null;
@@ -70,13 +70,11 @@ export async function loadOutingMeta(
 }
 
 export async function loadPlayerGameStats(
-  slug: string,
+  playerId: string,
   season: number,
   gameId: string,
 ): Promise<PlayerGameStats | null> {
-  return fetchJson<PlayerGameStats>(`/stats/players/${slug}/${season}/${gameId}.json`);
-}
-
-export async function loadPlayerSlugIndex(): Promise<Record<string, string> | null> {
-  return fetchJson<Record<string, string>>(`/stats/players/index.json`);
+  return fetchJson<PlayerGameStats>(
+    `/stats/players-by-id/${playerId}/${season}/${gameId}.json`,
+  );
 }

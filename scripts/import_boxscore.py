@@ -11,6 +11,13 @@ from urllib.parse import urlparse
 import requests
 
 try:
+    from lib.canonical_players import get_player_id_by_alias
+    from lib.canonical_players import get_slug_for_player_id as canonical_slug_from_arsenals
+except ImportError:  # pragma: no cover - support module imports
+    from scripts.lib.canonical_players import get_player_id_by_alias  # type: ignore
+    from scripts.lib.canonical_players import get_slug_for_player_id as canonical_slug_from_arsenals  # type: ignore
+
+try:
     from sidearm_parser import (
         normalize_name,
         normalize_player_name,
@@ -79,35 +86,26 @@ def canonical_slug(display: str) -> str:
     return "_".join(parts) if parts else ""
 
 
-def load_slug_index(index_path: str) -> Dict[str, str]:
-    """Load the playerId -> slug mapping from index.json."""
-    if not os.path.exists(index_path):
-        return {}
-    with open(index_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    return data if isinstance(data, dict) else {}
-
-
 def resolve_slug(
     display: str,
-    slug_index: Dict[str, str],
+    slug_index: Optional[Dict[str, str]] = None,
     player_id: Optional[str] = None,
 ) -> str:
     """Resolve canonical slug for a player.
 
     Priority:
-    1. Direct playerId lookup in index
-    2. Match display name forms against index values
-    3. Derive using last_first rule
+    1. Resolve canonical playerId from Arsenals aliases and use Arsenals slug
+    2. Derive using last_first rule
+
+    The ``slug_index`` parameter is retained only for backwards-compatible
+    call sites and tests. It is intentionally ignored.
     """
-    if player_id and player_id in slug_index:
-        return slug_index[player_id]
-    naive = player_key(display)
-    canon = canonical_slug(display)
-    for slug in slug_index.values():
-        if slug in (naive, canon):
-            return slug
-    return canon
+    resolved_player_id = player_id or get_player_id_by_alias(display)
+    if resolved_player_id:
+        canonical = canonical_slug_from_arsenals(resolved_player_id)
+        if canonical:
+            return canonical
+    return canonical_slug(display)
 
 
 def find_player(rows: List[Dict[str, Optional[object]]], target_norm: str) -> Optional[Dict[str, Optional[object]]]:
@@ -234,39 +232,43 @@ def main() -> None:
             batting_row = opponent_batting_match
             pitching_row = opponent_pitching_match
 
-    slug_index_path = os.path.join("web", "public", "stats", "players", "index.json")
-    slug_index = load_slug_index(slug_index_path)
-
     player_payload = None
     player_display = None
     if batting_row or pitching_row:
         player_display = (batting_row or pitching_row).get("name")
-        resolved = resolve_slug(player_display, slug_index)
-        player_payload = {
-            "season": season,
-            "gameId": str(game_id),
-            "playerKey": resolved,
-            "playerDisplay": player_display,
-            "team": player_team_key,
-            "batting": batting_row,
-            "pitching": pitching_row,
-            "source": {"url": args.url, "importedAt": imported_at},
-        }
+        resolved_player_id = get_player_id_by_alias(str(player_display)) or get_player_id_by_alias(args.player)
+        if resolved_player_id:
+            player_payload = {
+                "season": season,
+                "gameId": str(game_id),
+                "playerId": resolved_player_id,
+                "playerDisplay": player_display,
+                "team": player_team_key,
+                "batting": batting_row,
+                "pitching": pitching_row,
+                "source": {"url": args.url, "importedAt": imported_at},
+            }
+        else:
+            print(
+                f"Warning: could not resolve playerId from Arsenals for {player_display}",
+                file=sys.stderr,
+            )
 
     game_path = os.path.join("web", "public", "stats", "games", str(season), f"{game_id}.json")
     season_index_path = os.path.join("web", "public", "stats", "seasons", str(season), "games.json")
 
-    player_path = None
+    player_id_path = None
     if player_payload:
-        player_path = os.path.join(
-            "web",
-            "public",
-            "stats",
-            "players",
-            player_payload["playerKey"],
-            str(season),
-            f"{game_id}.json",
-        )
+        if player_payload.get("playerId"):
+            player_id_path = os.path.join(
+                "web",
+                "public",
+                "stats",
+                "players-by-id",
+                str(player_payload["playerId"]),
+                str(season),
+                f"{game_id}.json",
+            )
 
     index_entry = {
         "gameId": str(game_id),
@@ -274,7 +276,7 @@ def main() -> None:
         "opponent": opponent_display,
         "date": meta.get("date"),
         "importedAt": imported_at,
-        "playersIncluded": [player_payload["playerKey"]] if player_payload else [],
+        "playerIdsIncluded": [player_payload["playerId"]] if player_payload and player_payload.get("playerId") else [],
     }
 
     if args.dry_run:
@@ -283,10 +285,10 @@ def main() -> None:
             print(json.dumps(player_payload, indent=2, sort_keys=True))
     else:
         write_json(game_path, game_payload)
-        if player_payload and player_path:
-            write_json(player_path, player_payload)
-            if not os.path.exists(player_path):
-                print(f"ERROR: player file missing after write: {player_path}", file=sys.stderr)
+        if player_payload and player_id_path:
+            write_json(player_id_path, player_payload)
+            if not os.path.exists(player_id_path):
+                print(f"ERROR: playerId file missing after write: {player_id_path}", file=sys.stderr)
                 sys.exit(1)
         update_index(season_index_path, index_entry)
 
@@ -302,8 +304,8 @@ def main() -> None:
         print("- dry run: no files written")
     else:
         print(f"- game file: {game_path}")
-        if player_path:
-            print(f"- player file: {player_path}")
+        if player_id_path:
+            print(f"- playerId file: {player_id_path}")
         print(f"- season index: {season_index_path}")
 
 

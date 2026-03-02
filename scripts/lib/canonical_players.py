@@ -15,6 +15,12 @@ _DEFAULT_ARSENALS = _REPO_ROOT / "web" / "public" / "data" / "Arsenals.csv"
 
 _canonical_cache: Optional[Dict[str, str]] = None
 _slug_to_name_cache: Optional[Dict[str, str]] = None
+_player_id_by_alias_cache: Optional[Dict[str, str]] = None
+
+
+def normalize_player_alias(value: str) -> str:
+    """Normalize arbitrary player labels to an alias-safe lookup key."""
+    return re.sub(r"[^a-z0-9]+", "", value.lower())
 
 
 def slugify(name: str) -> str:
@@ -85,6 +91,123 @@ def _load_slug_to_name(arsenals_path: Optional[os.PathLike] = None) -> Dict[str,
     return result
 
 
+def _player_alias_candidates(player_id: str, name: str) -> set[str]:
+    aliases: set[str] = set()
+    pid = player_id.strip()
+    display = name.strip()
+    if pid:
+        aliases.add(pid)
+        stem = re.sub(r"\d+$", "", pid)
+        digits = pid[len(stem):]
+        if stem:
+            aliases.add(stem)
+            if digits:
+                aliases.add(f"{stem} {digits}")
+            if len(stem) > 1:
+                aliases.add(f"{stem[0]} {stem[1:]}")
+                if digits:
+                    aliases.add(f"{stem[0]} {stem[1:]} {digits}")
+
+    cleaned = re.sub(r"[^a-zA-Z\s,'-]", "", display).strip()
+    cleaned = re.sub(r"'", "", cleaned)
+
+    if "," in cleaned:
+        before, _, after = cleaned.partition(",")
+        last = before.strip()
+        given = after.strip()
+    else:
+        parts = [p for p in re.split(r"\s+", cleaned) if p]
+        if not parts:
+            return aliases
+        last = parts[-1]
+        given = " ".join(parts[:-1]) if len(parts) > 1 else parts[0]
+
+    given_parts = [p for p in re.split(r"\s+", given) if p]
+    first_token = given_parts[0] if given_parts else ""
+    first_initial = first_token[:1]
+
+    if given and last:
+        aliases.add(f"{given} {last}")
+        aliases.add(f"{last}, {given}")
+        aliases.add(f"{last} {given}")
+    if first_initial and last:
+        aliases.add(f"{first_initial} {last}")
+        aliases.add(f"{first_initial}{last}")
+        aliases.add(f"{last}, {first_initial}")
+        aliases.add(f"{last} {first_initial}")
+    if given:
+        aliases.add(given)
+    if last:
+        aliases.add(last)
+
+    return aliases
+
+
+def _build_player_id_by_alias(
+    arsenals_path: Optional[os.PathLike] = None,
+) -> Dict[str, str]:
+    global _player_id_by_alias_cache
+    if arsenals_path is None and _player_id_by_alias_cache is not None:
+        return _player_id_by_alias_cache
+
+    by_id = _load_canonical(arsenals_path)
+    collisions: Dict[str, set[str]] = {}
+
+    for pid, name in by_id.items():
+        aliases = {
+            normalize_player_alias(alias)
+            for alias in _player_alias_candidates(pid, name)
+            if normalize_player_alias(alias)
+        }
+        for alias in aliases:
+            collisions.setdefault(alias, set()).add(pid)
+
+    resolved = {
+        alias: next(iter(player_ids))
+        for alias, player_ids in collisions.items()
+        if len(player_ids) == 1
+    }
+
+    if arsenals_path is None:
+        _player_id_by_alias_cache = resolved
+    return resolved
+
+
+def get_player_id_by_alias(
+    value: str,
+    arsenals_path: Optional[os.PathLike] = None,
+) -> Optional[str]:
+    """Resolve any supported name/id alias to the canonical playerId."""
+    key = normalize_player_alias(value.strip())
+    if not key:
+        return None
+    return _build_player_id_by_alias(arsenals_path).get(key)
+
+
+def get_player_alias_map(
+    arsenals_path: Optional[os.PathLike] = None,
+) -> Dict[str, str]:
+    """Return normalized alias -> playerId for unique aliases."""
+    return dict(_build_player_id_by_alias(arsenals_path))
+
+
+def get_slug_for_player_id(
+    player_id: str,
+    arsenals_path: Optional[os.PathLike] = None,
+) -> Optional[str]:
+    """Resolve canonical last_first slug for a playerId or alias."""
+    resolved_id = get_player_id_by_alias(player_id, arsenals_path)
+    if not resolved_id:
+        resolved_id = player_id.strip() if player_id.strip() in _load_canonical(arsenals_path) else None
+    if not resolved_id:
+        return None
+    name = _load_canonical(arsenals_path).get(resolved_id)
+    if not name:
+        return None
+    slug = slugify(name)
+    return slug or None
+
+
 def get_canonical_name(
     slug_or_player_id_or_raw: str,
     arsenals_path: Optional[os.PathLike] = None,
@@ -96,6 +219,12 @@ def get_canonical_name(
     """
     data = _load_slug_to_name(arsenals_path)
     key = slug_or_player_id_or_raw.strip()
+
+    player_id = get_player_id_by_alias(key, arsenals_path)
+    if player_id:
+        canonical = _load_canonical(arsenals_path).get(player_id)
+        if canonical:
+            return canonical
 
     # Direct lookup
     if key in data:

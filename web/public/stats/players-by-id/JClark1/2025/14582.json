@@ -1,0 +1,39 @@
+{
+  "batting": {
+    "ab": 0,
+    "avg": null,
+    "bb": 0,
+    "h": 0,
+    "hbp": null,
+    "hr": null,
+    "name": "James Clark",
+    "pos": "p",
+    "r": 0,
+    "rbi": 0,
+    "sb": null,
+    "so": 0
+  },
+  "gameId": "14582",
+  "pitching": {
+    "bb": 1,
+    "bf": 6,
+    "er": 2,
+    "era": null,
+    "h": 1,
+    "hr": null,
+    "ip": "1.0",
+    "name": "James Clark",
+    "pitches": 24,
+    "r": 2,
+    "so": 3,
+    "strikes": null
+  },
+  "playerDisplay": "James Clark",
+  "playerId": "JClark1",
+  "season": 2025,
+  "source": {
+    "importedAt": "2026-02-12T23:37:57Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2025/-13-14-salve-regina/boxscore/14582"
+  },
+  "team": "babson"
+}

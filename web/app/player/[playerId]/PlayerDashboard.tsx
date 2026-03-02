@@ -24,7 +24,6 @@ import { seasonFromDateId } from "@/lib/season";
 import {
   loadOutingMeta,
   loadPlayerGameStats,
-  loadPlayerSlugIndex,
   type OutingMeta,
   type PlayerGameStats,
 } from "@/lib/stats";
@@ -122,20 +121,14 @@ export default function PlayerDashboard({
         return;
       }
       setOutingMeta(meta);
-      const slugIndex = await loadPlayerSlugIndex();
-      const slug = slugIndex?.[outingPlayerId];
       const initialMap: Record<string, PlayerGameStats | null> = {};
       for (const game of meta.linkedGames) {
         initialMap[game.gameId] = null;
       }
-      if (!slug) {
-        setStatsByGame(initialMap);
-        return;
-      }
       const entries = await Promise.all(
         meta.linkedGames.map(async (game) => [
           game.gameId,
-          await loadPlayerGameStats(slug, game.season, game.gameId),
+          await loadPlayerGameStats(outingPlayerId, game.season, game.gameId),
         ] as const),
       );
       if (!active) return;

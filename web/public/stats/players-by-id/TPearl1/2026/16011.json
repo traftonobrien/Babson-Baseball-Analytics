@@ -1,0 +1,39 @@
+{
+  "batting": {
+    "ab": 0,
+    "avg": null,
+    "bb": 0,
+    "h": 0,
+    "hbp": null,
+    "hr": null,
+    "name": "Tristan Pearl",
+    "pos": "p",
+    "r": 0,
+    "rbi": 0,
+    "sb": null,
+    "so": 0
+  },
+  "gameId": "16011",
+  "pitching": {
+    "bb": 2,
+    "bf": 10,
+    "er": 1,
+    "era": null,
+    "h": 2,
+    "hr": null,
+    "ip": "2.1",
+    "name": "Tristan Pearl",
+    "pitches": 48,
+    "r": 1,
+    "so": 2,
+    "strikes": null
+  },
+  "playerDisplay": "Tristan Pearl",
+  "playerId": "TPearl1",
+  "season": 2026,
+  "source": {
+    "importedAt": "2026-03-01T05:38:27Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2026/-1-6-trinity-texas-/boxscore/16011"
+  },
+  "team": "babson"
+}

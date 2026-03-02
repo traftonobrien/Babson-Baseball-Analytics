@@ -10,7 +10,7 @@ Start here to find any doc. For task-based lookup, see `docs/ROUTING.md`.
 
 - `docs/architecture/overview.md` — System data flow and components
 - `docs/architecture/coordinates_and_handedness.md` — Perspective, miss vectors, arm/glove logic
-- `docs/architecture/folder_contract.md` — Required folder structures and naming
+- `docs/architecture/folder_contract.md` — Required folder structures, stats layout, and canonical player identity rules
 - `docs/architecture/ownership_map.md` — Directory ownership matrix (who owns what)
 
 ### Pipeline

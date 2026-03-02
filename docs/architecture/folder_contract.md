@@ -8,6 +8,12 @@ Canonical reference for folder structure, naming conventions, and file mapping r
 - **dateId:** `yyyy_mm_dd` zero-padded (e.g. `2025_03_26`). Optional `_01` suffix for same-day.
 - **outingId:** `playerId/dateId` (e.g. `DJames1/2025_03_26`)
 
+### Identity Contract
+
+- `web/public/data/Arsenals.csv` is the single source of truth for `playerId`.
+- Resolve all player names, aliases, and slugs back to a canonical `playerId` before writing persistent data.
+- `playerId` is the active storage key for post-game stats and web routing. Slug-based stats paths are legacy migration inputs only.
+
 ### Local Outing Structure
 
 ```
@@ -34,6 +40,19 @@ web/public/data/<playerId>/<dateId>/
 ```
 
 Result PNGs, `pitch_log.json`, and `roi.json` are not published.
+
+### Stats Published Structure
+
+```
+web/public/stats/
+├── games/<season>/<gameId>.json
+├── players-by-id/<playerId>/<season>/<gameId>.json
+└── seasons/<season>/games.json
+```
+
+- Player stat payloads persist `playerId` and never rely on a slug path for lookup.
+- Season indexes persist `playerIdsIncluded`.
+- `web/public/stats/players/` is a legacy migration source and should not be written by current scripts.
 
 ### File Mapping
 

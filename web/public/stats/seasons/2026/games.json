@@ -4,8 +4,8 @@
     "gameId": "16011",
     "importedAt": "2026-03-01T05:52:21Z",
     "opponent": "#1/6 Trinity (Texas)",
-    "playersIncluded": [
-      "valente_ben"
+    "playerIdsIncluded": [
+      "BValente1"
     ],
     "url": "https://babsonathletics.com/sports/baseball/stats/2026/-1-6-trinity-texas-/boxscore/16011"
   },
@@ -14,8 +14,8 @@
     "gameId": "16012",
     "importedAt": "2026-03-02T02:32:54Z",
     "opponent": "#1/6 Trinity (Texas)",
-    "playersIncluded": [
-      "doan_connor"
+    "playerIdsIncluded": [
+      "CDoan1"
     ],
     "url": "https://babsonathletics.com/sports/baseball/stats/2026/-1-6-trinity-texas-/boxscore/16012"
   },
@@ -24,9 +24,9 @@
     "gameId": "16013",
     "importedAt": "2026-03-02T05:40:01Z",
     "opponent": "#1/6 Trinity (Texas)",
-    "playersIncluded": [
-      "chase_burrows",
-      "zander_teator"
+    "playerIdsIncluded": [
+      "CBurrows1",
+      "ZTeator1"
     ],
     "url": "https://babsonathletics.com/sports/baseball/stats/2026/-1-6-trinity-texas-/boxscore/16013"
   }

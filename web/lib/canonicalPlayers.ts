@@ -5,8 +5,9 @@
 
 import {
   CANONICAL_BY_PLAYER_ID,
-  CANONICAL_BY_SLUG,
-  SLUG_TO_HAND,
+  HAND_BY_PLAYER_ID,
+  PLAYER_ID_BY_ALIAS,
+  SLUG_BY_PLAYER_ID,
 } from "./canonicalPlayersData";
 
 /** "Trafton OBrien" -> "obrien_trafton"; "O'Brien, Trafton" -> "obrien_trafton" */
@@ -28,6 +29,17 @@ function parseToSlug(raw: string): string {
   return `${last}_${first}`;
 }
 
+function normalizePlayerAlias(raw: string): string {
+  return raw.trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+function resolveCanonicalPlayerId(raw: string): string | null {
+  const key = raw.trim();
+  if (!key) return null;
+  if (CANONICAL_BY_PLAYER_ID[key]) return key;
+  return PLAYER_ID_BY_ALIAS[normalizePlayerAlias(key)] ?? null;
+}
+
 /**
  * Get canonical display name for a player (sync).
  * Accepts slug (obrien_trafton), playerId (TOBrien1), or raw (OBrien, Trafton).
@@ -35,26 +47,8 @@ function parseToSlug(raw: string): string {
  */
 export function getCanonicalName(slugOrPlayerIdOrRaw: string): string {
   const key = slugOrPlayerIdOrRaw.trim();
-
-  const byId = CANONICAL_BY_PLAYER_ID[key];
-  if (byId) return byId;
-
-  const bySlug = CANONICAL_BY_SLUG[key];
-  if (bySlug) return bySlug;
-
-  // Mechanics index uses first_last; canonical uses last_first — try reversed
-  if (key.includes("_")) {
-    const parts = key.split("_");
-    if (parts.length === 2) {
-      const reversed = `${parts[1]}_${parts[0]}`;
-      const byReversed = CANONICAL_BY_SLUG[reversed];
-      if (byReversed) return byReversed;
-    }
-  }
-
-  const parsedSlug = parseToSlug(key);
-  const byParsed = CANONICAL_BY_SLUG[parsedSlug];
-  if (byParsed) return byParsed;
+  const playerId = resolveCanonicalPlayerId(key);
+  if (playerId) return CANONICAL_BY_PLAYER_ID[playerId];
 
   if (key.includes(",")) {
     const [last, first] = key.split(",").map((s) => s.trim());
@@ -65,16 +59,23 @@ export function getCanonicalName(slugOrPlayerIdOrRaw: string): string {
 
 /** Get handedness (R/L) from slug, or null if unknown. */
 export function getHand(slug: string): "R" | "L" | null {
-  const h = SLUG_TO_HAND[slug.trim()] ?? SLUG_TO_HAND[parseToSlug(slug)];
-  return h ?? null;
+  const playerId = resolveCanonicalPlayerId(slug);
+  if (!playerId) return null;
+  return HAND_BY_PLAYER_ID[playerId] ?? null;
 }
 
 /** Get canonical playerId (TOBrien1) from slug (obrien_trafton), or null. */
 export function getCanonicalPlayerId(slug: string): string | null {
-  const name = CANONICAL_BY_SLUG[slug.trim()] ?? CANONICAL_BY_SLUG[parseToSlug(slug)];
-  if (!name) return null;
-  for (const [pid, n] of Object.entries(CANONICAL_BY_PLAYER_ID)) {
-    if (n === name) return pid;
+  return resolveCanonicalPlayerId(slug);
+}
+
+/** Get canonical slug (obrien_trafton) from playerId (TOBrien1), or null. */
+export function getSlugForPlayerId(playerId: string): string | null {
+  const resolvedId = resolveCanonicalPlayerId(playerId);
+  if (!resolvedId) return null;
+  if (SLUG_BY_PLAYER_ID[resolvedId]) return SLUG_BY_PLAYER_ID[resolvedId];
+  if (CANONICAL_BY_PLAYER_ID[resolvedId]) {
+    return parseToSlug(CANONICAL_BY_PLAYER_ID[resolvedId]);
   }
   return null;
 }
