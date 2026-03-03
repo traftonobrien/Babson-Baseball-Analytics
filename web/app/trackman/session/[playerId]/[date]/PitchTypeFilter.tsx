@@ -1,6 +1,6 @@
 "use client";
 
-import { pitchColor } from "@/lib/pitchColors";
+import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 
 interface Props {
   allTypes: string[];
@@ -19,38 +19,28 @@ export default function PitchTypeFilter({
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      {/* Pitch type toggles */}
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-2">
         {allTypes.map((type) => {
           const active = activePitchTypes.size === 0 || activePitchTypes.has(type);
           return (
             <button
               key={type}
               onClick={() => onToggleType(type)}
-              className={`px-2.5 py-1 text-xs rounded-md font-mono transition-smooth border ${
-                active
-                  ? "border-zinc-600 text-zinc-100"
-                  : "border-zinc-800 text-zinc-500"
+              className={`rounded-full transition-smooth ${
+                active ? "opacity-100" : "opacity-40 hover:opacity-80"
               }`}
-              style={{
-                backgroundColor: active ? pitchColor(type) + "33" : undefined,
-              }}
+              aria-pressed={active}
             >
-              <span
-                className="inline-block w-2 h-2 rounded-full mr-1"
-                style={{ backgroundColor: pitchColor(type) }}
-              />
-              {type}
+              <PitchTypeChip pitchType={type} label={type} size="xs" />
             </button>
           );
         })}
       </div>
 
-      {/* Reset */}
       {hasFilters && (
         <button
           onClick={() => onClearTypes()}
-          className="text-xs text-zinc-500 hover:text-zinc-300 transition-smooth"
+          className="rounded-full border border-zinc-800 bg-zinc-950/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500 transition-smooth hover:border-zinc-600 hover:text-zinc-200"
         >
           Reset
         </button>

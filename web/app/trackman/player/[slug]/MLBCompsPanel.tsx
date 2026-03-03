@@ -2,7 +2,13 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Play } from "lucide-react";
-import { pitchColor } from "@/lib/pitchColors";
+import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
+import {
+  Button,
+  leaderboardFilterButtonBaseClassName,
+  leaderboardFilterButtonBlueActiveClassName,
+  leaderboardFilterButtonBlueInactiveClassName,
+} from "@/components/ui/neon-button";
 import {
   findPitchComps,
   findArsenalComps,
@@ -54,7 +60,7 @@ function WatchClipButton({
   return (
     <button
       onClick={onClick}
-      className="flex items-center justify-start gap-1.5 w-[92px] h-[28px] shrink-0 px-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-zinc-100 transition-colors text-[11px] font-medium border border-zinc-700/60 hover:border-zinc-600 whitespace-nowrap"
+      className="flex h-[30px] w-[96px] shrink-0 items-center justify-start gap-1.5 whitespace-nowrap rounded-xl border border-zinc-700/70 bg-zinc-800/90 px-2.5 text-[11px] font-medium text-zinc-300 transition-smooth hover:border-zinc-600 hover:bg-zinc-700/90 hover:text-zinc-100"
       title={title}
     >
       <Play className="w-3 h-3 fill-current shrink-0" />
@@ -76,7 +82,7 @@ function PitchCompCard({
   const rankColor = rankColors[rank] ?? "text-zinc-500";
 
   return (
-    <div className="flex items-center gap-3 py-2 border-b border-zinc-800/60 last:border-0">
+    <div className="flex items-center gap-3 py-2.5 border-b border-zinc-800/60 last:border-0">
       <span className={`text-xs font-bold w-4 shrink-0 ${rankColor}`}>
         {rank + 1}
       </span>
@@ -129,30 +135,20 @@ function ArsenalCompCard({
   const rankColor = rankColors[rank] ?? "text-zinc-500";
 
   return (
-    <div className="flex items-center gap-3 py-2 border-b border-zinc-800/60 last:border-0">
+    <div className="flex items-center gap-3 py-3 border-b border-zinc-800/60 last:border-0">
       <span className={`text-xs font-bold w-4 shrink-0 ${rankColor}`}>
         {rank + 1}
       </span>
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-zinc-200 truncate">
-          {result.pitcher.name}
-        </div>
-        <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-          {result.pitchBreakdown.map((b) => (
-            <span
-              key={b.pitchType}
-              className="text-[9px] font-mono text-zinc-500 bg-zinc-800/80 px-1 py-0.5 rounded"
-            >
-              {b.pitchType.slice(0, 3)} {b.distance.toFixed(1)}
-            </span>
-          ))}
-        </div>
+      <div className="flex-1 min-w-0 text-sm font-medium text-zinc-200 truncate">
+        {result.pitcher.name}
       </div>
-      <div className="text-right shrink-0">
-        <div className="text-[10px] font-mono text-zinc-400">
+      <div className="inline-flex shrink-0 min-w-[8.5rem] items-center justify-end gap-2 rounded-xl border border-blue-500/20 bg-blue-500/[0.08] px-3 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+        <span className="text-sm font-mono font-semibold text-blue-200">
           {result.avgDistance.toFixed(2)}
-        </div>
-        <div className="text-[9px] text-zinc-600">dist</div>
+        </span>
+        <span className="whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.14em] text-blue-300/70">
+          Arsenal Delta
+        </span>
       </div>
     </div>
   );
@@ -234,7 +230,7 @@ export default function MLBCompsPanel({
   if (arsenal.length === 0) return null;
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+    <div className="rounded-[1.35rem] border border-zinc-800/90 bg-[radial-gradient(circle_at_84%_14%,rgba(59,130,246,0.08),transparent_22%),linear-gradient(180deg,rgba(24,24,27,0.78),rgba(9,9,11,0.94))] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.20)]">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -246,19 +242,22 @@ export default function MLBCompsPanel({
           )}
         </div>
         {/* Mode toggle */}
-        <div className="flex bg-zinc-800 rounded-lg p-0.5 gap-0.5">
+        <div className="flex items-center gap-1 rounded-2xl border border-zinc-800/80 bg-zinc-950/60 p-1">
           {(["per-pitch", "arsenal"] as const).map((m) => (
-            <button
+            <Button
               key={m}
               onClick={() => setMode(m)}
-              className={`text-[11px] px-2.5 py-1 rounded-md transition-colors ${
+              variant="default"
+              tone="blue"
+              className={`${leaderboardFilterButtonBaseClassName} ${
                 mode === m
-                  ? "bg-zinc-600 text-zinc-100"
-                  : "text-zinc-400 hover:text-zinc-200"
+                  ? leaderboardFilterButtonBlueActiveClassName
+                  : leaderboardFilterButtonBlueInactiveClassName
               }`}
+              aria-pressed={mode === m}
             >
               {m === "per-pitch" ? "Per Pitch" : "Arsenal"}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -276,30 +275,19 @@ export default function MLBCompsPanel({
             <div className="space-y-5">
               {/* Pitch type selector */}
               {pitchKeys.length > 1 && (
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-2">
                   {pitchKeys.map((pt) => {
-                    const color = pitchColor(pt);
                     const isActive = pt === currentPitch;
                     return (
                       <button
                         key={pt}
                         onClick={() => setActivePitch(pt)}
-                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors border ${
-                          isActive
-                            ? "border-transparent text-white"
-                            : "border-zinc-700 text-zinc-400 hover:text-zinc-200 bg-transparent"
+                        className={`rounded-full transition-smooth ${
+                          isActive ? "opacity-100" : "opacity-40 hover:opacity-80"
                         }`}
-                        style={
-                          isActive
-                            ? { backgroundColor: color, borderColor: color }
-                            : {}
-                        }
+                        aria-pressed={isActive}
                       >
-                        <span
-                          className="w-1.5 h-1.5 rounded-full shrink-0"
-                          style={{ backgroundColor: isActive ? "rgba(255,255,255,0.7)" : color }}
-                        />
-                        {pt}
+                        <PitchTypeChip pitchType={pt} label={pt} size="xs" />
                       </button>
                     );
                   })}
@@ -315,14 +303,12 @@ export default function MLBCompsPanel({
                     {/* Babson pitcher's stats for context */}
                     {input && (
                       <div className="flex items-center gap-3 mb-3 pb-3 border-b border-zinc-800">
-                        <div className="flex items-center gap-1.5">
-                          <span
-                            className="w-2 h-2 rounded-full shrink-0"
-                            style={{ backgroundColor: pitchColor(currentPitch) }}
+                        <div className="flex items-center gap-2">
+                          <PitchTypeChip
+                            pitchType={currentPitch}
+                            label={`Your ${currentPitch}`}
+                            size="xs"
                           />
-                          <span className="text-xs font-medium text-zinc-300">
-                            Your {currentPitch}
-                          </span>
                         </div>
                         <span className="text-[11px] font-mono text-zinc-400">
                           IVB {fmt(input.ivb)}&quot;

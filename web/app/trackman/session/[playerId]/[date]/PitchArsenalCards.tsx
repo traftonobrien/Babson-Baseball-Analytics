@@ -2,11 +2,16 @@
 
 import { useMemo } from "react";
 import { pitchColor } from "@/lib/pitchColors";
+import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import type { TrackmanPitchTypeSummary } from "@/lib/trackman/metrics";
 
 function fmt(v: number | null, decimals = 1): string {
   if (v === null) return "\u2014";
   return v.toFixed(decimals);
+}
+
+function accentBackground(color: string): string {
+  return `radial-gradient(circle at 86% 14%, ${color}1f, transparent 26%), linear-gradient(180deg, rgba(24,24,27,0.88), rgba(9,9,11,0.96))`;
 }
 
 function Metric({ label, value, unit }: { label: string; value: string; unit?: string }) {
@@ -44,36 +49,44 @@ export default function PitchArsenalCards({
           return (
             <div
               key={row.pitchType}
-              className="relative bg-zinc-900 border border-zinc-800 rounded-lg p-4 overflow-hidden transition-smooth duration-300 hover:border-zinc-700"
+              className="group relative overflow-hidden rounded-[1.35rem] border border-zinc-800/90 p-4 shadow-[0_18px_40px_rgba(0,0,0,0.20)] transition-smooth duration-300 hover:border-zinc-700"
+              style={{ background: accentBackground(color) }}
             >
-              {/* Colored accent bar */}
               <div
-                className="absolute top-0 left-0 w-full h-0.5"
-                style={{ backgroundColor: color }}
+                className="absolute bottom-4 left-0 top-4 w-[3px] rounded-full"
+                style={{ backgroundColor: color, boxShadow: `0 0 12px ${color}` }}
               />
-              {/* Pitch name + color dot */}
-              <div className="flex items-center gap-2 mb-3">
-                <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: color }}
-                />
-                <span className="text-sm font-semibold text-zinc-100">
-                  {row.pitchType}
-                </span>
-              </div>
-              {/* Hero velo */}
-              <div className="mb-3">
-                <span className="text-3xl font-bold tabular-nums text-zinc-50">
-                  {fmt(row.avgVelo)}
-                </span>
-                <span className="text-xs text-zinc-500 ml-1">mph</span>
-              </div>
-              {/* Secondary metrics */}
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-                <Metric label="Spin" value={fmt(row.avgSpin, 0)} unit="rpm" />
-                <Metric label="IVB" value={fmt(row.avgIvb)} unit={"\u2033"} />
-                <Metric label="HB" value={fmt(row.avgHb)} unit={"\u2033"} />
-                <Metric label="Extension" value={fmt(row.avgExtension)} unit="ft" />
+              <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent" />
+
+              <div className="pl-3">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <PitchTypeChip
+                    pitchType={row.pitchType}
+                    label={row.pitchType}
+                    size="sm"
+                  />
+                  {row.count != null ? (
+                    <span className="rounded-full border border-zinc-800 bg-zinc-950/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
+                      {row.count} pitch{row.count !== 1 ? "es" : ""}
+                    </span>
+                  ) : null}
+                </div>
+
+                <div className="mb-4 flex items-baseline gap-1.5">
+                  <span className="text-3xl font-bold tabular-nums text-zinc-50">
+                    {fmt(row.avgVelo)}
+                  </span>
+                  <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">
+                    mph
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                  <Metric label="Spin" value={fmt(row.avgSpin, 0)} unit="rpm" />
+                  <Metric label="IVB" value={fmt(row.avgIvb)} unit={"\u2033"} />
+                  <Metric label="HB" value={fmt(row.avgHb)} unit={"\u2033"} />
+                  <Metric label="Extension" value={fmt(row.avgExtension)} unit="ft" />
+                </div>
               </div>
             </div>
           );

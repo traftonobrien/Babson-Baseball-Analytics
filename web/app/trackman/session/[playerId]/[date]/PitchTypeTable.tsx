@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { pitchColor } from "@/lib/pitchColors";
+import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
 import type { TrackmanPitchTypeSummary, TrackmanSessionSummary } from "@/lib/trackman/metrics";
 
@@ -66,11 +66,12 @@ export default function PitchTypeTable({
             {rows.map((row) => (
               <tr key={row.pitchType} className="border-t border-zinc-800/50">
                 <td className="px-3 py-1.5">
-                  <span
-                    className="inline-block w-2 h-2 rounded-full mr-1.5"
-                    style={{ backgroundColor: pitchColor(row.pitchType) }}
+                  <PitchTypeChip
+                    pitchType={row.pitchType}
+                    label={pitchName(row.pitchType)}
+                    size="xs"
+                    className="align-middle"
                   />
-                  {pitchName(row.pitchType)}
                 </td>
                 {showCounts && (
                   <td className="px-3 py-1.5 text-right font-mono">

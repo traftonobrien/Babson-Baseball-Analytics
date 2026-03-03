@@ -23,8 +23,8 @@ const CENTER = PAD + PLOT / 2;
 
 const DOT_R = 7;
 const HALO_R = 20;
-const HALO_OPACITY = 0.14;
-const HALO_STROKE_OPACITY = 0.25;
+const HALO_OPACITY = 0.12;
+const HALO_STROKE_OPACITY = 0.2;
 
 const MLB_DOT_R = 7;
 const MLB_HALO_R = 18;
@@ -36,10 +36,9 @@ const RING_INCHES = [6, 12, 18, 24];
 const OUTER_RING = 27;
 
 /* Label layout */
-const LABEL_DX = 10;
-const LABEL_DY_NAME = -8;
-const LABEL_DY_METRICS = 3;
-const MIN_LABEL_GAP = 18;
+const LABEL_SIDE_GAP = HALO_R + 12;
+const LABEL_CARD_HEIGHT = 30;
+const LABEL_CARD_MIN_WIDTH = 72;
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -60,26 +59,65 @@ function inchesToPx(inches: number, maxAbs: number): number {
   return (inches / maxAbs) * (PLOT / 2);
 }
 
-function resolveCollisions(
-  labels: { key: string; x: number; y: number }[],
-): { key: string; x: number; y: number }[] {
-  const sorted = [...labels].sort((a, b) => a.y - b.y);
-  for (let i = 1; i < sorted.length; i++) {
-    const prev = sorted[i - 1];
-    const curr = sorted[i];
-    const gap = curr.y - prev.y;
-    if (gap < MIN_LABEL_GAP) {
-      const push = (MIN_LABEL_GAP - gap) / 2;
-      prev.y -= push;
-      curr.y += push;
-    }
-  }
-  return sorted;
+type Rect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function rectsOverlap(a: Rect, b: Rect, padding = 0): boolean {
+  return !(
+    a.x + a.width + padding <= b.x ||
+    b.x + b.width + padding <= a.x ||
+    a.y + a.height + padding <= b.y ||
+    b.y + b.height + padding <= a.y
+  );
+}
+
+function rectIntersectsCircle(
+  rect: Rect,
+  cx: number,
+  cy: number,
+  r: number,
+  padding = 0,
+): boolean {
+  const closestX = clamp(cx, rect.x, rect.x + rect.width);
+  const closestY = clamp(cy, rect.y, rect.y + rect.height);
+  const dx = cx - closestX;
+  const dy = cy - closestY;
+  const radius = r + padding;
+  return dx * dx + dy * dy < radius * radius;
 }
 
 /** Generate a unique SVG pattern ID for a color. */
 function hatchId(color: string): string {
   return `hatch-${color.replace("#", "")}`;
+}
+
+function labelGradientId(color: string): string {
+  return `label-grad-${color.replace("#", "")}`;
+}
+
+function hexToRgbChannels(value: string): string {
+  const normalized = value.trim();
+  const fullHex =
+    normalized.startsWith("#") && normalized.length === 4
+      ? `#${normalized[1]}${normalized[1]}${normalized[2]}${normalized[2]}${normalized[3]}${normalized[3]}`
+      : normalized;
+
+  const match = /^#([0-9a-f]{6})$/i.exec(fullHex);
+  if (!match) return "113, 113, 122";
+
+  const hex = match[1];
+  const red = Number.parseInt(hex.slice(0, 2), 16);
+  const green = Number.parseInt(hex.slice(2, 4), 16);
+  const blue = Number.parseInt(hex.slice(4, 6), 16);
+  return `${red}, ${green}, ${blue}`;
 }
 
 /* ------------------------------------------------------------------ */
@@ -178,14 +216,151 @@ export default function MovementScatterByType({
 
   const rings = RING_INCHES;
 
-  const labelPositions = useMemo(() => {
-    const raw = valid.map((p) => ({
+  const labelCards = useMemo(() => {
+    const plotLeft = PAD + 8;
+    const plotTop = PAD + 8;
+    const plotRight = PAD + PLOT - 8;
+    const plotBottom = PAD + PLOT - 8;
+    const occupied: Rect[] = [];
+    const legendRect: Rect | null =
+      hand && mlbBubbles.length > 0
+        ? {
+            x: PAD + PLOT - 92,
+            y: PAD + 4,
+            width: 92,
+            height: 24,
+          }
+        : null;
+
+    const pitchCircles = valid.map((p) => ({
+      x: toSvg(p.avgHb!, maxAbs),
+      y: toSvg(-p.avgIvb!, maxAbs),
+      r: HALO_R + 4,
       key: p.pitchType,
-      x: toSvg(p.avgHb!, maxAbs) + LABEL_DX,
-      y: toSvg(-p.avgIvb!, maxAbs) + LABEL_DY_NAME,
     }));
-    return resolveCollisions(raw);
-  }, [valid, maxAbs]);
+
+    const mlbCircles = mlbBubbles.map((mlb) => ({
+      x: toSvg(mlb.hb + MLB_OFFSET_HB, maxAbs),
+      y: toSvg(-(mlb.ivb + MLB_OFFSET_IVB), maxAbs),
+      r: MLB_HALO_R + 3,
+    }));
+
+    return [...valid]
+      .sort((a, b) => toSvg(-a.avgIvb!, maxAbs) - toSvg(-b.avgIvb!, maxAbs))
+      .map((p) => {
+        const rename = renameMap.get(p.pitchType);
+        const displayLabel = rename?.wasRenamed
+          ? rename.displayType
+          : p.pitchType;
+        const metrics = `${fmt1(p.avgIvb)} IVB • ${fmt1(p.avgHb)} HB`;
+        const color = pitchColor(displayLabel);
+        const pointX = toSvg(p.avgHb!, maxAbs);
+        const pointY = toSvg(-p.avgIvb!, maxAbs);
+        const cardWidth = Math.max(
+          LABEL_CARD_MIN_WIDTH,
+          displayLabel.length * 5.9 + 22,
+          metrics.length * 4.15 + 22,
+        );
+
+        const rightX = pointX + LABEL_SIDE_GAP;
+        const leftX = pointX - LABEL_SIDE_GAP - cardWidth;
+        const rightFits = rightX + cardWidth <= plotRight;
+        const leftFits = leftX >= plotLeft;
+        const rightSpace = plotRight - (pointX + LABEL_SIDE_GAP + cardWidth);
+        const leftSpace = pointX - LABEL_SIDE_GAP - cardWidth - plotLeft;
+
+        const preferRight = (() => {
+          if (pointY < CENTER - 28 && pointX > CENTER + 20) return false;
+          if (pointY < CENTER - 28 && pointX < CENTER - 20) return true;
+          return rightSpace >= leftSpace;
+        })();
+
+        const sideOrder = preferRight ? ["right", "left"] : ["left", "right"];
+        const yOffsets = [0, -20, 20, -38, 38, -56, 56];
+
+        let bestRect: Rect | null = null;
+        let bestSide: "left" | "right" = sideOrder[0] as "left" | "right";
+        let bestScore = Number.POSITIVE_INFINITY;
+
+        for (const side of sideOrder) {
+          const baseX = side === "right" ? rightX : leftX;
+          if ((side === "right" && !rightFits) || (side === "left" && !leftFits)) {
+            continue;
+          }
+
+          for (const offset of yOffsets) {
+            const candidate: Rect = {
+              x: baseX,
+              y: clamp(
+                pointY - LABEL_CARD_HEIGHT / 2 + offset,
+                plotTop,
+                plotBottom - LABEL_CARD_HEIGHT,
+              ),
+              width: cardWidth,
+              height: LABEL_CARD_HEIGHT,
+            };
+
+            let score = Math.abs(offset);
+            if (side !== sideOrder[0]) score += 18;
+
+            for (const rect of occupied) {
+              if (rectsOverlap(candidate, rect, 6)) {
+                score += 1000;
+              }
+            }
+
+            if (legendRect && rectsOverlap(candidate, legendRect, 4)) {
+              score += 1000;
+            }
+
+            for (const circle of pitchCircles) {
+              if (circle.key === p.pitchType) continue;
+              if (rectIntersectsCircle(candidate, circle.x, circle.y, circle.r, 3)) {
+                score += 140;
+              }
+            }
+
+            for (const circle of mlbCircles) {
+              if (rectIntersectsCircle(candidate, circle.x, circle.y, circle.r, 3)) {
+                score += 90;
+              }
+            }
+
+            if (score < bestScore) {
+              bestScore = score;
+              bestRect = candidate;
+              bestSide = side as "left" | "right";
+            }
+          }
+        }
+
+        if (!bestRect) {
+          const fallbackSide = rightFits ? "right" : "left";
+          const fallbackX = fallbackSide === "right"
+            ? clamp(rightX, plotLeft, plotRight - cardWidth)
+            : clamp(leftX, plotLeft, plotRight - cardWidth);
+          bestRect = {
+            x: fallbackX,
+            y: clamp(pointY - LABEL_CARD_HEIGHT / 2, plotTop, plotBottom - LABEL_CARD_HEIGHT),
+            width: cardWidth,
+            height: LABEL_CARD_HEIGHT,
+          };
+          bestSide = fallbackSide as "left" | "right";
+        }
+
+        occupied.push(bestRect);
+
+        return {
+          key: p.pitchType,
+          displayLabel,
+          metrics,
+          color,
+          rect: bestRect,
+          textAlign: bestSide === "right" ? "start" : "start",
+          rename,
+        };
+      });
+  }, [hand, maxAbs, mlbBubbles, renameMap, valid]);
 
   const armAngleRays = useMemo(() => {
     if (!hand) return [];
@@ -193,8 +368,8 @@ export default function MovementScatterByType({
   }, [pitchTypes, hand]);
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 h-full flex flex-col">
-      <h3 className="text-xs uppercase tracking-wider text-zinc-400 mb-4">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 h-full flex flex-col">
+      <h3 className="mb-3 text-[11px] uppercase tracking-[0.2em] text-zinc-400">
         Movement Profile (Induced Break)
       </h3>
 
@@ -202,21 +377,27 @@ export default function MovementScatterByType({
         {/* Hatch pattern definitions for MLB avg bubbles */}
         <defs>
           {uniqueColors.map((color) => (
-            <pattern
-              key={hatchId(color)}
-              id={hatchId(color)}
-              width={4}
-              height={4}
-              patternUnits="userSpaceOnUse"
-              patternTransform="rotate(45)"
-            >
-              <line x1={0} y1={0} x2={0} y2={4} stroke={color} strokeWidth={1.5} opacity={0.7} />
-            </pattern>
+            <g key={color}>
+              <pattern
+                id={hatchId(color)}
+                width={4}
+                height={4}
+                patternUnits="userSpaceOnUse"
+                patternTransform="rotate(45)"
+              >
+                <line x1={0} y1={0} x2={0} y2={4} stroke={color} strokeWidth={1.5} opacity={0.7} />
+              </pattern>
+              <linearGradient id={labelGradientId(color)} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={color} stopOpacity="0.14" />
+                <stop offset="28%" stopColor={color} stopOpacity="0.06" />
+                <stop offset="100%" stopColor="#09090b" stopOpacity="0.95" />
+              </linearGradient>
+            </g>
           ))}
         </defs>
 
         {/* Background */}
-        <rect x={PAD} y={PAD} width={PLOT} height={PLOT} fill="#0f0f12" rx={4} />
+        <rect x={PAD} y={PAD} width={PLOT} height={PLOT} fill="#101116" rx={8} />
 
         {/* Concentric rings */}
         {rings.map((inches) => {
@@ -229,13 +410,15 @@ export default function MovementScatterByType({
                 r={r}
                 fill="none"
                 stroke="#27272a"
-                strokeWidth={0.75}
+                strokeWidth={0.7}
                 strokeDasharray="3 2"
+                opacity={0.6}
               />
               <text
                 x={CENTER + r + 2}
                 y={CENTER - 3}
                 className="fill-zinc-600 text-[8px] font-mono"
+                opacity={0.75}
               >
                 {inches}{"\u2033"}
               </text>
@@ -252,7 +435,7 @@ export default function MovementScatterByType({
           stroke="#27272a"
           strokeWidth={0.5}
           strokeDasharray="2 3"
-          opacity={0.5}
+          opacity={0.35}
         />
 
         {/* Subtle grid lines */}
@@ -260,15 +443,15 @@ export default function MovementScatterByType({
           const pos = toSvg(v, maxAbs);
           return (
             <g key={`grid-${v}`}>
-              <line x1={pos} y1={PAD} x2={pos} y2={PAD + PLOT} stroke="#1a1a1f" strokeWidth={0.5} />
-              <line x1={PAD} y1={pos} x2={PAD + PLOT} y2={pos} stroke="#1a1a1f" strokeWidth={0.5} />
+              <line x1={pos} y1={PAD} x2={pos} y2={PAD + PLOT} stroke="#1a1a1f" strokeWidth={0.5} opacity={0.45} />
+              <line x1={PAD} y1={pos} x2={PAD + PLOT} y2={pos} stroke="#1a1a1f" strokeWidth={0.5} opacity={0.45} />
             </g>
           );
         })}
 
         {/* Crosshair axes */}
-        <line x1={PAD} y1={CENTER} x2={PAD + PLOT} y2={CENTER} stroke="#3f3f46" strokeWidth={0.75} />
-        <line x1={CENTER} y1={PAD} x2={CENTER} y2={PAD + PLOT} stroke="#3f3f46" strokeWidth={0.75} />
+        <line x1={PAD} y1={CENTER} x2={PAD + PLOT} y2={CENTER} stroke="#3f3f46" strokeWidth={0.75} opacity={0.8} />
+        <line x1={CENTER} y1={PAD} x2={CENTER} y2={PAD + PLOT} stroke="#3f3f46" strokeWidth={0.75} opacity={0.8} />
 
         {/* Axis tick labels */}
         {ticks.map((v) => (
@@ -277,7 +460,7 @@ export default function MovementScatterByType({
             x={toSvg(v, maxAbs)}
             y={PAD + PLOT + 15}
             textAnchor="middle"
-            className="fill-zinc-500 text-[9px] font-mono"
+            className="fill-zinc-600 text-[8px] font-mono"
           >
             {v}
           </text>
@@ -288,14 +471,14 @@ export default function MovementScatterByType({
             x={PAD - 6}
             y={toSvg(-v, maxAbs) + 3}
             textAnchor="end"
-            className="fill-zinc-500 text-[9px] font-mono"
+            className="fill-zinc-600 text-[8px] font-mono"
           >
             {v}
           </text>
         ))}
 
         {/* Axis titles */}
-        <text x={CENTER} y={SIZE - 4} textAnchor="middle" className="fill-zinc-500 text-[10px]">
+        <text x={CENTER} y={SIZE - 4} textAnchor="middle" className="fill-zinc-600 text-[9px]">
           Horizontal Break ({"\u2033"})
         </text>
         <text
@@ -304,7 +487,7 @@ export default function MovementScatterByType({
           textAnchor="middle"
           dominantBaseline="middle"
           transform={`rotate(-90, 10, ${CENTER})`}
-          className="fill-zinc-500 text-[10px]"
+          className="fill-zinc-600 text-[9px]"
         >
           Induced Vertical Break ({"\u2033"})
         </text>
@@ -395,27 +578,52 @@ export default function MovementScatterByType({
         })}
 
         {/* Labels (rendered after dots so they sit on top) */}
-        {labelPositions.map((lbl) => {
-          const p = valid.find((v) => v.pitchType === lbl.key)!;
-          const rename = renameMap.get(p.pitchType);
-          const displayLabel = rename?.wasRenamed
-            ? rename.displayType
-            : p.pitchType;
+        {labelCards.map((label) => {
           return (
-            <g key={`lbl-${lbl.key}`}>
-              <text x={lbl.x} y={lbl.y} className="fill-zinc-300 text-[10px]">
-                {displayLabel}
+            <g key={`lbl-${label.key}`}>
+              <rect
+                x={label.rect.x}
+                y={label.rect.y}
+                width={label.rect.width}
+                height={LABEL_CARD_HEIGHT}
+                rx={8}
+                fill={`url(#${labelGradientId(label.color)})`}
+                stroke={`rgba(${hexToRgbChannels(label.color)}, 0.28)`}
+                strokeWidth={0.85}
+              />
+              <line
+                x1={label.rect.x + 10}
+                y1={label.rect.y + 5.25}
+                x2={label.rect.x + label.rect.width - 10}
+                y2={label.rect.y + 5.25}
+                stroke={label.color}
+                strokeWidth={1}
+                opacity={0.24}
+                strokeLinecap="round"
+              />
+              <circle
+                cx={label.rect.x + 10}
+                cy={label.rect.y + 14.5}
+                r={2.4}
+                fill={label.color}
+              />
+              <text
+                x={label.rect.x + 17}
+                y={label.rect.y + 16}
+                className="fill-zinc-200 text-[8px] font-semibold"
+              >
+                {label.displayLabel}
               </text>
               <text
-                x={lbl.x}
-                y={lbl.y + LABEL_DY_METRICS - LABEL_DY_NAME}
-                className="fill-zinc-500 text-[8px] font-mono"
+                x={label.rect.x + 9}
+                y={label.rect.y + 24.75}
+                className="fill-zinc-500 text-[7px] font-mono"
               >
-                {fmt1(p.avgIvb)} IVB / {fmt1(p.avgHb)} HB
+                {label.metrics}
               </text>
-              {rename?.wasRenamed && (
+              {label.rename?.wasRenamed && (
                 <title>
-                  Originally tagged {rename.originalType}. Auto-labeled because movement is closer to MLB {rename.reason!.bestPitch} average.
+                  Originally tagged {label.rename.originalType}. Auto-labeled because movement is closer to MLB {label.rename.reason!.bestPitch} average.
                 </title>
               )}
             </g>
@@ -432,12 +640,12 @@ export default function MovementScatterByType({
               fill={`url(#${hatchId("#71717a")})`}
               stroke="#71717a"
               strokeWidth={0.75}
-              opacity={0.7}
+              opacity={0.55}
             />
             <text
               x={PAD + PLOT - 40}
               y={PAD + 17}
-              className="fill-zinc-500 text-[9px]"
+              className="fill-zinc-600 text-[8px] uppercase tracking-[0.14em]"
             >
               MLB AVG
             </text>
@@ -451,7 +659,7 @@ export default function MovementScatterByType({
         )}
       </svg>
 
-      <p className="text-[10px] text-zinc-600 mt-2 text-center">
+      <p className="mt-1.5 text-center text-[9px] text-zinc-600">
         Halo radius is a visual cue only. PDF exports provide averages, not per-pitch variance.
       </p>
     </div>

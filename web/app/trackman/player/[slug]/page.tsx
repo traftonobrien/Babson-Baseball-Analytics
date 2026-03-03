@@ -2,12 +2,18 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeft, Radio } from "lucide-react";
+import { ArrowLeft, CalendarDays, Radio } from "lucide-react";
 import {
   normalizePitchTypeRow,
   type TrackmanPitchTypeSummary,
 } from "@/lib/trackman/metrics";
-import PitchTypeFilter from "../../session/[playerId]/[date]/PitchTypeFilter";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
+import {
+  LeaderboardHero,
+  LeaderboardPageFrame,
+  LeaderboardPanel,
+  LeaderboardPill,
+} from "@/app/components/leaderboards/LeaderboardChrome";
 import PitchTypeTable from "../../session/[playerId]/[date]/PitchTypeTable";
 import MovementScatterByType from "../../session/[playerId]/[date]/MovementScatterByType";
 import PitchArsenalCards from "../../session/[playerId]/[date]/PitchArsenalCards";
@@ -48,6 +54,11 @@ function extractDateSlug(path?: string): string | null {
   if (!path) return null;
   const match = path.match(/\/trackman\/sessions\/[^/]+\/([^/]+)\//);
   return match?.[1] ?? null;
+}
+
+function getSessionHref(playerSlug: string, entry: IndexEntry): string {
+  const dateSlug = extractDateSlug(entry.pitchTypesPath) ?? entry.date.replace(/-/g, "_");
+  return `/trackman/session/${playerSlug}/${dateSlug}?from=player&slug=${playerSlug}`;
 }
 
 /** "2026-02-13" → "2/13/26" */
@@ -194,6 +205,7 @@ function TrendLine({
 
   const sorted = [...points].sort((a, b) => a.date.localeCompare(b.date));
   const values = sorted.map((p) => p.value);
+  const latest = sorted[sorted.length - 1];
   const yMin = Math.floor(Math.min(...values) - 1);
   const yMax = Math.ceil(Math.max(...values) + 1);
 
@@ -211,53 +223,71 @@ function TrendLine({
     .join(" ");
 
   return (
-    <div className="h-full min-h-[200px] flex flex-col bg-zinc-900 border border-zinc-800 rounded-lg p-3">
-      <h4 className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2 shrink-0">{label}</h4>
-      <svg viewBox={`0 0 ${TREND_W} ${TREND_H}`} className="w-full flex-1 min-h-0">
-        <rect x={TPAD.left} y={TPAD.top} width={TPW} height={TPH} fill="#18181b" rx={3} />
+    <div className="relative flex h-full min-h-[156px] flex-col overflow-hidden rounded-[1.2rem] border border-zinc-800/85 bg-[radial-gradient(circle_at_82%_14%,rgba(59,130,246,0.05),transparent_24%),linear-gradient(180deg,rgba(24,24,27,0.84),rgba(9,9,11,0.96))] p-3.5 shadow-[0_14px_28px_rgba(0,0,0,0.14)]">
+      <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent" />
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <h4 className="max-w-[62%] text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
+          {label}
+        </h4>
+        <div className="shrink-0 text-right">
+          <div className="text-[8px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+            Latest Session
+          </div>
+          <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-300">
+            {latest.value.toFixed(1)} {unit}
+          </div>
+        </div>
+      </div>
 
-        {/* Y axis labels */}
-        <text x={TPAD.left - 5} y={TPAD.top + 4} textAnchor="end" className="fill-zinc-600 text-[8px] font-mono">
-          {yMax}
-        </text>
-        <text x={TPAD.left - 5} y={TPAD.top + TPH + 3} textAnchor="end" className="fill-zinc-600 text-[8px] font-mono">
-          {yMin}
-        </text>
+      <div className="h-[84px]">
+        <svg
+          viewBox={`0 0 ${TREND_W} ${TREND_H}`}
+          preserveAspectRatio="none"
+          className="h-full w-full"
+        >
+          {/* Y axis labels */}
+          <text x={TPAD.left - 5} y={TPAD.top + 4} textAnchor="end" className="fill-zinc-600 text-[8px] font-mono">
+            {yMax}
+          </text>
+          <text x={TPAD.left - 5} y={TPAD.top + TPH + 3} textAnchor="end" className="fill-zinc-600 text-[8px] font-mono">
+            {yMin}
+          </text>
 
-        {/* Line */}
-        <path d={pathD} fill="none" stroke={color} strokeWidth={1.5} />
+          {/* Line */}
+          <path d={pathD} fill="none" stroke={color} strokeWidth={1.5} />
 
-        {/* Dots */}
-        {sorted.map((p, i) => (
-          <circle key={i} cx={toX(i)} cy={toY(p.value)} r={3} fill={color} />
-        ))}
-
-        {/* Date labels */}
-        {sorted.length <= 10 &&
-          sorted.map((p, i) => (
-            <text
-              key={`d${i}`}
-              x={toX(i)}
-              y={TREND_H - 4}
-              textAnchor="middle"
-              className="fill-zinc-600 text-[7px] font-mono"
-            >
-              {p.date.slice(5).replace(/-/g, "/")}
-            </text>
+          {/* Dots */}
+          {sorted.map((p, i) => (
+            <circle key={i} cx={toX(i)} cy={toY(p.value)} r={3} fill={color} />
           ))}
 
-        {/* Unit label */}
-        <text
-          x={8}
-          y={TPAD.top + TPH / 2}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          transform={`rotate(-90, 8, ${TPAD.top + TPH / 2})`}
-          className="fill-zinc-600 text-[8px]"
-        >
-          {unit}
-        </text>
-      </svg>
+          {/* Date labels */}
+          {sorted.length <= 10 &&
+            sorted.map((p, i) => (
+              <text
+                key={`d${i}`}
+                x={toX(i)}
+                y={TREND_H - 4}
+                textAnchor="middle"
+                className="fill-zinc-600 text-[7px] font-mono"
+              >
+                {p.date.slice(5).replace(/-/g, "/")}
+              </text>
+            ))}
+
+          {/* Unit label */}
+          <text
+            x={8}
+            y={TPAD.top + TPH / 2}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            transform={`rotate(-90, 8, ${TPAD.top + TPH / 2})`}
+            className="fill-zinc-600 text-[8px]"
+          >
+            {unit}
+          </text>
+        </svg>
+      </div>
     </div>
   );
 }
@@ -291,7 +321,6 @@ export default function TrackmanPlayerPage({
   const [sessionData, setSessionData] = useState<SessionPitchTypes[]>([]);
   const [stuffPlusArsenal, setStuffPlusArsenal] = useState<{ pitchType: string; meanStuffPlus: number }[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activePitchTypes, setActivePitchTypes] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     params.then((p) => setSlug(p.slug));
@@ -360,171 +389,264 @@ export default function TrackmanPlayerPage({
     }));
   }, [sessionData, normalizedHand, stuffPlusArsenal]);
 
-  const allTypes = useMemo(
-    () => Array.from(new Set(aggregated.map((p) => p.pitchType))).sort(),
-    [aggregated],
-  );
-
-  const filtered = useMemo(() => {
-    if (activePitchTypes.size === 0) return aggregated;
-    return aggregated.filter((p) => activePitchTypes.has(p.pitchType));
-  }, [aggregated, activePitchTypes]);
-
   // Trends
   const fbVeloTrend = useMemo(() => computeFbVeloTrend(sessionData), [sessionData]);
   const bbSpinTrend = useMemo(() => computeBbSpinTrend(sessionData), [sessionData]);
+  const latestEntry = entries[0] ?? null;
+  const hasOverview =
+    stuffPlusArsenal.length > 0 || fbVeloTrend.length > 1 || bbSpinTrend.length > 1;
+  const backHref = fromProfile ? `/players/${slug}` : "/trackman";
+  const backLabel = fromProfile ? "Back to Player Profile" : "Back to Trackman Hub";
+  const latestSessionHref = latestEntry ? getSessionHref(slug, latestEntry) : null;
+  const latestSessionLabel = latestEntry ? formatDate(latestEntry.date) : null;
+  const latestSessionType = latestEntry?.sessionType;
+  const overviewCardCount =
+    (stuffPlusArsenal.length > 0 ? 1 : 0) +
+    (fbVeloTrend.length > 1 ? 1 : 0) +
+    (bbSpinTrend.length > 1 ? 1 : 0);
+  const overviewGridClassName =
+    overviewCardCount <= 1
+      ? "lg:grid-cols-1"
+      : overviewCardCount === 2
+        ? "lg:grid-cols-2"
+        : "lg:grid-cols-3";
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      {/* Header */}
-      <header className="bg-zinc-900 border-b border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3 mb-3">
-            <Link
-              href={fromProfile ? `/players/${slug}` : "/trackman"}
-              className="text-zinc-500 hover:text-zinc-300 transition-smooth"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </Link>
-            <span className="text-xs text-zinc-600 uppercase tracking-wider">
-              {fromProfile ? "Player Profile" : "Trackman"}
-            </span>
-          </div>
-          <div className="flex items-baseline gap-4 flex-wrap">
-            <h1 className="text-xl font-bold tracking-tight text-zinc-50">{playerName}</h1>
-            {hand && parseHand(hand) && (
-              <>
-                <span className="w-px h-5 bg-zinc-700 self-center hidden sm:block" />
-                <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${handBadgeClassesCompact(parseHand(hand)!)}`}
-                >
-                  {hand}
-                </span>
-              </>
-            )}
-            {team && (
-              <>
-                <span className="w-px h-5 bg-zinc-700 self-center hidden sm:block" />
-                <span className="text-sm text-zinc-400">{team}</span>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+    <LeaderboardPageFrame maxWidth="max-w-7xl">
+      <div className="flex flex-col gap-6">
+        <header className="space-y-3">
+          <Breadcrumbs
+            items={[
+              { label: "Home", href: "/" },
+              { label: "Trackman", href: "/trackman" },
+              { label: playerName },
+            ]}
+          />
 
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+          <LeaderboardHero
+            tone="blue"
+            icon={Radio}
+            eyebrow="Trackman Profile"
+            title={playerName}
+            description="Movement shape, velocity trends, and arsenal snapshots across every imported Trackman session."
+            meta={
+              <>
+                {normalizedHand ? (
+                  <span
+                    className={`text-[10px] px-2.5 py-1 rounded-full font-semibold uppercase tracking-[0.18em] ${handBadgeClassesCompact(normalizedHand)}`}
+                  >
+                    {normalizedHand === "R" ? "RHP" : "LHP"}
+                  </span>
+                ) : null}
+                {team ? <LeaderboardPill tone="neutral">{team}</LeaderboardPill> : null}
+                <LeaderboardPill tone="blue">
+                  {entries.length} Session{entries.length !== 1 ? "s" : ""}
+                </LeaderboardPill>
+                {latestSessionLabel ? (
+                  <LeaderboardPill tone="sky">Latest {latestSessionLabel}</LeaderboardPill>
+                ) : null}
+              </>
+            }
+            side={
+              <>
+                <Link href={backHref} className="block">
+                  <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-smooth hover:border-blue-500/25">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-blue-500/20 bg-blue-500/10 text-blue-300">
+                        <ArrowLeft className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                          Navigate
+                        </div>
+                        <div className="mt-1 text-sm font-semibold text-zinc-100">
+                          {backLabel}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+                {latestSessionHref ? (
+                  <Link href={latestSessionHref} className="block">
+                    <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-smooth hover:border-blue-500/25">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-blue-500/20 bg-blue-500/10 text-blue-300">
+                          <CalendarDays className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                            Latest Session
+                          </div>
+                          <div className="mt-1 text-sm font-semibold text-zinc-100">
+                            {latestSessionLabel}
+                          </div>
+                          {latestSessionType ? (
+                            <div className="mt-1 text-xs text-zinc-500">{latestSessionType}</div>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ) : null}
+              </>
+            }
+          />
+        </header>
+
         {loading ? (
-          <p className="text-zinc-500 text-sm">Loading player data...</p>
+          <LeaderboardPanel className="p-6">
+            <p className="text-zinc-500 text-sm">Loading player data...</p>
+          </LeaderboardPanel>
         ) : entries.length === 0 ? (
-          <p className="text-zinc-400 text-sm">No sessions found for this player.</p>
+          <LeaderboardPanel className="p-6">
+            <p className="text-zinc-400 text-sm">No sessions found for this player.</p>
+          </LeaderboardPanel>
         ) : (
           <>
-            {/* Session selector */}
-            <div>
-              <h3 className="text-xs uppercase tracking-wider text-zinc-500 mb-3">
-                Sessions ({entries.length})
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {entries.map((e, i) => {
-                  const dateSlug =
-                    extractDateSlug(e.pitchTypesPath) ??
-                    e.date.replace(/-/g, "_");
-                  return (
-                    <Link
-                      key={`${e.date}-${i}`}
-                      href={`/trackman/session/${slug}/${dateSlug}?from=player&slug=${slug}`}
-                      className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 hover:border-zinc-600 transition-smooth text-sm"
-                    >
-                      <span className="font-mono text-zinc-300">
-                        {formatDate(e.date)}
-                      </span>
-                      {e.sessionType && (
-                        <span className="ml-2 text-[10px] text-zinc-500">
-                          {e.sessionType}
-                        </span>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Stuff+ + Velocity + Spin — Stuff+ compact on left, charts flex to fill */}
-            {(stuffPlusArsenal.length > 0 || fbVeloTrend.length > 1 || bbSpinTrend.length > 1) && (
-              <div className="flex flex-col lg:flex-row gap-4 items-stretch">
-                {stuffPlusArsenal.length > 0 && (
-                  <div className="lg:w-[200px] lg:shrink-0">
-                    <StuffPlusSummaryCard arsenal={stuffPlusArsenal} playerId={slug} />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {fbVeloTrend.length > 1 && (
-                    <TrendLine
-                      points={fbVeloTrend}
-                      label="Avg Fastball Velocity Over Time"
-                      unit="mph"
-                      color="#3b82f6"
-                    />
-                  )}
-                  {bbSpinTrend.length > 1 && (
-                    <TrendLine
-                      points={bbSpinTrend}
-                      label="Avg Breaking Ball Spin Over Time"
-                      unit="rpm"
-                      color="#60a5fa"
-                    />
-                  )}
+            <section className="space-y-3">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+                  Session History
+                </div>
+                <div className="mt-1 text-sm text-zinc-500">
+                  Jump into any imported day without leaving the player page.
                 </div>
               </div>
+
+              <LeaderboardPanel className="p-4 sm:p-5">
+                <div className="overflow-x-auto pb-1">
+                  <div className="flex min-w-max gap-2.5 pr-1">
+                    {entries.map((e, i) => {
+                      const isLatest = i === 0;
+                      const sessionHref = getSessionHref(slug, e);
+                      return (
+                        <Link
+                          key={`${e.date}-${i}`}
+                          href={sessionHref}
+                          className="group shrink-0 min-w-[12.25rem] rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-2.5 text-zinc-300 transition-smooth hover:border-zinc-600"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="font-mono text-sm text-zinc-100">
+                                {formatDate(e.date)}
+                              </div>
+                            </div>
+
+                            <div className="flex min-w-0 items-center justify-end gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
+                              {e.sessionType ? (
+                                <span className="truncate text-right">
+                                  {e.sessionType}
+                                </span>
+                              ) : null}
+
+                              {isLatest ? (
+                                <span className="rounded-full border border-zinc-700 bg-zinc-900/80 px-2 py-0.5 text-[9px] tracking-[0.18em] text-blue-300">
+                                  Latest
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              </LeaderboardPanel>
+            </section>
+
+            {hasOverview && (
+              <section className="space-y-2.5">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+                    Overview
+                  </div>
+                  <div className="mt-1 text-sm text-zinc-500">
+                    The fastest read on the profile before you drill into pitch details.
+                  </div>
+                </div>
+
+                <div className={`grid grid-cols-1 items-stretch gap-3 ${overviewGridClassName}`}>
+                  {stuffPlusArsenal.length > 0 ? (
+                    <div className="h-full">
+                      <StuffPlusSummaryCard arsenal={stuffPlusArsenal} playerId={slug} />
+                    </div>
+                  ) : null}
+                  {fbVeloTrend.length > 1 ? (
+                    <div className="h-full">
+                      <TrendLine
+                        points={fbVeloTrend}
+                        label="Fastball Velo Trend"
+                        unit="mph"
+                        color="#3b82f6"
+                      />
+                    </div>
+                  ) : null}
+                  {bbSpinTrend.length > 1 ? (
+                    <div className="h-full">
+                      <TrendLine
+                        points={bbSpinTrend}
+                        label="Breaking-Ball Spin Trend"
+                        unit="rpm"
+                        color="#60a5fa"
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              </section>
             )}
 
-            {/* Aggregate view */}
             {aggregated.length > 0 && (
-              <>
-                <div className="border-t border-zinc-800 pt-6">
-                  <h3 className="text-xs uppercase tracking-wider text-zinc-500 mb-4">
-                    Averages Across All Sessions
-                  </h3>
-
-                  <PitchTypeFilter
-                    allTypes={allTypes}
-                    activePitchTypes={activePitchTypes}
-                    onToggleType={(type) => {
-                      setActivePitchTypes((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(type)) next.delete(type);
-                        else next.add(type);
-                        return next;
-                      });
-                    }}
-                    onClearTypes={() => setActivePitchTypes(new Set())}
-                  />
-                </div>
-
-                <PitchTypeTable pitchTypes={filtered} summary={null} />
-
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-stretch">
-                  <MovementScatterByType
-                    pitchTypes={filtered}
-                    hand={normalizedHand}
-                  />
-                  <div className="flex flex-col gap-4">
-                    <PitchArsenalCards pitchTypes={filtered} />
+              <section className="space-y-4">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+                    Arsenal Averages
+                  </div>
+                  <div className="mt-1 text-sm text-zinc-500">
+                    Every pitch type, blended across the full Trackman sample.
                   </div>
                 </div>
 
-                {/* MLB Comps */}
-                {normalizedHand && (
-                  <MLBCompsPanel
-                    aggregated={aggregated}
-                    hand={normalizedHand}
-                  />
-                )}
-              </>
+                  <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(21rem,0.9fr)]">
+                    <div className="min-w-0 space-y-6">
+                      <LeaderboardPanel className="p-5">
+                        <PitchTypeTable pitchTypes={aggregated} summary={null} />
+                      </LeaderboardPanel>
+
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+                          Movement Shape
+                        </div>
+                        <div className="mt-1 text-sm text-zinc-500">
+                          See how each pitch clusters by horizontal and induced vertical break.
+                        </div>
+                      </div>
+
+                      <MovementScatterByType
+                        pitchTypes={aggregated}
+                        hand={normalizedHand}
+                      />
+                    </div>
+                  </div>
+
+                  <aside className="space-y-4 xl:sticky xl:top-8 self-start">
+                    <LeaderboardPanel className="p-5">
+                      <PitchArsenalCards pitchTypes={aggregated} />
+                    </LeaderboardPanel>
+
+                    {normalizedHand && (
+                      <MLBCompsPanel
+                        aggregated={aggregated}
+                        hand={normalizedHand}
+                      />
+                    )}
+                  </aside>
+                </div>
+              </section>
             )}
           </>
         )}
       </div>
-    </div>
+    </LeaderboardPageFrame>
   );
 }
