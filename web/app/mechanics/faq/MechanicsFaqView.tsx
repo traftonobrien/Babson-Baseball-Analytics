@@ -1,43 +1,29 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowLeft, BookOpen } from "lucide-react";
+import { Film } from "lucide-react";
+import { DictionaryPageShell } from "@/app/components/dictionary/DictionaryChrome";
 
 export default function MechanicsFaqView() {
     return (
-        <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-20">
-            {/* Header */}
-            <div className="border-b border-zinc-800/50 bg-zinc-900/50 px-6 py-8">
-                <div className="max-w-4xl mx-auto">
-                    <Link
-                        href="/dictionary"
-                        className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-300 mb-8 transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4" /> Back to Dictionary
-                    </Link>
-
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="p-2 bg-violet-500/10 rounded-lg">
-                            <BookOpen className="w-5 h-5 text-violet-400" />
-                        </div>
-                        <p className="text-[10px] uppercase tracking-widest text-zinc-500 font-semibold">
-                            Analysis Documentation
-                        </p>
-                    </div>
-
-                    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-50 mb-4">
-                        AWRE Pitching Metrics: Definitions & FAQ
-                    </h1>
-                    <p className="text-base text-zinc-400 leading-relaxed max-w-3xl">
-                        Welcome to the AWRE Pitching Mechanics evaluation guide. Our computer vision pipeline tracks the pitcher&apos;s body through the entire delivery, measuring key biomechanical checkpoints to generate a <strong className="text-zinc-200">0-10 Efficiency Score</strong>.
-                        <br className="hidden sm:block" />
-                        <br className="hidden sm:block" />
-                        This document defines every metric we evaluate: what it measures, and how our algorithm calculates the score from AWRE Camera footage.
-                    </p>
-                </div>
-            </div>
-
-            <div className="max-w-4xl mx-auto px-6 py-12 space-y-20">
+        <DictionaryPageShell
+            tone="violet"
+            icon={Film}
+            eyebrow="Analysis Documentation"
+            title="AWRE Pitching Metrics Guide"
+            description={
+                <>
+                    Welcome to the AWRE pitching mechanics evaluation guide. Our computer vision pipeline tracks the pitcher&apos;s body through the full delivery to generate a{" "}
+                    <strong className="text-zinc-200">0-10 Efficiency Score</strong>.
+                    {" "}This document defines every metric we evaluate and how each score is calculated from AWRE camera footage.
+                </>
+            }
+            breadcrumbs={[
+                { label: "Home", href: "/" },
+                { label: "Dictionary", href: "/dictionary" },
+                { label: "Mechanics" },
+            ]}
+            maxWidth="max-w-5xl"
+        >
 
                 {/* Core Metrics */}
                 <section>
@@ -359,7 +345,6 @@ export default function MechanicsFaqView() {
                     </div>
                 </section>
 
-            </div>
-        </div>
+        </DictionaryPageShell>
     );
 }

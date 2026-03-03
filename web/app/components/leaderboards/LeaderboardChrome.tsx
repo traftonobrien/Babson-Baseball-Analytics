@@ -3,8 +3,23 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 
-type LeaderboardTone = "amber" | "orange" | "blue" | "sky";
-type PillTone = "neutral" | "amber" | "orange" | "blue" | "sky" | "emerald";
+type LeaderboardTone =
+  | "amber"
+  | "orange"
+  | "blue"
+  | "sky"
+  | "emerald"
+  | "violet"
+  | "indigo";
+type PillTone =
+  | "neutral"
+  | "amber"
+  | "orange"
+  | "blue"
+  | "sky"
+  | "emerald"
+  | "violet"
+  | "indigo";
 
 const HERO_TONES: Record<LeaderboardTone, {
   border: string;
@@ -40,6 +55,27 @@ const HERO_TONES: Record<LeaderboardTone, {
     backdrop:
       "bg-[radial-gradient(circle_at_14%_18%,rgba(14,165,233,0.16),transparent_28%),radial-gradient(circle_at_84%_22%,rgba(6,182,212,0.10),transparent_24%),linear-gradient(135deg,rgba(24,24,27,0.92),rgba(3,7,18,0.98))]",
   },
+  emerald: {
+    border: "border-emerald-500/20",
+    badge: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
+    icon: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
+    backdrop:
+      "bg-[radial-gradient(circle_at_14%_18%,rgba(16,185,129,0.16),transparent_28%),radial-gradient(circle_at_84%_22%,rgba(34,197,94,0.10),transparent_24%),linear-gradient(135deg,rgba(24,24,27,0.92),rgba(3,7,18,0.98))]",
+  },
+  violet: {
+    border: "border-violet-500/20",
+    badge: "border-violet-500/25 bg-violet-500/10 text-violet-300",
+    icon: "border-violet-500/25 bg-violet-500/10 text-violet-300",
+    backdrop:
+      "bg-[radial-gradient(circle_at_14%_18%,rgba(139,92,246,0.16),transparent_28%),radial-gradient(circle_at_84%_22%,rgba(59,130,246,0.08),transparent_24%),linear-gradient(135deg,rgba(24,24,27,0.92),rgba(3,7,18,0.98))]",
+  },
+  indigo: {
+    border: "border-indigo-500/20",
+    badge: "border-indigo-500/25 bg-indigo-500/10 text-indigo-300",
+    icon: "border-indigo-500/25 bg-indigo-500/10 text-indigo-300",
+    backdrop:
+      "bg-[radial-gradient(circle_at_14%_18%,rgba(99,102,241,0.16),transparent_28%),radial-gradient(circle_at_84%_22%,rgba(14,165,233,0.08),transparent_24%),linear-gradient(135deg,rgba(24,24,27,0.92),rgba(3,7,18,0.98))]",
+  },
 };
 
 const PILL_TONES: Record<PillTone, string> = {
@@ -49,6 +85,8 @@ const PILL_TONES: Record<PillTone, string> = {
   blue: "border-blue-500/25 bg-blue-500/10 text-blue-300",
   sky: "border-sky-500/25 bg-sky-500/10 text-sky-300",
   emerald: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
+  violet: "border-violet-500/25 bg-violet-500/10 text-violet-300",
+  indigo: "border-indigo-500/25 bg-indigo-500/10 text-indigo-300",
 };
 
 function joinClasses(...values: Array<string | false | null | undefined>): string {

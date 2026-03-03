@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
-export default function LogoutButton() {
+export default function LogoutButton({ className }: { className?: string }) {
   const router = useRouter();
 
   async function handleLogout() {
@@ -14,7 +15,10 @@ export default function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      className="text-xs text-zinc-500 hover:text-zinc-300 transition-smooth"
+      className={cn(
+        "text-xs text-zinc-500 hover:text-zinc-300 transition-smooth",
+        className,
+      )}
     >
       Logout
     </button>
