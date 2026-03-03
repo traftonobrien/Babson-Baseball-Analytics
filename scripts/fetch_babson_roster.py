@@ -21,6 +21,11 @@ from bs4 import BeautifulSoup
 ROSTER_URL = "https://babsonathletics.com/sports/baseball/roster"
 DEFAULT_OUT = Path(__file__).resolve().parents[1] / "web" / "data" / "roster.json"
 
+SLUG_ALIASES = {
+    "grindle_cameron": ("grindle_cam",),
+    "rhodes_patrick": ("rhodes_pat",),
+}
+
 
 def slugify_name(name: str) -> str:
     """'James Clark' -> 'clark_james'; 'Trafton O'Brien' -> 'obrien_trafton'."""
@@ -109,9 +114,8 @@ def main() -> None:
     for r in roster:
         data = {"height": r["height"], "weight": r["weight"], "class": r["class"]}
         by_slug[r["slug"]] = data
-        # Add aliases for players.json slug format (e.g. grindle_cam vs grindle_cameron)
-        if r["slug"] == "grindle_cameron":
-            by_slug["grindle_cam"] = data
+        for alias in SLUG_ALIASES.get(r["slug"], ()):
+            by_slug[alias] = data
 
     if args.dry_run:
         json.dump(by_slug, sys.stdout, indent=2)

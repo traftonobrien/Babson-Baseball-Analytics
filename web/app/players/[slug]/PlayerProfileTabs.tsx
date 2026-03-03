@@ -6,6 +6,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Activity, Target, ArrowRight, ScanLine, ChevronDown, ChevronUp } from "lucide-react";
 import SavantPercentileBar from "./SavantPercentileBar";
 import MechanicsProfileCard from "@/app/components/mechanics/MechanicsProfileCard";
+import {
+  LeaderboardPanel,
+  LeaderboardPill,
+  LeaderboardStatBlock,
+} from "@/app/components/leaderboards/LeaderboardChrome";
 import Segment from "@/app/components/Segment";
 import CommandPlusModelCard from "@/app/components/CommandPlusModelCard";
 import PitchingPlusModelCard from "@/app/components/PitchingPlusModelCard";
@@ -19,6 +24,7 @@ import type { HubPlayerEntry } from "@/lib/mechanics/hub";
 const TABS = ["Overview", "Trackman", "Command", "Mechanics"] as const;
 type Tab = (typeof TABS)[number];
 type HeroTone = "amber" | "orange" | "blue";
+type HubTone = "blue" | "orange" | "violet";
 
 interface SeasonStat {
   label: string;
@@ -104,6 +110,31 @@ interface Props {
   initialTab?: string;
   mechanicsEntry?: HubPlayerEntry | null;
 }
+
+const HUB_TONE_STYLES: Record<
+  HubTone,
+  {
+    border: string;
+    icon: string;
+    arrow: string;
+  }
+> = {
+  blue: {
+    border: "border-blue-500/25 hover:border-blue-400/40",
+    icon: "border-blue-500/20 bg-blue-500/10 text-blue-300",
+    arrow: "text-blue-300",
+  },
+  orange: {
+    border: "border-orange-500/25 hover:border-orange-400/40",
+    icon: "border-orange-500/20 bg-orange-500/10 text-orange-300",
+    arrow: "text-orange-300",
+  },
+  violet: {
+    border: "border-violet-500/25 hover:border-violet-400/40",
+    icon: "border-violet-500/20 bg-violet-500/10 text-violet-300",
+    arrow: "text-violet-300",
+  },
+};
 
 function formatDateLabel(raw: string): string {
   const parts = raw.replace(/_/g, "-").split("-");
@@ -303,9 +334,51 @@ function buildStuffHeroState(
   };
 }
 
+function ProfileHubLink({
+  href,
+  icon: Icon,
+  title,
+  note,
+  tone,
+}: {
+  href: string;
+  icon: typeof Activity;
+  title: string;
+  note: string;
+  tone: HubTone;
+}) {
+  const toneStyles = HUB_TONE_STYLES[tone];
+
+  return (
+    <Link href={href}>
+      <div
+        className={`group rounded-[1.7rem] border bg-zinc-950/72 p-5 shadow-[0_24px_64px_rgba(0,0,0,0.24)] transition-smooth hover:-translate-y-0.5 ${toneStyles.border}`}
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border ${toneStyles.icon}`}
+            >
+              <Icon className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-zinc-100">{title}</div>
+              <p className="mt-1 text-[11px] leading-5 text-zinc-500">{note}</p>
+            </div>
+          </div>
+          <ArrowRight
+            className={`h-4 w-4 shrink-0 opacity-70 transition-smooth group-hover:opacity-100 ${toneStyles.arrow}`}
+          />
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 export default function PlayerProfileTabs({
   seasonStats,
   seasonYear,
+  seasonNote,
   d3Percentiles,
   trackmanSessions,
   commandOutings,
@@ -439,32 +512,35 @@ export default function PlayerProfileTabs({
     trackmanSessions.length,
   ]);
 
+  const latestTrackmanSession = sortedSessions[0] ?? null;
+  const latestCommandOuting = filteredCommandOutings[0] ?? null;
+  const latestMechanicsSession = useMemo(() => {
+    if (!mechanicsEntry?.sessions?.length) return null;
+    return [...mechanicsEntry.sessions].sort((a, b) => b.date.localeCompare(a.date))[0];
+  }, [mechanicsEntry]);
+
   return (
-    <div className="mt-6">
-      {/* Tab bar */}
-      <div className="flex gap-0">
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => setActiveTab(tab)}
-            className={`relative cursor-pointer px-6 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] transition-smooth ${
-              activeTab === tab
-                ? "text-white"
-                : "text-zinc-600 hover:text-zinc-400"
-            }`}
-          >
-            {tab}
-            {activeTab === tab && (
-              <span className="absolute inset-x-2 bottom-0 h-[3px] rounded-full bg-emerald-500" />
-            )}
-          </button>
-        ))}
+    <div className="mt-8">
+      <div className="rounded-[1.5rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(17,24,39,0.64),rgba(9,9,11,0.9))] p-2 shadow-[0_20px_48px_rgba(0,0,0,0.20)]">
+        <div className="grid gap-2 sm:grid-cols-4">
+          {TABS.map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setActiveTab(tab)}
+              className={`rounded-[1.1rem] px-4 py-3 text-[11px] font-black uppercase tracking-[0.2em] transition-smooth ${
+                activeTab === tab
+                  ? "border border-emerald-500/25 bg-emerald-500/10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_0_0_1px_rgba(16,185,129,0.08)]"
+                  : "border border-transparent text-zinc-500 hover:border-zinc-800 hover:bg-zinc-950/70 hover:text-zinc-200"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
       </div>
-      <div className="h-px bg-zinc-800/60" />
 
       <AnimatePresence mode="wait">
-        {/* OVERVIEW */}
         {activeTab === "Overview" && (
           <motion.div
             key="Overview"
@@ -472,180 +548,182 @@ export default function PlayerProfileTabs({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="mt-12 space-y-16"
+            className="mt-8 space-y-8"
           >
-          <section>
-            <div className="space-y-3">
-              <ProfileHeroTile
-                index={0}
-                label={heroTiles.pitchingTile.label}
-                value={heroTiles.pitchingTile.value}
-                note={heroTiles.pitchingTile.note}
-                tone={heroTiles.pitchingTile.tone}
-                badgeStyle={heroTiles.pitchingTile.badgeStyle}
-                onClick={heroTiles.pitchingTile.onClick}
-                active={heroTiles.pitchingTile.active}
-                featured={heroTiles.pitchingTile.featured}
-              />
+            <section className="space-y-7">
+              <div className="space-y-3">
+                <ProfileHeroTile
+                  index={0}
+                  label={heroTiles.pitchingTile.label}
+                  value={heroTiles.pitchingTile.value}
+                  note={heroTiles.pitchingTile.note}
+                  tone={heroTiles.pitchingTile.tone}
+                  badgeStyle={heroTiles.pitchingTile.badgeStyle}
+                  onClick={heroTiles.pitchingTile.onClick}
+                  active={heroTiles.pitchingTile.active}
+                  featured={heroTiles.pitchingTile.featured}
+                />
 
-              <div className="grid gap-3 md:grid-cols-2">
-                {heroTiles.secondaryTiles.map((tile, index) => (
-                  <ProfileHeroTile
-                    key={tile.label}
-                    index={index + 1}
-                    label={tile.label}
-                    value={tile.value}
-                    note={tile.note}
-                    tone={tile.tone}
-                    badgeStyle={tile.badgeStyle}
-                    onClick={tile.onClick}
-                    active={tile.active}
-                    featured={tile.featured}
-                  />
-                ))}
-              </div>
-            </div>
-            <AnimatePresence initial={false} mode="wait">
-              {expandedMetric === "pitching" && (
-                <motion.div
-                  key="pitching-plus-model"
-                  initial={{ opacity: 0, y: -8, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: "auto" }}
-                  exit={{ opacity: 0, y: -6, height: 0 }}
-                  transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-                  className="mt-4 overflow-hidden"
-                >
-                  <PitchingPlusModelCard
-                    season={latestCommandSeason}
-                    loading={isPitchingHeroLoading}
-                    note={pitchingModel.note}
-                    result={pitchingModel.result}
-                  />
-                </motion.div>
-              )}
-              {expandedMetric === "command" && (
-                <motion.div
-                  key="command-plus-model"
-                  initial={{ opacity: 0, y: -8, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: "auto" }}
-                  exit={{ opacity: 0, y: -6, height: 0 }}
-                  transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-                  className="mt-4 overflow-hidden"
-                >
-                  <CommandPlusModelCard
-                    season={latestCommandSeason}
-                    note={
-                      currentCommandHero?.score != null && currentCommandHero.season != null
-                        ? `${currentCommandHero.outingCount} outing${currentCommandHero.outingCount === 1 ? "" : "s"} | ${currentCommandHero.pitchCount} pitch${currentCommandHero.pitchCount === 1 ? "" : "es"} in ${currentCommandHero.season}`
-                        : latestCommandSeason != null
-                          ? `No qualified score yet for ${latestCommandSeason}`
-                          : "No command outings yet"
-                    }
-                    result={initialCommandResult}
-                  />
-                </motion.div>
-              )}
-              {expandedMetric === "stuff" && (
-                <motion.div
-                  key="stuff-plus-model"
-                  initial={{ opacity: 0, y: -8, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: "auto" }}
-                  exit={{ opacity: 0, y: -6, height: 0 }}
-                  transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-                  className="mt-4 overflow-hidden"
-                >
-                  <StuffPlusModelCard
-                    note={
-                      currentStuffHero?.total != null
-                        ? `${currentStuffHero.pitchTypeCount} pitch type${currentStuffHero.pitchTypeCount === 1 ? "" : "s"} across ${currentStuffHero.sessionCount ?? 0} session${currentStuffHero.sessionCount === 1 ? "" : "s"}`
-                        : trackmanSessions.length > 0
-                          ? "Trackman sessions found, no Stuff+ grade yet"
-                          : "No Trackman arsenal yet"
-                    }
-                    overall={currentStuffHero?.total ?? null}
-                    pitches={initialStuffPitches}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </section>
-
-          {seasonStats.length === 0 && d3Percentiles.length === 0 ? (
-            <p className="text-sm text-zinc-600">
-              No {seasonYear} stats available.
-            </p>
-          ) : (
-            <>
-              {/* Season Snapshot */}
-              <section>
-                <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
-                  {seasonYear} Season
-                </h2>
-                <div className="mt-6 grid grid-cols-3 gap-x-2 gap-y-5 sm:grid-cols-5 lg:grid-cols-9">
-                  {seasonStats.map((stat, i) => (
-                    <div
-                      key={stat.label}
-                      className="text-center opacity-0"
-                      style={{
-                        animation: `savantFadeIn 0.4s ease-out ${i * 50}ms forwards`,
-                      }}
-                    >
-                      <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-600">
-                        {stat.label}
-                      </div>
-                      <div className="mt-1 font-mono text-[22px] font-black tabular-nums leading-none text-white">
-                        {stat.value}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              {/* D3 Percentile Rankings */}
-              <section>
-                <div className="flex items-end justify-between">
-                  <div>
-                    <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
-                      D3 Percentile Rankings
-                    </h2>
-                    <p className="mt-1 text-[10px] tracking-wide text-zinc-700">
-                      vs Division III pitchers, {seasonYear}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3 text-[9px] font-bold uppercase tracking-[0.15em] text-zinc-600">
-                    <span className="flex items-center gap-1.5">
-                      <span className="inline-block h-[10px] w-[10px] rounded-full" style={{ background: "#3b82f6" }} />
-                      Poor
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <span className="inline-block h-[10px] w-[10px] rounded-full" style={{ background: "#a1a1aa" }} />
-                      Avg
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <span className="inline-block h-[10px] w-[10px] rounded-full" style={{ background: "#dc2626" }} />
-                      Elite
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-8 space-y-0">
-                  {d3Percentiles.map((m, i) => (
-                    <SavantPercentileBar
-                      key={m.label}
-                      label={m.label}
-                      value={m.value}
-                      percentile={m.percentile}
-                      index={i}
+                <div className="grid gap-3 md:grid-cols-2">
+                  {heroTiles.secondaryTiles.map((tile, index) => (
+                    <ProfileHeroTile
+                      key={tile.label}
+                      index={index + 1}
+                      label={tile.label}
+                      value={tile.value}
+                      note={tile.note}
+                      tone={tile.tone}
+                      badgeStyle={tile.badgeStyle}
+                      onClick={tile.onClick}
+                      active={tile.active}
+                      featured={tile.featured}
                     />
                   ))}
                 </div>
-              </section>
-            </>
-          )}
+              </div>
+
+              <AnimatePresence initial={false} mode="wait">
+                {expandedMetric === "pitching" && (
+                  <motion.div
+                    key="pitching-plus-model"
+                    initial={{ opacity: 0, y: -8, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: "auto" }}
+                    exit={{ opacity: 0, y: -6, height: 0 }}
+                    transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                    className="overflow-hidden"
+                  >
+                    <PitchingPlusModelCard
+                      season={latestCommandSeason}
+                      loading={isPitchingHeroLoading}
+                      note={pitchingModel.note}
+                      result={pitchingModel.result}
+                    />
+                  </motion.div>
+                )}
+                {expandedMetric === "command" && (
+                  <motion.div
+                    key="command-plus-model"
+                    initial={{ opacity: 0, y: -8, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: "auto" }}
+                    exit={{ opacity: 0, y: -6, height: 0 }}
+                    transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                    className="overflow-hidden"
+                  >
+                    <CommandPlusModelCard
+                      season={latestCommandSeason}
+                      note={
+                        currentCommandHero?.score != null && currentCommandHero.season != null
+                          ? `${currentCommandHero.outingCount} outing${currentCommandHero.outingCount === 1 ? "" : "s"} | ${currentCommandHero.pitchCount} pitch${currentCommandHero.pitchCount === 1 ? "" : "es"} in ${currentCommandHero.season}`
+                          : latestCommandSeason != null
+                            ? `No qualified score yet for ${latestCommandSeason}`
+                            : "No command outings yet"
+                      }
+                      result={initialCommandResult}
+                    />
+                  </motion.div>
+                )}
+                {expandedMetric === "stuff" && (
+                  <motion.div
+                    key="stuff-plus-model"
+                    initial={{ opacity: 0, y: -8, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: "auto" }}
+                    exit={{ opacity: 0, y: -6, height: 0 }}
+                    transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                    className="overflow-hidden"
+                  >
+                    <StuffPlusModelCard
+                      note={
+                        currentStuffHero?.total != null
+                          ? `${currentStuffHero.pitchTypeCount} pitch type${currentStuffHero.pitchTypeCount === 1 ? "" : "s"} across ${currentStuffHero.sessionCount ?? 0} session${currentStuffHero.sessionCount === 1 ? "" : "s"}`
+                          : trackmanSessions.length > 0
+                            ? "Trackman sessions found, no Stuff+ grade yet"
+                            : "No Trackman arsenal yet"
+                      }
+                      overall={currentStuffHero?.total ?? null}
+                      pitches={initialStuffPitches}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </section>
+
+            {seasonStats.length === 0 && d3Percentiles.length === 0 ? (
+              <LeaderboardPanel className="p-5 text-sm text-zinc-500">
+                No {seasonYear} stats available.
+              </LeaderboardPanel>
+            ) : (
+              <>
+                <section className="space-y-4">
+                  <div className="flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                      <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
+                        Season Snapshot
+                      </h2>
+                      <p className="mt-1 text-sm text-zinc-500">
+                        {seasonYear} production at a glance.
+                      </p>
+                    </div>
+                    {seasonNote ? <LeaderboardPill tone="neutral">{seasonNote}</LeaderboardPill> : null}
+                  </div>
+
+                  <LeaderboardPanel className="p-5 sm:p-6">
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-9">
+                      {seasonStats.map((stat, i) => (
+                        <div
+                          key={stat.label}
+                          className="rounded-2xl border border-zinc-800/80 bg-zinc-950/60 p-3 text-center opacity-0"
+                          style={{
+                            animation: `savantFadeIn 0.4s ease-out ${i * 50}ms forwards`,
+                          }}
+                        >
+                          <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-600">
+                            {stat.label}
+                          </div>
+                          <div className="mt-2 font-mono text-[24px] font-black tabular-nums leading-none text-white">
+                            {stat.value}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </LeaderboardPanel>
+                </section>
+
+                <section className="space-y-4">
+                  <div className="flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                      <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
+                        D3 Percentile Rankings
+                      </h2>
+                      <p className="mt-1 text-sm text-zinc-500">
+                        Versus Division III pitchers in {seasonYear}.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <LeaderboardPill tone="blue">Poor</LeaderboardPill>
+                      <LeaderboardPill tone="neutral">Average</LeaderboardPill>
+                      <LeaderboardPill tone="orange">Elite</LeaderboardPill>
+                    </div>
+                  </div>
+
+                  <LeaderboardPanel className="overflow-hidden p-4 sm:p-5">
+                    <div className="space-y-0">
+                      {d3Percentiles.map((m, i) => (
+                        <SavantPercentileBar
+                          key={m.label}
+                          label={m.label}
+                          value={m.value}
+                          percentile={m.percentile}
+                          index={i}
+                        />
+                      ))}
+                    </div>
+                  </LeaderboardPanel>
+                </section>
+              </>
+            )}
           </motion.div>
         )}
 
-        {/* TRACKMAN */}
         {activeTab === "Trackman" && (
           <motion.div
             key="Trackman"
@@ -653,54 +731,98 @@ export default function PlayerProfileTabs({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="mt-10"
+            className="mt-8 space-y-6"
           >
-          {/* Hub button */}
-          <Link href={`/trackman/player/${playerSlug}?from=profile`}>
-            <div className="group flex items-center justify-between rounded-xl border border-blue-500/30 bg-zinc-900/60 px-5 py-4 transition-smooth hover:border-blue-500/50 hover:bg-zinc-900">
-              <div className="flex items-center gap-3">
-                <Activity className="h-4 w-4 text-blue-400" />
-                <div>
-                  <span className="text-sm font-semibold text-zinc-100">Trackman Hub</span>
-                  <p className="text-[10px] text-zinc-500">Averages, trends, and movement profiles</p>
-                </div>
+            <section className="space-y-5">
+              <ProfileHubLink
+                href={`/trackman/player/${playerSlug}?from=profile`}
+                icon={Activity}
+                title="Trackman Hub"
+                note="Averages, trends, and movement profiles"
+                tone="blue"
+              />
+
+              <div className="grid gap-3 pt-2 md:grid-cols-3">
+                <LeaderboardStatBlock
+                  label="Stuff+"
+                  value={
+                    currentStuffHero?.total != null
+                      ? currentStuffHero.total.toFixed(1)
+                      : "--"
+                  }
+                  detail={
+                    currentStuffHero?.total != null
+                      ? "current live arsenal grade"
+                      : "waiting on a full grade"
+                  }
+                  emphasisClassName="text-blue-300"
+                />
+                <LeaderboardStatBlock
+                  label="Pitch Types"
+                  value={String(currentStuffHero?.pitchTypeCount ?? 0)}
+                  detail="graded shapes in the mix"
+                  emphasisClassName="text-zinc-100"
+                />
+                <LeaderboardStatBlock
+                  label="Sessions"
+                  value={String(sortedSessions.length)}
+                  detail={
+                    latestTrackmanSession
+                      ? `latest ${formatDateLabel(latestTrackmanSession.date)}`
+                      : "no Trackman sessions yet"
+                  }
+                  emphasisClassName="text-zinc-100"
+                />
               </div>
-              <ArrowRight className="h-4 w-4 text-blue-400 opacity-60 group-hover:opacity-100 transition-opacity" />
-            </div>
-          </Link>
+            </section>
 
-          <h2 className="mt-10 text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
-            Sessions
-          </h2>
+            <section className="space-y-5">
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
+                    Sessions
+                  </h2>
+                  <p className="mt-1 text-sm text-zinc-500">
+                    Recent Trackman work for this player.
+                  </p>
+                </div>
+                <LeaderboardPill tone="blue">
+                  {sortedSessions.length} Session{sortedSessions.length === 1 ? "" : "s"}
+                </LeaderboardPill>
+              </div>
 
-          {sortedSessions.length === 0 ? (
-            <p className="mt-6 text-sm text-zinc-600">No sessions yet.</p>
-          ) : (
-            <ul className="mt-5 divide-y divide-zinc-800/40">
-              {sortedSessions.map((s) => (
-                <li key={`${s.dateSlug}-${s.sessionLabel}`}>
-                  <Link
-                    href={`/trackman/session/${playerSlug}/${s.dateSlug}?from=profile&slug=${playerSlug}`}
-                    className="flex items-center justify-between py-4 group/row"
-                  >
-                    <div>
-                      <div className="text-sm font-bold text-zinc-200 group-hover/row:text-white transition-smooth">
-                        {formatDateLabel(s.date)}
-                      </div>
-                      <div className="text-[10px] text-zinc-600">
-                        {s.sessionLabel}
-                      </div>
-                    </div>
-                    <ArrowRight className="h-3.5 w-3.5 text-zinc-600 opacity-0 group-hover/row:opacity-100 transition-opacity" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
+              <LeaderboardPanel className="overflow-hidden p-2 sm:p-3">
+                {sortedSessions.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-zinc-800 bg-zinc-950/60 px-4 py-8 text-center text-sm text-zinc-500">
+                    No sessions yet.
+                  </div>
+                ) : (
+                  <ul className="space-y-2">
+                    {sortedSessions.map((s) => (
+                      <li key={`${s.dateSlug}-${s.sessionLabel}`}>
+                        <Link
+                          href={`/trackman/session/${playerSlug}/${s.dateSlug}?from=profile&slug=${playerSlug}`}
+                          className="group flex items-center justify-between rounded-2xl border border-zinc-900 bg-zinc-950/50 px-4 py-4 transition-smooth hover:border-blue-500/20 hover:bg-zinc-900/60"
+                        >
+                          <div>
+                            <div className="text-sm font-bold text-zinc-200 transition-smooth group-hover:text-white">
+                              {formatDateLabel(s.date)}
+                            </div>
+                            <div className="mt-1 text-[11px] text-zinc-500">
+                              {s.sessionLabel}
+                            </div>
+                          </div>
+                          <ArrowRight className="h-4 w-4 text-zinc-600 opacity-70 transition-smooth group-hover:opacity-100 group-hover:text-blue-300" />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </LeaderboardPanel>
+            </section>
           </motion.div>
         )}
 
-        {/* COMMAND */}
         {activeTab === "Command" && (
           <motion.div
             key="Command"
@@ -708,67 +830,111 @@ export default function PlayerProfileTabs({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="mt-10"
+            className="mt-8 space-y-6"
           >
-          {/* Command Hub button */}
-          <Link href="/command">
-            <div className="group flex items-center justify-between rounded-xl border border-orange-500/30 bg-zinc-900/60 px-5 py-4 transition-smooth hover:border-orange-500/50 hover:bg-zinc-900">
-              <div className="flex items-center gap-3">
-                <Target className="h-4 w-4 text-orange-400" />
+            <section className="space-y-7">
+              <ProfileHubLink
+                href="/command"
+                icon={Target}
+                title="Command Hub"
+                note="All pitchers, all outings"
+                tone="orange"
+              />
+
+              <div className="grid gap-3 pt-2 md:grid-cols-3">
+                <LeaderboardStatBlock
+                  label="Command+"
+                  value={
+                    currentCommandHero?.score != null
+                      ? currentCommandHero.score.toFixed(0)
+                      : "--"
+                  }
+                  detail={
+                    currentCommandHero?.season != null
+                      ? `live baseline in ${currentCommandHero.season}`
+                      : "not qualified yet"
+                  }
+                  emphasisClassName="text-orange-300"
+                />
+                <LeaderboardStatBlock
+                  label="Outings"
+                  value={String(filteredCommandOutings.length)}
+                  detail={
+                    latestCommandOuting
+                      ? `latest ${formatDateLabel(latestCommandOuting.dateId)}`
+                      : "no command outings yet"
+                  }
+                  emphasisClassName="text-zinc-100"
+                />
+                <LeaderboardStatBlock
+                  label="Tracked Pitches"
+                  value={String(currentCommandHero?.pitchCount ?? 0)}
+                  detail="live command sample size"
+                  emphasisClassName="text-zinc-100"
+                />
+              </div>
+            </section>
+
+            <section className="space-y-7">
+              <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <span className="text-sm font-semibold text-zinc-100">Command Hub</span>
-                  <p className="text-[10px] text-zinc-500">All pitchers, all outings</p>
+                  <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
+                    Outings
+                  </h2>
+                  <p className="mt-1 text-sm text-zinc-500">
+                    Command reports tied to this player profile.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <LeaderboardPill tone="orange">
+                    {filteredCommandOutings.length} Outing{filteredCommandOutings.length === 1 ? "" : "s"}
+                  </LeaderboardPill>
+                  {commandSeasons.length > 1 && (
+                    <Segment
+                      label="Season"
+                      options={[
+                        ...commandSeasons.map((yr) => ({ value: String(yr), display: String(yr) })),
+                        { value: "all", display: "All" },
+                      ]}
+                      selected={commandSeasonFilter}
+                      onChange={setCommandSeasonFilter}
+                    />
+                  )}
                 </div>
               </div>
-              <ArrowRight className="h-4 w-4 text-orange-400 opacity-60 group-hover:opacity-100 transition-opacity" />
-            </div>
-          </Link>
 
-          <div className="mt-10 flex items-center justify-between">
-            <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
-              Outings
-            </h2>
-            {commandSeasons.length > 1 && (
-              <Segment
-                label="Season"
-                options={[
-                  ...commandSeasons.map((yr) => ({ value: String(yr), display: String(yr) })),
-                  { value: "all", display: "All" },
-                ]}
-                selected={commandSeasonFilter}
-                onChange={setCommandSeasonFilter}
-              />
-            )}
-          </div>
-
-          {filteredCommandOutings.length === 0 ? (
-            <p className="mt-6 text-sm text-zinc-600">No outings yet.</p>
-          ) : (
-            <ul className="mt-5 divide-y divide-zinc-800/40">
-              {filteredCommandOutings.map((o) => (
-                <li key={o.outingId}>
-                  <Link
-                    href={`/player/${o.playerId}?from=profile&slug=${playerSlug}`}
-                    className="flex items-center justify-between py-4 group/row"
-                  >
-                    <div>
-                      <div className="text-sm font-bold text-zinc-200 group-hover/row:text-white transition-smooth">
-                        {formatDateLabel(o.dateId)}
-                      </div>
-                      <div className="text-[10px] text-zinc-600">
-                        {o.label}
-                      </div>
-                    </div>
-                    <ArrowRight className="h-3.5 w-3.5 text-zinc-600 opacity-0 group-hover/row:opacity-100 transition-opacity" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
+              <LeaderboardPanel className="overflow-hidden p-2 sm:p-3">
+                {filteredCommandOutings.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-zinc-800 bg-zinc-950/60 px-4 py-8 text-center text-sm text-zinc-500">
+                    No outings yet.
+                  </div>
+                ) : (
+                  <ul className="space-y-2">
+                    {filteredCommandOutings.map((o) => (
+                      <li key={o.outingId}>
+                        <Link
+                          href={`/player/${o.playerId}?from=profile&slug=${playerSlug}`}
+                          className="group flex items-center justify-between rounded-2xl border border-zinc-900 bg-zinc-950/50 px-4 py-4 transition-smooth hover:border-orange-500/20 hover:bg-zinc-900/60"
+                        >
+                          <div>
+                            <div className="text-sm font-bold text-zinc-200 transition-smooth group-hover:text-white">
+                              {formatDateLabel(o.dateId)}
+                            </div>
+                            <div className="mt-1 text-[11px] text-zinc-500">
+                              {o.label}
+                            </div>
+                          </div>
+                          <ArrowRight className="h-4 w-4 text-zinc-600 opacity-70 transition-smooth group-hover:opacity-100 group-hover:text-orange-300" />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </LeaderboardPanel>
+            </section>
           </motion.div>
         )}
 
-        {/* MECHANICS */}
         {activeTab === "Mechanics" && (
           <motion.div
             key="Mechanics"
@@ -776,28 +942,69 @@ export default function PlayerProfileTabs({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="mt-10"
+            className="mt-8 space-y-6"
           >
-          <Link href={`/mechanics/player/${playerSlug}?from=profile&slug=${playerSlug}`}>
-            <div className="group flex items-center justify-between rounded-xl border border-violet-500/30 bg-zinc-900/60 px-5 py-4 transition-smooth hover:border-violet-500/50 hover:bg-zinc-900">
-              <div className="flex items-center gap-3">
-                <ScanLine className="h-4 w-4 text-violet-400" />
-                <div>
-                  <span className="text-sm font-semibold text-zinc-100">Mechanics Hub</span>
-                  <p className="text-[10px] text-zinc-500">Video analysis, efficiency scores, and session history</p>
-                </div>
+            <section className="space-y-4">
+              <ProfileHubLink
+                href={`/mechanics/player/${playerSlug}?from=profile&slug=${playerSlug}`}
+                icon={ScanLine}
+                title="Mechanics Hub"
+                note="Video analysis, efficiency scores, and session history"
+                tone="violet"
+              />
+
+              <div className="grid gap-3 pt-2 md:grid-cols-3">
+                <LeaderboardStatBlock
+                  label="Sessions"
+                  value={String(mechanicsEntry?.sessions.length ?? 0)}
+                  detail="mechanics sessions on file"
+                  emphasisClassName="text-zinc-100"
+                />
+                <LeaderboardStatBlock
+                  label="Latest Score"
+                  value={
+                    latestMechanicsSession
+                      ? latestMechanicsSession.efficiency_score.toFixed(1)
+                      : "--"
+                  }
+                  detail={
+                    latestMechanicsSession
+                      ? `${latestMechanicsSession.pass_count} pass / ${latestMechanicsSession.fail_count} fail`
+                      : "no mechanics session yet"
+                  }
+                  emphasisClassName="text-violet-300"
+                />
+                <LeaderboardStatBlock
+                  label="Latest Date"
+                  value={
+                    latestMechanicsSession
+                      ? formatDateLabel(latestMechanicsSession.date)
+                      : "--"
+                  }
+                  detail={
+                    latestMechanicsSession
+                      ? latestMechanicsSession.view_mode.replace(/_/g, " ")
+                      : "waiting on first upload"
+                  }
+                  emphasisClassName="text-zinc-100"
+                />
               </div>
-              <ArrowRight className="h-4 w-4 text-violet-400 opacity-60 group-hover:opacity-100 transition-opacity" />
-            </div>
-          </Link>
+            </section>
 
-          <h2 className="mt-10 text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
-            Sessions
-          </h2>
+            <section className="space-y-4">
+              <div>
+                <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
+                  Sessions
+                </h2>
+                <p className="mt-1 text-sm text-zinc-500">
+                  Delivery review and recent mechanics access.
+                </p>
+              </div>
 
-          <div className="mt-5">
-            <MechanicsProfileCard entry={mechanicsEntry ?? null} profileSlug={playerSlug} />
-          </div>
+              <LeaderboardPanel className="overflow-hidden p-4 sm:p-5">
+                <MechanicsProfileCard entry={mechanicsEntry ?? null} profileSlug={playerSlug} />
+              </LeaderboardPanel>
+            </section>
           </motion.div>
         )}
       </AnimatePresence>

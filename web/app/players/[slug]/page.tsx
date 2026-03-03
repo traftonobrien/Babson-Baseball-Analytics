@@ -25,6 +25,10 @@ import {
 } from "@/lib/pitchingPlus";
 import { seasonFromDateId } from "@/lib/season";
 import { buildStuffPlusLookupCandidates } from "@/lib/stuffPlusLookup";
+import {
+  LeaderboardPageFrame,
+  LeaderboardPill,
+} from "@/app/components/leaderboards/LeaderboardChrome";
 import PlayerProfileTabs from "./PlayerProfileTabs";
 
 export const dynamic = "force-dynamic";
@@ -888,55 +892,60 @@ export default async function PlayerProfilePage({
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="mx-auto w-full max-w-5xl px-6 py-12">
+    <LeaderboardPageFrame maxWidth="max-w-6xl">
+      <div className="mx-auto w-full">
         <Link
           href="/players"
-          className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-700 transition-smooth hover:text-zinc-400"
+          className="inline-flex items-center rounded-full border border-zinc-800 bg-zinc-950/70 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500 transition-smooth hover:border-zinc-700 hover:text-zinc-200"
         >
-          Roster
+          Back To Roster
         </Link>
 
-        <header className="mt-6 pb-4">
-          <div className="flex flex-wrap items-center gap-3 gap-y-2">
-            <h1 className="text-[32px] font-black tracking-tight text-white">
-              {player.name}
-            </h1>
-            {hand && (
-              <span
-                className={`text-sm font-semibold px-3 py-1.5 rounded-full uppercase tracking-wider shrink-0 ${handBadgeClasses(hand)}`}
-              >
-                {hand === "R" ? "RHP" : "LHP"}
-              </span>
-            )}
-          </div>
-          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] font-bold uppercase tracking-[0.2em] text-zinc-600">
-            <span>{player.team}</span>
-            <span className="text-zinc-800">/</span>
-            <span>{roleLabel}</span>
-            <span className="text-zinc-800">/</span>
-            <span>{TARGET_YEAR}</span>
-            {(rosterInfo?.height || rosterInfo?.weight || rosterInfo?.class) && (
-              <>
-                <span className="text-zinc-800">/</span>
-                <span className="text-zinc-500 font-normal normal-case tracking-normal">
-                  {[rosterInfo.height, rosterInfo.weight && `${rosterInfo.weight} lbs`, rosterInfo.class]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </span>
-              </>
-            )}
+        <header className="mt-6">
+          <div className="relative overflow-hidden rounded-[2.1rem] border border-emerald-500/18 bg-zinc-950/82 p-6 shadow-[0_28px_70px_rgba(0,0,0,0.30)] sm:p-7">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_18%,rgba(16,185,129,0.16),transparent_26%),radial-gradient(circle_at_84%_20%,rgba(59,130,246,0.10),transparent_24%),linear-gradient(135deg,rgba(24,24,27,0.92),rgba(3,7,18,0.98))]" />
+            <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+            <div className="relative">
+              <div className="flex flex-wrap items-center gap-2">
+                <LeaderboardPill tone="emerald">Pitching Profile</LeaderboardPill>
+                {hand && (
+                  <span
+                    className={`rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] ${handBadgeClasses(hand)}`}
+                  >
+                    {hand === "R" ? "RHP" : "LHP"}
+                  </span>
+                )}
+              </div>
+
+              <h1 className="mt-5 text-[34px] font-black tracking-tight text-white sm:text-[3rem] sm:leading-[1.02]">
+                {player.name}
+              </h1>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                <LeaderboardPill tone="neutral">{player.team}</LeaderboardPill>
+                <LeaderboardPill tone="neutral">{roleLabel}</LeaderboardPill>
+                <LeaderboardPill tone="neutral">{TARGET_YEAR}</LeaderboardPill>
+                {(rosterInfo?.height || rosterInfo?.weight || rosterInfo?.class) && (
+                  <LeaderboardPill tone="neutral">
+                    {[rosterInfo.height, rosterInfo.weight && `${rosterInfo.weight} lbs`, rosterInfo.class]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </LeaderboardPill>
+                )}
+              </div>
+            </div>
           </div>
         </header>
 
         {statsUnavailable && (
-          <div className="mb-4 rounded-lg border border-amber-800/40 bg-amber-950/30 px-4 py-3 text-sm text-amber-400">
+          <div className="mt-4 rounded-2xl border border-amber-800/40 bg-amber-950/30 px-4 py-3 text-sm text-amber-300">
             2025 stats temporarily unavailable. Check back soon.
           </div>
         )}
 
         {!d3PlayerId && (
-          <div className="mb-4 rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-500">
+          <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-500">
             No 2025 stats available
           </div>
         )}
@@ -959,6 +968,6 @@ export default async function PlayerProfilePage({
           mechanicsEntry={mechanicsEntry ?? null}
         />
       </div>
-    </main>
+    </LeaderboardPageFrame>
   );
 }
