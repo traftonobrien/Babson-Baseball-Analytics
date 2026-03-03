@@ -1,7 +1,8 @@
 "use client";
 
 import type { Pitch } from "../types";
-import { pitchColor } from "../utils";
+import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
+import { pitchDisplayName } from "@/lib/pitchNames";
 
 interface Props {
   pitches: Pitch[];
@@ -47,28 +48,19 @@ export default function PitchTypeSummaryCards({ pitches }: Props) {
   return (
     <div className={`grid ${cols} gap-3`}>
       {groups.map((g) => {
-        const color = pitchColor(g.type);
         return (
           <div
             key={g.type}
-            className="bg-zinc-900 rounded-lg border border-zinc-800 overflow-hidden"
-            style={{ borderLeftColor: color, borderLeftWidth: 3 }}
+            className="overflow-hidden rounded-[1.5rem] border border-zinc-800/80 bg-zinc-950/72 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
           >
-            {/* Type badge */}
-            <div className="flex items-center gap-2 px-3 pt-3 pb-1">
-              <span
-                className="text-xs font-bold px-1.5 py-0.5 rounded"
-                style={{ backgroundColor: color + "22", color }}
-              >
-                {g.type}
-              </span>
-              <span className="text-xs text-zinc-500">
+            <div className="flex items-center justify-between gap-2">
+              <PitchTypeChip pitchType={g.type} label={pitchDisplayName(g.type)} size="xs" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
                 {g.pitches.length} pitch{g.pitches.length !== 1 && "es"}
               </span>
             </div>
 
-            {/* 2x2 stat grid */}
-            <div className="grid grid-cols-2 gap-px p-3 pt-2">
+            <div className="mt-3 grid grid-cols-2 gap-2">
               <Stat
                 label="Avg Miss"
                 value={`${avg(g.pitches, (p) => p.total_miss_inches).toFixed(1)}"`}
@@ -95,9 +87,9 @@ export default function PitchTypeSummaryCards({ pitches }: Props) {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="text-center py-1">
-      <div className="text-lg font-mono font-semibold">{value}</div>
-      <div className="text-xs text-zinc-500 uppercase tracking-wider">{label}</div>
+    <div className="rounded-2xl border border-zinc-800/70 bg-zinc-950/70 px-3 py-2.5 text-center">
+      <div className="text-lg font-mono font-semibold text-zinc-100">{value}</div>
+      <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">{label}</div>
     </div>
   );
 }

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import Link from "next/link";
+import { useState, useEffect, useMemo, useCallback, type ReactNode } from "react";
+import { ArrowLeft } from "lucide-react";
 import { usePitchData } from "../../hooks/usePitchData";
 import { applyFilters } from "../../utils";
 import type { Pitch, Filters } from "../../types";
@@ -14,12 +16,10 @@ import StrikeZoneScatter from "../../components/StrikeZoneScatter";
 import LaneReport from "../../components/LaneReport";
 import PitchTypeSummaryCards from "../../components/PitchTypeSummaryCards";
 import CommandPlusSection from "../../components/CommandPlusSection";
-import PitchingPlusSection from "../../components/PitchingPlusSection";
 import MissHeatmap from "../../components/MissHeatmap";
 import LogoutButton from "../../components/LogoutButton";
 import OutingSelect from "./OutingSelect";
 import GameStatsSection from "@/lib/stats/GameStatsSection";
-import { MechanicsProfileSection } from "@/app/components/mechanics/MechanicsProfileSection";
 import { seasonFromDateId } from "@/lib/season";
 import {
   loadOutingMeta,
@@ -27,6 +27,13 @@ import {
   type OutingMeta,
   type PlayerGameStats,
 } from "@/lib/stats";
+import {
+  Button,
+  leaderboardFilterButtonBaseClassName,
+  leaderboardFilterButtonGhostInactiveClassName,
+  leaderboardFilterButtonOrangeActiveClassName,
+} from "@/components/ui/neon-button";
+import { LeaderboardPill } from "@/app/components/leaderboards/LeaderboardChrome";
 
 type VizMode = "scatter" | "heatmap";
 
@@ -76,6 +83,51 @@ function applyOverrides(pitches: Pitch[], overrides: Overrides): Pitch[] {
   });
 }
 
+function HeaderActionLink({
+  href,
+  label,
+  emphasis = false,
+}: {
+  href: string;
+  label: string;
+  emphasis?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`inline-flex items-center rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] transition-all duration-300 ${
+        emphasis
+          ? "border-orange-400/35 bg-orange-500/10 text-orange-200 hover:border-orange-300/45 hover:bg-orange-500/14"
+          : "border-zinc-800 bg-zinc-950/80 text-zinc-300 hover:border-orange-400/20 hover:text-zinc-100"
+      }`}
+    >
+      {label}
+    </Link>
+  );
+}
+
+function SidebarPanel({
+  title,
+  detail,
+  children,
+}: {
+  title: string;
+  detail?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="overflow-hidden rounded-[1.7rem] border border-zinc-800/80 bg-zinc-950/75 shadow-[0_18px_48px_rgba(0,0,0,0.24)]">
+      <div className="border-b border-zinc-800/70 px-4 py-3">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+          {title}
+        </div>
+        {detail ? <div className="mt-1 text-xs text-zinc-500">{detail}</div> : null}
+      </div>
+      <div className="p-4">{children}</div>
+    </section>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
@@ -84,10 +136,12 @@ export default function PlayerDashboard({
   player,
   outing,
   backTo,
+  backLabel,
 }: {
   player: Player;
   outing: Outing;
   backTo?: string;
+  backLabel?: string;
 }) {
   const { pitches: rawPitches, pitcherHand, loading, error } = usePitchData(outing.csvPath, player.id);
   const [overrides, setOverrides] = useState<Overrides>({});
@@ -149,20 +203,6 @@ export default function PlayerDashboard({
     () => applyOverrides(rawPitches, overrides),
     [rawPitches, overrides],
   );
-
-  const otherSeasonCsvPaths = useMemo(() => {
-    const dateId = outing.id.split("/")[1];
-    const season = seasonFromDateId(dateId);
-    if (!season) return [];
-
-    return player.outings
-      .filter((entry) => {
-        if (entry.id === outing.id) return false;
-        const entryDateId = entry.id.split("/")[1];
-        return seasonFromDateId(entryDateId) === season;
-      })
-      .map((entry) => entry.csvPath);
-  }, [outing.id, player.outings]);
 
   // Set of edited pitch numbers (for UI badge)
   const editedPitches = useMemo(
@@ -244,172 +284,216 @@ export default function PlayerDashboard({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-zinc-950 text-zinc-400">
-        Loading pitch data...
+      <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.12),_transparent_22%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.08),_transparent_22%),linear-gradient(180deg,_#09090b_0%,_#111827_56%,_#09090b_100%)] text-zinc-400">
+        Loading command report...
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-screen bg-zinc-950 text-red-400">
+      <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.12),_transparent_22%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.08),_transparent_22%),linear-gradient(180deg,_#09090b_0%,_#111827_56%,_#09090b_100%)] text-red-400">
         Error: {error}
       </div>
     );
   }
 
   const hasEdits = editedPitches.size > 0;
+  const outingDateId = outing.id.split("/")[1] ?? "";
+  const currentSeason = seasonFromDateId(outingDateId);
+  const compareHref =
+    player.outings.length >= 2
+      ? `/player/${player.id}/compare?outingA=${outing.id}&outingB=${
+          player.outings.find((o) => o.id !== outing.id)?.id ?? player.outings[1].id
+        }`
+      : `/player/${player.id}/compare?outingA=${outing.id}`;
 
   return (
-    <div className="h-screen flex flex-col bg-zinc-950 text-zinc-100">
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 py-2 bg-zinc-900 border-b border-zinc-800">
-        <div className="flex items-center gap-3">
-          {backTo ? (
-            <a href={backTo} className="text-sm font-semibold tracking-wide hover:text-zinc-300">
-              &larr; Profile
-            </a>
-          ) : (
-            <a href="/" className="text-sm font-semibold tracking-wide hover:text-zinc-300">
-              Pitch Tracker
-            </a>
-          )}
-          <span className="text-xs text-zinc-400">
-            {player.name} &middot; {outing.label}
-          </span>
-          {player.outings.length > 1 && (
-            <OutingSelect
-              playerId={player.id}
-              outings={player.outings}
-              selectedOutingId={outing.id}
-            />
-          )}
-        </div>
-        <div className="flex items-center gap-3">
-          <a
-            href={`/trackman/session/${player.id}/${outing.id.split("/")[1] ?? ""}`}
-            className="text-xs text-zinc-400 hover:text-zinc-200 transition-smooth"
-          >
-            Trackman
-          </a>
-          <a
-            href={`/player/${player.id}/report?scope=outing&outingId=${outing.id}`}
-            className="text-xs text-zinc-400 hover:text-zinc-200 transition-smooth"
-          >
-            Outing Report
-          </a>
-          <a
-            href={`/player/${player.id}/report?scope=overall`}
-            className="text-xs text-zinc-400 hover:text-zinc-200 transition-smooth"
-          >
-            Overall Report
-          </a>
-          {player.outings.length >= 1 && (
-            <a
-              href={
-                player.outings.length >= 2
-                  ? `/player/${player.id}/compare?outingA=${outing.id}&outingB=${player.outings.find((o) => o.id !== outing.id)?.id ?? player.outings[1].id}`
-                  : `/player/${player.id}/compare?outingA=${outing.id}`
-              }
-              className="text-xs font-medium text-orange-400 hover:text-orange-300 transition-smooth"
-            >
-              Compare
-            </a>
-          )}
-          <span className="text-xs text-zinc-500">
-            {laneFiltered.length} / {pitches.length} pitches
-          </span>
-          <LogoutButton />
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.12),_transparent_22%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.08),_transparent_22%),linear-gradient(180deg,_#09090b_0%,_#111827_56%,_#09090b_100%)] text-zinc-100">
+      <header className="border-b border-zinc-800/70 bg-[linear-gradient(135deg,rgba(24,24,27,0.95),rgba(9,9,11,0.96))]">
+        <div className="mx-auto max-w-[1600px] px-4 py-4 sm:px-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                <Link
+                  href={backTo ?? "/"}
+                  className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950/75 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-300 transition-all duration-300 hover:border-orange-400/20 hover:text-zinc-100"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  {backLabel ?? "Home"}
+                </Link>
+                <span className="hidden text-zinc-700 sm:inline">/</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                  Command Report
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <LeaderboardPill tone="orange">
+                  {laneFiltered.length} / {pitches.length} pitches
+                </LeaderboardPill>
+                <LogoutButton className="rounded-full border border-zinc-800 bg-zinc-950/75 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400 hover:border-zinc-700 hover:text-zinc-200" />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+              <div className="min-w-0">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300">
+                  {player.name}
+                </div>
+                <h1 className="mt-2 text-2xl font-black tracking-tight text-zinc-50 sm:text-4xl">
+                  {outing.label}
+                </h1>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {currentSeason ? (
+                    <LeaderboardPill tone="orange">{currentSeason} season</LeaderboardPill>
+                  ) : null}
+                  <LeaderboardPill>{pitches.length} tracked pitches</LeaderboardPill>
+                  {selected ? (
+                    <LeaderboardPill tone="neutral">
+                      Pitch #{selected.pitch_number} • {selected.pitch_type}
+                    </LeaderboardPill>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="flex w-full flex-col gap-3 xl:w-auto xl:min-w-[34rem]">
+                {player.outings.length > 1 ? (
+                  <OutingSelect
+                    playerId={player.id}
+                    outings={player.outings}
+                    selectedOutingId={outing.id}
+                  />
+                ) : null}
+                <div className="flex flex-wrap gap-2">
+                  <HeaderActionLink href={`/trackman/session/${player.id}/${outingDateId}`} label="Trackman Session" />
+                  <HeaderActionLink href={`/player/${player.id}/report?scope=outing&outingId=${outing.id}`} label="Outing Report" />
+                  <HeaderActionLink href={`/player/${player.id}/report?scope=overall`} label="Overall Report" />
+                  {player.outings.length >= 1 ? (
+                    <HeaderActionLink href={compareHref} label="Compare" emphasis />
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Body */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left sidebar */}
-        <aside className="w-80 border-r border-zinc-800 flex flex-col bg-zinc-950">
-          <div className="p-3 border-b border-zinc-800">
+      <div className="mx-auto grid max-w-[1600px] gap-4 px-4 py-4 sm:px-6 xl:grid-cols-[22rem_minmax(0,1fr)] xl:items-start">
+        <aside className="space-y-4 xl:sticky xl:top-4">
+          <SidebarPanel
+            title="Filters"
+            detail="Control pitch type, result quadrant, and max miss."
+          >
             <FilterPanel
               pitches={pitches}
               filters={filters}
               onChange={setFilters}
             />
-          </div>
-          {/* Reset edits button */}
-          {hasEdits && (
-            <div className="px-3 py-1.5 border-b border-zinc-800 flex items-center justify-between">
-              <span className="text-[10px] text-amber-400">
-                {editedPitches.size} pitch type{editedPitches.size !== 1 ? "s" : ""} edited
-              </span>
-              <button
-                type="button"
-                onClick={handleResetEdits}
-                className="text-[10px] text-zinc-400 hover:text-zinc-200 underline transition-smooth"
-              >
-                Reset edits
-              </button>
+          </SidebarPanel>
+
+          {hasEdits ? (
+            <div className="rounded-[1.5rem] border border-amber-500/20 bg-amber-500/5 px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+                  {editedPitches.size} edited
+                </span>
+                <button
+                  type="button"
+                  onClick={handleResetEdits}
+                  className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400 transition-all duration-300 hover:text-zinc-200"
+                >
+                  Reset
+                </button>
+              </div>
             </div>
-          )}
-          <PitchTable
-            pitches={activeLane ? laneFiltered : filtered}
-            selected={selected}
-            onSelect={setSelected}
-            pitcherHand={pitcherHand}
-            editedPitches={editedPitches}
-            onEditPitchType={handleEditPitchType}
-            pitchTypeOptions={pitchTypeOptions}
-          />
+          ) : null}
+
+          <section className="overflow-hidden rounded-[1.7rem] border border-zinc-800/80 bg-zinc-950/75 shadow-[0_18px_48px_rgba(0,0,0,0.24)]">
+            <div className="border-b border-zinc-800/70 px-4 py-3">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+                Pitch Log
+              </div>
+              <div className="mt-1 text-xs text-zinc-500">
+                Live pitch list for this outing.
+              </div>
+            </div>
+            <PitchTable
+              pitches={activeLane ? laneFiltered : filtered}
+              selected={selected}
+              onSelect={setSelected}
+              pitcherHand={pitcherHand}
+              editedPitches={editedPitches}
+              onEditPitchType={handleEditPitchType}
+              pitchTypeOptions={pitchTypeOptions}
+            />
+          </section>
         </aside>
 
-        {/* Main content */}
-        <main className="flex-1 flex flex-col overflow-y-auto p-4 gap-4">
-          {/* Video + Chart */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <VideoPlayer
-              pitch={selected}
-              overlayDir={outing.overlayDir}
-              clipsDir={outing.clipsDir}
-              pitcherHand={pitcherHand}
-            />
-            <div>
-              {/* Viz toggle + heatmap pitch type selector */}
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <div className="flex gap-1">
-                  {(["scatter", "heatmap"] as const).map((mode) => (
-                    <button
-                      key={mode}
-                      type="button"
-                      onClick={() => setVizMode(mode)}
-                      className={[
-                        "px-3 py-1 text-xs rounded-md capitalize transition-smooth",
-                        vizMode === mode
-                          ? "bg-zinc-700 text-zinc-100"
-                          : "bg-zinc-900 text-zinc-500 hover:text-zinc-300",
-                      ].join(" ")}
-                    >
-                      {mode}
-                    </button>
-                  ))}
+        <main className="min-w-0 space-y-4">
+          <section className="rounded-[1.8rem] border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[0_20px_56px_rgba(0,0,0,0.24)]">
+            <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+                  Video + Miss Shape
                 </div>
-                {vizMode === "heatmap" && heatmapPitchTypes.length > 2 && (
-                  <div className="flex gap-1 ml-2 border-l border-zinc-800 pl-2">
-                    {heatmapPitchTypes.map((pt) => (
-                      <button
-                        key={pt}
+                <div className="mt-1 text-sm text-zinc-400">
+                  Review the selected pitch video and toggle between scatter and heatmap views.
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {(["scatter", "heatmap"] as const).map((mode) => (
+                  <Button
+                    key={mode}
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    neon
+                    tone="orange"
+                    onClick={() => setVizMode(mode)}
+                    className={`${leaderboardFilterButtonBaseClassName} min-w-[5rem] ${
+                      vizMode === mode
+                        ? leaderboardFilterButtonOrangeActiveClassName
+                        : leaderboardFilterButtonGhostInactiveClassName
+                    }`}
+                  >
+                    {mode === "scatter" ? "Scatter" : "Heatmap"}
+                  </Button>
+                ))}
+
+                {vizMode === "heatmap" && heatmapPitchTypes.length > 2 ? (
+                  <div className="ml-1 flex flex-wrap items-center gap-1.5 rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
+                    {heatmapPitchTypes.map((pitchType) => (
+                      <Button
+                        key={pitchType}
                         type="button"
-                        onClick={() => setHeatmapPitchType(pt)}
-                        className={[
-                          "px-2 py-0.5 text-xs rounded transition-smooth",
-                          heatmapPitchType === pt
-                            ? "bg-zinc-600 text-zinc-100"
-                            : "bg-zinc-900 text-zinc-500 hover:text-zinc-300",
-                        ].join(" ")}
+                        size="sm"
+                        variant="ghost"
+                        neon
+                        tone="orange"
+                        onClick={() => setHeatmapPitchType(pitchType)}
+                        className={`${leaderboardFilterButtonBaseClassName} min-w-[4.75rem] ${
+                          heatmapPitchType === pitchType
+                            ? leaderboardFilterButtonOrangeActiveClassName
+                            : leaderboardFilterButtonGhostInactiveClassName
+                        }`}
                       >
-                        {pt}
-                      </button>
+                        {pitchType}
+                      </Button>
                     ))}
                   </div>
-                )}
+                ) : null}
               </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+              <VideoPlayer
+                pitch={selected}
+                overlayDir={outing.overlayDir}
+                clipsDir={outing.clipsDir}
+                pitcherHand={pitcherHand}
+              />
               {vizMode === "scatter" ? (
                 <StrikeZoneScatter
                   pitches={laneFiltered}
@@ -421,45 +505,28 @@ export default function PlayerDashboard({
                 <MissHeatmap pitches={heatmapData} throwsHand={pitcherHand} />
               )}
             </div>
-          </div>
+          </section>
 
-          {/* Game stats (linked boxscore) */}
-          {outingMeta && (
+          {outingMeta ? (
             <GameStatsSection meta={outingMeta} statsByGame={statsByGame} />
-          )}
+          ) : null}
 
-          {/* Pitching+ */}
-          {pitches.length > 0 && (
-            <PitchingPlusSection
-              playerId={player.id}
-              outingId={outing.id}
-              currentOutingPitches={pitches}
-              otherSeasonCsvPaths={otherSeasonCsvPaths}
-            />
-          )}
-
-          {/* Command+ */}
-          {laneFiltered.length > 0 && (
+          {laneFiltered.length > 0 ? (
             <CommandPlusSection pitches={laneFiltered} outingId={outing.id} />
-          )}
+          ) : null}
 
-          {/* Per-pitch-type summary */}
-          {laneFiltered.length > 0 && (
+          {laneFiltered.length > 0 ? (
             <PitchTypeSummaryCards pitches={laneFiltered} />
-          )}
+          ) : null}
 
-          {/* Lane Report — receives un-lane-filtered list so counts don't disappear */}
-          {measurable.length > 0 && (
+          {measurable.length > 0 ? (
             <LaneReport
               pitches={measurable}
               throwsHand={pitcherHand}
               activeLane={activeLane}
               onSelectLane={toggleLane}
             />
-          )}
-
-          {/* Mechanics Analysis */}
-          <MechanicsProfileSection playerId={player.id} />
+          ) : null}
         </main>
       </div>
     </div>

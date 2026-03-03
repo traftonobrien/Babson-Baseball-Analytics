@@ -32,15 +32,15 @@ export default function PitchTable({
   const [editingPitch, setEditingPitch] = useState<number | null>(null);
 
   return (
-    <div className="overflow-y-auto max-h-[calc(100vh-280px)]">
+    <div className="max-h-[calc(100vh-280px)] overflow-y-auto">
       <table className="w-full text-xs">
-        <thead className="sticky top-0 bg-zinc-900 text-zinc-400 uppercase">
+        <thead className="sticky top-0 z-10 bg-zinc-950/95 text-zinc-500 backdrop-blur">
           <tr>
-            <th className="px-2 py-1 text-left">#</th>
-            <th className="px-2 py-1 text-left">Type</th>
-            <th className="px-2 py-1 text-right">Miss</th>
-            <th className="px-2 py-1 text-left">H</th>
-            <th className="px-2 py-1 text-left">V</th>
+            <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.2em]">#</th>
+            <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.2em]">Type</th>
+            <th className="px-3 py-2 text-right text-[10px] font-semibold uppercase tracking-[0.2em]">Miss</th>
+            <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.2em]">H</th>
+            <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.2em]">V</th>
             {onEditPitchType && <th className="w-6" />}
           </tr>
         </thead>
@@ -55,12 +55,14 @@ export default function PitchTable({
               <tr
                 key={p.pitch_number}
                 onClick={() => onSelect(p)}
-                className={`cursor-pointer border-b border-zinc-800 transition-smooth ${
-                  isSelected ? "bg-zinc-700" : "hover:bg-zinc-800"
-                } ${isOutlier ? "opacity-50 grayscale hover:opacity-70" : ""}`}
+                className={`cursor-pointer border-b border-zinc-800/70 transition-all duration-300 ${
+                  isSelected
+                    ? "bg-orange-500/[0.09] shadow-[inset_2px_0_0_rgba(251,146,60,0.7)]"
+                    : "hover:bg-zinc-900/80"
+                } ${isOutlier ? "opacity-55 grayscale hover:opacity-75" : ""}`}
               >
-                <td className="px-2 py-1.5 font-mono">{p.pitch_number}</td>
-                <td className="px-2 py-1.5">
+                <td className="px-3 py-2 font-mono text-zinc-300">{p.pitch_number}</td>
+                <td className="px-3 py-2">
                   {isEditing && onEditPitchType && pitchTypeOptions ? (
                     <select
                       value={p.pitch_type}
@@ -71,7 +73,7 @@ export default function PitchTable({
                         setEditingPitch(null);
                       }}
                       onBlur={() => setEditingPitch(null)}
-                      className="bg-zinc-800 border border-zinc-600 rounded px-1 py-0.5 text-xs text-zinc-100 outline-none"
+                      className="rounded-xl border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-100 outline-none"
                     >
                       {pitchTypeOptions.map((t) => (
                         <option key={t} value={t}>
@@ -80,14 +82,22 @@ export default function PitchTable({
                       ))}
                     </select>
                   ) : (
-                    <span className="flex items-center gap-1">
+                    <span className="flex flex-wrap items-center gap-1.5">
                       <span
-                        className="inline-block w-2 h-2 rounded-full"
-                        style={{ backgroundColor: pitchColor(p.pitch_type) }}
-                      />
-                      {p.pitch_type}
+                        className="inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-semibold text-zinc-100"
+                        style={{
+                          borderColor: `${pitchColor(p.pitch_type)}55`,
+                          background: `linear-gradient(135deg, ${pitchColor(p.pitch_type)}22, rgba(9,9,11,0.92))`,
+                        }}
+                      >
+                        <span
+                          className="inline-block h-1.5 w-1.5 rounded-full"
+                          style={{ backgroundColor: pitchColor(p.pitch_type) }}
+                        />
+                        {p.pitch_type}
+                      </span>
                       {isEdited && (
-                        <span className="ml-1 px-1 py-0 rounded text-[9px] bg-amber-500/20 text-amber-400 leading-tight">
+                        <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-amber-300">
                           edited
                         </span>
                       )}
@@ -105,17 +115,17 @@ export default function PitchTable({
                     </span>
                   )}
                 </td>
-                <td className="px-2 py-1.5 text-right font-mono">
+                <td className="px-3 py-2 text-right font-mono text-zinc-200">
                   {Number.isFinite(p.total_miss_inches) ? `${p.total_miss_inches.toFixed(1)}"` : "—"}
                 </td>
-                <td className="px-2 py-1.5 text-zinc-400">
+                <td className="px-3 py-2 text-zinc-400">
                   {Number.isFinite(p.h_miss_inches) ? `${p.h_miss_inches.toFixed(1)}" ${hDirectionLabel(pitchArmSideX(p, pitcherHand))}` : "—"}
                 </td>
-                <td className="px-2 py-1.5 text-zinc-400">
+                <td className="px-3 py-2 text-zinc-400">
                   {Number.isFinite(p.v_miss_inches) ? `${p.v_miss_inches.toFixed(1)}" ${p.v_direction}` : "—"}
                 </td>
                 {onEditPitchType && (
-                  <td className="px-1 py-1.5 text-center">
+                  <td className="px-2 py-2 text-center">
                     <button
                       type="button"
                       title="Edit pitch type"
@@ -123,7 +133,7 @@ export default function PitchTable({
                         e.stopPropagation();
                         setEditingPitch(isEditing ? null : p.pitch_number);
                       }}
-                      className="text-zinc-500 hover:text-zinc-300 transition-smooth text-[11px]"
+                      className="rounded-md px-1 text-[11px] text-zinc-500 transition-all duration-300 hover:bg-zinc-800 hover:text-zinc-300"
                     >
                       ✎
                     </button>

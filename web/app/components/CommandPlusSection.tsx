@@ -7,7 +7,8 @@ import { globalCommandPlusBaselines, loadAllOutingData } from "@/lib/leaderboard
 import { seasonFromDateId } from "@/lib/season";
 import type { SeasonFilter } from "@/lib/leaderboards/types";
 import { plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
-import { pitchColor } from "../utils";
+import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
+import { pitchDisplayName } from "@/lib/pitchNames";
 import TeamAveragesBar from "./TeamAveragesBar";
 
 interface Props {
@@ -56,6 +57,7 @@ export default function CommandPlusSection({ pitches, outingId }: Props) {
             qualified: entry.eligible,
             baselineAvgMiss: entry.baselineAvgMiss,
         }));
+        const pitchTypesShown = new Set(pitchBreakdown.map((entry) => entry.type));
 
         const comparablePitchTypes = result.pitchTypeScores.filter(
             (entry) => entry.baselineAvgMiss !== null,
@@ -82,7 +84,9 @@ export default function CommandPlusSection({ pitches, outingId }: Props) {
             pitchBreakdown,
             subjectAvgMiss,
             teamMixAvgMiss,
-            teamAverages: listCommandPlusBaselines(seasonBaselines),
+            teamAverages: listCommandPlusBaselines(seasonBaselines).filter((row) =>
+                pitchTypesShown.has(row.pitchType),
+            ),
         };
     }, [pitches, season, baselinesLoaded]);
 
@@ -120,21 +124,21 @@ export default function CommandPlusSection({ pitches, outingId }: Props) {
                         pillClass: "bg-sky-500/15 text-sky-300",
                     };
 
-    return (
-        <div className={`mt-2 rounded-xl border ${tierClass.borderClass} ${tierClass.bgClass} p-4 flex flex-col gap-3`}>
+  return (
+        <div className={`rounded-[1.8rem] border ${tierClass.borderClass} ${tierClass.bgClass} p-5 shadow-[0_18px_48px_rgba(0,0,0,0.22)] flex flex-col gap-4`}>
             <div className="flex items-center justify-between">
                 <div>
-                    <h3 className="text-sm font-bold text-zinc-100 uppercase tracking-widest flex items-center gap-2">
+                    <h3 className="text-[10px] font-semibold text-zinc-400 uppercase tracking-[0.24em] flex items-center gap-2">
                         Command+
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-sm font-medium ${tierClass.pillClass}`}>
+                        <span className={`text-[10px] px-2 py-1 rounded-full font-semibold uppercase tracking-[0.18em] ${tierClass.pillClass}`}>
                             {season} Live Season
                         </span>
                     </h3>
-                    <p className="text-xs text-zinc-400 mt-1">
-                        Pitch execution relative to the live team baseline for this season. 100 is team average.
+                    <p className="mt-2 text-sm text-zinc-300">
+                        Live execution grade against the current team baseline. 100 is team average.
                     </p>
                     {!isQualified && (
-                        <p className="text-[11px] text-zinc-500 mt-1">
+                        <p className="text-[11px] leading-5 text-zinc-500 mt-1.5">
                             No official score yet. A pitch type needs at least {MIN_PITCH_COUNT} tracked pitches to qualify.
                         </p>
                     )}
@@ -161,19 +165,20 @@ export default function CommandPlusSection({ pitches, outingId }: Props) {
             />
 
             {pitchBreakdown.length > 0 && (
-                <div className="flex flex-wrap gap-2 pt-3 border-t border-zinc-700/50 mt-1">
+                <div className="flex flex-wrap gap-2.5 pt-4 border-t border-zinc-700/50 mt-1">
                     {pitchBreakdown.map(pb => {
-                        const pColor = pitchColor(pb.type);
                         return (
                             <div
                                 key={pb.type}
-                                className={`flex items-center gap-2 bg-zinc-950/40 rounded border border-zinc-800/80 px-2 py-1 ${!pb.qualified ? "opacity-50" : ""}`}
+                                className={`flex items-center gap-2.5 rounded-2xl border border-zinc-800/80 bg-zinc-950/55 px-3 py-2 ${!pb.qualified ? "opacity-50" : ""}`}
                                 title={pb.baselineAvgMiss === null ? undefined : `Team avg: ${pb.baselineAvgMiss.toFixed(1)}"`}
                             >
-                                <span className="flex items-center gap-1.5">
-                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: pb.qualified ? pColor : "#52525b" }} />
-                                    <span className={`font-mono text-[11px] font-bold ${pb.qualified ? "text-zinc-300" : "text-zinc-600"}`}>{pb.type}</span>
-                                </span>
+                                <PitchTypeChip
+                                    pitchType={pb.type}
+                                    label={pitchDisplayName(pb.type)}
+                                    size="xs"
+                                    className={pb.qualified ? "" : "opacity-65"}
+                                />
                                 {pb.score === null ? (
                                     <span className="font-mono text-sm font-extrabold text-zinc-600">
                                         --
@@ -187,7 +192,7 @@ export default function CommandPlusSection({ pitches, outingId }: Props) {
                                     </span>
                                 )}
                                 {!pb.qualified && (
-                                    <span className="text-[8px] text-zinc-600 font-medium">NQ</span>
+                                    <span className="rounded-full border border-zinc-800 bg-zinc-900/90 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-600">NQ</span>
                                 )}
                             </div>
                         );

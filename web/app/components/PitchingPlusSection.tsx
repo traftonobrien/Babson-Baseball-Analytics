@@ -18,11 +18,11 @@ import { seasonFromDateId } from "@/lib/season";
 import type { SeasonFilter } from "@/lib/leaderboards/types";
 import { plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
 import { getSlugForPlayerId } from "@/lib/canonicalPlayers";
-import { pitchColor } from "@/lib/pitchColors";
 import {
   buildStuffPlusLookupCandidates,
   fetchStuffPlusByCandidates,
 } from "@/lib/stuffPlusLookup";
+import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 
 interface Props {
   playerId: string;
@@ -227,32 +227,32 @@ export default function PitchingPlusSection({
 
   return (
     <div
-      className={`mt-2 rounded-xl border ${tierClass.borderClass} ${tierClass.bgClass} p-4 flex flex-col gap-3`}
+      className={`rounded-[1.8rem] border ${tierClass.borderClass} ${tierClass.bgClass} p-5 shadow-[0_18px_48px_rgba(0,0,0,0.22)] flex flex-col gap-4`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h3 className="text-sm font-bold text-zinc-100 uppercase tracking-widest flex items-center gap-2 flex-wrap">
+          <h3 className="text-[10px] font-semibold text-zinc-400 uppercase tracking-[0.24em] flex items-center gap-2 flex-wrap">
             Pitching+
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-sm font-medium ${tierClass.pillClass}`}>
+            <span className={`text-[10px] px-2 py-1 rounded-full font-semibold uppercase tracking-[0.18em] ${tierClass.pillClass}`}>
               {season} Live Season
             </span>
           </h3>
-          <p className="text-xs text-zinc-400 mt-1">
+          <p className="mt-2 text-sm text-zinc-300">
             Complete pitching grade combining team-centered Stuff+ with live Command+.
             {" "}
             100 is team average.
           </p>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-zinc-500">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[11px] text-zinc-500">
             <span>{Math.round(PITCHING_PLUS_STUFF_WEIGHT * 100)}% Stuff / {Math.round(PITCHING_PLUS_COMMAND_WEIGHT * 100)}% Command</span>
             <span>{Math.round(PITCHING_PLUS_EQUAL_SHARE_WEIGHT * 100)}% Pure Mix / {Math.round(PITCHING_PLUS_USAGE_WEIGHT * 100)}% Live Usage</span>
             <Link
               href="/pitching-plus"
-              className="text-cyan-400 hover:text-cyan-300 transition-smooth"
+              className="font-semibold text-orange-300 transition-smooth hover:text-orange-200"
             >
               Plus Models
             </Link>
           </div>
-          <p className="text-[11px] text-zinc-500 mt-1.5">
+          <p className="text-[11px] leading-5 text-zinc-500 mt-2">
             {readinessCopy(displayReason)}
           </p>
         </div>
@@ -276,21 +276,21 @@ export default function PitchingPlusSection({
 
       {ready && pitchResult && (
         <>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/40 px-3 py-2">
-              <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">Stuff Core</p>
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+            <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/60 px-4 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Stuff Core</p>
               <p className="mt-1 font-mono text-2xl font-bold text-zinc-100">
                 {pitchResult.stuffComponent?.toFixed(1)}
               </p>
             </div>
-            <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/40 px-3 py-2">
-              <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">Command Core</p>
+            <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/60 px-4 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Command Core</p>
               <p className="mt-1 font-mono text-2xl font-bold text-zinc-100">
                 {pitchResult.commandComponent?.toFixed(1)}
               </p>
             </div>
-            <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/40 px-3 py-2">
-              <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">Live Overlap</p>
+            <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/60 px-4 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Live Overlap</p>
               <p className="mt-1 font-mono text-2xl font-bold text-zinc-100">
                 {pitchResult.overlapPitchTypeCount}
                 <span className="ml-1 text-sm text-zinc-500">types</span>
@@ -301,14 +301,14 @@ export default function PitchingPlusSection({
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 pt-3 border-t border-zinc-700/50">
+          <div className="flex flex-wrap gap-2.5 pt-4 border-t border-zinc-700/50">
             {pitchResult.pitchTypeRows.map((row) => (
               <div
                 key={row.commandPitchType}
-                className={`min-w-[172px] rounded-xl border px-3 py-2 ${
+                className={`min-w-[180px] rounded-2xl border px-3 py-2.5 ${
                   row.included
-                    ? "border-zinc-800/80 bg-zinc-950/40"
-                    : "border-zinc-800/60 bg-zinc-950/20 opacity-60"
+                    ? "border-zinc-800/80 bg-zinc-950/55"
+                    : "border-zinc-800/60 bg-zinc-950/25 opacity-60"
                 }`}
                 title={
                   row.stuffPitchTypes.length > 0
@@ -317,19 +317,12 @@ export default function PitchingPlusSection({
                 }
               >
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="h-2 w-2 rounded-full"
-                      style={{
-                        backgroundColor: row.included
-                          ? pitchColor(row.commandPitchType)
-                          : "#52525b",
-                      }}
-                    />
-                    <span className="font-mono text-[12px] font-bold text-zinc-200">
-                      {row.commandPitchType}
-                    </span>
-                  </div>
+                  <PitchTypeChip
+                    pitchType={row.commandPitchType}
+                    label={row.commandPitchType}
+                    size="xs"
+                    className={row.included ? "" : "opacity-65"}
+                  />
                   {row.pitchingPlus === null ? (
                     <span className="font-mono text-sm font-bold text-zinc-500">--</span>
                   ) : (

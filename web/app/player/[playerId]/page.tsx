@@ -27,11 +27,26 @@ export default async function PlayerPage({
     notFound();
   }
 
+  const backTo =
+    from === "profile" && slug
+      ? `/players/${slug}`
+      : from === "command"
+        ? "/command"
+        : undefined;
+
+  const backLabel =
+    from === "profile" && slug
+      ? "Profile"
+      : from === "command"
+        ? "Command Hub"
+        : undefined;
+
   return (
     <PlayerDashboard
       player={player}
       outing={outing}
-      backTo={from === "profile" && slug ? `/players/${slug}` : undefined}
+      backTo={backTo}
+      backLabel={backLabel}
     />
   );
 }

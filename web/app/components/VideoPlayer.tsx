@@ -80,8 +80,16 @@ export default function VideoPlayer({ pitch, overlayDir, clipsDir, pitcherHand }
 
   if (!pitch) {
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden w-full">
-        <div className="aspect-[352/342] flex items-center justify-center text-zinc-500 text-sm">
+      <div className="w-full overflow-hidden rounded-[1.6rem] border border-zinc-800/80 bg-zinc-950/80 shadow-[0_18px_48px_rgba(0,0,0,0.22)]">
+        <div className="border-b border-zinc-800/70 px-4 py-3">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+            Video Review
+          </div>
+          <div className="mt-1 text-xs text-zinc-500">
+            Select a pitch from the log to load video.
+          </div>
+        </div>
+        <div className="flex aspect-[352/342] items-center justify-center px-4 text-center text-sm text-zinc-500">
           Select a pitch to play overlay video
         </div>
       </div>
@@ -89,16 +97,27 @@ export default function VideoPlayer({ pitch, overlayDir, clipsDir, pitcherHand }
   }
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden w-full">
+    <div className="w-full overflow-hidden rounded-[1.6rem] border border-zinc-800/80 bg-zinc-950/80 shadow-[0_18px_48px_rgba(0,0,0,0.22)]">
       {/* Header bar */}
-      <div className="flex items-center justify-between px-3 py-1.5 border-b border-zinc-800 text-xs text-zinc-400">
-        <span>
-          Pitch #{pitch.pitch_number} &middot; {pitch.pitch_type}
-          {Number.isFinite(pitch.total_miss_inches) ? <> &middot; {pitch.total_miss_inches.toFixed(1)}&quot; miss</> : <> &middot; no read</>}
-        </span>
-        <span>
+      <div className="border-b border-zinc-800/70 px-4 py-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-orange-500/20 bg-orange-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-orange-300">
+                Pitch #{pitch.pitch_number}
+              </span>
+              <span className="text-sm font-semibold text-zinc-100">{pitch.pitch_type}</span>
+            </div>
+            <div className="mt-1 text-xs text-zinc-500">
+              {Number.isFinite(pitch.total_miss_inches)
+                ? `${pitch.total_miss_inches.toFixed(1)}" miss`
+                : "No read"}
+            </div>
+          </div>
+          <span className="text-xs text-zinc-400">
           {Number.isFinite(pitch.h_miss_inches) ? <>{pitch.h_miss_inches.toFixed(1)}&quot; {hDirectionLabel(pitchArmSideX(pitch, pitcherHand))},{" "}{pitch.v_miss_inches.toFixed(1)}&quot; {pitch.v_direction}</> : null}
-        </span>
+          </span>
+        </div>
       </div>
 
       {/* Video viewport */}
@@ -111,7 +130,7 @@ export default function VideoPlayer({ pitch, overlayDir, clipsDir, pitcherHand }
         ) : (
           <>
             {loading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/80 text-zinc-400 text-sm z-10">
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/80 text-sm text-zinc-400">
                 Loading video&hellip;
               </div>
             )}

@@ -1,5 +1,6 @@
-import { pitchColor } from "@/lib/pitchColors";
 import type { CommandPlusBaselineRow } from "@/lib/commandPlus";
+import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
+import { pitchDisplayName } from "@/lib/pitchNames";
 
 interface Props {
   season: number;
@@ -16,11 +17,11 @@ function StatChip({
   value: number;
 }) {
   return (
-    <div className="min-w-[180px] rounded-lg border border-zinc-700/60 bg-zinc-900/70 px-4 py-2">
-      <div className="text-[10px] font-medium uppercase tracking-wide text-zinc-500">
+    <div className="min-w-[170px] rounded-2xl border border-zinc-800/80 bg-zinc-950/65 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
         {label}
       </div>
-      <div className="mt-1 text-lg font-mono font-bold tabular-nums text-zinc-100">
+      <div className="mt-1 text-xl font-mono font-bold tabular-nums text-zinc-100">
         {value.toFixed(1)}&Prime;
       </div>
     </div>
@@ -36,19 +37,19 @@ export default function TeamAveragesBar({
   if (averages.length === 0) return null;
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-950/80 px-5 py-4">
+    <div className="rounded-[1.45rem] border border-zinc-800/80 bg-zinc-950/78 px-5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <div className="flex items-baseline gap-2">
-            <span className="text-xs font-medium text-zinc-300">
-              Team Averages (Miss Distance)
+            <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-400">
+              Team Miss Baselines
             </span>
-            <span className="text-[10px] text-zinc-500">
+            <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-600">
               {season} live baseline
             </span>
           </div>
-          <p className="mt-1 text-[11px] text-zinc-500">
-            Live team miss by pitch type. Team Benchmark is the team-average miss for the pitch mix shown here.
+          <p className="mt-1 text-[11px] leading-5 text-zinc-500">
+            Team-average miss by pitch type, plus the weighted benchmark for this outing's pitch mix.
           </p>
         </div>
 
@@ -60,32 +61,28 @@ export default function TeamAveragesBar({
         )}
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2.5">
+      <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
         {averages.map(({ pitchType, avgMiss, count }) => {
-          const color = pitchColor(pitchType);
           return (
             <div
               key={pitchType}
-              className="flex items-center gap-2 rounded-lg border border-zinc-700/50 bg-zinc-900/70 px-3 py-2"
-              style={{ boxShadow: `0 0 12px ${color}40` }}
+              className="flex min-h-[4.5rem] items-center justify-between gap-3 rounded-2xl border border-zinc-800/80 bg-zinc-950/68 px-4 py-3"
               title={`${count} season pitches in baseline`}
             >
-              <span
-                className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
-                style={{ backgroundColor: color }}
+              <PitchTypeChip
+                pitchType={pitchType}
+                label={pitchDisplayName(pitchType)}
+                size="xs"
+                className="shrink-0"
               />
-              <span
-                className="text-sm font-mono font-bold"
-                style={{ color }}
-              >
-                {pitchType}
-              </span>
-              <span className="text-sm font-mono font-semibold tabular-nums text-zinc-300">
-                {avgMiss.toFixed(1)}&Prime;
-              </span>
-              <span className="text-[10px] font-medium tabular-nums text-zinc-500">
-                n={count}
-              </span>
+              <div className="flex items-baseline gap-3 text-right">
+                <span className="text-lg font-mono font-semibold tabular-nums text-zinc-200">
+                  {avgMiss.toFixed(1)}&Prime;
+                </span>
+                <span className="text-[10px] font-medium uppercase tracking-[0.16em] tabular-nums text-zinc-600">
+                  n={count}
+                </span>
+              </div>
             </div>
           );
         })}

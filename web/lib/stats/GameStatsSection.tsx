@@ -12,7 +12,7 @@ function InlineSummary({ stats }: { stats: PlayerGameStats }) {
   if (!stats.pitching) return null;
   const p = stats.pitching;
   return (
-    <span className="hidden sm:inline text-[11px] text-zinc-500 ml-auto whitespace-nowrap">
+    <span className="hidden sm:inline ml-auto text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-500 whitespace-nowrap">
       {PITCHING_KEYS.map((k) => `${k.toUpperCase()} ${formatValue(k, p[k])}`).join(" \u00b7 ")}
     </span>
   );
@@ -30,12 +30,12 @@ function PitchingGrid({ stats }: { stats: PlayerGameStats }) {
       {PITCHING_KEYS.map((k) => (
         <div
           key={k}
-          className="flex flex-col items-center justify-center rounded-xl border border-zinc-800/60 bg-zinc-950/35 py-2.5 px-1.5"
+          className="flex flex-col items-center justify-center rounded-2xl border border-zinc-800/70 bg-zinc-950/65 py-3 px-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
         >
           <span className="text-3xl sm:text-4xl font-semibold text-zinc-100 leading-none">
             {formatValue(k, p[k])}
           </span>
-          <span className="text-xs uppercase tracking-widest text-zinc-400 mt-0.5">
+          <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
             {k}
           </span>
         </div>
@@ -52,25 +52,27 @@ export default function GameStatsSection({
   statsByGame: Record<string, PlayerGameStats | null>;
 }) {
   return (
-    <section className="rounded-2xl border border-zinc-800/60 bg-zinc-950/40 shadow-sm p-5">
+    <section className="rounded-[1.8rem] border border-zinc-800/80 bg-zinc-950/72 p-5 shadow-[0_18px_48px_rgba(0,0,0,0.22)]">
       <div className="space-y-5">
         {meta.linkedGames.map((game: LinkedGame) => {
           const stats = statsByGame[game.gameId] ?? null;
           const opponent = game.opponent ?? "Unknown";
           const date = game.date ?? "";
           return (
-            <div key={`${game.season}-${game.gameId}`}>
-              {/* Header row */}
-              <div className="flex items-center gap-2 mb-3">
+            <div
+              key={`${game.season}-${game.gameId}`}
+              className="rounded-[1.4rem] border border-zinc-800/70 bg-zinc-950/55 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+            >
+              <div className="mb-4 flex flex-wrap items-center gap-2">
                 <div className="flex flex-col">
-                  <h2 className="text-xl font-semibold text-zinc-100">Game Stats</h2>
-                  <span className="text-xs uppercase tracking-widest text-zinc-500">Pitching line</span>
+                  <h2 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Game Stats</h2>
+                  <span className="mt-1 text-sm font-medium text-zinc-200">Pitching line</span>
                 </div>
-                <span className="rounded-full bg-zinc-800 px-2.5 py-0.5 text-[11px] text-zinc-300">
+                <span className="rounded-full border border-zinc-800 bg-zinc-950/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-300">
                   vs {opponent}
                 </span>
                 {date && (
-                  <span className="rounded-full bg-zinc-800 px-2.5 py-0.5 text-[11px] text-zinc-400">
+                  <span className="rounded-full border border-zinc-800 bg-zinc-950/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
                     {date}
                   </span>
                 )}

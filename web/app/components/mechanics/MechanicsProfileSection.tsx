@@ -54,11 +54,11 @@ export function MechanicsProfileSection({ playerId }: MechanicsProfileSectionPro
 
   if (!player || player.sessions.length === 0) {
     return (
-      <div className="border border-zinc-800/60 rounded-xl p-4 bg-zinc-900/40">
-        <p className="text-[10px] uppercase tracking-wider text-zinc-600 mb-1">
+      <div className="rounded-[1.8rem] border border-zinc-800/80 bg-zinc-950/72 p-5 shadow-[0_18px_48px_rgba(0,0,0,0.22)]">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500 mb-2">
           Mechanics Analysis
         </p>
-        <p className="text-xs text-zinc-700">No mechanics sessions recorded.</p>
+        <p className="text-sm text-zinc-500">No mechanics sessions recorded.</p>
       </div>
     );
   }
@@ -74,18 +74,19 @@ export function MechanicsProfileSection({ playerId }: MechanicsProfileSectionPro
       : null;
 
   return (
-    <div className="border border-zinc-800 rounded-xl overflow-hidden bg-zinc-900">
-      <div className="px-4 py-2.5 border-b border-zinc-800">
-        <p className="text-[10px] uppercase tracking-wider text-zinc-500">Mechanics Analysis</p>
+    <div className="overflow-hidden rounded-[1.8rem] border border-zinc-800/80 bg-zinc-950/72 shadow-[0_18px_48px_rgba(0,0,0,0.22)]">
+      <div className="border-b border-zinc-800/80 px-5 py-4">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Mechanics Analysis</p>
+        <p className="mt-1 text-sm text-zinc-300">Latest movement-efficiency read tied to this pitcher.</p>
       </div>
-      <div className="p-4">
+      <div className="p-5">
         {/* Score + metadata row */}
-        <div className="flex items-start justify-between gap-4 mb-3">
+        <div className="mb-4 flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] text-zinc-600 mb-0.5">{latest.date}</p>
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-600">{latest.date}</p>
             <p className="text-sm text-zinc-200 font-medium leading-tight">{latest.label}</p>
             {/* Pass/fail + confidence */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[9px]">
+            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-medium">
               <span className="text-green-500">{latest.pass_count} PASS</span>
               <span className="text-zinc-700">·</span>
               <span className="text-red-500">{latest.fail_count} FAIL</span>
@@ -124,7 +125,7 @@ export function MechanicsProfileSection({ playerId }: MechanicsProfileSectionPro
 
         <Link
           href={`/mechanics/session/${player.slug}/${latest.slug}`}
-          className="block w-full text-center text-xs bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 rounded-lg px-3 py-2 transition-smooth"
+          className="block w-full rounded-full border border-zinc-800 bg-zinc-950/85 px-4 py-2.5 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-300 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
         >
           Open Mechanics
         </Link>

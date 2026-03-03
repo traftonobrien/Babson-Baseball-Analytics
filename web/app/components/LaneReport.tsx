@@ -1,7 +1,7 @@
 "use client";
 
 import type { Pitch } from "../types";
-import { pitchColor } from "../utils";
+import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { pitchArmSideX, laneOf as classifyLane, laneDisplayName, hDirectionLabel, type Lane } from "@/lib/handedness";
 
 export type { Lane } from "@/lib/handedness";
@@ -66,6 +66,23 @@ interface TypeGroup {
   pitches: Pitch[];
 }
 
+const PITCH_NAMES: Record<string, string> = {
+  FF: "Fastball",
+  SI: "Sinker",
+  SL: "Slider",
+  CH: "Changeup",
+  CU: "Curveball",
+  FC: "Cutter",
+  FS: "Splitter",
+  KC: "Knuckle Curve",
+  CB: "Curveball",
+  CT: "Cutter",
+};
+
+function pitchName(abbr: string): string {
+  return PITCH_NAMES[abbr] ?? abbr;
+}
+
 function groupByType(pitches: Pitch[]): TypeGroup[] {
   const map = new Map<string, Pitch[]>();
   for (const p of pitches) {
@@ -104,16 +121,16 @@ function LanePanel({
             type="button"
             onClick={() => onSelectLane?.(b.key)}
             className={[
-              "flex flex-col items-center gap-2 rounded-md p-2 transition-smooth cursor-pointer",
+              "flex flex-col items-center gap-2 rounded-2xl border p-3 transition-smooth cursor-pointer",
               isActive
-                ? "border border-zinc-300/40 ring-2 ring-zinc-300/20 bg-zinc-800/60"
-                : "border border-transparent",
+                ? "border-orange-400/30 bg-orange-500/[0.08] ring-2 ring-orange-400/10"
+                : "border-zinc-800/70 bg-zinc-950/55 hover:border-zinc-700/80",
               isDimmed ? "opacity-50 hover:opacity-80" : "",
             ].join(" ")}
           >
             <div className="w-full h-24 flex items-end justify-center">
               <div
-                className="w-10 rounded-t bg-blue-500/60 transition-all"
+                className="w-10 rounded-t bg-orange-400/70 transition-all"
                 style={{
                   height:
                     b.pitches.length > 0
@@ -175,28 +192,31 @@ export default function LaneReport({ pitches, throwsHand, activeLane, onSelectLa
     "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
 
   return (
-    <div>
-      <p className="text-xs text-zinc-500 mb-2">
+    <div className="rounded-[1.8rem] border border-zinc-800/80 bg-zinc-950/72 p-5 shadow-[0_18px_48px_rgba(0,0,0,0.22)]">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+            Lane Report
+          </p>
+          <p className="mt-1 text-sm text-zinc-300">
+            Compare miss shape by horizontal lane inside the outing.
+          </p>
+        </div>
+      </div>
+      <p className="mt-3 text-[11px] text-zinc-500">
         Click a lane to filter. Click again to clear.
       </p>
-      <div className={`grid ${cols} gap-3`}>
+      <div className={`mt-4 grid ${cols} gap-3`}>
         {groups.map((g, i) => {
-          const color = pitchColor(g.type);
           const buckets = allBuckets[i];
           return (
             <div
               key={g.type}
-              className="bg-zinc-900 rounded-lg border border-zinc-800 overflow-hidden p-4"
-              style={{ borderLeftColor: color, borderLeftWidth: 3 }}
+              className="overflow-hidden rounded-[1.5rem] border border-zinc-800/80 bg-zinc-950/62 p-4"
             >
               <div className="flex items-center gap-2 mb-3">
-                <span
-                  className="text-xs font-bold px-1.5 py-0.5 rounded"
-                  style={{ backgroundColor: color + "22", color }}
-                >
-                  {g.type}
-                </span>
-                <span className="text-xs uppercase tracking-wider text-zinc-400">
+                <PitchTypeChip pitchType={g.type} label={pitchName(g.type)} size="xs" />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
                   Lane Breakdown
                 </span>
               </div>

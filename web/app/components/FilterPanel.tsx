@@ -1,7 +1,7 @@
 "use client";
 
 import type { Filters, Pitch } from "../types";
-import { uniqueTypes, uniqueQuadrants, pitchColor } from "../utils";
+import { uniqueTypes, pitchColor } from "../utils";
 
 interface Props {
   pitches: Pitch[];
@@ -11,7 +11,6 @@ interface Props {
 
 export default function FilterPanel({ pitches, filters, onChange }: Props) {
   const types = uniqueTypes(pitches);
-  const quads = uniqueQuadrants(pitches);
 
   const toggleType = (t: string) => {
     const next = new Set(filters.pitchTypes);
@@ -19,17 +18,11 @@ export default function FilterPanel({ pitches, filters, onChange }: Props) {
     onChange({ ...filters, pitchTypes: next });
   };
 
-  const toggleQuad = (q: string) => {
-    const next = new Set(filters.quadrants);
-    next.has(q) ? next.delete(q) : next.add(q);
-    onChange({ ...filters, quadrants: next });
-  };
-
   return (
-    <div className="space-y-4 text-sm">
+    <div className="space-y-5 text-sm">
       {/* Pitch type */}
-      <div>
-        <h3 className="text-xs uppercase tracking-wider text-zinc-400 mb-2">
+      <div className="space-y-2.5">
+        <h3 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
           Pitch Type
         </h3>
         <div className="flex flex-wrap gap-2">
@@ -38,20 +31,30 @@ export default function FilterPanel({ pitches, filters, onChange }: Props) {
           ) : types.map((t) => {
             const active =
               filters.pitchTypes.size === 0 || filters.pitchTypes.has(t);
+            const color = pitchColor(t);
             return (
               <button
                 key={t}
+                type="button"
                 onClick={() => toggleType(t)}
-                className={`px-2 py-0.5 rounded text-xs font-mono border transition-smooth ${
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-all duration-300 ${
                   active
-                    ? "border-zinc-500 text-white"
-                    : "border-zinc-700 text-zinc-600"
+                    ? "text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                    : "border-zinc-800 bg-zinc-950/70 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
                 }`}
-                style={active ? { backgroundColor: pitchColor(t) + "33" } : {}}
+                style={
+                  active
+                    ? {
+                        borderColor: `${color}55`,
+                        background: `linear-gradient(135deg, ${color}22, rgba(9,9,11,0.92))`,
+                        boxShadow: `0 0 0 1px ${color}12`,
+                      }
+                    : undefined
+                }
               >
                 <span
-                  className="inline-block w-2 h-2 rounded-full mr-1"
-                  style={{ backgroundColor: pitchColor(t) }}
+                  className="inline-block h-2 w-2 rounded-full"
+                  style={{ backgroundColor: color, boxShadow: active ? `0 0 10px ${color}` : "none" }}
                 />
                 {t}
               </button>
@@ -60,60 +63,39 @@ export default function FilterPanel({ pitches, filters, onChange }: Props) {
         </div>
       </div>
 
-      {/* Quadrant */}
-      <div>
-        <h3 className="text-xs uppercase tracking-wider text-zinc-400 mb-2">
-          Result Quadrant
-        </h3>
-        <div className="flex flex-wrap gap-2">
-          {quads.map((q) => {
-            const active =
-              filters.quadrants.size === 0 || filters.quadrants.has(q);
-            return (
-              <button
-                key={q}
-                onClick={() => toggleQuad(q)}
-                className={`px-2 py-0.5 rounded text-xs font-mono border transition-smooth ${
-                  active
-                    ? "border-zinc-500 text-white bg-zinc-800"
-                    : "border-zinc-700 text-zinc-600"
-                }`}
-              >
-                {q}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Miss max */}
-      <div>
-        <h3 className="text-xs uppercase tracking-wider text-zinc-400 mb-2">
-          Max Miss (inches)
-        </h3>
-        <input
-          type="range"
-          min={0}
-          max={24}
-          step={0.5}
-          value={filters.maxMiss ?? 24}
-          onChange={(e) => {
-            const v = parseFloat(e.target.value);
-            onChange({ ...filters, maxMiss: v >= 24 ? null : v });
-          }}
-          className="w-full accent-blue-500"
-        />
-        <span className="text-zinc-400">
-          {filters.maxMiss !== null ? `≤ ${filters.maxMiss}"` : "All"}
-        </span>
+      <div className="space-y-2.5">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+            Max Miss
+          </h3>
+          <span className="rounded-full border border-zinc-800 bg-zinc-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
+            {filters.maxMiss !== null ? `≤ ${filters.maxMiss}"` : "All"}
+          </span>
+        </div>
+        <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 px-3 py-3">
+          <input
+            type="range"
+            min={0}
+            max={24}
+            step={0.5}
+            value={filters.maxMiss ?? 24}
+            onChange={(e) => {
+              const v = parseFloat(e.target.value);
+              onChange({ ...filters, maxMiss: v >= 24 ? null : v });
+            }}
+            className="w-full accent-orange-400"
+          />
+        </div>
       </div>
 
       {/* Reset */}
       <button
+        type="button"
         onClick={() =>
           onChange({ pitchTypes: new Set(), quadrants: new Set(), maxMiss: null })
         }
-        className="text-xs text-zinc-500 hover:text-zinc-300 underline"
+        className="rounded-full border border-zinc-800 bg-zinc-950/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500 transition-all duration-300 hover:border-zinc-700 hover:text-zinc-300"
       >
         Reset filters
       </button>
