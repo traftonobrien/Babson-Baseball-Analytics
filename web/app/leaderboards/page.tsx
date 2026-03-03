@@ -11,6 +11,7 @@ import {
   leaderboardFilterButtonGhostInactiveClassName,
   leaderboardFilterButtonOrangeActiveClassName,
 } from "@/components/ui/neon-button";
+import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
 import {
   LeaderboardHero,
   LeaderboardPageFrame,
@@ -331,6 +332,12 @@ function KpiCells({
 
 export default function LeaderboardsPage() {
   const router = useRouter();
+  const {
+    runWithTransition,
+    contentTransitionClassName,
+    getRowTransitionProps,
+    transitionKey,
+  } = useSmoothFilterTransition();
   const [mode, setMode] = useState<LeaderboardMode>("outings");
   const [seasonFilter, setSeasonFilter] = useState<SeasonFilter>(2026);
   const [handFilter, setHandFilter] = useState<HandFilter>("ALL");
@@ -451,11 +458,6 @@ export default function LeaderboardsPage() {
         icon={Target}
         eyebrow="Command Leaderboard"
         title={<>Command Leaderboard</>}
-        description={
-          <>
-            This is the strike-throwing board. Use it to see who is landing it, who is missing by inches, and who is repeating that feel over and over.
-          </>
-        }
         meta={(
           <>
             <LeaderboardPill tone="orange">
@@ -469,17 +471,12 @@ export default function LeaderboardsPage() {
           <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
             <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Guide</div>
             <Link
-              href="/leaderboards/faq"
-              className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-orange-500/25 bg-orange-500/10 px-4 py-3 text-sm font-semibold text-orange-300 transition-smooth hover:border-orange-400/40 hover:text-orange-200"
+              href="/command/faq"
+              className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-orange-500/25 bg-orange-500/10 px-4 py-3.5 text-sm font-semibold text-orange-300 transition-smooth hover:border-orange-400/40 hover:text-orange-200"
             >
               <BookOpen className="h-4 w-4" />
               Metrics Dictionary
             </Link>
-            <p className="mt-3 text-xs leading-6 text-zinc-500">
-              {mode === "players"
-                ? "Player view shows the cleanest season-long command picture."
-                : "Outing view shows who had the sharpest feel on a given day."}
-            </p>
           </div>
         )}
       />
@@ -493,7 +490,7 @@ export default function LeaderboardsPage() {
               { value: "players", display: "Players" },
             ]}
             selected={mode}
-            onChange={setMode}
+            onChange={(nextMode) => runWithTransition(() => setMode(nextMode))}
           />
 
           <Segment
@@ -504,7 +501,11 @@ export default function LeaderboardsPage() {
               { value: "both", display: "Both" },
             ]}
             selected={String(seasonFilter)}
-            onChange={(v) => setSeasonFilter(v === "both" ? "both" : (Number(v) as SeasonFilter))}
+            onChange={(v) =>
+              runWithTransition(() =>
+                setSeasonFilter(v === "both" ? "both" : (Number(v) as SeasonFilter)),
+              )
+            }
           />
 
           <Segment
@@ -515,7 +516,7 @@ export default function LeaderboardsPage() {
               { value: "L", display: "LHP" },
             ]}
             selected={handFilter}
-            onChange={setHandFilter}
+            onChange={(nextHand) => runWithTransition(() => setHandFilter(nextHand))}
           />
 
           <Segment
@@ -526,7 +527,7 @@ export default function LeaderboardsPage() {
               { value: "BREAKING", display: "Breaking" },
             ]}
             selected={pitchGroup}
-            onChange={setPitchGroup}
+            onChange={(nextPitchGroup) => runWithTransition(() => setPitchGroup(nextPitchGroup))}
           />
 
           <div className="space-y-2">
@@ -558,137 +559,149 @@ export default function LeaderboardsPage() {
         </div>
       </LeaderboardToolbar>
 
-      <LeaderboardPanel className="mt-6 overflow-hidden">
-        <div className="max-h-[70vh] overflow-auto">
-          <table className="w-full text-sm">
-            <thead className="sticky top-0 z-10 bg-zinc-900/95 backdrop-blur-sm">
-              <tr className="bg-zinc-900/80 border-y border-zinc-800/60">
-                <th className="px-2 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-12">
-                  #
-                </th>
-                <Col label="Player" sortKey="playerName" sort={sort} onSort={handleSort} />
-                {mode === "outings" ? (
-                  <th className="px-2 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Date
+      <div
+        className={`mt-6 ${contentTransitionClassName}`}
+      >
+        <LeaderboardPanel className="overflow-hidden">
+          <div className="max-h-[70vh] overflow-auto">
+            <table className="w-full text-sm">
+              <thead className="sticky top-0 z-10 bg-zinc-900/95 backdrop-blur-sm">
+                <tr className="bg-zinc-900/80 border-y border-zinc-800/60">
+                  <th className="px-2 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-12">
+                    #
                   </th>
-                ) : (
-                  <th className="px-2 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Outings
-                  </th>
-                )}
-                <Col label="Pitches" sortKey="pitchCount" sort={sort} onSort={handleSort} />
-                <Col label="On-target %" sortKey="onTargetPct" sort={sort} onSort={handleSort} title="Pitches within 8 inches" />
-                <Col label="Command+" sortKey="commandPlus" sort={sort} onSort={handleSort} title="Pitch-weighted command relative to team average (100 = average, >100 is better)" />
-                <Col label="Avg Miss" sortKey="avgMissIn" sort={sort} onSort={handleSort} title="Average total miss (inches)" />
-                <Col label="Avg H" sortKey="avgHAbsIn" sort={sort} onSort={handleSort} title="Average horizontal miss (inches, absolute)" />
-                <Col label="Avg V" sortKey="avgVAbsIn" sort={sort} onSort={handleSort} title="Average vertical miss (inches, absolute)" />
-                <Col label="Outlier %" sortKey="outlierPct" sort={sort} onSort={handleSort} title="Pitches beyond 20 inches" />
-                <Col label="Consistency" sortKey="consistencyStdIn" sort={sort} onSort={handleSort} title="Std dev of total miss (lower = more consistent)" />
-              </tr>
-            </thead>
-            <tbody>
-              {loading
-                ? Array.from({ length: 8 }, (_, i) => (
-                    <SkeletonRow key={i} i={i} cols={9} />
-                  ))
-                : null}
-              {!loading && rowCount === 0 ? (
-                <tr>
-                  <td colSpan={10} className="px-4 py-12 text-center">
-                    <div className="flex flex-col items-center gap-2">
-                      <span className="text-zinc-500">
-                        No {mode === "outings" ? "outings" : "players"} found for the selected filters.
-                      </span>
-                      {search.trim() ? (
-                        <button
-                          type="button"
-                          onClick={() => setSearch("")}
-                          className="text-sm font-medium text-orange-300 hover:text-orange-200 transition-smooth"
-                        >
-                          Clear filters
-                        </button>
-                      ) : null}
-                    </div>
-                  </td>
+                  <Col label="Player" sortKey="playerName" sort={sort} onSort={handleSort} />
+                  {mode === "outings" ? (
+                    <th className="px-2 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                      Date
+                    </th>
+                  ) : (
+                    <th className="px-2 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                      Outings
+                    </th>
+                  )}
+                  <Col label="Pitches" sortKey="pitchCount" sort={sort} onSort={handleSort} />
+                  <Col label="On-target %" sortKey="onTargetPct" sort={sort} onSort={handleSort} title="Pitches within 8 inches" />
+                  <Col label="Command+" sortKey="commandPlus" sort={sort} onSort={handleSort} title="Pitch-weighted command relative to team average (100 = average, >100 is better)" />
+                  <Col label="Avg Miss" sortKey="avgMissIn" sort={sort} onSort={handleSort} title="Average total miss (inches)" />
+                  <Col label="Avg H" sortKey="avgHAbsIn" sort={sort} onSort={handleSort} title="Average horizontal miss (inches, absolute)" />
+                  <Col label="Avg V" sortKey="avgVAbsIn" sort={sort} onSort={handleSort} title="Average vertical miss (inches, absolute)" />
+                  <Col label="Outlier %" sortKey="outlierPct" sort={sort} onSort={handleSort} title="Pitches beyond 20 inches" />
+                  <Col label="Consistency" sortKey="consistencyStdIn" sort={sort} onSort={handleSort} title="Std dev of total miss (lower = more consistent)" />
                 </tr>
-              ) : null}
+              </thead>
+              <tbody key={`${mode}-${transitionKey}`}>
+                {loading
+                  ? Array.from({ length: 8 }, (_, i) => (
+                      <SkeletonRow key={i} i={i} cols={9} />
+                    ))
+                  : null}
+                {!loading && rowCount === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="px-4 py-12 text-center">
+                      <div className="flex flex-col items-center gap-2">
+                        <span className="text-zinc-500">
+                          No {mode === "outings" ? "outings" : "players"} found for the selected filters.
+                        </span>
+                        {search.trim() ? (
+                          <button
+                            type="button"
+                            onClick={() => setSearch("")}
+                            className="text-sm font-medium text-orange-300 hover:text-orange-200 transition-smooth"
+                          >
+                            Clear filters
+                          </button>
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
+                ) : null}
 
-              {!loading && mode === "outings"
-                ? displayedOutings.map((row, i) => (
-                    <tr
-                      key={row.outingId}
-                      className="border-b border-zinc-800/50 hover:bg-orange-500/5 transition-smooth cursor-pointer group"
-                      onClick={() => router.push(outingDashboardHref(row.playerId, row.outingId))}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          router.push(outingDashboardHref(row.playerId, row.outingId));
-                        }
-                      }}
-                      tabIndex={0}
-                      role="link"
-                      aria-label={`${row.playerName} ${dateLabel(row.dateId)} outing`}
-                    >
-                      <td className={`px-2 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>
-                        {i + 1}
-                      </td>
-                      <td className="px-2 py-3 font-medium whitespace-nowrap">
-                        <Link
-                          href={outingDashboardHref(row.playerId, row.outingId)}
-                          className="hover:text-orange-300 transition-smooth"
+                {!loading && mode === "outings"
+                  ? displayedOutings.map((row, i) => {
+                      const rowTransition = getRowTransitionProps(i);
+                      return (
+                        <tr
+                          key={row.outingId}
+                          className={`${rowTransition.className} border-b border-zinc-800/50 hover:bg-orange-500/5 transition-smooth cursor-pointer group`}
+                          style={rowTransition.style}
+                          onClick={() => router.push(outingDashboardHref(row.playerId, row.outingId))}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              router.push(outingDashboardHref(row.playerId, row.outingId));
+                            }
+                          }}
+                          tabIndex={0}
+                          role="link"
+                          aria-label={`${row.playerName} ${dateLabel(row.dateId)} outing`}
                         >
-                          {row.playerName}
-                        </Link>
-                        <HandBadge hand={row.pitcherHand} unknown={row.handUnknown} />
-                      </td>
-                      <td className="px-2 py-3 text-zinc-400 whitespace-nowrap">
-                        <Link
-                          href={outingDashboardHref(row.playerId, row.outingId)}
-                          className="hover:text-zinc-200 transition-smooth"
-                        >
-                          {dateLabel(row.dateId)}
-                        </Link>
-                      </td>
-                      <KpiCells row={row} onTargetMin={onTargetMin} onTargetMax={onTargetMax} />
-                    </tr>
-                  ))
-                : null}
+                          <td className={`px-2 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>
+                            {i + 1}
+                          </td>
+                          <td className="px-2 py-3 font-medium whitespace-nowrap">
+                            <Link
+                              href={outingDashboardHref(row.playerId, row.outingId)}
+                              className="hover:text-orange-300 transition-smooth"
+                            >
+                              {row.playerName}
+                            </Link>
+                            <HandBadge hand={row.pitcherHand} unknown={row.handUnknown} />
+                          </td>
+                          <td className="px-2 py-3 text-zinc-400 whitespace-nowrap">
+                            <Link
+                              href={outingDashboardHref(row.playerId, row.outingId)}
+                              className="hover:text-zinc-200 transition-smooth"
+                            >
+                              {dateLabel(row.dateId)}
+                            </Link>
+                          </td>
+                          <KpiCells row={row} onTargetMin={onTargetMin} onTargetMax={onTargetMax} />
+                        </tr>
+                      );
+                    })
+                  : null}
 
-              {!loading && mode === "players"
-                ? displayedPlayers.map((row, i) => (
-                    <tr
-                      key={row.playerId}
-                      className="border-b border-zinc-800/50 hover:bg-orange-500/5 transition-smooth cursor-pointer group"
-                    >
-                      <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>
-                        {i + 1}
-                      </td>
-                      <td className="px-4 py-3 font-medium whitespace-nowrap">
-                        <Link
-                          href={`/player/${row.playerId}`}
-                          className="hover:text-orange-300 transition-smooth"
+                {!loading && mode === "players"
+                  ? displayedPlayers.map((row, i) => {
+                      const rowTransition = getRowTransitionProps(i);
+                      return (
+                        <tr
+                          key={row.playerId}
+                          className={`${rowTransition.className} border-b border-zinc-800/50 hover:bg-orange-500/5 transition-smooth cursor-pointer group`}
+                          style={rowTransition.style}
                         >
-                          {row.playerName}
-                        </Link>
-                        <HandBadge hand={row.pitcherHand} unknown={row.handUnknown} />
-                      </td>
-                      <td className="px-4 py-3 text-zinc-400 font-mono">
-                        {row.outingCount}
-                      </td>
-                      <KpiCells row={row} onTargetMin={onTargetMin} onTargetMax={onTargetMax} />
-                    </tr>
-                  ))
-                : null}
-            </tbody>
-          </table>
-        </div>
-      </LeaderboardPanel>
+                          <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>
+                            {i + 1}
+                          </td>
+                          <td className="px-4 py-3 font-medium whitespace-nowrap">
+                            <Link
+                              href={`/player/${row.playerId}`}
+                              className="hover:text-orange-300 transition-smooth"
+                            >
+                              {row.playerName}
+                            </Link>
+                            <HandBadge hand={row.pitcherHand} unknown={row.handUnknown} />
+                          </td>
+                          <td className="px-4 py-3 text-zinc-400 font-mono">
+                            {row.outingCount}
+                          </td>
+                          <KpiCells row={row} onTargetMin={onTargetMin} onTargetMax={onTargetMax} />
+                        </tr>
+                      );
+                    })
+                  : null}
+              </tbody>
+            </table>
+          </div>
+        </LeaderboardPanel>
 
-      {!loading && mode === "players" && displayedPlayers.length > 0 ? (
-        <p className="mt-4 text-xs text-zinc-500">
-          Aggregated across all outings matching filters. Consistency is exact standard deviation across all pitches.
-        </p>
-      ) : null}
+        {!loading && mode === "players" && displayedPlayers.length > 0 ? (
+          <p className="mt-4 text-xs text-zinc-500">
+            Aggregated across all outings matching filters. Consistency is exact standard deviation across all pitches.
+          </p>
+        ) : null}
+      </div>
     </LeaderboardPageFrame>
   );
 }

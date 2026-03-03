@@ -10,6 +10,8 @@ import {
   leaderboardFilterButtonBlueActiveClassName,
   leaderboardFilterButtonBlueInactiveClassName,
 } from "@/components/ui/neon-button";
+import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
+import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
 import {
   LeaderboardHero,
   LeaderboardPageFrame,
@@ -107,6 +109,12 @@ function trackmanPlayerHref(playerId: string): string {
 }
 
 export default function TrackmanLeaderboardsPage() {
+  const {
+    runWithTransition,
+    contentTransitionClassName,
+    getRowTransitionProps,
+    transitionKey,
+  } = useSmoothFilterTransition();
   const [data, setData] = useState<Leaderboards | null>(null);
   const [stuffPlusRows, setStuffPlusRows] = useState<StuffPlusRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -281,11 +289,6 @@ export default function TrackmanLeaderboardsPage() {
         icon={Trophy}
         eyebrow="Stuff And Trackman"
         title={<>Trackman Leaderboard</>}
-        description={
-          <>
-            This is the raw stuff board. Come here to see which pitches are exploding out of the hand, carrying through the zone, and separating on shape.
-          </>
-        }
         meta={(
           <>
             <LeaderboardPill tone="blue">{activeLabel}</LeaderboardPill>
@@ -304,14 +307,11 @@ export default function TrackmanLeaderboardsPage() {
             <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Guide</div>
             <Link
               href="/trackman/faq"
-              className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-blue-500/25 bg-blue-500/10 px-4 py-3 text-sm font-semibold text-blue-300 transition-smooth hover:border-blue-400/40 hover:text-blue-200"
+              className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-blue-500/25 bg-blue-500/10 px-4 py-3.5 text-sm font-semibold text-blue-300 transition-smooth hover:border-blue-400/40 hover:text-blue-200"
             >
               <BookOpen className="h-4 w-4" />
               Metrics Dictionary
             </Link>
-            <p className="mt-3 text-xs leading-6 text-zinc-500">
-              Check this first when you want to know how nasty the pitch really is before command gets layered in.
-            </p>
           </div>
         )}
       />
@@ -347,7 +347,7 @@ export default function TrackmanLeaderboardsPage() {
                       variant="default"
                       neon
                       tone="blue"
-                      onClick={() => setActiveCategory(cat)}
+                      onClick={() => runWithTransition(() => setActiveCategory(cat))}
                       title={CATEGORY_TOOLTIPS[cat]}
                       className={`${leaderboardFilterButtonBaseClassName} ${
                         activeCategory === cat
@@ -382,6 +382,9 @@ export default function TrackmanLeaderboardsPage() {
             </div>
           </LeaderboardToolbar>
 
+          <div
+            className={contentTransitionClassName}
+          >
             {/* Category pitch type filter (for non-Stuff+ categories) */}
             {categoryPitchOptions.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-1.5">
@@ -393,7 +396,7 @@ export default function TrackmanLeaderboardsPage() {
                     variant="default"
                     neon
                     tone="blue"
-                    onClick={() => setCategoryPitchFilter(opt.value)}
+                    onClick={() => runWithTransition(() => setCategoryPitchFilter(opt.value))}
                     className={`${leaderboardFilterButtonBaseClassName} flex items-center gap-1 ${
                       categoryPitchFilter === opt.value
                         ? leaderboardFilterButtonBlueActiveClassName
@@ -422,7 +425,7 @@ export default function TrackmanLeaderboardsPage() {
                     variant="default"
                     neon
                     tone="blue"
-                    onClick={() => setStuffPlusPitchFilter("total")}
+                    onClick={() => runWithTransition(() => setStuffPlusPitchFilter("total"))}
                     className={`${leaderboardFilterButtonBaseClassName} ${
                       stuffPlusPitchFilter === "total"
                         ? leaderboardFilterButtonBlueActiveClassName
@@ -437,7 +440,7 @@ export default function TrackmanLeaderboardsPage() {
                     variant="default"
                     neon
                     tone="blue"
-                    onClick={() => setStuffPlusPitchFilter("all")}
+                    onClick={() => runWithTransition(() => setStuffPlusPitchFilter("all"))}
                     className={`${leaderboardFilterButtonBaseClassName} ${
                       stuffPlusPitchFilter === "all"
                         ? leaderboardFilterButtonBlueActiveClassName
@@ -454,7 +457,7 @@ export default function TrackmanLeaderboardsPage() {
                       variant="default"
                       neon
                       tone="blue"
-                      onClick={() => setStuffPlusPitchFilter(pt)}
+                      onClick={() => runWithTransition(() => setStuffPlusPitchFilter(pt))}
                       className={`${leaderboardFilterButtonBaseClassName} flex items-center gap-1 ${
                         stuffPlusPitchFilter === pt
                           ? leaderboardFilterButtonBlueActiveClassName
@@ -486,13 +489,15 @@ export default function TrackmanLeaderboardsPage() {
                         <th className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Sessions</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody key={`stuff-${transitionKey}`}>
                       {rankedStuffPlus.map((r, i) => {
                         const isMe = getSlugForPlayerId(r.playerId) === selectedSlug;
+                        const rowTransition = getRowTransitionProps(i);
                         return (
                         <tr
                           key={`${r.playerId}-${r.pitchType}-${i}`}
-                          className={`border-b border-zinc-800/50 hover:bg-blue-500/5 transition-smooth ${isMe ? "bg-emerald-500/5" : ""}`}
+                          className={`${rowTransition.className} border-b border-zinc-800/50 hover:bg-blue-500/5 transition-smooth ${isMe ? "bg-emerald-500/5" : ""}`}
+                          style={rowTransition.style}
                         >
                           <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>{i + 1}</td>
                           <td className="px-4 py-3 font-medium">
@@ -506,17 +511,11 @@ export default function TrackmanLeaderboardsPage() {
                           </td>
                           {stuffPlusPitchFilter === "all" && (
                             <td className="px-4 py-3">
-                              <span className="inline-flex items-center gap-1">
-                                <span
-                                  className="w-2 h-2 rounded-full shrink-0"
-                                  style={{
-                                    backgroundColor: pitchColor(
-                                      getStuffPlusDisplayPitchType(r.playerId, r.pitchType)
-                                    ),
-                                  }}
-                                />
-                                {getStuffPlusDisplayPitchType(r.playerId, r.pitchType)}
-                              </span>
+                              <PitchTypeChip
+                                pitchType={getStuffPlusDisplayPitchType(r.playerId, r.pitchType)}
+                                label={getStuffPlusDisplayPitchType(r.playerId, r.pitchType)}
+                                size="xs"
+                              />
                             </td>
                           )}
                           <td className="px-4 py-3 text-right">
@@ -578,7 +577,7 @@ export default function TrackmanLeaderboardsPage() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody key={`metric-${activeCategory}-${transitionKey}`}>
                       {entries.length === 0 && (
                         <tr>
                           <td colSpan={5} className="px-4 py-12 text-center">
@@ -600,10 +599,12 @@ export default function TrackmanLeaderboardsPage() {
                       {entries.map((e, i) => {
                         const pitchLabel = (e as LeaderboardEntry & { pitch_type?: string }).pitch_type ?? (categoryPitchFilter !== "all" ? categoryPitchFilter : null);
                         const isMe = e.playerSlug === selectedSlug;
+                        const rowTransition = getRowTransitionProps(i);
                         return (
                         <tr
                           key={`${e.playerSlug}-${i}`}
-                          className={`border-b border-zinc-800/50 hover:bg-blue-500/5 transition-smooth ${isMe ? "bg-emerald-500/5" : ""}`}
+                          className={`${rowTransition.className} border-b border-zinc-800/50 hover:bg-blue-500/5 transition-smooth ${isMe ? "bg-emerald-500/5" : ""}`}
+                          style={rowTransition.style}
                         >
                           <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>{e.rank}</td>
                           <td className="px-4 py-3 font-medium">
@@ -618,13 +619,11 @@ export default function TrackmanLeaderboardsPage() {
                           {activeCategory === "max_fb_velo" && categoryPitchOptions.length > 0 && (
                             <td className="px-4 py-3">
                               {pitchLabel ? (
-                                <span className="inline-flex items-center gap-1">
-                                  <span
-                                    className="w-2 h-2 rounded-full shrink-0"
-                                    style={{ backgroundColor: pitchColor(pitchLabel) }}
-                                  />
-                                  {pitchLabel}
-                                </span>
+                                <PitchTypeChip
+                                  pitchType={pitchLabel}
+                                  label={pitchLabel}
+                                  size="xs"
+                                />
                               ) : (
                                 <span className="text-zinc-500">—</span>
                               )}
@@ -662,13 +661,20 @@ export default function TrackmanLeaderboardsPage() {
                       <div className="text-lg font-mono font-semibold">
                         {pm.pct}%
                       </div>
-                      <div className="text-[10px] text-zinc-400">{pm.pitch_type}</div>
+                      <div className="mt-1 flex justify-center">
+                        <PitchTypeChip
+                          pitchType={pm.pitch_type}
+                          label={pm.pitch_type}
+                          size="xs"
+                        />
+                      </div>
                       <div className="text-[10px] text-zinc-600">{pm.count}</div>
                     </div>
                   ))}
                 </div>
               </LeaderboardPanel>
             )}
+          </div>
           </>
         )}
     </LeaderboardPageFrame>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   Users,
@@ -25,10 +26,41 @@ export default function HomeContent() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+        <motion.div
+          className="mt-2 mb-6 sm:mb-7"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="rounded-2xl border border-zinc-800/80 bg-[linear-gradient(135deg,rgba(24,24,27,0.9),rgba(9,9,11,0.96))] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+              Babson Baseball
+            </div>
+            <div className="mt-3 flex items-center gap-3 sm:gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-zinc-800/80 bg-zinc-900/80 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:h-14 sm:w-14">
+                <Image
+                  src="/babson-logo.svg"
+                  alt="Babson Baseball"
+                  width={28}
+                  height={28}
+                  className="h-7 w-7 shrink-0 sm:h-8 sm:w-8"
+                  priority
+                />
+              </div>
+              <h1 className="text-2xl font-black tracking-tight text-zinc-50 sm:text-[2.35rem] sm:leading-tight">
+                Babson Baseball Pitching Portal
+              </h1>
+            </div>
+            <p className="mt-2 max-w-3xl text-sm leading-7 text-zinc-400">
+              One home base for player reports, leaderboards, stuff, command, and mechanics.
+            </p>
+          </div>
+        </motion.div>
+
         {/* ---- Personal greeting (when player selected) ---- */}
         {slug && name && (
           <motion.div
-            className="mt-8 mb-3"
+            className="mt-0 mb-3"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
@@ -53,7 +85,7 @@ export default function HomeContent() {
 
         {/* ---- Player Profiles (hero) ---- */}
         <motion.div
-          className={slug ? "mt-0" : "mt-8"}
+          className="mt-0"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.05 }}
@@ -79,7 +111,7 @@ export default function HomeContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.07 }}
         >
-          <Link href="/team-stats">
+          <Link href="/team-stats/leaderboard">
             <div className="group relative rounded-xl border border-sky-500/30 hover:border-sky-500/60 bg-gradient-to-br from-zinc-900 to-zinc-900/80 p-4 transition-smooth duration-300 hover:scale-[1.01] hover:shadow-lg group-hover:shadow-sky-500/10">
               <div className="flex items-start justify-between">
                 <BarChart3 className="w-5 h-5 text-sky-400" />
@@ -114,7 +146,7 @@ export default function HomeContent() {
                 </p>
               </div>
             </Link>
-            <Link href="/trackman/leaderboards">
+            <Link href="/trackman/leaderboard">
               <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-blue-500/40 transition-smooth group">
                 <div className="flex items-center gap-2">
                   <Trophy className="w-4 h-4 text-blue-400" />
@@ -142,7 +174,7 @@ export default function HomeContent() {
                 </p>
               </div>
             </Link>
-            <Link href="/leaderboards">
+            <Link href="/command/leaderboard">
               <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-orange-500/40 transition-smooth group">
                 <div className="flex items-center gap-2">
                   <Trophy className="w-4 h-4 text-orange-400" />

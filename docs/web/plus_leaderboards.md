@@ -2,7 +2,7 @@
 
 Canonical reference for the unified plus-model leaderboard page.
 
-Route: `/leaderboards/plus`
+Route: `/pitching-plus/leaderboard`
 
 This page is the single leaderboard surface for:
 

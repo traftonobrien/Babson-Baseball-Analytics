@@ -168,7 +168,7 @@ export default function CommandPage() {
 
             {/* Leaderboards Link Button */}
             <Link
-              href="/leaderboards"
+              href="/command/leaderboard"
               className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm font-medium text-zinc-300 hover:text-orange-400 hover:border-orange-500/30 transition-all hover:bg-orange-500/5 group"
             >
               <Target className="w-4 h-4 text-orange-500 group-hover:scale-110 transition-transform" />

@@ -134,11 +134,6 @@ export default function TeamStatsPage() {
         icon={BarChart3}
         eyebrow="Performance Leaderboard"
         title={<>Statistics Leaderboard</>}
-        description={
-          <>
-            This is the results board. If you want to see who is getting outs, missing bats, and carrying innings, start here.
-          </>
-        }
         meta={(
           <>
             <LeaderboardPill tone="sky">{year} season</LeaderboardPill>
@@ -150,14 +145,11 @@ export default function TeamStatsPage() {
             <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Guide</div>
             <Link
               href="/team-stats/faq"
-              className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-sky-500/25 bg-sky-500/10 px-4 py-3 text-sm font-semibold text-sky-300 transition-smooth hover:border-sky-400/40 hover:text-sky-200"
+              className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-sky-500/25 bg-sky-500/10 px-4 py-3.5 text-sm font-semibold text-sky-300 transition-smooth hover:border-sky-400/40 hover:text-sky-200"
             >
               <BookOpen className="h-4 w-4" />
               Metrics Dictionary
             </Link>
-            <p className="mt-3 text-xs leading-6 text-zinc-500">
-              Rows over the innings floor stay at the top, so the qualified group is always the first thing you see.
-            </p>
           </div>
         )}
       />

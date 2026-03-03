@@ -1,6 +1,6 @@
-## Team Leaderboards
+## Command Leaderboard
 
-Route: `/leaderboards`
+Route: `/command/leaderboard`
 
 Ranks pitchers by command metrics across the full roster.
 

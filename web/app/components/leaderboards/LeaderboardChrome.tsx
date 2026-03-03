@@ -129,7 +129,7 @@ export function LeaderboardHero({
   icon: LucideIcon;
   eyebrow: string;
   title: ReactNode;
-  description: ReactNode;
+  description?: ReactNode;
   meta?: ReactNode;
   summary?: ReactNode;
   side?: ReactNode;
@@ -161,9 +161,11 @@ export function LeaderboardHero({
             <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-zinc-50 sm:text-[2.9rem] sm:leading-[1.02]">
               {title}
             </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-400 sm:text-[14px]">
-              {description}
-            </p>
+            {description ? (
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-400 sm:text-[14px]">
+                {description}
+              </p>
+            ) : null}
             {meta ? <div className="mt-4 flex flex-wrap items-center gap-2">{meta}</div> : null}
           </div>
 

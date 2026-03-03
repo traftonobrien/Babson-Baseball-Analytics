@@ -11,28 +11,28 @@ import {
 
 const LEADERBOARD_ITEMS = [
   {
-    href: "/leaderboards/plus",
+    href: "/pitching-plus/leaderboard",
     label: "Plus Statistics",
     description: "Pitching+, Command+, Stuff+, and session blend rankings",
     icon: Sparkles,
     color: "amber",
   },
   {
-    href: "/leaderboards",
+    href: "/command/leaderboard",
     label: "Command",
     description: "On-target %, avg miss, consistency by outing",
     icon: Target,
     color: "orange",
   },
   {
-    href: "/trackman/leaderboards",
+    href: "/trackman/leaderboard",
     label: "Trackman",
     description: "Stuff+, velocity, spin, extension by session",
     icon: Activity,
     color: "blue",
   },
   {
-    href: "/team-stats",
+    href: "/team-stats/leaderboard",
     label: "Team Stats",
     description: "ERA, FIP, WHIP, K%, and season stats",
     icon: BarChart3,
@@ -56,11 +56,6 @@ export default function LeaderboardsHubPage() {
         icon={Trophy}
         eyebrow="Leaderboard Hub"
         title={<>Leaderboards</>}
-        description={
-          <>
-            Performance, command, raw stuff, and Pitching+ each keep their own lane. The navigation is simpler now, so the right view is always one click away.
-          </>
-        }
         meta={(
           <>
             <LeaderboardPill tone="amber">4 boards</LeaderboardPill>

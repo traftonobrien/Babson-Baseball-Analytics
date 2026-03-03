@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import {
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+} from "react";
 import {
   BookOpen,
   Layers3,
@@ -12,6 +18,7 @@ import {
 } from "lucide-react";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import { LeaderboardPageFrame } from "@/app/components/leaderboards/LeaderboardChrome";
+import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
 import {
   Button,
   leaderboardFilterButtonAmberActiveClassName,
@@ -19,8 +26,8 @@ import {
   leaderboardFilterButtonGhostInactiveClassName,
   leaderboardFilterButtonZincActiveClassName,
 } from "@/components/ui/neon-button";
+import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { getSlugForPlayerId } from "@/lib/canonicalPlayers";
-import { pitchColor } from "@/lib/pitchColors";
 import { plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
 import type {
   PlusLeaderboardPayload,
@@ -31,10 +38,7 @@ import type {
 
 type ViewMode = "players" | "pitchTypes";
 type HandFilter = "ALL" | "R" | "L";
-
-function fmtPlus(value: number | null): string {
-  return value === null ? "—" : value.toFixed(0);
-}
+type RowTransitionProps = { className: string; style: CSSProperties };
 
 function fmtPct(value: number): string {
   return `${(value * 100).toFixed(0)}%`;
@@ -226,7 +230,15 @@ function EmptyState({
   );
 }
 
-function PlayerTable({ rows }: { rows: PlusPlayerRow[] }) {
+function PlayerTable({
+  rows,
+  transitionKey,
+  getRowTransitionProps,
+}: {
+  rows: PlusPlayerRow[];
+  transitionKey: number;
+  getRowTransitionProps: (index: number) => RowTransitionProps;
+}) {
   return (
     <div className="overflow-x-auto rounded-3xl border border-zinc-800/80 bg-zinc-950/65">
       <table className="min-w-full text-sm">
@@ -243,39 +255,54 @@ function PlayerTable({ rows }: { rows: PlusPlayerRow[] }) {
             <th className="px-4 py-3">Status</th>
           </tr>
         </thead>
-        <tbody>
-          {rows.map((row, index) => (
-            <tr key={row.playerId} className="border-b border-zinc-900/80 transition-smooth hover:bg-zinc-900/35 last:border-b-0">
-              <td className="px-4 py-3 font-semibold text-zinc-500">{index + 1}</td>
-              <td className="px-4 py-3">
-                <Link href={playerHref(row.playerId)} className="inline-flex items-center gap-2 font-semibold text-zinc-100 hover:text-cyan-300 transition-smooth">
-                  <span>{row.playerName}</span>
-                  {handBadge(row.throws)}
-                </Link>
-              </td>
-              <td className="px-4 py-3">{metricBadge(row.pitchingPlus)}</td>
-              <td className="px-4 py-3">{metricBadge(row.commandPlus)}</td>
-              <td className="px-4 py-3">{metricBadge(row.stuffPlus)}</td>
-              <td className="px-4 py-3 text-zinc-300">
-                <div className="font-medium">{row.overlapPitchTypeCount} types</div>
-                <div className="text-xs text-zinc-500">{row.overlapPitchCount} pitches</div>
-              </td>
-              <td className="px-4 py-3 text-zinc-300">{row.trackedPitchCount}</td>
-              <td className="px-4 py-3 text-zinc-300">{row.outingCount}</td>
-              <td className="px-4 py-3">
-                <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${row.ready ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300" : "border-zinc-700 bg-zinc-900 text-zinc-400"}`}>
-                  {reasonCopy(row.notReadyReason)}
-                </span>
-              </td>
-            </tr>
-          ))}
+        <tbody key={`players-${transitionKey}`}>
+          {rows.map((row, index) => {
+            const rowTransition = getRowTransitionProps(index);
+            return (
+              <tr
+                key={row.playerId}
+                className={`${rowTransition.className} border-b border-zinc-900/80 transition-smooth hover:bg-zinc-900/35 last:border-b-0`}
+                style={rowTransition.style}
+              >
+                <td className="px-4 py-3 font-semibold text-zinc-500">{index + 1}</td>
+                <td className="px-4 py-3">
+                  <Link href={playerHref(row.playerId)} className="inline-flex items-center gap-2 font-semibold text-zinc-100 hover:text-cyan-300 transition-smooth">
+                    <span>{row.playerName}</span>
+                    {handBadge(row.throws)}
+                  </Link>
+                </td>
+                <td className="px-4 py-3">{metricBadge(row.pitchingPlus)}</td>
+                <td className="px-4 py-3">{metricBadge(row.commandPlus)}</td>
+                <td className="px-4 py-3">{metricBadge(row.stuffPlus)}</td>
+                <td className="px-4 py-3 text-zinc-300">
+                  <div className="font-medium">{row.overlapPitchTypeCount} types</div>
+                  <div className="text-xs text-zinc-500">{row.overlapPitchCount} pitches</div>
+                </td>
+                <td className="px-4 py-3 text-zinc-300">{row.trackedPitchCount}</td>
+                <td className="px-4 py-3 text-zinc-300">{row.outingCount}</td>
+                <td className="px-4 py-3">
+                  <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${row.ready ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300" : "border-zinc-700 bg-zinc-900 text-zinc-400"}`}>
+                    {reasonCopy(row.notReadyReason)}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
   );
 }
 
-function PitchTypeTable({ rows }: { rows: PlusPitchTypeRow[] }) {
+function PitchTypeTable({
+  rows,
+  transitionKey,
+  getRowTransitionProps,
+}: {
+  rows: PlusPitchTypeRow[];
+  transitionKey: number;
+  getRowTransitionProps: (index: number) => RowTransitionProps;
+}) {
   return (
     <div className="overflow-x-auto rounded-3xl border border-zinc-800/80 bg-zinc-950/65">
       <table className="min-w-full text-sm">
@@ -292,36 +319,41 @@ function PitchTypeTable({ rows }: { rows: PlusPitchTypeRow[] }) {
             <th className="px-4 py-3">Status</th>
           </tr>
         </thead>
-        <tbody>
-          {rows.map((row, index) => (
-            <tr key={`${row.playerId}-${row.commandPitchType}`} className="border-b border-zinc-900/80 transition-smooth hover:bg-zinc-900/35 last:border-b-0">
-              <td className="px-4 py-3 font-semibold text-zinc-500">{index + 1}</td>
-              <td className="px-4 py-3">
-                <Link href={playerHref(row.playerId)} className="inline-flex items-center gap-2 font-semibold text-zinc-100 hover:text-cyan-300 transition-smooth">
-                  <span>{row.playerName}</span>
-                  {handBadge(row.throws)}
-                </Link>
-              </td>
-              <td className="px-4 py-3">
-                <span
-                  className="inline-flex rounded-full px-2.5 py-1 text-xs font-bold text-white"
-                  style={{ backgroundColor: pitchColor(row.commandPitchType) }}
-                >
-                  {row.pitchLabel}
-                </span>
-              </td>
-              <td className="px-4 py-3">{metricBadge(row.pitchingPlus)}</td>
-              <td className="px-4 py-3">{metricBadge(row.commandPlus)}</td>
-              <td className="px-4 py-3">{metricBadge(row.stuffPlus)}</td>
-              <td className="px-4 py-3 text-zinc-300">{fmtPct(row.usageShare)}</td>
-              <td className="px-4 py-3 text-zinc-300">{row.commandCount}</td>
-              <td className="px-4 py-3">
-                <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${row.includedInPitchingPlus ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300" : "border-zinc-700 bg-zinc-900 text-zinc-400"}`}>
-                  {reasonCopy(row.reason)}
-                </span>
-              </td>
-            </tr>
-          ))}
+        <tbody key={`pitch-types-${transitionKey}`}>
+          {rows.map((row, index) => {
+            const rowTransition = getRowTransitionProps(index);
+            return (
+              <tr
+                key={`${row.playerId}-${row.commandPitchType}`}
+                className={`${rowTransition.className} border-b border-zinc-900/80 transition-smooth hover:bg-zinc-900/35 last:border-b-0`}
+                style={rowTransition.style}
+              >
+                <td className="px-4 py-3 font-semibold text-zinc-500">{index + 1}</td>
+                <td className="px-4 py-3">
+                  <Link href={playerHref(row.playerId)} className="inline-flex items-center gap-2 font-semibold text-zinc-100 hover:text-cyan-300 transition-smooth">
+                    <span>{row.playerName}</span>
+                    {handBadge(row.throws)}
+                  </Link>
+                </td>
+                <td className="px-4 py-3">
+                  <PitchTypeChip
+                    pitchType={row.commandPitchType}
+                    label={row.pitchLabel}
+                  />
+                </td>
+                <td className="px-4 py-3">{metricBadge(row.pitchingPlus)}</td>
+                <td className="px-4 py-3">{metricBadge(row.commandPlus)}</td>
+                <td className="px-4 py-3">{metricBadge(row.stuffPlus)}</td>
+                <td className="px-4 py-3 text-zinc-300">{fmtPct(row.usageShare)}</td>
+                <td className="px-4 py-3 text-zinc-300">{row.commandCount}</td>
+                <td className="px-4 py-3">
+                  <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${row.includedInPitchingPlus ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300" : "border-zinc-700 bg-zinc-900 text-zinc-400"}`}>
+                    {reasonCopy(row.reason)}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -330,6 +362,12 @@ function PitchTypeTable({ rows }: { rows: PlusPitchTypeRow[] }) {
 
 export default function PlusLeaderboardsPage() {
   const seasonFilter: PlusSeasonFilter = 2026;
+  const {
+    runWithTransition,
+    contentTransitionClassName,
+    getRowTransitionProps,
+    transitionKey,
+  } = useSmoothFilterTransition();
   const [view, setView] = useState<ViewMode>("players");
   const [handFilter, setHandFilter] = useState<HandFilter>("ALL");
   const [minSample, setMinSample] = useState(10);
@@ -470,11 +508,8 @@ export default function PlusLeaderboardsPage() {
                   <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-zinc-50 sm:text-[2.9rem] sm:leading-[1.02]">
                     <span className="text-amber-300">Pitching+</span> Leaderboard
                   </h1>
-                  <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-400 sm:text-[14px]">
-                    This is the full-picture board. It blends the quality of the pitch with how well it is being landed, so you can see whose overall profile is strongest right now.
-                  </p>
 
-                  <div className="mt-5 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
+                  <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
                     <span className="inline-flex rounded-full border border-zinc-800 bg-zinc-950/70 px-3 py-1">
                       2026 live board
                     </span>
@@ -518,14 +553,11 @@ export default function PlusLeaderboardsPage() {
                     </div>
                     <Link
                       href="/pitching-plus"
-                      className="mt-2.5 inline-flex items-center gap-2 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2.5 text-sm font-semibold text-amber-300 transition-smooth hover:border-amber-400/40 hover:text-amber-200"
+                      className="mt-2.5 inline-flex items-center gap-2 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-4 py-3.5 text-sm font-semibold text-amber-300 transition-smooth hover:border-amber-400/40 hover:text-amber-200"
                     >
                       <BookOpen className="h-4 w-4" />
                       Full Methodology
                     </Link>
-                    <p className="mt-2 text-[11px] leading-5 text-zinc-500">
-                      Open this when you want to see how the grade is built.
-                    </p>
                   </div>
                 </div>
               </div>
@@ -537,17 +569,19 @@ export default function PlusLeaderboardsPage() {
                       label="View"
                       items={VIEW_OPTIONS}
                       value={view}
-                      onChange={setView}
+                      onChange={(nextView) => runWithTransition(() => setView(nextView))}
                       tone="amber"
                       activeClassName={leaderboardFilterButtonAmberActiveClassName}
                     />
                     <div className="flex items-end xl:min-w-[12rem]">
                       <button
-                        onClick={() => {
-                          setHandFilter("ALL");
-                          setMinSample(sampleChoices[0]);
-                          setSearch("");
-                        }}
+                        onClick={() =>
+                          runWithTransition(() => {
+                            setHandFilter("ALL");
+                            setMinSample(sampleChoices[0]);
+                            setSearch("");
+                          })
+                        }
                         className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
                       >
                         Reset
@@ -560,7 +594,7 @@ export default function PlusLeaderboardsPage() {
                       label="Handedness"
                       items={HAND_OPTIONS}
                       value={handFilter}
-                      onChange={setHandFilter}
+                      onChange={(nextHand) => runWithTransition(() => setHandFilter(nextHand))}
                       tone="zinc"
                       activeClassName={leaderboardFilterButtonZincActiveClassName}
                       compact
@@ -573,7 +607,9 @@ export default function PlusLeaderboardsPage() {
                       <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
                         <select
                           value={activeMinSample}
-                          onChange={(event) => setMinSample(Number(event.target.value))}
+                          onChange={(event) =>
+                            runWithTransition(() => setMinSample(Number(event.target.value)))
+                          }
                           className="w-full rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2.5 text-sm font-semibold text-zinc-100 outline-none"
                         >
                           {sampleChoices.map((value) => (
@@ -607,21 +643,33 @@ export default function PlusLeaderboardsPage() {
         </section>
 
         <section className="mt-6">
-          {loading ? (
-            <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-10 text-center text-zinc-500">
-              Loading plus leaderboard…
-            </div>
-          ) : error ? (
-            <div className="rounded-3xl border border-rose-500/30 bg-rose-500/10 p-10 text-center text-rose-200">
-              {error}
-            </div>
-          ) : activeCount === 0 ? (
-            <EmptyState title={emptyStateTitle} detail={emptyStateDetail} />
-          ) : view === "players" ? (
-            <PlayerTable rows={filteredPlayers} />
-          ) : (
-            <PitchTypeTable rows={filteredPitchTypes} />
-          )}
+          <div
+            className={contentTransitionClassName}
+          >
+            {loading ? (
+              <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-10 text-center text-zinc-500">
+                Loading plus leaderboard…
+              </div>
+            ) : error ? (
+              <div className="rounded-3xl border border-rose-500/30 bg-rose-500/10 p-10 text-center text-rose-200">
+                {error}
+              </div>
+            ) : activeCount === 0 ? (
+              <EmptyState title={emptyStateTitle} detail={emptyStateDetail} />
+            ) : view === "players" ? (
+              <PlayerTable
+                rows={filteredPlayers}
+                transitionKey={transitionKey}
+                getRowTransitionProps={getRowTransitionProps}
+              />
+            ) : (
+              <PitchTypeTable
+                rows={filteredPitchTypes}
+                transitionKey={transitionKey}
+                getRowTransitionProps={getRowTransitionProps}
+              />
+            )}
+          </div>
         </section>
     </LeaderboardPageFrame>
   );

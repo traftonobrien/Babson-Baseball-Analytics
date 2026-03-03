@@ -17,6 +17,35 @@ const nextConfig: NextConfig = {
       "./public/mechanics/**/*.webp",
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/leaderboards",
+        destination: "/command/leaderboard",
+        permanent: true,
+      },
+      {
+        source: "/leaderboards/faq",
+        destination: "/command/faq",
+        permanent: true,
+      },
+      {
+        source: "/leaderboards/plus",
+        destination: "/pitching-plus/leaderboard",
+        permanent: true,
+      },
+      {
+        source: "/trackman/leaderboards",
+        destination: "/trackman/leaderboard",
+        permanent: true,
+      },
+      {
+        source: "/team-stats",
+        destination: "/team-stats/leaderboard",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

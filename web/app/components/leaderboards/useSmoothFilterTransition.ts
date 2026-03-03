@@ -1,40 +1,39 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useState, useTransition, type CSSProperties } from "react";
 
-const DEFAULT_DURATION_MS = 220;
+const DEFAULT_DURATION_MS = 350;
 
 export function useSmoothFilterTransition(durationMs: number = DEFAULT_DURATION_MS) {
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionKey, setTransitionKey] = useState(0);
   const [, startTransition] = useTransition();
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const contentTransitionClassName = "";
+
+  const getRowTransitionProps = useCallback(
+    (index: number): { className: string; style: CSSProperties } => ({
+      className: "leaderboard-row-reveal",
+      style: {
+        animationDuration: `${durationMs}ms`,
+        animationDelay: `${Math.min(index, 10) * 40}ms`,
+      },
+    }),
+    [durationMs],
+  );
 
   const runWithTransition = useCallback(
     (apply: () => void) => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-
-      setIsTransitioning(true);
       startTransition(() => {
         apply();
+        setTransitionKey((current) => current + 1);
       });
-
-      timeoutRef.current = setTimeout(() => {
-        setIsTransitioning(false);
-        timeoutRef.current = null;
-      }, durationMs);
     },
-    [durationMs, startTransition],
+    [startTransition],
   );
 
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
-  return { isTransitioning, runWithTransition };
+  return {
+    contentTransitionClassName,
+    getRowTransitionProps,
+    runWithTransition,
+    transitionKey,
+  };
 }

@@ -173,7 +173,7 @@ export default function TrackmanPlayersPage() {
           </Link>
           <div className="w-px h-3 bg-zinc-800" />
           <Link
-            href="/trackman/leaderboards"
+            href="/trackman/leaderboard"
             className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-smooth"
           >
             <Trophy className="w-3.5 h-3.5" />

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -10,20 +9,25 @@ import {
   Target,
   Film,
   BarChart3,
-  ChevronDown,
-  UserCircle,
-  X,
+  Sparkles,
   BookOpen,
   Trophy,
 } from "lucide-react";
-import { useSelectedPlayer } from "@/lib/selectedPlayer";
-import { getCanonicalName } from "@/lib/canonicalPlayers";
-import playersJson from "@/data/players.json";
 
-const NAV_ITEMS = [
+type NavItem = {
+  href: string;
+  label: string;
+  icon?: typeof Users;
+};
+
+const PRIMARY_NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Home" },
   { href: "/players", label: "Players", icon: Users },
-  { href: "/team-stats", label: "Statistics", icon: BarChart3 },
+];
+
+const TRACKING_NAV_ITEMS: NavItem[] = [
+  { href: "/pitching-plus/leaderboard", label: "Pitching+", icon: Sparkles },
+  { href: "/team-stats/leaderboard", label: "Statistics", icon: BarChart3 },
   { href: "/trackman", label: "Trackman", icon: Activity },
   { href: "/command", label: "Command", icon: Target },
   { href: "/mechanics", label: "Mechanics", icon: Film },
@@ -34,172 +38,117 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-const PLAYER_LIST = (playersJson as { slug: string; name: string }[])
-  .map((p) => ({ slug: p.slug, name: getCanonicalName(p.name) }))
-  .sort((a, b) => a.name.localeCompare(b.name));
-
-function PlayerPicker() {
-  const { slug, name, setSelectedPlayer } = useSelectedPlayer();
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    if (open) document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) setSearch("");
-  }, [open]);
-
-  const filtered = search.trim()
-    ? PLAYER_LIST.filter((p) =>
-        p.name.toLowerCase().includes(search.toLowerCase()),
-      )
-    : PLAYER_LIST;
-
+function isDictionaryRoute(pathname: string): boolean {
   return (
-    <div ref={ref} className="relative shrink-0">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-smooth whitespace-nowrap border ${
-          slug
-            ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
-            : "border-zinc-700 bg-zinc-800/60 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
-        }`}
-      >
-        <UserCircle className="w-3.5 h-3.5 shrink-0" />
-        {slug ? name ?? "Player" : "I am..."}
-        <ChevronDown className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
+    pathname === "/dictionary" ||
+    pathname === "/command/faq" ||
+    pathname === "/trackman/faq" ||
+    pathname === "/team-stats/faq"
+  );
+}
 
-      {open && (
-        <div className="absolute right-0 top-full mt-1.5 w-56 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-[60] overflow-hidden">
-          <div className="p-2 border-b border-zinc-800">
-            <input
-              type="text"
-              autoFocus
-              placeholder="Search..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-500"
-            />
-          </div>
-          <div className="max-h-64 overflow-y-auto py-1">
-            {slug && (
-              <button
-                onClick={() => {
-                  setSelectedPlayer(null);
-                  setOpen(false);
-                }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors"
-              >
-                <X className="w-3 h-3" />
-                Clear selection
-              </button>
-            )}
-            {filtered.map((p) => (
-              <button
-                key={p.slug}
-                onClick={() => {
-                  setSelectedPlayer(p.slug);
-                  setOpen(false);
-                }}
-                className={`w-full text-left px-3 py-2 text-xs transition-colors ${
-                  p.slug === slug
-                    ? "bg-emerald-500/10 text-emerald-400"
-                    : "text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
-                }`}
-              >
-                {p.name}
-              </button>
-            ))}
-            {filtered.length === 0 && (
-              <p className="px-3 py-2 text-xs text-zinc-600">No players found</p>
-            )}
-          </div>
-        </div>
-      )}
+function isLeaderboardRoute(pathname: string): boolean {
+  return (
+    pathname === "/leaderboards-hub" ||
+    pathname === "/leaderboards" ||
+    pathname === "/command/leaderboard" ||
+    pathname === "/pitching-plus/leaderboard" ||
+    pathname === "/trackman/leaderboard" ||
+    pathname === "/trackman/leaderboards" ||
+    pathname.startsWith("/trackman/leaderboards/") ||
+    pathname === "/team-stats" ||
+    pathname === "/team-stats/leaderboard"
+  );
+}
+
+function NavCluster({
+  label,
+  items,
+  pathname,
+}: {
+  label: string;
+  items: NavItem[];
+  pathname: string;
+}) {
+  return (
+    <div className="flex items-center gap-1 rounded-2xl border border-zinc-800/80 bg-zinc-950/70 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+      <span className="hidden 2xl:inline px-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+        {label}
+      </span>
+      {items.map(({ href, label: itemLabel, icon: Icon }) => {
+        const active = isActive(pathname, href);
+        return (
+          <Link
+            key={href}
+            href={href}
+            className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-smooth whitespace-nowrap shrink-0 ${
+              active
+                ? "border-zinc-700 bg-zinc-900 text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                : "border-transparent bg-transparent text-zinc-400 hover:border-zinc-800 hover:bg-zinc-900 hover:text-zinc-100"
+            }`}
+          >
+            {Icon ? <Icon className="w-3.5 h-3.5 shrink-0" /> : null}
+            {itemLabel}
+          </Link>
+        );
+      })}
     </div>
   );
 }
 
 export default function Header() {
   const pathname = usePathname();
+  const dictionaryActive = isDictionaryRoute(pathname);
+  const leaderboardActive = isLeaderboardRoute(pathname);
 
   return (
-    <header className="bg-zinc-900/80 backdrop-blur-sm border-b border-zinc-800 sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-4 min-h-0">
+    <header className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur-sm">
+      <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 sm:px-6">
         <Link
           href="/"
-          className="flex items-center gap-3 py-2.5 w-fit group transition-opacity hover:opacity-80 shrink-0"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-zinc-800/80 bg-zinc-950/70 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-smooth hover:border-zinc-700 hover:bg-zinc-900"
         >
           <Image
             src="/babson-logo.svg"
             alt="Babson College"
-            width={36}
-            height={36}
-            className="shrink-0"
+            width={22}
+            height={22}
+            className="h-[1.35rem] w-[1.35rem] shrink-0"
             priority
           />
-          <span className="text-sm sm:text-base font-semibold tracking-tight text-zinc-100 hidden sm:inline">
-            Babson Baseball Pitching Portal
-          </span>
         </Link>
 
-        <div className="flex-1 min-w-0 overflow-x-auto overflow-y-hidden py-2 scrollbar-hide">
-          <div className="flex items-center gap-2 min-w-max">
-            <nav className="flex items-center gap-1">
-              {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-                const active = isActive(pathname, href);
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-smooth whitespace-nowrap shrink-0 ${
-                      active
-                        ? "bg-zinc-700 text-zinc-100"
-                        : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60"
-                    }`}
-                  >
-                    {Icon && <Icon className="w-3.5 h-3.5 shrink-0" />}
-                    {label}
-                  </Link>
-                );
-              })}
-            </nav>
-            <div className="w-px h-5 bg-zinc-700/50 shrink-0" />
-            <Link
-              href="/dictionary"
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-smooth whitespace-nowrap shrink-0 border ${
-                pathname === "/dictionary" ||
-                pathname.includes("/faq")
-                  ? "border-blue-500/50 bg-blue-500/10 text-blue-400"
-                  : "border-zinc-700 bg-zinc-800/60 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
-              }`}
-            >
-              <BookOpen className="w-3.5 h-3.5 shrink-0" />
-              Dictionary
-            </Link>
-            <Link
-              href="/leaderboards-hub"
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-smooth whitespace-nowrap shrink-0 border ${
-                pathname === "/leaderboards-hub" ||
-                pathname === "/leaderboards" ||
-                pathname.startsWith("/trackman/leaderboards") ||
-                pathname === "/team-stats"
-                  ? "border-orange-500/50 bg-orange-500/10 text-orange-400"
-                  : "border-zinc-700 bg-zinc-800/60 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
-              }`}
-            >
-              <Trophy className="w-3.5 h-3.5 shrink-0" />
-              Leaderboards
-            </Link>
-            <PlayerPicker />
+        <div className="min-w-0 flex-1 overflow-x-auto overflow-y-hidden py-2 scrollbar-hide">
+          <div className="flex min-w-max items-center gap-2.5">
+            <NavCluster label="Navigate" items={PRIMARY_NAV_ITEMS} pathname={pathname} />
+            <NavCluster label="Tracking" items={TRACKING_NAV_ITEMS} pathname={pathname} />
+            <div className="flex items-center gap-1 rounded-2xl border border-zinc-800/80 bg-zinc-950/70 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+              <span className="hidden 2xl:inline px-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                Tools
+              </span>
+              <Link
+                href="/leaderboards-hub"
+                className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-smooth whitespace-nowrap shrink-0 ${
+                  leaderboardActive
+                    ? "border-orange-500/45 bg-orange-500/12 text-orange-300"
+                    : "border-transparent bg-transparent text-zinc-400 hover:border-zinc-700 hover:bg-zinc-900 hover:text-zinc-100"
+                }`}
+              >
+                <Trophy className="w-3.5 h-3.5 shrink-0" />
+                Leaderboards
+              </Link>
+              <Link
+                href="/dictionary"
+                className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-smooth whitespace-nowrap shrink-0 ${
+                  dictionaryActive
+                    ? "border-blue-500/45 bg-blue-500/12 text-blue-300"
+                    : "border-transparent bg-transparent text-zinc-400 hover:border-zinc-700 hover:bg-zinc-900 hover:text-zinc-100"
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5 shrink-0" />
+                Dictionary
+              </Link>
+            </div>
           </div>
         </div>
       </div>

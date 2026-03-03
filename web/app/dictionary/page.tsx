@@ -7,7 +7,7 @@ import Breadcrumbs from "../components/Breadcrumbs";
 const DICTIONARY_ITEMS = [
   { href: "/pitching-plus", label: "Plus Models", description: "Pitching+, Command+, and Stuff+ in one place", icon: Sparkles, color: "amber" },
   { href: "/trackman/faq", label: "Trackman", description: "Stuff+, velocity, spin, and movement metrics", icon: Activity, color: "blue" },
-  { href: "/leaderboards/faq", label: "Command", description: "On-target %, avg miss, consistency", icon: Target, color: "orange" },
+  { href: "/command/faq", label: "Command", description: "On-target %, avg miss, consistency", icon: Target, color: "orange" },
   { href: "/players/faq", label: "Players", description: "Roster, profiles, and D3 stats", icon: Users, color: "emerald" },
   { href: "/mechanics/faq", label: "Mechanics", description: "AWRE metrics and video analysis", icon: Film, color: "violet" },
   { href: "/team-stats/faq", label: "Team Stats", description: "ERA, FIP, WHIP, and season stats", icon: BarChart3, color: "sky" },
