@@ -22,6 +22,7 @@ Single lookup table: task → canonical doc. When in doubt, start here.
 | Web app data contract | `docs/generated/web_app_data_contract.md` | auto-generated |
 | Outing selection logic | `docs/generated/outing_selection_logic.md` | auto-generated |
 | Team Leaderboards | `docs/web/leaderboards.md` | `web/app/leaderboards/page.tsx` |
+| Plus model leaderboards | `docs/web/plus_leaderboards.md` | `web/app/leaderboards/plus/page.tsx` |
 | Import Trackman PDF | `docs/runbooks/import_trackman_pdf.md` | `scripts/import_trackman_pdf.py` |
 | Trackman session UI | `docs/web/trackman_session_ui.md` | `web/app/trackman/session/` |
 | Sync D3 leaderboard (daily) | `docs/runbooks/sync_d3_leaderboard.md` | `scripts/sync_d3_leaderboard.py` |

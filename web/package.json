@@ -19,6 +19,7 @@
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
     "@vercel/analytics": "^1.6.1",
+    "class-variance-authority": "^0.7.1",
     "drizzle-orm": "^0.45.1",
     "framer-motion": "^12.34.0",
     "lucide-react": "^0.564.0",
