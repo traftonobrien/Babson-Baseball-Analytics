@@ -16,7 +16,7 @@ import {
 const DICTIONARY_ITEMS = [
   {
     href: "/pitching-plus",
-    label: "Plus Models",
+    label: "Plus Statistics",
     description: "Pitching+, Command+, and Stuff+ reference in one place.",
     icon: Sparkles,
     tone: "amber" as const,

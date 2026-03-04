@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { Activity } from "lucide-react";
 import {
   normalizePitch,
   normalizePitchTypeRow,
@@ -24,6 +24,13 @@ import PitchArsenalCards from "./PitchArsenalCards";
 import { mergeRenamedPitchTypes } from "@/lib/mergePitchTypes";
 import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
 import { getCanonicalName } from "@/lib/canonicalPlayers";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
+import {
+  LeaderboardHero,
+  LeaderboardPageFrame,
+  LeaderboardPill,
+  LeaderboardToolbar,
+} from "@/app/components/leaderboards/LeaderboardChrome";
 
 interface PitchPayload {
   format: "pitch";
@@ -329,134 +336,144 @@ export default function TrackmanSessionView({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-zinc-950 text-zinc-400">
-        Loading Trackman data...
-      </div>
+      <LeaderboardPageFrame maxWidth="max-w-7xl">
+        <div className="flex min-h-[60vh] items-center justify-center text-zinc-400">
+          Loading Trackman data...
+        </div>
+      </LeaderboardPageFrame>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-zinc-950 text-zinc-400 gap-4">
-        <p className="text-red-400">{error}</p>
-        <Link
-          href={backHref}
-          className="text-xs text-zinc-500 hover:text-zinc-300 transition-smooth"
-        >
-          {backLabel}
-        </Link>
-      </div>
+      <LeaderboardPageFrame maxWidth="max-w-7xl">
+        <div className="mt-12 rounded-3xl border border-red-500/20 bg-red-500/10 p-6 text-center">
+          <p className="text-sm text-red-300">{error}</p>
+          <Link
+            href={backHref}
+            className="mt-4 inline-flex rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
+          >
+            {backLabel}
+          </Link>
+        </div>
+      </LeaderboardPageFrame>
     );
   }
 
   if (viewMode === "pitch" && pitches.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-zinc-950 text-zinc-400 gap-4">
-        <p>No pitches found in session data.</p>
-        <Link
-          href={backHref}
-          className="text-xs text-zinc-500 hover:text-zinc-300 transition-smooth"
-        >
-          {backLabel}
-        </Link>
-      </div>
+      <LeaderboardPageFrame maxWidth="max-w-7xl">
+        <div className="mt-12 rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-6 text-center text-zinc-400">
+          <p className="text-sm">No pitches found in this session.</p>
+          <Link
+            href={backHref}
+            className="mt-4 inline-flex rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
+          >
+            {backLabel}
+          </Link>
+        </div>
+      </LeaderboardPageFrame>
     );
   }
 
   if (viewMode === "aggregate" && pitchTypes.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-zinc-950 text-zinc-400 gap-4">
-        <p>No pitch type data found in session.</p>
-        <Link
-          href={backHref}
-          className="text-xs text-zinc-500 hover:text-zinc-300 transition-smooth"
-        >
-          {backLabel}
-        </Link>
-      </div>
+      <LeaderboardPageFrame maxWidth="max-w-7xl">
+        <div className="mt-12 rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-6 text-center text-zinc-400">
+          <p className="text-sm">No pitch-type summary was found in this session.</p>
+          <Link
+            href={backHref}
+            className="mt-4 inline-flex rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
+          >
+            {backLabel}
+          </Link>
+        </div>
+      </LeaderboardPageFrame>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      {/* Session Header Strip */}
-      <header className="bg-zinc-900 border-b border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3 mb-3">
+    <LeaderboardPageFrame maxWidth="max-w-7xl">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Trackman", href: "/trackman" },
+          { label: playerName, href: backHref },
+          { label: "Session" },
+        ]}
+      />
+
+      <LeaderboardHero
+        tone="blue"
+        icon={Activity}
+        eyebrow="Trackman Session"
+        title={<>{playerName}</>}
+        description="Single-session Trackman view with pitch-level or aggregate exports, filtered without changing any of the underlying session calculations."
+        meta={(
+          <>
+            <LeaderboardPill tone="blue">{dateLabel}</LeaderboardPill>
+            {sessionLabel ? <LeaderboardPill tone="neutral">{sessionLabel}</LeaderboardPill> : null}
+            {hand ? <LeaderboardPill tone="neutral">Throws {hand === "L" ? "LHP" : "RHP"}</LeaderboardPill> : null}
+          </>
+        )}
+        side={(
+          <div className="grid gap-3">
             <Link
               href={backHref}
-              className="text-zinc-500 hover:text-zinc-300 transition-smooth"
+              className="inline-flex items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
             >
-              <ArrowLeft className="w-4 h-4" />
+              {backLabel}
             </Link>
-            <span className="text-xs text-zinc-600 uppercase tracking-wider">Trackman Session</span>
-          </div>
-          <div className="flex items-baseline gap-4 flex-wrap">
-            <h1 className="text-xl font-bold tracking-tight text-zinc-50">{playerName}</h1>
-            <span className="w-px h-5 bg-zinc-700 self-center hidden sm:block" />
-            <span className="text-sm text-zinc-400 font-mono">{dateLabel}</span>
-            {sessionLabel && (
-              <>
-                <span className="w-px h-5 bg-zinc-700 self-center hidden sm:block" />
-                <span className="text-sm font-medium text-zinc-300">{sessionLabel}</span>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* Filters */}
-        <PitchTypeFilter
-          allTypes={allTypes}
-          activePitchTypes={activePitchTypes}
-          onToggleType={(type) => {
-            setActivePitchTypes((prev) => {
-              const next = new Set(prev);
-              if (next.has(type)) next.delete(type);
-              else next.add(type);
-              return next;
-            });
-          }}
-          onClearTypes={() => setActivePitchTypes(new Set())}
-        />
-
-        {countsMissing && (
-          <div className="text-xs text-zinc-500">
-            Pitch counts not provided in this PDF export.
           </div>
         )}
+      />
 
+      <LeaderboardToolbar>
+        <div className="space-y-3">
+          <PitchTypeFilter
+            allTypes={allTypes}
+            activePitchTypes={activePitchTypes}
+            onToggleType={(type) => {
+              setActivePitchTypes((prev) => {
+                const next = new Set(prev);
+                if (next.has(type)) next.delete(type);
+                else next.add(type);
+                return next;
+              });
+            }}
+            onClearTypes={() => setActivePitchTypes(new Set())}
+          />
+          {countsMissing ? (
+            <div className="text-xs text-zinc-500">
+              Pitch counts were not included in this PDF export.
+            </div>
+          ) : null}
+        </div>
+      </LeaderboardToolbar>
+
+      <div className="mt-6 space-y-6">
         {viewMode === "pitch" ? (
           <>
-            {/* Per pitch type averages */}
             <KpiCards pitches={filteredPitches} />
 
-            {/* Charts row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Movement profile */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <MovementScatter pitches={filteredPitches} />
-
-              {/* Velo by pitch number */}
               <VeloByPitch pitches={filteredPitches} />
             </div>
 
-            {/* Spin by pitch number */}
             <SpinByPitch pitches={filteredPitches} />
-
-            {/* Pitch table */}
             <TrackmanPitchTable pitches={filteredPitches} />
           </>
         ) : (
           <>
             <PitchTypeTable pitchTypes={filteredPitchTypes} summary={summary} />
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-stretch">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_380px] items-stretch">
               <MovementScatterByType pitchTypes={filteredPitchTypes} hand={hand} />
               <PitchArsenalCards pitchTypes={filteredPitchTypes} />
             </div>
           </>
         )}
       </div>
-    </div>
+    </LeaderboardPageFrame>
   );
 }

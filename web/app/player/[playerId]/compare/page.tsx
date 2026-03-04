@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { Target } from "lucide-react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useMemo, useEffect, useState, useCallback } from "react";
 import { getPlayer } from "@/lib/dataIndex";
@@ -22,6 +24,14 @@ import ComparePitchTypeTable from "@/app/components/ComparePitchTypeTable";
 import CompareLaneTable from "@/app/components/CompareLaneTable";
 import StrikeZoneScatter from "@/app/components/StrikeZoneScatter";
 import LogoutButton from "@/app/components/LogoutButton";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
+import {
+  LeaderboardHero,
+  LeaderboardPageFrame,
+  LeaderboardPanel,
+  LeaderboardPill,
+  LeaderboardToolbar,
+} from "@/app/components/leaderboards/LeaderboardChrome";
 
 /* ------------------------------------------------------------------ */
 /*  Inner component (needs Suspense boundary for useSearchParams)      */
@@ -176,98 +186,110 @@ function CompareInner() {
   const isComparisonError = comparison && "error" in comparison;
 
   return (
-    <div className="max-w-[900px] mx-auto px-6 py-5">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between mb-4">
-        <a
-          href={`/player/${playerId}`}
-          className="text-sm text-zinc-400 hover:text-zinc-200 transition-smooth"
-        >
-          &larr; Dashboard
-        </a>
-        <LogoutButton />
-      </div>
+    <LeaderboardPageFrame maxWidth="max-w-6xl">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Players", href: "/players" },
+          { label: player.name, href: `/player/${playerId}` },
+          { label: "Compare" },
+        ]}
+      />
 
-      {/* Header */}
-      <header className="mb-4">
-        <div className="flex items-baseline justify-between border-b-2 border-zinc-600 pb-2">
-          <div>
-            <h1 className="text-xl font-extrabold tracking-tight leading-none">
-              {player.name}
-            </h1>
-            <p className="text-[12px] text-zinc-400 mt-1 leading-none">
-              Outing Comparison
-            </p>
+      <LeaderboardHero
+        tone="orange"
+        icon={Target}
+        eyebrow="Command Compare"
+        title={<>{player.name}</>}
+        description="Line two outings up side by side and compare miss shape, pitch-level execution, and lane breakdowns without changing the underlying report math."
+        meta={
+          <>
+            <LeaderboardPill tone="orange">Outing to outing</LeaderboardPill>
+            <LeaderboardPill tone="neutral">Same pitcher only</LeaderboardPill>
+          </>
+        }
+        side={
+          <div className="grid gap-3">
+            <Link
+              href={`/player/${playerId}`}
+              className="inline-flex items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
+            >
+              Back to Dashboard
+            </Link>
+            <LogoutButton className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 hover:border-zinc-700 hover:text-zinc-100" />
           </div>
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.15em]">
-            Compare
-          </div>
-        </div>
+        }
+      />
 
-        {/* Outlier toggle */}
-        <div className="flex items-center gap-2 mt-1.5 text-[9px] text-zinc-500">
-          <label className="inline-flex items-center gap-1 cursor-pointer select-none">
+      <LeaderboardToolbar>
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
+          <div className="grid gap-3 md:grid-cols-2">
+            <CompareControls
+              side="A"
+              selection={selectionA}
+              onChange={handleSelectionA}
+              availableOutings={player.outings}
+              playerId={playerId}
+            />
+            <CompareControls
+              side="B"
+              selection={selectionB}
+              onChange={handleSelectionB}
+              availableOutings={player.outings}
+              playerId={playerId}
+            />
+          </div>
+          <label className="inline-flex min-h-[3.75rem] items-center gap-3 rounded-3xl border border-zinc-800/80 bg-zinc-950/80 px-4 py-3 text-xs text-zinc-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
             <input
               type="checkbox"
               checked={excludeOutliers}
               onChange={toggleExcludeOutliers}
-              className="accent-zinc-400 w-3 h-3"
+              className="h-4 w-4 accent-orange-400"
             />
-            <span className="text-[9px] font-medium text-zinc-400">Exclude outliers (&gt;{OUTLIER_MISS_THRESHOLD_IN}&Prime;)</span>
+            <span className="font-semibold uppercase tracking-[0.18em] text-zinc-300">
+              Exclude outliers &gt;{OUTLIER_MISS_THRESHOLD_IN}&Prime;
+            </span>
           </label>
         </div>
-      </header>
+      </LeaderboardToolbar>
 
-      {/* Controls */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-        <CompareControls
-          side="A"
-          selection={selectionA}
-          onChange={handleSelectionA}
-          availableOutings={player.outings}
-          playerId={playerId}
-        />
-        <CompareControls
-          side="B"
-          selection={selectionB}
-          onChange={handleSelectionB}
-          availableOutings={player.outings}
-          playerId={playerId}
-        />
-      </div>
-
-      {/* Loading / Error states */}
       {(loadingA || loadingB) && (
-        <div className="text-center text-zinc-400 py-8">Loading pitch data...</div>
+        <div className="mt-6 rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-8 text-center text-zinc-400">
+          Loading pitch data...
+        </div>
       )}
       {errorA && (
-        <div className="text-center text-red-400 py-2 text-sm">Side A error: {errorA}</div>
+        <div className="mt-6 rounded-3xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+          Side A error: {errorA}
+        </div>
       )}
       {errorB && (
-        <div className="text-center text-red-400 py-2 text-sm">Side B error: {errorB}</div>
+        <div className="mt-4 rounded-3xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+          Side B error: {errorB}
+        </div>
       )}
 
-      {/* Missing selections */}
       {!loadingA && !loadingB && !errorA && !errorB && (
-        <>
+        <div className="mt-6 space-y-5">
           {!selectionA.outingId && (
-            <div className="text-center text-zinc-500 py-4 text-sm">Select outing for Side A</div>
+            <LeaderboardPanel className="p-5 text-sm text-zinc-500">
+              Select an outing for Side A to begin the comparison.
+            </LeaderboardPanel>
           )}
           {!selectionB.outingId && (
-            <div className="text-center text-zinc-500 py-4 text-sm">Select outing for Side B</div>
+            <LeaderboardPanel className="p-5 text-sm text-zinc-500">
+              Select an outing for Side B to begin the comparison.
+            </LeaderboardPanel>
           )}
 
-          {/* Pitcher hand mismatch */}
           {isComparisonError && (
-            <div className="text-center text-amber-400 py-4 text-sm border border-amber-500/30 rounded bg-amber-950/20 mb-4">
-              Cannot compare: Different pitcher handedness detected
+            <div className="rounded-3xl border border-amber-500/25 bg-amber-500/10 p-4 text-sm text-amber-300">
+              Cannot compare these outings because the detected pitcher handedness does not match.
             </div>
           )}
 
-          {/* Comparison results */}
           {comparison && !isComparisonError && (
-            <div className="space-y-4">
-              {/* KPI Row */}
+            <div className="space-y-5">
               <Section title="Key Metrics">
                 <CompareKpiRow
                   reportA={comparison.reportA}
@@ -276,11 +298,10 @@ function CompareInner() {
                 />
               </Section>
 
-              {/* Strike Zone Scatters */}
               <Section title="Miss Scatter">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
                   <div>
-                    <div className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
                       Side A: {outingA?.label ?? ""}
                     </div>
                     <StrikeZoneScatter
@@ -291,7 +312,7 @@ function CompareInner() {
                     />
                   </div>
                   <div>
-                    <div className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
                       Side B: {outingB?.label ?? ""}
                     </div>
                     <StrikeZoneScatter
@@ -304,12 +325,10 @@ function CompareInner() {
                 </div>
               </Section>
 
-              {/* Pitch Type Table */}
               <Section title="Pitch Type Comparison">
                 <ComparePitchTypeTable comparison={comparison.pitchTypeComparison} />
               </Section>
 
-              {/* Lane Table */}
               <Section title="Lane Breakdown">
                 <CompareLaneTable
                   comparison={comparison.laneComparison}
@@ -319,16 +338,19 @@ function CompareInner() {
             </div>
           )}
 
-          {/* One side has data, other doesn't */}
           {!comparison && reportA && !reportB && selectionB.outingId && !loadingB && (
-            <div className="text-center text-zinc-500 py-4 text-sm">No pitches found for Side B.</div>
+            <LeaderboardPanel className="p-5 text-sm text-zinc-500">
+              No pitches were found for Side B.
+            </LeaderboardPanel>
           )}
           {!comparison && !reportA && reportB && selectionA.outingId && !loadingA && (
-            <div className="text-center text-zinc-500 py-4 text-sm">No pitches found for Side A.</div>
+            <LeaderboardPanel className="p-5 text-sm text-zinc-500">
+              No pitches were found for Side A.
+            </LeaderboardPanel>
           )}
-        </>
+        </div>
       )}
-    </div>
+    </LeaderboardPageFrame>
   );
 }
 
@@ -338,12 +360,12 @@ function CompareInner() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section>
-      <h2 className="text-[9px] font-bold uppercase tracking-[0.1em] text-zinc-500 mb-1 border-b border-zinc-800 pb-[3px]">
+    <LeaderboardPanel className="p-5 sm:p-6">
+      <h2 className="border-b border-zinc-800/80 pb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
         {title}
       </h2>
-      {children}
-    </section>
+      <div className="mt-4">{children}</div>
+    </LeaderboardPanel>
   );
 }
 
@@ -353,16 +375,16 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function ComparePage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center h-screen text-zinc-400">
-            Loading...
+    <Suspense
+      fallback={
+        <LeaderboardPageFrame maxWidth="max-w-6xl">
+          <div className="flex min-h-[60vh] items-center justify-center text-zinc-400">
+            Loading comparison...
           </div>
-        }
-      >
-        <CompareInner />
-      </Suspense>
-    </div>
+        </LeaderboardPageFrame>
+      }
+    >
+      <CompareInner />
+    </Suspense>
   );
 }

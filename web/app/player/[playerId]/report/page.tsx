@@ -1,5 +1,6 @@
 "use client";
 
+import { Target } from "lucide-react";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useEffect, useState } from "react";
 import { getPlayer } from "@/lib/dataIndex";
@@ -17,6 +18,11 @@ import { hDirectionLabel } from "@/lib/handedness";
 import { handBadgeClassesCompact, parseHand } from "@/lib/handBadge";
 import { useAllPitchData } from "@/app/hooks/useAllPitchData";
 import LogoutButton from "@/app/components/LogoutButton";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
+import {
+  LeaderboardHero,
+  LeaderboardPill,
+} from "@/app/components/leaderboards/LeaderboardChrome";
 import { computeCommandPlus } from "@/lib/commandPlus";
 import { globalCommandPlusBaselines, loadAllOutingData } from "@/lib/leaderboards/load";
 import { seasonFromDateId } from "@/lib/season";
@@ -132,31 +138,60 @@ function ReportInner() {
       : `/player/${playerId}`;
 
   return (
-    <div className="report-root max-w-[740px] mx-auto px-6 py-5 print:max-w-none print:px-0 print:py-0">
-      {/* ---- Toolbar (screen only) ---- */}
-      <div className="flex items-center justify-between mb-4 print:hidden">
-        <a
-          href={backHref}
-          className="text-sm text-zinc-400 hover:text-zinc-200 transition-smooth"
-        >
-          &larr; Dashboard
-        </a>
-        <div className="flex items-center gap-2">
-          <a
-            href={`/player/${playerId}/compare${outingId ? `?outingA=${outingId}` : ""}`}
-            className="px-4 py-1.5 text-sm rounded-md bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-smooth font-medium"
-          >
-            Compare
-          </a>
-          <button
-            type="button"
-            onClick={handlePrint}
-            className="px-4 py-1.5 text-sm rounded-md bg-zinc-700 text-zinc-100 hover:bg-zinc-600 transition-smooth font-medium"
-          >
-            Export PDF
-          </button>
-        </div>
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.10),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(251,191,36,0.08),_transparent_24%),linear-gradient(180deg,_#09090b_0%,_#111827_56%,_#09090b_100%)] text-zinc-100 print:bg-white print:text-black">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 print:hidden">
+        <Breadcrumbs
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Players", href: "/players" },
+            { label: report.meta.playerName, href: `/player/${playerId}` },
+            { label: "Command Report" },
+          ]}
+        />
+        <LeaderboardHero
+          tone="orange"
+          icon={Target}
+          eyebrow="Command Report"
+          title={<>{report.meta.playerName}</>}
+          description="Printable command breakdown for a single outing or full rolling scope. This keeps the report math intact while bringing the screen view into the current site shell."
+          meta={(
+            <>
+              <LeaderboardPill tone="orange">
+                {report.meta.scope === "overall" ? "Overall" : "Single outing"}
+              </LeaderboardPill>
+              <LeaderboardPill tone="neutral">{report.meta.totalPitches} pitches</LeaderboardPill>
+            </>
+          )}
+          side={(
+            <div className="grid gap-3">
+              <a
+                href={backHref}
+                className="inline-flex items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
+              >
+                Back to Dashboard
+              </a>
+              <a
+                href={`/player/${playerId}/compare${outingId ? `?outingA=${outingId}` : ""}`}
+                className="inline-flex items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-orange-400/25 hover:text-zinc-100"
+              >
+                Compare
+              </a>
+              <button
+                type="button"
+                onClick={handlePrint}
+                className="inline-flex items-center justify-center rounded-2xl border border-orange-500/25 bg-orange-500/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-orange-200 transition-smooth hover:border-orange-400/40 hover:bg-orange-500/14"
+              >
+                Export PDF
+              </button>
+              <LogoutButton className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 hover:border-zinc-700 hover:text-zinc-100" />
+            </div>
+          )}
+        />
       </div>
+
+      <div className="mx-auto max-w-6xl px-4 pb-8 sm:px-6 print:max-w-none print:px-0 print:pb-0">
+        <div className="rounded-[2rem] border border-zinc-800/80 bg-zinc-950/68 p-5 shadow-[0_24px_64px_rgba(0,0,0,0.28)] print:rounded-none print:border-0 print:bg-white print:p-0 print:shadow-none">
+          <div className="report-root max-w-[740px] mx-auto px-6 py-5 print:max-w-none print:px-0 print:py-0">
 
       {/* ============================================================ */}
       {/*  HEADER                                                       */}
@@ -174,9 +209,6 @@ function ReportInner() {
           <div className="text-right shrink-0 pl-4 flex items-start gap-3">
             <div className="text-[11px] font-extrabold uppercase tracking-[0.15em] print:text-black">
               Command Report
-            </div>
-            <div className="print:hidden">
-              <LogoutButton />
             </div>
           </div>
         </div>
@@ -292,10 +324,13 @@ function ReportInner() {
 
       {/* ---- Footer ---- */}
       <footer className="pt-1.5 border-t border-zinc-700 print:border-zinc-400 text-[8px] text-zinc-500 print:text-zinc-500 flex justify-between">
-        <span>Pitch Tracker &mdash; Command Report</span>
+        <span>Babson Baseball Pitching Portal &mdash; Command Report</span>
         <span>{generatedDate}</span>
       </footer>
-    </div>
+          </div>
+        </div>
+      </div>
+    </main>
   );
 }
 

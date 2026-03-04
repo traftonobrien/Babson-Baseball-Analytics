@@ -46,53 +46,57 @@ export default function KpiCards({ pitches }: { pitches: TrackmanPitch[] }) {
   const totals = useMemo(() => deriveMetrics(pitches), [pitches]);
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
+    <div className="overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/65 shadow-[0_24px_64px_rgba(0,0,0,0.28)]">
+      <div className="border-b border-zinc-800/80 px-5 py-4">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+          Session Averages
+        </div>
+      </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
-          <thead className="bg-zinc-800/50 text-zinc-400 uppercase">
+          <thead className="bg-zinc-900/70 text-zinc-400 uppercase">
             <tr>
-              <th className="px-3 py-2 text-left">Pitch</th>
-              <th className="px-3 py-2 text-right">#</th>
-              <th className="px-3 py-2 text-right">Avg Velo</th>
-              <th className="px-3 py-2 text-right">Max Velo</th>
-              <th className="px-3 py-2 text-right">Avg Spin</th>
-              <th className="px-3 py-2 text-right">Avg IVB</th>
-              <th className="px-3 py-2 text-right">Avg HB</th>
-              <th className="px-3 py-2 text-right">Avg Ext</th>
+              <th className="px-5 py-3 text-left text-[10px] font-semibold tracking-[0.18em]">Pitch</th>
+              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">#</th>
+              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg Velo</th>
+              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Max Velo</th>
+              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg Spin</th>
+              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg IVB</th>
+              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg HB</th>
+              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg Ext</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-zinc-800/60">
             {rows.map(({ type, kpis }) => (
               <tr
                 key={type}
-                className="border-t border-zinc-800/50"
+                className="transition-smooth hover:bg-zinc-900/35"
               >
-                <td className="px-3 py-1.5">
+                <td className="px-5 py-3">
                   <span
                     className="inline-block w-2 h-2 rounded-full mr-1.5"
                     style={{ backgroundColor: pitchColor(type) }}
                   />
                   {pitchName(type)}
                 </td>
-                <td className="px-3 py-1.5 text-right font-mono">{kpis.count}</td>
-                <td className="px-3 py-1.5 text-right font-mono">{fmt(kpis.avgVelo)}</td>
-                <td className="px-3 py-1.5 text-right font-mono">{fmt(kpis.maxVelo)}</td>
-                <td className="px-3 py-1.5 text-right font-mono">{fmt(kpis.avgSpin, 0)}</td>
-                <td className="px-3 py-1.5 text-right font-mono">{fmt(kpis.avgIvb)}</td>
-                <td className="px-3 py-1.5 text-right font-mono">{fmt(kpis.avgHb)}</td>
-                <td className="px-3 py-1.5 text-right font-mono">{fmt(kpis.avgExtension)}</td>
+                <td className="px-5 py-3 text-right font-mono">{kpis.count}</td>
+                <td className="px-5 py-3 text-right font-mono">{fmt(kpis.avgVelo)}</td>
+                <td className="px-5 py-3 text-right font-mono">{fmt(kpis.maxVelo)}</td>
+                <td className="px-5 py-3 text-right font-mono">{fmt(kpis.avgSpin, 0)}</td>
+                <td className="px-5 py-3 text-right font-mono">{fmt(kpis.avgIvb)}</td>
+                <td className="px-5 py-3 text-right font-mono">{fmt(kpis.avgHb)}</td>
+                <td className="px-5 py-3 text-right font-mono">{fmt(kpis.avgExtension)}</td>
               </tr>
             ))}
-            {/* Totals row */}
-            <tr className="border-t border-zinc-700 bg-zinc-800/30 font-medium">
-              <td className="px-3 py-1.5 text-zinc-400">Total</td>
-              <td className="px-3 py-1.5 text-right font-mono">{totals.count}</td>
-              <td className="px-3 py-1.5 text-right font-mono">{fmt(totals.avgVelo)}</td>
-              <td className="px-3 py-1.5 text-right font-mono">{fmt(totals.maxVelo)}</td>
-              <td className="px-3 py-1.5 text-right font-mono">{fmt(totals.avgSpin, 0)}</td>
-              <td className="px-3 py-1.5 text-right font-mono">{fmt(totals.avgIvb)}</td>
-              <td className="px-3 py-1.5 text-right font-mono">{fmt(totals.avgHb)}</td>
-              <td className="px-3 py-1.5 text-right font-mono">{fmt(totals.avgExtension)}</td>
+            <tr className="bg-zinc-900/45 font-medium text-zinc-300">
+              <td className="px-5 py-3 text-zinc-400">Total</td>
+              <td className="px-5 py-3 text-right font-mono">{totals.count}</td>
+              <td className="px-5 py-3 text-right font-mono">{fmt(totals.avgVelo)}</td>
+              <td className="px-5 py-3 text-right font-mono">{fmt(totals.maxVelo)}</td>
+              <td className="px-5 py-3 text-right font-mono">{fmt(totals.avgSpin, 0)}</td>
+              <td className="px-5 py-3 text-right font-mono">{fmt(totals.avgIvb)}</td>
+              <td className="px-5 py-3 text-right font-mono">{fmt(totals.avgHb)}</td>
+              <td className="px-5 py-3 text-right font-mono">{fmt(totals.avgExtension)}</td>
             </tr>
           </tbody>
         </table>

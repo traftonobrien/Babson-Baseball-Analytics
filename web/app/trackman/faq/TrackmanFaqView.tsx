@@ -26,8 +26,8 @@ export default function TrackmanFaqView() {
       <DictionarySection
         tone="emerald"
         icon={Activity}
-        title="Pitch Modeling (Stuff+)"
-        description="We use machine learning models to grade every pitch by its flight traits. These metrics are scaled so 100 is NCAA average."
+        title="Model Context"
+        description="Trackman feeds the pitch-quality side of the stack. Stuff+ lives here directly, and Pitching+ uses those pitch-quality grades as one half of the full blend."
       >
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <DictionaryCard>
@@ -41,18 +41,21 @@ export default function TrackmanFaqView() {
           </DictionaryCard>
 
           <DictionaryCard>
-            <h3 className="text-lg font-bold text-sky-400">Location+</h3>
+            <h3 className="text-lg font-bold text-amber-400">Pitching+</h3>
             <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-              Grades command only. It ignores the raw stuff and looks at the
-              final plate location relative to pitch type and hitter handedness.
+              The overall live pitcher grade on this site. It blends Trackman
+              Stuff+ with live Command+, then rolls only the overlapping pitch
+              types into one team-centered number.
             </p>
           </DictionaryCard>
 
           <DictionaryCard>
-            <h3 className="text-lg font-bold text-amber-400">Pitching+</h3>
+            <h3 className="text-lg font-bold text-sky-400">Trackman&apos;s Role</h3>
             <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-              The overall blend of Stuff and Location. It estimates the expected
-              run value of throwing that exact pitch in that exact location.
+              This page captures the raw shape and flight traits. It does not
+              measure command by itself, but it does provide the entire
+              pitch-quality input that powers Stuff+ and the Stuff side of
+              Pitching+.
             </p>
           </DictionaryCard>
         </div>
@@ -76,7 +79,7 @@ export default function TrackmanFaqView() {
             <ul className="mt-4 list-disc space-y-1.5 pl-5 text-sm text-zinc-400">
               <li>
                 <strong className="text-zinc-300">Fastballs:</strong> Positive
-                IVB creates a “rising” look and stays above the barrel.
+                IVB creates a "rising" look and stays above the barrel.
               </li>
               <li>
                 <strong className="text-zinc-300">Breaking Balls:</strong>{" "}
