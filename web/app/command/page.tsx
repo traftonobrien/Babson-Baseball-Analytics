@@ -146,18 +146,25 @@ function SeriesDropdown({
   options,
   selected,
   onChange,
+  className,
 }: {
   options: SeriesOption[];
   selected: string;
   onChange: (value: string) => void;
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [renderMenu, setRenderMenu] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [revealedCount, setRevealedCount] = useState(0);
   const [menuPosition, setMenuPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const menuOptions: SeriesOption[] = useMemo(
+    () => [{ value: "all", label: "All opponents", accent: "#f97316" }, ...options],
+    [options],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -176,14 +183,31 @@ function SeriesDropdown({
   useEffect(() => {
     if (open) {
       setRenderMenu(true);
-      const frame = window.requestAnimationFrame(() => setMenuVisible(true));
-      return () => window.cancelAnimationFrame(frame);
+      setMenuVisible(false);
+      setRevealedCount(0);
+
+      const timers: number[] = [];
+      const frame = window.requestAnimationFrame(() => {
+        setMenuVisible(true);
+        menuOptions.forEach((_, index) => {
+          const timer = window.setTimeout(() => {
+            setRevealedCount((current) => Math.max(current, index + 1));
+          }, 55 + index * 28);
+          timers.push(timer);
+        });
+      });
+
+      return () => {
+        window.cancelAnimationFrame(frame);
+        timers.forEach((timer) => window.clearTimeout(timer));
+      };
     }
 
     setMenuVisible(false);
+    setRevealedCount(0);
     const timeout = window.setTimeout(() => setRenderMenu(false), 180);
     return () => window.clearTimeout(timeout);
-  }, [open]);
+  }, [open, menuOptions]);
 
   useEffect(() => {
     if (!renderMenu) return;
@@ -210,10 +234,6 @@ function SeriesDropdown({
   }, [renderMenu]);
 
   const selectedOption = options.find((option) => option.value === selected);
-  const menuOptions: SeriesOption[] = useMemo(
-    () => [{ value: "all", label: "All series", accent: "#f97316" }, ...options],
-    [options],
-  );
 
   const menu =
     renderMenu && menuPosition
@@ -237,6 +257,7 @@ function SeriesDropdown({
               {menuOptions.map((option, index) => {
                 const isSelected = selected === option.value;
                 const isDefault = option.value === "all";
+                const isRevealed = menuVisible && index < revealedCount;
 
                 return (
                   <button
@@ -257,9 +278,10 @@ function SeriesDropdown({
                         ? `linear-gradient(135deg, ${hexToRgba(option.accent, 0.18)}, rgba(9,9,11,0.88))`
                         : `linear-gradient(135deg, ${hexToRgba(option.accent, isDefault ? 0.1 : 0.08)}, rgba(9,9,11,0.9))`,
                       boxShadow: isSelected ? `0 0 14px ${hexToRgba(option.accent, 0.08)}` : undefined,
-                      opacity: menuVisible ? 1 : 0,
-                      transform: menuVisible ? "translateY(0)" : "translateY(-6px)",
-                      transitionDelay: menuVisible ? `${index * 18}ms` : "0ms",
+                      opacity: isRevealed ? 1 : 0,
+                      transform: isRevealed ? "translateY(0)" : "translateY(-10px)",
+                      transitionDuration: "260ms",
+                      transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
                     }}
                   >
                     {!isDefault ? (
@@ -282,16 +304,20 @@ function SeriesDropdown({
       : null;
 
   return (
-    <div ref={rootRef} className="min-w-[13rem] space-y-2">
+    <div ref={rootRef} className={`w-full min-w-0 space-y-2 ${className ?? ""}`}>
       <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-        Series
+        Opponent
       </div>
-      <div>
-        <button
+      <div className="inline-flex w-full rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
+        <Button
           ref={triggerRef}
           type="button"
+          size="sm"
+          variant="ghost"
+          neon
+          tone="orange"
           onClick={() => setOpen((current) => !current)}
-          className="flex w-full min-w-0 items-center justify-between gap-3 rounded-2xl border border-zinc-800/80 bg-zinc-950/80 px-3.5 py-3 text-left transition-all duration-300 hover:border-orange-400/20"
+          className={`${leaderboardFilterButtonBaseClassName} ${leaderboardFilterButtonOrangeActiveClassName} flex w-full min-w-0 items-center justify-between gap-2.5 text-left`}
         >
           <span className="flex min-w-0 items-center gap-2.5">
             {selectedOption ? (
@@ -308,13 +334,13 @@ function SeriesDropdown({
                 </span>
               </>
             ) : (
-              <span className="text-sm font-semibold text-zinc-100">All series</span>
+              <span className="text-sm font-semibold text-zinc-100">All opponents</span>
             )}
           </span>
           <ChevronDown
             className={`h-4 w-4 shrink-0 text-zinc-500 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
           />
-        </button>
+        </Button>
       </div>
       {menu}
     </div>
@@ -326,14 +352,16 @@ function HubSegment<T extends string>({
   options,
   selected,
   onChange,
+  className,
 }: {
   label: string;
   options: { value: T; display: string }[];
   selected: T;
   onChange: (value: T) => void;
+  className?: string;
 }) {
   return (
-    <div className="space-y-2">
+    <div className={`space-y-2 ${className ?? ""}`}>
       <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
         {label}
       </div>
@@ -404,7 +432,7 @@ export default function CommandPage() {
   const [seriesFilter, setSeriesFilter] = useState<string>("all");
   const { slug: selectedSlug } = useSelectedPlayer();
   const selectedPlayerId = selectedSlug ? getCanonicalPlayerId(selectedSlug) : null;
-  const { getRowTransitionProps, runWithTransition, transitionKey } = useSmoothFilterTransition();
+  const { getRowTransitionProps, runWithTransition, transitionKey } = useSmoothFilterTransition(450);
 
   const allSeasons = useMemo(() => {
     const values = new Set<number>();
@@ -576,54 +604,52 @@ export default function CommandPage() {
       />
 
       <LeaderboardToolbar className="relative z-30 overflow-visible">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-          <div className="flex flex-wrap gap-4">
+        <div className="flex flex-col gap-4 md:flex-row md:flex-nowrap md:items-end">
+          <HubSegment
+            label="View"
+            className="w-full min-w-0 md:w-[18rem] md:flex-none"
+            options={[
+              { value: "outings", display: "Latest Outings" },
+              { value: "players", display: "By Player" },
+            ]}
+            selected={viewMode}
+            onChange={(value) =>
+              runWithTransition(() => {
+                setViewMode(value);
+                setExpanded(null);
+              })
+            }
+          />
+          {allSeasons.length > 1 ? (
             <HubSegment
-              label="View"
+              label="Season"
+              className="w-full min-w-0 md:ml-4 md:w-[22rem] md:flex-none"
               options={[
-                { value: "outings", display: "Latest Outings" },
-                { value: "players", display: "By Player" },
+                ...allSeasons.map((year) => ({ value: String(year), display: String(year) })),
+                { value: "all", display: "All" },
               ]}
-              selected={viewMode}
+              selected={seasonFilter}
               onChange={(value) =>
                 runWithTransition(() => {
-                  setViewMode(value);
+                  setSeasonFilter(value);
                   setExpanded(null);
                 })
               }
             />
-            {allSeasons.length > 1 ? (
-              <HubSegment
-                label="Season"
-                options={[
-                  ...allSeasons.map((year) => ({ value: String(year), display: String(year) })),
-                  { value: "all", display: "All" },
-                ]}
-                selected={seasonFilter}
-                onChange={(value) =>
-                  runWithTransition(() => {
-                    setSeasonFilter(value);
-                    setExpanded(null);
-                  })
-                }
-              />
-            ) : null}
-          </div>
-
-          <div className="w-full xl:max-w-sm">
-            {availableSeries.length > 0 ? (
-              <SeriesDropdown
-                options={availableSeries}
-                selected={resolvedSeriesFilter}
-                onChange={(value) =>
-                  runWithTransition(() => {
-                    setSeriesFilter(value);
-                    setExpanded(null);
-                  })
-                }
-              />
-            ) : null}
-          </div>
+          ) : null}
+          {availableSeries.length > 0 ? (
+            <SeriesDropdown
+              className="w-full min-w-0 md:ml-4 md:flex-1"
+              options={availableSeries}
+              selected={resolvedSeriesFilter}
+              onChange={(value) =>
+                runWithTransition(() => {
+                  setSeriesFilter(value);
+                  setExpanded(null);
+                })
+              }
+            />
+          ) : null}
         </div>
       </LeaderboardToolbar>
 
