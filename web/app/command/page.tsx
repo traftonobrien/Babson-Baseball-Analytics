@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import {
   BookOpen,
   ChevronDown,
   ChevronRight,
-  Search,
   Target,
 } from "lucide-react";
 import Breadcrumbs from "../components/Breadcrumbs";
@@ -134,24 +134,6 @@ function OutingContextPill({
   );
 }
 
-function HandednessPill({ throws }: { throws: "R" | "L" }) {
-  const accent = throws === "L" ? "#38bdf8" : "#f97316";
-  const label = throws === "L" ? "LHP" : "RHP";
-
-  return (
-    <span
-      className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-      style={{
-        borderColor: hexToRgba(accent, 0.28),
-        background: `linear-gradient(135deg, ${hexToRgba(accent, 0.14)}, rgba(9,9,11,0.84))`,
-        boxShadow: `0 0 14px ${hexToRgba(accent, 0.07)}`,
-      }}
-    >
-      {label}
-    </span>
-  );
-}
-
 function PlayerNamePill({ name }: { name: string }) {
   return (
     <span className="inline-flex min-w-0 max-w-full items-center rounded-full border border-zinc-700/80 bg-[linear-gradient(135deg,rgba(39,39,42,0.72),rgba(9,9,11,0.88))] px-3 py-1 text-xs font-semibold tracking-[0.01em] text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
@@ -170,13 +152,19 @@ function SeriesDropdown({
   onChange: (value: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [renderMenu, setRenderMenu] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (!open) return;
 
     function handlePointerDown(event: MouseEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (!rootRef.current?.contains(target) && !menuRef.current?.contains(target)) {
         setOpen(false);
       }
     }
@@ -185,18 +173,125 @@ function SeriesDropdown({
     return () => window.removeEventListener("mousedown", handlePointerDown);
   }, [open]);
 
+  useEffect(() => {
+    if (open) {
+      setRenderMenu(true);
+      const frame = window.requestAnimationFrame(() => setMenuVisible(true));
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    setMenuVisible(false);
+    const timeout = window.setTimeout(() => setRenderMenu(false), 180);
+    return () => window.clearTimeout(timeout);
+  }, [open]);
+
+  useEffect(() => {
+    if (!renderMenu) return;
+
+    function updatePosition() {
+      const rect = triggerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      setMenuPosition({
+        top: rect.bottom + 8,
+        left: rect.left,
+        width: rect.width,
+      });
+    }
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [renderMenu]);
+
   const selectedOption = options.find((option) => option.value === selected);
+  const menuOptions: SeriesOption[] = useMemo(
+    () => [{ value: "all", label: "All series", accent: "#f97316" }, ...options],
+    [options],
+  );
+
+  const menu =
+    renderMenu && menuPosition
+      ? createPortal(
+          <div
+            ref={menuRef}
+            className={`fixed z-[120] origin-top overflow-hidden rounded-2xl border border-zinc-700/80 bg-zinc-950 shadow-[0_18px_40px_rgba(0,0,0,0.5)] transition-all duration-220 ease-out ${
+              menuVisible
+                ? "pointer-events-auto translate-y-0 scale-y-100 opacity-100"
+                : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
+            }`}
+            style={{
+              top: menuPosition.top,
+              left: menuPosition.left,
+              width: menuPosition.width,
+              maxHeight: menuVisible ? "20rem" : "0rem",
+              padding: menuVisible ? "0.625rem" : "0 0.625rem",
+            }}
+          >
+            <div className="space-y-1.5">
+              {menuOptions.map((option, index) => {
+                const isSelected = selected === option.value;
+                const isDefault = option.value === "all";
+
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => {
+                      onChange(option.value);
+                      setOpen(false);
+                    }}
+                    className={`flex w-full items-center gap-2.5 rounded-full border px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.16em] transition-all duration-200 ease-out ${
+                      isSelected
+                        ? "text-zinc-100"
+                        : "text-zinc-300 hover:translate-x-0.5 hover:text-zinc-100"
+                    }`}
+                    style={{
+                      borderColor: isSelected ? hexToRgba(option.accent, 0.36) : "rgba(39,39,42,0.8)",
+                      background: isSelected
+                        ? `linear-gradient(135deg, ${hexToRgba(option.accent, 0.18)}, rgba(9,9,11,0.88))`
+                        : `linear-gradient(135deg, ${hexToRgba(option.accent, isDefault ? 0.1 : 0.08)}, rgba(9,9,11,0.9))`,
+                      boxShadow: isSelected ? `0 0 14px ${hexToRgba(option.accent, 0.08)}` : undefined,
+                      opacity: menuVisible ? 1 : 0,
+                      transform: menuVisible ? "translateY(0)" : "translateY(-6px)",
+                      transitionDelay: menuVisible ? `${index * 18}ms` : "0ms",
+                    }}
+                  >
+                    {!isDefault ? (
+                      <span
+                        className="h-2.5 w-2.5 shrink-0 rounded-full"
+                        style={{
+                          backgroundColor: option.accent,
+                          boxShadow: `0 0 10px ${hexToRgba(option.accent, 0.35)}`,
+                        }}
+                      />
+                    ) : null}
+                    <span className="truncate">{option.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>,
+          document.body,
+        )
+      : null;
 
   return (
-    <div ref={rootRef} className="space-y-2">
+    <div ref={rootRef} className="min-w-[13rem] space-y-2">
       <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
         Series
       </div>
-      <div className="relative">
+      <div>
         <button
+          ref={triggerRef}
           type="button"
           onClick={() => setOpen((current) => !current)}
-          className="flex min-w-[16rem] items-center justify-between gap-3 rounded-2xl border border-zinc-800/80 bg-zinc-950/80 px-3.5 py-3 text-left transition-all duration-300 hover:border-orange-400/20"
+          className="flex w-full min-w-0 items-center justify-between gap-3 rounded-2xl border border-zinc-800/80 bg-zinc-950/80 px-3.5 py-3 text-left transition-all duration-300 hover:border-orange-400/20"
         >
           <span className="flex min-w-0 items-center gap-2.5">
             {selectedOption ? (
@@ -220,50 +315,8 @@ function SeriesDropdown({
             className={`h-4 w-4 shrink-0 text-zinc-500 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
           />
         </button>
-
-        {open ? (
-          <div className="absolute left-0 top-full z-20 mt-2 w-full rounded-2xl border border-zinc-800/80 bg-zinc-950/95 p-2 shadow-[0_18px_40px_rgba(0,0,0,0.38)] backdrop-blur">
-            <button
-              type="button"
-              onClick={() => {
-                onChange("all");
-                setOpen(false);
-              }}
-              className={`flex w-full items-center rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all duration-200 ${
-                selected === "all" ? "bg-zinc-900 text-zinc-100" : "text-zinc-400 hover:bg-zinc-900/70 hover:text-zinc-100"
-              }`}
-            >
-              All series
-            </button>
-            <div className="mt-1 space-y-1">
-              {options.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => {
-                    onChange(option.value);
-                    setOpen(false);
-                  }}
-                  className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm transition-all duration-200 ${
-                    selected === option.value
-                      ? "bg-zinc-900 text-zinc-100"
-                      : "text-zinc-400 hover:bg-zinc-900/70 hover:text-zinc-100"
-                  }`}
-                >
-                  <span
-                    className="h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{
-                      backgroundColor: option.accent,
-                      boxShadow: `0 0 10px ${hexToRgba(option.accent, 0.35)}`,
-                    }}
-                  />
-                  <span className="truncate font-medium">{option.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : null}
       </div>
+      {menu}
     </div>
   );
 }
@@ -349,11 +402,9 @@ export default function CommandPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [seasonFilter, setSeasonFilter] = useState<string>("2026");
   const [seriesFilter, setSeriesFilter] = useState<string>("all");
-  const [search, setSearch] = useState("");
   const { slug: selectedSlug } = useSelectedPlayer();
   const selectedPlayerId = selectedSlug ? getCanonicalPlayerId(selectedSlug) : null;
   const { getRowTransitionProps, runWithTransition, transitionKey } = useSmoothFilterTransition();
-  const searchQuery = search.trim().toLowerCase();
 
   const allSeasons = useMemo(() => {
     const values = new Set<number>();
@@ -453,12 +504,8 @@ export default function CommandPage() {
     }
 
     rows.sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
-    if (!searchQuery) return rows;
-    return rows.filter((row) =>
-      row.player.name.toLowerCase().includes(searchQuery) ||
-      row.player.id.toLowerCase().includes(searchQuery),
-    );
-  }, [filterOutings, searchQuery]);
+    return rows;
+  }, [filterOutings]);
 
   const pitcherData = useMemo(() => {
     const data = players
@@ -489,12 +536,8 @@ export default function CommandPage() {
       }
     }
 
-    if (!searchQuery) return data;
-    return data.filter((entry) =>
-      entry.player.name.toLowerCase().includes(searchQuery) ||
-      entry.player.id.toLowerCase().includes(searchQuery),
-    );
-  }, [filterOutings, searchQuery, selectedPlayerId]);
+    return data;
+  }, [filterOutings, selectedPlayerId]);
 
   const seasonLabel = seasonFilter === "all" ? "All seasons" : `${seasonFilter} season`;
 
@@ -532,7 +575,7 @@ export default function CommandPage() {
         }
       />
 
-      <LeaderboardToolbar>
+      <LeaderboardToolbar className="relative z-30 overflow-visible">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div className="flex flex-wrap gap-4">
             <HubSegment
@@ -565,6 +608,9 @@ export default function CommandPage() {
                 }
               />
             ) : null}
+          </div>
+
+          <div className="w-full xl:max-w-sm">
             {availableSeries.length > 0 ? (
               <SeriesDropdown
                 options={availableSeries}
@@ -577,25 +623,6 @@ export default function CommandPage() {
                 }
               />
             ) : null}
-          </div>
-
-          <div className="w-full xl:max-w-sm">
-            <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-              Search
-            </div>
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-              <input
-                type="text"
-                value={search}
-                onChange={(event) => {
-                  setSearch(event.target.value);
-                  setExpanded(null);
-                }}
-                placeholder="Player or player ID"
-                className="w-full rounded-2xl border border-zinc-800 bg-zinc-950/80 py-3 pl-11 pr-4 text-sm text-zinc-100 placeholder-zinc-600 outline-none transition-all duration-300 focus:border-orange-400/35"
-              />
-            </div>
           </div>
         </div>
       </LeaderboardToolbar>
@@ -645,7 +672,6 @@ export default function CommandPage() {
                       <div className="flex min-w-0 flex-wrap items-center gap-2.5 sm:gap-3">
                         <OutingContextPill date={row.date} opponent={row.outing.opponent} />
                         <PlayerNamePill name={row.player.name} />
-                        <HandednessPill throws={row.player.throws} />
                         {isMe ? (
                           <span className="text-[10px] font-semibold uppercase tracking-wider rounded-md border border-emerald-500/30 bg-emerald-500/15 px-1.5 py-0.5 text-emerald-300">
                             You
@@ -692,7 +718,6 @@ export default function CommandPage() {
                       <div className="min-w-0 space-y-2">
                         <div className="flex min-w-0 flex-wrap items-center gap-2.5">
                           <PlayerNamePill name={item.player.name} />
-                          <HandednessPill throws={item.player.throws} />
                           {isMe ? (
                             <span className="text-[10px] font-semibold uppercase tracking-wider rounded-md border border-emerald-500/30 bg-emerald-500/15 px-1.5 py-0.5 text-emerald-300">
                               You
