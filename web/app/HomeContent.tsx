@@ -387,7 +387,7 @@ export default function HomeContent() {
             eyebrow="Map"
             title="Leaderboards"
             description="See every leaderboard in one place, then jump directly into the ranking you need."
-            details={["Command", "Trackman", "Pitching+", "Stats"]}
+            details={["Command", "Trackman", "Pitching+", "Statistics"]}
           />
           <HomeLinkCard
             href="/dictionary"

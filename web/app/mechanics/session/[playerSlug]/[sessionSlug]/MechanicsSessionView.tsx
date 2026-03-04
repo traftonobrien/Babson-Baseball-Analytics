@@ -132,7 +132,7 @@ export default function MechanicsSessionView({
               className="inline-flex items-center gap-1.5 rounded-full border border-zinc-800/80 bg-zinc-950/85 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-violet-500/25 hover:text-zinc-100"
             >
               <BookOpen className="h-3.5 w-3.5 text-violet-300" />
-              Dictionary
+              Metrics Dictionary
             </Link>
           </div>
         </div>
