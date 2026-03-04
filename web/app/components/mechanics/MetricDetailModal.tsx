@@ -14,7 +14,7 @@ interface MetricDetailModalProps {
 
 function DataRow({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-zinc-800/60">
+    <div className="flex items-center justify-between border-b border-zinc-800/60 py-2">
       <span className="text-xs text-zinc-500">{label}</span>
       <span className="text-sm font-mono font-semibold" style={{ color: color ?? "#e4e4e7" }}>
         {value}
@@ -58,28 +58,27 @@ export function MetricDetailModal({ metricKey, metric, onClose }: MetricDetailMo
 
   return (
     <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.15 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4"
-        onClick={onClose}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="metric-modal-title"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="metric-modal-title"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.96 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className="w-full max-w-sm rounded-[1.5rem] border border-zinc-700/60 bg-[linear-gradient(180deg,rgba(24,24,27,0.96),rgba(9,9,11,0.98))] shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
       >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.96 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-          className="bg-zinc-900 border border-zinc-700/60 rounded-xl w-full max-w-sm shadow-2xl"
-          onClick={(e) => e.stopPropagation()}
-        >
-        {/* Header */}
-        <div className="flex items-start justify-between px-5 py-4 border-b border-zinc-800">
+        <div className="flex items-start justify-between border-b border-zinc-800 px-5 py-4">
           <div>
-            <h3 id="metric-modal-title" className="font-semibold text-zinc-100 text-sm">{metricLabel(metricKey)}</h3>
+            <h3 id="metric-modal-title" className="text-sm font-semibold text-zinc-100">{metricLabel(metricKey)}</h3>
             <p className="text-[9px] text-zinc-600 mt-0.5 font-mono">{metricKey}</p>
           </div>
           <div className="flex items-center gap-3 ml-4 shrink-0">
@@ -91,7 +90,7 @@ export function MetricDetailModal({ metricKey, metric, onClose }: MetricDetailMo
             </span>
             <button
               onClick={onClose}
-              className="text-zinc-600 hover:text-zinc-300 transition-smooth p-1"
+              className="p-1 text-zinc-600 transition-smooth hover:text-zinc-300"
               aria-label="Close metric details"
             >
               <X className="w-4 h-4" />
@@ -99,7 +98,7 @@ export function MetricDetailModal({ metricKey, metric, onClose }: MetricDetailMo
           </div>
         </div>
 
-        <div className="px-5 py-4 space-y-0">
+        <div className="space-y-0 px-5 py-4">
           {metric.status !== "ok" && (
             <p className="text-xs text-amber-400 mb-3">
               Status: <span className="font-mono">{metric.status}</span>
@@ -122,7 +121,6 @@ export function MetricDetailModal({ metricKey, metric, onClose }: MetricDetailMo
             />
           )}
 
-          {/* Confidence row with spark bar */}
           <div className="flex items-center py-2 border-b border-zinc-800/60">
             <span className="text-xs text-zinc-500">Confidence</span>
             <div className="flex-1 flex items-center justify-end gap-1">
@@ -147,15 +145,14 @@ export function MetricDetailModal({ metricKey, metric, onClose }: MetricDetailMo
             }
           />
 
-          {/* Flags */}
           {metric.reasons && metric.reasons.length > 0 && (
             <div className="mt-3">
-              <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2">Flags</p>
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Flags</p>
               <div className="flex flex-wrap gap-1.5">
                 {metric.reasons.map((r) => (
                   <span
                     key={r}
-                    className="text-[9px] uppercase tracking-wider bg-zinc-800 text-amber-400 border border-amber-900/50 rounded px-2 py-0.5"
+                    className="rounded-full border border-amber-900/50 bg-zinc-800 px-2 py-0.5 text-[9px] uppercase tracking-[0.16em] text-amber-400"
                   >
                     {r.replace(/_/g, " ")}
                   </span>
@@ -164,10 +161,9 @@ export function MetricDetailModal({ metricKey, metric, onClose }: MetricDetailMo
             </div>
           )}
 
-          {/* Low confidence warning */}
           {metric.low_confidence && (
-            <div className="mt-3 bg-amber-950/40 border border-amber-800/30 rounded-lg p-3">
-              <p className="text-[10px] uppercase tracking-wider text-amber-500 mb-1">
+            <div className="mt-3 rounded-2xl border border-amber-800/30 bg-amber-950/40 p-3">
+              <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-500">
                 Low Confidence
               </p>
               <p className="text-xs text-amber-200/70 leading-relaxed">

@@ -35,13 +35,13 @@ export function MechanicsTopInsights({ notes, onMetricClick }: MechanicsTopInsig
   if (top.length === 0) return null;
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-4">
-      <div className="flex items-baseline gap-3 mb-3">
-        <h2 className="text-[10px] uppercase tracking-wider text-zinc-500">Top Issues</h2>
-        <span className="text-[9px] text-zinc-700">Sorted by impact · Click for breakdown</span>
+    <div className="mx-auto max-w-5xl px-4 py-5 sm:px-6">
+      <div className="mb-4">
+        <h2 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Top Issues</h2>
+        <p className="mt-1 text-xs text-zinc-600">Sorted by impact. Click any card for the full breakdown.</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {top.map(({ key, metric }) => {
           const eff = metric.score_eff ?? metric.score;
           const color = scoreColor(eff);
@@ -50,14 +50,12 @@ export function MechanicsTopInsights({ notes, onMetricClick }: MechanicsTopInsig
             <button
               key={key}
               onClick={() => onMetricClick(key)}
-              className={`text-left p-4 rounded-xl border cursor-pointer transition-smooth hover:brightness-110 hover:scale-[1.01] ${insightBorder(eff)} ${insightBg(eff)}`}
+              className={`text-left p-4 rounded-[1.5rem] border cursor-pointer transition-smooth hover:-translate-y-0.5 hover:brightness-110 ${insightBorder(eff)} ${insightBg(eff)} shadow-[0_16px_40px_rgba(0,0,0,0.18)]`}
             >
-              {/* Metric name */}
-              <p className="text-[10px] uppercase tracking-wider text-zinc-400 mb-3">
+              <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
                 {metricLabel(key)}
               </p>
 
-              {/* Score + pass/fail */}
               <div className="flex items-end justify-between mb-3">
                 <span
                   className="text-3xl font-black font-mono tabular-nums leading-none"
@@ -73,17 +71,16 @@ export function MechanicsTopInsights({ notes, onMetricClick }: MechanicsTopInsig
                 </span>
               </div>
 
-              {/* Confidence badge + reason tags */}
               <div className="flex flex-wrap items-center gap-1.5">
                 <span
-                  className={`inline-flex items-center text-[9px] uppercase tracking-wider border rounded px-1.5 py-0.5 ${confBadge(metric.confidence)}`}
+                  className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] ${confBadge(metric.confidence)}`}
                 >
                   {confidenceLabel(metric.confidence)} conf
                 </span>
                 {metric.reasons?.map((r) => (
                   <span
                     key={r}
-                    className="text-[8px] uppercase tracking-wider bg-zinc-900 text-amber-500/70 border border-zinc-700/60 rounded px-1.5 py-0.5"
+                    className="rounded-full border border-zinc-700/60 bg-zinc-900 px-2 py-0.5 text-[8px] uppercase tracking-[0.16em] text-amber-500/70"
                   >
                     {r.replace(/_/g, " ")}
                   </span>

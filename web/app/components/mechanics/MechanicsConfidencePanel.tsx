@@ -19,13 +19,16 @@ export function MechanicsConfidencePanel({ notes }: MechanicsConfidencePanelProp
   const majorityLow = isMajorityLowConfidence(notes);
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-6">
-      <h2 className="text-[10px] uppercase tracking-wider text-zinc-500 mb-4">
-        Mechanics Context
-      </h2>
+    <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
+      <div className="mb-4">
+        <h2 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+          Mechanics Context
+        </h2>
+        <p className="mt-1 text-xs text-zinc-600">Camera angle and confidence notes that affect how aggressively to coach this session.</p>
+      </div>
 
       {majorityLow && (
-        <div className="mb-4 flex items-center gap-2.5 bg-amber-950/30 border border-amber-800/40 rounded-lg px-4 py-2.5">
+        <div className="mb-4 flex items-center gap-2.5 rounded-2xl border border-amber-800/40 bg-amber-950/30 px-4 py-3">
           <span className="text-amber-500 text-xs shrink-0">△</span>
           <p className="text-xs text-amber-300/80">
             Most metrics have low confidence this session. Cross-reference with film.
@@ -33,11 +36,10 @@ export function MechanicsConfidencePanel({ notes }: MechanicsConfidencePanelProp
         </div>
       )}
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Camera View + Pipeline Metadata */}
-        <div className="space-y-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="space-y-3 rounded-[1.5rem] border border-zinc-800/80 bg-zinc-950/72 p-5 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
           <div>
-            <p className="text-[9px] uppercase tracking-wider text-zinc-600 mb-2">Camera View</p>
+            <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-600">Camera View</p>
             <p className="text-sm font-medium text-zinc-300 capitalize">
               {limitations.camera_view.replace(/_/g, " ")}
             </p>
@@ -71,10 +73,9 @@ export function MechanicsConfidencePanel({ notes }: MechanicsConfidencePanelProp
           )}
         </div>
 
-        {/* Not Measurable */}
         {limitations.not_measurable.length > 0 && (
-          <div>
-            <p className="text-[9px] uppercase tracking-wider text-zinc-600 mb-2">
+          <div className="rounded-[1.5rem] border border-zinc-800/80 bg-zinc-950/72 p-5 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
+            <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-600">
               Not Measurable
             </p>
             <div className="space-y-1.5">
@@ -88,10 +89,9 @@ export function MechanicsConfidencePanel({ notes }: MechanicsConfidencePanelProp
           </div>
         )}
 
-        {/* Low Confidence */}
         {limitations.low_confidence_metrics.length > 0 && (
-          <div>
-            <p className="text-[9px] uppercase tracking-wider text-zinc-600 mb-2">
+          <div className="rounded-[1.5rem] border border-zinc-800/80 bg-zinc-950/72 p-5 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
+            <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-600">
               Low Confidence
             </p>
             <div className="space-y-1.5">

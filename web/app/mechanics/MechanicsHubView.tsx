@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Search, ArrowRight, BookOpen } from "lucide-react";
+import { Search, ArrowRight, BookOpen, GaugeCircle, Video } from "lucide-react";
 import { scoreColor, confidenceLabel } from "@/lib/mechanics/labels";
 import {
   getLatestSession,
@@ -16,6 +16,22 @@ import {
 } from "@/lib/mechanics/hub";
 import { getCanonicalName } from "@/lib/canonicalPlayers";
 import { handBadgeClassesCompact } from "@/lib/handBadge";
+import Breadcrumbs from "../components/Breadcrumbs";
+import {
+  Button,
+  leaderboardFilterButtonBaseClassName,
+  leaderboardFilterButtonGhostInactiveClassName,
+} from "@/components/ui/neon-button";
+import {
+  LeaderboardHero,
+  LeaderboardPageFrame,
+  LeaderboardPanel,
+  LeaderboardPill,
+  LeaderboardToolbar,
+} from "@/app/components/leaderboards/LeaderboardChrome";
+
+const mechanicsActiveFilterClassName =
+  "border-violet-400/45 bg-violet-500/16 text-violet-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_0_1px_rgba(167,139,250,0.16),0_0_20px_rgba(139,92,246,0.12)]";
 
 // ---------------------------------------------------------------------------
 // PlayerCard
@@ -44,81 +60,101 @@ function PlayerCard({ player }: { player: HubPlayerEntry }) {
           router.push(latestHref);
         }
       }}
-      className="group relative bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden flex flex-col hover:border-violet-500/50 hover:scale-[1.02] hover:shadow-lg hover:shadow-violet-500/10 transition-smooth duration-300 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+      className="group relative flex h-full flex-col overflow-hidden rounded-[1.7rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(17,24,39,0.7),rgba(9,9,11,0.9))] shadow-[0_22px_56px_rgba(0,0,0,0.22)] transition-all duration-300 cursor-pointer hover:border-violet-500/35 hover:-translate-y-0.5 hover:shadow-[0_28px_64px_rgba(0,0,0,0.28)] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50"
     >
-      {/* Hover affordance */}
-      <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-medium text-violet-400">
-        <span>View</span>
-        <ArrowRight className="w-3 h-3" />
+      <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent" />
+      <div className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-2xl border border-zinc-800/80 bg-zinc-950/88 text-zinc-500 transition-all duration-300 group-hover:border-violet-500/30 group-hover:text-violet-300">
+        <ArrowRight className="h-3.5 w-3.5" />
       </div>
-      {/* Phase thumbnail strip — silently hidden on 404 */}
+
       {!thumbError && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <div className="relative h-24 bg-zinc-950 overflow-hidden">
+        <div className="relative h-28 overflow-hidden bg-zinc-950">
           <img
             src={thumbSrc}
             alt={`${getCanonicalName(player.name ?? player.slug)} release`}
             className="w-full h-full object-cover object-top"
             onError={() => setThumbError(true)}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-zinc-950 to-transparent" />
         </div>
       )}
 
-      <div className="p-4 flex-1 flex flex-col gap-3">
-        {/* Identity row */}
-        <div className="flex items-start justify-between gap-2">
+      <div className="flex flex-1 flex-col gap-4 p-5">
+        <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="font-semibold text-zinc-100 text-sm leading-tight truncate">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+              Latest Session
+            </p>
+            <p className="mt-2 truncate text-base font-semibold leading-tight text-zinc-100">
               {getCanonicalName(player.name ?? player.slug)}
             </p>
-            <p className="text-[10px] text-zinc-600 mt-0.5 flex items-center gap-1.5">
+            <div className="mt-2 flex items-center gap-1.5">
               <span
                 className={`text-[9px] px-1.5 py-0.5 rounded font-normal ${handBadgeClassesCompact(latest.hand)}`}
               >
                 {latest.hand === "R" ? "RHP" : "LHP"}
               </span>
-            </p>
+            </div>
           </div>
-        </div>
-
-        {/* Score + stats */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-baseline gap-0.5 shrink-0">
-            <span
-              className="text-3xl font-black font-mono tabular-nums leading-none"
+          <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/85 px-3 py-1.5 text-right">
+            <div
+              className="text-2xl font-black font-mono leading-none tabular-nums"
               style={{ color }}
             >
               {latest.efficiency_score.toFixed(1)}
-            </span>
-            <span className="text-xs text-zinc-600 font-mono">/10</span>
+            </div>
+            <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-600">
+              /10
+            </div>
           </div>
+        </div>
 
-          <div className="flex flex-col gap-0.5 text-[10px]">
-            {confPct !== null && (
-              <span className="text-zinc-500">
-                {confPct}% conf&thinsp;
-                <span className="text-zinc-600">({confidenceLabel(latest.avg_confidence ?? null)})</span>
-              </span>
-            )}
-            <span>
-              <span className="text-green-500">{latest.pass_count}P</span>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-2xl border border-zinc-800/70 bg-zinc-950/80 px-3 py-2.5">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              Confidence
+            </div>
+            <div className="mt-1 text-sm font-semibold text-zinc-200">
+              {confPct !== null ? `${confPct}%` : "—"}
+            </div>
+            {confPct !== null ? (
+              <div className="mt-1 text-[10px] text-zinc-600">
+                {confidenceLabel(latest.avg_confidence ?? null)}
+              </div>
+            ) : null}
+          </div>
+          <div className="rounded-2xl border border-zinc-800/70 bg-zinc-950/80 px-3 py-2.5">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              Flags
+            </div>
+            <div className="mt-1 text-[11px] font-semibold">
+              <span className="text-green-500">{latest.pass_count} Pass</span>
               <span className="text-zinc-700"> · </span>
-              <span className="text-red-500">{latest.fail_count}F</span>
-              {latest.low_confidence_count != null && latest.low_confidence_count > 0 && (
-                <span className="text-zinc-600"> · {latest.low_confidence_count} low</span>
-              )}
-            </span>
+              <span className="text-red-500">{latest.fail_count} Fail</span>
+            </div>
+            {latest.low_confidence_count != null && latest.low_confidence_count > 0 ? (
+              <div className="mt-1 text-[10px] text-zinc-600">
+                {latest.low_confidence_count} low-confidence
+              </div>
+            ) : null}
           </div>
         </div>
 
-        {/* Latest session label */}
-        <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-[9px] text-zinc-600 shrink-0">{latest.date}</span>
-          <span className="text-[9px] text-zinc-700">·</span>
-          <span className="text-[9px] text-zinc-500 truncate">{latest.label}</span>
+        <div className="mt-auto flex items-center justify-between gap-3 rounded-2xl border border-zinc-800/70 bg-zinc-950/80 px-3.5 py-3">
+          <div className="min-w-0">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              {latest.date}
+            </div>
+            <div className="mt-1 truncate text-[11px] text-zinc-400">
+              {latest.label}
+            </div>
+          </div>
+          <div className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-300">
+            Open
+            <ArrowRight className="h-3.5 w-3.5" />
+          </div>
         </div>
-
       </div>
     </div>
   );
@@ -130,97 +166,131 @@ function PlayerCard({ player }: { player: HubPlayerEntry }) {
 export default function MechanicsHubView({ index }: { index: MechanicsIndex }) {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("date_desc");
-  const [filterLowConf, setFilterLowConf] = useState(false);
 
   const totalSessions = getTotalSessions(index.players);
 
   const displayed = useMemo(() => {
-    const filtered = filterPlayers(index.players, search, filterLowConf);
+    const filtered = filterPlayers(index.players, search, false);
     return sortPlayers(filtered, sortKey);
-  }, [index.players, search, sortKey, filterLowConf]);
+  }, [index.players, search, sortKey]);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-20">
-      {/* Header */}
-      <div className="border-b border-zinc-800/50 px-6 py-8 relative">
-        <div className="max-w-6xl mx-auto flex justify-between items-start">
-          <div>
-            <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">
-              Analysis Portal
-            </p>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-50 mb-1">Mechanics Hub</h1>
-            <p className="text-sm text-zinc-500 mb-4">
-              Video-first mechanics snapshots and session history
-            </p>
-            <div className="flex items-center gap-3 text-[11px] text-zinc-600">
-              <span>
-                {index.players.length} pitcher{index.players.length !== 1 ? "s" : ""}
-              </span>
-              <span>·</span>
-              <span>
-                {totalSessions} session{totalSessions !== 1 ? "s" : ""}
-              </span>
+    <LeaderboardPageFrame maxWidth="max-w-6xl">
+      <div className="flex flex-col gap-6 pb-10">
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Mechanics Hub" }]} />
+
+        <LeaderboardHero
+          tone="violet"
+          icon={GaugeCircle}
+          eyebrow="Mechanics Hub"
+          title="Mechanics Hub"
+          description="Video-first mechanics sessions, quick reads, and review-ready clips in one place."
+          meta={
+            <>
+              <LeaderboardPill tone="violet">
+                {index.players.length} Pitcher{index.players.length !== 1 ? "s" : ""}
+              </LeaderboardPill>
+              <LeaderboardPill tone="neutral">
+                {totalSessions} Session{totalSessions !== 1 ? "s" : ""}
+              </LeaderboardPill>
+            </>
+          }
+          side={
+            <>
+              <Link href="/mechanics/faq" className="block">
+                <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-smooth hover:border-violet-500/25">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-violet-500/20 bg-violet-500/10 text-violet-300">
+                      <BookOpen className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                        Guide
+                      </div>
+                      <div className="mt-1 text-sm font-semibold text-zinc-100">
+                        Metrics Dictionary
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+              <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-violet-500/20 bg-violet-500/10 text-violet-300">
+                    <Video className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                      Browse
+                    </div>
+                    <div className="mt-1 text-sm font-semibold text-zinc-100">
+                      Latest sessions first
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          }
+        />
+
+        <LeaderboardToolbar>
+          <div className="grid gap-4 xl:grid-cols-[minmax(14rem,1fr)_auto] xl:items-end">
+            <div className="space-y-2">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+                Search
+              </div>
+              <label className="relative block">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-600" />
+                <input
+                  type="text"
+                  placeholder="Search by name..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full rounded-2xl border border-zinc-800/80 bg-zinc-950/75 py-2.5 pl-9 pr-3 text-sm text-zinc-200 placeholder-zinc-600 outline-none transition-smooth focus:border-violet-500/30"
+                />
+              </label>
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+                Sort
+              </div>
+              <div className="inline-flex flex-wrap gap-1.5 rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
+                {([
+                  { value: "date_desc", label: "Latest" },
+                  { value: "score_desc", label: "Score" },
+                  { value: "conf_desc", label: "Confidence" },
+                  { value: "name_asc", label: "A-Z" },
+                ] as const).map((option) => (
+                  <Button
+                    key={option.value}
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    neon
+                    tone="zinc"
+                    onClick={() => setSortKey(option.value)}
+                    className={`${leaderboardFilterButtonBaseClassName} min-w-[5rem] ${
+                      sortKey === option.value
+                        ? mechanicsActiveFilterClassName
+                        : leaderboardFilterButtonGhostInactiveClassName
+                    }`}
+                  >
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
+        </LeaderboardToolbar>
 
-          <Link
-            href="/mechanics/faq"
-            className="hidden sm:flex items-center gap-2 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-violet-500/50 hover:bg-zinc-800 text-sm text-zinc-300 hover:text-white transition-all shadow-sm group"
-          >
-            <BookOpen className="w-4 h-4 text-violet-400 group-hover:text-violet-300" />
-            Metrics Documentation
-          </Link>
-        </div>
-      </div>
-
-      {/* Controls */}
-      <div className="px-6 py-4 border-b border-zinc-800/30 bg-zinc-950/80">
-        <div className="max-w-6xl mx-auto flex flex-wrap items-center gap-3">
-          {/* Search */}
-          <div className="relative flex-1 min-w-48">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-600 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search by name…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-9 pr-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 transition-smooth"
-            />
-          </div>
-
-          {/* Sort */}
-          <select
-            value={sortKey}
-            onChange={(e) => setSortKey(e.target.value as SortKey)}
-            className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-300 focus:outline-none focus:border-zinc-600 cursor-pointer transition-smooth"
-          >
-            <option value="date_desc">Latest first</option>
-            <option value="score_desc">Highest score</option>
-            <option value="conf_desc">Highest confidence</option>
-            <option value="name_asc">Name A→Z</option>
-          </select>
-
-          {/* Low confidence filter toggle */}
-          <button
-            onClick={() => setFilterLowConf(!filterLowConf)}
-            className={`text-[11px] px-3 py-2 rounded-lg border transition-smooth whitespace-nowrap ${filterLowConf
-              ? "bg-amber-950/50 border-amber-800/60 text-amber-400"
-              : "bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-700"
-              }`}
-          >
-            Low confidence only
-          </button>
-        </div>
-      </div>
-
-      {/* Player grid */}
-      <div className="max-w-6xl mx-auto px-6 py-6">
+        <LeaderboardPanel className="p-5 sm:p-6">
         {displayed.length === 0 ? (
-          <div className="text-center py-16 px-4">
+          <div className="px-4 py-16 text-center">
             {index.players.length === 0 ? (
               <>
-                <p className="text-zinc-500 text-sm mb-2">No mechanics sessions yet</p>
-                <p className="text-zinc-600 text-xs max-w-md mx-auto">
+                <p className="mb-2 text-sm text-zinc-500">No mechanics sessions yet</p>
+                <p className="mx-auto max-w-md text-xs text-zinc-600">
                   Mechanics data is added when video analysis sessions are processed. Check back after new sessions are run.
                 </p>
               </>
@@ -231,13 +301,14 @@ export default function MechanicsHubView({ index }: { index: MechanicsIndex }) {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {displayed.map((player) => (
               <PlayerCard key={player.slug} player={player} />
             ))}
           </div>
         )}
+        </LeaderboardPanel>
       </div>
-    </div>
+    </LeaderboardPageFrame>
   );
 }

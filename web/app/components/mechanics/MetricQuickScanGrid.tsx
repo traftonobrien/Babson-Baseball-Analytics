@@ -18,27 +18,23 @@ function MetricTile({ metricKey, metric, onClick }: MetricTileProps) {
   return (
     <button
       onClick={onClick}
-      className={`relative text-left p-4 rounded-xl border cursor-pointer transition-smooth hover:brightness-110 hover:scale-[1.01] ${bg}`}
+      className={`relative text-left p-4 rounded-[1.45rem] border cursor-pointer transition-smooth hover:-translate-y-0.5 hover:brightness-110 ${bg} shadow-[0_16px_40px_rgba(0,0,0,0.18)]`}
     >
-      {/* Low confidence badge */}
       {metric.low_confidence && (
-        <span className="absolute top-2.5 right-2.5 text-[8px] uppercase tracking-wider bg-amber-900/60 text-amber-400 border border-amber-800/40 rounded px-1.5 py-0.5">
+        <span className="absolute top-2.5 right-2.5 rounded-full border border-amber-800/40 bg-amber-900/60 px-2 py-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-amber-400">
           Low conf
         </span>
       )}
-      {/* Manual review badge */}
       {metric.manual_review_recommended && !metric.low_confidence && (
-        <span className="absolute top-2.5 right-2.5 text-[8px] uppercase tracking-wider bg-zinc-800 text-zinc-500 border border-zinc-700 rounded px-1.5 py-0.5">
+        <span className="absolute top-2.5 right-2.5 rounded-full border border-zinc-700 bg-zinc-800 px-2 py-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
           Review
         </span>
       )}
 
-      {/* Metric name */}
-      <p className="text-[10px] uppercase tracking-wider text-zinc-400 mb-2 pr-12">
+      <p className="mb-2 pr-12 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
         {metricLabel(metricKey)}
       </p>
 
-      {/* Score */}
       {isInsufficient ? (
         <p className="text-2xl font-black font-mono text-zinc-600">—</p>
       ) : (
@@ -72,13 +68,12 @@ function MetricTile({ metricKey, metric, onClick }: MetricTileProps) {
         )}
       </div>
 
-      {/* Reason tags */}
       {metric.reasons && metric.reasons.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1">
           {metric.reasons.map((r) => (
             <span
               key={r}
-              className="text-[8px] uppercase tracking-wider bg-zinc-900/60 text-amber-500/60 border border-zinc-700/50 rounded px-1.5 py-px"
+              className="rounded-full border border-zinc-700/50 bg-zinc-900/60 px-1.5 py-px text-[8px] uppercase tracking-[0.16em] text-amber-500/60"
             >
               {r.replace(/_/g, " ")}
             </span>
@@ -103,9 +98,12 @@ export function MetricQuickScanGrid({
   const keys = notes.official_metrics.filter((k) => notes.metrics[k]);
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-6">
-      <h2 className="text-[10px] uppercase tracking-wider text-zinc-500 mb-4">{heading}</h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+    <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
+      <div className="mb-4">
+        <h2 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">{heading}</h2>
+        <p className="mt-1 text-xs text-zinc-600">Click any tile for the full metric breakdown and confidence context.</p>
+      </div>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         {keys.map((key) => (
           <MetricTile
             key={key}
@@ -115,7 +113,7 @@ export function MetricQuickScanGrid({
           />
         ))}
       </div>
-      <p className="text-[9px] text-zinc-700 mt-3">
+      <p className="mt-3 text-[9px] text-zinc-700">
         Click any tile for full breakdown · Score = score_eff (confidence-weighted)
       </p>
     </div>

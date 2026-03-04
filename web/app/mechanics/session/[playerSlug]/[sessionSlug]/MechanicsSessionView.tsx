@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AnimatePresence } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, BookOpen } from "lucide-react";
 import type { NotesJson } from "@/lib/mechanics/types";
 import { MechanicsHero } from "@/app/components/mechanics/MechanicsHero";
 import { MechanicsTopInsights } from "@/app/components/mechanics/MechanicsTopInsights";
@@ -14,6 +14,7 @@ import { MetricQuickScanGrid } from "@/app/components/mechanics/MetricQuickScanG
 import { MetricDetailModal } from "@/app/components/mechanics/MetricDetailModal";
 import { MechanicsConfidencePanel } from "@/app/components/mechanics/MechanicsConfidencePanel";
 import { getCanonicalName } from "@/lib/canonicalPlayers";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 interface MechanicsSessionViewProps {
   playerSlug: string;
@@ -26,7 +27,7 @@ function formatSessionLabel(slug: string): string {
 
 function Divider() {
   return (
-    <div className="max-w-5xl mx-auto px-6">
+    <div className="mx-auto max-w-5xl px-4 sm:px-6">
       <div className="border-t border-zinc-800/50" />
     </div>
   );
@@ -68,16 +69,16 @@ export default function MechanicsSessionView({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <p className="text-zinc-500 text-sm">Loading mechanics data…</p>
+      <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(139,92,246,0.12),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.08),_transparent_26%),linear-gradient(180deg,_#09090b_0%,_#111827_56%,_#09090b_100%)]">
+        <p className="text-sm text-zinc-500">Loading mechanics data…</p>
       </div>
     );
   }
 
   if (error || !notes) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center flex-col gap-4">
-        <p className="text-zinc-400 text-sm">{error ?? "No data found."}</p>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[radial-gradient(circle_at_top_left,_rgba(139,92,246,0.12),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.08),_transparent_26%),linear-gradient(180deg,_#09090b_0%,_#111827_56%,_#09090b_100%)]">
+        <p className="text-sm text-zinc-400">{error ?? "No data found."}</p>
         <Link href="/" className="text-xs text-zinc-600 hover:text-zinc-400">
           ← Home
         </Link>
@@ -98,34 +99,53 @@ export default function MechanicsSessionView({
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-20">
-      {/* Sticky hero + breadcrumb */}
-      <div className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur-sm border-b border-zinc-800/40">
-        {/* Breadcrumb */}
-        <div className="px-6 py-2.5">
-          <div className="max-w-5xl mx-auto flex items-center gap-2 text-xs">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(139,92,246,0.12),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.08),_transparent_26%),linear-gradient(180deg,_#09090b_0%,_#111827_56%,_#09090b_100%)] text-zinc-100 pb-20">
+      <div className="sticky top-0 z-10 border-b border-zinc-800/40 bg-zinc-950/92 backdrop-blur-md">
+        <div className="mx-auto max-w-6xl px-4 pt-3 sm:px-6">
+          <div className="hidden sm:block">
+            <Breadcrumbs
+              items={[
+                { label: "Home", href: "/" },
+                { label: "Mechanics Hub", href: "/mechanics" },
+                { label: playerName },
+                { label: sessionLabel },
+              ]}
+            />
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Link
+                href={backHref}
+                className="inline-flex items-center gap-1.5 rounded-full border border-zinc-800/80 bg-zinc-950/85 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-violet-500/25 hover:text-zinc-100"
+                aria-label={fromProfile ? "Back to profile" : "Back to Mechanics Hub"}
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                {fromProfile ? "Profile" : "Mechanics Hub"}
+              </Link>
+              <span className="hidden text-zinc-700 sm:inline">/</span>
+              <span className="hidden truncate text-xs text-zinc-500 sm:inline">{playerName}</span>
+            </div>
+
             <Link
-              href={backHref}
-              className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-300 transition-smooth w-fit"
-              aria-label={fromProfile ? "Back to profile" : "Back to Mechanics Hub"}
+              href="/mechanics/faq"
+              className="inline-flex items-center gap-1.5 rounded-full border border-zinc-800/80 bg-zinc-950/85 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-violet-500/25 hover:text-zinc-100"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              {fromProfile ? "Profile" : "Mechanics Hub"}
+              <BookOpen className="h-3.5 w-3.5 text-violet-300" />
+              Dictionary
             </Link>
-            <span className="text-zinc-600">·</span>
-            <span className="text-zinc-400 truncate">{playerName}</span>
           </div>
         </div>
-        {/* Hero */}
+
         <MechanicsHero notes={notes} playerName={playerName} sessionLabel={sessionLabel} />
-        {/* Section anchors */}
-        <div className="px-6 py-2 border-t border-zinc-800/40 overflow-x-auto">
-          <div className="max-w-5xl mx-auto flex flex-wrap gap-2">
+
+        <div className="mx-auto max-w-5xl px-4 pb-3 sm:px-6">
+          <div className="flex flex-wrap gap-1.5 rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
             {sectionLinks.map(({ id, label }) => (
               <a
                 key={id}
                 href={`#${id}`}
-                className="text-[10px] text-zinc-500 hover:text-violet-400 transition-smooth whitespace-nowrap px-2 py-1 rounded hover:bg-zinc-800/50"
+                className="whitespace-nowrap rounded-full border border-transparent px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500 transition-smooth hover:border-violet-500/20 hover:bg-violet-500/10 hover:text-violet-200"
               >
                 {label}
               </a>
@@ -134,29 +154,25 @@ export default function MechanicsSessionView({
         </div>
       </div>
 
-      {/* Top Issues */}
-      <section id="top-issues" className="scroll-mt-4">
+      <section id="top-issues" className="scroll-mt-40">
         <MechanicsTopInsights notes={notes} onMetricClick={setSelectedMetric} />
       </section>
 
       <Divider />
 
-      {/* Film Room */}
-      <section id="film-room" className="scroll-mt-4">
+      <section id="film-room" className="scroll-mt-40">
         <MechanicsFilmRoom notes={notes} basePath={basePath} />
       </section>
 
       <Divider />
 
-      {/* Phase Breakdown */}
-      <section id="phase-breakdown" className="scroll-mt-4">
+      <section id="phase-breakdown" className="scroll-mt-40">
         <PhaseInsightPanels notes={notes} basePath={basePath} onMetricClick={setSelectedMetric} />
       </section>
 
       <Divider />
 
-      {/* All Metrics deep dive */}
-      <section id="all-metrics" className="scroll-mt-4">
+      <section id="all-metrics" className="scroll-mt-40">
         <MetricQuickScanGrid
           notes={notes}
           onMetricClick={setSelectedMetric}
@@ -166,21 +182,19 @@ export default function MechanicsSessionView({
 
       <Divider />
 
-      {/* Mechanics Context (confidence) */}
-      <section id="context" className="scroll-mt-4">
+      <section id="context" className="scroll-mt-40">
         <MechanicsConfidencePanel notes={notes} />
       </section>
 
-      {/* Metric Detail Modal */}
       <AnimatePresence>
-        {selectedMetric && modalMetric && (
+        {selectedMetric && modalMetric ? (
           <MetricDetailModal
             key={selectedMetric}
             metricKey={selectedMetric}
             metric={modalMetric}
             onClose={() => setSelectedMetric(null)}
           />
-        )}
+        ) : null}
       </AnimatePresence>
     </div>
   );

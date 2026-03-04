@@ -58,79 +58,79 @@ export function MechanicsFilmRoom({ notes, basePath }: MechanicsFilmRoomProps) {
   const videoUrl = `${basePath}/slowmo_review.mp4`;
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-6">
-      <h2 className="text-[10px] uppercase tracking-wider text-zinc-500 mb-5">Phase Frames</h2>
+    <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
+      <div className="mb-5">
+        <h2 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Film Room</h2>
+        <p className="mt-1 text-xs text-zinc-600">Flip through the key frames and open the full slow-motion clip when needed.</p>
+      </div>
 
-      {/* Large frame viewer */}
-      <div
-        className="relative w-full bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800 cursor-zoom-in lg:min-h-[420px]"
-        style={{ aspectRatio: "16/9" }}
-        onClick={() => setLightboxOpen(true)}
-      >
-        <Image
-          key={activeImg}
-          src={activeImg}
-          alt={phaseLabel(activePhase)}
-          fill
-          className="object-contain"
-          sizes="(max-width: 1024px) 100vw, 896px"
-          priority
-        />
+      <div className="overflow-hidden rounded-[1.8rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(17,24,39,0.64),rgba(9,9,11,0.88))] p-4 shadow-[0_20px_56px_rgba(0,0,0,0.22)]">
+        <div
+          className="relative w-full cursor-zoom-in overflow-hidden rounded-[1.4rem] border border-zinc-800/80 bg-zinc-950 lg:min-h-[420px]"
+          style={{ aspectRatio: "16/9" }}
+          onClick={() => setLightboxOpen(true)}
+        >
+          <Image
+            key={activeImg}
+            src={activeImg}
+            alt={phaseLabel(activePhase)}
+            fill
+            className="object-contain"
+            sizes="(max-width: 1024px) 100vw, 896px"
+            priority
+          />
 
-        {/* Bottom label */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-4 py-3 flex items-end justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-wider text-zinc-200 font-medium">
-              {phaseLabel(activePhase)}
-            </p>
-            {activeTime != null && (
-              <p className="text-[10px] font-mono text-zinc-500">{activeTime.toFixed(2)}s</p>
-            )}
+          <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between bg-gradient-to-t from-black/80 to-transparent px-4 py-3">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-zinc-200">
+                {phaseLabel(activePhase)}
+              </p>
+              {activeTime != null && (
+                <p className="text-[10px] font-mono text-zinc-500">{activeTime.toFixed(2)}s</p>
+              )}
+            </div>
+            <span className="text-[9px] uppercase tracking-wider text-zinc-600">
+              Click to zoom · ← → to change phase
+            </span>
           </div>
-          <span className="text-[9px] uppercase tracking-wider text-zinc-600">
-            Click to zoom · ← → to change phase
-          </span>
+        </div>
+
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap gap-2">
+            {availablePhases.map((pk) => {
+              const isActive = activePhase === pk;
+              return (
+                <button
+                  key={pk}
+                  onClick={() => setActivePhase(pk)}
+                  className={[
+                    "rounded-full border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] transition-all",
+                    isActive
+                      ? "border-violet-400/30 bg-violet-500/14 text-violet-200 shadow-[0_0_20px_rgba(139,92,246,0.12)]"
+                      : "border-zinc-800/80 bg-zinc-950/75 text-zinc-500 hover:border-zinc-700 hover:text-zinc-200",
+                  ].join(" ")}
+                >
+                  {phaseLabel(pk)}
+                  <span className="ml-1.5 font-mono text-zinc-600">
+                    {phases[pk].time_s.toFixed(2)}s
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <a
+            href={videoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-full border border-zinc-800/80 bg-zinc-950/75 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500 transition-smooth hover:border-zinc-700 hover:text-zinc-200"
+          >
+            <span>↗</span>
+            <span>Open slowmo video</span>
+          </a>
         </div>
       </div>
 
-      {/* Phase selector chips */}
-      <div className="flex flex-wrap gap-2 mt-4">
-        {availablePhases.map((pk) => {
-          const isActive = activePhase === pk;
-          return (
-            <button
-              key={pk}
-              onClick={() => setActivePhase(pk)}
-              className={[
-                "text-[10px] uppercase tracking-wider rounded-lg px-3 py-2 border transition-all",
-                isActive
-                  ? "bg-zinc-700 border-zinc-600 text-zinc-100"
-                  : "bg-zinc-800/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200",
-              ].join(" ")}
-            >
-              {phaseLabel(pk)}
-              <span className="ml-1.5 font-mono text-zinc-600">
-                {phases[pk].time_s.toFixed(2)}s
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Slowmo link */}
-      <div className="mt-3">
-        <a
-          href={videoUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[10px] text-zinc-600 hover:text-zinc-400 transition-smooth inline-flex items-center gap-1"
-        >
-          <span>↗</span>
-          <span>Open slowmo video</span>
-        </a>
-      </div>
-
-      {/* Lightbox */}
       {lightboxOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-6"
@@ -145,12 +145,12 @@ export function MechanicsFilmRoom({ notes, basePath }: MechanicsFilmRoomProps) {
               src={activeImg}
               alt={phaseLabel(activePhase)}
               fill
-              className="object-contain rounded-lg"
+              className="object-contain rounded-[1.25rem]"
               sizes="100vw"
             />
             <button
               onClick={() => setLightboxOpen(false)}
-              className="absolute top-3 right-3 bg-zinc-900/80 border border-zinc-700 text-zinc-300 hover:text-white rounded-full w-8 h-8 flex items-center justify-center text-sm transition-smooth"
+              className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900/80 text-sm text-zinc-300 transition-smooth hover:text-white"
             >
               ✕
             </button>
@@ -164,7 +164,6 @@ export function MechanicsFilmRoom({ notes, basePath }: MechanicsFilmRoomProps) {
             </div>
           </div>
 
-          {/* Phase navigation in lightbox */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
             {availablePhases.map((pk) => (
               <button
@@ -174,7 +173,7 @@ export function MechanicsFilmRoom({ notes, basePath }: MechanicsFilmRoomProps) {
                   setActivePhase(pk);
                 }}
                 className={[
-                  "text-[9px] uppercase tracking-wider rounded px-2.5 py-1.5 border transition-all",
+                  "rounded-full border px-2.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.16em] transition-all",
                   pk === activePhase
                     ? "bg-zinc-700 border-zinc-600 text-zinc-100"
                     : "bg-zinc-900/80 border-zinc-700 text-zinc-500 hover:text-zinc-300",

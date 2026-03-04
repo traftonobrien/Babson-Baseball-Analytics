@@ -25,9 +25,8 @@ function MetricRow({ metricKey, metric, onClick }: MetricRowProps) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left px-3 py-3 rounded-lg bg-zinc-800/30 border border-zinc-800/80 hover:border-zinc-700 hover:bg-zinc-800/50 transition-smooth"
+      className="w-full rounded-2xl border border-zinc-800/80 bg-zinc-950/72 px-3 py-3 text-left transition-smooth hover:border-violet-500/18 hover:bg-zinc-900/65"
     >
-      {/* Top row: dot + name + score */}
       <div className="flex items-center gap-2.5">
         <span
           className="w-2 h-2 rounded-full shrink-0"
@@ -35,7 +34,7 @@ function MetricRow({ metricKey, metric, onClick }: MetricRowProps) {
             backgroundColor: isInsufficient ? "#52525b" : metric.pass_fail ? "#22c55e" : "#ef4444",
           }}
         />
-        <span className="text-[10px] uppercase tracking-wider text-zinc-400 flex-1 leading-tight">
+        <span className="flex-1 text-[10px] font-semibold uppercase tracking-[0.16em] leading-tight text-zinc-400">
           {metricLabel(metricKey)}
         </span>
         <span
@@ -46,7 +45,6 @@ function MetricRow({ metricKey, metric, onClick }: MetricRowProps) {
         </span>
       </div>
 
-      {/* Bottom row: confidence + reason tags */}
       <div className="flex items-center gap-1.5 mt-1.5 pl-[18px] flex-wrap">
         <span
           className={`text-[9px] font-mono ${metric.low_confidence ? "text-amber-500" : "text-zinc-600"}`}
@@ -56,7 +54,7 @@ function MetricRow({ metricKey, metric, onClick }: MetricRowProps) {
         {metric.reasons?.map((r) => (
           <span
             key={r}
-            className="text-[8px] uppercase tracking-wider bg-zinc-900 text-amber-500/60 border border-zinc-700/60 rounded px-1 py-px"
+            className="rounded-full border border-zinc-700/60 bg-zinc-900 px-1.5 py-px text-[8px] uppercase tracking-[0.16em] text-amber-500/60"
           >
             {r.replace(/_/g, " ")}
           </span>
@@ -79,15 +77,12 @@ function PhaseBlock({ title, imageSrc, metricKeys, notes, onMetricClick }: Phase
   if (available.length === 0) return null;
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-      {/* Header */}
-      <div className="px-4 py-2.5 border-b border-zinc-800">
-        <p className="text-[10px] uppercase tracking-wider text-zinc-400">{title}</p>
+    <div className="overflow-hidden rounded-[1.7rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(17,24,39,0.64),rgba(9,9,11,0.88))] shadow-[0_20px_56px_rgba(0,0,0,0.22)]">
+      <div className="border-b border-zinc-800/80 px-5 py-4">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-400">{title}</p>
       </div>
 
-      {/* Image + rail */}
       <div className="flex flex-col lg:flex-row">
-        {/* Image — dominant column */}
         <div className="relative flex-1 min-w-0 bg-zinc-950 min-h-[240px] lg:min-h-[380px]">
           <Image
             src={imageSrc}
@@ -98,13 +93,11 @@ function PhaseBlock({ title, imageSrc, metricKeys, notes, onMetricClick }: Phase
           />
         </div>
 
-        {/* Metric rail — fixed narrow width */}
-        <div className="w-full lg:w-[300px] shrink-0 border-t lg:border-t-0 lg:border-l border-zinc-800 p-3 space-y-1.5 flex flex-col justify-center">
-          {/* Column header */}
+        <div className="w-full lg:w-[320px] shrink-0 border-t lg:border-t-0 lg:border-l border-zinc-800 p-3 space-y-1.5 flex flex-col justify-center">
           <div className="flex items-center gap-2.5 px-3 pb-1 mb-0.5">
             <span className="w-2 shrink-0" />
-            <span className="text-[8px] uppercase tracking-wider text-zinc-700 flex-1">Metric</span>
-            <span className="text-[8px] uppercase tracking-wider text-zinc-700">Score</span>
+            <span className="flex-1 text-[8px] font-semibold uppercase tracking-[0.18em] text-zinc-700">Metric</span>
+            <span className="text-[8px] font-semibold uppercase tracking-[0.18em] text-zinc-700">Score</span>
           </div>
           {available.map((key) => (
             <MetricRow
@@ -139,8 +132,11 @@ export function PhaseInsightPanels({ notes, basePath, onMetricClick }: PhaseInsi
   if (footStrikeMetrics.length === 0 && releaseMetrics.length === 0) return null;
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-6">
-      <h2 className="text-[10px] uppercase tracking-wider text-zinc-500 mb-4">Phase Breakdown</h2>
+    <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
+      <div className="mb-4">
+        <h2 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Phase Breakdown</h2>
+        <p className="mt-1 text-xs text-zinc-600">Tie the key metrics to the two most important frame checkpoints.</p>
+      </div>
       <div className="space-y-4">
         {footStrikeMetrics.length > 0 && (
           <PhaseBlock
