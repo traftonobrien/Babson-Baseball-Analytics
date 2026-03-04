@@ -368,8 +368,8 @@ export default function MovementScatterByType({
   }, [pitchTypes, hand]);
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 h-full flex flex-col">
-      <h3 className="mb-3 text-[11px] uppercase tracking-[0.2em] text-zinc-400">
+    <div className="h-full overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/65 p-5 shadow-[0_24px_64px_rgba(0,0,0,0.28)] flex flex-col">
+      <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
         Movement Profile (Induced Break)
       </h3>
 

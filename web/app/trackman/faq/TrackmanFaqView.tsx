@@ -13,12 +13,11 @@ export default function TrackmanFaqView() {
     <DictionaryPageShell
       tone="blue"
       icon={Activity}
-      eyebrow="Data Dictionary"
       title="Trackman Metrics Guide"
       description="This guide defines the core metrics captured by the portable Trackman B1 unit, along with the proprietary Stuff+ models used to evaluate pitch quality and location."
       breadcrumbs={[
         { label: "Home", href: "/" },
-        { label: "Dictionary", href: "/dictionary" },
+        { label: "Metrics Dictionary", href: "/dictionary" },
         { label: "Trackman" },
       ]}
       maxWidth="max-w-5xl"

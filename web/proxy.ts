@@ -15,7 +15,7 @@ const PUBLIC_PREFIXES = [
   "/api/mechanics-login",
 ];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Fast-path: D3 proxy is always public

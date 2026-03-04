@@ -37,6 +37,8 @@ function ReportInner() {
   const searchParams = useSearchParams();
   const outingId = searchParams.get("outingId");
   const scope = searchParams.get("scope") === "overall" ? "overall" : "outing";
+  const profileSlug = searchParams.get("slug");
+  const from = searchParams.get("from");
 
   const player = getPlayer(playerId);
 
@@ -131,11 +133,27 @@ function ReportInner() {
     { month: "short", day: "numeric", year: "numeric" },
   );
 
+  const profileHref =
+    from === "profile" && profileSlug
+      ? `/players/${profileSlug}?tab=Command`
+      : null;
   // Back link preserves outingId for outing scope
   const backHref =
-    scope === "outing" && outingId
+    profileHref
+      ? profileHref
+      : scope === "outing" && outingId
       ? `/player/${playerId}?outingId=${outingId}`
       : `/player/${playerId}`;
+  const backLabel = profileHref ? "Back to Player Profile" : "Back to Command Outing";
+  const compareParams = new URLSearchParams();
+  if (outingId) compareParams.set("outingA", outingId);
+  if (profileHref && profileSlug) {
+    compareParams.set("from", "profile");
+    compareParams.set("slug", profileSlug);
+  }
+  const compareHref = compareParams.size
+    ? `/player/${playerId}/compare?${compareParams.toString()}`
+    : `/player/${playerId}/compare`;
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.10),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(251,191,36,0.08),_transparent_24%),linear-gradient(180deg,_#09090b_0%,_#111827_56%,_#09090b_100%)] text-zinc-100 print:bg-white print:text-black">
@@ -144,14 +162,14 @@ function ReportInner() {
           items={[
             { label: "Home", href: "/" },
             { label: "Players", href: "/players" },
-            { label: report.meta.playerName, href: `/player/${playerId}` },
-            { label: "Command Report" },
+            { label: report.meta.playerName, href: backHref },
+            { label: "Printable Command Report" },
           ]}
         />
         <LeaderboardHero
           tone="orange"
           icon={Target}
-          eyebrow="Command Report"
+          eyebrow="Printable Command Report"
           title={<>{report.meta.playerName}</>}
           description="Printable command breakdown for a single outing or full rolling scope. This keeps the report math intact while bringing the screen view into the current site shell."
           meta={(
@@ -168,10 +186,10 @@ function ReportInner() {
                 href={backHref}
                 className="inline-flex items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
               >
-                Back to Dashboard
+                {backLabel}
               </a>
               <a
-                href={`/player/${playerId}/compare${outingId ? `?outingA=${outingId}` : ""}`}
+                href={compareHref}
                 className="inline-flex items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-orange-400/25 hover:text-zinc-100"
               >
                 Compare
@@ -208,7 +226,7 @@ function ReportInner() {
           </div>
           <div className="text-right shrink-0 pl-4 flex items-start gap-3">
             <div className="text-[11px] font-extrabold uppercase tracking-[0.15em] print:text-black">
-              Command Report
+              Printable Command Report
             </div>
           </div>
         </div>
@@ -324,7 +342,7 @@ function ReportInner() {
 
       {/* ---- Footer ---- */}
       <footer className="pt-1.5 border-t border-zinc-700 print:border-zinc-400 text-[8px] text-zinc-500 print:text-zinc-500 flex justify-between">
-        <span>Babson Baseball Pitching Portal &mdash; Command Report</span>
+        <span>Babson Baseball Pitching Portal &mdash; Printable Command Report</span>
         <span>{generatedDate}</span>
       </footer>
           </div>

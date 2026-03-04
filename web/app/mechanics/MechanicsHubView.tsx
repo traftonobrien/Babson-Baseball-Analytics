@@ -219,14 +219,14 @@ export default function MechanicsHubView({ index }: { index: MechanicsIndex }) {
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-violet-500/20 bg-violet-500/10 text-violet-300">
                     <Video className="h-4 w-4" />
                   </div>
-                  <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                      Browse
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                        Workflow
+                      </div>
+                      <div className="mt-1 text-sm font-semibold text-zinc-100">
+                        Start with the latest session
+                      </div>
                     </div>
-                    <div className="mt-1 text-sm font-semibold text-zinc-100">
-                      Latest sessions first
-                    </div>
-                  </div>
                 </div>
               </div>
             </>

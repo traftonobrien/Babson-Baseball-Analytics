@@ -41,6 +41,7 @@ function CompareInner() {
   const { playerId } = useParams<{ playerId: string }>();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const profileSlug = searchParams.get("slug");
 
   const player = getPlayer(playerId);
 
@@ -87,9 +88,13 @@ function CompareInner() {
   const pushUrl = useCallback(
     (a: PitchSelection, b: PitchSelection, eo: boolean) => {
       const params = serializeComparisonQueryParams(a, b, eo);
+      if (profileSlug) {
+        params.set("from", "profile");
+        params.set("slug", profileSlug);
+      }
       router.push(`/player/${playerId}/compare?${params.toString()}`);
     },
-    [router, playerId],
+    [profileSlug, router, playerId],
   );
 
   const handleSelectionA = useCallback(
@@ -184,6 +189,12 @@ function CompareInner() {
   }
 
   const isComparisonError = comparison && "error" in comparison;
+  const backHref = profileSlug
+    ? `/players/${profileSlug}?tab=Command`
+    : selectionA.outingId
+      ? `/player/${playerId}?outingId=${encodeURIComponent(selectionA.outingId)}`
+      : `/player/${playerId}`;
+  const backLabel = profileSlug ? "Back to Player Profile" : "Back to Command Outing";
 
   return (
     <LeaderboardPageFrame maxWidth="max-w-6xl">
@@ -191,7 +202,7 @@ function CompareInner() {
         items={[
           { label: "Home", href: "/" },
           { label: "Players", href: "/players" },
-          { label: player.name, href: `/player/${playerId}` },
+          { label: player.name, href: backHref },
           { label: "Compare" },
         ]}
       />
@@ -211,10 +222,10 @@ function CompareInner() {
         side={
           <div className="grid gap-3">
             <Link
-              href={`/player/${playerId}`}
+              href={backHref}
               className="inline-flex items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
             >
-              Back to Dashboard
+              {backLabel}
             </Link>
             <LogoutButton className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 hover:border-zinc-700 hover:text-zinc-100" />
           </div>

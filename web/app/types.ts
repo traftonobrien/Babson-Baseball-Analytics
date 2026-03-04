@@ -29,6 +29,5 @@ export interface Pitch {
 
 export interface Filters {
   pitchTypes: Set<string>;
-  quadrants: Set<string>;
   maxMiss: number | null;   // null = no limit
 }

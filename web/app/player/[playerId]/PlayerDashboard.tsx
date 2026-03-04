@@ -8,7 +8,7 @@ import { applyFilters } from "../../utils";
 import type { Pitch, Filters } from "../../types";
 import type { Lane } from "@/lib/handedness";
 import type { Player, Outing } from "@/lib/dataIndex";
-import { laneOf } from "@/lib/reportModel";
+import { laneOf, ON_TARGET_THRESHOLD_IN } from "@/lib/reportModel";
 import FilterPanel from "../../components/FilterPanel";
 import PitchTable from "../../components/PitchTable";
 import VideoPlayer from "../../components/VideoPlayer";
@@ -21,6 +21,7 @@ import LogoutButton from "../../components/LogoutButton";
 import OutingSelect from "./OutingSelect";
 import GameStatsSection from "@/lib/stats/GameStatsSection";
 import { seasonFromDateId } from "@/lib/season";
+import { pitchDisplayName } from "@/lib/pitchNames";
 import {
   loadOutingMeta,
   loadPlayerGameStats,
@@ -33,13 +34,15 @@ import {
   leaderboardFilterButtonGhostInactiveClassName,
   leaderboardFilterButtonOrangeActiveClassName,
 } from "@/components/ui/neon-button";
-import { LeaderboardPill } from "@/app/components/leaderboards/LeaderboardChrome";
+import {
+  LeaderboardPill,
+  LeaderboardStatBlock,
+} from "@/app/components/leaderboards/LeaderboardChrome";
 
 type VizMode = "scatter" | "heatmap";
 
 const EMPTY_FILTERS: Filters = {
   pitchTypes: new Set(),
-  quadrants: new Set(),
   maxMiss: null,
 };
 
@@ -128,6 +131,18 @@ function SidebarPanel({
   );
 }
 
+function formatSnapshotNumber(value: number | null, decimals = 1): string {
+  if (value == null || Number.isNaN(value)) return "--";
+  return value.toFixed(decimals);
+}
+
+function laneLabel(lane: Lane | null): string {
+  if (!lane) return "all lanes";
+  if (lane === "Glove") return "glove-side lane";
+  if (lane === "Arm") return "arm-side lane";
+  return "middle lane";
+}
+
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
@@ -137,11 +152,13 @@ export default function PlayerDashboard({
   outing,
   backTo,
   backLabel,
+  profileSlug,
 }: {
   player: Player;
   outing: Outing;
   backTo?: string;
   backLabel?: string;
+  profileSlug?: string;
 }) {
   const { pitches: rawPitches, pitcherHand, loading, error } = usePitchData(outing.csvPath, player.id);
   const [overrides, setOverrides] = useState<Overrides>({});
@@ -282,6 +299,62 @@ export default function PlayerDashboard({
     setActiveLane((prev) => (prev === lane ? null : lane));
   };
 
+  const outingSnapshot = useMemo(() => {
+    if (laneFiltered.length === 0) {
+      return {
+        avgMiss: null,
+        onTargetPct: null,
+        bestPitchName: "--",
+        bestPitchAvgMiss: null,
+        worstPitchName: "--",
+        worstPitchAvgMiss: null,
+      };
+    }
+
+    const avgMiss =
+      laneFiltered.reduce((sum, pitch) => sum + pitch.total_miss_inches, 0) /
+      laneFiltered.length;
+    const onTargetPct =
+      (laneFiltered.filter((pitch) => pitch.total_miss_inches <= ON_TARGET_THRESHOLD_IN).length /
+        laneFiltered.length) *
+      100;
+
+    const byPitchType = new Map<
+      string,
+      { totalMiss: number; count: number }
+    >();
+    for (const pitch of laneFiltered) {
+      const key = pitch.pitch_type || "UNK";
+      const current = byPitchType.get(key) ?? { totalMiss: 0, count: 0 };
+      current.totalMiss += pitch.total_miss_inches;
+      current.count += 1;
+      byPitchType.set(key, current);
+    }
+
+    const rankedPitches = Array.from(byPitchType.entries())
+      .map(([pitchType, stats]) => ({
+        pitchType,
+        avgMiss: stats.totalMiss / stats.count,
+        count: stats.count,
+      }))
+      .sort((a, b) => {
+        if (a.avgMiss !== b.avgMiss) return a.avgMiss - b.avgMiss;
+        return b.count - a.count;
+      });
+
+    const best = rankedPitches[0] ?? null;
+    const worst = rankedPitches[rankedPitches.length - 1] ?? null;
+
+    return {
+      avgMiss,
+      onTargetPct,
+      bestPitchName: best ? pitchDisplayName(best.pitchType) : "--",
+      bestPitchAvgMiss: best?.avgMiss ?? null,
+      worstPitchName: worst ? pitchDisplayName(worst.pitchType) : "--",
+      worstPitchAvgMiss: worst?.avgMiss ?? null,
+    };
+  }, [laneFiltered]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.12),_transparent_22%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.08),_transparent_22%),linear-gradient(180deg,_#09090b_0%,_#111827_56%,_#09090b_100%)] text-zinc-400">
@@ -301,12 +374,19 @@ export default function PlayerDashboard({
   const hasEdits = editedPitches.size > 0;
   const outingDateId = outing.id.split("/")[1] ?? "";
   const currentSeason = seasonFromDateId(outingDateId);
+  const profileHref = profileSlug ? `/players/${profileSlug}?tab=Command` : null;
+  const profileContextQuery = profileSlug
+    ? `&from=profile&slug=${encodeURIComponent(profileSlug)}`
+    : "";
+  const trackmanHref = profileSlug
+    ? `/trackman/session/${player.id}/${outingDateId}?from=profile&slug=${profileSlug}`
+    : `/trackman/session/${player.id}/${outingDateId}`;
   const compareHref =
     player.outings.length >= 2
       ? `/player/${player.id}/compare?outingA=${outing.id}&outingB=${
           player.outings.find((o) => o.id !== outing.id)?.id ?? player.outings[1].id
-        }`
-      : `/player/${player.id}/compare?outingA=${outing.id}`;
+        }${profileContextQuery}`
+      : `/player/${player.id}/compare?outingA=${outing.id}${profileContextQuery}`;
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.12),_transparent_22%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.08),_transparent_22%),linear-gradient(180deg,_#09090b_0%,_#111827_56%,_#09090b_100%)] text-zinc-100">
@@ -324,7 +404,7 @@ export default function PlayerDashboard({
                 </Link>
                 <span className="hidden text-zinc-700 sm:inline">/</span>
                 <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-                  Command Report
+                  Command Outing
                 </span>
               </div>
 
@@ -351,7 +431,7 @@ export default function PlayerDashboard({
                   <LeaderboardPill>{pitches.length} tracked pitches</LeaderboardPill>
                   {selected ? (
                     <LeaderboardPill tone="neutral">
-                      Pitch #{selected.pitch_number} • {selected.pitch_type}
+                      Pitch #{selected.pitch_number} • {pitchDisplayName(selected.pitch_type)}
                     </LeaderboardPill>
                   ) : null}
                 </div>
@@ -366,11 +446,20 @@ export default function PlayerDashboard({
                   />
                 ) : null}
                 <div className="flex flex-wrap gap-2">
-                  <HeaderActionLink href={`/trackman/session/${player.id}/${outingDateId}`} label="Trackman Session" />
-                  <HeaderActionLink href={`/player/${player.id}/report?scope=outing&outingId=${outing.id}`} label="Outing Report" />
-                  <HeaderActionLink href={`/player/${player.id}/report?scope=overall`} label="Overall Report" />
+                  {profileHref ? (
+                    <HeaderActionLink href={profileHref} label="Player Profile" />
+                  ) : null}
+                  <HeaderActionLink href={trackmanHref} label="Trackman Session" />
+                  <HeaderActionLink
+                    href={`/player/${player.id}/report?scope=outing&outingId=${outing.id}${profileContextQuery}`}
+                    label="Print Outing"
+                  />
+                  <HeaderActionLink
+                    href={`/player/${player.id}/report?scope=overall${profileContextQuery}`}
+                    label="Season Report"
+                  />
                   {player.outings.length >= 1 ? (
-                    <HeaderActionLink href={compareHref} label="Compare" emphasis />
+                    <HeaderActionLink href={compareHref} label="Compare Outings" emphasis />
                   ) : null}
                 </div>
               </div>
@@ -383,7 +472,7 @@ export default function PlayerDashboard({
         <aside className="space-y-4 xl:sticky xl:top-4">
           <SidebarPanel
             title="Filters"
-            detail="Control pitch type, result quadrant, and max miss."
+            detail="Filter by pitch type and miss distance."
           >
             <FilterPanel
               pitches={pitches}
@@ -415,7 +504,7 @@ export default function PlayerDashboard({
                 Pitch Log
               </div>
               <div className="mt-1 text-xs text-zinc-500">
-                Live pitch list for this outing.
+                Pick any pitch to update the video and miss shape.
               </div>
             </div>
             <PitchTable
@@ -432,13 +521,74 @@ export default function PlayerDashboard({
 
         <main className="min-w-0 space-y-4">
           <section className="rounded-[1.8rem] border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[0_20px_56px_rgba(0,0,0,0.24)]">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+                  Outing Snapshot
+                </div>
+                <div className="mt-1 text-sm text-zinc-400">
+                  Fast read of the current filtered view before you drill into video and miss shape.
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <LeaderboardPill tone="orange">
+                  {laneLabel(activeLane)}
+                </LeaderboardPill>
+                <LeaderboardPill tone="neutral">
+                  {laneFiltered.length} pitch{laneFiltered.length === 1 ? "" : "es"} in view
+                </LeaderboardPill>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <LeaderboardStatBlock
+                label="Avg Miss"
+                value={
+                  outingSnapshot.avgMiss == null
+                    ? "--"
+                    : `${formatSnapshotNumber(outingSnapshot.avgMiss)}"`
+                }
+                detail="average distance from target"
+              />
+              <LeaderboardStatBlock
+                label="On Target"
+                value={
+                  outingSnapshot.onTargetPct == null
+                    ? "--"
+                    : `${outingSnapshot.onTargetPct.toFixed(0)}%`
+                }
+                detail={`within ${ON_TARGET_THRESHOLD_IN}" of target`}
+                emphasisClassName="text-orange-300"
+              />
+              <LeaderboardStatBlock
+                label="Best Pitch"
+                value={outingSnapshot.bestPitchName}
+                detail={
+                  outingSnapshot.bestPitchAvgMiss == null
+                    ? "no tracked miss data"
+                    : `${formatSnapshotNumber(outingSnapshot.bestPitchAvgMiss)}" avg miss`
+                }
+              />
+              <LeaderboardStatBlock
+                label="Needs Work"
+                value={outingSnapshot.worstPitchName}
+                detail={
+                  outingSnapshot.worstPitchAvgMiss == null
+                    ? "no tracked miss data"
+                    : `${formatSnapshotNumber(outingSnapshot.worstPitchAvgMiss)}" avg miss`
+                }
+              />
+            </div>
+          </section>
+
+          <section className="rounded-[1.8rem] border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[0_20px_56px_rgba(0,0,0,0.24)]">
             <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
                   Video + Miss Shape
                 </div>
                 <div className="mt-1 text-sm text-zinc-400">
-                  Review the selected pitch video and toggle between scatter and heatmap views.
+                  Review the selected pitch, then switch between scatter and heatmap without leaving the outing.
                 </div>
               </div>
 
@@ -507,10 +657,6 @@ export default function PlayerDashboard({
             </div>
           </section>
 
-          {outingMeta ? (
-            <GameStatsSection meta={outingMeta} statsByGame={statsByGame} />
-          ) : null}
-
           {laneFiltered.length > 0 ? (
             <CommandPlusSection pitches={laneFiltered} outingId={outing.id} />
           ) : null}
@@ -526,6 +672,10 @@ export default function PlayerDashboard({
               activeLane={activeLane}
               onSelectLane={toggleLane}
             />
+          ) : null}
+
+          {outingMeta ? (
+            <GameStatsSection meta={outingMeta} statsByGame={statsByGame} />
           ) : null}
         </main>
       </div>

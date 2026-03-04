@@ -12,12 +12,11 @@ export default function LeaderboardsFaqView() {
     <DictionaryPageShell
       tone="orange"
       icon={Target}
-      eyebrow="Data Dictionary"
       title="Command Leaderboard Guide"
       description="This guide defines the accuracy and consistency metrics used in our charting system. It explains how we measure command instead of simply counting strikes."
       breadcrumbs={[
         { label: "Home", href: "/" },
-        { label: "Dictionary", href: "/dictionary" },
+        { label: "Metrics Dictionary", href: "/dictionary" },
         { label: "Command" },
       ]}
       maxWidth="max-w-5xl"

@@ -514,6 +514,11 @@ export default function PlayerProfileTabs({
 
   const latestTrackmanSession = sortedSessions[0] ?? null;
   const latestCommandOuting = filteredCommandOutings[0] ?? null;
+  const latestCommandReportHref = latestCommandOuting
+    ? `/player/${latestCommandOuting.playerId}?outingId=${encodeURIComponent(
+        latestCommandOuting.outingId,
+      )}&from=profile&slug=${playerSlug}`
+    : null;
   const latestMechanicsSession = useMemo(() => {
     if (!mechanicsEntry?.sessions?.length) return null;
     return [...mechanicsEntry.sessions].sort((a, b) => b.date.localeCompare(a.date))[0];
@@ -834,10 +839,10 @@ export default function PlayerProfileTabs({
           >
             <section className="space-y-7">
               <ProfileHubLink
-                href="/command"
+                href={latestCommandReportHref ?? "/command"}
                 icon={Target}
-                title="Command Hub"
-                note="All pitchers, all outings"
+                title="Command Outings"
+                note="Open the latest live report for this player"
                 tone="orange"
               />
 
@@ -913,7 +918,9 @@ export default function PlayerProfileTabs({
                     {filteredCommandOutings.map((o) => (
                       <li key={o.outingId}>
                         <Link
-                          href={`/player/${o.playerId}?from=profile&slug=${playerSlug}`}
+                          href={`/player/${o.playerId}?outingId=${encodeURIComponent(
+                            o.outingId,
+                          )}&from=profile&slug=${playerSlug}`}
                           className="group flex items-center justify-between rounded-2xl border border-zinc-900 bg-zinc-950/50 px-4 py-4 transition-smooth hover:border-orange-500/20 hover:bg-zinc-900/60"
                         >
                           <div>

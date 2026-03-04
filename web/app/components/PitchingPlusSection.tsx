@@ -249,7 +249,7 @@ export default function PitchingPlusSection({
               href="/pitching-plus"
               className="font-semibold text-orange-300 transition-smooth hover:text-orange-200"
             >
-              Plus Models
+              Plus Statistics
             </Link>
           </div>
           <p className="text-[11px] leading-5 text-zinc-500 mt-2">

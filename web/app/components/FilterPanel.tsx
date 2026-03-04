@@ -2,6 +2,7 @@
 
 import type { Filters, Pitch } from "../types";
 import { uniqueTypes, pitchColor } from "../utils";
+import { pitchDisplayName } from "@/lib/pitchNames";
 
 interface Props {
   pitches: Pitch[];
@@ -56,7 +57,7 @@ export default function FilterPanel({ pitches, filters, onChange }: Props) {
                   className="inline-block h-2 w-2 rounded-full"
                   style={{ backgroundColor: color, boxShadow: active ? `0 0 10px ${color}` : "none" }}
                 />
-                {t}
+                {pitchDisplayName(t)}
               </button>
             );
           })}
@@ -92,9 +93,7 @@ export default function FilterPanel({ pitches, filters, onChange }: Props) {
       {/* Reset */}
       <button
         type="button"
-        onClick={() =>
-          onChange({ pitchTypes: new Set(), quadrants: new Set(), maxMiss: null })
-        }
+        onClick={() => onChange({ pitchTypes: new Set(), maxMiss: null })}
         className="rounded-full border border-zinc-800 bg-zinc-950/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500 transition-all duration-300 hover:border-zinc-700 hover:text-zinc-300"
       >
         Reset filters

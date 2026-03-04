@@ -63,10 +63,9 @@ export default function DictionaryPage() {
     <DictionaryPageShell
       tone="blue"
       icon={Activity}
-      title="Data Dictionary"
-      description="Every leaderboard and player view should read the same way. Use this hub to jump into the definitions behind the numbers."
-      breadcrumbs={[{ label: "Home", href: "/" }, { label: "Dictionary" }]}
-      eyebrow="Reference Hub"
+      title="Metrics Dictionary"
+      description="One place for the definitions behind every leaderboard, model, and player view."
+      breadcrumbs={[{ label: "Home", href: "/" }, { label: "Metrics Dictionary" }]}
       maxWidth="max-w-6xl"
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getPlayer } from "@/lib/dataIndex";
+import { getSlugForPlayerId } from "@/lib/canonicalPlayers";
 import PlayerDashboard from "./PlayerDashboard";
 
 export default async function PlayerPage({
@@ -20,6 +21,8 @@ export default async function PlayerPage({
     notFound();
   }
 
+  const profileSlug = slug ?? getSlugForPlayerId(playerId) ?? undefined;
+
   const outing =
     player.outings.find((o) => o.id === outingId) ?? player.outings[0];
 
@@ -28,15 +31,15 @@ export default async function PlayerPage({
   }
 
   const backTo =
-    from === "profile" && slug
-      ? `/players/${slug}`
+    from === "profile" && profileSlug
+      ? `/players/${profileSlug}?tab=Command`
       : from === "command"
         ? "/command"
         : undefined;
 
   const backLabel =
-    from === "profile" && slug
-      ? "Profile"
+    from === "profile" && profileSlug
+      ? "Player Profile"
       : from === "command"
         ? "Command Hub"
         : undefined;
@@ -47,6 +50,7 @@ export default async function PlayerPage({
       outing={outing}
       backTo={backTo}
       backLabel={backLabel}
+      profileSlug={profileSlug}
     />
   );
 }

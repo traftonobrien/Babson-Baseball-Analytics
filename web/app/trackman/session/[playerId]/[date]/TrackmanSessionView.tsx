@@ -23,7 +23,7 @@ import MovementScatterByType from "./MovementScatterByType";
 import PitchArsenalCards from "./PitchArsenalCards";
 import { mergeRenamedPitchTypes } from "@/lib/mergePitchTypes";
 import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
-import { getCanonicalName } from "@/lib/canonicalPlayers";
+import { getCanonicalName, getSlugForPlayerId } from "@/lib/canonicalPlayers";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import {
   LeaderboardHero,
@@ -81,15 +81,33 @@ function formatDateLabel(raw: string): string {
 }
 
 /** Try multiple paths to find the session data. */
-async function fetchSessionData(playerId: string, date: string): Promise<SessionPayload> {
+async function fetchSessionData(
+  playerId: string,
+  date: string,
+  playerSlug?: string,
+): Promise<SessionPayload> {
+  const lookupSlugs = Array.from(
+    new Set([playerSlug, getSlugForPlayerId(playerId)].filter(Boolean) as string[]),
+  );
+
   // Candidate paths: legacy canonical, PDF pipeline (with various session slugs)
   const pitchCandidates = [
     `/data/${playerId}/${date}/trackman/pitches.json`,
+    ...lookupSlugs.flatMap((slug) => [
+      `/trackman/sessions/${slug}/${date}/session/pitches.json`,
+      `/trackman/sessions/${slug}/${date}/live_ab/pitches.json`,
+      `/trackman/sessions/${slug}/${date}/bullpen/pitches.json`,
+    ]),
     `/trackman/sessions/${playerId}/${date}/session/pitches.json`,
     `/trackman/sessions/${playerId}/${date}/live_ab/pitches.json`,
     `/trackman/sessions/${playerId}/${date}/bullpen/pitches.json`,
   ];
   const aggregateCandidates = [
+    ...lookupSlugs.flatMap((slug) => [
+      `/trackman/sessions/${slug}/${date}/session/pitch_types.json`,
+      `/trackman/sessions/${slug}/${date}/live_ab/pitch_types.json`,
+      `/trackman/sessions/${slug}/${date}/bullpen/pitch_types.json`,
+    ]),
     `/trackman/sessions/${playerId}/${date}/session/pitch_types.json`,
     `/trackman/sessions/${playerId}/${date}/live_ab/pitch_types.json`,
     `/trackman/sessions/${playerId}/${date}/bullpen/pitch_types.json`,
@@ -103,7 +121,11 @@ async function fetchSessionData(playerId: string, date: string): Promise<Session
       if (Array.isArray(index)) {
         const match = index.find(
           (e: Record<string, unknown>) =>
-            ((e.playerSlug as string) === playerId || (e.playerId as string) === playerId) &&
+            (
+              (e.playerSlug as string) === playerId ||
+              lookupSlugs.includes((e.playerSlug as string) ?? "") ||
+              (e.playerId as string) === playerId
+            ) &&
             ((e.date as string) === date ||
               (e.date as string)?.replace(/-/g, "_") === date ||
               date.replace(/_/g, "-") === (e.date as string)),
@@ -215,7 +237,7 @@ export default function TrackmanSessionView({
     setLoading(true);
     setError(null);
 
-    fetchSessionData(playerId, date)
+    fetchSessionData(playerId, date, profileSlug)
       .then((data) => {
         if (!active) return;
         if (data.format === "pitch") {

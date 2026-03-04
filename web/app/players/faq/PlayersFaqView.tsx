@@ -12,12 +12,12 @@ export default function PlayersFaqView() {
     <DictionaryPageShell
       tone="indigo"
       icon={Users}
-      eyebrow="Platform Guide"
+      eyebrow="Metrics Dictionary"
       title="Roster and Profiles Guide"
       description="This guide explains how the unified player profiles pull together information from each tracking system into one development view."
       breadcrumbs={[
         { label: "Home", href: "/" },
-        { label: "Dictionary", href: "/dictionary" },
+        { label: "Metrics Dictionary", href: "/dictionary" },
         { label: "Players" },
       ]}
       maxWidth="max-w-5xl"

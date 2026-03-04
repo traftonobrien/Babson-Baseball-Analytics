@@ -1,5 +1,9 @@
 {
-  "dependencies": {
-    "@vercel/analytics": "^1.6.1"
+  "name": "pitch-tracker-root",
+  "description": "Root tooling package for workspace-level Tailwind and PostCSS resolution.",
+  "private": true,
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.1",
+    "tailwindcss": "^4.2.1"
   }
 }

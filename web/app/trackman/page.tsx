@@ -226,7 +226,7 @@ export default function TrackmanPlayersPage() {
                           Guide
                         </div>
                         <div className="mt-1 text-sm font-semibold text-zinc-100">
-                          Dictionary
+                          Metrics Dictionary
                         </div>
                       </div>
                     </div>

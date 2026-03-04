@@ -15,12 +15,11 @@ export default function PitchingPlusPage() {
     <DictionaryPageShell
       tone="amber"
       icon={Sparkles}
-      eyebrow="Data Dictionary"
       title="Plus Statistics Guide"
       description="One reference for the site's 100-centered plus models. Pitching+ is the headline grade, while Command+ and Stuff+ define the two supporting pieces underneath it."
       breadcrumbs={[
         { label: "Home", href: "/" },
-        { label: "Dictionary", href: "/dictionary" },
+        { label: "Metrics Dictionary", href: "/dictionary" },
         { label: "Plus Statistics" },
       ]}
       maxWidth="max-w-6xl"

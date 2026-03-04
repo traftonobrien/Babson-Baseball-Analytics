@@ -42,7 +42,7 @@ export function DictionaryPageShell({
   title,
   description,
   breadcrumbs,
-  eyebrow = "Data Dictionary",
+  eyebrow = "Metrics Dictionary",
   meta,
   maxWidth = "max-w-5xl",
   children,

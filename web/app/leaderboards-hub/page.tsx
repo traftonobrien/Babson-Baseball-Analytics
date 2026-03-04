@@ -12,8 +12,8 @@ import {
 const LEADERBOARD_ITEMS = [
   {
     href: "/pitching-plus/leaderboard",
-    label: "Plus Statistics",
-    description: "Pitching+, Command+, Stuff+, and session blend rankings",
+    label: "Pitching+",
+    description: "Pitching+, Command+, Stuff+, and pitch-mix rankings",
     icon: Sparkles,
     color: "amber",
   },
@@ -33,8 +33,8 @@ const LEADERBOARD_ITEMS = [
   },
   {
     href: "/team-stats/leaderboard",
-    label: "Team Stats",
-    description: "ERA, FIP, WHIP, K%, and season stats",
+    label: "Statistics",
+    description: "ERA, FIP, WHIP, K%, and season production",
     icon: BarChart3,
     color: "sky",
   },
@@ -54,12 +54,12 @@ export default function LeaderboardsHubPage() {
       <LeaderboardHero
         tone="amber"
         icon={Trophy}
-        eyebrow="Leaderboard Hub"
+        eyebrow="All Rankings"
         title={<>Leaderboards</>}
         meta={(
           <>
             <LeaderboardPill tone="amber">4 boards</LeaderboardPill>
-            <LeaderboardPill tone="neutral">Shared controls</LeaderboardPill>
+            <LeaderboardPill tone="neutral">All rankings</LeaderboardPill>
           </>
         )}
       />

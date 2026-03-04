@@ -268,7 +268,7 @@ export default function HomeContent() {
             </div>
 
             <div className="mt-6 flex flex-wrap gap-2">
-              {["Profiles", "Live Hubs", "Leaderboards", "Dictionaries"].map(
+              {["Profiles", "Tracking", "Rankings", "Definitions"].map(
                 (chip) => (
                   <span
                     key={chip}
@@ -290,7 +290,7 @@ export default function HomeContent() {
         transition={{ duration: 0.3, delay: 0.05 }}
       >
         <SectionMarker
-          label="Core Access"
+          label="Start Here"
           note="The main team surfaces players will open first."
         />
         <div className="mt-3 grid gap-4 lg:grid-cols-12">
@@ -335,7 +335,7 @@ export default function HomeContent() {
         transition={{ duration: 0.3, delay: 0.09 }}
       >
         <SectionMarker
-          label="Live Hubs"
+          label="Daily Work"
           note="The day-to-day pitch quality and execution systems."
         />
         <div className="mt-3 grid gap-4 md:grid-cols-3">
@@ -358,13 +358,13 @@ export default function HomeContent() {
             details={["Strikes", "Misses", "Outings"]}
           />
           <HomeLinkCard
-            href="/pitching-plus"
+            href="/pitching-plus/leaderboard"
             tone="amber"
             icon={Sparkles}
             eyebrow="Blend"
-            title="Pitching+ Hub"
-            description="Roll the live stuff and command picture together into one model lens."
-            details={["Pitching+", "Models", "Methodology"]}
+            title="Pitching+"
+            description="Roll the live stuff and command picture together into one ranking view."
+            details={["Pitching+", "Command+", "Stuff+"]}
           />
         </div>
       </motion.div>
@@ -376,8 +376,8 @@ export default function HomeContent() {
         transition={{ duration: 0.3, delay: 0.12 }}
       >
         <SectionMarker
-          label="Navigation"
-          note="Use these when you need the full map or metric definitions."
+          label="Reference"
+          note="Open the full rankings or the definitions behind the numbers."
         />
         <div className="mt-3 grid gap-4 md:grid-cols-2">
           <HomeLinkCard
@@ -394,9 +394,9 @@ export default function HomeContent() {
             tone="zinc"
             icon={BookOpen}
             eyebrow="Reference"
-            title="Dictionaries"
+            title="Metrics Dictionary"
             description="Definitions, grading context, and guide pages for each major part of the system."
-            details={["Glossary", "Guides", "Context"]}
+            details={["Definitions", "Guides", "Context"]}
           />
         </div>
       </motion.div>

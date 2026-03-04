@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { pitchColor } from "@/lib/pitchColors";
+import { pitchDisplayName } from "@/lib/pitchNames";
 import { uniquePitchTypes, type TrackmanPitch } from "@/lib/trackman/metrics";
 
 const W = 400;
@@ -54,8 +55,8 @@ export default function VeloByPitch({ pitches }: { pitches: TrackmanPitch[] }) {
   }, [yMin, yMax]);
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
-      <h3 className="text-xs uppercase tracking-wider text-zinc-400 mb-3">
+    <div className="overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/65 p-5 shadow-[0_24px_64px_rgba(0,0,0,0.28)]">
+      <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
         Velocity by Pitch
       </h3>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
@@ -132,7 +133,7 @@ export default function VeloByPitch({ pitches }: { pitches: TrackmanPitch[] }) {
                 className="inline-block w-2.5 h-2.5 rounded-full"
                 style={{ backgroundColor: pitchColor(type) }}
               />
-              {type}
+              {pitchDisplayName(type)}
             </div>
           ))}
         </div>

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { pitchColor } from "@/lib/pitchColors";
+import { pitchDisplayName } from "@/lib/pitchNames";
 import type { TrackmanPitch } from "@/lib/trackman/metrics";
 
 type SortKey = keyof TrackmanPitch;
@@ -85,7 +86,7 @@ export default function TrackmanPitchTable({ pitches }: { pitches: TrackmanPitch
                     className="inline-block w-2 h-2 rounded-full mr-1.5"
                     style={{ backgroundColor: pitchColor(p.pitchType) }}
                   />
-                  {p.pitchType}
+                  {pitchDisplayName(p.pitchType)}
                 </td>
                 <td className="px-3 py-1.5 text-right font-mono">{fmt(p.mph)}</td>
                 <td className="px-3 py-1.5 text-right font-mono">{fmt(p.rpm, 0)}</td>

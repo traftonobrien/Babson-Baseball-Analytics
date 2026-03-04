@@ -1,6 +1,13 @@
+import path from "path";
+import { fileURLToPath } from "url";
 import type { NextConfig } from "next";
 
+const configDir = path.dirname(fileURLToPath(import.meta.url));
+
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: configDir,
+  },
   // Prevent Next.js from bundling media files into serverless function
   // packages. These are served as static assets at runtime, never imported.
   outputFileTracingExcludes: {

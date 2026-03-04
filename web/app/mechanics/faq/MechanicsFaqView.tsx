@@ -8,7 +8,7 @@ export default function MechanicsFaqView() {
         <DictionaryPageShell
             tone="violet"
             icon={Film}
-            eyebrow="Analysis Documentation"
+            eyebrow="Metrics Dictionary"
             title="AWRE Pitching Metrics Guide"
             description={
                 <>
@@ -19,7 +19,7 @@ export default function MechanicsFaqView() {
             }
             breadcrumbs={[
                 { label: "Home", href: "/" },
-                { label: "Dictionary", href: "/dictionary" },
+                { label: "Metrics Dictionary", href: "/dictionary" },
                 { label: "Mechanics" },
             ]}
             maxWidth="max-w-5xl"

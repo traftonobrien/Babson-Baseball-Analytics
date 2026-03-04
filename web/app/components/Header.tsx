@@ -41,9 +41,12 @@ function isActive(pathname: string, href: string): boolean {
 function isDictionaryRoute(pathname: string): boolean {
   return (
     pathname === "/dictionary" ||
+    pathname === "/pitching-plus" ||
     pathname === "/command/faq" ||
     pathname === "/trackman/faq" ||
-    pathname === "/team-stats/faq"
+    pathname === "/team-stats/faq" ||
+    pathname === "/players/faq" ||
+    pathname === "/mechanics/faq"
   );
 }
 
@@ -146,7 +149,7 @@ export default function Header() {
                 }`}
               >
                 <BookOpen className="w-3.5 h-3.5 shrink-0" />
-                Dictionary
+                Metrics Dictionary
               </Link>
             </div>
           </div>

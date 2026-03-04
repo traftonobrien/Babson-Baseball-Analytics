@@ -304,7 +304,7 @@ export default function PlayersHubView({
                         Guide
                       </div>
                       <div className="mt-1 text-sm font-semibold text-zinc-100">
-                        Platform Dictionary
+                        Metrics Dictionary
                       </div>
                     </div>
                   </div>

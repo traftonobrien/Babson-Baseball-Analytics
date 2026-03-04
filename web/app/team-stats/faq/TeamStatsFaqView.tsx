@@ -13,12 +13,11 @@ export default function TeamStatsFaqView() {
     <DictionaryPageShell
       tone="sky"
       icon={BarChart3}
-      eyebrow="Data Dictionary"
       title="Statistics Leaderboard Guide"
       description="This guide defines the traditional box-score statistics, advanced sabermetric identifiers, and value metrics used to evaluate pitcher performance in real game action."
       breadcrumbs={[
         { label: "Home", href: "/" },
-        { label: "Dictionary", href: "/dictionary" },
+        { label: "Metrics Dictionary", href: "/dictionary" },
         { label: "Statistics" },
       ]}
       maxWidth="max-w-5xl"
