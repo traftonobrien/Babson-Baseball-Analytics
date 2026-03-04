@@ -70,7 +70,7 @@ export function DictionaryPageShell({
           meta ?? (
             <>
               <LeaderboardPill tone={tone}>Reference</LeaderboardPill>
-              <LeaderboardPill tone="neutral">Definitions and context</LeaderboardPill>
+              <LeaderboardPill tone="neutral">Guides and definitions</LeaderboardPill>
             </>
           )
         }

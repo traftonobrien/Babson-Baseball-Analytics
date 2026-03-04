@@ -1,7 +1,7 @@
 {
   "date": "2026-03-01",
   "gameId": "16013",
-  "importedAt": "2026-03-02T05:40:01Z",
+  "importedAt": "2026-03-04T03:35:40Z",
   "opponent": "#1/6 Trinity (Texas)",
   "season": 2026,
   "teams": {
@@ -76,6 +76,20 @@
           "rbi": 1,
           "sb": null,
           "so": 1
+        },
+        {
+          "ab": 0,
+          "avg": null,
+          "bb": 0,
+          "h": 0,
+          "hbp": null,
+          "hr": null,
+          "name": "Wyatt Miller",
+          "pos": "2b",
+          "r": 0,
+          "rbi": 0,
+          "sb": null,
+          "so": 0
         },
         {
           "ab": 4,
@@ -154,8 +168,8 @@
           "h": 0,
           "hbp": null,
           "hr": null,
-          "name": "Wyatt Miller",
-          "pos": "2b",
+          "name": "Joe p/OUT Carrea",
+          "pos": "p/OUT",
           "r": 0,
           "rbi": 0,
           "sb": null,
@@ -165,16 +179,30 @@
       "pitching": [
         {
           "bb": 2,
-          "bf": 40,
+          "bf": 30,
           "er": 4,
           "era": null,
-          "h": 11,
+          "h": 9,
           "hr": null,
-          "ip": "8.0",
+          "ip": "5.2",
           "name": "Chase Burrows",
-          "pitches": 118,
+          "pitches": 85,
           "r": 4,
-          "so": 8,
+          "so": 3,
+          "strikes": null
+        },
+        {
+          "bb": 0,
+          "bf": 10,
+          "er": 0,
+          "era": null,
+          "h": 2,
+          "hr": null,
+          "ip": "2.1",
+          "name": "Joe Carrea",
+          "pitches": 33,
+          "r": 0,
+          "so": 5,
           "strikes": null
         },
         {

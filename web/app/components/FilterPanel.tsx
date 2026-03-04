@@ -28,7 +28,7 @@ export default function FilterPanel({ pitches, filters, onChange }: Props) {
         </h3>
         <div className="flex flex-wrap gap-2">
           {types.length === 0 ? (
-            <span className="text-xs text-zinc-500 italic">No pitch types in data</span>
+            <span className="text-xs text-zinc-500 italic">No pitches in this view</span>
           ) : types.map((t) => {
             const active =
               filters.pitchTypes.size === 0 || filters.pitchTypes.has(t);

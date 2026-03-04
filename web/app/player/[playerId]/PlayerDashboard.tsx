@@ -472,7 +472,7 @@ export default function PlayerDashboard({
         <aside className="space-y-4 xl:sticky xl:top-4">
           <SidebarPanel
             title="Filters"
-            detail="Filter by pitch type and miss distance."
+            detail="Choose pitch types and a max miss."
           >
             <FilterPanel
               pitches={pitches}
@@ -527,7 +527,7 @@ export default function PlayerDashboard({
                   Outing Snapshot
                 </div>
                 <div className="mt-1 text-sm text-zinc-400">
-                  Fast read of the current filtered view before you drill into video and miss shape.
+                  Quick read of the current view before video and miss shape.
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -548,7 +548,7 @@ export default function PlayerDashboard({
                     ? "--"
                     : `${formatSnapshotNumber(outingSnapshot.avgMiss)}"`
                 }
-                detail="average distance from target"
+                detail="from target"
               />
               <LeaderboardStatBlock
                 label="On Target"
@@ -557,7 +557,7 @@ export default function PlayerDashboard({
                     ? "--"
                     : `${outingSnapshot.onTargetPct.toFixed(0)}%`
                 }
-                detail={`within ${ON_TARGET_THRESHOLD_IN}" of target`}
+                detail={`inside ${ON_TARGET_THRESHOLD_IN}"`}
                 emphasisClassName="text-orange-300"
               />
               <LeaderboardStatBlock
@@ -565,7 +565,7 @@ export default function PlayerDashboard({
                 value={outingSnapshot.bestPitchName}
                 detail={
                   outingSnapshot.bestPitchAvgMiss == null
-                    ? "no tracked miss data"
+                    ? "no miss data yet"
                     : `${formatSnapshotNumber(outingSnapshot.bestPitchAvgMiss)}" avg miss`
                 }
               />
@@ -574,7 +574,7 @@ export default function PlayerDashboard({
                 value={outingSnapshot.worstPitchName}
                 detail={
                   outingSnapshot.worstPitchAvgMiss == null
-                    ? "no tracked miss data"
+                    ? "no miss data yet"
                     : `${formatSnapshotNumber(outingSnapshot.worstPitchAvgMiss)}" avg miss`
                 }
               />
@@ -588,7 +588,7 @@ export default function PlayerDashboard({
                   Video + Miss Shape
                 </div>
                 <div className="mt-1 text-sm text-zinc-400">
-                  Review the selected pitch, then switch between scatter and heatmap without leaving the outing.
+                  Review the selected pitch, then switch between scatter and heatmap in the same outing.
                 </div>
               </div>
 
@@ -657,6 +657,10 @@ export default function PlayerDashboard({
             </div>
           </section>
 
+          {outingMeta ? (
+            <GameStatsSection meta={outingMeta} statsByGame={statsByGame} />
+          ) : null}
+
           {laneFiltered.length > 0 ? (
             <CommandPlusSection pitches={laneFiltered} outingId={outing.id} />
           ) : null}
@@ -674,9 +678,6 @@ export default function PlayerDashboard({
             />
           ) : null}
 
-          {outingMeta ? (
-            <GameStatsSection meta={outingMeta} statsByGame={statsByGame} />
-          ) : null}
         </main>
       </div>
     </div>

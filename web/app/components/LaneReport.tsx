@@ -3,6 +3,7 @@
 import type { Pitch } from "../types";
 import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { pitchArmSideX, laneOf as classifyLane, laneDisplayName, hDirectionLabel, type Lane } from "@/lib/handedness";
+import { pitchDisplayName } from "@/lib/pitchNames";
 
 export type { Lane } from "@/lib/handedness";
 
@@ -64,23 +65,6 @@ function buildBuckets(pitches: Pitch[], throwsHand: "R" | "L"): LaneBucket[] {
 interface TypeGroup {
   type: string;
   pitches: Pitch[];
-}
-
-const PITCH_NAMES: Record<string, string> = {
-  FF: "Fastball",
-  SI: "Sinker",
-  SL: "Slider",
-  CH: "Changeup",
-  CU: "Curveball",
-  FC: "Cutter",
-  FS: "Splitter",
-  KC: "Knuckle Curve",
-  CB: "Curveball",
-  CT: "Cutter",
-};
-
-function pitchName(abbr: string): string {
-  return PITCH_NAMES[abbr] ?? abbr;
 }
 
 function groupByType(pitches: Pitch[]): TypeGroup[] {
@@ -199,12 +183,12 @@ export default function LaneReport({ pitches, throwsHand, activeLane, onSelectLa
             Lane Report
           </p>
           <p className="mt-1 text-sm text-zinc-300">
-            Compare miss shape by horizontal lane inside the outing.
+            See how misses play across glove side, middle, and arm side.
           </p>
         </div>
       </div>
       <p className="mt-3 text-[11px] text-zinc-500">
-        Click a lane to filter. Click again to clear.
+        Click a lane to filter. Click again to clear it.
       </p>
       <div className={`mt-4 grid ${cols} gap-3`}>
         {groups.map((g, i) => {
@@ -215,9 +199,9 @@ export default function LaneReport({ pitches, throwsHand, activeLane, onSelectLa
               className="overflow-hidden rounded-[1.5rem] border border-zinc-800/80 bg-zinc-950/62 p-4"
             >
               <div className="flex items-center gap-2 mb-3">
-                <PitchTypeChip pitchType={g.type} label={pitchName(g.type)} size="xs" />
+                <PitchTypeChip pitchType={g.type} label={pitchDisplayName(g.type)} size="xs" />
                 <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                  Lane Breakdown
+                  By Lane
                 </span>
               </div>
               <LanePanel

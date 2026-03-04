@@ -66,15 +66,15 @@ export default function PitchTypeSummaryCards({ pitches }: Props) {
                 value={`${avg(g.pitches, (p) => p.total_miss_inches).toFixed(1)}"`}
               />
               <Stat
-                label="Avg H Miss"
+                label="Horizontal Miss"
                 value={`${avg(g.pitches, (p) => p.h_miss_inches).toFixed(1)}"`}
               />
               <Stat
-                label="Avg V Miss"
+                label="Vertical Miss"
                 value={`${avg(g.pitches, (p) => p.v_miss_inches).toFixed(1)}"`}
               />
               <Stat
-                label="Pitches"
+                label="Count"
                 value={String(g.pitches.length)}
               />
             </div>

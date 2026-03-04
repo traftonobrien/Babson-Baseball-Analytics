@@ -135,11 +135,11 @@ export default function CommandPlusSection({ pitches, outingId }: Props) {
                         </span>
                     </h3>
                     <p className="mt-2 text-sm text-zinc-300">
-                        Live execution grade against the current team baseline. 100 is team average.
+                        This outing&apos;s command grade against the current team baseline. 100 is team average.
                     </p>
                     {!isQualified && (
                         <p className="text-[11px] leading-5 text-zinc-500 mt-1.5">
-                            No official score yet. A pitch type needs at least {MIN_PITCH_COUNT} tracked pitches to qualify.
+                            No official score yet. Each pitch type needs at least {MIN_PITCH_COUNT} tracked pitches to qualify.
                         </p>
                     )}
                 </div>

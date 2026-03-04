@@ -16,7 +16,7 @@ export default function PitchingPlusPage() {
       tone="amber"
       icon={Sparkles}
       title="Plus Statistics Guide"
-      description="One reference for the site's 100-centered plus models. Pitching+ is the headline grade, while Command+ and Stuff+ define the two supporting pieces underneath it."
+      description="One reference for the site&apos;s 100-centered plus models. Pitching+ is the headline grade, with Command+ and Stuff+ as the two supporting layers."
       breadcrumbs={[
         { label: "Home", href: "/" },
         { label: "Metrics Dictionary", href: "/dictionary" },
@@ -29,7 +29,7 @@ export default function PitchingPlusPage() {
           href="#pitching-plus-formula"
           className="inline-flex items-center rounded-full border border-amber-500/25 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-200 transition-smooth hover:border-amber-400/40 hover:bg-amber-500/14"
         >
-          Pitching+ Methodology
+          Jump to Formula
         </Link>
         <Link
           href="/pitching-plus/leaderboard"
@@ -52,9 +52,9 @@ export default function PitchingPlusPage() {
               Pitching+
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-300">
-              Pitching+ is the complete-pitcher grade. It blends team-centered Stuff+ with
-              live Command+, then rolls the matched pitch types up with a hybrid weighting
-              model. On this site, 100 is team average.
+              Pitching+ is the complete-pitcher grade. It blends team-centered
+              Stuff+ with live Command+, then rolls the matched pitch types up
+              with a hybrid weighting model. On this site, 100 is team average.
             </p>
           </div>
           <div className="rounded-2xl border border-amber-400/20 bg-black/20 px-5 py-3 text-right">
@@ -75,14 +75,14 @@ export default function PitchingPlusPage() {
 {`Pitching+_p = 100 * (Stuff+_p / 100)^${PITCHING_PLUS_STUFF_WEIGHT.toFixed(2)} * (Command+_p / 100)^${PITCHING_PLUS_COMMAND_WEIGHT.toFixed(2)}`}
             </pre>
             <p className="mt-4 text-sm leading-7 text-zinc-400">
-              Each overlapping pitch type gets its own blended grade first. This keeps the
-              Stuff and Command pieces attached to the same pitch before the model rolls
-              everything up.
+              Each overlapping pitch type gets its own blended grade first. That
+              keeps the Stuff and Command pieces attached to the same pitch
+              before the model rolls everything up.
             </p>
           </div>
 
           <div className="rounded-2xl border border-zinc-800 bg-zinc-950/50 p-5">
-            <h3 className="text-lg font-bold text-zinc-100">Rollup Weighting</h3>
+            <h3 className="text-lg font-bold text-zinc-100">How It Rolls Up</h3>
             <pre className="mt-4 overflow-x-auto rounded-xl border border-zinc-800 bg-black/30 p-4 text-xs text-cyan-300">
 {`K        = number of overlapping pitch types
 usage_p  = share of tracked pitches thrown of type p
@@ -92,8 +92,8 @@ w_p = ${PITCHING_PLUS_EQUAL_SHARE_WEIGHT.toFixed(2)} * (1 / K) + ${PITCHING_PLUS
 Overall Pitching+ = Σ (w_p * Pitching+_p)`}
             </pre>
             <p className="mt-4 text-sm leading-7 text-zinc-400">
-              Half pure mix keeps great secondaries relevant. Half live usage keeps primary
-              weapons from being underweighted.
+              Half pure mix keeps strong secondaries relevant. Half live usage
+              keeps primary pitches from being underweighted.
             </p>
           </div>
         </div>
@@ -104,7 +104,8 @@ Overall Pitching+ = Σ (w_p * Pitching+_p)`}
               What 100 Means
             </p>
             <p className="mt-2 text-sm leading-6 text-zinc-300">
-              Team-average complete-pitcher grade across the matched live arsenal.
+              Team-average complete-pitcher grade across the matched live
+              arsenal.
             </p>
           </div>
           <div className="rounded-2xl border border-zinc-800 bg-zinc-950/40 p-4">
@@ -112,8 +113,8 @@ Overall Pitching+ = Σ (w_p * Pitching+_p)`}
               When It Shows
             </p>
             <p className="mt-2 text-sm leading-6 text-zinc-300">
-              Only when live command exists and at least one pitch type overlaps cleanly
-              with Stuff+.
+              Only when live command exists and at least one pitch type overlaps
+              cleanly with Stuff+.
             </p>
           </div>
           <div className="rounded-2xl border border-zinc-800 bg-zinc-950/40 p-4">
@@ -121,8 +122,8 @@ Overall Pitching+ = Σ (w_p * Pitching+_p)`}
               Why It Can Differ
             </p>
             <p className="mt-2 text-sm leading-6 text-zinc-300">
-              Pitching+ only uses the overlap set, so its internal cores can differ from
-              the standalone Command+ and Stuff+ tiles.
+              Pitching+ only uses the overlap set, so its internal cores can
+              differ from the standalone Command+ and Stuff+ tiles.
             </p>
           </div>
         </div>
@@ -134,8 +135,8 @@ Overall Pitching+ = Σ (w_p * Pitching+_p)`}
           <p className="mt-2 text-sm leading-7 text-zinc-300">
             A pitcher with a{" "}
             <span className="font-semibold text-amber-200">Pitching+ of 108</span> is
-            performing 8% above team average on the combined stuff-and-command grade across
-            their overlapping pitch types.
+            performing 8% above team average on the combined stuff-and-command
+            grade across the overlapping pitch types.
           </p>
         </div>
       </section>
@@ -149,9 +150,10 @@ Overall Pitching+ = Σ (w_p * Pitching+_p)`}
             Command+
           </h2>
           <p className="mt-3 text-sm leading-7 text-zinc-300">
-            Command+ is the full live execution grade. It compares the pitcher's miss
-            distance to the live team miss baseline and uses every qualified command pitch
-            type, even if a pitch does not make it into Pitching+.
+            Command+ is the full live execution grade. It compares a
+            pitcher&apos;s miss distance to the live team miss baseline and uses
+            every qualified command pitch, even if that pitch does not make it
+            into Pitching+.
           </p>
           <pre className="mt-4 overflow-x-auto rounded-xl border border-zinc-800 bg-black/30 p-4 text-xs text-cyan-300">
 {`Command+_pitchType = (team baseline miss / pitcher miss) * 100
@@ -159,9 +161,9 @@ Overall Pitching+ = Σ (w_p * Pitching+_p)`}
 Overall Command+ = pitch-count weighted average across all qualified live pitch types`}
           </pre>
           <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-950/35 p-4 text-sm leading-6 text-zinc-400">
-            Standalone Command+ can read higher or lower than the Pitching+ Command Core,
-            because the standalone model keeps all qualified command pitches while the core
-            only keeps the Stuff-overlap subset.
+            Standalone Command+ can read higher or lower than the Pitching+
+            Command Core because the standalone model keeps all qualified
+            command pitches, while the core only keeps the Stuff-overlap subset.
           </div>
         </section>
 
@@ -173,9 +175,9 @@ Overall Command+ = pitch-count weighted average across all qualified live pitch 
             Stuff+
           </h2>
           <p className="mt-3 text-sm leading-7 text-zinc-300">
-            Stuff+ is the standalone pitch-quality grade. On the player profile, the visible
-            Stuff+ tile is a simple average across valid pitch-type rows in the tracked
-            arsenal.
+            Stuff+ is the standalone pitch-quality grade. On the player profile,
+            the visible Stuff+ tile is a simple average across valid pitch-type
+            rows in the tracked arsenal.
           </p>
           <pre className="mt-4 overflow-x-auto rounded-xl border border-zinc-800 bg-black/30 p-4 text-xs text-cyan-300">
 {`Profile Stuff+ = simple average of valid pitch-type Stuff+ rows
@@ -183,8 +185,8 @@ Overall Command+ = pitch-count weighted average across all qualified live pitch 
 Pitching+ Stuff Core = overlap-only subset, then re-weighted inside Pitching+`}
           </pre>
           <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-950/35 p-4 text-sm leading-6 text-zinc-400">
-            Standalone Stuff+ can differ from the Pitching+ Stuff Core because Pitching+
-            removes non-overlap pitches and changes the weighting.
+            Standalone Stuff+ can differ from the Pitching+ Stuff Core because
+            Pitching+ removes non-overlap pitches and changes the weighting.
           </div>
         </section>
       </div>

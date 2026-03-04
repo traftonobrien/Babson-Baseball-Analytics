@@ -12,8 +12,8 @@ export default function LeaderboardsFaqView() {
     <DictionaryPageShell
       tone="orange"
       icon={Target}
-      title="Command Leaderboard Guide"
-      description="This guide defines the accuracy and consistency metrics used in our charting system. It explains how we measure command instead of simply counting strikes."
+      title="Command Guide"
+      description="This guide explains how the site grades command. The model measures where the pitch finished relative to the target, not just whether it was a strike."
       breadcrumbs={[
         { label: "Home", href: "/" },
         { label: "Metrics Dictionary", href: "/dictionary" },
@@ -25,21 +25,20 @@ export default function LeaderboardsFaqView() {
         tone="orange"
         icon={Target}
         title="Core Command Metrics"
-        description="Unlike raw strike percentage, our system measures the exact Euclidean distance between the catcher’s target and the actual pitch location."
+        description="Command is built from the exact miss distance between the catcher’s target and the pitch location."
       >
         <div className="space-y-6">
           <DictionaryCard className="sm:px-8">
             <h3 className="text-lg font-bold text-zinc-200">On-Target %</h3>
             <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-              The percentage of pitches thrown that landed within an{" "}
-              <strong className="text-zinc-200">8-inch radius</strong> of the
-              catcher&apos;s requested target.
+                  The share of pitches that finished within an{" "}
+                  <strong className="text-zinc-200">8-inch radius</strong> of the
+                  catcher&apos;s target.
             </p>
             <div className="mt-4 rounded-2xl border border-zinc-800/80 bg-zinc-950/75 p-4 text-sm text-zinc-500">
               <strong className="mb-1 block text-zinc-300">Why 8 inches?</strong>
-              A standard baseball is roughly 3 inches wide. An 8-inch halo
-              allows for margin of error while still ensuring the pitch stayed
-              highly competitive near the requested spot.
+              The 8-inch halo leaves room for normal variation while still
+              keeping the pitch close enough to be genuinely competitive.
             </div>
           </DictionaryCard>
 
@@ -49,10 +48,9 @@ export default function LeaderboardsFaqView() {
                 Average Miss (Total)
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                Measured in inches. The average absolute distance from the
-                intended target to the pitch&apos;s actual location across the
-                full sample. Lower is better. 10.0&quot; is roughly elite D3
-                average.
+                Measured in inches. This is the average straight-line miss from
+                the target across the full sample. Lower is better. Around
+                10.0&quot; is strong D3 command.
               </p>
             </DictionaryCard>
 
@@ -61,10 +59,10 @@ export default function LeaderboardsFaqView() {
                 Consistency (Std Dev)
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                Measured in inches. Tracks the{" "}
+                Measured in inches. This is the{" "}
                 <strong className="text-zinc-300">standard deviation</strong> of
-                the pitcher&apos;s total miss. A lower number means misses are
-                tightly clustered. A higher number means they scatter.
+                total miss. Lower means the misses cluster tightly. Higher means
+                they scatter.
               </p>
             </DictionaryCard>
           </div>
@@ -78,8 +76,8 @@ export default function LeaderboardsFaqView() {
                 </h3>
               </div>
               <p className="text-sm leading-relaxed text-zinc-400">
-                The average absolute distance missed strictly on the horizontal
-                plane. Useful for spotting early release or missing arm-side.
+                The average absolute miss on the horizontal plane. This is the
+                quickest way to spot arm-side or glove-side drift.
               </p>
             </DictionaryCard>
 
@@ -91,8 +89,8 @@ export default function LeaderboardsFaqView() {
                 </h3>
               </div>
               <p className="text-sm leading-relaxed text-zinc-400">
-                The average absolute distance missed strictly on the vertical
-                plane.
+                  The average absolute miss on the vertical plane. It shows how
+                  often the pitcher misses above or below the target line.
               </p>
             </DictionaryCard>
           </div>
@@ -100,9 +98,9 @@ export default function LeaderboardsFaqView() {
           <DictionaryCard className="border-rose-900/30 bg-rose-950/15">
             <h3 className="text-lg font-bold text-rose-200">Outlier %</h3>
             <p className="mt-2 text-sm leading-relaxed text-rose-200/70">
-              The percentage of pitches that missed the intended target by more
-              than <strong className="text-rose-100">20 inches</strong>. These
-              are strictly non-competitive misses. Lower is better.
+              The share of pitches that missed the target by more than{" "}
+              <strong className="text-rose-100">20 inches</strong>. These are
+              true non-competitive misses. Lower is better.
             </p>
           </DictionaryCard>
 
@@ -110,35 +108,33 @@ export default function LeaderboardsFaqView() {
             <h3 className="text-lg font-bold text-orange-300">Command+</h3>
             <div className="mt-3 space-y-4">
               <p className="text-sm leading-relaxed text-orange-200/70">
-                Command+ is a live, pitch-weighted metric that compares a
-                pitcher&apos;s command relative to the team&apos;s current-season
-                average for that same pitch type. A score of 100 means exactly
-                average command across the arsenal. Higher is better.
+                Command+ compares a pitcher&apos;s live miss distance to the
+                team&apos;s current baseline for the same pitch type. A score of
+                100 is team average. Higher is better.
               </p>
               <div className="rounded-2xl border border-orange-900/50 bg-orange-950/35 p-4">
                 <h4 className="mb-2 text-sm font-semibold text-orange-300">
-                  The Math Behind the Metric
+                  How Command+ Works
                 </h4>
                 <ul className="list-disc space-y-2 pl-5 text-sm text-orange-200/65">
                   <li>
-                    <strong>Pitch-Specific Baseline:</strong> We calculate the
-                    team&apos;s live season average absolute miss for every valid
-                    pitch type.
+                    <strong>Pitch baseline:</strong> Live team miss average for
+                    each valid pitch type.
                   </li>
                   <li>
-                    <strong>Relative Ratio:</strong> Team Baseline divided by the
-                    pitcher&apos;s average miss for that pitch, multiplied by 100.
+                    <strong>Relative score:</strong> Team baseline divided by
+                    the pitcher&apos;s average miss, then multiplied by 100.
                   </li>
                   <li>
-                    <strong>Usage Weighting:</strong> Global Command+ weights each
-                    pitch score by how often that pitch is thrown.
+                    <strong>Usage weighting:</strong> The overall score weights
+                    each pitch by how often it is thrown.
                   </li>
                   <li>
                     <strong>Eligibility:</strong> Blank, unknown, and{" "}
                     <code className="rounded bg-orange-950 px-1 py-0.5 text-orange-300">
                       OTHER
                     </code>{" "}
-                    rows are excluded from the official baseline and score.
+                    rows are excluded.
                   </li>
                 </ul>
               </div>

@@ -49,14 +49,14 @@ export default function TeamAveragesBar({
             </span>
           </div>
           <p className="mt-1 text-[11px] leading-5 text-zinc-500">
-            Team-average miss by pitch type, plus the weighted benchmark for this outing's pitch mix.
+            Baseline miss by pitch type, plus the weighted benchmark for this outing&apos;s pitch mix.
           </p>
         </div>
 
         {subjectAvgMiss !== null && teamMixAvgMiss !== null && (
           <div className="grid grid-cols-2 gap-3">
-            <StatChip label="Your Avg" value={subjectAvgMiss} />
-            <StatChip label="Team Benchmark" value={teamMixAvgMiss} />
+            <StatChip label="Your Avg Miss" value={subjectAvgMiss} />
+            <StatChip label="Team Mix Avg" value={teamMixAvgMiss} />
           </div>
         )}
       </div>

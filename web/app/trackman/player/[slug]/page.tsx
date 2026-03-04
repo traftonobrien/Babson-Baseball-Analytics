@@ -428,7 +428,7 @@ export default function TrackmanPlayerPage({
             icon={Radio}
             eyebrow="Trackman Profile"
             title={playerName}
-            description="Movement shape, velocity trends, and arsenal snapshots across every imported Trackman session."
+            description="Movement shape, velocity trends, and arsenal snapshots from every Trackman session."
             meta={
               <>
                 {normalizedHand ? (

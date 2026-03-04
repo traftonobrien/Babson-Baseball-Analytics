@@ -171,7 +171,7 @@ function ReportInner() {
           icon={Target}
           eyebrow="Printable Command Report"
           title={<>{report.meta.playerName}</>}
-          description="Printable command breakdown for a single outing or full rolling scope. This keeps the report math intact while bringing the screen view into the current site shell."
+          description="Printable command breakdown for a single outing or a rolling overall view."
           meta={(
             <>
               <LeaderboardPill tone="orange">

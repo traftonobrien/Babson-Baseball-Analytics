@@ -37,13 +37,13 @@ export default function PitchTypeTable({
           <thead className="bg-zinc-900/70 text-zinc-400 uppercase">
             <tr>
               <th className="px-5 py-3 text-left text-[10px] font-semibold tracking-[0.18em]">Pitch</th>
-              {showCounts && <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">#</th>}
+              {showCounts && <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Count</th>}
               <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Stuff+</th>
-              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg Velo</th>
+              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg Velocity</th>
               <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg Spin</th>
-              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg IVB</th>
-              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg HB</th>
-              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg Ext</th>
+              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg Vertical Break</th>
+              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg Horizontal Break</th>
+              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg Extension</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-800/60">
@@ -83,7 +83,7 @@ export default function PitchTypeTable({
             ))}
             {summary && (
               <tr className="bg-zinc-900/45 font-medium text-zinc-300">
-                <td className="px-5 py-3 text-zinc-400">Total</td>
+                <td className="px-5 py-3 text-zinc-400">Session Total</td>
                 {showCounts && (
                   <td className="px-5 py-3 text-right font-mono">
                     {summary.totalPitches ?? "\u2014"}

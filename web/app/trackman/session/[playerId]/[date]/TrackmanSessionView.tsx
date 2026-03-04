@@ -430,7 +430,7 @@ export default function TrackmanSessionView({
         icon={Activity}
         eyebrow="Trackman Session"
         title={<>{playerName}</>}
-        description="Single-session Trackman view with pitch-level or aggregate exports, filtered without changing any of the underlying session calculations."
+        description="Single-session Trackman view with pitch-level and aggregate splits."
         meta={(
           <>
             <LeaderboardPill tone="blue">{dateLabel}</LeaderboardPill>

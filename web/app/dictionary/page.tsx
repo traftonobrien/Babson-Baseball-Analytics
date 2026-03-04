@@ -17,42 +17,42 @@ const DICTIONARY_ITEMS = [
   {
     href: "/pitching-plus",
     label: "Plus Statistics",
-    description: "Pitching+, Command+, and Stuff+ reference in one place.",
+    description: "How Pitching+, Command+, and Stuff+ fit together.",
     icon: Sparkles,
     tone: "amber" as const,
   },
   {
     href: "/trackman/faq",
     label: "Trackman",
-    description: "Stuff+, velocity, spin, movement, and pitch quality context.",
+    description: "Definitions for Stuff+, velocity, spin, movement, and pitch quality.",
     icon: Activity,
     tone: "blue" as const,
   },
   {
     href: "/command/faq",
     label: "Command",
-    description: "On-target rate, miss shape, and Command+ definitions.",
+    description: "Definitions for on-target rate, miss shape, and Command+.",
     icon: Target,
     tone: "orange" as const,
   },
   {
     href: "/players/faq",
     label: "Players",
-    description: "How roster profiles combine the full data stack.",
+    description: "How each player profile pulls the full picture together.",
     icon: Users,
     tone: "indigo" as const,
   },
   {
     href: "/mechanics/faq",
     label: "Mechanics",
-    description: "AWRE movement metrics and efficiency model context.",
+    description: "AWRE metrics, movement checks, and efficiency scoring.",
     icon: Film,
     tone: "violet" as const,
   },
   {
     href: "/team-stats/faq",
     label: "Statistics",
-    description: "Traditional stats, value metrics, and season leaderboard math.",
+    description: "Traditional stats, value metrics, and season rankings.",
     icon: BarChart3,
     tone: "sky" as const,
   },
@@ -64,7 +64,7 @@ export default function DictionaryPage() {
       tone="blue"
       icon={Activity}
       title="Metrics Dictionary"
-      description="One place for the definitions behind every leaderboard, model, and player view."
+      description="Definitions behind every leaderboard, model, and player view."
       breadcrumbs={[{ label: "Home", href: "/" }, { label: "Metrics Dictionary" }]}
       maxWidth="max-w-6xl"
     >

@@ -184,7 +184,7 @@ export default function MechanicsHubView({ index }: { index: MechanicsIndex }) {
           icon={GaugeCircle}
           eyebrow="Mechanics Hub"
           title="Mechanics Hub"
-          description="Video-first mechanics sessions, quick reads, and review-ready clips in one place."
+          description="Review mechanics sessions, quick reads, and clips for every pitcher."
           meta={
             <>
               <LeaderboardPill tone="violet">
@@ -224,7 +224,7 @@ export default function MechanicsHubView({ index }: { index: MechanicsIndex }) {
                         Workflow
                       </div>
                       <div className="mt-1 text-sm font-semibold text-zinc-100">
-                        Start with the latest session
+                        Latest session first
                       </div>
                     </div>
                 </div>

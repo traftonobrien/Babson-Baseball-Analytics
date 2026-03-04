@@ -41,7 +41,7 @@ export default function PitchArsenalCards({
   return (
     <div>
       <h3 className="text-xs uppercase tracking-wider text-zinc-400 mb-3">
-        Pitch Arsenal
+        Arsenal Averages
       </h3>
       <div className="flex flex-col gap-3">
         {sorted.map((row) => {

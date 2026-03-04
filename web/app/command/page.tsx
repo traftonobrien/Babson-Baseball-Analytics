@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   BookOpen,
@@ -12,9 +12,9 @@ import {
 import Breadcrumbs from "../components/Breadcrumbs";
 import { players, type Outing } from "@/lib/dataIndex";
 import { seasonFromDateId } from "@/lib/season";
-import { handBadgeClassesCompact } from "@/lib/handBadge";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
 import { getCanonicalPlayerId } from "@/lib/canonicalPlayers";
+import { getTeamAccentColor, getTeamBrandEntry, hexToRgba } from "@/lib/teamBranding";
 import {
   Button,
   leaderboardFilterButtonBaseClassName,
@@ -31,6 +31,11 @@ import {
 } from "@/app/components/leaderboards/LeaderboardChrome";
 
 type ViewMode = "outings" | "players";
+type SeriesOption = {
+  value: string;
+  label: string;
+  accent: string;
+};
 
 function parsePitchCount(label: string): number {
   const match = label.match(/\((\d+)\s+pitches?\)/);
@@ -55,9 +60,212 @@ function formatDate(date: Date): string {
   });
 }
 
+function formatCompactDate(date: Date): string {
+  return date.toLocaleDateString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric",
+  });
+}
+
+function stripTeamRanking(value: string): string {
+  return value.replace(/^#\d+(?:\/\d+)?\s*/, "").trim();
+}
+
+function seriesKeyForOpponent(opponent?: string | null): string | null {
+  if (!opponent) return null;
+  const brand = getTeamBrandEntry(opponent);
+  return brand?.name ?? stripTeamRanking(opponent);
+}
+
 function outingSeason(outing: Outing): number | null {
   const dateId = outing.id.split("/")[1];
   return dateId ? seasonFromDateId(dateId) : null;
+}
+
+function OpponentPill({ opponent }: { opponent: string }) {
+  const accent = getTeamAccentColor(opponent);
+  const brand = getTeamBrandEntry(opponent);
+  const label = brand?.name ?? stripTeamRanking(opponent);
+
+  return (
+    <span
+      className="inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+      style={{
+        borderColor: hexToRgba(accent, 0.3),
+        background: `linear-gradient(135deg, ${hexToRgba(accent, 0.18)}, rgba(9,9,11,0.84))`,
+        color: "#f4f4f5",
+        boxShadow: `0 0 16px ${hexToRgba(accent, 0.08)}`,
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+function OutingContextPill({
+  date,
+  opponent,
+}: {
+  date: Date | null;
+  opponent?: string | null;
+}) {
+  const accent = opponent ? getTeamAccentColor(opponent) : null;
+  const brand = opponent ? getTeamBrandEntry(opponent) : null;
+  const opponentLabel = opponent ? brand?.name ?? stripTeamRanking(opponent) : null;
+  const label = date ? formatCompactDate(date) : "Unknown";
+  const text = opponentLabel ? `${label} - ${opponentLabel}` : label;
+
+  return (
+    <span
+      className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+      style={
+        accent
+          ? {
+              borderColor: hexToRgba(accent, 0.28),
+              background: `linear-gradient(135deg, ${hexToRgba(accent, 0.16)}, rgba(9,9,11,0.84))`,
+              boxShadow: `0 0 16px ${hexToRgba(accent, 0.08)}`,
+            }
+          : undefined
+      }
+    >
+      {text}
+    </span>
+  );
+}
+
+function HandednessPill({ throws }: { throws: "R" | "L" }) {
+  const accent = throws === "L" ? "#38bdf8" : "#f97316";
+  const label = throws === "L" ? "LHP" : "RHP";
+
+  return (
+    <span
+      className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+      style={{
+        borderColor: hexToRgba(accent, 0.28),
+        background: `linear-gradient(135deg, ${hexToRgba(accent, 0.14)}, rgba(9,9,11,0.84))`,
+        boxShadow: `0 0 14px ${hexToRgba(accent, 0.07)}`,
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+function PlayerNamePill({ name }: { name: string }) {
+  return (
+    <span className="inline-flex min-w-0 max-w-full items-center rounded-full border border-zinc-700/80 bg-[linear-gradient(135deg,rgba(39,39,42,0.72),rgba(9,9,11,0.88))] px-3 py-1 text-xs font-semibold tracking-[0.01em] text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+      <span className="truncate">{name}</span>
+    </span>
+  );
+}
+
+function SeriesDropdown({
+  options,
+  selected,
+  onChange,
+}: {
+  options: SeriesOption[];
+  selected: string;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function handlePointerDown(event: MouseEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    window.addEventListener("mousedown", handlePointerDown);
+    return () => window.removeEventListener("mousedown", handlePointerDown);
+  }, [open]);
+
+  const selectedOption = options.find((option) => option.value === selected);
+
+  return (
+    <div ref={rootRef} className="space-y-2">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+        Series
+      </div>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen((current) => !current)}
+          className="flex min-w-[16rem] items-center justify-between gap-3 rounded-2xl border border-zinc-800/80 bg-zinc-950/80 px-3.5 py-3 text-left transition-all duration-300 hover:border-orange-400/20"
+        >
+          <span className="flex min-w-0 items-center gap-2.5">
+            {selectedOption ? (
+              <>
+                <span
+                  className="h-2.5 w-2.5 shrink-0 rounded-full"
+                  style={{
+                    backgroundColor: selectedOption.accent,
+                    boxShadow: `0 0 10px ${hexToRgba(selectedOption.accent, 0.35)}`,
+                  }}
+                />
+                <span className="truncate text-sm font-semibold text-zinc-100">
+                  {selectedOption.label}
+                </span>
+              </>
+            ) : (
+              <span className="text-sm font-semibold text-zinc-100">All series</span>
+            )}
+          </span>
+          <ChevronDown
+            className={`h-4 w-4 shrink-0 text-zinc-500 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+          />
+        </button>
+
+        {open ? (
+          <div className="absolute left-0 top-full z-20 mt-2 w-full rounded-2xl border border-zinc-800/80 bg-zinc-950/95 p-2 shadow-[0_18px_40px_rgba(0,0,0,0.38)] backdrop-blur">
+            <button
+              type="button"
+              onClick={() => {
+                onChange("all");
+                setOpen(false);
+              }}
+              className={`flex w-full items-center rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all duration-200 ${
+                selected === "all" ? "bg-zinc-900 text-zinc-100" : "text-zinc-400 hover:bg-zinc-900/70 hover:text-zinc-100"
+              }`}
+            >
+              All series
+            </button>
+            <div className="mt-1 space-y-1">
+              {options.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(option.value);
+                    setOpen(false);
+                  }}
+                  className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm transition-all duration-200 ${
+                    selected === option.value
+                      ? "bg-zinc-900 text-zinc-100"
+                      : "text-zinc-400 hover:bg-zinc-900/70 hover:text-zinc-100"
+                  }`}
+                >
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{
+                      backgroundColor: option.accent,
+                      boxShadow: `0 0 10px ${hexToRgba(option.accent, 0.35)}`,
+                    }}
+                  />
+                  <span className="truncate font-medium">{option.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
 }
 
 function HubSegment<T extends string>({
@@ -140,6 +348,7 @@ export default function CommandPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("outings");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [seasonFilter, setSeasonFilter] = useState<string>("2026");
+  const [seriesFilter, setSeriesFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const { slug: selectedSlug } = useSelectedPlayer();
   const selectedPlayerId = selectedSlug ? getCanonicalPlayerId(selectedSlug) : null;
@@ -157,13 +366,48 @@ export default function CommandPage() {
     return Array.from(values).sort((a, b) => a - b);
   }, []);
 
-  const filterOutings = useMemo(() => {
+  const filterOutingsBySeason = useMemo(() => {
     return (outings: Outing[]) => {
       if (seasonFilter === "all") return outings;
       const year = Number(seasonFilter);
       return outings.filter((outing) => outingSeason(outing) === year);
     };
   }, [seasonFilter]);
+
+  const availableSeries = useMemo(() => {
+    const bySeries = new Map<string, SeriesOption>();
+
+    for (const player of players) {
+      for (const outing of filterOutingsBySeason(player.outings)) {
+        const key = seriesKeyForOpponent(outing.opponent);
+        if (!key || bySeries.has(key)) continue;
+
+        bySeries.set(key, {
+          value: key,
+          label: key,
+          accent: getTeamAccentColor(outing.opponent ?? key),
+        });
+      }
+    }
+
+    return Array.from(bySeries.values()).sort((a, b) => a.label.localeCompare(b.label));
+  }, [filterOutingsBySeason]);
+
+  const resolvedSeriesFilter =
+    seriesFilter === "all" || availableSeries.some((option) => option.value === seriesFilter)
+      ? seriesFilter
+      : "all";
+
+  const filterOutings = useMemo(() => {
+    return (outings: Outing[]) => {
+      const seasonFiltered = filterOutingsBySeason(outings);
+      if (resolvedSeriesFilter === "all") return seasonFiltered;
+
+      return seasonFiltered.filter(
+        (outing) => seriesKeyForOpponent(outing.opponent) === resolvedSeriesFilter,
+      );
+    };
+  }, [filterOutingsBySeason, resolvedSeriesFilter]);
 
   const stats = useMemo(() => {
     const filteredPlayers = players.filter((player) => filterOutings(player.outings).length > 0);
@@ -263,7 +507,7 @@ export default function CommandPage() {
         icon={Target}
         eyebrow="Command Tracking"
         title="Command Hub"
-        description="Jump between live command days and each pitcher’s running history in the same command view."
+        description="Move between recent outings and each pitcher’s running command history."
         meta={
           <>
             <LeaderboardPill tone="orange">{seasonLabel}</LeaderboardPill>
@@ -276,13 +520,13 @@ export default function CommandPage() {
               href="/command/leaderboard"
               icon={Target}
               title="Command Leaderboard"
-              detail="Open the ranked board for command plus, on-target rate, and miss shape."
+              detail="Open the ranked board for Command+, on-target rate, and miss shape."
             />
             <HeroActionCard
               href="/command/faq"
               icon={BookOpen}
               title="Metrics Dictionary"
-              detail="Keep the command grading language nearby while you move through outings."
+              detail="Keep the command definitions close while you work through outings."
             />
           </div>
         }
@@ -321,6 +565,18 @@ export default function CommandPage() {
                 }
               />
             ) : null}
+            {availableSeries.length > 0 ? (
+              <SeriesDropdown
+                options={availableSeries}
+                selected={resolvedSeriesFilter}
+                onChange={(value) =>
+                  runWithTransition(() => {
+                    setSeriesFilter(value);
+                    setExpanded(null);
+                  })
+                }
+              />
+            ) : null}
           </div>
 
           <div className="w-full xl:max-w-sm">
@@ -352,8 +608,8 @@ export default function CommandPage() {
             </div>
           <div className="mt-1 text-sm text-zinc-400">
             {viewMode === "outings"
-              ? "Ordered by most recent. Open any day to jump straight into that report."
-              : "One expandable row per pitcher, with the latest outing first."}
+              ? "Ordered by most recent. Open any day to view that outing."
+              : "One expandable row per pitcher, with the latest outing at the top."}
           </div>
           </div>
           <LeaderboardPill tone={viewMode === "outings" ? "orange" : "neutral"} className="self-start sm:self-auto">
@@ -362,7 +618,7 @@ export default function CommandPage() {
         </div>
 
         <div
-          key={`${viewMode}-${seasonFilter}-${transitionKey}`}
+          key={`${viewMode}-${seasonFilter}-${resolvedSeriesFilter}-${transitionKey}`}
           className="p-4 sm:p-5"
         >
           {viewMode === "outings" ? (
@@ -387,19 +643,9 @@ export default function CommandPage() {
                       style={rowTransition.style}
                     >
                       <div className="flex min-w-0 flex-wrap items-center gap-2.5 sm:gap-3">
-                        <span className="inline-flex min-w-[7.5rem] items-center rounded-full border border-zinc-800 bg-zinc-950/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-300">
-                          {row.date ? formatDate(row.date) : "Unknown"}
-                        </span>
-                        <span className="truncate text-sm font-semibold text-zinc-100">
-                          {row.player.name}
-                        </span>
-                        <span
-                          className={`text-[10px] px-1.5 py-0.5 rounded font-normal ${handBadgeClassesCompact(
-                            row.player.throws === "L" ? "L" : "R",
-                          )}`}
-                        >
-                          {row.player.throws === "L" ? "LHP" : "RHP"}
-                        </span>
+                        <OutingContextPill date={row.date} opponent={row.outing.opponent} />
+                        <PlayerNamePill name={row.player.name} />
+                        <HandednessPill throws={row.player.throws} />
                         {isMe ? (
                           <span className="text-[10px] font-semibold uppercase tracking-wider rounded-md border border-emerald-500/30 bg-emerald-500/15 px-1.5 py-0.5 text-emerald-300">
                             You
@@ -445,16 +691,8 @@ export default function CommandPage() {
                     >
                       <div className="min-w-0 space-y-2">
                         <div className="flex min-w-0 flex-wrap items-center gap-2.5">
-                          <span className="truncate text-sm font-semibold text-zinc-100">
-                            {item.player.name}
-                          </span>
-                          <span
-                            className={`text-[10px] px-1.5 py-0.5 rounded font-normal ${handBadgeClassesCompact(
-                              item.player.throws === "L" ? "L" : "R",
-                            )}`}
-                          >
-                            {item.player.throws === "L" ? "LHP" : "RHP"}
-                          </span>
+                          <PlayerNamePill name={item.player.name} />
+                          <HandednessPill throws={item.player.throws} />
                           {isMe ? (
                             <span className="text-[10px] font-semibold uppercase tracking-wider rounded-md border border-emerald-500/30 bg-emerald-500/15 px-1.5 py-0.5 text-emerald-300">
                               You
@@ -492,9 +730,7 @@ export default function CommandPage() {
                               className="flex items-center justify-between gap-4 rounded-2xl border border-zinc-800/70 bg-zinc-950/70 px-3.5 py-2.5 text-sm transition-all duration-300 hover:border-orange-400/20 hover:bg-zinc-900/80"
                             >
                               <div className="flex min-w-0 items-center gap-3">
-                                <span className="text-zinc-200">
-                                  {outing.date ? formatDate(outing.date) : outing.label}
-                                </span>
+                                <OutingContextPill date={outing.date} opponent={outing.opponent} />
                                 <span className="text-xs font-mono text-zinc-500">
                                   {parsePitchCount(outing.label)} pitches
                                 </span>

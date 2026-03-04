@@ -108,7 +108,7 @@ export default function MechanicsPlayerView({ playerSlug }: { playerSlug: string
           icon={GaugeCircle}
           eyebrow="Mechanics Profile"
           title={displayName}
-          description="Review session history and open any mechanics breakdown from the latest read backward."
+          description="Review session history and open any mechanics breakdown, starting with the latest session."
           meta={
             <>
               <LeaderboardPill tone="violet">
@@ -165,7 +165,7 @@ export default function MechanicsPlayerView({ playerSlug }: { playerSlug: string
               Session History
             </div>
             <div className="mt-1 text-sm text-zinc-300">
-              Ordered by most recent. Open any session to jump into the full mechanics report.
+              Ordered by most recent. Open any session to view the full breakdown.
             </div>
           </div>
 

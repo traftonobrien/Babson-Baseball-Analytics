@@ -2,24 +2,8 @@
 
 import { useMemo } from "react";
 import { pitchColor } from "@/lib/pitchColors";
+import { pitchDisplayName } from "@/lib/pitchNames";
 import { deriveMetrics, type TrackmanPitch } from "@/lib/trackman/metrics";
-
-const PITCH_NAMES: Record<string, string> = {
-  FF: "Fastball",
-  SI: "Sinker",
-  SL: "Slider",
-  CH: "Changeup",
-  CU: "Curveball",
-  FC: "Cutter",
-  FS: "Splitter",
-  KC: "Knuckle Curve",
-  CB: "Curveball",
-  CT: "Cutter",
-};
-
-function pitchName(abbr: string): string {
-  return PITCH_NAMES[abbr] ?? abbr;
-}
 
 function fmt(v: number | null, d = 1): string {
   if (v === null) return "\u2014";
@@ -49,7 +33,7 @@ export default function KpiCards({ pitches }: { pitches: TrackmanPitch[] }) {
     <div className="overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/65 shadow-[0_24px_64px_rgba(0,0,0,0.28)]">
       <div className="border-b border-zinc-800/80 px-5 py-4">
         <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-          Session Averages
+          Session Averages by Pitch
         </div>
       </div>
       <div className="overflow-x-auto">
@@ -57,13 +41,13 @@ export default function KpiCards({ pitches }: { pitches: TrackmanPitch[] }) {
           <thead className="bg-zinc-900/70 text-zinc-400 uppercase">
             <tr>
               <th className="px-5 py-3 text-left text-[10px] font-semibold tracking-[0.18em]">Pitch</th>
-              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">#</th>
-              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg Velo</th>
-              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Max Velo</th>
+              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Count</th>
+              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg Velocity</th>
+              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Max Velocity</th>
               <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg Spin</th>
-              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg IVB</th>
-              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg HB</th>
-              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg Ext</th>
+              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg Vertical Break</th>
+              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg Horizontal Break</th>
+              <th className="px-5 py-3 text-right text-[10px] font-semibold tracking-[0.18em]">Avg Extension</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-800/60">
@@ -77,7 +61,7 @@ export default function KpiCards({ pitches }: { pitches: TrackmanPitch[] }) {
                     className="inline-block w-2 h-2 rounded-full mr-1.5"
                     style={{ backgroundColor: pitchColor(type) }}
                   />
-                  {pitchName(type)}
+                  {pitchDisplayName(type)}
                 </td>
                 <td className="px-5 py-3 text-right font-mono">{kpis.count}</td>
                 <td className="px-5 py-3 text-right font-mono">{fmt(kpis.avgVelo)}</td>
@@ -89,7 +73,7 @@ export default function KpiCards({ pitches }: { pitches: TrackmanPitch[] }) {
               </tr>
             ))}
             <tr className="bg-zinc-900/45 font-medium text-zinc-300">
-              <td className="px-5 py-3 text-zinc-400">Total</td>
+              <td className="px-5 py-3 text-zinc-400">Session Total</td>
               <td className="px-5 py-3 text-right font-mono">{totals.count}</td>
               <td className="px-5 py-3 text-right font-mono">{fmt(totals.avgVelo)}</td>
               <td className="px-5 py-3 text-right font-mono">{fmt(totals.maxVelo)}</td>

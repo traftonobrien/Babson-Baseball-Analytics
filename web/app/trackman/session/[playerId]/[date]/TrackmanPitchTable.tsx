@@ -13,15 +13,15 @@ function fmt(v: number | null, d = 1): string {
 }
 
 const columns: { key: SortKey; label: string; decimals: number; align: "left" | "right" }[] = [
-  { key: "pitchNo", label: "#", decimals: 0, align: "left" },
-  { key: "pitchType", label: "Type", decimals: 0, align: "left" },
-  { key: "mph", label: "Velo", decimals: 1, align: "right" },
+  { key: "pitchNo", label: "Pitch #", decimals: 0, align: "left" },
+  { key: "pitchType", label: "Pitch", decimals: 0, align: "left" },
+  { key: "mph", label: "Velocity", decimals: 1, align: "right" },
   { key: "rpm", label: "Spin", decimals: 0, align: "right" },
-  { key: "ivb", label: "IVB", decimals: 1, align: "right" },
-  { key: "hb", label: "HB", decimals: 1, align: "right" },
-  { key: "extension", label: "Ext", decimals: 1, align: "right" },
-  { key: "relHeight", label: "Rel H", decimals: 2, align: "right" },
-  { key: "relSide", label: "Rel S", decimals: 2, align: "right" },
+  { key: "ivb", label: "Vertical Break", decimals: 1, align: "right" },
+  { key: "hb", label: "Horizontal Break", decimals: 1, align: "right" },
+  { key: "extension", label: "Extension", decimals: 1, align: "right" },
+  { key: "relHeight", label: "Release Height", decimals: 2, align: "right" },
+  { key: "relSide", label: "Release Side", decimals: 2, align: "right" },
 ];
 
 export default function TrackmanPitchTable({ pitches }: { pitches: TrackmanPitch[] }) {

@@ -300,7 +300,7 @@ export default function HomeContent() {
             icon={Users}
             eyebrow="Foundation"
             title="Player Profiles"
-            description="Every pitcher, all in one place. Open the roster and get to stats, Trackman, command, and video from the same page."
+            description="Open the roster, then move from each pitcher into stats, Trackman, command, and video."
             details={["Roster", "Profiles", "Comparisons"]}
             className="lg:col-span-6"
           />
@@ -310,7 +310,7 @@ export default function HomeContent() {
             icon={BarChart3}
             eyebrow="Production"
             title="Statistics"
-            description="Season results for the staff, organized as one clean leaderboard."
+            description="Season production for the staff, laid out in one ranked board."
             details={["ERA", "WHIP", "K%", "BB%"]}
             className="lg:col-span-3"
           />
@@ -363,7 +363,7 @@ export default function HomeContent() {
             icon={Sparkles}
             eyebrow="Blend"
             title="Pitching+"
-            description="Roll the live stuff and command picture together into one ranking view."
+            description="See how live stuff and command blend into one leaderboard view."
             details={["Pitching+", "Command+", "Stuff+"]}
           />
         </div>
@@ -386,7 +386,7 @@ export default function HomeContent() {
             icon={LayoutGrid}
             eyebrow="Map"
             title="Leaderboards"
-            description="See every leaderboard in one place, then jump directly into the ranking you need."
+            description="Open the full set of rankings, then go straight to the board you need."
             details={["Command", "Trackman", "Pitching+", "Statistics"]}
           />
           <HomeLinkCard
@@ -395,7 +395,7 @@ export default function HomeContent() {
             icon={BookOpen}
             eyebrow="Reference"
             title="Metrics Dictionary"
-            description="Definitions, grading context, and guide pages for each major part of the system."
+            description="Definitions, grading context, and guide pages for every major part of the site."
             details={["Definitions", "Guides", "Context"]}
           />
         </div>

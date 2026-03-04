@@ -4,6 +4,7 @@ export interface Outing {
   csvPath: string;
   overlayDir: string;
   clipsDir: string;
+  opponent?: string | null;
 }
 
 export interface Player {
@@ -12,6 +13,17 @@ export interface Player {
   throws: "R" | "L";
   outings: Outing[];
 }
+
+const OPPONENTS_BY_DATE_ID: Record<string, string> = {
+  "2025_03_26": "Suffolk",
+  "2025_04_09": "Suffolk",
+  "2025_04_14": "#13/14 Salve Regina",
+  "2025_04_27": "Coast Guard",
+  "2025_10_04": "UMass Boston",
+  "2026_02_27": "#1/6 Trinity (Texas)",
+  "2026_02_28": "#1/6 Trinity (Texas)",
+  "2026_03_01": "#1/6 Trinity (Texas)",
+};
 
 export const players: Player[] = [
   {
@@ -216,6 +228,6 @@ export function buildDataPaths(playerId: string, dateId: string) {
     csvPath: `/data/${playerId}/${dateId}/pitch_data_overlay_lite.csv`,
     overlayDir: `/data/${playerId}/${dateId}/results`,
     clipsDir: `/data/${playerId}/${dateId}/clips`,
+    opponent: OPPONENTS_BY_DATE_ID[dateId] ?? null,
   };
 }
-

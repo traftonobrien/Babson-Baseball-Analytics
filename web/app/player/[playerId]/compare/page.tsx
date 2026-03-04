@@ -212,7 +212,7 @@ function CompareInner() {
         icon={Target}
         eyebrow="Command Compare"
         title={<>{player.name}</>}
-        description="Line two outings up side by side and compare miss shape, pitch-level execution, and lane breakdowns without changing the underlying report math."
+        description="Set two outings side by side to compare miss shape, pitch-level execution, and lane breakdowns."
         meta={
           <>
             <LeaderboardPill tone="orange">Outing to outing</LeaderboardPill>

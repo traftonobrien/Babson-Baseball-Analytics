@@ -202,7 +202,7 @@ export default function TrackmanPlayersPage() {
             icon={Radio}
             eyebrow="Trackman Hub"
             title="Trackman Hub"
-            description="Browse imported Trackman player profiles and jump straight into movement, velocity, and session history."
+            description="Browse Trackman player profiles for movement, velocity, and session history."
             meta={
               <>
                 <LeaderboardPill tone="blue">

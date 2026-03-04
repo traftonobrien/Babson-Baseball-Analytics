@@ -9,12 +9,14 @@ export default function MechanicsFaqView() {
             tone="violet"
             icon={Film}
             eyebrow="Metrics Dictionary"
-            title="AWRE Pitching Metrics Guide"
+            title="Mechanics Guide"
             description={
                 <>
-                    Welcome to the AWRE pitching mechanics evaluation guide. Our computer vision pipeline tracks the pitcher&apos;s body through the full delivery to generate a{" "}
+                    This guide explains the AWRE mechanics model. The
+                    computer-vision pipeline tracks the full delivery and
+                    turns it into a{" "}
                     <strong className="text-zinc-200">0-10 Efficiency Score</strong>.
-                    {" "}This document defines every metric we evaluate and how each score is calculated from AWRE camera footage.
+                    {" "}Below is what each metric measures and how it is scored.
                 </>
             }
             breadcrumbs={[
@@ -31,7 +33,7 @@ export default function MechanicsFaqView() {
                         Core Efficiency Metrics
                     </h2>
                     <p className="text-zinc-400 mb-10">
-                        These seven primary metrics strictly drive the overall Mechanics Efficiency Score.
+                        These seven metrics are the main drivers of the overall Mechanics Efficiency Score.
                     </p>
 
                     <div className="space-y-12">
@@ -43,14 +45,14 @@ export default function MechanicsFaqView() {
                             </h3>
                             <div className="space-y-4 text-sm text-zinc-400 leading-relaxed">
                                 <p>
-                                    <strong className="text-zinc-200 tracking-wide">What it is:</strong> The elapsed time from the pitcher&apos;s SET phase to FOOT STRIKE (when the lead foot plants).
+                                    <strong className="text-zinc-200 tracking-wide">What it is:</strong> The time from the set position to foot strike.
                                 </p>
                                 <p>
-                                    <strong className="text-zinc-200 tracking-wide">How it&apos;s measured:</strong> We calculate the difference in time (in seconds) between the exact video frame where the pitcher begins their motion and the frame where the lead foot plants.
+                                    <strong className="text-zinc-200 tracking-wide">How it&apos;s measured:</strong> We calculate the exact number of seconds between first movement and lead-foot plant.
                                 </p>
                                 <div className="pt-2">
                                     <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-semibold mb-2 block">
-                                        Scoring Criteria:
+                                        Scoring:
                                     </span>
                                     <ul className="list-disc list-inside space-y-1.5 ml-1">
                                         <li>1.05 seconds or faster: <span className="text-green-400 font-mono ml-1">10/10</span></li>
@@ -68,14 +70,14 @@ export default function MechanicsFaqView() {
                             </h3>
                             <div className="space-y-4 text-sm text-zinc-400 leading-relaxed">
                                 <p>
-                                    <strong className="text-zinc-200 tracking-wide">What it is:</strong> Measures the pitcher&apos;s lateral trunk lean (angle offset from perfectly vertical) at the exact moment of BALL RELEASE.
+                                    <strong className="text-zinc-200 tracking-wide">What it is:</strong> The pitcher&apos;s side-to-side trunk lean at ball release.
                                 </p>
                                 <p>
-                                    <strong className="text-zinc-200 tracking-wide">How it&apos;s measured:</strong> The trunk is defined as the 2D vector drawn from the mid-point of the hips to the mid-point of the shoulders. We calculate the angle of this vector from a perfectly vertical line.
+                                    <strong className="text-zinc-200 tracking-wide">How it&apos;s measured:</strong> We draw a trunk line from the hips to the shoulders and measure its angle away from vertical.
                                 </p>
                                 <div className="pt-2">
                                     <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-semibold mb-2 block">
-                                        Scoring Criteria:
+                                        Scoring:
                                     </span>
                                     <ul className="list-disc list-inside space-y-1.5 ml-1">
                                         <li>Less than 6&deg; lean: <span className="text-green-400 font-mono ml-1">10/10</span></li>
@@ -93,14 +95,14 @@ export default function MechanicsFaqView() {
                             </h3>
                             <div className="space-y-4 text-sm text-zinc-400 leading-relaxed">
                                 <p>
-                                    <strong className="text-zinc-200 tracking-wide">What it is:</strong> Measures the vertical drop or travel of the pitcher&apos;s head from SET to BALL RELEASE.
+                                    <strong className="text-zinc-200 tracking-wide">What it is:</strong> The amount of head drop from set to ball release.
                                 </p>
                                 <p>
-                                    <strong className="text-zinc-200 tracking-wide">How it&apos;s measured:</strong> We track the absolute pixel vertical distance of the nose between the Set phase and the Ball Release phase. To make this measurement accurate across all body types and camera distances, we divide this pixel drop by the pitcher&apos;s estimated body height to get a percentage of height traveled.
+                                    <strong className="text-zinc-200 tracking-wide">How it&apos;s measured:</strong> We track the nose vertically, then normalize that drop by estimated body height so the score scales across body types and camera distances.
                                 </p>
                                 <div className="pt-2">
                                     <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-semibold mb-2 block">
-                                        Scoring Criteria:
+                                        Scoring:
                                     </span>
                                     <ul className="list-disc list-inside space-y-1.5 ml-1">
                                         <li>1% drop or less: <span className="text-green-400 font-mono ml-1">10/10</span></li>
@@ -118,14 +120,14 @@ export default function MechanicsFaqView() {
                             </h3>
                             <div className="space-y-4 text-sm text-zinc-400 leading-relaxed">
                                 <p>
-                                    <strong className="text-zinc-200 tracking-wide">What it is:</strong> Evaluates how effectively the pitcher is loading their back hip and glute before driving down the mound.
+                                    <strong className="text-zinc-200 tracking-wide">What it is:</strong> How well the pitcher loads the back hip before driving down the mound.
                                 </p>
                                 <p>
-                                    <strong className="text-zinc-200 tracking-wide">How it&apos;s measured:</strong> At the PEAK LEG LIFT frame, we draw an energy vector originating at the planted drive ankle (back foot) and pointing to the elevated stride hip (front hip). We measure this angle above horizontal.
+                                    <strong className="text-zinc-200 tracking-wide">How it&apos;s measured:</strong> At peak leg lift, we measure the angle from the drive ankle to the stride hip above horizontal.
                                 </p>
                                 <div className="pt-2">
                                     <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-semibold mb-2 block">
-                                        Scoring Criteria:
+                                        Scoring:
                                     </span>
                                     <ul className="list-disc list-inside space-y-1.5 ml-1">
                                         <li>25&deg; angle or more: <span className="text-green-400 font-mono ml-1">10/10</span></li>
@@ -143,14 +145,14 @@ export default function MechanicsFaqView() {
                             </h3>
                             <div className="space-y-4 text-sm text-zinc-400 leading-relaxed">
                                 <p>
-                                    <strong className="text-zinc-200 tracking-wide">What it is:</strong> Checks if the front glove-side arm remains inside the geometric bounds of the torso at BALL RELEASE.
+                                    <strong className="text-zinc-200 tracking-wide">What it is:</strong> Whether the glove-side arm stays stable and inside the torso window at release.
                                 </p>
                                 <p>
-                                    <strong className="text-zinc-200 tracking-wide">How it&apos;s measured:</strong> We calculate the horizontal bounding box of the torso (bounded by the shoulders and hips) at the Release frame. If the glove wrist falls within these lines, the pitcher remained stable.
+                                    <strong className="text-zinc-200 tracking-wide">How it&apos;s measured:</strong> We build a horizontal torso boundary from the shoulders and hips, then check whether the glove wrist stays inside it at release.
                                 </p>
                                 <div className="pt-2">
                                     <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-semibold mb-2 block">
-                                        Scoring Criteria:
+                                        Scoring:
                                     </span>
                                     <ul className="list-disc list-inside space-y-1.5 ml-1">
                                         <li>Glove inside torso bounds: <span className="text-green-400 font-mono ml-1">10/10</span></li>
@@ -166,18 +168,18 @@ export default function MechanicsFaqView() {
                                 <span className="text-sm font-mono text-violet-500/50">6.</span> Trunk Stability (Core Control)
                             </h3>
                             <p className="text-xs text-zinc-500 mb-4 italic ml-7">
-                                *Note: This metric serves as our measure for body rotation ("Stack &amp; Track") for single-camera 2D video.*
+                                *For single-camera 2D video, this is our best proxy for body rotation.*
                             </p>
                             <div className="space-y-4 text-sm text-zinc-400 leading-relaxed mt-4">
                                 <p>
-                                    <strong className="text-zinc-200 tracking-wide">What it is:</strong> Measures how much the pitcher&apos;s core lean changes between FOOT STRIKE and BALL RELEASE.
+                                    <strong className="text-zinc-200 tracking-wide">What it is:</strong> How much trunk angle changes between foot strike and ball release.
                                 </p>
                                 <p>
-                                    <strong className="text-zinc-200 tracking-wide">How it&apos;s measured:</strong> We calculate the angle of the trunk vector (mid-hip to mid-shoulder) at Foot Strike, and compare it to the trunk angle at Ball Release. The difference between these two angles dictates the score.
+                                    <strong className="text-zinc-200 tracking-wide">How it&apos;s measured:</strong> We compare the trunk angle at foot strike to the trunk angle at release. The difference drives the score.
                                 </p>
                                 <div className="pt-2">
                                     <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-semibold mb-2 block">
-                                        Scoring Criteria:
+                                        Scoring:
                                     </span>
                                     <ul className="list-disc list-inside space-y-1.5 ml-1">
                                         <li>5&deg; delta or less: <span className="text-green-400 font-mono ml-1">10/10</span></li>
@@ -195,14 +197,14 @@ export default function MechanicsFaqView() {
                             </h3>
                             <div className="space-y-4 text-sm text-zinc-400 leading-relaxed">
                                 <p>
-                                    <strong className="text-zinc-200 tracking-wide">What it is:</strong> A measure of Hip-to-Shoulder Separation. Evaluates how "closed" (pointing toward 3rd or 1st base) the shoulders remain at FOOT STRIKE relative to how completely "open" (pointing at home plate) they are at BALL RELEASE.
+                                    <strong className="text-zinc-200 tracking-wide">What it is:</strong> A hip-to-shoulder separation check that measures how closed the shoulders stay at foot strike.
                                 </p>
                                 <p>
-                                    <strong className="text-zinc-200 tracking-wide">How it&apos;s measured:</strong> Using the 2D pixel angle of the shoulder line, we compare the shoulder angle at Foot Strike to the angle at Release and express it as a simple ratio (Openness at Foot Strike / Openness at Release). A ratio near 0.0 means the shoulders barely rotated before foot strike (preserving torque). A ratio near 1.0 means the shoulders were already fully open facing the batter at foot plant.
+                                    <strong className="text-zinc-200 tracking-wide">How it&apos;s measured:</strong> We compare the shoulder-line angle at foot strike to the angle at release and express it as an openness ratio. Lower means the shoulders stayed closed longer. Higher means they opened early.
                                 </p>
                                 <div className="pt-2">
                                     <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-semibold mb-2 block">
-                                        Scoring Criteria:
+                                        Scoring:
                                     </span>
                                     <ul className="list-disc list-inside space-y-1.5 ml-1">
                                         <li>Ratio of 0.10 or less: <span className="text-green-400 font-mono ml-1">10/10</span></li>
@@ -222,7 +224,7 @@ export default function MechanicsFaqView() {
                         Secondary &amp; Supporting Metrics
                     </h2>
                     <p className="text-zinc-400 mb-10">
-                        These metrics provide rich, coach-level insights and data points, but typically do not heavily penalize the core Efficiency Score.
+                        These metrics add context for coaches, but they do not usually drive the core score as heavily.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -230,10 +232,10 @@ export default function MechanicsFaqView() {
                         <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl p-6">
                             <h3 className="text-lg font-bold text-zinc-200 mb-3">Arm Timing</h3>
                             <p className="text-sm text-zinc-400 leading-relaxed mb-3">
-                                <strong className="text-zinc-300">What it is:</strong> Ensures the throwing arm reaches its cocked (flip-up) position at roughly the exact same time the front foot takes the pitcher&apos;s full body weight.
+                                <strong className="text-zinc-300">What it is:</strong> Checks whether the throwing arm is up when the front side takes full weight.
                             </p>
                             <p className="text-sm text-zinc-400 leading-relaxed">
-                                <strong className="text-zinc-300">How it&apos;s measured:</strong> We calculate the frame offset between the arm flip-up phase and the weight-bearing phase.
+                                <strong className="text-zinc-300">How it&apos;s measured:</strong> We calculate the frame offset between arm flip-up and the weight-bearing phase.
                             </p>
                             <ul className="list-disc list-inside space-y-1 mt-3 text-sm text-zinc-400 ml-1">
                                 <li><strong className="text-green-400 font-normal">On time:</strong> 0 to 2 frames before weight bearing</li>
@@ -245,44 +247,44 @@ export default function MechanicsFaqView() {
                         <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl p-6">
                             <h3 className="text-lg font-bold text-zinc-200 mb-3">Arm Alignment &amp; Flexion</h3>
                             <p className="text-sm text-zinc-400 leading-relaxed mb-3">
-                                <strong className="text-zinc-300">What it is:</strong> Evaluates whether the throwing elbow is properly elevated and flexed when the arm cocks back.
+                                <strong className="text-zinc-300">What it is:</strong> Checks whether the throwing elbow is in a strong position when the arm cocks back.
                             </p>
                             <p className="text-sm text-zinc-400 leading-relaxed mb-2">
                                 <strong className="text-zinc-300">How it&apos;s measured:</strong> A balanced composite of:
                             </p>
                             <ul className="list-decimal list-outside space-y-1.5 text-sm text-zinc-400 ml-4">
-                                <li><strong>Shoulder-Elbow Line Level:</strong> The shoulder-to-elbow vector should be exactly in line with the horizontal shoulder-to-shoulder vector.</li>
-                                <li><strong>Elbow Flexion:</strong> The angle of the inner elbow hinge should ideally be 90&deg; or less.</li>
+                                <li><strong>Shoulder-elbow line:</strong> The shoulder-to-elbow line should stay level with the shoulder line.</li>
+                                <li><strong>Elbow flexion:</strong> The inner elbow angle should ideally stay at 90&deg; or less.</li>
                             </ul>
                         </div>
 
                         <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl p-6">
                             <h3 className="text-lg font-bold text-zinc-200 mb-3">Front Knee Bracing</h3>
                             <p className="text-sm text-zinc-400 leading-relaxed mb-3">
-                                <strong className="text-zinc-300">What it is:</strong> Measures if the front leg blocks and acts as a firm brake to catapult the upper body forward.
+                                <strong className="text-zinc-300">What it is:</strong> Checks whether the front leg firms up and creates a stable brace.
                             </p>
                             <p className="text-sm text-zinc-400 leading-relaxed">
-                                <strong className="text-zinc-300">How it&apos;s measured:</strong> We compare the internal angle of the lead knee at FOOT STRIKE vs BALL RELEASE. If the angle increases (extends), it braced. If it decreases (flexes further), the pitcher leaked energy by lunging.
+                                <strong className="text-zinc-300">How it&apos;s measured:</strong> We compare the lead-knee angle at foot strike to the angle at release. More extension means a brace. More bend means energy leaked forward.
                             </p>
                         </div>
 
                         <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl p-6">
                             <h3 className="text-lg font-bold text-zinc-200 mb-3">Release Extension</h3>
                             <p className="text-sm text-zinc-400 leading-relaxed mb-3">
-                                <strong className="text-zinc-300">What it is:</strong> Evaluates how far down the mound the pitcher releases the baseball, making the pitch appear faster to the hitter.
+                                <strong className="text-zinc-300">What it is:</strong> Estimates how far out front the pitcher releases the ball.
                             </p>
                             <p className="text-sm text-zinc-400 leading-relaxed">
-                                <strong className="text-zinc-300">How it&apos;s measured:</strong> This is a composite proxy metric using the normalized forward distance of the throwing wrist relative to the drive hip, the shoulder-to-wrist release angle, and forward wrist velocity before release.
+                                <strong className="text-zinc-300">How it&apos;s measured:</strong> It uses a proxy blend of forward wrist distance, shoulder-to-wrist release angle, and wrist speed into release.
                             </p>
                         </div>
 
                         <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl p-6 md:col-span-2">
                             <h3 className="text-lg font-bold text-zinc-200 mb-3">Loading Profile</h3>
                             <p className="text-sm text-zinc-400 leading-relaxed mb-3">
-                                <strong className="text-zinc-300">What it is:</strong> A snapshot evaluation of the athlete at their lowest, deepest point of the stride between Peak Leg Lift and Foot Strike.
+                                <strong className="text-zinc-300">What it is:</strong> A snapshot of the athlete at the deepest point of the move between peak leg lift and foot strike.
                             </p>
                             <p className="text-sm text-zinc-400 leading-relaxed mb-2">
-                                <strong className="text-zinc-300">How it&apos;s measured:</strong> Merges four independent measurements into one profile score:
+                                <strong className="text-zinc-300">How it&apos;s measured:</strong> It merges four checks into one profile score:
                             </p>
                             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                                 <li className="flex items-start gap-2 text-sm text-zinc-400">
@@ -316,28 +318,30 @@ export default function MechanicsFaqView() {
                             Disabled Metrics
                         </h2>
                         <p className="text-rose-200/70 mb-8 max-w-2xl leading-relaxed">
-                            We believe in strict data integrity. If a metric cannot be measured with robust mathematical certainty due to single-camera constraints, we disable it rather than outputting false data to the athlete.
+                            If a metric cannot be measured reliably from a
+                            single camera, we disable it instead of showing bad
+                            data.
                         </p>
 
                         <div className="bg-zinc-950/50 rounded-xl p-6 border border-rose-900/20">
                             <h3 className="text-lg font-bold text-zinc-200 mb-3">Stride Length</h3>
                             <p className="text-sm text-zinc-400 leading-relaxed mb-4">
-                                <strong className="text-zinc-300">What it was supposed to measure:</strong> The physical distance (in inches) from the pitching rubber to the lead foot at foot strike. Standard benchmarks require 80%-90% of body height.
+                                <strong className="text-zinc-300">What it was supposed to measure:</strong> The physical distance from the rubber to the lead foot at foot strike. Standard benchmarks are usually 80%-90% of body height.
                             </p>
                             <div className="space-y-3">
                                 <h4 className="text-sm font-semibold text-rose-300 uppercase tracking-widest">Why it is disabled:</h4>
                                 <ul className="space-y-4">
                                     <li className="text-sm text-zinc-400 leading-relaxed">
                                         <strong className="text-rose-200/80 block mb-1">Digital Panning:</strong>
-                                        Operators naturally pan AWRE Cameras to follow the pitcher moving down the mound. Because the camera physically rotates, the background pixels shift continuously over the pitch delivery. Measuring pure pixel distance between the back ankle at Set Phase and the front ankle at Foot Strike is invalidated because the camera&apos;s origin point drags along with the pitcher.
+                                        Operators naturally pan the camera to follow the pitcher. Once the camera rotates, the background shifts and the pixel origin moves with the athlete, which breaks any true distance measurement.
                                     </li>
                                     <li className="text-sm text-zinc-400 leading-relaxed">
                                         <strong className="text-rose-200/80 block mb-1">Occlusion:</strong>
-                                        Tracing the pitching rubber directly also fails because pitchers regularly drag their feet over the rubber, tricking computer vision algorithms into tracking the moving shoe instead of the stationary ground.
+                                        Tracking the rubber directly also fails because pitchers often drag the back foot over it, which makes computer vision lock onto the moving shoe instead of the fixed ground.
                                     </li>
                                     <li className="text-sm text-zinc-400 leading-relaxed border-t border-rose-900/20 pt-4 mt-2">
                                         <strong className="text-rose-100 block mb-1">Conclusion:</strong>
-                                        Without establishing a stationary 3D origin, measuring absolute Euclidean distance from single, panning cameras is not robust enough. Stride length is currently disabled and does not penalize efficiency scores.
+                                        Without a fixed 3D origin, absolute stride distance is not reliable enough from a single panning camera. Stride length stays disabled and does not affect the efficiency score.
                                     </li>
                                 </ul>
                             </div>
