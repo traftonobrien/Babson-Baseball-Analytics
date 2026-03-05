@@ -816,7 +816,6 @@ export default async function PlayerProfilePage({
       playerId: diPlayer!.id,
       dateId,
       label: o.label,
-      csvPath: o.csvPath,
     };
   });
   const stuffPlusCandidates = buildStuffPlusLookupCandidates([
@@ -957,7 +956,6 @@ export default async function PlayerProfilePage({
           d3Percentiles={d3Percentiles}
           trackmanSessions={trackmanSessions}
           commandOutings={commandOutings}
-          commandPlayerId={diPlayer?.id ?? null}
           playerSlug={player.slug}
           initialCommandHero={initialCommandHero}
           initialCommandResult={initialCommandResult}

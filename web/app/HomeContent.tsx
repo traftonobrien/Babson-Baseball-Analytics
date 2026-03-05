@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import LogoutButton from "./components/LogoutButton";
 import { LeaderboardPageFrame } from "@/app/components/leaderboards/LeaderboardChrome";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { cn } from "@/lib/utils";
 
 type HomeTone =
@@ -164,6 +165,17 @@ function HomeLinkCard({
           toneStyles.glow,
         )}
       >
+        <GlowingEffect
+          blur={0}
+          spread={28}
+          glow
+          disabled={false}
+          proximity={72}
+          inactiveZone={0.18}
+          movementDuration={0.9}
+          borderWidth={2}
+          className="opacity-90"
+        />
         <div
           className={cn(
             "pointer-events-none absolute inset-0 bg-gradient-to-br opacity-100",
@@ -234,6 +246,16 @@ export default function HomeContent() {
         transition={{ duration: 0.3 }}
       >
         <div className="relative overflow-hidden rounded-[2.35rem] border border-emerald-500/20 bg-zinc-950/82 p-6 shadow-[0_36px_90px_rgba(0,0,0,0.34)] sm:p-8">
+          <GlowingEffect
+            spread={34}
+            glow
+            disabled={false}
+            proximity={96}
+            inactiveZone={0.24}
+            movementDuration={1.1}
+            borderWidth={2}
+            className="opacity-80"
+          />
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_18%,rgba(16,185,129,0.18),transparent_28%),radial-gradient(circle_at_78%_24%,rgba(59,130,246,0.12),transparent_26%),linear-gradient(135deg,rgba(24,24,27,0.92),rgba(3,7,18,0.98))]" />
           <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           <div className="pointer-events-none absolute right-8 top-10 h-24 w-24 rounded-full border border-emerald-500/15" />

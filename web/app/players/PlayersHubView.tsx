@@ -12,6 +12,7 @@ import {
   LeaderboardStatBlock,
   LeaderboardToolbar,
 } from "../components/leaderboards/LeaderboardChrome";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { getCanonicalName, getHand } from "@/lib/canonicalPlayers";
 import { handBadgeClasses } from "@/lib/handBadge";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
@@ -104,6 +105,16 @@ function PlayerCard({
           pinned ? "border-emerald-500/28" : accentClasses,
         )}
       >
+        <GlowingEffect
+          glow
+          disabled={false}
+          proximity={72}
+          inactiveZone={0.18}
+          spread={30}
+          movementDuration={0.85}
+          borderWidth={2}
+          className="opacity-90"
+        />
         <div
           className={cn(
             "pointer-events-none absolute inset-0 opacity-100",
@@ -294,7 +305,17 @@ export default function PlayersHubView({
             }
             side={
               <Link href="/players/faq" className="block">
-                <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-smooth hover:border-emerald-500/30">
+                <div className="relative overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-smooth hover:border-emerald-500/30">
+                  <GlowingEffect
+                    glow
+                    disabled={false}
+                    proximity={56}
+                    inactiveZone={0.22}
+                    spread={24}
+                    movementDuration={0.8}
+                    borderWidth={2}
+                    className="opacity-80"
+                  />
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-300">
                       <BookOpen className="h-4 w-4" />

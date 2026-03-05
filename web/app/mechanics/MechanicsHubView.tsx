@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, ArrowRight, BookOpen, GaugeCircle, Video } from "lucide-react";
@@ -29,6 +30,7 @@ import {
   LeaderboardPill,
   LeaderboardToolbar,
 } from "@/app/components/leaderboards/LeaderboardChrome";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
 
 const mechanicsActiveFilterClassName =
   "border-violet-400/45 bg-violet-500/16 text-violet-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_0_1px_rgba(167,139,250,0.16),0_0_20px_rgba(139,92,246,0.12)]";
@@ -62,6 +64,16 @@ function PlayerCard({ player }: { player: HubPlayerEntry }) {
       }}
       className="group relative flex h-full flex-col overflow-hidden rounded-[1.7rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(17,24,39,0.7),rgba(9,9,11,0.9))] shadow-[0_22px_56px_rgba(0,0,0,0.22)] transition-all duration-300 cursor-pointer hover:border-violet-500/35 hover:-translate-y-0.5 hover:shadow-[0_28px_64px_rgba(0,0,0,0.28)] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50"
     >
+      <GlowingEffect
+        glow
+        disabled={false}
+        proximity={72}
+        inactiveZone={0.2}
+        spread={30}
+        movementDuration={0.9}
+        borderWidth={2}
+        className="opacity-90"
+      />
       <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent" />
       <div className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-2xl border border-zinc-800/80 bg-zinc-950/88 text-zinc-500 transition-all duration-300 group-hover:border-violet-500/30 group-hover:text-violet-300">
         <ArrowRight className="h-3.5 w-3.5" />
@@ -69,10 +81,12 @@ function PlayerCard({ player }: { player: HubPlayerEntry }) {
 
       {!thumbError && (
         <div className="relative h-28 overflow-hidden bg-zinc-950">
-          <img
+          <Image
             src={thumbSrc}
             alt={`${getCanonicalName(player.name ?? player.slug)} release`}
-            className="w-full h-full object-cover object-top"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover object-top"
             onError={() => setThumbError(true)}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent" />
@@ -198,7 +212,17 @@ export default function MechanicsHubView({ index }: { index: MechanicsIndex }) {
           side={
             <>
               <Link href="/mechanics/faq" className="block">
-                <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-smooth hover:border-violet-500/25">
+                <div className="relative overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-smooth hover:border-violet-500/25">
+                  <GlowingEffect
+                    glow
+                    disabled={false}
+                    proximity={56}
+                    inactiveZone={0.22}
+                    spread={24}
+                    movementDuration={0.8}
+                    borderWidth={2}
+                    className="opacity-80"
+                  />
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-violet-500/20 bg-violet-500/10 text-violet-300">
                       <BookOpen className="h-4 w-4" />
@@ -214,7 +238,17 @@ export default function MechanicsHubView({ index }: { index: MechanicsIndex }) {
                   </div>
                 </div>
               </Link>
-              <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+              <div className="relative overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <GlowingEffect
+                  glow
+                  disabled={false}
+                  proximity={56}
+                  inactiveZone={0.22}
+                  spread={24}
+                  movementDuration={0.8}
+                  borderWidth={2}
+                  className="opacity-75"
+                />
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-violet-500/20 bg-violet-500/10 text-violet-300">
                     <Video className="h-4 w-4" />

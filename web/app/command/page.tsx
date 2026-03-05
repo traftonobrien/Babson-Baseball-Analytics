@@ -21,6 +21,7 @@ import {
   leaderboardFilterButtonGhostInactiveClassName,
   leaderboardFilterButtonOrangeActiveClassName,
 } from "@/components/ui/neon-button";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
 import {
   LeaderboardHero,
@@ -81,26 +82,6 @@ function seriesKeyForOpponent(opponent?: string | null): string | null {
 function outingSeason(outing: Outing): number | null {
   const dateId = outing.id.split("/")[1];
   return dateId ? seasonFromDateId(dateId) : null;
-}
-
-function OpponentPill({ opponent }: { opponent: string }) {
-  const accent = getTeamAccentColor(opponent);
-  const brand = getTeamBrandEntry(opponent);
-  const label = brand?.name ?? stripTeamRanking(opponent);
-
-  return (
-    <span
-      className="inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-      style={{
-        borderColor: hexToRgba(accent, 0.3),
-        background: `linear-gradient(135deg, ${hexToRgba(accent, 0.18)}, rgba(9,9,11,0.84))`,
-        color: "#f4f4f5",
-        boxShadow: `0 0 16px ${hexToRgba(accent, 0.08)}`,
-      }}
-    >
-      {label}
-    </span>
-  );
 }
 
 function OutingContextPill({
@@ -181,32 +162,44 @@ function SeriesDropdown({
   }, [open]);
 
   useEffect(() => {
-    if (open) {
-      setRenderMenu(true);
-      setMenuVisible(false);
-      setRevealedCount(0);
+    const timers: number[] = [];
+    let frame = 0;
 
-      const timers: number[] = [];
-      const frame = window.requestAnimationFrame(() => {
-        setMenuVisible(true);
-        menuOptions.forEach((_, index) => {
-          const timer = window.setTimeout(() => {
-            setRevealedCount((current) => Math.max(current, index + 1));
-          }, 55 + index * 28);
-          timers.push(timer);
+    if (open) {
+      const kickoff = window.setTimeout(() => {
+        setRenderMenu(true);
+        setMenuVisible(false);
+        setRevealedCount(0);
+
+        frame = window.requestAnimationFrame(() => {
+          setMenuVisible(true);
+          menuOptions.forEach((_, index) => {
+            const timer = window.setTimeout(() => {
+              setRevealedCount((current) => Math.max(current, index + 1));
+            }, 55 + index * 28);
+            timers.push(timer);
+          });
         });
-      });
+      }, 0);
 
       return () => {
-        window.cancelAnimationFrame(frame);
+        window.clearTimeout(kickoff);
+        if (frame) {
+          window.cancelAnimationFrame(frame);
+        }
         timers.forEach((timer) => window.clearTimeout(timer));
       };
     }
 
-    setMenuVisible(false);
-    setRevealedCount(0);
+    const reset = window.setTimeout(() => {
+      setMenuVisible(false);
+      setRevealedCount(0);
+    }, 0);
     const timeout = window.setTimeout(() => setRenderMenu(false), 180);
-    return () => window.clearTimeout(timeout);
+    return () => {
+      window.clearTimeout(reset);
+      window.clearTimeout(timeout);
+    };
   }, [open, menuOptions]);
 
   useEffect(() => {
@@ -402,8 +395,18 @@ function HeroActionCard({
   return (
     <Link
       href={href}
-      className="group rounded-3xl border border-zinc-800/80 bg-zinc-950/75 p-3.5 transition-all duration-300 hover:border-orange-400/25 hover:bg-zinc-900/85"
+      className="group relative overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/75 p-3.5 transition-all duration-300 hover:border-orange-400/25 hover:bg-zinc-900/85"
     >
+      <GlowingEffect
+        glow
+        disabled={false}
+        proximity={56}
+        inactiveZone={0.22}
+        spread={24}
+        movementDuration={0.8}
+        borderWidth={2}
+        className="opacity-80"
+      />
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
           <div className="text-sm font-semibold text-zinc-100">{title}</div>

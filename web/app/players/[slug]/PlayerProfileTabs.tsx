@@ -49,7 +49,6 @@ interface CommandOuting {
   playerId: string;
   dateId: string;
   label: string;
-  csvPath: string;
 }
 
 interface HeroTileConfig {
@@ -100,7 +99,6 @@ interface Props {
   d3Percentiles: PercentileMetric[];
   trackmanSessions: TrackmanSession[];
   commandOutings: CommandOuting[];
-  commandPlayerId?: string | null;
   playerSlug: string;
   initialCommandHero: CommandHeroState | null;
   initialCommandResult: CommandPlusResult | null;
@@ -382,7 +380,6 @@ export default function PlayerProfileTabs({
   d3Percentiles,
   trackmanSessions,
   commandOutings,
-  commandPlayerId,
   playerSlug,
   initialCommandHero,
   initialCommandResult,
@@ -526,14 +523,17 @@ export default function PlayerProfileTabs({
 
   return (
     <div className="mt-8">
-      <div className="rounded-[1.5rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(17,24,39,0.64),rgba(9,9,11,0.9))] p-2 shadow-[0_20px_48px_rgba(0,0,0,0.20)]">
-        <div className="grid gap-2 sm:grid-cols-4">
+      <div className="overflow-x-auto rounded-[1.5rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(17,24,39,0.64),rgba(9,9,11,0.9))] p-2 shadow-[0_20px_48px_rgba(0,0,0,0.20)] scrollbar-hide">
+        <div
+          className="grid min-w-[30rem] gap-2 md:min-w-full"
+          style={{ gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))` }}
+        >
           {TABS.map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
-              className={`rounded-[1.1rem] px-4 py-3 text-[11px] font-black uppercase tracking-[0.2em] transition-smooth ${
+              className={`w-full rounded-[1.1rem] px-4 py-3 text-[11px] font-black uppercase tracking-[0.2em] transition-smooth ${
                 activeTab === tab
                   ? "border border-emerald-500/25 bg-emerald-500/10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_0_0_1px_rgba(16,185,129,0.08)]"
                   : "border border-transparent text-zinc-500 hover:border-zinc-800 hover:bg-zinc-950/70 hover:text-zinc-200"

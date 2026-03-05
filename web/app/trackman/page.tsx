@@ -9,6 +9,7 @@ import {
   leaderboardFilterButtonBlueActiveClassName,
   leaderboardFilterButtonBlueInactiveClassName,
 } from "@/components/ui/neon-button";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
 import Breadcrumbs from "../components/Breadcrumbs";
 import {
   LeaderboardHero,
@@ -216,7 +217,17 @@ export default function TrackmanPlayersPage() {
             side={
               <>
                 <Link href="/trackman/faq" className="block">
-                  <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-smooth hover:border-blue-500/25">
+                  <div className="relative overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-smooth hover:border-blue-500/25">
+                    <GlowingEffect
+                      glow
+                      disabled={false}
+                      proximity={56}
+                      inactiveZone={0.22}
+                      spread={24}
+                      movementDuration={0.8}
+                      borderWidth={2}
+                      className="opacity-80"
+                    />
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-blue-500/20 bg-blue-500/10 text-blue-300">
                         <BookOpen className="h-4 w-4" />
@@ -233,7 +244,17 @@ export default function TrackmanPlayersPage() {
                   </div>
                 </Link>
                 <Link href="/trackman/leaderboard" className="block">
-                  <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-smooth hover:border-blue-500/25">
+                  <div className="relative overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-smooth hover:border-blue-500/25">
+                    <GlowingEffect
+                      glow
+                      disabled={false}
+                      proximity={56}
+                      inactiveZone={0.22}
+                      spread={24}
+                      movementDuration={0.8}
+                      borderWidth={2}
+                      className="opacity-80"
+                    />
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-blue-500/20 bg-blue-500/10 text-blue-300">
                         <Trophy className="h-4 w-4" />
@@ -386,6 +407,16 @@ export default function TrackmanPlayersPage() {
                         href={`/trackman/player/${player.slug}`}
                         className={`group relative block overflow-hidden rounded-[1.7rem] border p-4 shadow-[0_20px_48px_rgba(0,0,0,0.20)] transition-smooth hover:-translate-y-0.5 hover:border-zinc-600 ${isMe ? "border-emerald-500/40 shadow-[0_26px_56px_rgba(16,185,129,0.08)] bg-[radial-gradient(circle_at_82%_16%,rgba(16,185,129,0.08),transparent_24%),linear-gradient(180deg,rgba(24,24,27,0.76),rgba(9,9,11,0.90))]" : "border-zinc-800 bg-[radial-gradient(circle_at_82%_16%,rgba(59,130,246,0.06),transparent_24%),linear-gradient(180deg,rgba(24,24,27,0.76),rgba(9,9,11,0.90))]"} `}
                       >
+                        <GlowingEffect
+                          glow
+                          disabled={false}
+                          proximity={72}
+                          inactiveZone={0.18}
+                          spread={28}
+                          movementDuration={0.85}
+                          borderWidth={2}
+                          className="opacity-90"
+                        />
                         <div
                           className={`absolute left-0 top-5 bottom-5 w-[3px] rounded-full transition-smooth ${
                             isMe

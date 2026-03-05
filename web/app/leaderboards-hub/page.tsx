@@ -8,6 +8,7 @@ import {
   LeaderboardPageFrame,
   LeaderboardPill,
 } from "../components/leaderboards/LeaderboardChrome";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
 
 const LEADERBOARD_ITEMS = [
   {
@@ -71,6 +72,16 @@ export default function LeaderboardsHubPage() {
               href={href}
               className={`group relative overflow-hidden rounded-[1.75rem] border bg-zinc-950/70 p-5 transition-smooth hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(0,0,0,0.25)] ${COLOR_CLASSES[color]}`}
             >
+              <GlowingEffect
+                glow
+                disabled={false}
+                proximity={64}
+                inactiveZone={0.18}
+                spread={28}
+                movementDuration={0.85}
+                borderWidth={2}
+                className="opacity-90"
+              />
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.04),transparent_24%),linear-gradient(180deg,rgba(24,24,27,0.45),rgba(9,9,11,0.82))]" />
               <Icon className="w-6 h-6 shrink-0 mt-0.5" />
               <div className="relative flex-1 min-w-0">
