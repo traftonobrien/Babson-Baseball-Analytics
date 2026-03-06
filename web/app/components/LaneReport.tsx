@@ -2,6 +2,7 @@
 
 import type { Pitch } from "../types";
 import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
+import { pitchColor } from "@/lib/pitchColors";
 import { pitchArmSideX, laneOf as classifyLane, laneDisplayName, hDirectionLabel, type Lane } from "@/lib/handedness";
 import { pitchDisplayName } from "@/lib/pitchNames";
 import { sortPitchTypes } from "@/lib/pitchTypeOrder";
@@ -37,6 +38,23 @@ function hLabel(armSideX: number): string {
 function vLabel(v: number): string {
   if (Math.abs(v) < 0.05) return "";
   return v < 0 ? "high" : "low";
+}
+
+function hexToRgbChannels(value: string): string {
+  const normalized = value.trim();
+  const fullHex =
+    normalized.startsWith("#") && normalized.length === 4
+      ? `#${normalized[1]}${normalized[1]}${normalized[2]}${normalized[2]}${normalized[3]}${normalized[3]}`
+      : normalized;
+
+  const match = /^#([0-9a-f]{6})$/i.exec(fullHex);
+  if (!match) return "249, 115, 22";
+
+  const hex = match[1];
+  const red = Number.parseInt(hex.slice(0, 2), 16);
+  const green = Number.parseInt(hex.slice(2, 4), 16);
+  const blue = Number.parseInt(hex.slice(4, 6), 16);
+  return `${red}, ${green}, ${blue}`;
 }
 
 function buildBuckets(pitches: Pitch[], throwsHand: "R" | "L"): LaneBucket[] {
@@ -86,12 +104,16 @@ function LanePanel({
   maxAvgTotal,
   activeLane,
   onSelectLane,
+  barColor,
 }: {
   buckets: LaneBucket[];
   maxAvgTotal: number;
   activeLane?: Lane | null;
   onSelectLane?: (lane: Lane) => void;
+  barColor: string;
 }) {
+  const barRgb = hexToRgbChannels(barColor);
+
   return (
     <div className="grid grid-cols-3 gap-4">
       {buckets.map((b) => {
@@ -111,10 +133,12 @@ function LanePanel({
               isDimmed ? "opacity-50 hover:opacity-80" : "",
             ].join(" ")}
           >
-            <div className="w-full h-24 flex items-end justify-center">
+            <div className="flex h-24 w-full items-end justify-center">
               <div
-                className="w-10 rounded-t bg-orange-400/70 transition-all"
+                className="w-10 rounded-t transition-all"
                 style={{
+                  background: `linear-gradient(180deg, rgba(${barRgb}, 0.98), rgba(${barRgb}, 0.72))`,
+                  boxShadow: `0 0 22px rgba(${barRgb}, 0.18), inset 0 1px 0 rgba(255,255,255,0.18)`,
                   height:
                     b.pitches.length > 0
                       ? `${Math.max((b.avgTotal / maxAvgTotal) * 100, 4)}%`
@@ -208,6 +232,7 @@ export default function LaneReport({ pitches, throwsHand, activeLane, onSelectLa
                 maxAvgTotal={maxAvgTotal}
                 activeLane={activeLane}
                 onSelectLane={onSelectLane}
+                barColor={pitchColor(g.type)}
               />
             </div>
           );
