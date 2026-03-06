@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { pitchColor } from "@/lib/pitchColors";
+import { pitchDisplayName } from "@/lib/pitchNames";
 import { cn } from "@/lib/utils";
 
 type PitchTypeChipSize = "sm" | "xs";
@@ -49,11 +50,12 @@ export function PitchTypeChip({
   className,
 }: {
   pitchType: string;
-  label: string;
+  label?: string;
   size?: PitchTypeChipSize;
   className?: string;
 }) {
   const color = pitchColor(pitchType);
+  const displayLabel = pitchDisplayName(label ?? pitchType);
 
   return (
     <span
@@ -71,7 +73,7 @@ export function PitchTypeChip({
           boxShadow: `0 0 10px ${color}`,
         }}
       />
-      {label}
+      {displayLabel}
     </span>
   );
 }

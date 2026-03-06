@@ -1,5 +1,6 @@
 import type { Pitch, Filters } from "./types";
 export { pitchColor } from "@/lib/pitchColors";
+import { sortPitchTypes } from "@/lib/pitchTypeOrder";
 
 /** Overlay MP4 URL */
 export function overlayUrl(pitch: Pitch, overlayDir: string): string {
@@ -15,7 +16,10 @@ export function clipUrl(pitch: Pitch, clipsDir: string): string {
 
 /** Unique sorted pitch types from data (excludes empty/undefined) */
 export function uniqueTypes(pitches: Pitch[]): string[] {
-  return [...new Set(pitches.map((p) => p.pitch_type).filter(Boolean))].sort();
+  return sortPitchTypes(
+    [...new Set(pitches.map((p) => p.pitch_type).filter(Boolean))],
+    (pitchType) => pitchType,
+  );
 }
 
 /** Apply filters to pitch array */

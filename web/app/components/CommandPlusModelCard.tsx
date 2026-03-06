@@ -1,5 +1,6 @@
 "use client";
 
+import { pitchDisplayName } from "@/lib/pitchNames";
 import { plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
 import type { CommandPlusResult } from "@/lib/commandPlus";
 import { pitchColor } from "@/lib/pitchColors";
@@ -119,7 +120,7 @@ export default function CommandPlusModelCard({
                     style={{ backgroundColor: row.eligible ? pitchColor(row.pitchType) : "#52525b" }}
                   />
                   <span className="font-mono text-[12px] font-bold text-zinc-200">
-                    {row.pitchType}
+                    {pitchDisplayName(row.pitchType)}
                   </span>
                 </div>
                 {row.score == null ? (

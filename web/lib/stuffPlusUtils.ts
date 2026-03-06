@@ -22,9 +22,9 @@ export type PlusMetricTier = "elite" | "aboveAverage" | "average" | "belowAverag
 type PlusMetricStep = 0 | 1 | 2;
 type RGB = [number, number, number];
 
-const ELITE_PLUS_THRESHOLD = 110;
+const ELITE_PLUS_THRESHOLD = 106;
 const ABOVE_AVERAGE_PLUS_THRESHOLD = 100;
-const AVERAGE_PLUS_THRESHOLD = 90;
+const AVERAGE_PLUS_THRESHOLD = 95;
 
 const PLUS_METRIC_BADGE_TONES: Record<
   PlusMetricTier,
@@ -45,14 +45,14 @@ const PLUS_METRIC_BADGE_TONES: Record<
     hazeAlpha: 0.11,
   },
   average: {
-    shades: ["#7c8798", "#697486", "#566173"],
-    glowAlpha: 0.14,
-    hazeAlpha: 0.06,
+    shades: ["#5d6b7e", "#718094", "#8794a6"],
+    glowAlpha: 0.1,
+    hazeAlpha: 0.04,
   },
   belowAverage: {
-    shades: ["#2fb5f4", "#1391de", "#0a70b1"],
-    glowAlpha: 0.18,
-    hazeAlpha: 0.08,
+    shades: ["#2aaef0", "#118cda", "#0a6fae"],
+    glowAlpha: 0.16,
+    hazeAlpha: 0.06,
   },
 };
 
@@ -126,9 +126,9 @@ export function plusMetricSurfaceClasses(v: number | null): PlusMetricSurfaceCla
       };
     case "average":
       return {
-        borderClass: "border-zinc-700/90",
-        bgClass: "bg-zinc-900/55",
-        pillClass: "bg-zinc-700/90 text-white",
+        borderClass: "border-slate-600/80",
+        bgClass: "bg-slate-950/45",
+        pillClass: "bg-slate-700/90 text-white",
       };
     case "belowAverage":
       return {
@@ -203,7 +203,7 @@ export function stuffPlusBadgeClass(v: number): string {
     case "aboveAverage":
       return "bg-orange-500/80 text-white";
     case "average":
-      return "bg-zinc-500 text-white";
+      return "bg-slate-500 text-white";
     case "belowAverage":
       return "bg-sky-500/80 text-white";
   }
@@ -217,7 +217,7 @@ export function stuffPlusAccentClass(v: number): string {
     case "aboveAverage":
       return "border-l-orange-500";
     case "average":
-      return "border-l-zinc-400";
+      return "border-l-slate-400";
     case "belowAverage":
       return "border-l-sky-500";
   }

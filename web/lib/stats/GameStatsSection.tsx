@@ -4,8 +4,8 @@ import { getTeamAccentColor, hexToRgba } from "@/lib/teamBranding";
 const PITCHING_KEYS = ["ip", "h", "r", "er", "bb", "so"] as const;
 const PITCHING_LABELS: Record<(typeof PITCHING_KEYS)[number], string> = {
   ip: "IP",
-  h: "Hits",
-  r: "Runs",
+  h: "H",
+  r: "R",
   er: "ER",
   bb: "BB",
   so: "K",
@@ -33,11 +33,11 @@ function PitchingGrid({
   }
   const p = stats.pitching;
   return (
-    <div className="grid grid-cols-6 gap-2">
+    <div className="grid grid-cols-6 gap-5">
       {PITCHING_KEYS.map((k) => (
         <div
           key={k}
-          className="inline-flex min-w-0 max-w-full items-center justify-center justify-self-center gap-2 rounded-full border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(24,24,27,0.78),rgba(9,9,11,0.92))] px-2 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+          className="inline-flex w-full max-w-[7.5rem] min-w-0 items-center justify-center justify-self-center gap-2 rounded-full border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(24,24,27,0.78),rgba(9,9,11,0.92))] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
           style={{
             borderColor: hexToRgba(accent, 0.18),
             boxShadow: [
@@ -87,7 +87,7 @@ export default function GameStatsSection({
               key={`${game.season}-${game.gameId}`}
               className="rounded-[1.4rem] border border-zinc-800/70 bg-zinc-950/50 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
             >
-              <div className="mb-3 flex flex-wrap items-center gap-2">
+              <div className="mb-4 flex flex-wrap items-center gap-2">
                 <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
                   Pitching Line
                 </span>

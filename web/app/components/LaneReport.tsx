@@ -4,6 +4,7 @@ import type { Pitch } from "../types";
 import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { pitchArmSideX, laneOf as classifyLane, laneDisplayName, hDirectionLabel, type Lane } from "@/lib/handedness";
 import { pitchDisplayName } from "@/lib/pitchNames";
+import { sortPitchTypes } from "@/lib/pitchTypeOrder";
 
 export type { Lane } from "@/lib/handedness";
 
@@ -75,9 +76,9 @@ function groupByType(pitches: Pitch[]): TypeGroup[] {
     if (arr) arr.push(p);
     else map.set(t, [p]);
   }
-  return [...map.entries()]
-    .sort((a, b) => b[1].length - a[1].length)
-    .map(([type, pitches]) => ({ type, pitches }));
+  return sortPitchTypes([...map.entries()], ([type]) => type).map(
+    ([type, groupPitches]) => ({ type, pitches: groupPitches }),
+  );
 }
 
 function LanePanel({
@@ -85,13 +86,11 @@ function LanePanel({
   maxAvgTotal,
   activeLane,
   onSelectLane,
-  throwsHand,
 }: {
   buckets: LaneBucket[];
   maxAvgTotal: number;
   activeLane?: Lane | null;
   onSelectLane?: (lane: Lane) => void;
-  throwsHand: "R" | "L";
 }) {
   return (
     <div className="grid grid-cols-3 gap-4">
@@ -209,7 +208,6 @@ export default function LaneReport({ pitches, throwsHand, activeLane, onSelectLa
                 maxAvgTotal={maxAvgTotal}
                 activeLane={activeLane}
                 onSelectLane={onSelectLane}
-                throwsHand={throwsHand}
               />
             </div>
           );

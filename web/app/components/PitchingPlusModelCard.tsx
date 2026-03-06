@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { pitchColor } from "@/lib/pitchColors";
+import { pitchDisplayName } from "@/lib/pitchNames";
 import { plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
 import type { PitchingPlusResult } from "@/lib/pitchingPlus";
 
@@ -24,7 +25,9 @@ export default function PitchingPlusModelCard({
     (sum, row) => sum + row.commandCount,
     0,
   );
-  const excludedPitchTypes = excludedRows.map((row) => row.commandPitchType).join(", ");
+  const excludedPitchTypes = excludedRows
+    .map((row) => pitchDisplayName(row.commandPitchType))
+    .join(", ");
 
   return (
     <section className="rounded-3xl border border-zinc-800/80 bg-gradient-to-br from-amber-500/8 via-zinc-950/95 to-zinc-950 p-6 shadow-2xl shadow-black/20">
@@ -147,7 +150,7 @@ export default function PitchingPlusModelCard({
                 }`}
                 title={
                   row.stuffPitchTypes.length > 0
-                    ? `Stuff match: ${row.stuffPitchTypes.join(", ")}`
+                    ? `Stuff match: ${row.stuffPitchTypes.map((pitchType) => pitchDisplayName(pitchType)).join(", ")}`
                     : undefined
                 }
               >
@@ -162,7 +165,7 @@ export default function PitchingPlusModelCard({
                       }}
                     />
                     <span className="font-mono text-[12px] font-bold text-zinc-200">
-                      {row.commandPitchType}
+                      {pitchDisplayName(row.commandPitchType)}
                     </span>
                   </div>
                   {row.pitchingPlus == null ? (

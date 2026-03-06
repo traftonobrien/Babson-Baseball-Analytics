@@ -15,6 +15,9 @@ const PITCH_COLORS: Record<string, string> = {
   KC: "#0ea5e9",   // sky
   CB: "#6366f1",   // indigo (alias for CU)
   CT: "#f59e0b",   // amber (alias for FC)
+  FF_SI: "#f97316",
+  CH_FS: "#10b981",
+  SL_SW: "#d946ef",
   // Full names (PDF pipeline)
   Fastball: "#ef4444",
   Sinker: "#f97316",
@@ -46,6 +49,9 @@ export const PITCH_BG_CLASSES: Record<string, string> = {
   KC: "bg-sky-500",
   CB: "bg-indigo-500",
   CT: "bg-amber-500",
+  FF_SI: "bg-orange-500",
+  CH_FS: "bg-emerald-500",
+  SL_SW: "bg-fuchsia-500",
 };
 
 export const OTHER_BG_CLASS = "bg-zinc-500";

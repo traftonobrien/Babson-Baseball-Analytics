@@ -6,6 +6,7 @@ export interface CommandPlusBaseline {
 }
 
 export type CommandPlusBaselines = Record<string, CommandPlusBaseline>;
+export type CommandPlusPitchBucket = string;
 
 export interface CommandPlusPitchTypeScore {
   pitchType: string;
@@ -46,6 +47,15 @@ const COMMAND_PLUS_UNKNOWN_VALUES = new Set([
 
 type PitchWithRawType = Pitch & { raw_pitch_type?: string };
 
+export const COMMAND_PLUS_FAMILY_FASTBALL = "FF_SI";
+export const COMMAND_PLUS_FAMILY_CHANGEUP = "CH_FS";
+export const COMMAND_PLUS_FAMILY_SLIDER = "SL_SW";
+const COMMAND_PLUS_FAMILY_KEYS = new Set<string>([
+  COMMAND_PLUS_FAMILY_FASTBALL,
+  COMMAND_PLUS_FAMILY_CHANGEUP,
+  COMMAND_PLUS_FAMILY_SLIDER,
+]);
+
 function normalizePitchTypeValue(value: string | null | undefined): string {
   return (value ?? "").trim().toUpperCase();
 }
@@ -64,8 +74,34 @@ export function getCommandPlusPitchType(pitch: Pitch): string | null {
   return normalizedType;
 }
 
+export function getCommandPlusPitchBucketFromType(pitchType: string): CommandPlusPitchBucket {
+  switch (normalizePitchTypeValue(pitchType)) {
+    case "FF":
+    case "FB":
+    case "FT":
+    case "SI":
+      return COMMAND_PLUS_FAMILY_FASTBALL;
+    case "CH":
+    case "FS":
+      return COMMAND_PLUS_FAMILY_CHANGEUP;
+    case "SL":
+    case "SW":
+    case "ST":
+      return COMMAND_PLUS_FAMILY_SLIDER;
+    default:
+      return normalizePitchTypeValue(pitchType);
+  }
+}
+
+export function getCommandPlusPitchBucket(pitch: Pitch): CommandPlusPitchBucket | null {
+  const pitchType = getCommandPlusPitchType(pitch);
+  if (!pitchType) return null;
+  return getCommandPlusPitchBucketFromType(pitchType);
+}
+
 export function buildCommandPlusBaselines(pitches: Pitch[]): CommandPlusBaselines {
-  const aggregates = new Map<string, { missSum: number; count: number }>();
+  const familyAggregates = new Map<string, { missSum: number; count: number }>();
+  const seenExactTypes = new Set<string>();
 
   for (const pitch of pitches) {
     const pitchType = getCommandPlusPitchType(pitch);
@@ -73,21 +109,30 @@ export function buildCommandPlusBaselines(pitches: Pitch[]): CommandPlusBaseline
       continue;
     }
 
-    const next = aggregates.get(pitchType) ?? { missSum: 0, count: 0 };
+    seenExactTypes.add(pitchType);
+    const familyKey = getCommandPlusPitchBucketFromType(pitchType);
+    const next = familyAggregates.get(familyKey) ?? { missSum: 0, count: 0 };
     next.missSum += pitch.total_miss_inches;
     next.count += 1;
-    aggregates.set(pitchType, next);
+    familyAggregates.set(familyKey, next);
   }
 
   const baselines: CommandPlusBaselines = {};
-  for (const [pitchType, aggregate] of aggregates.entries()) {
+  for (const [familyKey, aggregate] of familyAggregates.entries()) {
     if (aggregate.count === 0) {
       continue;
     }
-    baselines[pitchType] = {
+    const baseline = {
       avgMiss: aggregate.missSum / aggregate.count,
       count: aggregate.count,
     };
+    baselines[familyKey] = baseline;
+
+    for (const pitchType of seenExactTypes) {
+      if (getCommandPlusPitchBucketFromType(pitchType) === familyKey) {
+        baselines[pitchType] = baseline;
+      }
+    }
   }
 
   return baselines;
@@ -97,6 +142,7 @@ export function listCommandPlusBaselines(
   baselines: CommandPlusBaselines,
 ): CommandPlusBaselineRow[] {
   return Object.entries(baselines)
+    .filter(([pitchType]) => !COMMAND_PLUS_FAMILY_KEYS.has(pitchType))
     .map(([pitchType, baseline]) => ({
       pitchType,
       avgMiss: baseline.avgMiss,
@@ -135,7 +181,9 @@ export function computeCommandPlus(
 
   for (const [pitchType, aggregate] of aggregates.entries()) {
     const subjectAvgMiss = aggregate.missSum / aggregate.count;
-    const baseline = baselines[pitchType];
+    const baseline =
+      baselines[pitchType] ??
+      baselines[getCommandPlusPitchBucketFromType(pitchType)];
     let score: number | null = null;
     let eligible = true;
     let reason: CommandPlusPitchTypeScore["reason"] = null;

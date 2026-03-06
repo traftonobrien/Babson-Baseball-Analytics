@@ -8,7 +8,7 @@ import { applyFilters } from "../../utils";
 import type { Pitch, Filters } from "../../types";
 import type { Lane } from "@/lib/handedness";
 import type { Player, Outing } from "@/lib/dataIndex";
-import { laneOf, ON_TARGET_THRESHOLD_IN } from "@/lib/reportModel";
+import { laneOf } from "@/lib/reportModel";
 import FilterPanel from "../../components/FilterPanel";
 import PitchTable from "../../components/PitchTable";
 import VideoPlayer from "../../components/VideoPlayer";
@@ -28,16 +28,14 @@ import {
   type OutingMeta,
   type PlayerGameStats,
 } from "@/lib/stats";
+import { sortPitchTypes } from "@/lib/pitchTypeOrder";
 import {
   Button,
   leaderboardFilterButtonBaseClassName,
   leaderboardFilterButtonGhostInactiveClassName,
   leaderboardFilterButtonOrangeActiveClassName,
 } from "@/components/ui/neon-button";
-import {
-  LeaderboardPill,
-  LeaderboardStatBlock,
-} from "@/app/components/leaderboards/LeaderboardChrome";
+import { LeaderboardPill } from "@/app/components/leaderboards/LeaderboardChrome";
 
 type VizMode = "scatter" | "heatmap";
 
@@ -129,18 +127,6 @@ function SidebarPanel({
       <div className="p-4">{children}</div>
     </section>
   );
-}
-
-function formatSnapshotNumber(value: number | null, decimals = 1): string {
-  if (value == null || Number.isNaN(value)) return "--";
-  return value.toFixed(decimals);
-}
-
-function laneLabel(lane: Lane | null): string {
-  if (!lane) return "all lanes";
-  if (lane === "Glove") return "glove-side lane";
-  if (lane === "Arm") return "arm-side lane";
-  return "middle lane";
 }
 
 /* ------------------------------------------------------------------ */
@@ -236,7 +222,7 @@ export default function PlayerDashboard({
     for (const v of Object.values(overrides)) {
       if (v) types.add(v);
     }
-    return Array.from(types).sort();
+    return sortPitchTypes(Array.from(types), (type) => type);
   }, [rawPitches, overrides]);
 
   const handleEditPitchType = useCallback(
@@ -272,7 +258,7 @@ export default function PlayerDashboard({
   // Unique pitch types present in the filtered data (for heatmap selector)
   const heatmapPitchTypes = useMemo(() => {
     const types = new Set(laneFiltered.map((p) => p.pitch_type).filter(Boolean));
-    return ["All", ...Array.from(types).sort()];
+    return ["All", ...sortPitchTypes(Array.from(types), (type) => type)];
   }, [laneFiltered]);
 
   // Heatmap data filtered by local pitch type selector
@@ -298,62 +284,6 @@ export default function PlayerDashboard({
   const toggleLane = (lane: Lane) => {
     setActiveLane((prev) => (prev === lane ? null : lane));
   };
-
-  const outingSnapshot = useMemo(() => {
-    if (laneFiltered.length === 0) {
-      return {
-        avgMiss: null,
-        onTargetPct: null,
-        bestPitchName: "--",
-        bestPitchAvgMiss: null,
-        worstPitchName: "--",
-        worstPitchAvgMiss: null,
-      };
-    }
-
-    const avgMiss =
-      laneFiltered.reduce((sum, pitch) => sum + pitch.total_miss_inches, 0) /
-      laneFiltered.length;
-    const onTargetPct =
-      (laneFiltered.filter((pitch) => pitch.total_miss_inches <= ON_TARGET_THRESHOLD_IN).length /
-        laneFiltered.length) *
-      100;
-
-    const byPitchType = new Map<
-      string,
-      { totalMiss: number; count: number }
-    >();
-    for (const pitch of laneFiltered) {
-      const key = pitch.pitch_type || "UNK";
-      const current = byPitchType.get(key) ?? { totalMiss: 0, count: 0 };
-      current.totalMiss += pitch.total_miss_inches;
-      current.count += 1;
-      byPitchType.set(key, current);
-    }
-
-    const rankedPitches = Array.from(byPitchType.entries())
-      .map(([pitchType, stats]) => ({
-        pitchType,
-        avgMiss: stats.totalMiss / stats.count,
-        count: stats.count,
-      }))
-      .sort((a, b) => {
-        if (a.avgMiss !== b.avgMiss) return a.avgMiss - b.avgMiss;
-        return b.count - a.count;
-      });
-
-    const best = rankedPitches[0] ?? null;
-    const worst = rankedPitches[rankedPitches.length - 1] ?? null;
-
-    return {
-      avgMiss,
-      onTargetPct,
-      bestPitchName: best ? pitchDisplayName(best.pitchType) : "--",
-      bestPitchAvgMiss: best?.avgMiss ?? null,
-      worstPitchName: worst ? pitchDisplayName(worst.pitchType) : "--",
-      worstPitchAvgMiss: worst?.avgMiss ?? null,
-    };
-  }, [laneFiltered]);
 
   if (loading) {
     return (
@@ -520,67 +450,6 @@ export default function PlayerDashboard({
         </aside>
 
         <main className="min-w-0 space-y-4">
-          <section className="rounded-[1.8rem] border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[0_20px_56px_rgba(0,0,0,0.24)]">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-                  Outing Snapshot
-                </div>
-                <div className="mt-1 text-sm text-zinc-400">
-                  Quick read of the current view before video and miss shape.
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <LeaderboardPill tone="orange">
-                  {laneLabel(activeLane)}
-                </LeaderboardPill>
-                <LeaderboardPill tone="neutral">
-                  {laneFiltered.length} pitch{laneFiltered.length === 1 ? "" : "es"} in view
-                </LeaderboardPill>
-              </div>
-            </div>
-
-            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <LeaderboardStatBlock
-                label="Avg Miss"
-                value={
-                  outingSnapshot.avgMiss == null
-                    ? "--"
-                    : `${formatSnapshotNumber(outingSnapshot.avgMiss)}"`
-                }
-                detail="from target"
-              />
-              <LeaderboardStatBlock
-                label="On Target"
-                value={
-                  outingSnapshot.onTargetPct == null
-                    ? "--"
-                    : `${outingSnapshot.onTargetPct.toFixed(0)}%`
-                }
-                detail={`inside ${ON_TARGET_THRESHOLD_IN}"`}
-                emphasisClassName="text-orange-300"
-              />
-              <LeaderboardStatBlock
-                label="Best Pitch"
-                value={outingSnapshot.bestPitchName}
-                detail={
-                  outingSnapshot.bestPitchAvgMiss == null
-                    ? "no miss data yet"
-                    : `${formatSnapshotNumber(outingSnapshot.bestPitchAvgMiss)}" avg miss`
-                }
-              />
-              <LeaderboardStatBlock
-                label="Needs Work"
-                value={outingSnapshot.worstPitchName}
-                detail={
-                  outingSnapshot.worstPitchAvgMiss == null
-                    ? "no miss data yet"
-                    : `${formatSnapshotNumber(outingSnapshot.worstPitchAvgMiss)}" avg miss`
-                }
-              />
-            </div>
-          </section>
-
           <section className="rounded-[1.8rem] border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[0_20px_56px_rgba(0,0,0,0.24)]">
             <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>

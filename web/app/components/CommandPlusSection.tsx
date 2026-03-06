@@ -9,6 +9,7 @@ import type { SeasonFilter } from "@/lib/leaderboards/types";
 import { plusMetricBadgeStyle, plusMetricSurfaceClasses } from "@/lib/stuffPlusUtils";
 import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { pitchDisplayName } from "@/lib/pitchNames";
+import { sortPitchTypes } from "@/lib/pitchTypeOrder";
 import TeamAveragesBar from "./TeamAveragesBar";
 
 interface Props {
@@ -50,13 +51,16 @@ export default function CommandPlusSection({ pitches, outingId }: Props) {
             minPitchTypeCount: MIN_PITCH_COUNT,
         });
 
-        const pitchBreakdown: PitchPlus[] = result.pitchTypeScores.map((entry) => ({
-            type: entry.pitchType,
-            count: entry.subjectCount,
-            score: entry.score,
-            qualified: entry.eligible,
-            baselineAvgMiss: entry.baselineAvgMiss,
-        }));
+        const pitchBreakdown: PitchPlus[] = sortPitchTypes(
+            result.pitchTypeScores.map((entry) => ({
+                type: entry.pitchType,
+                count: entry.subjectCount,
+                score: entry.score,
+                qualified: entry.eligible,
+                baselineAvgMiss: entry.baselineAvgMiss,
+            })),
+            (entry) => entry.type,
+        );
         const pitchTypesShown = new Set(pitchBreakdown.map((entry) => entry.type));
 
         const comparablePitchTypes = result.pitchTypeScores.filter(
@@ -84,8 +88,11 @@ export default function CommandPlusSection({ pitches, outingId }: Props) {
             pitchBreakdown,
             subjectAvgMiss,
             teamMixAvgMiss,
-            teamAverages: listCommandPlusBaselines(seasonBaselines).filter((row) =>
-                pitchTypesShown.has(row.pitchType),
+            teamAverages: sortPitchTypes(
+                listCommandPlusBaselines(seasonBaselines).filter((row) =>
+                    pitchTypesShown.has(row.pitchType),
+                ),
+                (row) => row.pitchType,
             ),
         };
     }, [pitches, season, baselinesLoaded]);
@@ -102,7 +109,8 @@ export default function CommandPlusSection({ pitches, outingId }: Props) {
                 <div>
                     <h3 className="text-[10px] font-semibold text-zinc-400 uppercase tracking-[0.24em] flex items-center gap-2">
                         Command+
-                        <span className={`text-[10px] px-2 py-1 rounded-full font-semibold uppercase tracking-[0.18em] ${tierClass.pillClass}`}>
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-400/35 bg-[linear-gradient(135deg,rgba(251,146,60,0.22),rgba(9,9,11,0.92))] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_0_1px_rgba(251,146,60,0.1),0_0_18px_rgba(251,146,60,0.14)]">
+                            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-orange-300 shadow-[0_0_10px_rgba(253,186,116,0.9)]" />
                             {season} Live Season
                         </span>
                     </h3>

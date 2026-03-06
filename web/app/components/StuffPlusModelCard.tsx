@@ -2,6 +2,7 @@
 
 import { plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
 import { pitchColor } from "@/lib/pitchColors";
+import { pitchDisplayName } from "@/lib/pitchNames";
 
 interface StuffPlusPitchRow {
   pitchType?: string;
@@ -123,7 +124,7 @@ export default function StuffPlusModelCard({
                     }}
                   />
                   <span className="text-[12px] font-bold text-zinc-200">
-                    {row.pitchType ?? "Unknown"}
+                    {row.pitchType ? pitchDisplayName(row.pitchType) : "Unknown"}
                   </span>
                 </div>
                 {row.meanStuffPlus == null ? (
