@@ -70,8 +70,8 @@ export default function PitchTypeSummaryCards({ pitches }: Props) {
                 pitchType={g.type}
               />
               <Stat
-                label="H Miss"
-                value={`${avg(g.pitches, (p) => p.h_miss_inches).toFixed(1)}"`}
+                label="Usage %"
+                value={`${Math.round((g.pitches.length / pitches.length) * 100)}%`}
                 pitchType={g.type}
               />
               <Stat
@@ -80,8 +80,8 @@ export default function PitchTypeSummaryCards({ pitches }: Props) {
                 pitchType={g.type}
               />
               <Stat
-                label="Count"
-                value={String(g.pitches.length)}
+                label="H Miss"
+                value={`${avg(g.pitches, (p) => p.h_miss_inches).toFixed(1)}"`}
                 pitchType={g.type}
               />
             </div>
@@ -134,14 +134,14 @@ function Stat({
 }) {
   return (
     <div
-      className="aspect-[1.2/0.75] rounded-[22px] border bg-[linear-gradient(180deg,rgba(24,24,27,0.78),rgba(9,9,11,0.92))] px-3.5 py-2.5 text-center"
+      className="h-[3.75rem] w-[7.5rem] justify-self-center rounded-full border bg-[linear-gradient(180deg,rgba(24,24,27,0.78),rgba(9,9,11,0.92))] px-3 py-1.5 text-center"
       style={statStyle(pitchType)}
     >
       <div className="flex h-full flex-col items-center justify-center">
-        <div className="text-[1.875rem] font-mono font-semibold leading-none text-zinc-100">
+        <div className="text-[1.22rem] font-mono font-semibold leading-none text-zinc-100">
           {value}
         </div>
-        <div className="mt-1.5 max-w-[7rem] whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+        <div className="mt-0.5 max-w-[6rem] whitespace-nowrap text-[8px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
           {label}
         </div>
       </div>
