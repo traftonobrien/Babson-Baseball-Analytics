@@ -69,11 +69,23 @@ function buildBuckets(pitches: Pitch[], throwsHand: "R" | "L"): LaneBucket[] {
     else middle.push(p);
   }
 
-  return [
-    { key: "Glove" as Lane, label: laneDisplayName("Glove", throwsHand), pitches: glove },
-    { key: "Middle" as Lane, label: "Middle", pitches: middle },
-    { key: "Arm" as Lane, label: laneDisplayName("Arm", throwsHand), pitches: arm },
-  ].map((b) => ({
+  // From catcher's view: 3B is always on the left, 1B on the right.
+  // RHP: glove=3B, arm=1B → Glove | Middle | Arm
+  // LHP: arm=3B, glove=1B → Arm | Middle | Glove
+  const ordered =
+    throwsHand === "L"
+      ? [
+          { key: "Arm" as Lane, label: laneDisplayName("Arm", throwsHand), pitches: arm },
+          { key: "Middle" as Lane, label: "Middle", pitches: middle },
+          { key: "Glove" as Lane, label: laneDisplayName("Glove", throwsHand), pitches: glove },
+        ]
+      : [
+          { key: "Glove" as Lane, label: laneDisplayName("Glove", throwsHand), pitches: glove },
+          { key: "Middle" as Lane, label: "Middle", pitches: middle },
+          { key: "Arm" as Lane, label: laneDisplayName("Arm", throwsHand), pitches: arm },
+        ];
+
+  return ordered.map((b) => ({
     ...b,
     avgTotal: avg(b.pitches, (p) => p.total_miss_inches),
     avgH: avg(b.pitches, (p) => pitchArmSideX(p, throwsHand)),
