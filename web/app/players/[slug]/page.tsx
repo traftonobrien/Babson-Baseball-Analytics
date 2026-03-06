@@ -816,6 +816,7 @@ export default async function PlayerProfilePage({
       playerId: diPlayer!.id,
       dateId,
       label: o.label,
+      csvPath: o.csvPath,
     };
   });
   const stuffPlusCandidates = buildStuffPlusLookupCandidates([
