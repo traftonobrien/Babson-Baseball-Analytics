@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Trophy, Search, BookOpen } from "lucide-react";
-import Breadcrumbs from "@/app/components/Breadcrumbs";
 import {
   Button,
   leaderboardFilterButtonBaseClassName,
@@ -14,6 +13,7 @@ import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
 import {
   LeaderboardHero,
+  LeaderboardIntro,
   LeaderboardPageFrame,
   LeaderboardPanel,
   LeaderboardPill,
@@ -282,39 +282,45 @@ export default function TrackmanLeaderboardsPage() {
 
   return (
     <LeaderboardPageFrame maxWidth="max-w-7xl">
-      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Leaderboards", href: "/leaderboards-hub" }, { label: "Trackman" }]} />
-
-      <LeaderboardHero
-        tone="blue"
-        icon={Trophy}
-        eyebrow="Stuff And Trackman"
-        title={<>Trackman Leaderboard</>}
-        meta={(
-          <>
-            <LeaderboardPill tone="blue">{activeLabel}</LeaderboardPill>
-            <LeaderboardPill tone="neutral">
-              {data?.session_count ?? 0} session{data?.session_count === 1 ? "" : "s"}
-            </LeaderboardPill>
-            {data?.generated_at ? (
+      <LeaderboardIntro
+        breadcrumbs={[
+          { label: "Home", href: "/" },
+          { label: "Leaderboards", href: "/leaderboards-hub" },
+          { label: "Trackman" },
+        ]}
+      >
+        <LeaderboardHero
+          tone="blue"
+          icon={Trophy}
+          eyebrow="Stuff And Trackman"
+          title={<>Trackman Leaderboard</>}
+          meta={(
+            <>
+              <LeaderboardPill tone="blue">{activeLabel}</LeaderboardPill>
               <LeaderboardPill tone="neutral">
-                Updated {new Date(data.generated_at).toLocaleDateString()}
+                {data?.session_count ?? 0} session{data?.session_count === 1 ? "" : "s"}
               </LeaderboardPill>
-            ) : null}
-          </>
-        )}
-        side={(
-          <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Guide</div>
-            <Link
-              href="/trackman/faq"
-              className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-blue-500/25 bg-blue-500/10 px-4 py-3.5 text-sm font-semibold text-blue-300 transition-smooth hover:border-blue-400/40 hover:text-blue-200"
-            >
-              <BookOpen className="h-4 w-4" />
-              Metrics Dictionary
-            </Link>
-          </div>
-        )}
-      />
+              {data?.generated_at ? (
+                <LeaderboardPill tone="neutral">
+                  Updated {new Date(data.generated_at).toLocaleDateString()}
+                </LeaderboardPill>
+              ) : null}
+            </>
+          )}
+          side={(
+            <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Guide</div>
+              <Link
+                href="/trackman/faq"
+                className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-blue-500/25 bg-blue-500/10 px-4 py-3.5 text-sm font-semibold text-blue-300 transition-smooth hover:border-blue-400/40 hover:text-blue-200"
+              >
+                <BookOpen className="h-4 w-4" />
+                Metrics Dictionary
+              </Link>
+            </div>
+          )}
+        />
+      </LeaderboardIntro>
 
       {loading ? (
         <LeaderboardPanel className="mt-6 p-10 text-center text-zinc-500">

@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { BookOpen, Search, Sparkles, Users } from "lucide-react";
-import Breadcrumbs from "../components/Breadcrumbs";
 import {
   LeaderboardHero,
+  LeaderboardIntro,
   LeaderboardPageFrame,
   LeaderboardPanel,
   LeaderboardPill,
@@ -278,9 +278,7 @@ export default function PlayersHubView({
   return (
     <LeaderboardPageFrame maxWidth="max-w-6xl">
       <div className="flex flex-col gap-6">
-        <header className="space-y-3">
-          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Players" }]} />
-
+        <LeaderboardIntro breadcrumbs={[{ label: "Home", href: "/" }, { label: "Players" }]}>
           <LeaderboardHero
             tone="emerald"
             icon={Users}
@@ -333,7 +331,7 @@ export default function PlayersHubView({
               </Link>
             }
           />
-        </header>
+        </LeaderboardIntro>
 
         <LeaderboardToolbar>
           <div className="grid gap-4">

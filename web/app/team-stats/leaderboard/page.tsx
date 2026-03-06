@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { BarChart3, Search, BookOpen } from "lucide-react";
-import Breadcrumbs from "@/app/components/Breadcrumbs";
 import {
   LeaderboardHero,
+  LeaderboardIntro,
   LeaderboardPageFrame,
   LeaderboardPanel,
   LeaderboardPill,
@@ -126,38 +126,41 @@ export default function TeamStatsPage() {
 
   return (
     <LeaderboardPageFrame maxWidth="max-w-7xl">
-      <div className="flex justify-end">
-        <LogoutButton />
-      </div>
-
-      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Leaderboards", href: "/leaderboards-hub" }, { label: "Statistics" }]} />
-
-      <LeaderboardHero
-        tone="sky"
-        icon={BarChart3}
-        eyebrow="Statistics"
-        title={<>Statistics Leaderboard</>}
-        meta={(
-          <>
-            <LeaderboardPill tone="sky">
-              {seasonYear ? `${seasonYear} season` : "Season stats"}
-            </LeaderboardPill>
-            <LeaderboardPill tone="neutral">{minIp}+ IP qualifies</LeaderboardPill>
-          </>
-        )}
-        side={(
-          <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Guide</div>
-            <Link
-              href="/team-stats/faq"
-              className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-sky-500/25 bg-sky-500/10 px-4 py-3.5 text-sm font-semibold text-sky-300 transition-smooth hover:border-sky-400/40 hover:text-sky-200"
-            >
-              <BookOpen className="h-4 w-4" />
-              Metrics Dictionary
-            </Link>
-          </div>
-        )}
-      />
+      <LeaderboardIntro
+        breadcrumbs={[
+          { label: "Home", href: "/" },
+          { label: "Leaderboards", href: "/leaderboards-hub" },
+          { label: "Statistics" },
+        ]}
+        actions={<LogoutButton />}
+      >
+        <LeaderboardHero
+          tone="sky"
+          icon={BarChart3}
+          eyebrow="Statistics"
+          title={<>Statistics Leaderboard</>}
+          meta={(
+            <>
+              <LeaderboardPill tone="sky">
+                {seasonYear ? `${seasonYear} season` : "Season stats"}
+              </LeaderboardPill>
+              <LeaderboardPill tone="neutral">{minIp}+ IP qualifies</LeaderboardPill>
+            </>
+          )}
+          side={(
+            <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Guide</div>
+              <Link
+                href="/team-stats/faq"
+                className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-sky-500/25 bg-sky-500/10 px-4 py-3.5 text-sm font-semibold text-sky-300 transition-smooth hover:border-sky-400/40 hover:text-sky-200"
+              >
+                <BookOpen className="h-4 w-4" />
+                Metrics Dictionary
+              </Link>
+            </div>
+          )}
+        />
+      </LeaderboardIntro>
 
       <LeaderboardToolbar>
         <div className="grid gap-4 xl:grid-cols-[minmax(12rem,14rem)_minmax(0,1fr)_auto] xl:items-end">

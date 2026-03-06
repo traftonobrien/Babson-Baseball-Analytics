@@ -6,7 +6,7 @@ import { computeCommandPlus, listCommandPlusBaselines } from "@/lib/commandPlus"
 import { globalCommandPlusBaselines, loadAllOutingData } from "@/lib/leaderboards/load";
 import { seasonFromDateId } from "@/lib/season";
 import type { SeasonFilter } from "@/lib/leaderboards/types";
-import { plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
+import { plusMetricBadgeStyle, plusMetricSurfaceClasses } from "@/lib/stuffPlusUtils";
 import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { pitchDisplayName } from "@/lib/pitchNames";
 import TeamAveragesBar from "./TeamAveragesBar";
@@ -94,35 +94,7 @@ export default function CommandPlusSection({ pitches, outingId }: Props) {
     const { overall, pitchBreakdown, subjectAvgMiss, teamMixAvgMiss, teamAverages } = data;
 
     const isQualified = overall !== null;
-    const tierClass = !isQualified
-        ? {
-            borderClass: "border-zinc-800",
-            bgClass: "bg-zinc-900/50",
-            pillClass: "bg-zinc-800 text-zinc-300",
-        }
-        : overall >= 110
-            ? {
-                borderClass: "border-rose-500/50",
-                bgClass: "bg-rose-950/10",
-                pillClass: "bg-rose-500/15 text-rose-300",
-            }
-            : overall >= 100
-                ? {
-                    borderClass: "border-orange-500/50",
-                    bgClass: "bg-orange-950/10",
-                    pillClass: "bg-orange-500/15 text-orange-300",
-                }
-                : overall >= 90
-                    ? {
-                        borderClass: "border-zinc-700",
-                        bgClass: "bg-zinc-900/50",
-                        pillClass: "bg-zinc-800 text-zinc-300",
-                    }
-                    : {
-                        borderClass: "border-sky-500/50",
-                        bgClass: "bg-sky-950/10",
-                        pillClass: "bg-sky-500/15 text-sky-300",
-                    };
+    const tierClass = plusMetricSurfaceClasses(overall);
 
   return (
         <div className={`rounded-[1.8rem] border ${tierClass.borderClass} ${tierClass.bgClass} p-5 shadow-[0_18px_48px_rgba(0,0,0,0.22)] flex flex-col gap-4`}>

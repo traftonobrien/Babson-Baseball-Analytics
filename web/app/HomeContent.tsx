@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import type { CSSProperties } from "react";
 import {
   Activity,
   ArrowUpRight,
@@ -10,7 +11,6 @@ import {
   BookOpen,
   Film,
   LayoutGrid,
-  Shield,
   Sparkles,
   Target,
   Users,
@@ -91,6 +91,15 @@ const HOME_TONE_STYLES: Record<
   },
 };
 
+const BABSON_BADGE_STYLE: CSSProperties = {
+  borderColor: "rgba(var(--babson-grey-rgb), 0.24)",
+  background:
+    "linear-gradient(135deg, rgba(var(--babson-green-rgb), 0.16), rgba(var(--babson-grey-rgb), 0.08) 58%, rgba(9, 9, 11, 0.92) 100%)",
+  boxShadow:
+    "inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 1px rgba(var(--babson-green-rgb), 0.05)",
+  color: "rgb(214 226 220)",
+};
+
 function HomeIconBadge({
   tone,
   icon: Icon,
@@ -121,14 +130,14 @@ function SectionMarker({
   note,
 }: {
   label: string;
-  note: string;
+  note?: string;
 }) {
   return (
     <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
       <div className="text-[11px] font-semibold uppercase tracking-[0.26em] text-zinc-500">
         {label}
       </div>
-      <div className="text-xs text-zinc-600">{note}</div>
+      {note ? <div className="text-xs text-zinc-600">{note}</div> : null}
     </div>
   );
 }
@@ -233,9 +242,12 @@ export default function HomeContent() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
       >
-        <div className="inline-flex items-center gap-2 rounded-full border border-zinc-800/80 bg-zinc-950/70 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+        <div
+          className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em]"
+          style={BABSON_BADGE_STYLE}
+        >
           Session
-          <LogoutButton className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-300 hover:text-zinc-100" />
+          <LogoutButton className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-200 hover:text-zinc-50" />
         </div>
       </motion.div>
 
@@ -262,7 +274,10 @@ export default function HomeContent() {
           <div className="pointer-events-none absolute right-14 top-16 h-10 w-10 rounded-full border border-sky-400/15" />
 
           <div className="relative">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/8 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-200">
+            <div
+              className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em]"
+              style={BABSON_BADGE_STYLE}
+            >
               Babson Baseball
             </div>
 
@@ -311,10 +326,7 @@ export default function HomeContent() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.05 }}
       >
-        <SectionMarker
-          label="Start Here"
-          note="The main team surfaces players will open first."
-        />
+        <SectionMarker label="Start Here" />
         <div className="mt-3 grid gap-4 lg:grid-cols-12">
           <HomeLinkCard
             href="/players"
@@ -356,10 +368,7 @@ export default function HomeContent() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.09 }}
       >
-        <SectionMarker
-          label="Daily Work"
-          note="The day-to-day pitch quality and execution systems."
-        />
+        <SectionMarker label="Daily Work" />
         <div className="mt-3 grid gap-4 md:grid-cols-3">
           <HomeLinkCard
             href="/trackman"
@@ -397,10 +406,7 @@ export default function HomeContent() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.12 }}
       >
-        <SectionMarker
-          label="Reference"
-          note="Open the full rankings or the definitions behind the numbers."
-        />
+        <SectionMarker label="Reference" />
         <div className="mt-3 grid gap-4 md:grid-cols-2">
           <HomeLinkCard
             href="/leaderboards-hub"
@@ -429,9 +435,19 @@ export default function HomeContent() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.15 }}
       >
-        <div className="inline-flex items-center gap-2 rounded-full border border-zinc-800/80 bg-zinc-950/75 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-          <Shield className="h-3.5 w-3.5 text-zinc-400" />
-          One home base for the full staff workflow
+        <div
+          className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em]"
+          style={BABSON_BADGE_STYLE}
+        >
+          <Image
+            src="/babson-logo.svg"
+            alt=""
+            aria-hidden="true"
+            width={14}
+            height={14}
+            className="h-3.5 w-3.5 shrink-0 opacity-85"
+          />
+          Home of the Babson Beavers
         </div>
       </motion.div>
     </LeaderboardPageFrame>

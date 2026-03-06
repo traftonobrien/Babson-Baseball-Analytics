@@ -9,7 +9,6 @@ import {
   ChevronRight,
   Target,
 } from "lucide-react";
-import Breadcrumbs from "../components/Breadcrumbs";
 import { players, type Outing } from "@/lib/dataIndex";
 import { seasonFromDateId } from "@/lib/season";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
@@ -25,6 +24,7 @@ import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
 import {
   LeaderboardHero,
+  LeaderboardIntro,
   LeaderboardPageFrame,
   LeaderboardPanel,
   LeaderboardPill,
@@ -574,37 +574,37 @@ export default function CommandPage() {
 
   return (
     <LeaderboardPageFrame maxWidth="max-w-6xl">
-      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Command Hub" }]} />
-
-      <LeaderboardHero
-        tone="orange"
-        icon={Target}
-        eyebrow="Command Tracking"
-        title="Command Hub"
-        description="Move between recent outings and each pitcher’s running command history."
-        meta={
-          <>
-            <LeaderboardPill tone="orange">{seasonLabel}</LeaderboardPill>
-            <LeaderboardPill>{stats.mostRecentDate ? `Latest ${formatDate(stats.mostRecentDate)}` : "No recent outing"}</LeaderboardPill>
-          </>
-        }
-        side={
-          <div className="grid gap-3">
-            <HeroActionCard
-              href="/command/leaderboard"
-              icon={Target}
-              title="Command Leaderboard"
-              detail="Open the ranked board for Command+, on-target rate, and miss shape."
-            />
-            <HeroActionCard
-              href="/command/faq"
-              icon={BookOpen}
-              title="Metrics Dictionary"
-              detail="Keep the command definitions close while you work through outings."
-            />
-          </div>
-        }
-      />
+      <LeaderboardIntro breadcrumbs={[{ label: "Home", href: "/" }, { label: "Command Hub" }]}>
+        <LeaderboardHero
+          tone="orange"
+          icon={Target}
+          eyebrow="Command Tracking"
+          title="Command Hub"
+          description="Move between recent outings and each pitcher’s running command history."
+          meta={
+            <>
+              <LeaderboardPill tone="orange">{seasonLabel}</LeaderboardPill>
+              <LeaderboardPill>{stats.mostRecentDate ? `Latest ${formatDate(stats.mostRecentDate)}` : "No recent outing"}</LeaderboardPill>
+            </>
+          }
+          side={
+            <div className="grid gap-3">
+              <HeroActionCard
+                href="/command/leaderboard"
+                icon={Target}
+                title="Command Leaderboard"
+                detail="Open the ranked board for Command+, on-target rate, and miss shape."
+              />
+              <HeroActionCard
+                href="/command/faq"
+                icon={BookOpen}
+                title="Metrics Dictionary"
+                detail="Keep the command definitions close while you work through outings."
+              />
+            </div>
+          }
+        />
+      </LeaderboardIntro>
 
       <LeaderboardToolbar className="relative z-30 overflow-visible">
         <div className="flex flex-col gap-4 md:flex-row md:flex-nowrap md:items-end">

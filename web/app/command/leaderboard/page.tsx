@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Target, BookOpen } from "lucide-react";
-import Breadcrumbs from "@/app/components/Breadcrumbs";
 import {
   Button,
   leaderboardFilterButtonBaseClassName,
@@ -14,6 +13,7 @@ import {
 import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
 import {
   LeaderboardHero,
+  LeaderboardIntro,
   LeaderboardPageFrame,
   LeaderboardPanel,
   LeaderboardPill,
@@ -447,39 +447,42 @@ export default function LeaderboardsPage() {
 
   return (
     <LeaderboardPageFrame maxWidth="max-w-7xl">
-      <div className="flex justify-end">
-        <LogoutButton />
-      </div>
-
-      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Leaderboards", href: "/leaderboards-hub" }, { label: "Command" }]} />
-
-      <LeaderboardHero
-        tone="orange"
-        icon={Target}
-        eyebrow="Command Leaderboard"
-        title={<>Command Leaderboard</>}
-        meta={(
-          <>
-            <LeaderboardPill tone="orange">
-              {mode === "outings" ? "Outing view" : "Player view"}
-            </LeaderboardPill>
-            <LeaderboardPill tone="neutral">{activeSeasonLabel}</LeaderboardPill>
-            <LeaderboardPill tone="neutral">{filterSummary}</LeaderboardPill>
-          </>
-        )}
-        side={(
-          <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Guide</div>
-            <Link
-              href="/command/faq"
-              className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-orange-500/25 bg-orange-500/10 px-4 py-3.5 text-sm font-semibold text-orange-300 transition-smooth hover:border-orange-400/40 hover:text-orange-200"
-            >
-              <BookOpen className="h-4 w-4" />
-              Metrics Dictionary
-            </Link>
-          </div>
-        )}
-      />
+      <LeaderboardIntro
+        breadcrumbs={[
+          { label: "Home", href: "/" },
+          { label: "Leaderboards", href: "/leaderboards-hub" },
+          { label: "Command" },
+        ]}
+        actions={<LogoutButton />}
+      >
+        <LeaderboardHero
+          tone="orange"
+          icon={Target}
+          eyebrow="Command Leaderboard"
+          title={<>Command Leaderboard</>}
+          meta={(
+            <>
+              <LeaderboardPill tone="orange">
+                {mode === "outings" ? "Outing view" : "Player view"}
+              </LeaderboardPill>
+              <LeaderboardPill tone="neutral">{activeSeasonLabel}</LeaderboardPill>
+              <LeaderboardPill tone="neutral">{filterSummary}</LeaderboardPill>
+            </>
+          )}
+          side={(
+            <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Guide</div>
+              <Link
+                href="/command/faq"
+                className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-orange-500/25 bg-orange-500/10 px-4 py-3.5 text-sm font-semibold text-orange-300 transition-smooth hover:border-orange-400/40 hover:text-orange-200"
+              >
+                <BookOpen className="h-4 w-4" />
+                Metrics Dictionary
+              </Link>
+            </div>
+          )}
+        />
+      </LeaderboardIntro>
 
       <LeaderboardToolbar>
         <div className="grid gap-4 xl:grid-cols-[auto_auto_auto_auto_minmax(0,1fr)_auto] xl:items-end">

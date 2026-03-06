@@ -8,9 +8,10 @@ import {
   type LucideProps,
   ArrowLeft,
 } from "lucide-react";
-import Breadcrumbs, { type BreadcrumbItem } from "@/app/components/Breadcrumbs";
+import { type BreadcrumbItem } from "@/app/components/Breadcrumbs";
 import {
   LeaderboardHero,
+  LeaderboardIntro,
   LeaderboardPageFrame,
   LeaderboardPanel,
   LeaderboardPill,
@@ -59,22 +60,23 @@ export function DictionaryPageShell({
 }) {
   return (
     <LeaderboardPageFrame maxWidth={maxWidth}>
-      <Breadcrumbs items={breadcrumbs} />
-      <LeaderboardHero
-        tone={tone}
-        icon={Icon}
-        eyebrow={eyebrow}
-        title={title}
-        description={description}
-        meta={
-          meta ?? (
-            <>
-              <LeaderboardPill tone={tone}>Reference</LeaderboardPill>
-              <LeaderboardPill tone="neutral">Guides and definitions</LeaderboardPill>
-            </>
-          )
-        }
-      />
+      <LeaderboardIntro breadcrumbs={breadcrumbs}>
+        <LeaderboardHero
+          tone={tone}
+          icon={Icon}
+          eyebrow={eyebrow}
+          title={title}
+          description={description}
+          meta={
+            meta ?? (
+              <>
+                <LeaderboardPill tone={tone}>Reference</LeaderboardPill>
+                <LeaderboardPill tone="neutral">Guides and definitions</LeaderboardPill>
+              </>
+            )
+          }
+        />
+      </LeaderboardIntro>
       <div className="mt-6 space-y-6">{children}</div>
     </LeaderboardPageFrame>
   );

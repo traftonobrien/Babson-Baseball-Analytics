@@ -17,7 +17,6 @@ import {
 } from "@/lib/mechanics/hub";
 import { getCanonicalName } from "@/lib/canonicalPlayers";
 import { handBadgeClassesCompact } from "@/lib/handBadge";
-import Breadcrumbs from "../components/Breadcrumbs";
 import {
   Button,
   leaderboardFilterButtonBaseClassName,
@@ -25,6 +24,7 @@ import {
 } from "@/components/ui/neon-button";
 import {
   LeaderboardHero,
+  LeaderboardIntro,
   LeaderboardPageFrame,
   LeaderboardPanel,
   LeaderboardPill,
@@ -191,8 +191,7 @@ export default function MechanicsHubView({ index }: { index: MechanicsIndex }) {
   return (
     <LeaderboardPageFrame maxWidth="max-w-6xl">
       <div className="flex flex-col gap-6 pb-10">
-        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Mechanics Hub" }]} />
-
+        <LeaderboardIntro breadcrumbs={[{ label: "Home", href: "/" }, { label: "Mechanics Hub" }]}>
         <LeaderboardHero
           tone="violet"
           icon={GaugeCircle}
@@ -266,6 +265,7 @@ export default function MechanicsHubView({ index }: { index: MechanicsIndex }) {
             </>
           }
         />
+        </LeaderboardIntro>
 
         <LeaderboardToolbar>
           <div className="grid gap-4 xl:grid-cols-[minmax(14rem,1fr)_auto] xl:items-end">

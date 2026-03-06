@@ -1,21 +1,21 @@
 /**
  * Universal RHP/LHP badge styling.
- * RHP: emerald (green)
- * LHP: blue (matches command leaderboard)
+ * RHP: warm amber
+ * LHP: cool sky
  */
 
 /** Pill style with border (e.g. Pitching Hub cards) */
 export function handBadgeClasses(hand: "R" | "L"): string {
   return hand === "R"
-    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-    : "bg-blue-500/20 text-blue-400 border border-blue-500/30";
+    ? "border border-amber-500/35 bg-amber-500/10 text-amber-300"
+    : "border border-sky-500/35 bg-sky-500/10 text-sky-300";
 }
 
 /** Compact style without border (e.g. leaderboards, command page) */
 export function handBadgeClassesCompact(hand: "R" | "L"): string {
   return hand === "R"
-    ? "bg-emerald-900/40 text-emerald-400"
-    : "bg-blue-900/40 text-blue-400";
+    ? "bg-amber-500/12 text-amber-300 ring-1 ring-inset ring-amber-500/25"
+    : "bg-sky-500/12 text-sky-300 ring-1 ring-inset ring-sky-500/25";
 }
 
 /** Parse "RHP"/"LHP" or "R"/"L" to "R" | "L" */

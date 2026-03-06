@@ -1,7 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
+import Breadcrumbs, { type BreadcrumbItem } from "@/app/components/Breadcrumbs";
 
 type LeaderboardTone =
   | "amber"
@@ -12,6 +13,7 @@ type LeaderboardTone =
   | "violet"
   | "indigo";
 type PillTone =
+  | "brand"
   | "neutral"
   | "amber"
   | "orange"
@@ -20,6 +22,42 @@ type PillTone =
   | "emerald"
   | "violet"
   | "indigo";
+
+const BRAND_FRAME_STYLE: CSSProperties = {
+  backgroundImage:
+    "radial-gradient(circle at top left, rgba(var(--babson-green-rgb), 0.18), transparent 24%), radial-gradient(circle at top right, rgba(var(--babson-grey-rgb), 0.14), transparent 26%), linear-gradient(180deg, #09090b 0%, #111827 56%, #09090b 100%)",
+};
+
+const BRAND_PILL_STYLE: CSSProperties = {
+  borderColor: "rgba(var(--babson-grey-rgb), 0.3)",
+  background:
+    "linear-gradient(135deg, rgba(var(--babson-green-rgb), 0.22), rgba(var(--babson-grey-rgb), 0.12) 58%, rgba(9, 9, 11, 0.92) 100%)",
+  boxShadow:
+    "inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 1px rgba(var(--babson-green-rgb), 0.08), 0 0 18px rgba(var(--babson-green-rgb), 0.1)",
+  color: "rgb(233 240 236)",
+};
+
+const NEUTRAL_PILL_STYLE: CSSProperties = {
+  borderColor: "rgba(var(--babson-grey-rgb), 0.22)",
+  background:
+    "linear-gradient(135deg, rgba(var(--babson-green-rgb), 0.1), rgba(var(--babson-grey-rgb), 0.08) 58%, rgba(9, 9, 11, 0.92) 100%)",
+  boxShadow:
+    "inset 0 1px 0 rgba(255,255,255,0.05), 0 0 0 1px rgba(var(--babson-green-rgb), 0.05)",
+  color: "rgb(212 220 218)",
+};
+
+const BRAND_PANEL_STYLE: CSSProperties = {
+  borderColor: "rgba(var(--babson-grey-rgb), 0.18)",
+  background:
+    "linear-gradient(180deg, rgba(12, 18, 17, 0.82), rgba(9, 9, 11, 0.92))",
+  boxShadow:
+    "0 24px 64px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.03), 0 0 0 1px rgba(var(--babson-green-rgb), 0.04)",
+};
+
+const BRAND_RULE_STYLE: CSSProperties = {
+  backgroundImage:
+    "linear-gradient(to right, transparent, rgba(var(--babson-grey-rgb), 0.28), transparent)",
+};
 
 const HERO_TONES: Record<LeaderboardTone, {
   border: string;
@@ -78,8 +116,7 @@ const HERO_TONES: Record<LeaderboardTone, {
   },
 };
 
-const PILL_TONES: Record<PillTone, string> = {
-  neutral: "border-zinc-800 bg-zinc-950/70 text-zinc-300",
+const PILL_TONES: Record<Exclude<PillTone, "brand" | "neutral">, string> = {
   amber: "border-amber-500/25 bg-amber-500/10 text-amber-300",
   orange: "border-orange-500/25 bg-orange-500/10 text-orange-300",
   blue: "border-blue-500/25 bg-blue-500/10 text-blue-300",
@@ -101,7 +138,7 @@ export function LeaderboardPageFrame({
   maxWidth?: string;
 }) {
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.12),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.1),_transparent_26%),linear-gradient(180deg,_#09090b_0%,_#111827_56%,_#09090b_100%)] text-zinc-100">
+    <main className="min-h-screen text-zinc-100" style={BRAND_FRAME_STYLE}>
       <div className={joinClasses("mx-auto px-4 py-8 sm:px-6", maxWidth)}>{children}</div>
     </main>
   );
@@ -116,13 +153,17 @@ export function LeaderboardPill({
   tone?: PillTone;
   className?: string;
 }) {
+  const pillStyle =
+    tone === "brand" ? BRAND_PILL_STYLE : tone === "neutral" ? NEUTRAL_PILL_STYLE : undefined;
+
   return (
     <span
       className={joinClasses(
         "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]",
-        PILL_TONES[tone],
+        tone === "brand" || tone === "neutral" ? undefined : PILL_TONES[tone],
         className,
       )}
+      style={pillStyle}
     >
       {children}
     </span>
@@ -141,7 +182,11 @@ export function LeaderboardStatBlock({
   emphasisClassName?: string;
 }) {
   return (
-    <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+    <div
+      className="relative overflow-hidden rounded-3xl border p-4"
+      style={BRAND_PANEL_STYLE}
+    >
+      <div className="pointer-events-none absolute inset-x-8 top-0 h-px" style={BRAND_RULE_STYLE} />
       <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
         {label}
       </div>
@@ -219,6 +264,28 @@ export function LeaderboardHero({
   );
 }
 
+export function LeaderboardIntro({
+  breadcrumbs,
+  actions,
+  children,
+  className,
+}: {
+  breadcrumbs: BreadcrumbItem[];
+  actions?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={joinClasses("space-y-4", className)}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Breadcrumbs items={breadcrumbs} className="mb-0" />
+        {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+      </div>
+      <div className="[&>section]:mt-0">{children}</div>
+    </div>
+  );
+}
+
 export function LeaderboardToolbar({
   children,
   className,
@@ -229,10 +296,12 @@ export function LeaderboardToolbar({
   return (
     <div
       className={joinClasses(
-        "mt-5 rounded-[1.5rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(17,24,39,0.7),rgba(9,9,11,0.92))] p-4",
+        "relative mt-5 overflow-hidden rounded-[1.5rem] border p-4",
         className,
       )}
+      style={BRAND_PANEL_STYLE}
     >
+      <div className="pointer-events-none absolute inset-x-8 top-0 h-px" style={BRAND_RULE_STYLE} />
       {children}
     </div>
   );
@@ -248,10 +317,12 @@ export function LeaderboardPanel({
   return (
     <div
       className={joinClasses(
-        "rounded-3xl border border-zinc-800/80 bg-zinc-950/65 shadow-[0_24px_64px_rgba(0,0,0,0.28)]",
+        "relative overflow-hidden rounded-3xl border",
         className,
       )}
+      style={BRAND_PANEL_STYLE}
     >
+      <div className="pointer-events-none absolute inset-x-8 top-0 h-px" style={BRAND_RULE_STYLE} />
       {children}
     </div>
   );

@@ -10,9 +10,9 @@ import {
   leaderboardFilterButtonBlueInactiveClassName,
 } from "@/components/ui/neon-button";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
-import Breadcrumbs from "../components/Breadcrumbs";
 import {
   LeaderboardHero,
+  LeaderboardIntro,
   LeaderboardPageFrame,
   LeaderboardPanel,
   LeaderboardPill,
@@ -195,9 +195,7 @@ export default function TrackmanPlayersPage() {
   return (
     <LeaderboardPageFrame maxWidth="max-w-6xl">
       <div className="flex flex-col gap-6">
-        <header className="space-y-3">
-          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Trackman" }]} />
-
+        <LeaderboardIntro breadcrumbs={[{ label: "Home", href: "/" }, { label: "Trackman" }]}>
           <LeaderboardHero
             tone="blue"
             icon={Radio}
@@ -273,7 +271,7 @@ export default function TrackmanPlayersPage() {
               </>
             }
           />
-        </header>
+        </LeaderboardIntro>
 
         {loading ? (
           <LeaderboardPanel className="p-6">

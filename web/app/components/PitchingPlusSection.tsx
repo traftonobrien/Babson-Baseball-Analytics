@@ -16,7 +16,7 @@ import {
 import { globalCommandPlusBaselines, loadAllOutingData } from "@/lib/leaderboards/load";
 import { seasonFromDateId } from "@/lib/season";
 import type { SeasonFilter } from "@/lib/leaderboards/types";
-import { plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
+import { plusMetricBadgeStyle, plusMetricSurfaceClasses } from "@/lib/stuffPlusUtils";
 import { getSlugForPlayerId } from "@/lib/canonicalPlayers";
 import {
   buildStuffPlusLookupCandidates,
@@ -188,36 +188,7 @@ export default function PitchingPlusSection({
 
   const pitchResult = data?.pitchingResult ?? null;
   const ready = Boolean(pitchResult?.ready && pitchResult.overall !== null);
-
-  const tierClass = !ready
-    ? {
-        borderClass: "border-zinc-800",
-        bgClass: "bg-zinc-900/55",
-        pillClass: "bg-zinc-800 text-zinc-300",
-      }
-    : (pitchResult?.overall ?? 0) >= 110
-      ? {
-          borderClass: "border-rose-500/50",
-          bgClass: "bg-rose-950/10",
-          pillClass: "bg-rose-500/15 text-rose-300",
-        }
-      : (pitchResult?.overall ?? 0) >= 100
-        ? {
-            borderClass: "border-orange-500/50",
-            bgClass: "bg-orange-950/10",
-            pillClass: "bg-orange-500/15 text-orange-300",
-          }
-        : (pitchResult?.overall ?? 0) >= 90
-          ? {
-              borderClass: "border-zinc-700",
-              bgClass: "bg-zinc-900/50",
-              pillClass: "bg-zinc-800 text-zinc-300",
-            }
-          : {
-              borderClass: "border-sky-500/50",
-              bgClass: "bg-sky-950/10",
-              pillClass: "bg-sky-500/15 text-sky-300",
-            };
+  const tierClass = plusMetricSurfaceClasses(ready ? pitchResult?.overall ?? null : null);
 
   const displayReason = commandError
     ? "command_load_error"

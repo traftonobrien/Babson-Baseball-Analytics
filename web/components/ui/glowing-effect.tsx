@@ -173,17 +173,17 @@ const GlowingEffect = memo(
                       rgba(255,255,255,0.15) calc(75% / var(--repeating-conic-gradient-times)),
                       rgba(255,255,255,0.9) calc(100% / var(--repeating-conic-gradient-times))
                     )`
-                  : `radial-gradient(circle, #dd7bbb 10%, #dd7bbb00 20%),
-                    radial-gradient(circle at 40% 40%, #d79f1e 5%, #d79f1e00 15%),
-                    radial-gradient(circle at 60% 60%, #5a922c 10%, #5a922c00 20%),
-                    radial-gradient(circle at 40% 60%, #4c7894 10%, #4c789400 20%),
+                  : `radial-gradient(circle, rgba(var(--babson-green-rgb), 0.88) 10%, rgba(var(--babson-green-rgb), 0) 22%),
+                    radial-gradient(circle at 40% 40%, rgba(var(--babson-grey-rgb), 0.72) 6%, rgba(var(--babson-grey-rgb), 0) 18%),
+                    radial-gradient(circle at 64% 62%, rgba(255, 255, 255, 0.16) 8%, rgba(255, 255, 255, 0) 22%),
+                    radial-gradient(circle at 38% 68%, rgba(var(--babson-green-rgb), 0.42) 10%, rgba(var(--babson-green-rgb), 0) 21%),
                     repeating-conic-gradient(
                       from 236.84deg at 50% 50%,
-                      #dd7bbb 0%,
-                      #d79f1e calc(25% / var(--repeating-conic-gradient-times)),
-                      #5a922c calc(50% / var(--repeating-conic-gradient-times)),
-                      #4c7894 calc(75% / var(--repeating-conic-gradient-times)),
-                      #dd7bbb calc(100% / var(--repeating-conic-gradient-times))
+                      rgba(var(--babson-green-rgb), 0.92) 0%,
+                      rgba(var(--babson-grey-rgb), 0.84) calc(25% / var(--repeating-conic-gradient-times)),
+                      rgba(255, 255, 255, 0.18) calc(50% / var(--repeating-conic-gradient-times)),
+                      rgba(var(--babson-grey-rgb), 0.7) calc(75% / var(--repeating-conic-gradient-times)),
+                      rgba(var(--babson-green-rgb), 0.92) calc(100% / var(--repeating-conic-gradient-times))
                     )`,
             } as CSSProperties
           }

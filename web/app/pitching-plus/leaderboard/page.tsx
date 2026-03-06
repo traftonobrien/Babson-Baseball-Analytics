@@ -28,6 +28,8 @@ import {
 } from "@/components/ui/neon-button";
 import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { getSlugForPlayerId } from "@/lib/canonicalPlayers";
+import { mutedBadgeClasses, readinessBadgeClasses } from "@/lib/badgeStyles";
+import { handBadgeClasses } from "@/lib/handBadge";
 import { plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
 import type {
   PlusLeaderboardPayload,
@@ -80,7 +82,7 @@ function compareMetric(
 function metricBadge(value: number | null) {
   if (value === null) {
     return (
-      <span className="inline-flex rounded-full border border-zinc-700 px-2.5 py-1 text-xs font-semibold text-zinc-500">
+      <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${mutedBadgeClasses()}`}>
         —
       </span>
     );
@@ -99,19 +101,14 @@ function metricBadge(value: number | null) {
 function handBadge(throws: "R" | "L" | null) {
   if (!throws) {
     return (
-      <span className="inline-flex rounded-full border border-zinc-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+      <span className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${mutedBadgeClasses()}`}>
         —
       </span>
     );
   }
 
-  const classes =
-    throws === "L"
-      ? "border-sky-500/40 bg-sky-500/10 text-sky-300"
-      : "border-amber-500/40 bg-amber-500/10 text-amber-300";
-
   return (
-    <span className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${classes}`}>
+    <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${handBadgeClasses(throws)}`}>
       {throws === "L" ? "LHP" : "RHP"}
     </span>
   );
@@ -281,7 +278,7 @@ function PlayerTable({
                 <td className="px-4 py-3 text-zinc-300">{row.trackedPitchCount}</td>
                 <td className="px-4 py-3 text-zinc-300">{row.outingCount}</td>
                 <td className="px-4 py-3">
-                  <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${row.ready ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300" : "border-zinc-700 bg-zinc-900 text-zinc-400"}`}>
+                  <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${readinessBadgeClasses(row.ready)}`}>
                     {reasonCopy(row.notReadyReason)}
                   </span>
                 </td>
@@ -347,7 +344,7 @@ function PitchTypeTable({
                 <td className="px-4 py-3 text-zinc-300">{fmtPct(row.usageShare)}</td>
                 <td className="px-4 py-3 text-zinc-300">{row.commandCount}</td>
                 <td className="px-4 py-3">
-                  <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${row.includedInPitchingPlus ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300" : "border-zinc-700 bg-zinc-900 text-zinc-400"}`}>
+                  <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${readinessBadgeClasses(row.includedInPitchingPlus)}`}>
                     {reasonCopy(row.reason)}
                   </span>
                 </td>

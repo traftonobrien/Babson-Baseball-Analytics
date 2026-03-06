@@ -3,11 +3,17 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --babson-green: #006644;
+  --babson-green-rgb: 0, 102, 68;
+  --babson-grey: #a3aaae;
+  --babson-grey-rgb: 163, 170, 174;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-babson-green: var(--babson-green);
+  --color-babson-grey: var(--babson-grey);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

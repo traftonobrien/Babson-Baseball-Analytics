@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { Trophy, Target, Activity, BarChart3, ArrowRight, Sparkles } from "lucide-react";
-import Breadcrumbs from "../components/Breadcrumbs";
 import {
   LeaderboardHero,
+  LeaderboardIntro,
   LeaderboardPageFrame,
   LeaderboardPill,
 } from "../components/leaderboards/LeaderboardChrome";
@@ -51,19 +51,20 @@ const COLOR_CLASSES: Record<string, string> = {
 export default function LeaderboardsHubPage() {
   return (
     <LeaderboardPageFrame maxWidth="max-w-6xl">
-      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Leaderboards" }]} />
-      <LeaderboardHero
-        tone="amber"
-        icon={Trophy}
-        eyebrow="All Rankings"
-        title={<>Leaderboards</>}
-        meta={(
-          <>
-            <LeaderboardPill tone="amber">4 boards</LeaderboardPill>
-            <LeaderboardPill tone="neutral">All rankings</LeaderboardPill>
-          </>
-        )}
-      />
+      <LeaderboardIntro breadcrumbs={[{ label: "Home", href: "/" }, { label: "Leaderboards" }]}>
+        <LeaderboardHero
+          tone="amber"
+          icon={Trophy}
+          eyebrow="All Rankings"
+          title={<>Leaderboards</>}
+          meta={(
+            <>
+              <LeaderboardPill tone="amber">4 boards</LeaderboardPill>
+              <LeaderboardPill tone="neutral">All rankings</LeaderboardPill>
+            </>
+          )}
+        />
+      </LeaderboardIntro>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {LEADERBOARD_ITEMS.map(({ href, label, description, icon: Icon, color }) => (
