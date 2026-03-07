@@ -2,18 +2,19 @@
 
 ## Overview
 
-This roadmap takes the project from a brownfield repo with no live charting domain to a staff-usable internal iPad workflow plus portal reporting. The sequence is intentionally fine-grained so work can stop safely between sections, preserve context, and avoid overcommitting a single implementation run.
+This roadmap takes the project from a brownfield repo with no live charting domain to a staff-usable internal iPad workflow plus portal reporting. The sequence is intentionally fine-grained so work can stop safely between sections, preserve context, and avoid overcommitting a single implementation run. After export fidelity, the next risk is charting-engine correctness, so internal pilot packaging is intentionally pushed behind a hardening phase.
 
 ## Phases
 
-- [ ] **Phase 1: Charting Domain Foundation** - Define the backend charting model, persistence schema, and revision-safe APIs
-- [ ] **Phase 2: Access and Game Setup** - Add operator access, bootstrap data, lineup setup, and pitcher-segment management
-- [ ] **Phase 3: Local iPad Persistence** - Create the native app shell with autosaved offline storage and recovery
-- [ ] **Phase 4: Live Charting Workflow** - Build the touch-first pitch and plate-appearance capture experience
-- [ ] **Phase 5: Sync and Finalization** - Add offline queue replay, finalize flow, and manual totals override support
-- [ ] **Phase 6: Portal Charting Surfaces** - Add charting hub, game detail, and derived reporting views
-- [ ] **Phase 7: Export Fidelity** - Generate structured CSV and PDF outputs based on the stable chart model
-- [ ] **Phase 8: Pilot Hardening and TestFlight** - Prepare internal beta delivery, diagnostics, and operational guidance
+- [x] **Phase 1: Charting Domain Foundation** - Define the backend charting model, persistence schema, and revision-safe APIs
+- [x] **Phase 2: Access and Game Setup** - Add operator access, bootstrap data, lineup setup, and pitcher-segment management
+- [x] **Phase 3: Local iPad Persistence** - Create the native iPad app shell with autosaved offline storage and recovery
+- [x] **Phase 4: Live Charting Workflow** - Build the touch-first pitch and plate-appearance capture experience
+- [x] **Phase 5: Sync and Finalization** - Add offline queue replay, finalize flow, and manual totals override support
+- [x] **Phase 6: Portal Charting Surfaces** - Add charting hub, game detail, and derived reporting views
+- [x] **Phase 7: Export Fidelity** - Generate structured CSV and PDF outputs based on the stable chart model
+- [x] **Phase 8: Charting Engine Hardening** - Make the live charting state machine deterministic, validated, and regression-tested
+- [ ] **Phase 9: Pilot Hardening and TestFlight** - Prepare internal beta delivery, diagnostics, and operational guidance
 
 ## Phase Details
 
@@ -28,9 +29,9 @@ This roadmap takes the project from a brownfield repo with no live charting doma
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: Define charting snapshot types, normalized tables, and fixture payloads
-- [ ] 01-02: Build create/read/update APIs with revision handling
-- [ ] 01-03: Add backend tests for revision safety and fixture round-trips
+- [x] 01-01: Define charting snapshot types, normalized tables, and fixture payloads
+- [x] 01-02: Build create/read/update APIs with revision handling
+- [x] 01-03: Add backend tests for revision safety and fixture round-trips
 
 ### Phase 2: Access and Game Setup
 **Goal**: Let an internal operator start a game, load canonical pitchers, enter hitters, and manage pitcher changes.
@@ -43,9 +44,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: Add internal charting auth and bootstrap endpoints
-- [ ] 02-02: Model lineup entry and editable game-header metadata
-- [ ] 02-03: Add pitcher-segment lifecycle and setup tests
+- [x] 02-01: Add internal charting auth and bootstrap endpoints
+- [x] 02-02: Model lineup entry and editable game-header metadata
+- [x] 02-03: Add pitcher-segment lifecycle and setup tests
 
 ### Phase 3: Local iPad Persistence
 **Goal**: Create the native iPad app shell and guarantee local autosave + relaunch recovery.
@@ -58,9 +59,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: Create SwiftUI app shell, navigation, and shared models
-- [ ] 03-02: Implement SwiftData persistence and autosave flow
-- [ ] 03-03: Add relaunch and recovery verification
+- [x] 03-01: Create SwiftUI app shell, navigation, and shared models
+- [x] 03-02: Implement SwiftData persistence and autosave flow
+- [x] 03-03: Add relaunch and recovery verification
 
 ### Phase 4: Live Charting Workflow
 **Goal**: Deliver the fast touch workflow for pitch-by-pitch and plate-appearance entry.
@@ -73,9 +74,14 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 04-01: Build live pitch-entry controls and zone grid interaction
-- [ ] 04-02: Implement count / PA state machine, result codes, and edit history
-- [ ] 04-03: Add sample-sheet-inspired live board rendering for scorer confidence
+- [x] 04-01: Build live pitch-entry controls and zone grid interaction
+- [x] 04-02: Implement count / PA state machine, result codes, and edit history
+- [x] 04-03: Add sample-sheet-inspired live board rendering for scorer confidence
+
+Implemented baseline:
+- The iPad charting shell is landscape-first with the 14-cell Trackman zone selector occupying the elastic top canvas.
+- Count, pitch type, pitch result, and plate-appearance closeout live in the bottom operator dock.
+- Matchup and pitch history are supporting surfaces that should stay compact as future controls are added.
 
 ### Phase 5: Sync and Finalization
 **Goal**: Make the workflow reliable when connectivity is poor and lock finalized games correctly.
@@ -88,9 +94,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 05-01: Build queued offline sync and replay behavior
-- [ ] 05-02: Add finalize flow and manual totals override UX
-- [ ] 05-03: Add sync diagnostics, stale-write handling, and tests
+- [x] 05-01: Build queued offline sync and replay behavior
+- [x] 05-02: Add finalize flow and manual totals override UX
+- [x] 05-03: Add sync diagnostics, stale-write handling, and tests
 
 ### Phase 6: Portal Charting Surfaces
 **Goal**: Make synced charting games visible and useful inside the existing portal.
@@ -103,9 +109,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 06-01: Build charting hub route and game listing
-- [ ] 06-02: Build game detail views and analytics summaries
-- [ ] 06-03: Add query, projection, and rendering tests
+- [x] 06-01: Build charting hub route and game listing
+- [x] 06-02: Build game detail views and analytics summaries
+- [x] 06-03: Add query, projection, and rendering tests
 
 ### Phase 7: Export Fidelity
 **Goal**: Turn the stable chart data into staff-usable CSV and PDF outputs.
@@ -118,13 +124,38 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 07-01: Build normalized CSV export
-- [ ] 07-02: Build paper-style PDF renderer
-- [ ] 07-03: Verify export output against the sample chart fixture
+- [x] 07-01: Build normalized CSV export
+- [x] 07-02: Build paper-style PDF renderer
+- [x] 07-03: Verify export output against the sample chart fixture
 
-### Phase 8: Pilot Hardening and TestFlight
-**Goal**: Prepare the product for internal staff use in a controlled TestFlight pilot.
+Current status:
+- CSV export now ships from `/api/charting/games/[id]/export` and is linked directly from `/charting/games/[id]`.
+- PDF export now ships from `/api/charting/games/[id]/export-pdf` and is linked directly from `/charting/games/[id]`.
+- Fixture-backed export verification passed for both CSV and PDF outputs, including finalized pitcher totals.
+
+### Phase 8: Charting Engine Hardening
+**Goal**: Make the live charting engine deterministic enough to trust in real-game use before widening distribution.
 **Depends on**: Phase 7
+**Requirements**: [ENG-01, ENG-02, ENG-03, ENG-04]
+**Success Criteria** (what must be TRUE):
+  1. The app can reconstruct inning, outs, count, batter slot, and open plate appearance deterministically from the saved event log after undo, relaunch, or sync reload.
+  2. Supported plate-appearance result codes advance outs, inning, batter order, and active pitcher state correctly without relying on ad hoc string checks.
+  3. Scenario-based tests cover count progression, PA closure, undo, pitcher changes, relaunch recovery, and finalize locking.
+**Plans**: 3 plans
+
+Plans:
+- [x] 08-01: Build deterministic charting-engine rules and state reconstruction
+- [x] 08-02: Integrate engine rules into the live workflow with operator guardrails
+- [x] 08-03: Add scenario-based regression coverage and verification fixtures
+
+Current status:
+- The iPad charting engine now derives inning, outs, count, batter slot, and closeout readiness from typed pitch and PA result rules rather than ad hoc counter repair.
+- Live workflow guardrails now prevent extra pitches after terminal events, restrict PA closeout choices to valid results, block pitcher changes mid-PA, and prevent finalization with an open PA.
+- Scenario-based charting engine tests now cover strike-three bunt fouls, ball four, inning rollover, double plays, in-play closeouts, and between-inning segment handoff.
+
+### Phase 9: Pilot Hardening and TestFlight
+**Goal**: Prepare the product for internal staff use in a controlled TestFlight pilot once the charting mechanics are trustworthy.
+**Depends on**: Phase 8
 **Requirements**: [OPS-01, OPS-02]
 **Success Criteria** (what must be TRUE):
   1. Internal testers can install and run the app via TestFlight.
@@ -133,22 +164,23 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 08-01: Prepare internal TestFlight packaging and distribution checklist
-- [ ] 08-02: Add pilot diagnostics, error surfacing, and retry guidance
-- [ ] 08-03: Publish operator runbook and scoring quick reference
+- [ ] 09-01: Prepare internal TestFlight packaging and distribution checklist
+- [ ] 09-02: Add pilot diagnostics, error surfacing, and retry guidance
+- [ ] 09-03: Publish operator runbook and scoring quick reference
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Charting Domain Foundation | 0/3 | Not started | - |
-| 2. Access and Game Setup | 0/3 | Not started | - |
-| 3. Local iPad Persistence | 0/3 | Not started | - |
-| 4. Live Charting Workflow | 0/3 | Not started | - |
-| 5. Sync and Finalization | 0/3 | Not started | - |
-| 6. Portal Charting Surfaces | 0/3 | Not started | - |
-| 7. Export Fidelity | 0/3 | Not started | - |
-| 8. Pilot Hardening and TestFlight | 0/3 | Not started | - |
+| 1. Charting Domain Foundation | 3/3 | Complete | 2026-03-06 |
+| 2. Access and Game Setup | 3/3 | Complete | 2026-03-06 |
+| 3. Local iPad Persistence | 3/3 | Complete | 2026-03-06 |
+| 4. Live Charting Workflow | 3/3 | Complete | 2026-03-06 |
+| 5. Sync and Finalization | 3/3 | Complete | 2026-03-06 |
+| 6. Portal Charting Surfaces | 3/3 | Complete | 2026-03-06 |
+| 7. Export Fidelity | 3/3 | Complete | 2026-03-06 |
+| 8. Charting Engine Hardening | 3/3 | Complete | 2026-03-06 |
+| 9. Pilot Hardening and TestFlight | 0/3 | Not started | - |

@@ -1,60 +1,89 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+current_phase: 9
+current_phase_name: pilot hardening and testflight
+current_plan: Not started
+status: planning
+stopped_at: Phase 8 charting-engine hardening is complete and verified; Phase 9 pilot/TestFlight work is next
+last_updated: "2026-03-06T23:45:30.000Z"
+last_activity: 2026-03-06
+progress:
+  total_phases: 9
+  completed_phases: 8
+  total_plans: 12
+  completed_plans: 12
+  percent: 89
+---
+
 # Project State
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-03-06)
 
-**Core value:** One coach can chart an entire Babson outing on one iPad and trust that the result survives offline use, syncs cleanly, and exports well enough to replace the current paper workflow.
-**Current focus:** Phase 1 - Charting Domain Foundation
+**Core Value:** One coach can chart an entire Babson outing on one iPad and trust that the result survives offline use, syncs cleanly, and exports well enough to replace the current paper workflow.
+**Current Focus:** Phase 9: Pilot Hardening and TestFlight
 
 ## Current Position
 
-Phase: 1 of 8 (Charting Domain Foundation)
-Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-03-06 — Initialized brownfield project, codebase map, research, requirements, and roadmap
-
-Progress: [░░░░░░░░░░] 0%
+**Current Phase:** 9
+**Current Phase Name:** pilot hardening and testflight
+**Total Phases:** 9
+**Current Plan:** Not started
+**Total Plans in Phase:** 3
+**Status:** Ready to plan
+**Last Activity:** 2026-03-06
+**Last Activity Description:** Phase 8 complete, verified, and handed off to Phase 9
+**Progress:** 89%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0.0 hours
+- Total plans completed: 24 roadmap plans shipped across Phases 1-8
+- Documented phase summaries on disk: 12
+- Total execution time: -
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 1. Charting Domain Foundation | 3 | - | - |
+| 2. Access and Game Setup | 3 | - | - |
+| 3. Local iPad Persistence | 3 | - | - |
+| 4. Live Charting Workflow | 3 | - | - |
+| 5. Sync and Finalization | 3 | - | - |
+| 6. Portal Charting Surfaces | 3 | - | - |
+| 7. Export Fidelity | 3 | - | - |
+| 8. Charting Engine Hardening | 3 | - | - |
 
 **Recent Trend:**
-- Last 5 plans: -
+- Last 5 plans: 07-02, 07-03, 08-01, 08-02, 08-03
 - Trend: Stable
 
-## Accumulated Context
+## Decisions Made
 
-### Decisions
+| Phase | Summary | Rationale |
+|-------|---------|-----------|
+| 4 | Use a landscape-first charting shell with an elastic top zone canvas and a bottom operator dock | Preserves the largest surface for spatial pitch location while leaving the control deck extensible as more charting actions are added |
+| 4 | Match the zone selector to the 14-cell Trackman layout with custom outer L-brackets and a separate `PO` cell | Aligns the scorer's touch targets to the actual location model staff expects |
+| 6 | Keep portal detail analytics and chart review on `/charting/games/[id]` using DB-backed synced snapshots | Staff needs one authoritative post-sync review surface inside the existing portal |
+| 7 | Generate CSV and PDF exports from the shared chart snapshot contract | Export surfaces must stay aligned with the synced game model and finalized pitcher totals |
+| 8 | Rebuild live charting state from typed pitch and PA result rules | Count, outs, batter order, and relaunch recovery need one deterministic source of truth |
+| 8 | Enforce guardrails in both the store and the UI | The scorer should not be able to record contradictory actions even if one surface drifts later |
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
+## Pending Todos
 
-- Initialization: Use fine-grained phases and sequential execution to reduce context/usage risk
-- Initialization: Treat charting as a new DB-backed subsystem rather than extending the static publish path
-- Initialization: Keep v1 to one scorer, manual hitters, no baserunner engine
+- Plan Phase 9 around TestFlight packaging, pilot diagnostics, and operator runbook coverage
+- Decide whether pilot diagnostics should stay app-only or also surface a compact portal support view
 
-### Pending Todos
+## Blockers
 
-None yet.
+None.
 
-### Blockers/Concerns
+## Session
 
-- Need a typed fixture game based on the sample chart before implementation gets deep
-- Need final choice of internal charting auth mechanism before Phase 2 execution
-
-## Session Continuity
-
-Last session: 2026-03-06
-Stopped at: Project initialization complete; Phase 1 is ready for plan-phase work
-Resume file: None
+**Last Date:** 2026-03-06 18:45
+**Stopped At:** Phase 8 complete and verified with deterministic charting engine rules, workflow guardrails, and green iOS scenario tests
+**Resume File:** None

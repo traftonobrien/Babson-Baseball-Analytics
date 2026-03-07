@@ -5,6 +5,11 @@
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "computedHash": "13624b09c8dde98402647ffa13158f0e66a3fe6c440e74b2110e8b455a11153a"
+    },
+    "swiftui-pro": {
+      "source": "twostraws/swiftui-agent-skill",
+      "sourceType": "github",
+      "computedHash": "c5d0b2c7bafbb7862c6c84a59f6d26b272fe7bfa476909edb58a22ae626554c6"
     }
   }
 }
