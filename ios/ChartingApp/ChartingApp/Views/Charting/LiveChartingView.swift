@@ -774,6 +774,15 @@ struct LiveChartingView: View {
         }
         .modifier(SurfaceCard())
         .shadow(color: Color.black.opacity(0.08), radius: 18, y: 6)
+        .gesture(
+            DragGesture(minimumDistance: 50)
+                .onEnded { value in
+                    if value.translation.width < -50 && abs(value.translation.height) < 50 {
+                        handleUndo()
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    }
+                }
+        )
     }
 
     private var pendingPitchFooter: some View {
@@ -831,6 +840,7 @@ struct LiveChartingView: View {
     private func confirmPitch() {
         if isLiveABMode {
             _ = chartingState.commitLiveABPitch()
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             return
         }
 
@@ -852,6 +862,7 @@ struct LiveChartingView: View {
         if didRecord {
             chartingState.clearPitchDraft()
             chartingState.clearGameCorrection()
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         }
     }
 
@@ -859,12 +870,14 @@ struct LiveChartingView: View {
         if isLiveABMode {
             if chartingState.closeLiveAB(result: result) {
                 isShowingPACloseoutSheet = false
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
             }
             return
         }
         chartingState.clearPitchDraft()
         gameStore.closePlateAppearance(result: result)
         isShowingPACloseoutSheet = false
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 
     private func handleUndo() {
