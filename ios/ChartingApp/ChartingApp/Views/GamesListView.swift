@@ -54,7 +54,7 @@ struct GamesListView: View {
                 }
             }
             .sheet(isPresented: $showNewGame) {
-                GameSetupView(gameStore: gameStore)
+                GameSetupWizardView(gameStore: gameStore)
             }
             .navigationDestination(item: $selectedGameId) { gameId in
                 GameDetailView(gameStore: gameStore, gameId: gameId)

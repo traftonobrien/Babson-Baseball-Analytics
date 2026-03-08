@@ -40,6 +40,7 @@ export const CHARTING_EXPORT_COLUMNS = [
   "pitch_type",
   "location_cell",
   "pitch_result",
+  "velocity",
 ] as const;
 
 type ChartingExportColumn = (typeof CHARTING_EXPORT_COLUMNS)[number];
@@ -140,6 +141,7 @@ export function buildChartingExportRows(
       pitch_type: pitch.pitchType,
       location_cell: pitch.locationCell,
       pitch_result: pitch.pitchResult,
+      velocity: pitch.velocity,
     };
   });
 }

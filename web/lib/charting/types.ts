@@ -80,6 +80,8 @@ export interface ChartingPitch {
   pitchResult: PitchResult;
   ballsBefore: number;
   strikesBefore: number;
+  /** Gun reading in mph; null if not recorded */
+  velocity: number | null;
 }
 
 /** One slot in the pre-game opponent lineup (1-9). */

@@ -2,8 +2,10 @@ import SwiftUI
 
 /// Pre-charting setup screen for Live AB mode.
 /// User configures pitcher, hitter, and context here, then taps Start.
+/// Shows recent Live AB session history at the bottom.
 struct LiveABHomeView: View {
     @Bindable var gameStore: GameStore
+    @Bindable var chartingState: ChartingState
 
     @State private var setup = LiveABSetup()
     @State private var isChartingActive = false
@@ -127,13 +129,56 @@ struct LiveABHomeView: View {
                     }
                     .disabled(!setup.isReady)
                 }
+
+                // MARK: Recent Sessions
+                if !chartingState.completedLiveABSessions.isEmpty {
+                    Section("Recent Sessions") {
+                        ForEach(chartingState.completedLiveABSessions.reversed()) { session in
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    Text(session.setup.pitcherName)
+                                        .font(.headline)
+                                    Text("vs")
+                                        .foregroundStyle(.secondary)
+                                    Text(session.setup.hitterName)
+                                        .font(.headline)
+                                    Spacer()
+                                    if let result = session.result {
+                                        Text(result.rawValue)
+                                            .font(.caption.bold())
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 2)
+                                            .background(resultColor(for: result))
+                                            .foregroundStyle(.white)
+                                            .clipShape(Capsule())
+                                    }
+                                }
+
+                                HStack(spacing: 12) {
+                                    Text("\(session.pitches.count) pitches")
+                                    Text(session.setup.inningText)
+                                    if session.setup.isBuntMode {
+                                        Text("Bunt")
+                                            .foregroundStyle(.orange)
+                                    }
+                                }
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    }
+                }
             }
             .navigationTitle("Live AB")
             .navigationDestination(isPresented: $isChartingActive) {
                 LiveChartingView(
                     gameStore: gameStore,
                     initialMode: .liveAB,
-                    initialLiveABSetup: setup
+                    initialLiveABSetup: setup,
+                    onSessionsComplete: { sessions in
+                        chartingState.completedLiveABSessions.append(contentsOf: sessions)
+                    }
                 )
             }
             .sheet(isPresented: $isShowingHitterPicker) {
@@ -149,6 +194,16 @@ struct LiveABHomeView: View {
                     Task { await gameStore.fetchBootstrap() }
                 }
             }
+        }
+    }
+
+    private func resultColor(for result: PAResultType) -> Color {
+        switch result.family {
+        case .strikeout: return .red
+        case .freePass: return .blue
+        case .hit: return .green
+        case .out: return .orange
+        case .misc: return .purple
         }
     }
 }

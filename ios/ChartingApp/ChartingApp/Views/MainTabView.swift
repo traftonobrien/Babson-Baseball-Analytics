@@ -7,12 +7,13 @@ struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
 
     @State private var gameStore: GameStore?
+    @State private var chartingState = ChartingState()
 
     var body: some View {
         Group {
             if let store = gameStore {
                 TabView {
-                    LiveABHomeView(gameStore: store)
+                    LiveABHomeView(gameStore: store, chartingState: chartingState)
                         .tabItem {
                             Label("Live AB", systemImage: "figure.baseball")
                         }

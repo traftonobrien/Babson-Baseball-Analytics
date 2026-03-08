@@ -105,6 +105,7 @@ const pitches: ChartingPitch[] = [
     pitchResult: "called_strike",
     ballsBefore: 0,
     strikesBefore: 0,
+    velocity: null,
   },
   {
     id: "fixture-pitch-2",
@@ -116,6 +117,7 @@ const pitches: ChartingPitch[] = [
     pitchResult: "ball",
     ballsBefore: 0,
     strikesBefore: 1,
+    velocity: null,
   },
   {
     id: "fixture-pitch-3",
@@ -127,6 +129,7 @@ const pitches: ChartingPitch[] = [
     pitchResult: "swinging_strike",
     ballsBefore: 1,
     strikesBefore: 1,
+    velocity: null,
   },
   // PA 2: walk in 4 pitches
   {
@@ -139,6 +142,7 @@ const pitches: ChartingPitch[] = [
     pitchResult: "ball",
     ballsBefore: 0,
     strikesBefore: 0,
+    velocity: null,
   },
   {
     id: "fixture-pitch-5",
@@ -150,6 +154,7 @@ const pitches: ChartingPitch[] = [
     pitchResult: "ball",
     ballsBefore: 1,
     strikesBefore: 0,
+    velocity: null,
   },
   {
     id: "fixture-pitch-6",
@@ -161,6 +166,7 @@ const pitches: ChartingPitch[] = [
     pitchResult: "ball",
     ballsBefore: 2,
     strikesBefore: 0,
+    velocity: null,
   },
   {
     id: "fixture-pitch-7",
@@ -172,6 +178,7 @@ const pitches: ChartingPitch[] = [
     pitchResult: "ball",
     ballsBefore: 3,
     strikesBefore: 0,
+    velocity: null,
   },
   // PA 3: in progress, no result yet
   {
@@ -184,6 +191,7 @@ const pitches: ChartingPitch[] = [
     pitchResult: "foul",
     ballsBefore: 0,
     strikesBefore: 0,
+    velocity: null,
   },
 ];
 

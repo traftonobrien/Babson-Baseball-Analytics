@@ -172,6 +172,19 @@ struct GameDetailView: View {
                                 .font(.headline)
                                 .foregroundStyle(.green)
                                 .frame(maxWidth: .infinity, alignment: .center)
+
+                            if let csvURL = CSVExporter.writeToTempFile(
+                                game: game,
+                                segments: gameStore.activeSegments,
+                                plateAppearances: gameStore.activePlateAppearances,
+                                pitches: gameStore.activePitches
+                            ) {
+                                ShareLink(item: csvURL) {
+                                    Label("Export CSV", systemImage: "square.and.arrow.up")
+                                        .font(.headline)
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                }
+                            }
                         }
                     }
                 }

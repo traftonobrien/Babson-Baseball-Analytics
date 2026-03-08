@@ -8,6 +8,8 @@ struct LiveChartingView: View {
     var initialMode: ChartingMode = .liveAB
     /// When provided, a Live AB session is started immediately on appear (skips the setup sheet).
     var initialLiveABSetup: LiveABSetup? = nil
+    /// Called when the user exits Live AB charting, passes back all completed sessions.
+    var onSessionsComplete: (([LiveABSession]) -> Void)? = nil
 
     @State private var chartingState = ChartingState()
     @State private var isShowingPACloseoutSheet = false
@@ -61,7 +63,12 @@ struct LiveChartingView: View {
         .disabled(requiresLandscapeOrientation)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Exit") { dismiss() }
+                Button("Exit") {
+                    if chartingState.mode == .liveAB {
+                        onSessionsComplete?(chartingState.completedLiveABSessions)
+                    }
+                    dismiss()
+                }
             }
         }
         .navigationBarBackButtonHidden()

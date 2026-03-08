@@ -140,4 +140,6 @@ export const chartingPitches = pgTable("charting_pitches", {
   pitchResult: text("pitch_result").notNull(),
   ballsBefore: integer("balls_before").notNull(),
   strikesBefore: integer("strikes_before").notNull(),
+  /** Gun reading in mph; null if not recorded */
+  velocity: integer("velocity"),
 });

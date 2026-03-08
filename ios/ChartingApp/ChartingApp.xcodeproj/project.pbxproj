@@ -30,6 +30,8 @@
 		F6A4434CA7A01CD18D9746C5 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FA96D3E279594E81F9FD7C5 /* RootView.swift */; };
 		FEEE9AB5A29DA272A75D1588 /* GamesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 711154F2DF6A0DFB35809540 /* GamesListView.swift */; };
 		AA01BB02CC03DD04EE05FF06 /* LiveABHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA01BB02CC03DD04EE05FF07 /* LiveABHomeView.swift */; };
+		BB02CC03DD04EE05FF06AA01 /* CSVExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB02CC03DD04EE05FF06AA02 /* CSVExporter.swift */; };
+		CC03DD04EE05FF06AA01BB02 /* GameSetupWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC03DD04EE05FF06AA01BB03 /* GameSetupWizardView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -68,6 +70,8 @@
 		D40B26F6AB1C0BB4E764F641 /* PAResultControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PAResultControls.swift; sourceTree = "<group>"; };
 		E8C8D0D69C4D548918A63000 /* PitchTypePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchTypePicker.swift; sourceTree = "<group>"; };
 		EE78DF14FD0F398E84B632BC /* ZoneGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneGridView.swift; sourceTree = "<group>"; };
+		BB02CC03DD04EE05FF06AA02 /* CSVExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVExporter.swift; sourceTree = "<group>"; };
+		CC03DD04EE05FF06AA01BB03 /* GameSetupWizardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSetupWizardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -77,6 +81,7 @@
 				4E37DD99BD3B37AC77CA4DEF /* GameDetailView.swift */,
 				4CD72253BAED4B32A89A9685 /* GameSetupView.swift */,
 				711154F2DF6A0DFB35809540 /* GamesListView.swift */,
+				CC03DD04EE05FF06AA01BB03 /* GameSetupWizardView.swift */,
 				AA01BB02CC03DD04EE05FF07 /* LiveABHomeView.swift */,
 				72CCBB2C3CD4054FFE112238 /* LoginView.swift */,
 				1DD8D47EBF522F777D689468 /* MainTabView.swift */,
@@ -169,6 +174,7 @@
 		EB7C93407E9D0FDB71CFF731 /* Stores */ = {
 			isa = PBXGroup;
 			children = (
+				BB02CC03DD04EE05FF06AA02 /* CSVExporter.swift */,
 				132823EAFE9828F954DF089D /* GameStore.swift */,
 			);
 			path = Stores;
@@ -269,6 +275,8 @@
 				F6A4434CA7A01CD18D9746C5 /* RootView.swift in Sources */,
 				0E7CF23EC36FA290C183F50F /* SyncQueueManager.swift in Sources */,
 				A109AA81B31A72E0C6FB2F50 /* SyncStatusIndicator.swift in Sources */,
+				BB02CC03DD04EE05FF06AA01 /* CSVExporter.swift in Sources */,
+				CC03DD04EE05FF06AA01BB02 /* GameSetupWizardView.swift in Sources */,
 				E5568C67FA7443E9DCF8FA51 /* ZoneGridView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
