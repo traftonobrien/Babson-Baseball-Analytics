@@ -947,4 +947,37 @@ final class ChartingStateTests: XCTestCase {
         XCTAssertTrue(state.closeLiveAB(result: .hitByPitch))
         XCTAssertEqual(state.liveABSetup.countPreset, .zeroZero)
     }
+
+    func testSelectingNewHitterStartsNextLiveABAutomatically() {
+        let state = ChartingState()
+        state.mode = .liveAB
+
+        state.setLiveABPitcher(
+            playerId: "DJames1",
+            name: "D. James",
+            throwsHand: "R"
+        )
+        state.setLiveABCountPreset(.twoOne)
+
+        XCTAssertNil(state.currentLiveABSession)
+
+        state.setLiveABHitter(name: "First Hitter")
+
+        XCTAssertEqual(state.currentLiveABSession?.setup.hitterName, "First Hitter")
+        XCTAssertEqual(state.currentLiveABSession?.setup.countPreset, .twoOne)
+        XCTAssertEqual(state.liveABSetup.countPreset, .zeroZero)
+
+        state.selectedPitchType = .fastball
+        state.selectedPitchResult = .hitByPitch
+
+        XCTAssertTrue(state.commitLiveABPitch())
+        XCTAssertTrue(state.closeLiveAB(result: .hitByPitch))
+        XCTAssertNil(state.currentLiveABSession)
+        XCTAssertEqual(state.liveABSetup.hitterName, "")
+
+        state.setLiveABHitter(name: "Second Hitter")
+
+        XCTAssertEqual(state.currentLiveABSession?.setup.hitterName, "Second Hitter")
+        XCTAssertEqual(state.currentLiveABSession?.setup.countPreset, .zeroZero)
+    }
 }

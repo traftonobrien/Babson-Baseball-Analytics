@@ -294,7 +294,12 @@ struct LiveChartingView: View {
 
     private var pitchControlBlockedReason: String? {
         if isLiveABMode && chartingState.currentLiveABSession == nil {
-            return "Start an at-bat to unlock pitch controls."
+            if selectedPitcherPlayerId == nil {
+                return "Select a pitcher and hitter to unlock pitch controls."
+            }
+            return chartingState.liveABSetup.hitterName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                ? "Select a hitter to start the at-bat."
+                : "Select a hitter to start the next at-bat."
         }
         if needsPAClosure {
             return paGuidanceText
@@ -314,7 +319,7 @@ struct LiveChartingView: View {
 
     private var paGuidanceText: String {
         if isLiveABMode {
-            return chartingState.currentLiveABSession?.guidanceText ?? "Start an at-bat to begin charting."
+            return chartingState.currentLiveABSession?.guidanceText ?? "Select a hitter to begin charting."
         }
         return gameStore.liveState.guidanceText
     }

@@ -149,6 +149,10 @@ final class ChartingState {
         liveABSetup.hitterName = name
 
         guard var session = activeLiveABSession else {
+            guard liveABSetup.isReady else {
+                return
+            }
+            beginLiveABSession(with: liveABSetup)
             return
         }
         session.setup.hitterName = name
@@ -193,6 +197,7 @@ final class ChartingState {
         session.result = result
         completedLiveABSessions.append(session)
         activeLiveABSession = nil
+        liveABSetup.hitterName = ""
         liveABSetup.countPreset = .zeroZero
         clearPitchDraft()
         return true
