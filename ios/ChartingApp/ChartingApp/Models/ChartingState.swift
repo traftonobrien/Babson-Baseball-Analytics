@@ -4,7 +4,7 @@ import Foundation
 /// used by the live charting screen.
 @Observable
 final class ChartingState {
-    var mode: ChartingMode = .game
+    var mode: ChartingMode = .liveAB
 
     var selectedPitchType: PitchType?
     var selectedLocation: Int?
@@ -113,6 +113,7 @@ final class ChartingState {
             pitches: [],
             result: nil
         )
+        liveABSetup.countPreset = .zeroZero
         clearPitchDraft()
     }
 
@@ -131,11 +132,11 @@ final class ChartingState {
     }
 
     func setLiveABCountPreset(_ preset: LiveABCountPreset) {
-        liveABSetup.countPreset = preset
-
         if var session = activeLiveABSession {
             session.setup.countPreset = preset
             activeLiveABSession = session
+        } else {
+            liveABSetup.countPreset = preset
         }
 
         guard let selectedPitchResult, !availablePitchResults.contains(selectedPitchResult) else {
@@ -190,6 +191,7 @@ final class ChartingState {
         session.result = result
         completedLiveABSessions.append(session)
         activeLiveABSession = nil
+        liveABSetup.countPreset = .zeroZero
         clearPitchDraft()
         return true
     }
@@ -201,6 +203,7 @@ final class ChartingState {
                 activeLiveABSession = session
             } else {
                 activeLiveABSession = nil
+                liveABSetup.countPreset = .zeroZero
             }
             return
         }

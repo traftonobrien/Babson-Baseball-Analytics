@@ -795,6 +795,13 @@ final class PersistenceTests: XCTestCase {
 
 final class ChartingStateTests: XCTestCase {
 
+    func testChartingDefaultsToLiveABModeWithFreshZeroZeroCount() {
+        let state = ChartingState()
+
+        XCTAssertEqual(state.mode, .liveAB)
+        XCTAssertEqual(state.liveABSetup.countPreset, .zeroZero)
+    }
+
     func testPendingPitchRequiresExplicitAction() {
         let state = ChartingState()
         state.selectedPitchType = .fastball
@@ -868,5 +875,32 @@ final class ChartingStateTests: XCTestCase {
 
         XCTAssertTrue(state.commitLiveABPitch())
         XCTAssertTrue(state.currentLiveABSession?.pitches.last?.buntContext == true)
+    }
+
+    func testNewLiveABReturnsDefaultCountPresetToZeroZeroAfterStartAndClose() {
+        let state = ChartingState()
+        let setup = LiveABSetup(
+            pitcherPlayerId: "DJames1",
+            pitcherName: "D. James",
+            pitcherThrowsHand: "R",
+            hitterName: "Practice Hitter",
+            inning: 1,
+            halfInning: .top,
+            outs: 0,
+            countPreset: .twoOne
+        )
+
+        state.beginLiveABSession(with: setup)
+
+        XCTAssertEqual(state.currentLiveABSession?.setup.countPreset, .twoOne)
+        XCTAssertEqual(state.liveABSetup.countPreset, .zeroZero)
+
+        state.selectedPitchType = .fastball
+        state.selectedLocation = 3
+        state.selectedPitchResult = .hitByPitch
+
+        XCTAssertTrue(state.commitLiveABPitch())
+        XCTAssertTrue(state.closeLiveAB(result: .hitByPitch))
+        XCTAssertEqual(state.liveABSetup.countPreset, .zeroZero)
     }
 }

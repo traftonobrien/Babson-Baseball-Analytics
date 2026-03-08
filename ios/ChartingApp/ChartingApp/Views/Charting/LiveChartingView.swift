@@ -405,6 +405,7 @@ struct LiveChartingView: View {
                     .frame(minWidth: 0, maxWidth: .infinity)
 
                 CountBadge(
+                    title: isLiveABMode ? "Live Count" : "Count",
                     balls: currentBalls,
                     strikes: currentStrikes,
                     preset: isLiveABMode ? chartingState.currentLiveABCountPreset : nil,
@@ -885,6 +886,7 @@ private struct MetricPill: View {
 }
 
 private struct CountBadge: View {
+    let title: String
     let balls: Int
     let strikes: Int
     let preset: LiveABCountPreset?
@@ -894,7 +896,7 @@ private struct CountBadge: View {
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Live Count")
+                Text(title)
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
 
