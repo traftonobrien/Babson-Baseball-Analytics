@@ -14,7 +14,8 @@
     "db:studio": "drizzle-kit studio",
     "load:stuff-plus": "npx tsx scripts/load_stuff_plus.ts",
     "generate:canonical": "python3 ../scripts/generate_canonical_players_ts.py",
-    "fetch:roster": "python3 ../scripts/fetch_babson_roster.py"
+    "fetch:roster": "python3 ../scripts/fetch_babson_roster.py",
+    "generate:charting-roster": "python3 ../scripts/generate_charting_roster.py"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",

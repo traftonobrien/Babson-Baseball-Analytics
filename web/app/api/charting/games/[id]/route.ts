@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { chartingGames } from "@/db/schema";
+import {
+  chartingGames,
+  chartingPitcherSegments,
+  chartingLineupEntries,
+  chartingPlateAppearances,
+  chartingPitches,
+} from "@/db/schema";
 import { isValidGameStatus } from "@/lib/charting/domain";
 import { loadChartingGameSnapshot } from "@/lib/charting/snapshot";
 
@@ -33,25 +39,15 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
 
 /**
  * PATCH /api/charting/games/[id]
- * Updates game metadata. Requires `revision` in the request body matching the
- * current stored revision (optimistic locking). Returns 409 on mismatch.
  *
- * Body shape (all fields optional except revision):
- * {
- *   revision: number,       // required — must match current DB revision
- *   opponent?: string,
- *   gameDate?: string,      // yyyy-mm-dd
- *   status?: "draft" | "active" | "final",
- *   charter?: string | null,
- *   weather?: string | null,
- *   homeCatcher?: string | null,
- *   awayCatcher?: string | null,
- *   babsonRecord?: string | null,
- *   standing?: string | null,
- *   tomorrowStarter?: string | null,
- *   tomorrowOpponent?: string | null,
- *   notes?: string | null,
- * }
+ * Accepts either:
+ *   1. A simple metadata update (legacy): { revision, opponent?, status?, ... }
+ *   2. A full ChartingGameSnapshot sync from the iPad app:
+ *      { game: {...}, segments: [...], lineup: [...], plateAppearances: [...], pitches: [...], revision }
+ *
+ * In both cases `revision` (number) is required for optimistic locking.
+ * When the snapshot form is detected (body.game exists), the handler replaces
+ * all relational children for this game inside a single transaction.
  */
 export async function PATCH(req: NextRequest, { params }: RouteContext) {
   const { id } = await params;
@@ -59,13 +55,192 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
   try {
     const body = await req.json();
 
-    const clientRevision = body.revision;
+    // ---------------------------------------------------------------
+    // Detect snapshot sync vs. simple metadata update
+    // ---------------------------------------------------------------
+    const isSnapshotSync = body.game !== undefined;
+
+    // Resolve revision from either body.revision or body.game.revision
+    const clientRevision: number | undefined = isSnapshotSync
+      ? body.game?.revision ?? body.revision
+      : body.revision;
+
     if (typeof clientRevision !== "number") {
       return NextResponse.json(
         { error: "revision (number) is required" },
         { status: 400 }
       );
     }
+
+    // ---------------------------------------------------------------
+    // Snapshot sync — full game payload from iPad SyncQueueManager
+    // ---------------------------------------------------------------
+    if (isSnapshotSync) {
+      const gamePayload = body.game;
+      const segmentsPayload: unknown[] = body.segments ?? [];
+      const lineupPayload: unknown[] = body.lineup ?? [];
+      const pasPayload: unknown[] = body.plateAppearances ?? [];
+      const pitchesPayload: unknown[] = body.pitches ?? [];
+
+      // Validate status if present
+      if (
+        gamePayload.status !== undefined &&
+        !isValidGameStatus(gamePayload.status)
+      ) {
+        return NextResponse.json(
+          { error: `Invalid status: ${gamePayload.status}` },
+          { status: 400 }
+        );
+      }
+
+      const now = new Date().toISOString();
+
+      // Run everything in a transaction for atomicity
+      const result = await db.transaction(async (tx) => {
+        // 1. Conditional update on the game row (optimistic lock)
+        const gamePatch: Record<string, unknown> = { updatedAt: now };
+        const gameFields = [
+          "opponent",
+          "gameDate",
+          "status",
+          "charter",
+          "weather",
+          "homeCatcher",
+          "awayCatcher",
+          "babsonRecord",
+          "standing",
+          "tomorrowStarter",
+          "tomorrowOpponent",
+          "notes",
+        ] as const;
+        for (const key of gameFields) {
+          if (key in gamePayload) gamePatch[key] = gamePayload[key];
+        }
+
+        const updated = await tx
+          .update(chartingGames)
+          .set({ ...gamePatch, revision: clientRevision + 1 })
+          .where(
+            and(
+              eq(chartingGames.id, id),
+              eq(chartingGames.revision, clientRevision)
+            )
+          )
+          .returning();
+
+        if (updated.length === 0) {
+          return { conflict: true };
+        }
+
+        // 2. Replace segments
+        await tx
+          .delete(chartingPitcherSegments)
+          .where(eq(chartingPitcherSegments.gameId, id));
+
+        if (segmentsPayload.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await tx.insert(chartingPitcherSegments).values(
+            segmentsPayload.map((s: any) => ({
+              id: s.id,
+              gameId: id,
+              playerId: s.playerId,
+              displayName: s.displayName,
+              segmentOrder: s.segmentOrder,
+              enteredInning: s.enteredInning ?? null,
+              exitedInning: s.exitedInning ?? null,
+              runsOverride: s.runsOverride ?? null,
+              earnedRunsOverride: s.earnedRunsOverride ?? null,
+            }))
+          );
+        }
+
+        // 3. Replace lineup
+        await tx
+          .delete(chartingLineupEntries)
+          .where(eq(chartingLineupEntries.gameId, id));
+
+        if (lineupPayload.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await tx.insert(chartingLineupEntries).values(
+            lineupPayload.map((e: any) => ({
+              id: e.id,
+              gameId: id,
+              lineupSlot: e.lineupSlot,
+              hitterName: e.hitterName,
+            }))
+          );
+        }
+
+        // 4. Replace plate appearances
+        await tx
+          .delete(chartingPlateAppearances)
+          .where(eq(chartingPlateAppearances.gameId, id));
+
+        if (pasPayload.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await tx.insert(chartingPlateAppearances).values(
+            pasPayload.map((pa: any) => ({
+              id: pa.id,
+              gameId: id,
+              segmentId: pa.segmentId,
+              paOrder: pa.paOrder,
+              inning: pa.inning,
+              hitterName: pa.hitterName,
+              lineupSlot: pa.lineupSlot,
+              resultCode: pa.resultCode ?? null,
+              buntContext: pa.buntContext ?? false,
+            }))
+          );
+        }
+
+        // 5. Replace pitches (including velocity)
+        await tx
+          .delete(chartingPitches)
+          .where(eq(chartingPitches.gameId, id));
+
+        if (pitchesPayload.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await tx.insert(chartingPitches).values(
+            pitchesPayload.map((p: any) => ({
+              id: p.id,
+              gameId: id,
+              paId: p.paId,
+              pitchOrder: p.pitchOrder,
+              pitchType: p.pitchType,
+              locationCell: p.locationCell ?? null,
+              pitchResult: p.pitchResult,
+              ballsBefore: p.ballsBefore,
+              strikesBefore: p.strikesBefore,
+              velocity: p.velocity ?? null,
+            }))
+          );
+        }
+
+        return { conflict: false, game: updated[0] };
+      });
+
+      if (result.conflict) {
+        // Check existence vs. stale revision
+        const [existing] = await db
+          .select({ id: chartingGames.id })
+          .from(chartingGames)
+          .where(eq(chartingGames.id, id));
+
+        if (!existing) {
+          return NextResponse.json({ error: "Not found" }, { status: 404 });
+        }
+        return NextResponse.json(
+          { error: "Stale revision — fetch the latest game and retry" },
+          { status: 409 }
+        );
+      }
+
+      return NextResponse.json({ game: result.game });
+    }
+
+    // ---------------------------------------------------------------
+    // Simple metadata-only update (legacy / non-snapshot)
+    // ---------------------------------------------------------------
 
     if (body.status !== undefined && !isValidGameStatus(body.status)) {
       return NextResponse.json(

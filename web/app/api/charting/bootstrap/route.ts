@@ -2,10 +2,8 @@ import { NextResponse } from "next/server";
 import { desc } from "drizzle-orm";
 import { db } from "@/db";
 import { chartingGames } from "@/db/schema";
-import {
-  CANONICAL_BY_PLAYER_ID,
-  HAND_BY_PLAYER_ID,
-} from "@/lib/canonicalPlayersData";
+import { buildBootstrapPitchers } from "@/lib/charting/bootstrapPitchers";
+import { buildBootstrapRosterPlayers } from "@/lib/charting/bootstrapRoster";
 
 export const runtime = "nodejs";
 
@@ -16,13 +14,8 @@ export const runtime = "nodejs";
  */
 export async function GET() {
   try {
-    const pitchers = Object.entries(CANONICAL_BY_PLAYER_ID)
-      .map(([playerId, name]) => ({
-        playerId,
-        name,
-        throws: HAND_BY_PLAYER_ID[playerId] ?? "R",
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    const pitchers = await buildBootstrapPitchers();
+    const rosterPlayers = buildBootstrapRosterPlayers();
 
     const recentGames = await db
       .select()
@@ -30,7 +23,7 @@ export async function GET() {
       .orderBy(desc(chartingGames.gameDate))
       .limit(10);
 
-    return NextResponse.json({ pitchers, recentGames });
+    return NextResponse.json({ pitchers, rosterPlayers, recentGames });
   } catch (err) {
     console.error("charting/bootstrap GET:", err);
     return NextResponse.json(

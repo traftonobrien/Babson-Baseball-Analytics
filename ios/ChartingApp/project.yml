@@ -1,0 +1,45 @@
+name: ChartingApp
+options:
+  bundleIdPrefix: com.babsonbaseball
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "15.0"
+  defaultConfig: Debug
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    TARGETED_DEVICE_FAMILY: "2"  # iPad only
+
+targets:
+  ChartingApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: ChartingApp
+        excludes:
+          - "Info.plist"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.babsonbaseball.chartingapp
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: ChartingApp/Info.plist
+        INFOPLIST_KEY_UILaunchScreen_Generation: true
+        INFOPLIST_KEY_CFBundleDisplayName: "Charting App"
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: >-
+          UIInterfaceOrientationLandscapeLeft
+          UIInterfaceOrientationLandscapeRight
+          UIInterfaceOrientationPortrait
+          UIInterfaceOrientationPortraitUpsideDown
+
+  ChartingAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: ChartingAppTests
+    dependencies:
+      - target: ChartingApp
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.babsonbaseball.chartingapp.tests
+        GENERATE_INFOPLIST_FILE: YES

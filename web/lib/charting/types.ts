@@ -80,6 +80,8 @@ export interface ChartingPitch {
   pitchResult: PitchResult;
   ballsBefore: number;
   strikesBefore: number;
+  /** Gun reading in mph; null if not recorded */
+  velocity: number | null;
 }
 
 /** One slot in the pre-game opponent lineup (1-9). */
@@ -96,11 +98,25 @@ export interface ChartingBootstrapPitcher {
   playerId: string;
   name: string;
   throws: "R" | "L";
+  arsenalPitchTypes: PitchType[];
+}
+
+/** Full Babson roster player used for hitter selection and live AB setup. */
+export interface ChartingBootstrapRosterPlayer {
+  slug: string;
+  playerId: string | null;
+  name: string;
+  positions: string[];
+  bats: string | null;
+  throws: string | null;
+  academicYear: string | null;
+  isPitcher: boolean;
 }
 
 /** Payload returned by GET /api/charting/bootstrap */
 export interface ChartingBootstrapResponse {
   pitchers: ChartingBootstrapPitcher[];
+  rosterPlayers: ChartingBootstrapRosterPlayer[];
   recentGames: ChartingGame[];
 }
 
