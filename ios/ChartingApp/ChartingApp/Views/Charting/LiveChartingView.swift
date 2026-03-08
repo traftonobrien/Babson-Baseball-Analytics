@@ -7,6 +7,7 @@ struct LiveChartingView: View {
     @State private var chartingState = ChartingState()
     @State private var isShowingPACloseoutSheet = false
     @State private var isShowingGameStateSheet = false
+    @State private var requiresLandscapeOrientation = false
     @Environment(\.dismiss) private var dismiss
 
     private let outerPadding: CGFloat = 16
@@ -33,6 +34,12 @@ struct LiveChartingView: View {
                 .frame(maxHeight: .infinity, alignment: .top)
             }
             .padding(outerPadding)
+            .onAppear {
+                updateOrientationRequirement(for: proxy.size)
+            }
+            .onChange(of: proxy.size) { _, newSize in
+                updateOrientationRequirement(for: newSize)
+            }
         }
         .navigationTitle("Live Charting")
         .navigationBarTitleDisplayMode(.inline)
@@ -41,6 +48,13 @@ struct LiveChartingView: View {
                 .padding(.horizontal, outerPadding)
                 .padding(.bottom, 12)
         }
+        .blur(radius: requiresLandscapeOrientation ? 18 : 0)
+        .overlay {
+            if requiresLandscapeOrientation {
+                LandscapeOrientationRequiredOverlay()
+            }
+        }
+        .disabled(requiresLandscapeOrientation)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Exit") { dismiss() }
@@ -791,6 +805,17 @@ struct LiveChartingView: View {
         isShowingGameStateSheet = true
     }
 
+    private func updateOrientationRequirement(for size: CGSize) {
+        let shouldRequireLandscape = size.height > size.width
+        guard shouldRequireLandscape != requiresLandscapeOrientation else {
+            return
+        }
+
+        withAnimation(.easeInOut(duration: 0.2)) {
+            requiresLandscapeOrientation = shouldRequireLandscape
+        }
+    }
+
     private func selectPitcher(_ pitcher: PersistedBootstrapPitcher) {
         if isLiveABMode {
             chartingState.setLiveABPitcher(
@@ -852,6 +877,48 @@ private struct SurfaceCard: ViewModifier {
             .padding(16)
             .background(Color(white: 0.97))
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+}
+
+private struct LandscapeOrientationRequiredOverlay: View {
+    var body: some View {
+        ZStack {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea()
+
+            VStack(spacing: 18) {
+                ZStack {
+                    Circle()
+                        .fill(Color.blue.opacity(0.14))
+                        .frame(width: 96, height: 96)
+
+                    Image(systemName: "rotate.right.fill")
+                        .font(.system(size: 36, weight: .bold))
+                        .foregroundStyle(.blue)
+                }
+
+                VStack(spacing: 8) {
+                    Text("Rotate to Landscape")
+                        .font(.system(.title2, design: .rounded).weight(.bold))
+
+                    Text("Live Charting is landscape-only. Turn the iPad sideways to continue.")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 360)
+                }
+
+                Label("Charting controls are disabled in portrait.", systemImage: "lock.fill")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.orange)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(Color.orange.opacity(0.12))
+                    .clipShape(Capsule())
+            }
+            .padding(32)
+        }
     }
 }
 
