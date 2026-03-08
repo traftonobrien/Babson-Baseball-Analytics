@@ -106,7 +106,7 @@ struct PitchResultControls: View {
         case .foul:
             return .gray
         case .buntFoul:
-            return .brown
+            return .gray
         case .inPlay:
             return .blue
         case .hitByPitch:

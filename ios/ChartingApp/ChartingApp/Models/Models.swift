@@ -32,7 +32,7 @@ enum PitchResultType: String, Codable, CaseIterable, Identifiable {
         case .calledStrike:   return "Called Strike"
         case .swingingStrike: return "Swinging Strike"
         case .foul:           return "Foul"
-        case .buntFoul:       return "Bunt Foul"
+        case .buntFoul:       return "Foul"
         case .inPlay:         return "In Play"
         case .hitByPitch:     return "HBP"
         }

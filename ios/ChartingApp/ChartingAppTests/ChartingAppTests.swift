@@ -866,14 +866,15 @@ final class ChartingStateTests: XCTestCase {
 
         XCTAssertEqual(
             state.availablePitchResults,
-            [.ball, .calledStrike, .buntFoul, .inPlay, .hitByPitch]
+            [.ball, .calledStrike, .foul, .inPlay, .hitByPitch]
         )
 
         state.selectedPitchType = .fastball
         state.selectedLocation = 2
-        state.selectedPitchResult = .inPlay
+        state.selectedPitchResult = .foul
 
         XCTAssertTrue(state.commitLiveABPitch())
+        XCTAssertEqual(state.currentLiveABSession?.pitches.last?.pitchResult, .buntFoul)
         XCTAssertTrue(state.currentLiveABSession?.pitches.last?.buntContext == true)
     }
 

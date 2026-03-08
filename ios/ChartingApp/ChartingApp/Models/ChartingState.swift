@@ -78,9 +78,9 @@ final class ChartingState {
 
     var availablePitchResults: [PitchResultType] {
         if isBuntModeActive {
-            return [.ball, .calledStrike, .buntFoul, .inPlay, .hitByPitch]
+            return [.ball, .calledStrike, .foul, .inPlay, .hitByPitch]
         }
-        return PitchResultType.allCases
+        return [.ball, .calledStrike, .swingingStrike, .foul, .inPlay, .hitByPitch]
     }
 
     func liveABPitcherTotal(playerId: String) -> Int {
@@ -159,10 +159,12 @@ final class ChartingState {
     func commitLiveABPitch() -> Bool {
         guard isPendingPitchReady,
               let type = selectedPitchType,
-              let result = selectedPitchResult,
+              let selectedResult = selectedPitchResult,
               var session = activeLiveABSession else {
             return false
         }
+
+        let result = normalizedCommittedResult(from: selectedResult)
 
         let newPitch = LiveABPitchRecord(
             id: UUID().uuidString,
@@ -230,5 +232,12 @@ final class ChartingState {
             return completedLiveABSessions + [activeLiveABSession]
         }
         return completedLiveABSessions
+    }
+
+    private func normalizedCommittedResult(from selectedResult: PitchResultType) -> PitchResultType {
+        if isBuntModeActive && selectedResult == .foul {
+            return .buntFoul
+        }
+        return selectedResult
     }
 }
