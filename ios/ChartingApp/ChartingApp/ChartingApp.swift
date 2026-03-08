@@ -18,6 +18,7 @@ struct ChartingApp: App {
             PersistedPitch.self,
             PersistedLineupEntry.self,
             PersistedBootstrapPitcher.self,
+            PersistedSyncEntry.self,
         ])
     }
 }

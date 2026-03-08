@@ -399,3 +399,36 @@ final class PersistedBootstrapPitcher {
         return stored.isEmpty ? PitchType.allCases : stored
     }
 }
+
+// MARK: - Sync Queue Persistence
+
+@Model
+final class PersistedSyncEntry {
+    @Attribute(.unique) var id: String
+    var gameId: String
+    var revision: Int
+    /// JSON-encoded `ChartingGameSnapshot` payload.
+    var payloadJSON: Data
+    var createdAt: Date
+    /// "pending" | "syncing" | "failed"
+    var status: String
+    var retryCount: Int
+
+    init(
+        id: String = UUID().uuidString,
+        gameId: String,
+        revision: Int,
+        payloadJSON: Data,
+        createdAt: Date = Date(),
+        status: String = "pending",
+        retryCount: Int = 0
+    ) {
+        self.id = id
+        self.gameId = gameId
+        self.revision = revision
+        self.payloadJSON = payloadJSON
+        self.createdAt = createdAt
+        self.status = status
+        self.retryCount = retryCount
+    }
+}

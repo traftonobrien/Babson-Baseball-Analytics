@@ -81,7 +81,7 @@ final class GameStore {
     init(modelContext: ModelContext, apiClient: APIClient = APIClient()) {
         self.modelContext = modelContext
         self.apiClient = apiClient
-        self.syncQueue = SyncQueueManager(apiClient: apiClient)
+        self.syncQueue = SyncQueueManager(apiClient: apiClient, modelContainer: modelContext.container)
         
         // Setup sync status observer
         Task {
@@ -114,6 +114,10 @@ final class GameStore {
                 loadGameChildren(gameId: game.id)
                 // Attempt to sync immediately in case we were offline when we closed
                 enqueueSync(for: game)
+            }
+            // Drain any persisted sync entries that survived an app kill
+            Task {
+                await syncQueue.drainPendingEntries()
             }
         } catch {
             print("Failed to recover active game: \(error)")
