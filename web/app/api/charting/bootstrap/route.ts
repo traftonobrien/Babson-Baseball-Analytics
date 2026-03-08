@@ -1,0 +1,34 @@
+import { NextResponse } from "next/server";
+import { desc } from "drizzle-orm";
+import { db } from "@/db";
+import { chartingGames } from "@/db/schema";
+import { buildBootstrapPitchers } from "@/lib/charting/bootstrapPitchers";
+import { buildBootstrapRosterPlayers } from "@/lib/charting/bootstrapRoster";
+
+export const runtime = "nodejs";
+
+/**
+ * GET /api/charting/bootstrap
+ * Returns the canonical Babson pitcher roster and the 10 most recent charting
+ * games. Intended as the first request an iPad client makes after login.
+ */
+export async function GET() {
+  try {
+    const pitchers = await buildBootstrapPitchers();
+    const rosterPlayers = buildBootstrapRosterPlayers();
+
+    const recentGames = await db
+      .select()
+      .from(chartingGames)
+      .orderBy(desc(chartingGames.gameDate))
+      .limit(10);
+
+    return NextResponse.json({ pitchers, rosterPlayers, recentGames });
+  } catch (err) {
+    console.error("charting/bootstrap GET:", err);
+    return NextResponse.json(
+      { error: "Failed to load bootstrap data" },
+      { status: 500 }
+    );
+  }
+}

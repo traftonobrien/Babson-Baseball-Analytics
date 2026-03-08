@@ -1,0 +1,76 @@
+import { NextRequest, NextResponse } from "next/server";
+import { and, eq } from "drizzle-orm";
+import { db } from "@/db";
+import { chartingLineupEntries } from "@/db/schema";
+import { isValidLineupSlot } from "@/lib/charting/domain";
+
+export const runtime = "nodejs";
+
+type RouteContext = { params: Promise<{ id: string; slot: string }> };
+
+/**
+ * PATCH /api/charting/games/[id]/lineup/[slot]
+ * Update the hitter name for a single lineup slot. Creates the entry if it
+ * does not yet exist (upsert).
+ *
+ * Body: { hitterName: string }
+ */
+export async function PATCH(req: NextRequest, { params }: RouteContext) {
+  const { id, slot: slotParam } = await params;
+  const slot = parseInt(slotParam, 10);
+
+  if (!isValidLineupSlot(slot)) {
+    return NextResponse.json(
+      { error: `Invalid slot: ${slotParam} (must be 1-9)` },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const body = await req.json();
+    const hitterName: string = body.hitterName?.trim() ?? "";
+
+    if (!hitterName) {
+      return NextResponse.json(
+        { error: "hitterName must not be empty" },
+        { status: 400 }
+      );
+    }
+
+    // Upsert: update if exists, insert if not
+    const [existing] = await db
+      .select({ id: chartingLineupEntries.id })
+      .from(chartingLineupEntries)
+      .where(
+        and(
+          eq(chartingLineupEntries.gameId, id),
+          eq(chartingLineupEntries.lineupSlot, slot)
+        )
+      );
+
+    let entry: typeof chartingLineupEntries.$inferSelect;
+
+    if (existing) {
+      const [updated] = await db
+        .update(chartingLineupEntries)
+        .set({ hitterName })
+        .where(eq(chartingLineupEntries.id, existing.id))
+        .returning();
+      entry = updated;
+    } else {
+      const [inserted] = await db
+        .insert(chartingLineupEntries)
+        .values({ id: crypto.randomUUID(), gameId: id, lineupSlot: slot, hitterName })
+        .returning();
+      entry = inserted;
+    }
+
+    return NextResponse.json({ entry });
+  } catch (err) {
+    console.error(`charting/games/${id}/lineup/${slot} PATCH:`, err);
+    return NextResponse.json(
+      { error: "Failed to update lineup slot" },
+      { status: 500 }
+    );
+  }
+}
