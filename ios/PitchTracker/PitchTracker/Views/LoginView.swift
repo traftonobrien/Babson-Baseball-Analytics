@@ -7,7 +7,10 @@ struct LoginView: View {
     @State private var password = ""
     @State private var serverURL = ""
     @State private var isLoggingIn = false
+    @State private var isTestingConnection = false
     @State private var errorMessage: String?
+    @State private var connectionMessage: String?
+    @State private var isConnectionError = false
     @State private var showServerConfig = false
 
     var body: some View {
@@ -54,10 +57,32 @@ struct LoginView: View {
                     .controlSize(.large)
                     .disabled(password.isEmpty || isLoggingIn)
 
+                    Button {
+                        testConnection()
+                    } label: {
+                        if isTestingConnection {
+                            ProgressView()
+                                .frame(maxWidth: 360)
+                        } else {
+                            Label("Test Connection", systemImage: "network")
+                                .frame(maxWidth: 360)
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+                    .disabled(isTestingConnection || isLoggingIn)
+
                     if let error = errorMessage {
                         Text(error)
                             .font(.caption)
                             .foregroundStyle(.red)
+                            .multilineTextAlignment(.center)
+                    }
+
+                    if let connectionMessage {
+                        Text(connectionMessage)
+                            .font(.caption)
+                            .foregroundStyle(isConnectionError ? .orange : .green)
                             .multilineTextAlignment(.center)
                     }
                 }
@@ -81,6 +106,8 @@ struct LoginView: View {
                 TextField("https://example.com", text: $serverURL)
                 Button("Save") {
                     apiClient.baseURL = serverURL
+                    errorMessage = nil
+                    connectionMessage = nil
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
@@ -98,9 +125,27 @@ struct LoginView: View {
             do {
                 try await apiClient.login(password: password)
             } catch {
-                errorMessage = error.localizedDescription
+                errorMessage = apiClient.userFacingErrorMessage(for: error)
             }
             isLoggingIn = false
+        }
+    }
+
+    private func testConnection() {
+        isTestingConnection = true
+        connectionMessage = nil
+        isConnectionError = false
+
+        Task {
+            do {
+                try await apiClient.ping()
+                connectionMessage = "Connected to \(apiClient.baseURL)."
+                isConnectionError = false
+            } catch {
+                connectionMessage = apiClient.userFacingErrorMessage(for: error)
+                isConnectionError = true
+            }
+            isTestingConnection = false
         }
     }
 }

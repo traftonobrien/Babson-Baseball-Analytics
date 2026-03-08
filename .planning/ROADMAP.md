@@ -2,7 +2,7 @@
 
 ## Overview
 
-This roadmap takes the project from a brownfield repo with no live charting domain to a staff-usable internal iPad workflow plus portal reporting. The sequence is intentionally fine-grained so work can stop safely between sections, preserve context, and avoid overcommitting a single implementation run. After export fidelity, the next risk is charting-engine correctness, so internal pilot packaging is intentionally pushed behind a hardening phase.
+This roadmap takes the project from a brownfield repo with no live charting domain to a staff-usable internal iPad workflow plus portal reporting. The sequence is intentionally fine-grained so work can stop safely between sections, preserve context, and avoid overcommitting a single implementation run. After export fidelity, the next risk is charting-engine correctness, so internal pilot packaging is intentionally pushed behind a hardening phase. Phase 9 planning also surfaced one remaining sync-contract gap between the iPad snapshot payload and the server PATCH route, so pilot hardening now explicitly includes closing that operational hole before TestFlight. Phase 08.1 has now reset the iPad charting experience around a zone-first, confirm-before-save workflow before that pilot work begins.
 
 ## Phases
 
@@ -14,6 +14,7 @@ This roadmap takes the project from a brownfield repo with no live charting doma
 - [x] **Phase 6: Portal Charting Surfaces** - Add charting hub, game detail, and derived reporting views
 - [x] **Phase 7: Export Fidelity** - Generate structured CSV and PDF outputs based on the stable chart model
 - [x] **Phase 8: Charting Engine Hardening** - Make the live charting state machine deterministic, validated, and regression-tested
+- [x] **Phase 08.1: Charting UX and Mode Workflow** - Rebuild live charting around zone-first layout, mode-aware setup, and explicit pitch confirmation
 - [ ] **Phase 9: Pilot Hardening and TestFlight** - Prepare internal beta delivery, diagnostics, and operational guidance
 
 ## Phase Details
@@ -153,9 +154,27 @@ Current status:
 - Live workflow guardrails now prevent extra pitches after terminal events, restrict PA closeout choices to valid results, block pitcher changes mid-PA, and prevent finalization with an open PA.
 - Scenario-based charting engine tests now cover strike-three bunt fouls, ball four, inning rollover, double plays, in-play closeouts, and between-inning segment handoff.
 
+### Phase 08.1: Charting UX and Mode Workflow (INSERTED)
+
+**Goal:** Rebuild the live charting experience so it mirrors the real scoring workflow, supports both `Live AB` and `Game` modes, and removes accidental tap-to-save pitch entry.
+**Requirements**: [CHRT-01, CHRT-02, CHRT-03, CHRT-04, CHRT-05, ENG-03]
+**Depends on:** Phase 8
+**Plans:** 3 plans
+
+Plans:
+- [x] 08.1-01: Rebuild the live charting shell around zone-first layout and hidden history
+- [x] 08.1-02: Add `Live AB` and `Game` mode workflow
+- [x] 08.1-03: Implement confirm-first pitch entry, arsenal filtering, and verification
+
+Current status:
+- `LiveChartingView` now uses a compact top utility bar, dominant left-side zone workspace, right-side count/type/action stack, and a hidden history sheet.
+- The iPad app now supports local `Live AB` setup alongside lineup-driven `Game` mode, with queued next-AB correction in game flow.
+- Pitch action taps now build a pending pitch that must be explicitly confirmed, while the main screen always shows pitcher, inning, and game pitch totals.
+- Bootstrap pitchers now carry arsenal-filtered pitch families into iOS so the pitch-type picker can reduce clutter per pitcher.
+
 ### Phase 9: Pilot Hardening and TestFlight
 **Goal**: Prepare the product for internal staff use in a controlled TestFlight pilot once the charting mechanics are trustworthy.
-**Depends on**: Phase 8
+**Depends on**: Phase 08.1
 **Requirements**: [OPS-01, OPS-02]
 **Success Criteria** (what must be TRUE):
   1. Internal testers can install and run the app via TestFlight.
@@ -164,14 +183,18 @@ Current status:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 09-01: Prepare internal TestFlight packaging and distribution checklist
-- [ ] 09-02: Add pilot diagnostics, error surfacing, and retry guidance
-- [ ] 09-03: Publish operator runbook and scoring quick reference
+- [ ] 09-01: Restore intentional pilot shell, auth gating, and build/session visibility
+- [ ] 09-02: Close full snapshot sync gap and add pilot diagnostics/recovery
+- [ ] 09-03: Publish operator runbook, checklist, and verification handoff
+
+Current planning status:
+- `09-CONTEXT.md`, `09-01-PLAN.md`, `09-02-PLAN.md`, and `09-03-PLAN.md` are now on disk.
+- Phase 9 execution should start with the iPad auth shell and the sync-contract repair, because the discovered PATCH-route mismatch is the main blocker to a credible TestFlight pilot.
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 08.1 → 9
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -183,4 +206,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. Portal Charting Surfaces | 3/3 | Complete | 2026-03-06 |
 | 7. Export Fidelity | 3/3 | Complete | 2026-03-06 |
 | 8. Charting Engine Hardening | 3/3 | Complete | 2026-03-06 |
-| 9. Pilot Hardening and TestFlight | 0/3 | Not started | - |
+| 08.1. Charting UX and Mode Workflow | 3/3 | Complete | 2026-03-07 |
+| 9. Pilot Hardening and TestFlight | 0/3 | Planned | - |

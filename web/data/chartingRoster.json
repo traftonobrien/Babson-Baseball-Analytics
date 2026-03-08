@@ -1,0 +1,490 @@
+[
+  {
+    "slug": "wilson_alexander",
+    "name": "Alexander Wilson",
+    "positions": [
+      "OF"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Jr."
+  },
+  {
+    "slug": "lapierre_anthony",
+    "name": "Anthony LaPierre",
+    "positions": [
+      "P"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "So."
+  },
+  {
+    "slug": "valente_ben",
+    "name": "Ben Valente",
+    "positions": [
+      "P",
+      "OF"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "So."
+  },
+  {
+    "slug": "burk_bobby",
+    "name": "Bobby Burk",
+    "positions": [
+      "P"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "So."
+  },
+  {
+    "slug": "reid_bourke",
+    "name": "Bourke Reid",
+    "positions": [
+      "P"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Fr."
+  },
+  {
+    "slug": "shapiro_brennan",
+    "name": "Brennan Shapiro",
+    "positions": [
+      "P"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Jr."
+  },
+  {
+    "slug": "saft_brooks",
+    "name": "Brooks Saft",
+    "positions": [
+      "C"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "So."
+  },
+  {
+    "slug": "place_cal",
+    "name": "Cal Place",
+    "positions": [
+      "P"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Gr."
+  },
+  {
+    "slug": "grindle_cameron",
+    "name": "Cameron Grindle",
+    "positions": [
+      "P"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Jr."
+  },
+  {
+    "slug": "burrows_chase",
+    "name": "Chase Burrows",
+    "positions": [
+      "P"
+    ],
+    "bats": "L",
+    "throws": "L",
+    "academicYear": "So."
+  },
+  {
+    "slug": "chou_colin",
+    "name": "Colin Chou",
+    "positions": [
+      "P",
+      "1B"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "So."
+  },
+  {
+    "slug": "doan_connor",
+    "name": "Connor Doan",
+    "positions": [
+      "P"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Sr."
+  },
+  {
+    "slug": "frickey_connor",
+    "name": "Connor Frickey",
+    "positions": [
+      "IF"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Jr."
+  },
+  {
+    "slug": "smith_cooper",
+    "name": "Cooper Smith",
+    "positions": [
+      "P"
+    ],
+    "bats": "L",
+    "throws": "L",
+    "academicYear": "Gr."
+  },
+  {
+    "slug": "davanzo_dante",
+    "name": "Dante D'Avanzo",
+    "positions": [
+      "IF"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Jr."
+  },
+  {
+    "slug": "james_dillon",
+    "name": "Dillon James",
+    "positions": [
+      "P"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "So."
+  },
+  {
+    "slug": "snyder_drew",
+    "name": "Drew Snyder",
+    "positions": [
+      "P",
+      "IF"
+    ],
+    "bats": "R",
+    "throws": "L",
+    "academicYear": "Fr."
+  },
+  {
+    "slug": "drazka_dylan",
+    "name": "Dylan Drazka",
+    "positions": [
+      "OF"
+    ],
+    "bats": "L",
+    "throws": "L",
+    "academicYear": "So."
+  },
+  {
+    "slug": "cushner_gabe",
+    "name": "Gabe Cushner",
+    "positions": [
+      "C"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "So."
+  },
+  {
+    "slug": "harmon_gabe",
+    "name": "Gabe Harmon",
+    "positions": [
+      "IF"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "So."
+  },
+  {
+    "slug": "vyse_graydon",
+    "name": "Graydon Vyse",
+    "positions": [
+      "R",
+      "R"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "So."
+  },
+  {
+    "slug": "clarke_griffin",
+    "name": "Griffin Clarke",
+    "positions": [
+      "C"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Fr."
+  },
+  {
+    "slug": "laforest_ian",
+    "name": "Ian Laforest",
+    "positions": [
+      "P",
+      "UTL"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Jr."
+  },
+  {
+    "slug": "moses_jack",
+    "name": "Jack Moses",
+    "positions": [
+      "C"
+    ],
+    "bats": "L",
+    "throws": "R",
+    "academicYear": "Jr."
+  },
+  {
+    "slug": "getchell_jacob",
+    "name": "Jacob Getchell",
+    "positions": [
+      "P"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Fr."
+  },
+  {
+    "slug": "clark_james",
+    "name": "James Clark",
+    "positions": [
+      "P"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Sr."
+  },
+  {
+    "slug": "finkelstein_jason",
+    "name": "Jason Finkelstein",
+    "positions": [
+      "OF",
+      "P"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Jr."
+  },
+  {
+    "slug": "labrador_jayson",
+    "name": "Jayson Labrador",
+    "positions": [
+      "IF"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Fr."
+  },
+  {
+    "slug": "carrea_joe",
+    "name": "Joe Carrea",
+    "positions": [
+      "P"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Gr."
+  },
+  {
+    "slug": "schildcrout_joshua",
+    "name": "Joshua Schildcrout",
+    "positions": [
+      "C"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Fr."
+  },
+  {
+    "slug": "herrera_julian",
+    "name": "Julian Herrera",
+    "positions": [
+      "OF"
+    ],
+    "bats": "L",
+    "throws": "L",
+    "academicYear": "Fr."
+  },
+  {
+    "slug": "camardi_michael",
+    "name": "Michael Camardi",
+    "positions": [
+      "P"
+    ],
+    "bats": "L",
+    "throws": "L",
+    "academicYear": "Gr."
+  },
+  {
+    "slug": "mccarthy_michael",
+    "name": "Michael McCarthy",
+    "positions": [
+      "OF"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Fr."
+  },
+  {
+    "slug": "stephens_owen",
+    "name": "Owen Stephens",
+    "positions": [
+      "IF",
+      "OF"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Sr."
+  },
+  {
+    "slug": "rhodes_patrick",
+    "name": "Patrick Rhodes",
+    "positions": [
+      "P"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Fr."
+  },
+  {
+    "slug": "okeefe_quinn",
+    "name": "Quinn O'Keefe",
+    "positions": [
+      "P"
+    ],
+    "bats": "L",
+    "throws": "R",
+    "academicYear": "So."
+  },
+  {
+    "slug": "christensen_robert",
+    "name": "Robert Christensen",
+    "positions": [
+      "IF"
+    ],
+    "bats": "L",
+    "throws": "R",
+    "academicYear": "Fr."
+  },
+  {
+    "slug": "grace_ryan",
+    "name": "Ryan Grace",
+    "positions": [
+      "IF"
+    ],
+    "bats": "L",
+    "throws": "L",
+    "academicYear": "Gr."
+  },
+  {
+    "slug": "hvozdovic_ryan",
+    "name": "Ryan Hvozdovic",
+    "positions": [
+      "OF"
+    ],
+    "bats": "L",
+    "throws": "L",
+    "academicYear": "Sr."
+  },
+  {
+    "slug": "liss_ryan",
+    "name": "Ryan Liss",
+    "positions": [
+      "OF"
+    ],
+    "bats": "L",
+    "throws": "L",
+    "academicYear": "Jr."
+  },
+  {
+    "slug": "noone_sean",
+    "name": "Sean Noone",
+    "positions": [
+      "P"
+    ],
+    "bats": "L",
+    "throws": "R",
+    "academicYear": "Fr."
+  },
+  {
+    "slug": "langan_shane",
+    "name": "Shane Langan",
+    "positions": [
+      "P"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Fr."
+  },
+  {
+    "slug": "flack_tj",
+    "name": "TJ Flack",
+    "positions": [
+      "P"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Fr."
+  },
+  {
+    "slug": "obrien_trafton",
+    "name": "Trafton O'Brien",
+    "positions": [
+      "P"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "So."
+  },
+  {
+    "slug": "pearl_tristan",
+    "name": "Tristan Pearl",
+    "positions": [
+      "P"
+    ],
+    "bats": "L",
+    "throws": "L",
+    "academicYear": "Jr."
+  },
+  {
+    "slug": "purpura_vinnie",
+    "name": "Vinnie Purpura",
+    "positions": [
+      "P"
+    ],
+    "bats": "R",
+    "throws": "L",
+    "academicYear": "Sr."
+  },
+  {
+    "slug": "miller_wyatt",
+    "name": "Wyatt Miller",
+    "positions": [
+      "IF"
+    ],
+    "bats": "R",
+    "throws": "R",
+    "academicYear": "Fr."
+  },
+  {
+    "slug": "teator_zander",
+    "name": "Zander Teator",
+    "positions": [
+      "P",
+      "IF"
+    ],
+    "bats": "L",
+    "throws": "R",
+    "academicYear": "Sr."
+  }
+]

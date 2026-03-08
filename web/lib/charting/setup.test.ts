@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { beforeAll, describe, it, expect } from "vitest";
 import {
   isValidLineupSlot,
   nextSegmentOrder,
@@ -6,12 +6,14 @@ import {
   LINEUP_SLOT_MIN,
   LINEUP_SLOT_MAX,
 } from "./domain";
-import {
-  CANONICAL_BY_PLAYER_ID,
-  HAND_BY_PLAYER_ID,
-} from "@/lib/canonicalPlayersData";
-import type { ChartingBootstrapPitcher, ChartingBootstrapResponse } from "./types";
+import type {
+  ChartingBootstrapPitcher,
+  ChartingBootstrapResponse,
+  ChartingBootstrapRosterPlayer,
+} from "./types";
 import { fixtureGameSnapshot } from "./fixtures";
+import { buildBootstrapPitchers } from "./bootstrapPitchers";
+import { buildBootstrapRosterPlayers } from "./bootstrapRoster";
 
 // ---------------------------------------------------------------------------
 // Lineup slot validation (GAME-02)
@@ -103,17 +105,13 @@ describe("charting cookie", () => {
 // ---------------------------------------------------------------------------
 
 describe("bootstrap pitcher roster", () => {
-  // Build the pitcher list the same way the bootstrap route does, so
-  // we can verify the shape without hitting the DB.
-  const pitchers: ChartingBootstrapPitcher[] = Object.entries(
-    CANONICAL_BY_PLAYER_ID
-  )
-    .map(([playerId, name]) => ({
-      playerId,
-      name,
-      throws: (HAND_BY_PLAYER_ID[playerId] ?? "R") as "R" | "L",
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  let pitchers: ChartingBootstrapPitcher[] = [];
+  let rosterPlayers: ChartingBootstrapRosterPlayer[] = [];
+
+  beforeAll(async () => {
+    pitchers = await buildBootstrapPitchers();
+    rosterPlayers = buildBootstrapRosterPlayers();
+  });
 
   it("has at least one pitcher", () => {
     expect(pitchers.length).toBeGreaterThan(0);
@@ -137,6 +135,18 @@ describe("bootstrap pitcher roster", () => {
     }
   });
 
+  it("every pitcher exposes at least one charting pitch family", () => {
+    for (const p of pitchers) {
+      expect(p.arsenalPitchTypes.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("every pitcher includes Other as a fallback pitch family", () => {
+    for (const p of pitchers) {
+      expect(p.arsenalPitchTypes).toContain("Other");
+    }
+  });
+
   it("is sorted alphabetically by name", () => {
     for (let i = 1; i < pitchers.length; i++) {
       expect(
@@ -153,13 +163,26 @@ describe("bootstrap pitcher roster", () => {
     }
   });
 
-  it("bootstrap response shape has pitchers and recentGames fields", () => {
+  it("bootstrap response shape has pitchers, rosterPlayers, and recentGames fields", () => {
     // Type-check the shape without a DB call
     const mockResponse: ChartingBootstrapResponse = {
       pitchers,
+      rosterPlayers,
       recentGames: [],
     };
     expect(Array.isArray(mockResponse.pitchers)).toBe(true);
+    expect(Array.isArray(mockResponse.rosterPlayers)).toBe(true);
     expect(Array.isArray(mockResponse.recentGames)).toBe(true);
+    expect(Array.isArray(mockResponse.pitchers[0]?.arsenalPitchTypes ?? [])).toBe(true);
+  });
+
+  it("roster players include full-team hitters beyond the pitcher arsenal list", () => {
+    expect(rosterPlayers.length).toBeGreaterThan(pitchers.length);
+  });
+
+  it("roster players contain known non-pitchers from the current Babson roster", () => {
+    const rosterNames = new Set(rosterPlayers.map((player) => player.name));
+    expect(rosterNames.has("Wyatt Miller")).toBe(true);
+    expect(rosterNames.has("Dylan Drazka")).toBe(true);
   });
 });

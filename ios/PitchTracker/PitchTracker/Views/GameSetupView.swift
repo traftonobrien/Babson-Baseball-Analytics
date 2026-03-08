@@ -61,7 +61,7 @@ struct GameSetupView: View {
                 gameStore.setActiveGame(game)
                 dismiss()
             } catch {
-                errorMessage = error.localizedDescription
+                errorMessage = gameStore.apiClient.userFacingErrorMessage(for: error)
             }
             isSaving = false
         }

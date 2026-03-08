@@ -28,6 +28,7 @@ enum GameStoreError: LocalizedError {
 /// and API sync coordination. Every mutation immediately saves to SwiftData.
 @Observable
 final class GameStore {
+    private let rosterPlayersCacheKey = "pt_charting_roster_players"
 
     private let modelContext: ModelContext
     let apiClient: APIClient
@@ -44,6 +45,9 @@ final class GameStore {
 
     /// Cached bootstrap pitchers.
     var pitchers: [PersistedBootstrapPitcher] = []
+
+    /// Cached Babson roster players used for hitter selection and live AB setup.
+    var rosterPlayers: [BootstrapRosterPlayer] = []
 
     /// Segments for the active game.
     var activeSegments: [PersistedSegment] = []
@@ -85,7 +89,9 @@ final class GameStore {
             }
         }
         
+        loadLocalPitchers()
         loadLocalGames()
+        loadCachedRosterPlayers()
         recoverActiveGame()
     }
 
@@ -131,6 +137,23 @@ final class GameStore {
             pitchers = try modelContext.fetch(descriptor)
         } catch {
             print("Failed to load local pitchers: \(error)")
+        }
+    }
+
+    func loadCachedRosterPlayers() {
+        guard let data = UserDefaults.standard.data(forKey: rosterPlayersCacheKey) else {
+            rosterPlayers = []
+            return
+        }
+
+        do {
+            let decoded = try JSONDecoder().decode([BootstrapRosterPlayer].self, from: data)
+            rosterPlayers = decoded.sorted {
+                $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+            }
+        } catch {
+            rosterPlayers = []
+            print("Failed to load cached roster players: \(error)")
         }
     }
 
@@ -182,16 +205,58 @@ final class GameStore {
         currentStrikes = liveState.strikes
         currentBatterSlot = liveState.batterSlot
     }
+
+    private var plateAppearancesById: [String: PersistedPlateAppearance] {
+        Dictionary(uniqueKeysWithValues: activePlateAppearances.map { ($0.id, $0) })
+    }
+
+    var activePitcherProfile: PersistedBootstrapPitcher? {
+        guard let activePlayerId = activeSegments.last?.playerId else {
+            return nil
+        }
+        return pitchers.first(where: { $0.playerId == activePlayerId })
+    }
+
+    var currentPitcherPitchTotal: Int {
+        guard let activeSegmentId = liveState.activeSegmentId ?? activeSegments.last?.id else {
+            return 0
+        }
+        let paIds = Set(activePlateAppearances.filter { $0.segmentId == activeSegmentId }.map(\.id))
+        return activePitches.filter { paIds.contains($0.paId) }.count
+    }
+
+    var currentInningPitchTotal: Int {
+        let paIds = Set(activePlateAppearances.filter { $0.inning == currentInning }.map(\.id))
+        return activePitches.filter { paIds.contains($0.paId) }.count
+    }
+
+    var totalPitchCount: Int {
+        activePitches.count
+    }
+
+    func availablePitchTypesForActivePitcher() -> [PitchType] {
+        normalizedPitchTypes(activePitcherProfile?.arsenalPitchTypes ?? PitchType.allCases)
+    }
+
+    private func normalizedPitchTypes(_ pitchTypes: [PitchType]) -> [PitchType] {
+        let uniqueTypes = Set(pitchTypes + [.other])
+        return PitchType.allCases.filter { uniqueTypes.contains($0) }
+    }
     
     /// Ensures we have an open Plate Appearance for the current batter.
     /// Returns the ID of the open PA.
-    func ensureOpenPA() -> String {
+    func ensureOpenPA(lineupSlotOverride: Int? = nil, hitterNameOverride: String? = nil) -> String {
         guard let game = activeGame else { return "" }
         guard let activeSegmentId = liveState.activeSegmentId ?? activeSegments.last?.id else { return "" }
         
         if let lastPA = activePlateAppearances.last, lastPA.resultCode == nil {
             return lastPA.id
         }
+
+        let resolvedLineupSlot = lineupSlotOverride ?? currentBatterSlot
+        let resolvedHitterName = hitterNameOverride
+            ?? activeLineup.first(where: { $0.lineupSlot == resolvedLineupSlot })?.hitterName
+            ?? "Unknown"
         
         let newPA = PersistedPlateAppearance(
             id: UUID().uuidString,
@@ -199,8 +264,8 @@ final class GameStore {
             segmentId: activeSegmentId,
             paOrder: activePlateAppearances.count,
             inning: currentInning,
-            hitterName: activeLineup.first(where: { $0.lineupSlot == currentBatterSlot })?.hitterName ?? "Unknown",
-            lineupSlot: currentBatterSlot,
+            hitterName: resolvedHitterName,
+            lineupSlot: resolvedLineupSlot,
             resultCode: nil,
             buntContext: false
         )
@@ -213,17 +278,28 @@ final class GameStore {
     }
     
     /// Records a pitch and updates the count.
-    func recordPitch(type: PitchType, location: Int?, result: PitchResultType, buntContext: Bool) {
-        guard let game = activeGame else { return }
+    @discardableResult
+    func recordPitch(
+        type: PitchType,
+        location: Int?,
+        result: PitchResultType,
+        buntContext: Bool,
+        lineupSlotOverride: Int? = nil,
+        hitterNameOverride: String? = nil
+    ) -> Bool {
+        guard let game = activeGame else { return false }
         guard !liveState.needsPAClosure else {
             errorMessage = GameStoreError.closeCurrentPABeforeNextPitch.errorDescription
-            return
+            return false
         }
 
-        let paId = ensureOpenPA()
+        let paId = ensureOpenPA(
+            lineupSlotOverride: lineupSlotOverride,
+            hitterNameOverride: hitterNameOverride
+        )
         guard !paId.isEmpty else {
             errorMessage = GameStoreError.missingActiveSegment.errorDescription
-            return
+            return false
         }
         if let openPA = activePlateAppearances.last, openPA.id == paId {
             openPA.buntContext = openPA.buntContext || buntContext
@@ -246,6 +322,7 @@ final class GameStore {
         errorMessage = nil
         recalculateChartingState()
         save()
+        return true
     }
     
     /// Closes out the current plate appearance with a result code.
@@ -322,11 +399,13 @@ final class GameStore {
                 saveGameLocally(apiGame)
             }
 
+            cacheRosterPlayers(response.rosterPlayers)
             save()
             loadLocalPitchers()
+            loadCachedRosterPlayers()
             loadLocalGames()
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = apiClient.userFacingErrorMessage(for: error)
         }
         isLoading = false
     }
@@ -382,7 +461,7 @@ final class GameStore {
             ).first
             loadGameChildren(gameId: id)
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = apiClient.userFacingErrorMessage(for: error)
         }
         isLoading = false
     }
@@ -520,6 +599,19 @@ final class GameStore {
             existing.update(from: apiGame)
         } else {
             modelContext.insert(PersistedGame(from: apiGame))
+        }
+    }
+
+    private func cacheRosterPlayers(_ players: [BootstrapRosterPlayer]) {
+        do {
+            let sortedPlayers = players.sorted {
+                $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+            }
+            let data = try JSONEncoder().encode(sortedPlayers)
+            UserDefaults.standard.set(data, forKey: rosterPlayersCacheKey)
+            rosterPlayers = sortedPlayers
+        } catch {
+            print("Failed to cache roster players: \(error)")
         }
     }
 

@@ -11,7 +11,13 @@ final class APIClient {
     /// Base URL of the Next.js server (e.g. "https://your-app.vercel.app").
     var baseURL: String {
         didSet {
+            let normalized = APIClient.normalizedBaseURL(baseURL)
+            if normalized != baseURL {
+                baseURL = normalized
+                return
+            }
             UserDefaults.standard.set(baseURL, forKey: "pt_api_base_url")
+            checkExistingAuth()
         }
     }
 
@@ -24,7 +30,7 @@ final class APIClient {
 
     init() {
         let storedURL = UserDefaults.standard.string(forKey: "pt_api_base_url")
-        self.baseURL = storedURL ?? "http://localhost:3000"
+        self.baseURL = APIClient.normalizedBaseURL(storedURL ?? "http://127.0.0.1:3000")
 
         let config = URLSessionConfiguration.default
         config.httpCookieAcceptPolicy = .always
@@ -72,6 +78,14 @@ final class APIClient {
         let (data, response) = try await session.data(for: URLRequest(url: url))
         try validateResponse(response, data: data)
         return try decoder.decode(BootstrapResponse.self, from: data)
+    }
+
+    /// GET /api/charting/ping
+    func ping() async throws {
+        let url = try makeURL("/api/charting/ping")
+        let (data, response) = try await session.data(for: URLRequest(url: url))
+        try validateResponse(response, data: data)
+        _ = try decoder.decode(PingResponse.self, from: data)
     }
 
     // MARK: - Games
@@ -275,6 +289,44 @@ final class APIClient {
         let cookies = HTTPCookieStorage.shared.cookies(for: url) ?? []
         isAuthenticated = cookies.contains { $0.name == ChartingConstants.chartingCookie }
     }
+
+    func userFacingErrorMessage(for error: Error) -> String {
+        if let apiError = error as? APIError {
+            return apiError.localizedDescription
+        }
+
+        guard let urlError = error as? URLError else {
+            return error.localizedDescription
+        }
+
+        switch urlError.code {
+        case .cannotConnectToHost, .cannotFindHost, .timedOut, .networkConnectionLost:
+            if isLoopbackBaseURL {
+                #if targetEnvironment(simulator)
+                return "Can't reach \(baseURL). Start the web portal or update the Server URL in Settings."
+                #else
+                return "Can't reach \(baseURL). Localhost only works in the simulator. Set the Server URL to your Mac's LAN address in Settings."
+                #endif
+            }
+            return "Can't reach \(baseURL). Check the Server URL in Settings and make sure the web portal is running."
+        case .notConnectedToInternet:
+            return "No network connection. Rejoin Wi-Fi or update the Server URL in Settings."
+        default:
+            return urlError.localizedDescription
+        }
+    }
+
+    private var isLoopbackBaseURL: Bool {
+        guard let host = URL(string: baseURL)?.host?.lowercased() else {
+            return false
+        }
+        return host == "localhost" || host == "127.0.0.1"
+    }
+
+    private static func normalizedBaseURL(_ rawValue: String) -> String {
+        let trimmed = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.replacingOccurrences(of: "/+$", with: "", options: .regularExpression)
+    }
 }
 
 // MARK: - API Error
@@ -310,6 +362,7 @@ private struct LineupWrapper: Codable { let lineup: [ChartingLineupEntry] }
 private struct LineupEntryWrapper: Codable { let entry: ChartingLineupEntry }
 private struct SegmentWrapper: Codable { let segment: ChartingPitcherSegment }
 private struct ErrorWrapper: Codable { let error: String }
+private struct PingResponse: Codable { let ok: Bool }
 
 // MARK: - Payload Types
 

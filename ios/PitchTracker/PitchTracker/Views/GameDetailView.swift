@@ -205,24 +205,55 @@ struct LineupEditorView: View {
     @State private var hitters: [String] = Array(repeating: "", count: 9)
     @State private var isSaving = false
     @State private var errorMessage: String?
+    @State private var selectedRosterSlot: LineupSlotSelection?
 
     var body: some View {
         NavigationStack {
             Form {
                 ForEach(1...9, id: \.self) { slot in
-                    HStack {
-                        Text("#\(slot)")
-                            .font(.headline)
-                            .frame(width: 32)
-                        TextField("Hitter name", text: $hitters[slot - 1])
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .firstTextBaseline) {
+                            Text("#\(slot)")
+                                .font(.headline)
+                                .frame(width: 32)
+
+                            TextField("Hitter name", text: $hitters[slot - 1])
+                        }
+
+                        Button {
+                            selectedRosterSlot = LineupSlotSelection(slot: slot)
+                        } label: {
+                            Label(
+                                hitters[slot - 1].trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                                    ? "Choose from Babson roster"
+                                    : "Replace from Babson roster",
+                                systemImage: "person.crop.circle.badge.plus"
+                            )
+                            .font(.caption)
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(gameStore.rosterPlayers.isEmpty)
                     }
                 }
                 if let error = errorMessage {
                     Text(error).foregroundStyle(.red)
                 }
+                if gameStore.rosterPlayers.isEmpty {
+                    Text("No Babson roster loaded yet. Refresh bootstrap from Settings to import hitters.")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
             }
             .navigationTitle("Lineup")
             .navigationBarTitleDisplayMode(.inline)
+            .sheet(item: $selectedRosterSlot) { selection in
+                LineupRosterPickerSheet(
+                    title: "Slot #\(selection.slot)",
+                    players: gameStore.rosterPlayers
+                ) { player in
+                    hitters[selection.slot - 1] = player.name
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
@@ -257,7 +288,7 @@ struct LineupEditorView: View {
                 try await gameStore.replaceLineup(gameId: gameId, entries: entries)
                 dismiss()
             } catch {
-                errorMessage = error.localizedDescription
+                errorMessage = gameStore.apiClient.userFacingErrorMessage(for: error)
             }
             isSaving = false
         }
@@ -300,10 +331,16 @@ struct AddPitcherView: View {
                     Button {
                         addPitcher(pitcher)
                     } label: {
-                        HStack {
-                            Text(pitcher.name)
-                            Spacer()
-                            Text(pitcher.throwsHand == "L" ? "LHP" : "RHP")
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text(pitcher.name)
+                                Spacer()
+                                Text(pitcher.throwsHand == "L" ? "LHP" : "RHP")
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Text(pitcher.arsenalPitchTypes.map(\.rawValue).joined(separator: " • "))
+                                .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -336,9 +373,73 @@ struct AddPitcherView: View {
                 )
                 dismiss()
             } catch {
-                errorMessage = error.localizedDescription
+                errorMessage = gameStore.apiClient.userFacingErrorMessage(for: error)
             }
             isSaving = false
+        }
+    }
+}
+
+private struct LineupSlotSelection: Identifiable {
+    let slot: Int
+
+    var id: Int { slot }
+}
+
+private struct LineupRosterPickerSheet: View {
+    let title: String
+    let players: [BootstrapRosterPlayer]
+    let onSelect: (BootstrapRosterPlayer) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var searchText = ""
+
+    private var filteredPlayers: [BootstrapRosterPlayer] {
+        let trimmed = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return players
+        }
+
+        return players.filter { player in
+            player.name.localizedCaseInsensitiveContains(trimmed)
+                || player.positions.joined(separator: " ").localizedCaseInsensitiveContains(trimmed)
+                || (player.academicYear?.localizedCaseInsensitiveContains(trimmed) ?? false)
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            List(filteredPlayers) { player in
+                Button {
+                    onSelect(player)
+                    dismiss()
+                } label: {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(player.name)
+                            .foregroundStyle(.primary)
+
+                        HStack(spacing: 8) {
+                            if !player.positions.isEmpty {
+                                Text(player.positions.joined(separator: " / "))
+                            }
+                            if let academicYear = player.academicYear, !academicYear.isEmpty {
+                                Text(academicYear)
+                            }
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    }
+                }
+                .tint(.primary)
+            }
+            .searchable(text: $searchText, prompt: "Search roster")
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
         }
     }
 }

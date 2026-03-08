@@ -1,36 +1,41 @@
 import SwiftUI
 
-/// Buttons to record the pitch result. Submits the pitch to GameStore.
+/// Buttons to select the pending pitch action without committing the pitch.
 struct PitchResultControls: View {
     @Bindable var state: ChartingState
-    let canRecordPitch: Bool
+    let isInteractive: Bool
     let blockedReason: String?
-    let recordPitch: (PitchType, Int?, PitchResultType, Bool) -> Void
-    
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 10),
+        GridItem(.flexible(), spacing: 10),
+        GridItem(.flexible(), spacing: 10),
+    ]
+
     var body: some View {
-        VStack(spacing: 12) {
-            Text("Action")
-                .font(.headline)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            HStack(spacing: 12) {
-                resultButton(.ball, color: .green)
-                resultButton(.calledStrike, color: .red)
-                resultButton(.swingingStrike, color: .orange)
-            }
-            
-            HStack(spacing: 12) {
-                resultButton(.foul, color: .gray)
-                resultButton(.buntFoul, color: .brown)
-                resultButton(.inPlay, color: .blue)
-            }
-            
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
-                resultButton(.hitByPitch, color: .purple)
+                Text("Action")
+                    .font(.headline)
+
                 Spacer()
+
+                Text(state.selectedPitchResult?.displayLabel ?? "Select action")
+                    .font(.caption.bold())
+                    .foregroundStyle(state.selectedPitchResult == nil ? Color.secondary : .blue)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Color.blue.opacity(state.selectedPitchResult == nil ? 0.08 : 0.14))
+                    .clipShape(Capsule())
             }
 
-            if let blockedReason, !canRecordPitch {
+            LazyVGrid(columns: columns, spacing: 10) {
+                ForEach(PitchResultType.allCases) { result in
+                    resultButton(result)
+                }
+            }
+
+            if let blockedReason, !isInteractive {
                 Text(blockedReason)
                     .font(.caption)
                     .foregroundStyle(.orange)
@@ -38,26 +43,62 @@ struct PitchResultControls: View {
             }
         }
     }
-    
+
     @ViewBuilder
-    private func resultButton(_ result: PitchResultType, color: Color) -> some View {
-        // HBP doesn't strictly need location, but we require Type for everything.
-        let isReady = canRecordPitch && state.selectedPitchType != nil && (state.selectedLocation != nil || result == .hitByPitch)
-        
+    private func resultButton(_ result: PitchResultType) -> some View {
+        let isSelected = state.selectedPitchResult == result
+        let color = color(for: result)
+
         Button {
-            guard let type = state.selectedPitchType else { return }
-            let loc = state.selectedLocation
-            recordPitch(type, loc, result, state.selectedBuntContext)
-            state.resetForm()
+            guard isInteractive else { return }
+            state.selectedPitchResult = result
         } label: {
-            Text(result.displayLabel)
-                .font(.subheadline.bold())
-                .frame(maxWidth: .infinity, minHeight: 60)
-                .background(isReady ? color : color.opacity(0.3))
-                .foregroundStyle(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+            HStack(alignment: .top, spacing: 8) {
+                Text(result.displayLabel)
+                    .font(.subheadline.bold())
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+
+                Spacer(minLength: 0)
+
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.body.bold())
+                }
+            }
+            .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
+            .padding(.horizontal, 12)
+                .background(isSelected ? color.opacity(0.92) : color.opacity(0.16))
+                .foregroundStyle(isSelected ? .white : color)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(color.opacity(isSelected ? 0.95 : 0.24), lineWidth: isSelected ? 2 : 1)
+                )
+                .opacity(isInteractive ? 1 : 0.45)
         }
-        .disabled(!isReady)
         .buttonStyle(.plain)
+        .disabled(!isInteractive)
+        .accessibilityValue(isSelected ? "Selected" : "Not selected")
+    }
+
+    private func color(for result: PitchResultType) -> Color {
+        switch result {
+        case .ball:
+            return .green
+        case .calledStrike:
+            return .red
+        case .swingingStrike:
+            return .orange
+        case .foul:
+            return .gray
+        case .buntFoul:
+            return .brown
+        case .inPlay:
+            return .blue
+        case .hitByPitch:
+            return .purple
+        }
     }
 }

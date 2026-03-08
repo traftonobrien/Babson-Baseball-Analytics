@@ -4,7 +4,6 @@ import SwiftData
 /// Games tab — lists recent games with pull-to-refresh, "New Game" button.
 struct GamesListView: View {
     @Bindable var gameStore: GameStore
-    @Environment(APIClient.self) private var apiClient
 
     @State private var showNewGame = false
     @State private var selectedGameId: String?
@@ -16,7 +15,15 @@ struct GamesListView: View {
                     ContentUnavailableView {
                         Label("No Games", systemImage: "baseball.diamond.bases")
                     } description: {
-                        Text("Create a new game or pull down to refresh from the server.")
+                        VStack(spacing: 8) {
+                            Text("Create a new game or pull down to refresh from the server.")
+                            if let errorMessage = gameStore.errorMessage {
+                                Text(errorMessage)
+                                    .font(.caption)
+                                    .foregroundStyle(.red)
+                                    .multilineTextAlignment(.center)
+                            }
+                        }
                     } actions: {
                         Button("New Game") { showNewGame = true }
                             .buttonStyle(.borderedProminent)
@@ -60,7 +67,8 @@ struct GamesListView: View {
             .onAppear {
                 gameStore.loadLocalGames()
                 gameStore.loadLocalPitchers()
-                if gameStore.games.isEmpty {
+                gameStore.loadCachedRosterPlayers()
+                if gameStore.games.isEmpty || gameStore.pitchers.isEmpty || gameStore.rosterPlayers.isEmpty {
                     Task { await gameStore.fetchBootstrap() }
                 }
             }

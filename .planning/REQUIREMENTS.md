@@ -35,9 +35,13 @@
 
 ### Charting UX Baseline
 
-- The zone selector owns the elastic top canvas in landscape mode and should remain the primary spatial work surface.
-- Count, pitch type, pitch result, and plate-appearance closeout belong in the persistent bottom operator dock.
-- Matchup and pitch history are supporting surfaces and should stay compact or move into rail/drawer patterns as the charting page grows.
+- The zone selector owns the dominant left-side canvas in landscape mode and remains the primary spatial work surface.
+- Matchup, inning, outs, and mode controls live in a compact top utility bar instead of a large permanent side card.
+- Count/totals, pitch type, action, and pending-pitch confirmation live in a right-side control stack ordered to match the scorer's real workflow.
+- Pitch history is secondary and should stay behind a drawer or modal reveal instead of occupying permanent primary screen space.
+- The screen supports both lineup-driven `Game` mode and pre-AB `Live AB` setup mode.
+- Pitch entry uses `select -> review -> confirm`, not immediate save on action tap.
+- Pitch type selection should be filtered to the active pitcher's arsenal plus `Other` whenever arsenal data is available.
 
 ### Offline & Sync
 
@@ -62,7 +66,7 @@
 ### Operations
 
 - [ ] **OPS-01**: Internal staff can install and run the beta via TestFlight during the pilot
-- [ ] **OPS-02**: System surfaces sync failures and recoverable charting errors clearly enough for internal pilot use after the charting engine is hardened
+- [ ] **OPS-02**: System surfaces sync failures and recoverable charting errors clearly enough for internal pilot use after the charting engine is hardened, including durable full-snapshot sync, revision adoption, retry, and refresh guidance
 
 ## v2 Requirements
 
@@ -133,4 +137,4 @@
 
 ---
 *Requirements defined: 2026-03-06*
-*Last updated: 2026-03-06 after Phase 8 charting-engine hardening completion and verification*
+*Last updated: 2026-03-07 after Phase 08.1 charting UX/workflow implementation completed*

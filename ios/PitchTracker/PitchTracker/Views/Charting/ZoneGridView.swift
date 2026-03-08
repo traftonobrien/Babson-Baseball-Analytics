@@ -1,81 +1,66 @@
 import SwiftUI
 
-/// 14-cell Trackman strike zone representation + 1 "Other" cell (PO/Misc).
+/// 14-cell Trackman strike zone representation.
 struct ZoneGridView: View {
     @Bindable var state: ChartingState
     
     private let cellSize: CGFloat = 60
     private let cornerThickness: CGFloat = 40
     private let gap: CGFloat = 4
-    private let poSize = CGSize(width: 80, height: 40)
-    private let verticalSpacing: CGFloat = 24
     
     var body: some View {
         GeometryReader { proxy in
             let baseGridWidth = cellSize * 3 + cornerThickness * 2 + gap * 4
             let baseGridHeight = cellSize * 3 + cornerThickness * 2 + gap * 4
-            let baseLayoutHeight = baseGridHeight + verticalSpacing + poSize.height
-            let availableWidth = max(proxy.size.width - 12, 1)
-            let availableHeight = max(proxy.size.height - 12, 1)
-            let scale = min(availableWidth / baseGridWidth, availableHeight / baseLayoutHeight)
-            let fittedScale = min(scale, 2.6)
+            let availableWidth = max(proxy.size.width - 4, 1)
+            let availableHeight = max(proxy.size.height - 4, 1)
+            let scale = min(availableWidth / baseGridWidth, availableHeight / baseGridHeight)
+            let fittedScale = min(scale, 3.6)
             
-            VStack(spacing: verticalSpacing) {
+            ZStack {
+                Color.clear
                 
-                // The 14-cell tracking grid
-                ZStack {
-                    // Background to help debug or visually group
-                    Color.clear
-                    
-                    // Top-Left L (11)
-                    cellButton(11, shape: .lShapeTopLeft)
-                        .frame(width: cellSize * 1.5 + gap + cornerThickness/2, height: cellSize * 1.5 + gap + cornerThickness/2)
-                        .offset(x: -(cellSize + gap + cornerThickness/4), y: -(cellSize + gap + cornerThickness/4))
-                    
-                    // Top-Right L (12)
-                    cellButton(12, shape: .lShapeTopRight)
-                        .frame(width: cellSize * 1.5 + gap + cornerThickness/2, height: cellSize * 1.5 + gap + cornerThickness/2)
-                        .offset(x: (cellSize + gap + cornerThickness/4), y: -(cellSize + gap + cornerThickness/4))
-                    
-                    // Bottom-Left L (13)
-                    cellButton(13, shape: .lShapeBottomLeft)
-                        .frame(width: cellSize * 1.5 + gap + cornerThickness/2, height: cellSize * 1.5 + gap + cornerThickness/2)
-                        .offset(x: -(cellSize + gap + cornerThickness/4), y: (cellSize + gap + cornerThickness/4))
-                    
-                    // Bottom-Right L (14)
-                    cellButton(14, shape: .lShapeBottomRight)
-                        .frame(width: cellSize * 1.5 + gap + cornerThickness/2, height: cellSize * 1.5 + gap + cornerThickness/2)
-                        .offset(x: (cellSize + gap + cornerThickness/4), y: (cellSize + gap + cornerThickness/4))
-                    
-                    // Center 3x3 Grid (1-9)
-                    VStack(spacing: gap) {
-                        HStack(spacing: gap) {
-                            cellButton(1)
-                            cellButton(2)
-                            cellButton(3)
-                        }
-                        HStack(spacing: gap) {
-                            cellButton(4)
-                            cellButton(5)
-                            cellButton(6)
-                        }
-                        HStack(spacing: gap) {
-                            cellButton(7)
-                            cellButton(8)
-                            cellButton(9)
-                        }
+                // Top-Left L (11)
+                cellButton(11, shape: .lShapeTopLeft)
+                    .frame(width: cellSize * 1.5 + gap + cornerThickness/2, height: cellSize * 1.5 + gap + cornerThickness/2)
+                    .offset(x: -(cellSize + gap + cornerThickness/4), y: -(cellSize + gap + cornerThickness/4))
+                
+                // Top-Right L (12)
+                cellButton(12, shape: .lShapeTopRight)
+                    .frame(width: cellSize * 1.5 + gap + cornerThickness/2, height: cellSize * 1.5 + gap + cornerThickness/2)
+                    .offset(x: (cellSize + gap + cornerThickness/4), y: -(cellSize + gap + cornerThickness/4))
+                
+                // Bottom-Left L (13)
+                cellButton(13, shape: .lShapeBottomLeft)
+                    .frame(width: cellSize * 1.5 + gap + cornerThickness/2, height: cellSize * 1.5 + gap + cornerThickness/2)
+                    .offset(x: -(cellSize + gap + cornerThickness/4), y: (cellSize + gap + cornerThickness/4))
+                
+                // Bottom-Right L (14)
+                cellButton(14, shape: .lShapeBottomRight)
+                    .frame(width: cellSize * 1.5 + gap + cornerThickness/2, height: cellSize * 1.5 + gap + cornerThickness/2)
+                    .offset(x: (cellSize + gap + cornerThickness/4), y: (cellSize + gap + cornerThickness/4))
+                
+                // Center 3x3 Grid (1-9)
+                VStack(spacing: gap) {
+                    HStack(spacing: gap) {
+                        cellButton(1)
+                        cellButton(2)
+                        cellButton(3)
                     }
-                    .frame(width: cellSize * 3 + gap * 2, height: cellSize * 3 + gap * 2)
+                    HStack(spacing: gap) {
+                        cellButton(4)
+                        cellButton(5)
+                        cellButton(6)
+                    }
+                    HStack(spacing: gap) {
+                        cellButton(7)
+                        cellButton(8)
+                        cellButton(9)
+                    }
                 }
-                .frame(width: baseGridWidth, height: baseGridHeight)
-                
-                // Generic PO / Misc cell (10) since 1-9 & 11-14 are used for Trackman geometry
-                HStack {
-                    cellButton(10, label: "PO", shape: .pill)
-                        .frame(width: poSize.width, height: poSize.height)
-                }
+                .frame(width: cellSize * 3 + gap * 2, height: cellSize * 3 + gap * 2)
             }
-            .frame(width: baseGridWidth, height: baseLayoutHeight, alignment: .top)
+            .frame(width: baseGridWidth, height: baseGridHeight)
             .scaleEffect(fittedScale)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }

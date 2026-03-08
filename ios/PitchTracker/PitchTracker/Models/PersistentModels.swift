@@ -360,18 +360,37 @@ final class PersistedBootstrapPitcher {
     @Attribute(.unique) var playerId: String
     var name: String
     var throwsHand: String // "R" or "L"
+    var arsenalPitchTypesRaw: String?
 
-    init(playerId: String, name: String, throwsHand: String) {
+    init(playerId: String, name: String, throwsHand: String, arsenalPitchTypesRaw: String? = nil) {
         self.playerId = playerId
         self.name = name
         self.throwsHand = throwsHand
+        self.arsenalPitchTypesRaw = arsenalPitchTypesRaw
     }
 
     convenience init(from api: BootstrapPitcher) {
-        self.init(playerId: api.playerId, name: api.name, throwsHand: api.throwsHand)
+        self.init(
+            playerId: api.playerId,
+            name: api.name,
+            throwsHand: api.throwsHand,
+            arsenalPitchTypesRaw: api.arsenalPitchTypes.map(\.rawValue).joined(separator: ",")
+        )
     }
 
     func toAPIModel() -> BootstrapPitcher {
-        BootstrapPitcher(playerId: playerId, name: name, throwsHand: throwsHand)
+        BootstrapPitcher(
+            playerId: playerId,
+            name: name,
+            throwsHand: throwsHand,
+            arsenalPitchTypes: arsenalPitchTypes
+        )
+    }
+
+    var arsenalPitchTypes: [PitchType] {
+        let stored = (arsenalPitchTypesRaw ?? "")
+            .split(separator: ",")
+            .compactMap { PitchType(rawValue: String($0)) }
+        return stored.isEmpty ? PitchType.allCases : stored
     }
 }

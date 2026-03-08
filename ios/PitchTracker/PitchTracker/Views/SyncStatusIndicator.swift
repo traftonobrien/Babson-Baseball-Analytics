@@ -25,10 +25,10 @@ struct SyncStatusIndicator: View {
                 Text("Error")
             }
         }
-        .font(.caption2)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(Color(white: 0.9))
+        .font(.caption.bold())
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.white.opacity(0.88))
         .clipShape(Capsule())
     }
 }

@@ -231,17 +231,51 @@ final class ModelRoundTripTests: XCTestCase {
     // MARK: BootstrapPitcher & Response
 
     func testBootstrapPitcherRoundTrip() throws {
-        let p = BootstrapPitcher(playerId: "DJames1", name: "D. James", throwsHand: "R")
+        let p = BootstrapPitcher(
+            playerId: "DJames1",
+            name: "D. James",
+            throwsHand: "R",
+            arsenalPitchTypes: [.fastball, .slider, .other]
+        )
         let data = try encoder.encode(p)
         let decoded = try decoder.decode(BootstrapPitcher.self, from: data)
         XCTAssertEqual(p, decoded)
     }
 
+    func testBootstrapRosterPlayerRoundTrip() throws {
+        let player = BootstrapRosterPlayer(
+            slug: "miller_wyatt",
+            playerId: nil,
+            name: "Wyatt Miller",
+            positions: ["INF"],
+            batsHand: "R",
+            throwsHand: "R",
+            academicYear: "Sr.",
+            isPitcher: false
+        )
+
+        let data = try encoder.encode(player)
+        let decoded = try decoder.decode(BootstrapRosterPlayer.self, from: data)
+        XCTAssertEqual(player, decoded)
+    }
+
     func testBootstrapResponseRoundTrip() throws {
         let response = BootstrapResponse(
             pitchers: [
-                BootstrapPitcher(playerId: "DJames1", name: "D. James", throwsHand: "R"),
-                BootstrapPitcher(playerId: "CBurrows1", name: "C. Burrows", throwsHand: "L"),
+                BootstrapPitcher(playerId: "DJames1", name: "D. James", throwsHand: "R", arsenalPitchTypes: [.fastball, .slider, .other]),
+                BootstrapPitcher(playerId: "CBurrows1", name: "C. Burrows", throwsHand: "L", arsenalPitchTypes: [.fastball, .changeup, .other]),
+            ],
+            rosterPlayers: [
+                BootstrapRosterPlayer(
+                    slug: "miller_wyatt",
+                    playerId: nil,
+                    name: "Wyatt Miller",
+                    positions: ["INF"],
+                    batsHand: "R",
+                    throwsHand: "R",
+                    academicYear: "Sr.",
+                    isPitcher: false
+                ),
             ],
             recentGames: []
         )
@@ -249,7 +283,9 @@ final class ModelRoundTripTests: XCTestCase {
         let data = try encoder.encode(response)
         let decoded = try decoder.decode(BootstrapResponse.self, from: data)
         XCTAssertEqual(decoded.pitchers.count, 2)
+        XCTAssertEqual(decoded.rosterPlayers.count, 1)
         XCTAssertTrue(decoded.recentGames.isEmpty)
+        XCTAssertEqual(decoded.pitchers[0].arsenalPitchTypes, [.fastball, .slider, .other])
     }
 
     // MARK: ChartingGameSnapshot
@@ -456,6 +492,15 @@ final class ChartingEngineTests: XCTestCase {
         XCTAssertEqual(progress.closureState, .walk)
     }
 
+    func testPitchProgressSeedsFromStoredCount() {
+        let progress = derivePAPitchProgress(from: [
+            makePitch(id: "p1", paId: "pa-1", order: 0, result: .foul, ballsBefore: 2, strikesBefore: 1),
+        ])
+
+        XCTAssertEqual(progress.balls, 2)
+        XCTAssertEqual(progress.strikes, 2)
+    }
+
     func testInningRollsAfterThreeRecordedOuts() {
         let state = deriveChartingLiveState(
             segments: [makeSegment(id: "seg-1", order: 0, enteredInning: 1)],
@@ -503,18 +548,7 @@ final class ChartingEngineTests: XCTestCase {
         XCTAssertEqual(state.outs, 1)
         XCTAssertEqual(state.batterSlot, 2)
         XCTAssertEqual(state.closureState, .inPlay)
-        XCTAssertEqual(state.availableResults, [
-            .single,
-            .double,
-            .triple,
-            .homeRun,
-            .flyOutCenter,
-            .groundOut63,
-            .groundOut53,
-            .doublePlay,
-            .error6,
-            .fieldersChoice,
-        ])
+        XCTAssertEqual(state.availableResults, PAResultType.inPlayOptions)
     }
 
     func testLatestSegmentBecomesActiveBetweenInnings() {
@@ -673,7 +707,10 @@ final class PersistenceTests: XCTestCase {
         let context = ModelContext(container)
 
         let pitcher = PersistedBootstrapPitcher(
-            playerId: "DJames1", name: "D. James", throwsHand: "R"
+            playerId: "DJames1",
+            name: "D. James",
+            throwsHand: "R",
+            arsenalPitchTypesRaw: "Fastball,Slider,Other"
         )
         context.insert(pitcher)
         try context.save()
@@ -682,6 +719,7 @@ final class PersistenceTests: XCTestCase {
         XCTAssertEqual(fetched.count, 1)
         XCTAssertEqual(fetched[0].playerId, "DJames1")
         XCTAssertEqual(fetched[0].throwsHand, "R")
+        XCTAssertEqual(fetched[0].arsenalPitchTypes, [.fastball, .slider, .other])
     }
 
     // MARK: Relaunch Recovery
@@ -752,5 +790,55 @@ final class PersistenceTests: XCTestCase {
         XCTAssertEqual(fetched[0].status, "active")
         XCTAssertEqual(fetched[0].revision, 2)
         XCTAssertNotNil(fetched[0].lastSyncedAt)
+    }
+}
+
+final class ChartingStateTests: XCTestCase {
+
+    func testPendingPitchRequiresExplicitAction() {
+        let state = ChartingState()
+        state.selectedPitchType = .fastball
+        state.selectedLocation = 5
+
+        XCTAssertFalse(state.isPendingPitchReady)
+
+        state.selectedPitchResult = .calledStrike
+
+        XCTAssertTrue(state.isPendingPitchReady)
+    }
+
+    func testLiveABPitchConfirmationAndUndoLifecycle() {
+        let state = ChartingState()
+        let setup = LiveABSetup(
+            pitcherPlayerId: "DJames1",
+            pitcherName: "D. James",
+            pitcherThrowsHand: "R",
+            hitterName: "Practice Hitter",
+            inning: 3,
+            halfInning: .top,
+            outs: 1,
+            startingBalls: 0,
+            startingStrikes: 2
+        )
+
+        state.beginLiveABSession(with: setup)
+        state.selectedPitchType = .fastball
+        state.selectedLocation = 5
+        state.selectedPitchResult = .swingingStrike
+
+        XCTAssertTrue(state.commitLiveABPitch())
+        XCTAssertEqual(state.currentLiveABSession?.currentStrikes, 3)
+        XCTAssertEqual(state.currentLiveABSession?.availableResults, [.strikeout])
+        XCTAssertEqual(state.liveABPitcherTotal(playerId: "DJames1"), 1)
+
+        XCTAssertTrue(state.closeLiveAB(result: .strikeout))
+        XCTAssertNil(state.currentLiveABSession)
+        XCTAssertEqual(state.completedLiveABSessions.count, 1)
+
+        state.undoLiveABAction()
+
+        XCTAssertNotNil(state.currentLiveABSession)
+        XCTAssertNil(state.currentLiveABSession?.result)
+        XCTAssertEqual(state.currentLiveABSession?.pitches.count, 1)
     }
 }

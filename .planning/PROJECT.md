@@ -28,8 +28,9 @@ One coach can chart an entire Babson outing on one iPad and trust that the resul
 
 ### Active Completion Work
 
-- [ ] Preserve the live charting rough layout baseline as the page grows: top zone canvas, bottom operator dock, compact secondary rails
 - [ ] Prepare the iPad app and support tooling for internal pilot/TestFlight use after the charting mechanics are trustworthy
+- [ ] Close the remaining iPad-to-server snapshot sync contract gap before pilot distribution so the beta is a functional v1, not only a packaged build
+- [ ] Decide how `Live AB` practice charts should eventually persist and share beyond the current local-first workflow
 
 ### Out of Scope
 
@@ -48,12 +49,14 @@ The current paper workflow is represented by [Charting Example.pdf](/Users/traft
 ## Current Shipping Baseline
 
 - The portal ships a working `/charting` hub and `/charting/games/[id]` detail surface backed by synced Drizzle data and derived analytics.
-- The iPad live charting screen is landscape-first, with the zone selector as the elastic top canvas and the operational controls in a bottom dock.
+- The iPad live charting screen now uses a compact top utility bar, a dominant left-side zone canvas, a right-side count/type/action stack, and a hidden history sheet instead of a permanent history rail.
 - `ZoneGridView` matches the 14-cell Trackman layout using custom SwiftUI `Path` L-brackets around the central 3x3 grid, plus a separate `PO` cell.
 - CSV and PDF export now exist as portal download paths.
 - The iPad charting engine now derives inning, outs, count, batter slot, and closeout readiness from typed pitch and PA result rules instead of demo-grade counter repair.
 - The workflow now blocks contradictory actions such as recording extra pitches after a terminal event, changing pitchers mid-PA, or finalizing with an open plate appearance.
 - Scenario-based engine tests lock in strikeout, walk, inning rollover, double-play, in-play closeout, and between-inning segment handoff behavior.
+- The charting surface now supports both lineup-driven `Game` mode and local `Live AB` setup mode, with explicit pitch confirmation and arsenal-filtered pitch-type selection per pitcher.
+- Phase 9 planning is now on disk, and it identified one remaining pilot blocker: the current queued iPad snapshot payload needs a matching full-snapshot persistence path on the server before TestFlight is trustworthy.
 
 ## Constraints
 
@@ -75,10 +78,13 @@ The current paper workflow is represented by [Charting Example.pdf](/Users/traft
 | Use fine-grained phases | Smaller sections reduce context risk and make handoffs safer | Locked; current roadmap is split into nine sequential phases |
 | Run future phases sequentially | Safer handoffs and easier recovery when context windows are tight | Locked; current work proceeds phase-by-phase |
 | Match the iPad zone selector to the 14-cell Trackman layout with custom L-bracket geometry | Staff expects physical location capture to mirror the real charting model, not a generic 3x3 strike zone | Implemented in `ZoneGridView` with custom `Path` shapes and a separate `PO` cell |
-| Reserve the top charting canvas for zone selection and the bottom dock for operational controls | Maximizes the most valuable spatial surface while keeping the control deck extensible for future charting features | Locked as the rough layout baseline for the iPad app |
+| Rebuild the live charting shell around a compact utility bar, dominant zone workspace, and confirm-first control stack | Staff needs a screen that matches physical charting order and reduces accidental commits before pilot use | Implemented in Phase 08.1 with hidden history, pending pitch review, and top-level matchup/context cards |
+| Filter pitch-type selection to the active pitcher's arsenal plus `Other` | Reduces picker clutter and aligns on-screen pitch families to what that pitcher actually throws | Implemented through bootstrap payload expansion and iOS picker filtering |
+| Keep `Live AB` practice charting local-first for now | Mechanics and scorer trust are higher priority than shared storage for ad hoc practice reps | Implemented as a dedicated setup/session workflow while broader storage evolution stays deferred |
 | Generate CSV exports from a shared chart snapshot loader | The detail page and export output must stay in sync as the charting model evolves | Implemented via shared snapshot/export utilities and `/api/charting/games/[id]/export` |
 | Generate paper-style PDF exports from the same shared chart snapshot as CSV | PDF output must stay recognizable to staff without diverging from the synced chart data | Implemented via `pdf-lib` renderer and `/api/charting/games/[id]/export-pdf` |
 | Harden charting mechanics before pilot/TestFlight work | Staff trust depends more on deterministic count/outs/PA logic than on early beta packaging | Implemented in Phase 8 before pilot delivery work begins |
+| Absorb the discovered snapshot-sync mismatch into Phase 9 instead of treating it as a later storage rewrite | A functional v1 pilot requires durable full-chart sync, revision adoption, and operator recovery even if broader storage evolution remains future work | Planned in Phase 9 `09-02` |
 
 ---
-*Last updated: 2026-03-06 after Phase 8 charting-engine hardening completion and Phase 9 handoff*
+*Last updated: 2026-03-07 after Phase 08.1 completed and Phase 9 became the active next step*

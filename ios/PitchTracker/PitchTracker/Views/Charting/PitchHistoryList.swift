@@ -1,54 +1,71 @@
 import SwiftUI
 
-/// Compact history list of pitches in the active PA (and previous PAs) with undo.
+/// Compact history list for the current active charting thread with undo.
 struct PitchHistoryList: View {
-    let activePitches: [PersistedPitch]
+    let entries: [PitchHistoryEntry]
     let onUndo: () -> Void
-    
+
     var body: some View {
         VStack(spacing: 0) {
             HStack {
                 Text("Pitch History")
-                    .font(.subheadline.bold())
+                    .font(.headline)
                 Spacer()
                 Button(role: .destructive) {
                     onUndo()
                 } label: {
-                    Image(systemName: "arrow.uturn.backward.circle.fill")
+                    Label("Undo", systemImage: "arrow.uturn.backward.circle.fill")
+                        .labelStyle(.iconOnly)
                         .font(.title3)
                 }
-                .disabled(activePitches.isEmpty)
+                .disabled(entries.isEmpty)
             }
             .padding(.horizontal)
+            .padding(.top)
             .padding(.bottom, 8)
-            
-            List {
-                ForEach(activePitches.reversed(), id: \.id) { pitch in
-                    HStack {
-                        Text("\(pitch.pitchOrder + 1)")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .frame(width: 20, alignment: .leading)
-                        
-                        Text(pitch.pitchType.prefix(1).uppercased())
-                            .font(.subheadline.bold())
-                            .frame(width: 20)
-                        
-                        Text(pitch.pitchResult.replacingOccurrences(of: "_", with: " ").capitalized)
-                            .font(.caption)
-                            .lineLimit(1)
-                        
-                        Spacer()
-                        
-                        Text("\(pitch.ballsBefore)-\(pitch.strikesBefore)")
-                            .font(.caption.monospacedDigit())
-                            .foregroundStyle(.secondary)
+
+            if entries.isEmpty {
+                ContentUnavailableView(
+                    "No pitches yet",
+                    systemImage: "list.bullet.rectangle",
+                    description: Text("Committed pitches for the active AB will appear here.")
+                )
+                .frame(maxHeight: .infinity)
+            } else {
+                List {
+                    ForEach(entries.reversed(), id: \.id) { entry in
+                        HStack(spacing: 12) {
+                            Text("\(entry.pitchNumber)")
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .frame(width: 24, alignment: .leading)
+
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(entry.pitchTypeLabel)
+                                    .font(.subheadline.weight(.semibold))
+                                Text(entry.resultLabel)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+
+                            VStack(alignment: .trailing, spacing: 3) {
+                                Text(entry.countLabel)
+                                    .font(.caption.monospacedDigit())
+                                    .foregroundStyle(.secondary)
+                                if let locationLabel = entry.locationLabel {
+                                    Text(locationLabel)
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                        .padding(.vertical, 4)
                     }
-                    .padding(.vertical, 2)
                 }
+                .listStyle(.plain)
             }
-            .listStyle(.plain)
-            .background(Color(white: 0.98))
         }
     }
 }

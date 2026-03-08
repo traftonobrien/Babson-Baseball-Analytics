@@ -78,12 +78,12 @@ actor SyncQueueManager {
                 if case .staleRevision = error {
                     onStatusChange?(.failed("Stale Revision - Pull to refresh"))
                 } else {
-                    onStatusChange?(.failed(error.localizedDescription))
+                    onStatusChange?(.failed(apiClient.userFacingErrorMessage(for: error)))
                 }
             }
         } catch {
             if !Task.isCancelled {
-                onStatusChange?(.failed(error.localizedDescription))
+                onStatusChange?(.failed(apiClient.userFacingErrorMessage(for: error)))
             }
         }
         
