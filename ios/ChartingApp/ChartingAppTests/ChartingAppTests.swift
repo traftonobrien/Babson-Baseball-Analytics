@@ -1004,3 +1004,215 @@ final class ChartingStateTests: XCTestCase {
         XCTAssertEqual(state.currentLiveABSession?.setup.countPreset, .zeroZero)
     }
 }
+
+// MARK: - GameStore Integration Tests
+
+@available(iOS 17.0, *)
+final class GameStoreTests: XCTestCase {
+
+    private var container: ModelContainer!
+    private var store: GameStore!
+
+    @MainActor
+    override func setUp() {
+        super.setUp()
+        let schema = Schema([
+            PersistedGame.self,
+            PersistedSegment.self,
+            PersistedPlateAppearance.self,
+            PersistedPitch.self,
+            PersistedLineupEntry.self,
+            PersistedBootstrapPitcher.self,
+            PersistedSyncEntry.self,
+        ])
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        container = try! ModelContainer(for: schema, configurations: [config])
+        let context = ModelContext(container)
+        store = GameStore(modelContext: context)
+    }
+
+    override func tearDown() {
+        container = nil
+        store = nil
+        super.tearDown()
+    }
+
+    // MARK: Helpers
+
+    @MainActor
+    private func createActiveGame() {
+        let game = PersistedGame(
+            id: "test-game",
+            opponent: "MIT",
+            gameDate: "2026-03-01",
+            status: "active",
+            revision: 1,
+            createdAt: "2026-03-01T12:00:00Z",
+            updatedAt: "2026-03-01T12:00:00Z"
+        )
+        store.activeGame = game
+        let context = ModelContext(container)
+        context.insert(game)
+        try? context.save()
+
+        // Add a pitcher segment so we can record pitches
+        let segment = PersistedSegment(
+            id: "seg-1",
+            gameId: "test-game",
+            playerId: "DJames1",
+            displayName: "D. James",
+            segmentOrder: 0
+        )
+        context.insert(segment)
+        try? context.save()
+        store.activeSegments = [segment]
+    }
+
+    // MARK: Tests
+
+    @MainActor
+    func testRecordPitchCreatesPAAndPitch() {
+        createActiveGame()
+
+        let didRecord = store.recordPitch(
+            type: .fastball,
+            location: 5,
+            result: .calledStrike,
+            buntContext: false
+        )
+
+        XCTAssertTrue(didRecord)
+        XCTAssertEqual(store.activePitches.count, 1)
+        XCTAssertEqual(store.activePlateAppearances.count, 1)
+        XCTAssertEqual(store.currentBalls, 0)
+        XCTAssertEqual(store.currentStrikes, 1)
+    }
+
+    @MainActor
+    func testRecordPitchUpdatesCount() {
+        createActiveGame()
+
+        store.recordPitch(type: .fastball, location: 5, result: .ball, buntContext: false)
+        XCTAssertEqual(store.currentBalls, 1)
+        XCTAssertEqual(store.currentStrikes, 0)
+
+        store.recordPitch(type: .slider, location: 3, result: .swingingStrike, buntContext: false)
+        XCTAssertEqual(store.currentBalls, 1)
+        XCTAssertEqual(store.currentStrikes, 1)
+
+        store.recordPitch(type: .fastball, location: nil, result: .ball, buntContext: false)
+        XCTAssertEqual(store.currentBalls, 2)
+        XCTAssertEqual(store.currentStrikes, 1)
+    }
+
+    @MainActor
+    func testRecordPitchWithVelocity() {
+        createActiveGame()
+
+        store.recordPitch(
+            type: .fastball,
+            location: 5,
+            result: .calledStrike,
+            buntContext: false,
+            velocity: 91
+        )
+
+        XCTAssertEqual(store.activePitches.first?.velocity, 91)
+    }
+
+    @MainActor
+    func testClosePlateAppearance() {
+        createActiveGame()
+
+        // Record 3 strikes to force PA closure
+        store.recordPitch(type: .fastball, location: 5, result: .calledStrike, buntContext: false)
+        store.recordPitch(type: .slider, location: 3, result: .swingingStrike, buntContext: false)
+        store.recordPitch(type: .fastball, location: 5, result: .swingingStrike, buntContext: false)
+
+        // PA should need closure now
+        XCTAssertTrue(store.liveState.needsPAClosure)
+
+        store.closePlateAppearance(result: .strikeout)
+
+        XCTAssertEqual(store.activePlateAppearances.first?.resultCode, PAResultType.strikeout.rawValue)
+        XCTAssertFalse(store.liveState.needsPAClosure)
+    }
+
+    @MainActor
+    func testClosePAAdvancesBatterSlot() {
+        createActiveGame()
+
+        let initialSlot = store.currentBatterSlot
+
+        // Record strikeout
+        store.recordPitch(type: .fastball, location: 5, result: .calledStrike, buntContext: false)
+        store.recordPitch(type: .slider, location: 3, result: .swingingStrike, buntContext: false)
+        store.recordPitch(type: .fastball, location: 5, result: .swingingStrike, buntContext: false)
+        store.closePlateAppearance(result: .strikeout)
+
+        XCTAssertEqual(store.currentBatterSlot, initialSlot + 1)
+    }
+
+    @MainActor
+    func testUndoLastPitch() {
+        createActiveGame()
+
+        store.recordPitch(type: .fastball, location: 5, result: .calledStrike, buntContext: false)
+        store.recordPitch(type: .slider, location: 3, result: .ball, buntContext: false)
+
+        XCTAssertEqual(store.activePitches.count, 2)
+        XCTAssertEqual(store.currentBalls, 1)
+
+        store.undoLastAction()
+
+        XCTAssertEqual(store.activePitches.count, 1)
+        XCTAssertEqual(store.currentBalls, 0)
+        XCTAssertEqual(store.currentStrikes, 1)
+    }
+
+    @MainActor
+    func testUndoPAClosureReOpensPA() {
+        createActiveGame()
+
+        // Record K and close
+        store.recordPitch(type: .fastball, location: 5, result: .calledStrike, buntContext: false)
+        store.recordPitch(type: .slider, location: 3, result: .swingingStrike, buntContext: false)
+        store.recordPitch(type: .fastball, location: 5, result: .swingingStrike, buntContext: false)
+        store.closePlateAppearance(result: .strikeout)
+
+        XCTAssertNotNil(store.activePlateAppearances.last?.resultCode)
+
+        store.undoLastAction()
+
+        XCTAssertNil(store.activePlateAppearances.last?.resultCode)
+        XCTAssertTrue(store.liveState.needsPAClosure)
+    }
+
+    @MainActor
+    func testRecordPitchBlockedWhenPANeedsClosure() {
+        createActiveGame()
+
+        // Force K
+        store.recordPitch(type: .fastball, location: 5, result: .calledStrike, buntContext: false)
+        store.recordPitch(type: .slider, location: 3, result: .swingingStrike, buntContext: false)
+        store.recordPitch(type: .fastball, location: 5, result: .swingingStrike, buntContext: false)
+
+        // PA needs closure — next pitch should be blocked
+        let blocked = store.recordPitch(
+            type: .fastball, location: 5, result: .ball, buntContext: false
+        )
+
+        XCTAssertFalse(blocked)
+        XCTAssertEqual(store.activePitches.count, 3)
+    }
+
+    @MainActor
+    func testTotalPitchCount() {
+        createActiveGame()
+
+        store.recordPitch(type: .fastball, location: 5, result: .ball, buntContext: false)
+        store.recordPitch(type: .slider, location: 3, result: .calledStrike, buntContext: false)
+
+        XCTAssertEqual(store.totalPitchCount, 2)
+    }
+}
