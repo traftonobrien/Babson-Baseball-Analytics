@@ -210,6 +210,7 @@ struct LiveABPitchRecord: Identifiable, Equatable {
     var ballsBefore: Int
     var strikesBefore: Int
     var buntContext: Bool
+    var velocity: Int?
 
     func toChartingPitch(paId: String) -> ChartingPitch {
         ChartingPitch(
@@ -221,7 +222,8 @@ struct LiveABPitchRecord: Identifiable, Equatable {
             locationCell: locationCell,
             pitchResult: pitchResult,
             ballsBefore: ballsBefore,
-            strikesBefore: strikesBefore
+            strikesBefore: strikesBefore,
+            velocity: velocity
         )
     }
 }
@@ -233,6 +235,7 @@ struct PitchHistoryEntry: Identifiable, Equatable {
     var resultLabel: String
     var countLabel: String
     var locationLabel: String?
+    var velocityLabel: String?
 }
 
 struct LiveABSession: Identifiable, Equatable {
@@ -273,7 +276,8 @@ struct LiveABSession: Identifiable, Equatable {
                 pitchTypeLabel: $0.pitchType.rawValue,
                 resultLabel: $0.pitchResult.displayLabel(isBuntMode: $0.buntContext),
                 countLabel: "\($0.ballsBefore)-\($0.strikesBefore)",
-                locationLabel: $0.locationCell.map { "Cell \($0)" }
+                locationLabel: $0.locationCell.map { "Cell \($0)" },
+                velocityLabel: $0.velocity.map { "\($0) mph" }
             )
         }
     }
@@ -885,6 +889,7 @@ struct ChartingPitch: Codable, Identifiable, Equatable {
     var pitchResult: PitchResultType
     var ballsBefore: Int
     var strikesBefore: Int
+    var velocity: Int?
 }
 
 /// Mirrors the server's `ChartingLineupEntry` interface.

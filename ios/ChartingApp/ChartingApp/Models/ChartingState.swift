@@ -9,6 +9,7 @@ final class ChartingState {
     var selectedPitchType: PitchType?
     var selectedLocation: Int?
     var selectedPitchResult: PitchResultType?
+    var pendingVelocity: Int?
 
     var isShowingHistory = false
     var isShowingLiveABSetup = false
@@ -37,7 +38,8 @@ final class ChartingState {
         let location = selectedLocation.map { "Cell \($0)" } ?? "Zone"
         let result = selectedPitchResult?.displayLabel(isBuntMode: isBuntModeActive) ?? "Action"
         let contextPrefix = isBuntModeActive ? "Bunt • " : ""
-        return "\(contextPrefix)\(type) • \(location) • \(result)"
+        let veloSuffix = pendingVelocity.map { " • \($0) mph" } ?? ""
+        return "\(contextPrefix)\(type) • \(location) • \(result)\(veloSuffix)"
     }
 
     var currentLiveABSession: LiveABSession? {
@@ -99,6 +101,7 @@ final class ChartingState {
         selectedPitchType = nil
         selectedLocation = nil
         selectedPitchResult = nil
+        pendingVelocity = nil
     }
 
     func resetForModeChange() {
@@ -178,7 +181,8 @@ final class ChartingState {
             pitchResult: result,
             ballsBefore: session.currentBalls,
             strikesBefore: session.currentStrikes,
-            buntContext: session.setup.isBuntMode || result == .buntFoul
+            buntContext: session.setup.isBuntMode || result == .buntFoul,
+            velocity: pendingVelocity
         )
 
         session.pitches.append(newPitch)

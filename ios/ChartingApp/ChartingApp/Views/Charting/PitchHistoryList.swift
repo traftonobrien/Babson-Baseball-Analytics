@@ -59,6 +59,11 @@ struct PitchHistoryList: View {
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
                                 }
+                                if let velocityLabel = entry.velocityLabel {
+                                    Text(velocityLabel)
+                                        .font(.caption2.monospacedDigit())
+                                        .foregroundStyle(.orange)
+                                }
                             }
                         }
                         .padding(.vertical, 4)

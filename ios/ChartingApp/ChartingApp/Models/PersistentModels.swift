@@ -266,6 +266,7 @@ final class PersistedPitch {
     var pitchResult: String
     var ballsBefore: Int
     var strikesBefore: Int
+    var velocity: Int?
 
     init(
         id: String,
@@ -276,7 +277,8 @@ final class PersistedPitch {
         locationCell: Int? = nil,
         pitchResult: String,
         ballsBefore: Int,
-        strikesBefore: Int
+        strikesBefore: Int,
+        velocity: Int? = nil
     ) {
         self.id = id
         self.gameId = gameId
@@ -287,6 +289,7 @@ final class PersistedPitch {
         self.pitchResult = pitchResult
         self.ballsBefore = ballsBefore
         self.strikesBefore = strikesBefore
+        self.velocity = velocity
     }
 
     convenience init(from api: ChartingPitch) {
@@ -299,7 +302,8 @@ final class PersistedPitch {
             locationCell: api.locationCell,
             pitchResult: api.pitchResult.rawValue,
             ballsBefore: api.ballsBefore,
-            strikesBefore: api.strikesBefore
+            strikesBefore: api.strikesBefore,
+            velocity: api.velocity
         )
     }
 
@@ -317,7 +321,8 @@ final class PersistedPitch {
             locationCell: locationCell,
             pitchResult: pr,
             ballsBefore: ballsBefore,
-            strikesBefore: strikesBefore
+            strikesBefore: strikesBefore,
+            velocity: velocity
         )
     }
 }

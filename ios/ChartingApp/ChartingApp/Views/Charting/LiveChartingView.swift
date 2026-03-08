@@ -222,7 +222,8 @@ struct LiveChartingView: View {
                 pitchTypeLabel: pitch.pitchType,
                 resultLabel: pitch.pitchResult.replacingOccurrences(of: "_", with: " ").capitalized,
                 countLabel: "\(pitch.ballsBefore)-\(pitch.strikesBefore)",
-                locationLabel: pitch.locationCell.map { "Cell \($0)" }
+                locationLabel: pitch.locationCell.map { "Cell \($0)" },
+                velocityLabel: pitch.velocity.map { "\($0) mph" }
             )
         }
     }
@@ -778,6 +779,8 @@ struct LiveChartingView: View {
 
                 Spacer(minLength: 12)
 
+                VeloInputWidget(velocity: $chartingState.pendingVelocity)
+
                 HStack(spacing: 12) {
                     Button("Clear", action: chartingState.clearPitchDraft)
                         .buttonStyle(.bordered)
@@ -826,6 +829,7 @@ struct LiveChartingView: View {
             location: chartingState.selectedLocation,
             result: result,
             buntContext: chartingState.isBuntModeActive || result == .buntFoul,
+            velocity: chartingState.pendingVelocity,
             lineupSlotOverride: chartingState.gameLineupOverrideSlot,
             hitterNameOverride: chartingState.resolvedGameHitterOverrideName
         )
@@ -1164,6 +1168,161 @@ private struct MatchupSelectorLabel: View {
         .background(Color.white.opacity(isEnabled ? 0.92 : 0.65))
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .opacity(isEnabled ? 1 : 0.72)
+    }
+}
+
+private struct VeloInputWidget: View {
+    @Binding var velocity: Int?
+    @State private var isShowingNumpad = false
+
+    var body: some View {
+        VStack(alignment: .center, spacing: 4) {
+            Text("Velo")
+                .font(.caption.bold())
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 6) {
+                Button {
+                    if let v = velocity, v > 1 {
+                        velocity = v - 1
+                    }
+                } label: {
+                    Image(systemName: "minus")
+                        .font(.caption.bold())
+                        .frame(width: 28, height: 28)
+                        .background(Color.white.opacity(0.8))
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .disabled(velocity == nil)
+
+                Button {
+                    isShowingNumpad = true
+                } label: {
+                    Text(velocity.map { "\($0)" } ?? "—")
+                        .font(.system(.title3, design: .monospaced).bold())
+                        .foregroundStyle(velocity == nil ? .secondary : .primary)
+                        .frame(minWidth: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    velocity = (velocity ?? 59) + 1
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.caption.bold())
+                        .frame(width: 28, height: 28)
+                        .background(Color.white.opacity(0.8))
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+            }
+
+            Text("mph")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(Color.white.opacity(0.72))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .popover(isPresented: $isShowingNumpad, arrowEdge: .bottom) {
+            VeloNumpadPopover(velocity: $velocity, isPresented: $isShowingNumpad)
+                .presentationCompactAdaptation(.popover)
+        }
+    }
+}
+
+private struct VeloNumpadPopover: View {
+    @Binding var velocity: Int?
+    @Binding var isPresented: Bool
+
+    @State private var inputString: String = ""
+
+    private let rows: [[String]] = [
+        ["7", "8", "9"],
+        ["4", "5", "6"],
+        ["1", "2", "3"],
+        ["C", "0", "⌫"],
+    ]
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Velocity")
+                .font(.headline)
+
+            HStack(alignment: .lastTextBaseline, spacing: 4) {
+                Text(inputString.isEmpty ? "—" : inputString)
+                    .font(.system(size: 52, weight: .bold, design: .monospaced))
+                    .frame(minWidth: 100, alignment: .trailing)
+                    .foregroundStyle(inputString.isEmpty ? .secondary : .primary)
+                Text("mph")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+            }
+
+            VStack(spacing: 10) {
+                ForEach(rows, id: \.self) { row in
+                    HStack(spacing: 10) {
+                        ForEach(row, id: \.self) { key in
+                            numpadKey(key)
+                        }
+                    }
+                }
+            }
+
+            HStack(spacing: 12) {
+                Button("Cancel") {
+                    isPresented = false
+                }
+                .buttonStyle(.bordered)
+
+                Spacer(minLength: 0)
+
+                Button("Done") {
+                    if let value = Int(inputString), value > 0 {
+                        velocity = value
+                    } else if inputString.isEmpty {
+                        velocity = nil
+                    }
+                    isPresented = false
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(24)
+        .frame(width: 290)
+        .onAppear {
+            inputString = velocity.map { "\($0)" } ?? ""
+        }
+    }
+
+    @ViewBuilder
+    private func numpadKey(_ key: String) -> some View {
+        let isClear = key == "C"
+        Button {
+            handleKey(key)
+        } label: {
+            Text(key)
+                .font(.title2.bold())
+                .frame(width: 74, height: 58)
+                .background(isClear ? Color.red.opacity(0.14) : Color(white: 0.94))
+                .foregroundStyle(isClear ? .red : .primary)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func handleKey(_ key: String) {
+        switch key {
+        case "C":
+            inputString = ""
+        case "⌫":
+            if !inputString.isEmpty { inputString.removeLast() }
+        default:
+            if inputString.count < 3 { inputString += key }
+        }
     }
 }
 

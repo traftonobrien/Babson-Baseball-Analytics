@@ -311,6 +311,7 @@ final class GameStore {
         location: Int?,
         result: PitchResultType,
         buntContext: Bool,
+        velocity: Int? = nil,
         lineupSlotOverride: Int? = nil,
         hitterNameOverride: String? = nil
     ) -> Bool {
@@ -341,7 +342,8 @@ final class GameStore {
             locationCell: location,
             pitchResult: result.rawValue,
             ballsBefore: currentBalls,
-            strikesBefore: currentStrikes
+            strikesBefore: currentStrikes,
+            velocity: velocity
         )
         
         modelContext.insert(newPitch)
