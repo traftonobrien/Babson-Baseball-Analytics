@@ -13,6 +13,9 @@ const PUBLIC_PREFIXES = [
   "/players",
   "/mechanics-login",
   "/api/mechanics-login",
+  "/charting-login",
+  "/api/charting-login",
+  "/api/charting",
 ];
 
 export function proxy(request: NextRequest) {
@@ -61,9 +64,19 @@ export function proxy(request: NextRequest) {
     }
   }
 
+  // Charting routes are open (no separate password gate)
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!_next/static|_next/image|favicon.ico).*)'
+  ],
 };

@@ -9,6 +9,7 @@ import {
   ArrowUpRight,
   BarChart3,
   BookOpen,
+  ClipboardList,
   Film,
   LayoutGrid,
   Sparkles,
@@ -369,7 +370,7 @@ export default function HomeContent() {
         transition={{ duration: 0.3, delay: 0.09 }}
       >
         <SectionMarker label="Daily Work" />
-        <div className="mt-3 grid gap-4 md:grid-cols-3">
+        <div className="mt-3 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <HomeLinkCard
             href="/trackman"
             tone="blue"
@@ -387,6 +388,15 @@ export default function HomeContent() {
             title="Command Hub"
             description="Track strike quality, miss distance, and how consistently a pitcher repeats feel."
             details={["Strikes", "Misses", "Outings"]}
+          />
+          <HomeLinkCard
+            href="/charting"
+            tone="emerald"
+            icon={ClipboardList}
+            eyebrow="Tracking"
+            title="Charting Hub"
+            description="View synced pitcher charts, play-by-play logs, and derived analytics from the iPad app."
+            details={["Logs", "Pitches", "Analytics"]}
           />
           <HomeLinkCard
             href="/pitching-plus/leaderboard"

@@ -1,0 +1,196 @@
+import type {
+  ChartingGameSnapshot,
+  ChartingGame,
+  ChartingPitcherSegment,
+  ChartingPlateAppearance,
+  ChartingPitch,
+} from "./types";
+
+const GAME_ID = "fixture-game-001";
+const SEG_A = "fixture-seg-A";
+const SEG_B = "fixture-seg-B";
+const PA_1 = "fixture-pa-1";
+const PA_2 = "fixture-pa-2";
+const PA_3 = "fixture-pa-3";
+
+const game: ChartingGame = {
+  id: GAME_ID,
+  opponent: "MIT",
+  gameDate: "2026-03-01",
+  status: "active",
+  revision: 1,
+  charter: "Coach T",
+  weather: "Clear, 48F",
+  homeCatcher: "E. Santos",
+  awayCatcher: null,
+  babsonRecord: "2-1",
+  standing: "1st NEWMAC",
+  tomorrowStarter: "CBurrows1",
+  tomorrowOpponent: "WPI",
+  notes: null,
+  createdAt: "2026-03-01T12:00:00.000Z",
+  updatedAt: "2026-03-01T14:30:00.000Z",
+};
+
+const segments: ChartingPitcherSegment[] = [
+  {
+    id: SEG_A,
+    gameId: GAME_ID,
+    playerId: "DJames1",
+    displayName: "D. James",
+    segmentOrder: 0,
+    enteredInning: 1,
+    exitedInning: 5,
+    runsOverride: null,
+    earnedRunsOverride: null,
+  },
+  {
+    id: SEG_B,
+    gameId: GAME_ID,
+    playerId: "CBurrows1",
+    displayName: "C. Burrows",
+    segmentOrder: 1,
+    enteredInning: 6,
+    exitedInning: null,
+    runsOverride: null,
+    earnedRunsOverride: null,
+  },
+];
+
+const plateAppearances: ChartingPlateAppearance[] = [
+  {
+    id: PA_1,
+    gameId: GAME_ID,
+    segmentId: SEG_A,
+    paOrder: 0,
+    inning: 1,
+    hitterName: "Smith",
+    lineupSlot: 1,
+    resultCode: "K",
+    buntContext: false,
+  },
+  {
+    id: PA_2,
+    gameId: GAME_ID,
+    segmentId: SEG_A,
+    paOrder: 1,
+    inning: 1,
+    hitterName: "Jones",
+    lineupSlot: 2,
+    resultCode: "BB",
+    buntContext: false,
+  },
+  {
+    id: PA_3,
+    gameId: GAME_ID,
+    segmentId: SEG_B,
+    paOrder: 2,
+    inning: 6,
+    hitterName: "Williams",
+    lineupSlot: 3,
+    resultCode: null,
+    buntContext: false,
+  },
+];
+
+const pitches: ChartingPitch[] = [
+  // PA 1: strikeout in 3 pitches
+  {
+    id: "fixture-pitch-1",
+    gameId: GAME_ID,
+    paId: PA_1,
+    pitchOrder: 0,
+    pitchType: "Fastball",
+    locationCell: 5,
+    pitchResult: "called_strike",
+    ballsBefore: 0,
+    strikesBefore: 0,
+  },
+  {
+    id: "fixture-pitch-2",
+    gameId: GAME_ID,
+    paId: PA_1,
+    pitchOrder: 1,
+    pitchType: "Fastball",
+    locationCell: 8,
+    pitchResult: "ball",
+    ballsBefore: 0,
+    strikesBefore: 1,
+  },
+  {
+    id: "fixture-pitch-3",
+    gameId: GAME_ID,
+    paId: PA_1,
+    pitchOrder: 2,
+    pitchType: "Slider",
+    locationCell: 14,
+    pitchResult: "swinging_strike",
+    ballsBefore: 1,
+    strikesBefore: 1,
+  },
+  // PA 2: walk in 4 pitches
+  {
+    id: "fixture-pitch-4",
+    gameId: GAME_ID,
+    paId: PA_2,
+    pitchOrder: 0,
+    pitchType: "Fastball",
+    locationCell: 11,
+    pitchResult: "ball",
+    ballsBefore: 0,
+    strikesBefore: 0,
+  },
+  {
+    id: "fixture-pitch-5",
+    gameId: GAME_ID,
+    paId: PA_2,
+    pitchOrder: 1,
+    pitchType: "Curveball",
+    locationCell: 15,
+    pitchResult: "ball",
+    ballsBefore: 1,
+    strikesBefore: 0,
+  },
+  {
+    id: "fixture-pitch-6",
+    gameId: GAME_ID,
+    paId: PA_2,
+    pitchOrder: 2,
+    pitchType: "Fastball",
+    locationCell: 16,
+    pitchResult: "ball",
+    ballsBefore: 2,
+    strikesBefore: 0,
+  },
+  {
+    id: "fixture-pitch-7",
+    gameId: GAME_ID,
+    paId: PA_2,
+    pitchOrder: 3,
+    pitchType: "Changeup",
+    locationCell: 17,
+    pitchResult: "ball",
+    ballsBefore: 3,
+    strikesBefore: 0,
+  },
+  // PA 3: in progress, no result yet
+  {
+    id: "fixture-pitch-8",
+    gameId: GAME_ID,
+    paId: PA_3,
+    pitchOrder: 0,
+    pitchType: "Split/Cut",
+    locationCell: 6,
+    pitchResult: "foul",
+    ballsBefore: 0,
+    strikesBefore: 0,
+  },
+];
+
+export const fixtureGameSnapshot: ChartingGameSnapshot = {
+  game,
+  segments,
+  lineup: [],
+  plateAppearances,
+  pitches,
+};
