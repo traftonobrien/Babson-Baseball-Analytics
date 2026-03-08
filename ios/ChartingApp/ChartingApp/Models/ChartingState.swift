@@ -9,7 +9,6 @@ final class ChartingState {
     var selectedPitchType: PitchType?
     var selectedLocation: Int?
     var selectedPitchResult: PitchResultType?
-    var selectedBuntContext: Bool = false
 
     var isShowingHistory = false
     var isShowingLiveABSetup = false
@@ -37,7 +36,8 @@ final class ChartingState {
         let type = selectedPitchType?.rawValue ?? "Pitch type"
         let location = selectedLocation.map { "Cell \($0)" } ?? "Zone"
         let result = selectedPitchResult?.displayLabel ?? "Action"
-        return "\(type) • \(location) • \(result)"
+        let contextPrefix = isBuntModeActive ? "Bunt • " : ""
+        return "\(contextPrefix)\(type) • \(location) • \(result)"
     }
 
     var currentLiveABSession: LiveABSession? {
@@ -68,6 +68,21 @@ final class ChartingState {
         liveABSetup.isReady
     }
 
+    var currentLiveABCountPreset: LiveABCountPreset {
+        activeLiveABSession?.setup.countPreset ?? liveABSetup.countPreset
+    }
+
+    var isBuntModeActive: Bool {
+        mode == .liveAB && currentLiveABCountPreset.isBuntMode
+    }
+
+    var availablePitchResults: [PitchResultType] {
+        if isBuntModeActive {
+            return [.ball, .calledStrike, .buntFoul, .inPlay, .hitByPitch]
+        }
+        return PitchResultType.allCases
+    }
+
     func liveABPitcherTotal(playerId: String) -> Int {
         allLiveABSessions
             .filter { $0.setup.pitcherPlayerId == playerId }
@@ -84,7 +99,6 @@ final class ChartingState {
         selectedPitchType = nil
         selectedLocation = nil
         selectedPitchResult = nil
-        selectedBuntContext = false
     }
 
     func resetForModeChange() {
@@ -116,6 +130,20 @@ final class ChartingState {
         activeLiveABSession = session
     }
 
+    func setLiveABCountPreset(_ preset: LiveABCountPreset) {
+        liveABSetup.countPreset = preset
+
+        if var session = activeLiveABSession {
+            session.setup.countPreset = preset
+            activeLiveABSession = session
+        }
+
+        guard let selectedPitchResult, !availablePitchResults.contains(selectedPitchResult) else {
+            return
+        }
+        self.selectedPitchResult = nil
+    }
+
     func setLiveABHitter(name: String) {
         liveABSetup.hitterName = name
 
@@ -143,7 +171,7 @@ final class ChartingState {
             pitchResult: result,
             ballsBefore: session.currentBalls,
             strikesBefore: session.currentStrikes,
-            buntContext: selectedBuntContext
+            buntContext: session.setup.isBuntMode || result == .buntFoul
         )
 
         session.pitches.append(newPitch)

@@ -102,6 +102,47 @@ enum ChartingHalfInning: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+enum LiveABCountPreset: String, Codable, CaseIterable, Identifiable {
+    case zeroZero = "0-0"
+    case twoOne = "2-1"
+    case bunt = "Bunt"
+
+    var id: String { rawValue }
+
+    var startingBalls: Int {
+        switch self {
+        case .zeroZero, .bunt:
+            return 0
+        case .twoOne:
+            return 2
+        }
+    }
+
+    var startingStrikes: Int {
+        switch self {
+        case .zeroZero, .bunt:
+            return 0
+        case .twoOne:
+            return 1
+        }
+    }
+
+    var isBuntMode: Bool {
+        self == .bunt
+    }
+
+    var detailText: String {
+        switch self {
+        case .zeroZero:
+            return "Fresh count"
+        case .twoOne:
+            return "Start ahead in the rep"
+        case .bunt:
+            return "Bunt rep with bunt-only actions"
+        }
+    }
+}
+
 struct LiveABSetup: Equatable {
     var pitcherPlayerId: String = ""
     var pitcherName: String = ""
@@ -110,8 +151,19 @@ struct LiveABSetup: Equatable {
     var inning: Int = 1
     var halfInning: ChartingHalfInning = .top
     var outs: Int = 0
-    var startingBalls: Int = 0
-    var startingStrikes: Int = 0
+    var countPreset: LiveABCountPreset = .zeroZero
+
+    var startingBalls: Int {
+        countPreset.startingBalls
+    }
+
+    var startingStrikes: Int {
+        countPreset.startingStrikes
+    }
+
+    var isBuntMode: Bool {
+        countPreset.isBuntMode
+    }
 
     var isReady: Bool {
         !pitcherPlayerId.isEmpty && !hitterName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty

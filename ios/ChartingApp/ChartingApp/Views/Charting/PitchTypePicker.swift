@@ -32,18 +32,6 @@ struct PitchTypePicker: View {
                     typeButton(type)
                 }
             }
-
-            HStack(spacing: 12) {
-                Text("Bunt Context")
-                    .font(.subheadline.bold())
-                    .foregroundStyle(.secondary)
-
-                Spacer()
-
-                Toggle("", isOn: $state.selectedBuntContext)
-                    .labelsHidden()
-            }
-            .padding(.top, 4)
         }
     }
 

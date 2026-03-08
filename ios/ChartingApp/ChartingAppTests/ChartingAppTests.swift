@@ -817,21 +817,19 @@ final class ChartingStateTests: XCTestCase {
             inning: 3,
             halfInning: .top,
             outs: 1,
-            startingBalls: 0,
-            startingStrikes: 2
+            countPreset: .twoOne
         )
 
         state.beginLiveABSession(with: setup)
         state.selectedPitchType = .fastball
         state.selectedLocation = 5
-        state.selectedPitchResult = .swingingStrike
+        state.selectedPitchResult = .hitByPitch
 
         XCTAssertTrue(state.commitLiveABPitch())
-        XCTAssertEqual(state.currentLiveABSession?.currentStrikes, 3)
-        XCTAssertEqual(state.currentLiveABSession?.availableResults, [.strikeout])
+        XCTAssertEqual(state.currentLiveABSession?.availableResults, [.hitByPitch])
         XCTAssertEqual(state.liveABPitcherTotal(playerId: "DJames1"), 1)
 
-        XCTAssertTrue(state.closeLiveAB(result: .strikeout))
+        XCTAssertTrue(state.closeLiveAB(result: .hitByPitch))
         XCTAssertNil(state.currentLiveABSession)
         XCTAssertEqual(state.completedLiveABSessions.count, 1)
 
@@ -840,5 +838,35 @@ final class ChartingStateTests: XCTestCase {
         XCTAssertNotNil(state.currentLiveABSession)
         XCTAssertNil(state.currentLiveABSession?.result)
         XCTAssertEqual(state.currentLiveABSession?.pitches.count, 1)
+    }
+
+    func testBuntPresetFiltersActionsAndMarksCommittedPitchContext() {
+        let state = ChartingState()
+        state.mode = .liveAB
+
+        let setup = LiveABSetup(
+            pitcherPlayerId: "DJames1",
+            pitcherName: "D. James",
+            pitcherThrowsHand: "R",
+            hitterName: "Practice Hitter",
+            inning: 1,
+            halfInning: .top,
+            outs: 0,
+            countPreset: .bunt
+        )
+
+        state.beginLiveABSession(with: setup)
+
+        XCTAssertEqual(
+            state.availablePitchResults,
+            [.ball, .calledStrike, .buntFoul, .inPlay, .hitByPitch]
+        )
+
+        state.selectedPitchType = .fastball
+        state.selectedLocation = 2
+        state.selectedPitchResult = .inPlay
+
+        XCTAssertTrue(state.commitLiveABPitch())
+        XCTAssertTrue(state.currentLiveABSession?.pitches.last?.buntContext == true)
     }
 }

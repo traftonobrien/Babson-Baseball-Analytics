@@ -21,13 +21,18 @@ struct PACloseoutSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 10) {
                         Text("Build the complete plate appearance result before saving it.")
                             .font(.headline)
                         Text(statusMessage)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
+                    .padding(20)
+                    .background(Color(white: 0.97))
+                    .clipShape(RoundedRectangle(cornerRadius: 22))
+
+                    progressCard
 
                     if showsPrimarySelection {
                         stepSection(title: "Outcome") {
@@ -107,26 +112,45 @@ struct PACloseoutSheet: View {
                         }
                     }
 
-                    if let selectedResult {
-                        selectedResultSummary(result: selectedResult)
-                    }
+                    selectionReviewCard
                 }
                 .padding(24)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .background(Color(.systemBackground))
             .safeAreaInset(edge: .bottom, spacing: 0) {
-                HStack(spacing: 12) {
-                    Button("Cancel") {
-                        dismiss()
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 10) {
+                        Text(selectedResult == nil ? "Closeout Progress" : "Ready To Save")
+                            .font(.caption.bold())
+                            .foregroundStyle(.secondary)
+
+                        Spacer(minLength: 0)
+
+                        if let selectedResult {
+                            Text(selectedResult.rawValue)
+                                .font(.subheadline.bold())
+                                .foregroundStyle(.primary)
+                        }
                     }
-                    .buttonStyle(.bordered)
 
-                    Spacer(minLength: 0)
+                    Text(progressPrompt)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
 
-                    Button("Save PA Result", action: submitSelection)
-                        .buttonStyle(.borderedProminent)
-                        .disabled(selectedResult == nil)
+                    HStack(spacing: 12) {
+                        Button("Cancel") {
+                            dismiss()
+                        }
+                        .buttonStyle(.bordered)
+
+                        Spacer(minLength: 0)
+
+                        Button("Save PA Result", action: submitSelection)
+                            .buttonStyle(.borderedProminent)
+                            .disabled(selectedResult == nil)
+                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 12)
@@ -142,6 +166,60 @@ struct PACloseoutSheet: View {
             }
         }
         .onAppear(perform: seedDefaults)
+    }
+
+    private var progressCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Progress")
+                .font(.headline)
+
+            HStack(spacing: 10) {
+                ForEach(progressSteps) { step in
+                    ProgressChip(step: step)
+                }
+            }
+
+            if selectionTrail.isEmpty {
+                Text(progressPrompt)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(selectionTrail, id: \.self) { item in
+                            Text(item)
+                                .font(.caption.bold())
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 7)
+                                .background(Color.white)
+                                .clipShape(Capsule())
+                        }
+                    }
+                }
+            }
+        }
+        .padding(18)
+        .background(Color(white: 0.97))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+
+    private var selectionReviewCard: some View {
+        Group {
+            if let selectedResult {
+                selectedResultSummary(result: selectedResult)
+            } else {
+                HStack(spacing: 10) {
+                    Image(systemName: "square.and.pencil")
+                        .foregroundStyle(.secondary)
+                    Text(progressPrompt)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(18)
+                .background(Color.gray.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 18))
+            }
+        }
     }
 
     private var primaryChoices: [PAOutcomePrimaryChoice] {
@@ -294,6 +372,94 @@ struct PACloseoutSheet: View {
             }
         case .none:
             return "Scoring"
+        }
+    }
+
+    private var detailStepComplete: Bool {
+        guard let primary = effectivePrimary else {
+            return false
+        }
+
+        guard primary == .ballInPlay else {
+            return true
+        }
+
+        switch selectedBranch {
+        case .hit:
+            return true
+        case .out:
+            return selectedOutPath != nil
+        case .reachedSafely:
+            return selectedSafePath != nil
+        case .none:
+            return false
+        }
+    }
+
+    private var progressSteps: [CloseoutProgressStep] {
+        [
+            CloseoutProgressStep(
+                title: "Outcome",
+                isComplete: effectivePrimary != nil,
+                isCurrent: effectivePrimary == nil
+            ),
+            CloseoutProgressStep(
+                title: "Detail",
+                isComplete: detailStepComplete,
+                isCurrent: effectivePrimary != nil && !detailStepComplete
+            ),
+            CloseoutProgressStep(
+                title: "Scoring",
+                isComplete: selectedResult != nil,
+                isCurrent: resultChoices.count > 0 && selectedResult == nil
+            ),
+        ]
+    }
+
+    private var selectionTrail: [String] {
+        var trail: [String] = []
+
+        if let primary = effectivePrimary {
+            trail.append(primary.title)
+        }
+        if let branch = selectedBranch {
+            trail.append(branch.title)
+        }
+        if let safePath = selectedSafePath {
+            trail.append(safePath.title)
+        }
+        if let outPath = selectedOutPath {
+            trail.append(outPath.title)
+        }
+        if let selectedResult {
+            trail.append(selectedResult.rawValue)
+        }
+
+        return trail
+    }
+
+    private var progressPrompt: String {
+        if let selectedResult {
+            return "Save \(selectedResult.rawValue) to close the plate appearance."
+        }
+
+        guard let primary = effectivePrimary else {
+            return "Choose the plate appearance outcome first."
+        }
+
+        guard primary == .ballInPlay else {
+            return "Confirm the result, then save the plate appearance."
+        }
+
+        switch selectedBranch {
+        case .none:
+            return "Choose how the ball in play ended."
+        case .hit:
+            return "Choose the hit type to finish the play."
+        case .out:
+            return selectedOutPath == nil ? "Choose the out type before scoring it." : "Choose the scored out result."
+        case .reachedSafely:
+            return selectedSafePath == nil ? "Choose how the batter reached safely." : "Choose the scored safe result."
         }
     }
 
@@ -624,5 +790,62 @@ private enum PAOutPath: String, CaseIterable, Identifiable {
 
     var tint: Color {
         .orange
+    }
+}
+
+private struct CloseoutProgressStep: Identifiable {
+    let title: String
+    let isComplete: Bool
+    let isCurrent: Bool
+
+    var id: String { title }
+}
+
+private struct ProgressChip: View {
+    let step: CloseoutProgressStep
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: iconName)
+                .font(.caption.bold())
+            Text(step.title)
+                .font(.caption.bold())
+                .lineLimit(1)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .foregroundStyle(foregroundColor)
+        .background(backgroundColor)
+        .clipShape(Capsule())
+    }
+
+    private var iconName: String {
+        if step.isComplete {
+            return "checkmark.circle.fill"
+        }
+        if step.isCurrent {
+            return "circle.fill"
+        }
+        return "circle"
+    }
+
+    private var foregroundColor: Color {
+        if step.isComplete {
+            return .green
+        }
+        if step.isCurrent {
+            return .blue
+        }
+        return .secondary
+    }
+
+    private var backgroundColor: Color {
+        if step.isComplete {
+            return Color.green.opacity(0.12)
+        }
+        if step.isCurrent {
+            return Color.blue.opacity(0.12)
+        }
+        return Color.white
     }
 }

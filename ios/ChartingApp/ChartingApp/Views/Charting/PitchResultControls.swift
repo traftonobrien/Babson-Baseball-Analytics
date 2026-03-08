@@ -3,6 +3,8 @@ import SwiftUI
 /// Buttons to select the pending pitch action without committing the pitch.
 struct PitchResultControls: View {
     @Bindable var state: ChartingState
+    let availableResults: [PitchResultType]
+    let isBuntMode: Bool
     let isInteractive: Bool
     let blockedReason: String?
 
@@ -20,6 +22,16 @@ struct PitchResultControls: View {
 
                 Spacer()
 
+                if isBuntMode {
+                    Text("Bunt Rep")
+                        .font(.caption.bold())
+                        .foregroundStyle(.brown)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.brown.opacity(0.14))
+                        .clipShape(Capsule())
+                }
+
                 Text(state.selectedPitchResult?.displayLabel ?? "Select action")
                     .font(.caption.bold())
                     .foregroundStyle(state.selectedPitchResult == nil ? Color.secondary : .blue)
@@ -30,7 +42,7 @@ struct PitchResultControls: View {
             }
 
             LazyVGrid(columns: columns, spacing: 10) {
-                ForEach(PitchResultType.allCases) { result in
+                ForEach(availableResults) { result in
                     resultButton(result)
                 }
             }

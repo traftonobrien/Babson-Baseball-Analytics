@@ -281,6 +281,13 @@ struct LiveChartingView: View {
         canUsePitchControls && !needsPAClosure
     }
 
+    private var canEditLiveABCountPreset: Bool {
+        guard isLiveABMode else {
+            return false
+        }
+        return chartingState.currentLiveABSession?.pitches.isEmpty ?? true
+    }
+
     private var pitchControlBlockedReason: String? {
         if isLiveABMode && chartingState.currentLiveABSession == nil {
             return "Start an at-bat to unlock pitch controls."
@@ -336,10 +343,10 @@ struct LiveChartingView: View {
     }
 
     private var topUtilityBar: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top, spacing: 14) {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
                 modeCluster
-                    .frame(width: 210, alignment: .leading)
+                    .frame(width: 220, alignment: .leading)
 
                 topBarWorkspace
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -354,6 +361,10 @@ struct LiveChartingView: View {
 
     private var modeCluster: some View {
         VStack(alignment: .leading, spacing: 12) {
+            Text("Mode")
+                .font(.caption.bold())
+                .foregroundStyle(.secondary)
+
             Picker("Charting Mode", selection: $chartingState.mode) {
                 ForEach(ChartingMode.allCases) { mode in
                     Text(mode.rawValue).tag(mode)
@@ -379,35 +390,62 @@ struct LiveChartingView: View {
 
     private var topBarWorkspace: some View {
         VStack(alignment: .leading, spacing: 12) {
-            topBarMetricsStrip
+            HStack(alignment: .center, spacing: 10) {
+                topBarMetricsStrip
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-            HStack(alignment: .top, spacing: 12) {
+                topBarActions
+            }
+
+            HStack(alignment: .center, spacing: 12) {
                 pitcherSelector
                     .frame(minWidth: 0, maxWidth: .infinity)
 
                 hitterSelector
                     .frame(minWidth: 0, maxWidth: .infinity)
 
-                CountBadge(balls: currentBalls, strikes: currentStrikes)
-                    .frame(width: 182, alignment: .leading)
+                CountBadge(
+                    balls: currentBalls,
+                    strikes: currentStrikes,
+                    preset: isLiveABMode ? chartingState.currentLiveABCountPreset : nil,
+                    canEditPreset: canEditLiveABCountPreset,
+                    onSelectPreset: isLiveABMode ? { chartingState.setLiveABCountPreset($0) } : nil
+                )
+                .frame(width: 280, alignment: .leading)
             }
         }
     }
 
     private var topBarMetricsStrip: some View {
         HStack(spacing: 10) {
-            MetricPill(title: "Inning", value: "\(currentHalfInning.shortLabel) \(currentInning)")
-            MetricPill(title: "Outs", value: "\(currentOuts)")
-            MetricPill(title: "Pitcher", value: "\(pitcherPitchTotal)")
-            MetricPill(title: "Inning", value: "\(inningPitchTotal)")
-            MetricPill(title: "Game", value: "\(gamePitchTotal)")
-
-            Spacer(minLength: 0)
-
-            Button("History", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90", action: presentHistory)
-                .buttonStyle(.bordered)
+            MetricPill(title: "Inning", value: "\(currentHalfInning.shortLabel) \(currentInning)", accent: .blue)
+            MetricPill(title: "Outs", value: "\(currentOuts)", accent: .orange)
+            MetricPill(title: "Pitcher Pitches", value: "\(pitcherPitchTotal)", accent: .purple)
+            MetricPill(title: "This Inning", value: "\(inningPitchTotal)", accent: .green)
+            MetricPill(title: "Game Total", value: "\(gamePitchTotal)", accent: .primary)
         }
         .modifier(CompactDeck())
+    }
+
+    @ViewBuilder
+    private var topBarActions: some View {
+        HStack(spacing: 8) {
+            if !isLiveABMode {
+                TopBarActionButton(
+                    title: chartingState.hasGameCorrection ? "Queued AB" : "Next AB",
+                    systemImage: "arrow.triangle.branch",
+                    accent: .blue,
+                    action: presentGameCorrection
+                )
+            }
+
+            TopBarActionButton(
+                title: "History",
+                systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90",
+                accent: .secondary,
+                action: presentHistory
+            )
+        }
     }
 
     @ViewBuilder
@@ -426,12 +464,11 @@ struct LiveChartingView: View {
     }
 
     private var topBarMessageBanner: some View {
-        HStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: 8) {
             if let correctionLabel, !isLiveABMode {
                 Label(correctionLabel, systemImage: "arrow.triangle.branch")
                     .font(.caption)
                     .foregroundStyle(.blue)
-                    .lineLimit(1)
             }
 
             if let pitchControlBlockedReason, gameStore.errorMessage == nil {
@@ -558,7 +595,7 @@ struct LiveChartingView: View {
 
     private var controlStack: some View {
         GeometryReader { proxy in
-            let pitchHeight = min(max(proxy.size.height * 0.28, 180), 240)
+            let pitchHeight = min(max(proxy.size.height * 0.24, 156), 210)
 
             VStack(spacing: layoutSpacing) {
                 pitchTypeCard
@@ -579,6 +616,8 @@ struct LiveChartingView: View {
     private var actionCard: some View {
         PitchResultControls(
             state: chartingState,
+            availableResults: chartingState.availablePitchResults,
+            isBuntMode: chartingState.isBuntModeActive,
             isInteractive: canSelectActionControls,
             blockedReason: pitchControlBlockedReason
         )
@@ -637,7 +676,6 @@ struct LiveChartingView: View {
                             chartingState.selectedPitchType == nil
                                 && chartingState.selectedLocation == nil
                                 && chartingState.selectedPitchResult == nil
-                                && !chartingState.selectedBuntContext
                         )
 
                     Button("Undo", systemImage: "arrow.uturn.backward", action: handleUndo)
@@ -678,7 +716,7 @@ struct LiveChartingView: View {
             type: type,
             location: chartingState.selectedLocation,
             result: result,
-            buntContext: chartingState.selectedBuntContext,
+            buntContext: chartingState.isBuntModeActive || result == .buntFoul,
             lineupSlotOverride: chartingState.gameLineupOverrideSlot,
             hitterNameOverride: chartingState.resolvedGameHitterOverrideName
         )
@@ -819,6 +857,13 @@ private struct CompactDeck: ViewModifier {
 private struct MetricPill: View {
     let title: String
     let value: String
+    let accent: Color
+
+    init(title: String, value: String, accent: Color = .primary) {
+        self.title = title
+        self.value = value
+        self.accent = accent
+    }
 
     var body: some View {
         HStack(spacing: 8) {
@@ -828,12 +873,13 @@ private struct MetricPill: View {
 
             Text(value)
                 .font(.subheadline.bold())
+                .foregroundStyle(accent)
                 .lineLimit(1)
                 .minimumScaleFactor(0.9)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .background(Color.white.opacity(0.85))
+        .background(accent.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
@@ -841,23 +887,69 @@ private struct MetricPill: View {
 private struct CountBadge: View {
     let balls: Int
     let strikes: Int
+    let preset: LiveABCountPreset?
+    let canEditPreset: Bool
+    let onSelectPreset: ((LiveABCountPreset) -> Void)?
 
     var body: some View {
-        HStack(spacing: 10) {
-            Text("Count")
-                .font(.caption.bold())
-                .foregroundStyle(.secondary)
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Live Count")
+                    .font(.caption.bold())
+                    .foregroundStyle(.secondary)
+
+                if let preset {
+                    if let onSelectPreset {
+                        Menu {
+                            ForEach(LiveABCountPreset.allCases) { option in
+                                Button {
+                                    onSelectPreset(option)
+                                } label: {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(option.rawValue)
+                                            Text(option.detailText)
+                                                .font(.caption)
+                                        }
+                                        if option == preset {
+                                            Spacer()
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Text("Preset \(preset.rawValue)")
+                                Image(systemName: "chevron.down")
+                                    .font(.caption2.bold())
+                            }
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(canEditPreset ? .blue : .secondary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color.blue.opacity(canEditPreset ? 0.12 : 0.07))
+                            .clipShape(Capsule())
+                        }
+                        .disabled(!canEditPreset)
+                    }
+                } else {
+                    Text("Balls-Strikes")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
 
             Spacer(minLength: 0)
 
             Text("\(balls)-\(strikes)")
-                .font(.system(size: 28, weight: .bold, design: .monospaced))
+                .font(.system(size: 36, weight: .bold, design: .monospaced))
                 .foregroundStyle(.blue)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
         .background(Color.white.opacity(0.85))
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
@@ -901,6 +993,26 @@ private struct MatchupSelectorLabel: View {
         .background(Color.white.opacity(isEnabled ? 0.92 : 0.65))
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .opacity(isEnabled ? 1 : 0.72)
+    }
+}
+
+private struct TopBarActionButton: View {
+    let title: String
+    let systemImage: String
+    let accent: Color
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .font(.subheadline.weight(.semibold))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .foregroundStyle(accent == .secondary ? .primary : accent)
+                .background((accent == .secondary ? Color.white : accent.opacity(0.1)))
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -991,17 +1103,17 @@ private struct LiveABSetupSheet: View {
                     }
                 }
 
-                Section("Starting Count") {
-                    Picker("Balls", selection: $setup.startingBalls) {
-                        ForEach(0...3, id: \.self) { balls in
-                            Text("\(balls)").tag(balls)
+                Section("Count Preset") {
+                    Picker("Default Count", selection: $setup.countPreset) {
+                        ForEach(LiveABCountPreset.allCases) { preset in
+                            Text(preset.rawValue).tag(preset)
                         }
                     }
-                    Picker("Strikes", selection: $setup.startingStrikes) {
-                        ForEach(0...2, id: \.self) { strikes in
-                            Text("\(strikes)").tag(strikes)
-                        }
-                    }
+                    .pickerStyle(.segmented)
+
+                    Text(setup.countPreset.detailText)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
             .navigationTitle("Start Live AB")
