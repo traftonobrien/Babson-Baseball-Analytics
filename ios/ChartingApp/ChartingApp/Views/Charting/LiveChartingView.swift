@@ -6,7 +6,6 @@ struct LiveChartingView: View {
     @Bindable var gameStore: GameStore
     @State private var chartingState = ChartingState()
     @State private var isShowingPACloseoutSheet = false
-    @State private var isShowingGameStateSheet = false
     @State private var requiresLandscapeOrientation = false
     @Environment(\.dismiss) private var dismiss
 
@@ -98,20 +97,6 @@ struct LiveChartingView: View {
                 chartingState.applyGameCorrection(slot: slot, hitterName: hitterName)
             }
             .presentationDetents([.fraction(0.45), .medium])
-        }
-        .sheet(isPresented: $isShowingGameStateSheet) {
-            GameStateSheet(
-                initialInning: currentInning,
-                initialHalfInning: currentHalfInning,
-                initialOuts: currentOuts
-            ) { inning, halfInning, outs in
-                gameStore.applyGameStateOverride(
-                    inning: inning,
-                    halfInning: halfInning,
-                    outs: outs
-                )
-            }
-            .presentationDetents([.fraction(0.4), .medium])
         }
         .fullScreenCover(isPresented: $isShowingPACloseoutSheet) {
             PACloseoutSheet(
@@ -448,8 +433,8 @@ struct LiveChartingView: View {
 
     private var topBarMetricsStrip: some View {
         HStack(spacing: 10) {
-            MetricPill(title: "Inning", value: "\(currentHalfInning.shortLabel) \(currentInning)", accent: .blue)
-            MetricPill(title: "Outs", value: "\(currentOuts)", accent: .orange)
+            inningMetricPill
+            outsMetricPill
             MetricPill(title: "Pitcher Pitches", value: "\(pitcherPitchTotal)", accent: .purple)
             MetricPill(title: "This Inning", value: "\(inningPitchTotal)", accent: .green)
             MetricPill(title: "Game Total", value: "\(gamePitchTotal)", accent: .primary)
@@ -458,17 +443,103 @@ struct LiveChartingView: View {
     }
 
     @ViewBuilder
+    private var inningMetricPill: some View {
+        if isLiveABMode {
+            MetricPill(title: "Inning", value: "\(currentHalfInning.shortLabel) \(currentInning)", accent: .blue)
+        } else {
+            Menu {
+                Section("Top") {
+                    ForEach(1...12, id: \.self) { inning in
+                        Button {
+                            gameStore.applyGameStateOverride(
+                                inning: inning,
+                                halfInning: .top,
+                                outs: currentOuts
+                            )
+                        } label: {
+                            HStack {
+                                Text("Top \(inning)")
+                                if currentHalfInning == .top && currentInning == inning {
+                                    Spacer()
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Section("Bottom") {
+                    ForEach(1...12, id: \.self) { inning in
+                        Button {
+                            gameStore.applyGameStateOverride(
+                                inning: inning,
+                                halfInning: .bottom,
+                                outs: currentOuts
+                            )
+                        } label: {
+                            HStack {
+                                Text("Bot \(inning)")
+                                if currentHalfInning == .bottom && currentInning == inning {
+                                    Spacer()
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                }
+            } label: {
+                MetricPill(
+                    title: "Inning",
+                    value: "\(currentHalfInning.shortLabel) \(currentInning)",
+                    accent: .blue,
+                    showsDisclosure: true
+                )
+            }
+            .buttonStyle(.plain)
+            .disabled(!gameStore.canEditGameState)
+        }
+    }
+
+    @ViewBuilder
+    private var outsMetricPill: some View {
+        if isLiveABMode {
+            MetricPill(title: "Outs", value: "\(currentOuts)", accent: .orange)
+        } else {
+            Menu {
+                ForEach(0...2, id: \.self) { outs in
+                    Button {
+                        gameStore.applyGameStateOverride(
+                            inning: currentInning,
+                            halfInning: currentHalfInning,
+                            outs: outs
+                        )
+                    } label: {
+                        HStack {
+                            Text("\(outs) Outs")
+                            if currentOuts == outs {
+                                Spacer()
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
+            } label: {
+                MetricPill(
+                    title: "Outs",
+                    value: "\(currentOuts)",
+                    accent: .orange,
+                    showsDisclosure: true
+                )
+            }
+            .buttonStyle(.plain)
+            .disabled(!gameStore.canEditGameState)
+        }
+    }
+
+    @ViewBuilder
     private var topBarActions: some View {
         HStack(spacing: 8) {
             if !isLiveABMode {
-                TopBarActionButton(
-                    title: "Game State",
-                    systemImage: "square.stack.3d.up",
-                    accent: .orange,
-                    action: presentGameStateEditor
-                )
-                .disabled(!gameStore.canEditGameState)
-
                 TopBarActionButton(
                     title: chartingState.hasGameCorrection ? "Queued AB" : "Next AB",
                     systemImage: "arrow.triangle.branch",
@@ -801,10 +872,6 @@ struct LiveChartingView: View {
         chartingState.isShowingGameCorrection = true
     }
 
-    private func presentGameStateEditor() {
-        isShowingGameStateSheet = true
-    }
-
     private func updateOrientationRequirement(for size: CGSize) {
         let shouldRequireLandscape = size.height > size.width
         guard shouldRequireLandscape != requiresLandscapeOrientation else {
@@ -953,11 +1020,13 @@ private struct MetricPill: View {
     let title: String
     let value: String
     let accent: Color
+    let showsDisclosure: Bool
 
-    init(title: String, value: String, accent: Color = .primary) {
+    init(title: String, value: String, accent: Color = .primary, showsDisclosure: Bool = false) {
         self.title = title
         self.value = value
         self.accent = accent
+        self.showsDisclosure = showsDisclosure
     }
 
     var body: some View {
@@ -971,6 +1040,12 @@ private struct MetricPill: View {
                 .foregroundStyle(accent)
                 .lineLimit(1)
                 .minimumScaleFactor(0.9)
+
+            if showsDisclosure {
+                Image(systemName: "chevron.down")
+                    .font(.caption2.bold())
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
@@ -1316,79 +1391,6 @@ private struct GameCorrectionSheet: View {
                     Button("Save") {
                         let trimmed = hitterName.trimmingCharacters(in: .whitespacesAndNewlines)
                         onSave(selectedSlot, trimmed.isEmpty ? nil : trimmed)
-                        dismiss()
-                    }
-                }
-            }
-        }
-    }
-}
-
-private struct GameStateSheet: View {
-    let initialInning: Int
-    let initialHalfInning: ChartingHalfInning
-    let initialOuts: Int
-    let onSave: (Int, ChartingHalfInning, Int) -> Void
-
-    @Environment(\.dismiss) private var dismiss
-    @State private var inning: Int
-    @State private var halfInning: ChartingHalfInning
-    @State private var outs: Int
-
-    init(
-        initialInning: Int,
-        initialHalfInning: ChartingHalfInning,
-        initialOuts: Int,
-        onSave: @escaping (Int, ChartingHalfInning, Int) -> Void
-    ) {
-        self.initialInning = initialInning
-        self.initialHalfInning = initialHalfInning
-        self.initialOuts = initialOuts
-        self.onSave = onSave
-        _inning = State(initialValue: initialInning)
-        _halfInning = State(initialValue: initialHalfInning)
-        _outs = State(initialValue: initialOuts)
-    }
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section("Frame State") {
-                    Picker("Half", selection: $halfInning) {
-                        ForEach(ChartingHalfInning.allCases) { half in
-                            Text(half.rawValue).tag(half)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-
-                    Picker("Inning", selection: $inning) {
-                        ForEach(1...12, id: \.self) { inning in
-                            Text("\(inning)").tag(inning)
-                        }
-                    }
-
-                    Picker("Outs", selection: $outs) {
-                        ForEach(0...2, id: \.self) { outs in
-                            Text("\(outs)").tag(outs)
-                        }
-                    }
-                }
-
-                Section {
-                    Text("Use this between plate appearances to advance innings or correct the live game state.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .navigationTitle("Game State")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        onSave(inning, halfInning, outs)
                         dismiss()
                     }
                 }
