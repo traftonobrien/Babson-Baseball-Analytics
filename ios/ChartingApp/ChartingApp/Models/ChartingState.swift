@@ -35,7 +35,7 @@ final class ChartingState {
     var pendingPitchSummary: String {
         let type = selectedPitchType?.rawValue ?? "Pitch type"
         let location = selectedLocation.map { "Cell \($0)" } ?? "Zone"
-        let result = selectedPitchResult?.displayLabel ?? "Action"
+        let result = selectedPitchResult?.displayLabel(isBuntMode: isBuntModeActive) ?? "Action"
         let contextPrefix = isBuntModeActive ? "Bunt • " : ""
         return "\(contextPrefix)\(type) • \(location) • \(result)"
     }
@@ -78,7 +78,7 @@ final class ChartingState {
 
     var availablePitchResults: [PitchResultType] {
         if isBuntModeActive {
-            return [.ball, .calledStrike, .foul, .inPlay, .hitByPitch]
+            return [.ball, .foul, .inPlay]
         }
         return [.ball, .calledStrike, .swingingStrike, .foul, .inPlay, .hitByPitch]
     }

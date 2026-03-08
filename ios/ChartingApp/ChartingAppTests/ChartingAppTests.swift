@@ -909,7 +909,7 @@ final class ChartingStateTests: XCTestCase {
 
         XCTAssertEqual(
             state.availablePitchResults,
-            [.ball, .calledStrike, .foul, .inPlay, .hitByPitch]
+            [.ball, .foul, .inPlay]
         )
 
         state.selectedPitchType = .fastball
@@ -919,6 +919,7 @@ final class ChartingStateTests: XCTestCase {
         XCTAssertTrue(state.commitLiveABPitch())
         XCTAssertEqual(state.currentLiveABSession?.pitches.last?.pitchResult, .buntFoul)
         XCTAssertTrue(state.currentLiveABSession?.pitches.last?.buntContext == true)
+        XCTAssertEqual(state.currentLiveABSession?.historyEntries.last?.resultLabel, "Foul Bunt")
     }
 
     func testNewLiveABReturnsDefaultCountPresetToZeroZeroAfterStartAndClose() {

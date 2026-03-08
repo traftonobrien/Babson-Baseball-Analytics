@@ -27,8 +27,18 @@ enum PitchResultType: String, Codable, CaseIterable, Identifiable {
     var id: String { rawValue }
 
     var displayLabel: String {
+        displayLabel(isBuntMode: false)
+    }
+
+    func displayLabel(isBuntMode: Bool) -> String {
         switch self {
         case .ball:           return "Ball"
+        case .foul where isBuntMode:
+            return "Foul Bunt"
+        case .buntFoul where isBuntMode:
+            return "Foul Bunt"
+        case .inPlay where isBuntMode:
+            return "Fair Bunt"
         case .calledStrike:   return "Called Strike"
         case .swingingStrike: return "Swinging Strike"
         case .foul:           return "Foul"
@@ -250,7 +260,7 @@ struct LiveABSession: Identifiable, Equatable {
                 id: $0.id,
                 pitchNumber: $0.pitchOrder + 1,
                 pitchTypeLabel: $0.pitchType.rawValue,
-                resultLabel: $0.pitchResult.displayLabel,
+                resultLabel: $0.pitchResult.displayLabel(isBuntMode: $0.buntContext),
                 countLabel: "\($0.ballsBefore)-\($0.strikesBefore)",
                 locationLabel: $0.locationCell.map { "Cell \($0)" }
             )

@@ -32,7 +32,7 @@ struct PitchResultControls: View {
                         .clipShape(Capsule())
                 }
 
-                Text(state.selectedPitchResult?.displayLabel ?? "Select action")
+                Text(state.selectedPitchResult?.displayLabel(isBuntMode: isBuntMode) ?? "Select action")
                     .font(.caption.bold())
                     .foregroundStyle(state.selectedPitchResult == nil ? Color.secondary : .blue)
                     .padding(.horizontal, 10)
@@ -66,7 +66,7 @@ struct PitchResultControls: View {
             state.selectedPitchResult = result
         } label: {
             HStack(alignment: .top, spacing: 8) {
-                Text(result.displayLabel)
+                Text(result.displayLabel(isBuntMode: isBuntMode))
                     .font(.subheadline.bold())
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)
