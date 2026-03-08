@@ -51,6 +51,14 @@ Use this skill to update `codex/charting-app` from `origin/main` without changin
 - Stop on rebase or merge conflicts and report the conflicting files instead of improvising.
 - Prefer the script over manually rewriting the same Git sequence.
 
+## Deployment Topology
+When working on both the Next.js backend and the iOS App:
+
+- **Web Changes** (`web/` directory): API routes, schema changes, and logic need to be accessible by the iPad in production. **These must be merged into `main`** so Vercel can deploy them.
+- **iOS Changes** (`ios/` directory): Features and native app code live only on the `codex/charting-app` branch. Vercel doesn't build these, so compiling/deploying happens through Xcode natively.
+
+If you make web API changes on the charting branch, you should check out `main` and manually merge `codex/charting-app` (resolving conflicts by taking the charting version for tracking-related files) and push to `origin/main` to trigger a Vercel deploy.
+
 ## Resource
 
 Use [sync_charting_branch.sh](scripts/sync_charting_branch.sh) for the actual branch sync.
