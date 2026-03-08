@@ -370,6 +370,49 @@ final class DomainValidationTests: XCTestCase {
         XCTAssertEqual(ChartingConstants.chartingCookie, "pt_charting")
     }
 
+    func testRosterRoleHelpersKeepTwoWayPlayersInBothPools() {
+        let pitcherOnly = BootstrapRosterPlayer(
+            slug: "pitcher-only",
+            playerId: "PitcherOnly1",
+            name: "Pitcher Only",
+            positions: ["P"],
+            batsHand: "R",
+            throwsHand: "R",
+            academicYear: "Sr.",
+            isPitcher: true
+        )
+        let hitterOnly = BootstrapRosterPlayer(
+            slug: "hitter-only",
+            playerId: "HitterOnly1",
+            name: "Hitter Only",
+            positions: ["OF"],
+            batsHand: "L",
+            throwsHand: "L",
+            academicYear: "Jr.",
+            isPitcher: false
+        )
+        let twoWay = BootstrapRosterPlayer(
+            slug: "two-way",
+            playerId: "TwoWay1",
+            name: "Two Way",
+            positions: ["P", "OF"],
+            batsHand: "R",
+            throwsHand: "R",
+            academicYear: "So.",
+            isPitcher: true
+        )
+
+        XCTAssertTrue(pitcherOnly.canAppearInPitcherPicker)
+        XCTAssertFalse(pitcherOnly.canAppearInHitterPicker)
+
+        XCTAssertFalse(hitterOnly.canAppearInPitcherPicker)
+        XCTAssertTrue(hitterOnly.canAppearInHitterPicker)
+
+        XCTAssertTrue(twoWay.canAppearInPitcherPicker)
+        XCTAssertTrue(twoWay.canAppearInHitterPicker)
+        XCTAssertTrue(twoWay.isTwoWayPlayer)
+    }
+
     func testGameStatusFinalEncoding() throws {
         let game = ChartingGame(
             id: "enc-test",

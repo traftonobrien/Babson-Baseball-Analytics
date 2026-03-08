@@ -232,13 +232,13 @@ struct LineupEditorView: View {
                             .font(.caption)
                         }
                         .buttonStyle(.bordered)
-                        .disabled(gameStore.rosterPlayers.isEmpty)
+                        .disabled(!gameStore.rosterPlayers.contains(where: \.canAppearInHitterPicker))
                     }
                 }
                 if let error = errorMessage {
                     Text(error).foregroundStyle(.red)
                 }
-                if gameStore.rosterPlayers.isEmpty {
+                if !gameStore.rosterPlayers.contains(where: \.canAppearInHitterPicker) {
                     Text("No Babson roster loaded yet. Refresh bootstrap from Settings to import hitters.")
                         .font(.caption)
                         .foregroundStyle(.orange)
@@ -249,7 +249,7 @@ struct LineupEditorView: View {
             .sheet(item: $selectedRosterSlot) { selection in
                 LineupRosterPickerSheet(
                     title: "Slot #\(selection.slot)",
-                    players: gameStore.rosterPlayers
+                    players: gameStore.rosterPlayers.filter(\.canAppearInHitterPicker)
                 ) { player in
                     hitters[selection.slot - 1] = player.name
                 }

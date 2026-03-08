@@ -64,7 +64,7 @@ struct LiveChartingView: View {
         .sheet(isPresented: $chartingState.isShowingLiveABSetup) {
             LiveABSetupSheet(
                 pitchers: gameStore.pitchers,
-                rosterPlayers: gameStore.rosterPlayers,
+                rosterPlayers: hitterRosterPlayers,
                 initialSetup: chartingState.currentLiveABSession?.setup ?? chartingState.liveABSetup
             ) { setup in
                 chartingState.beginLiveABSession(with: setup)
@@ -74,7 +74,7 @@ struct LiveChartingView: View {
         .sheet(isPresented: $chartingState.isShowingGameCorrection) {
             GameCorrectionSheet(
                 lineup: gameStore.activeLineup,
-                rosterPlayers: gameStore.rosterPlayers,
+                rosterPlayers: hitterRosterPlayers,
                 initialSlot: chartingState.gameLineupOverrideSlot ?? gameStore.currentBatterSlot,
                 initialHitterName: chartingState.resolvedGameHitterOverrideName
                     ?? gameStore.activeLineup.first(where: { $0.lineupSlot == gameStore.currentBatterSlot })?.hitterName
@@ -252,8 +252,12 @@ struct LiveChartingView: View {
         !gameStore.pitchers.isEmpty && (isLiveABMode || canEditGameMatchup)
     }
 
+    private var hitterRosterPlayers: [BootstrapRosterPlayer] {
+        gameStore.rosterPlayers.filter(\.canAppearInHitterPicker)
+    }
+
     private var canSelectHitterFromBar: Bool {
-        (!gameStore.activeLineup.isEmpty || !gameStore.rosterPlayers.isEmpty) && (isLiveABMode || canEditGameMatchup)
+        (!gameStore.activeLineup.isEmpty || !hitterRosterPlayers.isEmpty) && (isLiveABMode || canEditGameMatchup)
     }
 
     private var pitcherSelectorSubtitle: String? {
@@ -537,9 +541,9 @@ struct LiveChartingView: View {
                 }
             }
 
-            if !gameStore.rosterPlayers.isEmpty {
+            if !hitterRosterPlayers.isEmpty {
                 Section("Roster") {
-                    ForEach(gameStore.rosterPlayers, id: \.id) { player in
+                    ForEach(hitterRosterPlayers, id: \.id) { player in
                         Button {
                             selectRosterHitter(player)
                         } label: {

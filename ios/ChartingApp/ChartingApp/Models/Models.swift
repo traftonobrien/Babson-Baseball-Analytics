@@ -924,6 +924,28 @@ struct BootstrapRosterPlayer: Codable, Identifiable, Equatable {
 
     var id: String { playerId ?? slug }
 
+    var normalizedPositions: [String] {
+        positions.map { $0.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() }
+    }
+
+    var hasNonPitchingPosition: Bool {
+        normalizedPositions.contains { position in
+            position != "P" && position != "RHP" && position != "LHP"
+        }
+    }
+
+    var canAppearInPitcherPicker: Bool {
+        isPitcher
+    }
+
+    var canAppearInHitterPicker: Bool {
+        !isPitcher || hasNonPitchingPosition
+    }
+
+    var isTwoWayPlayer: Bool {
+        isPitcher && hasNonPitchingPosition
+    }
+
     enum CodingKeys: String, CodingKey {
         case slug
         case playerId
