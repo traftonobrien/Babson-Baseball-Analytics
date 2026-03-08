@@ -136,12 +136,22 @@ struct GameDetailView: View {
                     // Live Charting Link or Finalize status
                     Section {
                         if game.status != "final" {
-                            NavigationLink {
-                                LiveChartingView(gameStore: gameStore)
-                            } label: {
-                                Text("Open Live Charting")
-                                    .font(.headline)
-                                    .foregroundStyle(.blue)
+                            if gameStore.activeSegments.isEmpty {
+                                Label("Add a starting pitcher above before charting.", systemImage: "exclamationmark.triangle")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.orange)
+                            } else if gameStore.activeLineup.isEmpty {
+                                Label("Add the opponent lineup above before charting.", systemImage: "exclamationmark.triangle")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.orange)
+                            } else {
+                                NavigationLink {
+                                    LiveChartingView(gameStore: gameStore, initialMode: .game)
+                                } label: {
+                                    Label("Start Charting", systemImage: "play.circle.fill")
+                                        .font(.headline)
+                                        .foregroundStyle(.blue)
+                                }
                             }
 
                             if let errorMessage = gameStore.errorMessage {
@@ -149,7 +159,7 @@ struct GameDetailView: View {
                                     .font(.caption)
                                     .foregroundStyle(.red)
                             }
-                            
+
                             Button(role: .destructive) {
                                 showFinalizeModal = true
                             } label: {

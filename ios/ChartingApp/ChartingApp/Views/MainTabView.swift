@@ -12,6 +12,10 @@ struct MainTabView: View {
         Group {
             if let store = gameStore {
                 TabView {
+                    LiveABHomeView(gameStore: store)
+                        .tabItem {
+                            Label("Live AB", systemImage: "figure.baseball")
+                        }
                     GamesListView(gameStore: store)
                         .tabItem {
                             Label("Games", systemImage: "list.bullet.clipboard")

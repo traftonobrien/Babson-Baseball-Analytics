@@ -4,6 +4,11 @@ import SwiftData
 /// The main touch interface for logging pitches.
 struct LiveChartingView: View {
     @Bindable var gameStore: GameStore
+    /// Mode is chosen before entering — it is fixed for the lifetime of this view.
+    var initialMode: ChartingMode = .liveAB
+    /// When provided, a Live AB session is started immediately on appear (skips the setup sheet).
+    var initialLiveABSetup: LiveABSetup? = nil
+
     @State private var chartingState = ChartingState()
     @State private var isShowingPACloseoutSheet = false
     @State private var requiresLandscapeOrientation = false
@@ -105,9 +110,12 @@ struct LiveChartingView: View {
                 submitResult: closePlateAppearance
             )
         }
-        .onChange(of: chartingState.mode) { _, newMode in
-            chartingState.resetForModeChange()
-            if newMode == .liveAB && chartingState.currentLiveABSession == nil {
+        .onAppear {
+            // Mode is fixed at entry — set it once and never change it.
+            chartingState.mode = initialMode
+            if let setup = initialLiveABSetup, initialMode == .liveAB {
+                chartingState.beginLiveABSession(with: setup)
+            } else if initialMode == .liveAB && chartingState.currentLiveABSession == nil {
                 chartingState.isShowingLiveABSetup = true
             }
         }
@@ -389,16 +397,16 @@ struct LiveChartingView: View {
                 .font(.caption.bold())
                 .foregroundStyle(.secondary)
 
-            Picker("Charting Mode", selection: $chartingState.mode) {
-                ForEach(ChartingMode.allCases) { mode in
-                    Text(mode.rawValue).tag(mode)
-                }
-            }
-            .pickerStyle(.segmented)
+            Label(chartingState.mode.rawValue,
+                  systemImage: isLiveABMode ? "figure.baseball" : "list.bullet.clipboard")
+                .font(.subheadline.bold())
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .foregroundStyle(isLiveABMode ? .orange : .blue)
+                .background((isLiveABMode ? Color.orange : Color.blue).opacity(0.12))
+                .clipShape(Capsule())
 
-            if !isLiveABMode {
-                topBarStatusBadge
-            }
+            topBarStatusBadge
         }
         .modifier(InnerDeck())
     }
@@ -1558,7 +1566,7 @@ private struct GameCorrectionSheet: View {
     }
 }
 
-private struct LiveABRosterPickerSheet: View {
+struct LiveABRosterPickerSheet: View {
     let title: String
     let players: [BootstrapRosterPlayer]
     let onSelect: (BootstrapRosterPlayer) -> Void
