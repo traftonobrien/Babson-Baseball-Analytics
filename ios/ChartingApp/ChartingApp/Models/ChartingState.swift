@@ -78,7 +78,7 @@ final class ChartingState {
 
     var availablePitchResults: [PitchResultType] {
         if isBuntModeActive {
-            return [.ball, .foul, .inPlay]
+            return [.inPlay, .foul, .ball]
         }
         return [.ball, .calledStrike, .swingingStrike, .foul, .inPlay, .hitByPitch]
     }

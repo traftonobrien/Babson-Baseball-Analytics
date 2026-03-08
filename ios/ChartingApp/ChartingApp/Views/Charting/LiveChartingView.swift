@@ -6,6 +6,7 @@ struct LiveChartingView: View {
     @Bindable var gameStore: GameStore
     @State private var chartingState = ChartingState()
     @State private var isShowingPACloseoutSheet = false
+    @State private var isShowingGameStateSheet = false
     @Environment(\.dismiss) private var dismiss
 
     private let outerPadding: CGFloat = 16
@@ -83,6 +84,20 @@ struct LiveChartingView: View {
                 chartingState.applyGameCorrection(slot: slot, hitterName: hitterName)
             }
             .presentationDetents([.fraction(0.45), .medium])
+        }
+        .sheet(isPresented: $isShowingGameStateSheet) {
+            GameStateSheet(
+                initialInning: currentInning,
+                initialHalfInning: currentHalfInning,
+                initialOuts: currentOuts
+            ) { inning, halfInning, outs in
+                gameStore.applyGameStateOverride(
+                    inning: inning,
+                    halfInning: halfInning,
+                    outs: outs
+                )
+            }
+            .presentationDetents([.fraction(0.4), .medium])
         }
         .fullScreenCover(isPresented: $isShowingPACloseoutSheet) {
             PACloseoutSheet(
@@ -433,6 +448,14 @@ struct LiveChartingView: View {
         HStack(spacing: 8) {
             if !isLiveABMode {
                 TopBarActionButton(
+                    title: "Game State",
+                    systemImage: "square.stack.3d.up",
+                    accent: .orange,
+                    action: presentGameStateEditor
+                )
+                .disabled(!gameStore.canEditGameState)
+
+                TopBarActionButton(
                     title: chartingState.hasGameCorrection ? "Queued AB" : "Next AB",
                     systemImage: "arrow.triangle.branch",
                     accent: .blue,
@@ -762,6 +785,10 @@ struct LiveChartingView: View {
 
     private func presentGameCorrection() {
         chartingState.isShowingGameCorrection = true
+    }
+
+    private func presentGameStateEditor() {
+        isShowingGameStateSheet = true
     }
 
     private func selectPitcher(_ pitcher: PersistedBootstrapPitcher) {
@@ -1222,6 +1249,79 @@ private struct GameCorrectionSheet: View {
                     Button("Save") {
                         let trimmed = hitterName.trimmingCharacters(in: .whitespacesAndNewlines)
                         onSave(selectedSlot, trimmed.isEmpty ? nil : trimmed)
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct GameStateSheet: View {
+    let initialInning: Int
+    let initialHalfInning: ChartingHalfInning
+    let initialOuts: Int
+    let onSave: (Int, ChartingHalfInning, Int) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var inning: Int
+    @State private var halfInning: ChartingHalfInning
+    @State private var outs: Int
+
+    init(
+        initialInning: Int,
+        initialHalfInning: ChartingHalfInning,
+        initialOuts: Int,
+        onSave: @escaping (Int, ChartingHalfInning, Int) -> Void
+    ) {
+        self.initialInning = initialInning
+        self.initialHalfInning = initialHalfInning
+        self.initialOuts = initialOuts
+        self.onSave = onSave
+        _inning = State(initialValue: initialInning)
+        _halfInning = State(initialValue: initialHalfInning)
+        _outs = State(initialValue: initialOuts)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Frame State") {
+                    Picker("Half", selection: $halfInning) {
+                        ForEach(ChartingHalfInning.allCases) { half in
+                            Text(half.rawValue).tag(half)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    Picker("Inning", selection: $inning) {
+                        ForEach(1...12, id: \.self) { inning in
+                            Text("\(inning)").tag(inning)
+                        }
+                    }
+
+                    Picker("Outs", selection: $outs) {
+                        ForEach(0...2, id: \.self) { outs in
+                            Text("\(outs)").tag(outs)
+                        }
+                    }
+                }
+
+                Section {
+                    Text("Use this between plate appearances to advance innings or correct the live game state.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .navigationTitle("Game State")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        onSave(inning, halfInning, outs)
                         dismiss()
                     }
                 }

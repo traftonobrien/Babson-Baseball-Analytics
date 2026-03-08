@@ -561,6 +561,28 @@ final class ChartingEngineTests: XCTestCase {
         XCTAssertTrue(state.isBetweenInnings)
     }
 
+    func testGameStateOverrideSeedsSubsequentPlateAppearances() {
+        let state = deriveChartingLiveState(
+            segments: [makeSegment(id: "seg-1", order: 0, enteredInning: 1)],
+            plateAppearances: [
+                makePA(id: "pa-1", order: 0, inning: 1, lineupSlot: 1, segmentId: "seg-1", resultCode: "K"),
+                makePA(id: "pa-2", order: 1, inning: 2, lineupSlot: 2, segmentId: "seg-1", resultCode: "6-3"),
+            ],
+            pitches: [],
+            gameStateOverride: GameStateOverride(
+                inning: 2,
+                isTopInning: false,
+                outs: 1,
+                anchorPAOrder: 0
+            )
+        )
+
+        XCTAssertEqual(state.inning, 2)
+        XCTAssertFalse(state.isTopInning)
+        XCTAssertEqual(state.outs, 2)
+        XCTAssertEqual(state.batterSlot, 3)
+    }
+
     func testDoublePlayAddsTwoOutsWithoutEndingInningByItself() {
         let state = deriveChartingLiveState(
             segments: [makeSegment(id: "seg-1", order: 0, enteredInning: 1)],
@@ -909,7 +931,7 @@ final class ChartingStateTests: XCTestCase {
 
         XCTAssertEqual(
             state.availablePitchResults,
-            [.ball, .foul, .inPlay]
+            [.inPlay, .foul, .ball]
         )
 
         state.selectedPitchType = .fastball

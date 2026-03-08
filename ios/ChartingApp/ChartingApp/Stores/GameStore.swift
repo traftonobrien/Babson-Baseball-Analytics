@@ -29,6 +29,7 @@ enum GameStoreError: LocalizedError {
 @Observable
 final class GameStore {
     private let rosterPlayersCacheKey = "pt_charting_roster_players"
+    private let gameStateOverridesCacheKey = "pt_charting_game_state_overrides"
 
     private let modelContext: ModelContext
     let apiClient: APIClient
@@ -75,6 +76,8 @@ final class GameStore {
     var isLoading: Bool = false
     var errorMessage: String?
 
+    private var gameStateOverridesByGameId: [String: GameStateOverride] = [:]
+
     init(modelContext: ModelContext, apiClient: APIClient = APIClient()) {
         self.modelContext = modelContext
         self.apiClient = apiClient
@@ -92,6 +95,7 @@ final class GameStore {
         loadLocalPitchers()
         loadLocalGames()
         loadCachedRosterPlayers()
+        loadGameStateOverrides()
         recoverActiveGame()
     }
 
@@ -196,7 +200,8 @@ final class GameStore {
         liveState = deriveChartingLiveState(
             segments: activeSegments.map { $0.toAPIModel() },
             plateAppearances: activePlateAppearances.map { $0.toAPIModel() },
-            pitches: activePitches.compactMap { $0.toAPIModel() }
+            pitches: activePitches.compactMap { $0.toAPIModel() },
+            gameStateOverride: activeGameStateOverride
         )
         currentInning = liveState.inning
         isTopInning = liveState.isTopInning
@@ -234,8 +239,30 @@ final class GameStore {
         activePitches.count
     }
 
+    var canEditGameState: Bool {
+        activeGame != nil && liveState.openPAId == nil
+    }
+
     func availablePitchTypesForActivePitcher() -> [PitchType] {
         normalizedPitchTypes(activePitcherProfile?.arsenalPitchTypes ?? PitchType.allCases)
+    }
+
+    func applyGameStateOverride(inning: Int, halfInning: ChartingHalfInning, outs: Int) {
+        guard let game = activeGame else { return }
+        guard liveState.openPAId == nil else {
+            errorMessage = "Close the current plate appearance before changing inning or outs."
+            return
+        }
+
+        gameStateOverridesByGameId[game.id] = GameStateOverride(
+            inning: max(1, inning),
+            isTopInning: halfInning == .top,
+            outs: max(0, min(2, outs)),
+            anchorPAOrder: activePlateAppearances.last?.paOrder ?? -1
+        )
+        persistGameStateOverrides()
+        errorMessage = nil
+        recalculateChartingState()
     }
 
     private func normalizedPitchTypes(_ pitchTypes: [PitchType]) -> [PitchType] {
@@ -659,6 +686,36 @@ final class GameStore {
         }
         for pitch in snapshot.pitches {
             modelContext.insert(PersistedPitch(from: pitch))
+        }
+    }
+
+    private var activeGameStateOverride: GameStateOverride? {
+        guard let gameId = activeGame?.id else {
+            return nil
+        }
+        return gameStateOverridesByGameId[gameId]
+    }
+
+    private func loadGameStateOverrides() {
+        guard let data = UserDefaults.standard.data(forKey: gameStateOverridesCacheKey) else {
+            gameStateOverridesByGameId = [:]
+            return
+        }
+
+        do {
+            gameStateOverridesByGameId = try JSONDecoder().decode([String: GameStateOverride].self, from: data)
+        } catch {
+            gameStateOverridesByGameId = [:]
+            print("Failed to load cached game state overrides: \(error)")
+        }
+    }
+
+    private func persistGameStateOverrides() {
+        do {
+            let data = try JSONEncoder().encode(gameStateOverridesByGameId)
+            UserDefaults.standard.set(data, forKey: gameStateOverridesCacheKey)
+        } catch {
+            print("Failed to cache game state overrides: \(error)")
         }
     }
 }

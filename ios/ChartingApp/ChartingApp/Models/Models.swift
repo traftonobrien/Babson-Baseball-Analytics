@@ -153,6 +153,17 @@ enum LiveABCountPreset: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+struct GameStateOverride: Codable, Equatable {
+    var inning: Int
+    var isTopInning: Bool
+    var outs: Int
+    var anchorPAOrder: Int
+
+    var halfInning: ChartingHalfInning {
+        isTopInning ? .top : .bottom
+    }
+}
+
 struct LiveABSetup: Equatable {
     var pitcherPlayerId: String = ""
     var pitcherName: String = ""
@@ -742,7 +753,8 @@ func derivePAPitchProgress(
 func deriveChartingLiveState(
     segments: [ChartingPitcherSegment],
     plateAppearances: [ChartingPlateAppearance],
-    pitches: [ChartingPitch]
+    pitches: [ChartingPitch],
+    gameStateOverride: GameStateOverride? = nil
 ) -> ChartingLiveState {
     let orderedSegments = segments.sorted { lhs, rhs in
         if lhs.segmentOrder == rhs.segmentOrder {
@@ -759,9 +771,20 @@ func deriveChartingLiveState(
 
     let pitchesByPA = Dictionary(grouping: pitches) { $0.paId }
     var state = ChartingLiveState()
+    if let gameStateOverride {
+        state.inning = max(1, gameStateOverride.inning)
+        state.isTopInning = gameStateOverride.isTopInning
+        state.outs = max(0, min(2, gameStateOverride.outs))
+    }
     state.activeSegmentId = orderedSegments.last?.id
+    let relevantPAs: [ChartingPlateAppearance]
+    if let gameStateOverride {
+        relevantPAs = orderedPAs.filter { $0.paOrder > gameStateOverride.anchorPAOrder }
+    } else {
+        relevantPAs = orderedPAs
+    }
 
-    for pa in orderedPAs {
+    for pa in relevantPAs {
         state.inning = max(state.inning, pa.inning)
 
         let paPitches = pitchesByPA[pa.id] ?? []
@@ -794,7 +817,7 @@ func deriveChartingLiveState(
         state.lastPitchResult = nil
     }
 
-    if let lastPA = orderedPAs.last,
+    if let lastPA = relevantPAs.last,
        let resultCode = lastPA.resultCode,
        let result = PAResultType(rawValue: resultCode) {
         state.isBetweenInnings = result.outsRecorded > 0 && state.outs == 0 && state.inning > lastPA.inning
