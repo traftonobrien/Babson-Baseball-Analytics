@@ -347,8 +347,8 @@ struct LiveChartingView: View {
     }
 
     private var topUtilityBar: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 10) {
                 modeCluster
                     .frame(width: 220, alignment: .leading)
 
@@ -364,7 +364,7 @@ struct LiveChartingView: View {
     }
 
     private var modeCluster: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("Mode")
                 .font(.caption.bold())
                 .foregroundStyle(.secondary)
@@ -376,24 +376,15 @@ struct LiveChartingView: View {
             }
             .pickerStyle(.segmented)
 
-            HStack(spacing: 8) {
+            if !isLiveABMode {
                 topBarStatusBadge
-
-                if isLiveABMode {
-                    Button(
-                        chartingState.currentLiveABSession == nil ? "Setup AB" : "Edit AB",
-                        systemImage: "slider.horizontal.3",
-                        action: presentLiveABSetup
-                    )
-                    .buttonStyle(.bordered)
-                }
             }
         }
         .modifier(InnerDeck())
     }
 
     private var topBarWorkspace: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .center, spacing: 10) {
                 topBarMetricsStrip
                     .frame(maxWidth: .infinity, alignment: .leading)
