@@ -24,7 +24,7 @@ struct LoginView: View {
                         .font(.system(size: 64))
                         .foregroundStyle(.blue)
 
-                    Text("Pitch Tracker")
+                    Text("Charting App")
                         .font(.largeTitle.bold())
 
                     Text("Babson Baseball Charting")
@@ -111,7 +111,7 @@ struct LoginView: View {
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("Enter the base URL of the Pitch Tracker server")
+                Text("Enter the base URL of the Charting App server")
             }
         }
     }

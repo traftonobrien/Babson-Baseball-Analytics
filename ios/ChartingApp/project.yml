@@ -1,4 +1,4 @@
-name: PitchTracker
+name: ChartingApp
 options:
   bundleIdPrefix: com.babsonbaseball
   deploymentTarget:
@@ -12,34 +12,34 @@ settings:
     TARGETED_DEVICE_FAMILY: "2"  # iPad only
 
 targets:
-  PitchTracker:
+  ChartingApp:
     type: application
     platform: iOS
     sources:
-      - path: PitchTracker
+      - path: ChartingApp
         excludes:
           - "Info.plist"
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.babsonbaseball.pitchtracker
+        PRODUCT_BUNDLE_IDENTIFIER: com.babsonbaseball.chartingapp
         GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_FILE: PitchTracker/Info.plist
+        INFOPLIST_FILE: ChartingApp/Info.plist
         INFOPLIST_KEY_UILaunchScreen_Generation: true
-        INFOPLIST_KEY_CFBundleDisplayName: "Pitch Tracker"
+        INFOPLIST_KEY_CFBundleDisplayName: "Charting App"
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: >-
           UIInterfaceOrientationLandscapeLeft
           UIInterfaceOrientationLandscapeRight
           UIInterfaceOrientationPortrait
           UIInterfaceOrientationPortraitUpsideDown
 
-  PitchTrackerTests:
+  ChartingAppTests:
     type: bundle.unit-test
     platform: iOS
     sources:
-      - path: PitchTrackerTests
+      - path: ChartingAppTests
     dependencies:
-      - target: PitchTracker
+      - target: ChartingApp
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.babsonbaseball.pitchtracker.tests
+        PRODUCT_BUNDLE_IDENTIFIER: com.babsonbaseball.chartingapp.tests
         GENERATE_INFOPLIST_FILE: YES

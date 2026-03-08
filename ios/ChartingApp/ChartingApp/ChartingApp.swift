@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 @main
-struct PitchTrackerApp: App {
+struct ChartingApp: App {
 
     let apiClient = APIClient()
 

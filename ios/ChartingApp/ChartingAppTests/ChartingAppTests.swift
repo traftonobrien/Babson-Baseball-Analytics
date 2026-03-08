@@ -1,5 +1,5 @@
 import XCTest
-@testable import PitchTracker
+@testable import ChartingApp
 
 // MARK: - Model Round-Trip Tests
 

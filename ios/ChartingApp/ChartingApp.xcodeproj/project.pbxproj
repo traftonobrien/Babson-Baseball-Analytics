@@ -1,0 +1,519 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0E7CF23EC36FA290C183F50F /* SyncQueueManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E4639798C9876EAD84A273 /* SyncQueueManager.swift */; };
+		128CB47AAED6C1B723EC37FB /* PitchHistoryList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E33246FF3AAF40D8FE10EE /* PitchHistoryList.swift */; };
+		1598433189114F7E29390C95 /* PitchResultControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25CBF757CE782B6761BC77FE /* PitchResultControls.swift */; };
+		15D254ED579240598C45681D /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DD8D47EBF522F777D689468 /* MainTabView.swift */; };
+		17D6170EFC38B17FF5220125 /* ChartingAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9C9358A35A299C359EF799C /* ChartingAppTests.swift */; };
+		2F756CC5ECE55074C098ADE6 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 244CE9AE10702DA41C6F83FB /* Models.swift */; };
+		451E897B21ACE8AF7743E1AB /* GameSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD72253BAED4B32A89A9685 /* GameSetupView.swift */; };
+		461C6273DB8DCFA156B4B5DF /* FinalizeGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8850A7374E5984F5C2C57F91 /* FinalizeGameView.swift */; };
+		58FEE976C1C0ABEF5C166118 /* PitchTypePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C8D0D69C4D548918A63000 /* PitchTypePicker.swift */; };
+		7C4F86F069437B0F6A493B5D /* GameStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132823EAFE9828F954DF089D /* GameStore.swift */; };
+		9BAAC659E843437ACAB83D50 /* GameDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E37DD99BD3B37AC77CA4DEF /* GameDetailView.swift */; };
+		A109AA81B31A72E0C6FB2F50 /* SyncStatusIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE06E7606199A7120C56D45B /* SyncStatusIndicator.swift */; };
+		A16EB36AA6F83566B8104417 /* ChartingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92CBC625E578199096529FD3 /* ChartingState.swift */; };
+		B58FF45C40C30F2D3B34A1D6 /* PersistentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78153598EF8692A3C996D6F6 /* PersistentModels.swift */; };
+		C16E0C10EF8C4602E9C1D200 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72CCBB2C3CD4054FFE112238 /* LoginView.swift */; };
+		C1DDF5D835DD21F96C8137D8 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1212C37A6D740BA8415BC95E /* APIClient.swift */; };
+		D35A92AB879D104BF0C420B1 /* PAResultControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40B26F6AB1C0BB4E764F641 /* PAResultControls.swift */; };
+		E5568C67FA7443E9DCF8FA51 /* ZoneGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE78DF14FD0F398E84B632BC /* ZoneGridView.swift */; };
+		E569EB8A403F2BE7FAA5A13D /* ChartingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BECAD2A6AD92DF3C7DA23860 /* ChartingApp.swift */; };
+		F36F2F978E03F94D832B45C5 /* LiveChartingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5052E76F596F437F44F56C84 /* LiveChartingView.swift */; };
+		F6A4434CA7A01CD18D9746C5 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FA96D3E279594E81F9FD7C5 /* RootView.swift */; };
+		FEEE9AB5A29DA272A75D1588 /* GamesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 711154F2DF6A0DFB35809540 /* GamesListView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		47E4623D39DAAF6DD8F56B15 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 581C4D4D343ACD48EE5A85C8 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C3E2B5F67671FF92BFA05B0C;
+			remoteInfo = ChartingApp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		1212C37A6D740BA8415BC95E /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		132823EAFE9828F954DF089D /* GameStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStore.swift; sourceTree = "<group>"; };
+		19E4639798C9876EAD84A273 /* SyncQueueManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncQueueManager.swift; sourceTree = "<group>"; };
+		1DD8D47EBF522F777D689468 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		244CE9AE10702DA41C6F83FB /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		25CBF757CE782B6761BC77FE /* PitchResultControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchResultControls.swift; sourceTree = "<group>"; };
+		26B5EEB9C6A104865310AA2A /* ChartingAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ChartingAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4CD72253BAED4B32A89A9685 /* GameSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSetupView.swift; sourceTree = "<group>"; };
+		4E37DD99BD3B37AC77CA4DEF /* GameDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDetailView.swift; sourceTree = "<group>"; };
+		5052E76F596F437F44F56C84 /* LiveChartingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveChartingView.swift; sourceTree = "<group>"; };
+		57E33246FF3AAF40D8FE10EE /* PitchHistoryList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchHistoryList.swift; sourceTree = "<group>"; };
+		5FA96D3E279594E81F9FD7C5 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		711154F2DF6A0DFB35809540 /* GamesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamesListView.swift; sourceTree = "<group>"; };
+		72CCBB2C3CD4054FFE112238 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		78153598EF8692A3C996D6F6 /* PersistentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentModels.swift; sourceTree = "<group>"; };
+		8850A7374E5984F5C2C57F91 /* FinalizeGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinalizeGameView.swift; sourceTree = "<group>"; };
+		92CBC625E578199096529FD3 /* ChartingState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartingState.swift; sourceTree = "<group>"; };
+		AE06E7606199A7120C56D45B /* SyncStatusIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatusIndicator.swift; sourceTree = "<group>"; };
+		BECAD2A6AD92DF3C7DA23860 /* ChartingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartingApp.swift; sourceTree = "<group>"; };
+		C9C9358A35A299C359EF799C /* ChartingAppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartingAppTests.swift; sourceTree = "<group>"; };
+		CE930E3E392B4115453722B6 /* ChartingApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ChartingApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D40B26F6AB1C0BB4E764F641 /* PAResultControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PAResultControls.swift; sourceTree = "<group>"; };
+		E8C8D0D69C4D548918A63000 /* PitchTypePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchTypePicker.swift; sourceTree = "<group>"; };
+		EE78DF14FD0F398E84B632BC /* ZoneGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneGridView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		02D1F393E3C70575E0D559F8 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				4E37DD99BD3B37AC77CA4DEF /* GameDetailView.swift */,
+				4CD72253BAED4B32A89A9685 /* GameSetupView.swift */,
+				711154F2DF6A0DFB35809540 /* GamesListView.swift */,
+				72CCBB2C3CD4054FFE112238 /* LoginView.swift */,
+				1DD8D47EBF522F777D689468 /* MainTabView.swift */,
+				5FA96D3E279594E81F9FD7C5 /* RootView.swift */,
+				AE06E7606199A7120C56D45B /* SyncStatusIndicator.swift */,
+				8BB1999F5623F431D493BEB6 /* Charting */,
+				C8393E9177D3FFDBFD5C7BAD /* Game */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		0CE95345BD3FE4D8D1D2133B /* ChartingApp */ = {
+			isa = PBXGroup;
+			children = (
+				BECAD2A6AD92DF3C7DA23860 /* ChartingApp.swift */,
+				7651410389A9FABE1ACB82D0 /* Models */,
+				AFBF820869EEF1C5BF1F7008 /* Network */,
+				EB7C93407E9D0FDB71CFF731 /* Stores */,
+				02D1F393E3C70575E0D559F8 /* Views */,
+			);
+			path = ChartingApp;
+			sourceTree = "<group>";
+		};
+		3AFD2C48D20C16E209A2DB0A = {
+			isa = PBXGroup;
+			children = (
+				0CE95345BD3FE4D8D1D2133B /* ChartingApp */,
+				4E1D3FE3EE5E9531B308A548 /* ChartingAppTests */,
+				477F828F78427C8455C869E0 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		477F828F78427C8455C869E0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CE930E3E392B4115453722B6 /* ChartingApp.app */,
+				26B5EEB9C6A104865310AA2A /* ChartingAppTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4E1D3FE3EE5E9531B308A548 /* ChartingAppTests */ = {
+			isa = PBXGroup;
+			children = (
+				C9C9358A35A299C359EF799C /* ChartingAppTests.swift */,
+			);
+			path = ChartingAppTests;
+			sourceTree = "<group>";
+		};
+		7651410389A9FABE1ACB82D0 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				92CBC625E578199096529FD3 /* ChartingState.swift */,
+				244CE9AE10702DA41C6F83FB /* Models.swift */,
+				78153598EF8692A3C996D6F6 /* PersistentModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		8BB1999F5623F431D493BEB6 /* Charting */ = {
+			isa = PBXGroup;
+			children = (
+				5052E76F596F437F44F56C84 /* LiveChartingView.swift */,
+				D40B26F6AB1C0BB4E764F641 /* PAResultControls.swift */,
+				57E33246FF3AAF40D8FE10EE /* PitchHistoryList.swift */,
+				25CBF757CE782B6761BC77FE /* PitchResultControls.swift */,
+				E8C8D0D69C4D548918A63000 /* PitchTypePicker.swift */,
+				EE78DF14FD0F398E84B632BC /* ZoneGridView.swift */,
+			);
+			path = Charting;
+			sourceTree = "<group>";
+		};
+		AFBF820869EEF1C5BF1F7008 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				1212C37A6D740BA8415BC95E /* APIClient.swift */,
+				19E4639798C9876EAD84A273 /* SyncQueueManager.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		C8393E9177D3FFDBFD5C7BAD /* Game */ = {
+			isa = PBXGroup;
+			children = (
+				8850A7374E5984F5C2C57F91 /* FinalizeGameView.swift */,
+			);
+			path = Game;
+			sourceTree = "<group>";
+		};
+		EB7C93407E9D0FDB71CFF731 /* Stores */ = {
+			isa = PBXGroup;
+			children = (
+				132823EAFE9828F954DF089D /* GameStore.swift */,
+			);
+			path = Stores;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		94774713D4F651BBCD845537 /* ChartingAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 88FB2C44BC20FDCC8106402A /* Build configuration list for PBXNativeTarget "ChartingAppTests" */;
+			buildPhases = (
+				7B8C8327A6910EE127BE032A /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2A3832BE6577481AE3E26FCE /* PBXTargetDependency */,
+			);
+			name = ChartingAppTests;
+			packageProductDependencies = (
+			);
+			productName = ChartingAppTests;
+			productReference = 26B5EEB9C6A104865310AA2A /* ChartingAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		C3E2B5F67671FF92BFA05B0C /* ChartingApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C071C73A78FD3EE0136B9A34 /* Build configuration list for PBXNativeTarget "ChartingApp" */;
+			buildPhases = (
+				1455BE374F0DA683CC07276F /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ChartingApp;
+			packageProductDependencies = (
+			);
+			productName = ChartingApp;
+			productReference = CE930E3E392B4115453722B6 /* ChartingApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		581C4D4D343ACD48EE5A85C8 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 3C3DEEEB4329416E248B96EC /* Build configuration list for PBXProject "ChartingApp" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 3AFD2C48D20C16E209A2DB0A;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 477F828F78427C8455C869E0 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C3E2B5F67671FF92BFA05B0C /* ChartingApp */,
+				94774713D4F651BBCD845537 /* ChartingAppTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1455BE374F0DA683CC07276F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C1DDF5D835DD21F96C8137D8 /* APIClient.swift in Sources */,
+				E569EB8A403F2BE7FAA5A13D /* ChartingApp.swift in Sources */,
+				A16EB36AA6F83566B8104417 /* ChartingState.swift in Sources */,
+				461C6273DB8DCFA156B4B5DF /* FinalizeGameView.swift in Sources */,
+				9BAAC659E843437ACAB83D50 /* GameDetailView.swift in Sources */,
+				451E897B21ACE8AF7743E1AB /* GameSetupView.swift in Sources */,
+				7C4F86F069437B0F6A493B5D /* GameStore.swift in Sources */,
+				FEEE9AB5A29DA272A75D1588 /* GamesListView.swift in Sources */,
+				F36F2F978E03F94D832B45C5 /* LiveChartingView.swift in Sources */,
+				C16E0C10EF8C4602E9C1D200 /* LoginView.swift in Sources */,
+				15D254ED579240598C45681D /* MainTabView.swift in Sources */,
+				2F756CC5ECE55074C098ADE6 /* Models.swift in Sources */,
+				D35A92AB879D104BF0C420B1 /* PAResultControls.swift in Sources */,
+				B58FF45C40C30F2D3B34A1D6 /* PersistentModels.swift in Sources */,
+				128CB47AAED6C1B723EC37FB /* PitchHistoryList.swift in Sources */,
+				1598433189114F7E29390C95 /* PitchResultControls.swift in Sources */,
+				58FEE976C1C0ABEF5C166118 /* PitchTypePicker.swift in Sources */,
+				F6A4434CA7A01CD18D9746C5 /* RootView.swift in Sources */,
+				0E7CF23EC36FA290C183F50F /* SyncQueueManager.swift in Sources */,
+				A109AA81B31A72E0C6FB2F50 /* SyncStatusIndicator.swift in Sources */,
+				E5568C67FA7443E9DCF8FA51 /* ZoneGridView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7B8C8327A6910EE127BE032A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				17D6170EFC38B17FF5220125 /* ChartingAppTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2A3832BE6577481AE3E26FCE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C3E2B5F67671FF92BFA05B0C /* ChartingApp */;
+			targetProxy = 47E4623D39DAAF6DD8F56B15 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		072B3061F74EA623E1FA6332 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ChartingApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Charting App";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.babsonbaseball.chartingapp;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		371F00720D7EE1B38D3CAD65 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.babsonbaseball.chartingapp.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ChartingApp.app/ChartingApp";
+			};
+			name = Release;
+		};
+		750749F7F40089B35D7C22E3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Debug;
+		};
+		A48EBDD2B2A3C86ABBC7D2C3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Release;
+		};
+		CA8586DA9571B36B1F56D00C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ChartingApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Charting App";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.babsonbaseball.chartingapp;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D6460BC0E4098CF9E41149AD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.babsonbaseball.chartingapp.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ChartingApp.app/ChartingApp";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3C3DEEEB4329416E248B96EC /* Build configuration list for PBXProject "ChartingApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				750749F7F40089B35D7C22E3 /* Debug */,
+				A48EBDD2B2A3C86ABBC7D2C3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		88FB2C44BC20FDCC8106402A /* Build configuration list for PBXNativeTarget "ChartingAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D6460BC0E4098CF9E41149AD /* Debug */,
+				371F00720D7EE1B38D3CAD65 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C071C73A78FD3EE0136B9A34 /* Build configuration list for PBXNativeTarget "ChartingApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CA8586DA9571B36B1F56D00C /* Debug */,
+				072B3061F74EA623E1FA6332 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 581C4D4D343ACD48EE5A85C8 /* Project object */;
+}
