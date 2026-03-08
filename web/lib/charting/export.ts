@@ -1,4 +1,5 @@
 import type { ChartingGame, ChartingGameSnapshot, ChartingPitch } from "./types";
+import { PLAYER_ID_BY_ALIAS } from "../canonicalPlayersData";
 
 /**
  * Simplified charting CSV — 13 essential pitch-level columns.
@@ -25,6 +26,12 @@ type ChartingExportCell = string | number | null;
 
 export type ChartingExportRow = Record<ChartingExportColumn, ChartingExportCell>;
 
+/** Resolve a hitter name to a player ID via the canonical alias map. */
+function resolveHitterId(name: string): string {
+  const key = name.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return PLAYER_ID_BY_ALIAS[key] ?? "";
+}
+
 export function buildChartingExportRows(
   snapshot: ChartingGameSnapshot
 ): ChartingExportRow[] {
@@ -36,19 +43,6 @@ export function buildChartingExportRows(
     const existing = pitchesByPaId.get(pitch.paId) ?? [];
     existing.push(pitch);
     pitchesByPaId.set(pitch.paId, existing);
-  }
-
-  // Build the hitter → playerId lookup from the roster bootstrap in the snapshot
-  const hitterIdByName = new Map<string, string>();
-  if (snapshot.lineup) {
-    for (const entry of snapshot.lineup) {
-      if (entry.hitterName && (entry as Record<string, unknown>).playerId) {
-        hitterIdByName.set(
-          entry.hitterName,
-          String((entry as Record<string, unknown>).playerId)
-        );
-      }
-    }
   }
 
   const orderedEntries: Array<{
@@ -87,7 +81,7 @@ export function buildChartingExportRows(
       inning: pa?.inning ?? null,
       pitcher_id: segment?.playerId ?? "",
       pitcher: segment?.displayName ?? "",
-      hitter_id: pa ? hitterIdByName.get(pa.hitterName) ?? "" : "",
+      hitter_id: pa ? resolveHitterId(pa.hitterName) : "",
       hitter: pa?.hitterName ?? "",
       lineup_slot: pa?.lineupSlot ?? null,
       pitch_number: pitchNumberInPa,
