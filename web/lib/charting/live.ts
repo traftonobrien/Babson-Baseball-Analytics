@@ -9,12 +9,12 @@ import type {
   PitchType,
 } from "./types";
 
+/** Pitch results shown as buttons in the charting UI. Excludes bunt_foul (handled by backend/PDF but not exposed in UI). */
 export const GAME_PITCH_RESULTS = [
   "ball",
   "called_strike",
   "swinging_strike",
   "foul",
-  "bunt_foul",
   "in_play",
   "hit_by_pitch",
 ] as const satisfies readonly PitchResult[];

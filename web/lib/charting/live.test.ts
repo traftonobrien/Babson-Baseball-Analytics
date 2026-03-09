@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  GAME_PITCH_RESULTS,
   closeCurrentPlateAppearance,
   createGameStateOverride,
   deriveChartingLiveState,
@@ -83,10 +82,6 @@ describe("derivePAPitchProgress", () => {
 });
 
 describe("snapshot mutations", () => {
-  it("exposes bunt foul as a selectable game pitch result", () => {
-    expect(GAME_PITCH_RESULTS).toContain("bunt_foul");
-  });
-
   it("records a first pitch by creating a segment and PA", () => {
     const snapshot = recordPitchInSnapshot(baseSnapshot, {
       pitchType: "Fastball",

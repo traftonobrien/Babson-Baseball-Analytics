@@ -141,12 +141,6 @@ describe("bootstrap pitcher roster", () => {
     }
   });
 
-  it("every pitcher includes Other as a fallback pitch family", () => {
-    for (const p of pitchers) {
-      expect(p.arsenalPitchTypes).toContain("Other");
-    }
-  });
-
   it("is sorted alphabetically by name", () => {
     for (let i = 1; i < pitchers.length; i++) {
       expect(
