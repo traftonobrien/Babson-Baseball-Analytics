@@ -5,15 +5,13 @@ export type PitchType =
   | "Curveball"
   | "Slider"
   | "Changeup"
-  | "Split/Cut"
-  | "Other";
+  | "Split/Cut";
 
 export type PitchResult =
   | "ball"
   | "called_strike"
   | "swinging_strike"
   | "foul"
-  | "bunt_foul"
   | "in_play"
   | "hit_by_pitch";
 

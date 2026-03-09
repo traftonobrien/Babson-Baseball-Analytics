@@ -14,7 +14,6 @@ export const GAME_PITCH_RESULTS = [
   "called_strike",
   "swinging_strike",
   "foul",
-  "bunt_foul",
   "in_play",
   "hit_by_pitch",
 ] as const satisfies readonly PitchResult[];
@@ -447,13 +446,13 @@ export function recordPitchInSnapshot(
       hitterName: input.hitterName.trim(),
       lineupSlot: clamp(input.lineupSlot, 1, 9),
       resultCode: null,
-      buntContext: input.pitchResult === "bunt_foul",
+      buntContext: false,
     };
     nextSnapshot.plateAppearances.push(openPA);
   } else {
     openPA.hitterName = input.hitterName.trim();
     openPA.lineupSlot = clamp(input.lineupSlot, 1, 9);
-    openPA.buntContext = openPA.buntContext || input.pitchResult === "bunt_foul";
+    openPA.buntContext = openPA.buntContext || false;
   }
 
   nextSnapshot.pitches.push({
@@ -594,14 +593,6 @@ function applyPitchResult(progress: PAPitchProgress, result: PitchResult) {
       break;
     case "foul":
       if (progress.strikes < 2) {
-        progress.strikes += 1;
-      }
-      break;
-    case "bunt_foul":
-      if (progress.strikes >= 2) {
-        progress.strikes = 3;
-        progress.closureState = "strikeout";
-      } else {
         progress.strikes += 1;
       }
       break;

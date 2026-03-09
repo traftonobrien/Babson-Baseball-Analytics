@@ -111,6 +111,7 @@ export function ChartingEditor({
   const [pendingVelocity, setPendingVelocity] = useState("");
   const [selectedLineupSlot, setSelectedLineupSlot] = useState(initialMatchup.slot);
   const [hitterName, setHitterName] = useState(initialMatchup.hitterName);
+  const [showHistory, setShowHistory] = useState(false);
   const [gameStateOverride, setGameStateOverride] = useState<GameStateOverride | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -139,11 +140,11 @@ export function ChartingEditor({
     pitchers.find((pitcher) => pitcher.playerId === selectedPitcherId) ??
     (snapshot.segments.length > 0
       ? {
-          playerId: snapshot.segments[snapshot.segments.length - 1].playerId,
-          name: snapshot.segments[snapshot.segments.length - 1].displayName,
-          throws: "R" as const,
-          arsenalPitchTypes: [...PITCH_TYPES],
-        }
+        playerId: snapshot.segments[snapshot.segments.length - 1].playerId,
+        name: snapshot.segments[snapshot.segments.length - 1].displayName,
+        throws: "R" as const,
+        arsenalPitchTypes: [...PITCH_TYPES],
+      }
       : null);
   const availablePitchTypes =
     selectedPitcher?.arsenalPitchTypes.length
@@ -444,556 +445,325 @@ export function ChartingEditor({
   };
 
   return (
-    <div className="relative">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[32rem] bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.18),_transparent_34%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.16),_transparent_34%),linear-gradient(180deg,_rgba(9,9,11,0.95),_rgba(9,9,11,0.75)_45%,_rgba(9,9,11,0.98))]" />
-
-      <div className="space-y-6">
-        <section className="overflow-hidden rounded-[2rem] border border-emerald-500/18 bg-zinc-950/80 shadow-[0_28px_90px_rgba(0,0,0,0.32)]">
-          <div className="border-b border-zinc-800/80 px-6 py-5 lg:px-8">
-            <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-              <div className="space-y-3">
-                <Link
-                  href={`/charting/games/${snapshot.game.id}`}
-                  className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500 transition-colors hover:text-zinc-200"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  View Saved Game
-                </Link>
-                <div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <h1 className="text-3xl font-black tracking-tight text-zinc-50 lg:text-[2.6rem]">
-                      {snapshot.game.opponent}
-                    </h1>
-                    <StatusBadge status={snapshot.game.status} />
-                    {gameStateOverride ? (
-                      <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-200">
-                        <WandSparkles className="h-3.5 w-3.5" />
-                        Manual State Override
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="mt-2 max-w-3xl text-sm leading-7 text-zinc-400">
-                    Desktop-first charting workspace for full game entry. Record pitches, close plate appearances, and push full snapshots back through the existing sync API.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[26rem]">
-                <MetricPill
-                  label="Save Status"
-                  value={saveStatusLabel}
-                  tone={saveState === "error" ? "amber" : saveState === "saved" ? "emerald" : "slate"}
-                  icon={
-                    saveState === "saving" ? (
-                      <LoaderCircle className="h-4 w-4 animate-spin" />
-                    ) : saveState === "saved" ? (
-                      <CheckCircle2 className="h-4 w-4" />
-                    ) : saveState === "error" ? (
-                      <ShieldAlert className="h-4 w-4" />
-                    ) : (
-                      <Save className="h-4 w-4" />
-                    )
-                  }
-                />
-                <MetricPill
-                  label="Game Snapshot"
-                  value={`rev ${snapshot.game.revision}`}
-                  tone="sky"
-                  icon={<RefreshCw className="h-4 w-4" />}
-                />
-                <MetricPill
-                  label="Count"
-                  value={`${liveState.balls}-${liveState.strikes}`}
-                  tone={needsPAClosure ? "amber" : "slate"}
-                  icon={<Timer className="h-4 w-4" />}
-                />
-                <MetricPill
-                  label="Sequence"
-                  value={`${snapshot.pitches.length} pitches`}
-                  tone="slate"
-                  icon={<PencilLine className="h-4 w-4" />}
-                />
-              </div>
+    <div className="fixed inset-0 flex flex-col bg-zinc-950 text-zinc-100 overflow-hidden">
+      {/* Top Header */}
+      <header className="flex items-center justify-between border-b border-zinc-800/80 bg-zinc-950/90 px-6 py-4 lg:px-8">
+        <div className="flex items-center gap-4">
+          <Link
+            href={`/charting/games/${snapshot.game.id}`}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-zinc-900 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
+            aria-label="Back to game view"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Link>
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-bold tracking-tight text-white">
+                {snapshot.game.opponent}
+              </h1>
+              <StatusBadge status={snapshot.game.status} />
+              {gameStateOverride && (
+                <span className="inline-flex items-center gap-1.5 flex-none rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-500">
+                  <WandSparkles className="h-3 w-3" />
+                  Override
+                </span>
+              )}
+            </div>
+            <div className="mt-0.5 text-xs text-zinc-500">
+              {liveState.isTopInning ? "Top" : "Bot"} {liveState.inning} • {liveState.outs} Outs
             </div>
           </div>
+        </div>
 
-          <div className="px-6 py-5 lg:px-8">
-            <div className="grid gap-4 xl:grid-cols-[1.15fr_1fr_0.9fr]">
-              <ControlField
-                label="Pitcher"
-                helper={
-                  currentPitcherLocked
-                    ? "Pitcher changes are locked until the current plate appearance is closed."
-                    : "Select the active pitcher and the pitch menu will filter to his arsenal."
-                }
-              >
+        <div className="flex items-center gap-4">
+          <div className="hidden items-center gap-1.5 text-xs text-zinc-500 sm:flex">
+            {saveState === "saving" ? (
+              <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+            ) : saveState === "saved" ? (
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+            ) : saveState === "error" ? (
+              <ShieldAlert className="h-3.5 w-3.5 text-amber-500" />
+            ) : (
+              <Save className="h-3.5 w-3.5" />
+            )}
+            <span>{saveStatusLabel}</span>
+          </div>
+
+          <select
+            value={snapshot.game.status}
+            onChange={(event) => handleStatusChange(event.target.value as ChartingGameSnapshot["game"]["status"])}
+            className="h-9 cursor-pointer rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-xs font-medium text-zinc-300 outline-none hover:bg-zinc-800 focus:border-emerald-500"
+          >
+            <option value="draft">Draft</option>
+            <option value="active">Active</option>
+            <option value="final">Final</option>
+          </select>
+        </div>
+      </header>
+
+      {(errorMessage || statusMessage) && (
+        <div className={`border-b px-6 py-2.5 text-sm font-medium ${errorMessage
+          ? "border-amber-500/20 bg-amber-500/10 text-amber-200"
+          : "border-emerald-500/20 bg-emerald-500/10 text-emerald-200"
+          }`}>
+          <div className="mx-auto flex max-w-7xl items-center gap-2">
+            {errorMessage ? <AlertTriangle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+            {errorMessage || statusMessage}
+          </div>
+        </div>
+      )}
+
+      {/* Main Workspace */}
+      <div className="flex flex-1 flex-col">
+
+        {/* Top Horizontal Bar: Matchup, Count, Game State */}
+        <section className="border-b border-zinc-800/80 bg-zinc-950 px-4 py-2 lg:px-6">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
+
+            {/* Matchup */}
+            <div className="flex flex-1 flex-col justify-center gap-1.5">
+              <div className="flex items-center gap-3">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">Current At-Bat</div>
+
                 <select
                   value={selectedPitcher?.playerId ?? ""}
                   onChange={(event) => handlePitcherChange(event.target.value)}
                   disabled={currentPitcherLocked}
-                  className="h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/85 px-4 text-sm font-medium text-zinc-100 outline-none transition-colors hover:border-zinc-700 focus:border-emerald-400/35 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="h-8 w-48 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-xs font-medium text-zinc-100 outline-none transition-colors focus:border-emerald-500 disabled:opacity-50"
                 >
                   {pitchers.map((pitcher) => (
-                    <option key={pitcher.playerId} value={pitcher.playerId}>
-                      {pitcher.name}
-                    </option>
+                    <option key={pitcher.playerId} value={pitcher.playerId}>{pitcher.name}</option>
                   ))}
                 </select>
-              </ControlField>
 
-              <ControlField
-                label="Hitter"
-                helper="Pick the lineup slot first, then type or choose the hitter name from the roster suggestions."
-              >
-                <div className="grid gap-3 sm:grid-cols-[8.5rem_minmax(0,1fr)]">
+                <div className="text-zinc-600 text-xs">vs</div>
+
+                <div className="flex gap-2">
                   <select
                     value={selectedLineupSlot}
                     onChange={(event) => handleLineupSlotChange(Number(event.target.value))}
-                    className="h-12 rounded-2xl border border-zinc-800 bg-zinc-950/85 px-4 text-sm font-medium text-zinc-100 outline-none transition-colors hover:border-zinc-700 focus:border-emerald-400/35"
+                    className="h-8 w-16 rounded-lg border border-zinc-800 bg-zinc-900 px-2 text-xs font-medium text-zinc-100 outline-none focus:border-emerald-500"
                   >
-                    {Array.from({ length: 9 }, (_, index) => index + 1).map((slot) => (
-                      <option key={slot} value={slot}>
-                        Slot {slot}
-                      </option>
+                    {Array.from({ length: 9 }, (_, i) => i + 1).map((slot) => (
+                      <option key={slot} value={slot}>#{slot}</option>
                     ))}
                   </select>
                   <input
                     list={datalistId}
                     value={hitterName}
                     onChange={(event) => setHitterName(event.target.value)}
-                    placeholder="Type hitter name"
-                    className="h-12 rounded-2xl border border-zinc-800 bg-zinc-950/85 px-4 text-sm font-medium text-zinc-100 placeholder:text-zinc-600 outline-none transition-colors hover:border-zinc-700 focus:border-emerald-400/35"
+                    placeholder="Hitter name"
+                    className="h-8 w-48 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-xs font-medium text-zinc-100 outline-none focus:border-emerald-500"
                   />
-                  <datalist id={datalistId}>
-                    {hitterSuggestions.map((name) => (
-                      <option key={name} value={name} />
-                    ))}
-                  </datalist>
                 </div>
-              </ControlField>
+              </div>
 
-              <ControlField
-                label="Game State"
-                helper="These menus let you locally correct inning, half, and outs before the next plate appearance starts."
-              >
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <select
-                    value={overrideBase.inning}
-                    onChange={(event) =>
-                      handleOverrideChange("inning", Number(event.target.value))
-                    }
-                    className="h-12 rounded-2xl border border-zinc-800 bg-zinc-950/85 px-4 text-sm font-medium text-zinc-100 outline-none transition-colors hover:border-zinc-700 focus:border-emerald-400/35"
-                  >
-                    {INNING_OPTIONS.map((inning) => (
-                      <option key={inning} value={inning}>
-                        Inning {inning}
-                      </option>
-                    ))}
+              {/* Game State Override Toggle */}
+              <details className="group">
+                <summary className="cursor-pointer text-[10px] font-semibold text-zinc-500 hover:text-zinc-300 outline-none">
+                  Adjust Game State Manually
+                </summary>
+                <div className="mt-1 flex items-center gap-2">
+                  <select value={overrideBase.inning} onChange={(e) => handleOverrideChange("inning", Number(e.target.value))} className="h-7 rounded-md border border-zinc-800 bg-zinc-900 px-2 text-[10px] text-zinc-300">
+                    {INNING_OPTIONS.map((i) => <option key={i} value={i}>Inning {i}</option>)}
                   </select>
-                  <select
-                    value={overrideBase.isTopInning ? "top" : "bottom"}
-                    onChange={(event) =>
-                      handleOverrideChange(
-                        "isTopInning",
-                        event.target.value === "top"
-                      )
-                    }
-                    className="h-12 rounded-2xl border border-zinc-800 bg-zinc-950/85 px-4 text-sm font-medium text-zinc-100 outline-none transition-colors hover:border-zinc-700 focus:border-emerald-400/35"
-                  >
-                    <option value="top">Top</option>
-                    <option value="bottom">Bottom</option>
+                  <select value={overrideBase.isTopInning ? "top" : "bottom"} onChange={(e) => handleOverrideChange("isTopInning", e.target.value === "top")} className="h-7 rounded-md border border-zinc-800 bg-zinc-900 px-2 text-[10px] text-zinc-300">
+                    <option value="top">Top</option><option value="bottom">Bot</option>
                   </select>
-                  <select
-                    value={overrideBase.outs}
-                    onChange={(event) =>
-                      handleOverrideChange("outs", Number(event.target.value))
-                    }
-                    className="h-12 rounded-2xl border border-zinc-800 bg-zinc-950/85 px-4 text-sm font-medium text-zinc-100 outline-none transition-colors hover:border-zinc-700 focus:border-emerald-400/35"
-                  >
-                    {OUT_OPTIONS.map((outs) => (
-                      <option key={outs} value={outs}>
-                        {outs} Outs
-                      </option>
-                    ))}
+                  <select value={overrideBase.outs} onChange={(e) => handleOverrideChange("outs", Number(e.target.value))} className="h-7 rounded-md border border-zinc-800 bg-zinc-900 px-2 text-[10px] text-zinc-300">
+                    {OUT_OPTIONS.map((o) => <option key={o} value={o}>{o} Outs</option>)}
                   </select>
+                  {gameStateOverride && (
+                    <button onClick={handleResetOverride} className="text-[10px] text-amber-500 hover:text-amber-400">Reset override</button>
+                  )}
                 </div>
-                <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <span className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950/90 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
-                    <CircleDot className="h-3.5 w-3.5" />
-                    {overrideBase.isTopInning ? "Top" : "Bottom"} {overrideBase.inning} • {overrideBase.outs} Outs
-                  </span>
-                  {gameStateOverride ? (
-                    <button
-                      type="button"
-                      onClick={handleResetOverride}
-                      className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950/90 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-300 transition-colors hover:border-zinc-700 hover:text-zinc-100"
-                    >
-                      <RefreshCw className="h-3.5 w-3.5" />
-                      Reset Override
-                    </button>
-                  ) : null}
-                </div>
-              </ControlField>
+              </details>
             </div>
 
-            <div className="mt-5 flex flex-wrap gap-3">
-              <StatTag label="Pitcher Total" value={`${activePitcherPitchCount}`} />
-              <StatTag label="Open PA" value={openPlateAppearance ? `#${openPlateAppearance.paOrder + 1}` : "Ready"} />
-              <StatTag label="Batter Slot" value={`${selectedLineupSlot}`} />
-              <StatTag label="Plate Appearances" value={`${snapshot.plateAppearances.length}`} />
-              <StatTag
-                label="Game Status"
-                value={snapshot.game.status}
-                action={
-                  <select
-                    value={snapshot.game.status}
-                    onChange={(event) =>
-                      handleStatusChange(
-                        event.target.value as ChartingGameSnapshot["game"]["status"]
-                      )
-                    }
-                    className="rounded-full border border-transparent bg-transparent text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-300 outline-none"
-                  >
-                    <option value="draft">Draft</option>
-                    <option value="active">Active</option>
-                    <option value="final">Final</option>
-                  </select>
-                }
-              />
+            {/* Game State & Count */}
+            <div className="flex items-center gap-6">
+              <div className="text-right">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">Game State</div>
+                <div className="flex items-center gap-2 text-xs font-medium text-zinc-300">
+                  <span>{liveState.isTopInning ? "Top" : "Bot"} {liveState.inning}</span>
+                  <span className="text-zinc-600">•</span>
+                  <span>{liveState.outs} Outs</span>
+                  {needsPAClosure && (
+                    <span className="ml-2 rounded-full bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-500">Close PA</span>
+                  )}
+                </div>
+              </div>
+              <div className="border-l border-zinc-800/80 pl-6 text-right">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">Live Count</div>
+                <div className="text-3xl font-black tracking-tight text-emerald-500 leading-none">
+                  {liveState.balls}-{liveState.strikes}
+                </div>
+              </div>
             </div>
+
           </div>
         </section>
 
-        {(errorMessage || statusMessage) && (
-          <section
-            className={`rounded-2xl border px-5 py-4 text-sm ${
-              errorMessage
-                ? "border-amber-400/20 bg-amber-400/10 text-amber-100"
-                : "border-emerald-500/20 bg-emerald-500/10 text-emerald-100"
-            }`}
-          >
-            <div className="flex items-start gap-3">
-              {errorMessage ? (
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-              ) : (
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-              )}
-              <p>{errorMessage ?? statusMessage}</p>
-            </div>
-          </section>
-        )}
+        {/* Middle Content: Zone (Left) & Actions (Right) */}
+        <section className="mx-auto flex w-full max-w-7xl flex-1 gap-6 p-4 min-h-0">
 
-        <section className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)_24rem]">
-          <SurfacePanel className="min-h-[42rem]">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-                  Zone Workspace
-                </div>
-                <h2 className="mt-3 text-2xl font-black tracking-tight text-zinc-50">
-                  Location First
-                </h2>
-                <p className="mt-2 max-w-xl text-sm leading-7 text-zinc-400">
-                  Mirror the native flow: mark the target cell, pick the pitch family, then choose the action.
-                </p>
-              </div>
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3 text-right">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-                  Selected Zone
-                </div>
-                <div className="mt-2 text-lg font-black text-zinc-100">
-                  {selectedPitchResult === "hit_by_pitch"
-                    ? "HBP"
-                    : selectedLocation
-                    ? `Cell ${selectedLocation}`
-                    : "None"}
-                </div>
+          {/* Left: Zone */}
+          <div className="flex flex-col items-center rounded-[2rem] bg-zinc-900/40 p-4 min-h-0 w-fit shrink-0">
+            <div className="mb-3 flex w-full items-center justify-between gap-4">
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500 whitespace-nowrap">Zone Workspace</div>
+              <div className="inline-flex rounded-full bg-zinc-800/80 px-2 py-0.5 text-[10px] font-medium text-zinc-300">
+                Selected: <span className="ml-1 font-bold text-white">{selectedPitchResult === "hit_by_pitch" ? "HBP" : selectedLocation ? `Cell ${selectedLocation}` : "None"}</span>
               </div>
             </div>
 
-            <div className="mt-8 flex min-h-[31rem] items-center justify-center">
+            <div className="flex-1 w-[24rem] flex items-center justify-center min-h-0">
               <PitchLocationGrid
                 selectedLocation={selectedLocation}
                 disabled={selectedPitchResult === "hit_by_pitch"}
                 onSelect={(cellId) => setSelectedLocation(cellId)}
               />
             </div>
-          </SurfacePanel>
-
-          <div className="space-y-6">
-            <SurfacePanel>
-              <SectionHeading
-                eyebrow="Pitch Family"
-                title="Arsenal Filter"
-                body={
-                  selectedPitcher
-                    ? `${selectedPitcher.name} • ${selectedPitcher.throws}HP`
-                    : "Choose a pitcher to load the available pitch families."
-                }
-              />
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                {availablePitchTypes.map((pitchType) => (
-                  <SelectionButton
-                    key={pitchType}
-                    title={pitchType}
-                    subtitle={pitchTypeDescription(pitchType)}
-                    active={activePitchType === pitchType}
-                    tone={pitchTypeTone(pitchType)}
-                    onClick={() => setSelectedPitchType(pitchType)}
-                  />
-                ))}
-              </div>
-            </SurfacePanel>
-
-            <SurfacePanel>
-              <SectionHeading
-                eyebrow="Pitch Action"
-                title="Pending Result"
-                body="These actions set the next pitch outcome without committing it yet."
-              />
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                {GAME_PITCH_RESULTS.map((result) => (
-                  <SelectionButton
-                    key={result}
-                    title={pitchResultLabel(result)}
-                    subtitle={pitchResultDescription(result)}
-                    active={selectedPitchResult === result}
-                    tone={pitchResultTone(result)}
-                    onClick={() => handlePitchResultChange(result)}
-                  />
-                ))}
-              </div>
-            </SurfacePanel>
           </div>
 
-          <div className="space-y-6">
-            <SurfacePanel>
-              <SectionHeading
-                eyebrow="Lineup"
-                title="Quick Slot Access"
-                body="Tap a slot to pull the saved lineup name into the active hitter field."
-              />
-              <div className="mt-5 grid grid-cols-3 gap-3">
-                {Array.from({ length: 9 }, (_, index) => index + 1).map((slot) => (
-                  <button
-                    key={slot}
-                    type="button"
-                    onClick={() => handleLineupSlotChange(slot)}
-                    className={`rounded-2xl border px-3 py-3 text-left transition-all ${
-                      selectedLineupSlot === slot
-                        ? "border-emerald-400/35 bg-emerald-400/10 text-emerald-100 shadow-[0_18px_40px_rgba(16,185,129,0.16)]"
-                        : "border-zinc-800 bg-zinc-950/80 text-zinc-300 hover:border-zinc-700 hover:text-zinc-100"
-                    }`}
-                  >
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-                      Slot {slot}
-                    </div>
-                    <div className="mt-2 line-clamp-2 text-sm font-semibold">
-                      {lineupNameForSlot(snapshot.lineup, slot) ?? "Open slot"}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </SurfacePanel>
+          {/* Right: Actions */}
+          <div className="flex flex-1 flex-col gap-4 min-w-0 min-h-0">
+            {/* View Toggle */}
+            <div className="flex items-center rounded-xl bg-zinc-900/60 p-1 shrink-0">
+              <button
+                onClick={() => setShowHistory(false)}
+                className={`flex-1 rounded-lg py-2.5 text-xs font-bold transition-all ${!showHistory ? "bg-zinc-800 text-white shadow-sm ring-1 ring-white/10" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/40"}`}
+              >
+                Arsenal & Action
+              </button>
+              <button
+                onClick={() => setShowHistory(true)}
+                className={`flex-1 rounded-lg py-2.5 text-xs font-bold transition-all ${showHistory ? "bg-zinc-800 text-white shadow-sm ring-1 ring-white/10" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/40"}`}
+              >
+                Pitch History
+              </button>
+            </div>
 
-            <SurfacePanel>
-              <SectionHeading
-                eyebrow="Recent Sequence"
-                title="Pitch Log"
-                body="The latest entries stay visible while you chart, so you can verify count flow at a glance."
-              />
-              <div className="mt-5 space-y-3">
-                {recentPitches.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-zinc-800 bg-zinc-950/75 px-4 py-5 text-sm text-zinc-500">
-                    No pitches charted yet.
+            {!showHistory ? (
+              <div className="flex flex-1 flex-col gap-4 min-h-0">
+                {/* Column 1: Pitch Family */}
+                <SurfacePanel className="p-3 flex flex-col flex-1 h-0 min-h-0">
+                  <SectionHeading eyebrow="Arsenal" title="Pitch Family" body="" />
+                  <div className="mt-2 flex-1 min-h-0 grid auto-rows-min grid-cols-3 gap-2 overflow-y-auto pr-1">
+                    {availablePitchTypes.map((type) => (
+                      <SelectionButton
+                        key={type}
+                        title={type}
+                        subtitle=""
+                        active={activePitchType === type}
+                        tone={pitchTypeTone(type)}
+                        onClick={() => setSelectedPitchType(type)}
+                      />
+                    ))}
                   </div>
-                ) : (
-                  recentPitches.map((pitch) => (
-                    <article
-                      key={pitch.id}
-                      className="rounded-2xl border border-zinc-800 bg-zinc-950/82 px-4 py-4"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-                            Pitch {pitch.order}
-                          </div>
-                          <h3 className="mt-2 text-sm font-semibold text-zinc-100">
-                            {pitch.hitterName}
-                          </h3>
-                        </div>
-                        <span className="rounded-full border border-zinc-800 bg-zinc-900/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
-                          {pitch.count}
-                        </span>
-                      </div>
-                      <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-zinc-400">
-                        <span className="rounded-full border border-zinc-800 bg-zinc-900/90 px-2.5 py-1">
-                          {pitch.pitchType}
-                        </span>
-                        <span className="rounded-full border border-zinc-800 bg-zinc-900/90 px-2.5 py-1">
-                          {pitchResultLabel(pitch.pitchResult)}
-                        </span>
-                        <span className="rounded-full border border-zinc-800 bg-zinc-900/90 px-2.5 py-1">
-                          Top {pitch.inning}
-                        </span>
-                        {pitch.paResult ? (
-                          <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-emerald-200">
-                            {pitch.paResult}
-                          </span>
-                        ) : null}
-                      </div>
-                    </article>
-                  ))
-                )}
+                </SurfacePanel>
+
+                {/* Column 2: Pitch Result */}
+                <SurfacePanel className="p-3 flex flex-col flex-1 h-0 min-h-0">
+                  <SectionHeading eyebrow="Action" title="Pitch Result" body="" />
+                  <div className="mt-2 flex-1 min-h-0 grid auto-rows-min grid-cols-3 gap-2 overflow-y-auto pr-1">
+                    {GAME_PITCH_RESULTS.map((result) => (
+                      <SelectionButton
+                        key={result}
+                        title={pitchResultLabel(result)}
+                        subtitle=""
+                        active={selectedPitchResult === result}
+                        tone={pitchResultTone(result)}
+                        onClick={() => handlePitchResultChange(result)}
+                      />
+                    ))}
+                  </div>
+                </SurfacePanel>
               </div>
-            </SurfacePanel>
+            ) : (
+              /* Column 3: Pitch Log History */
+              <SurfacePanel className="p-5 flex-1 h-0 min-h-0 flex flex-col">
+                <SectionHeading eyebrow="History" title="Recent Pitches" body="" />
+                <div className="mt-4 flex-1 flex flex-col gap-2 overflow-y-auto pr-2">
+                  {recentPitches.length === 0 ? (
+                    <div className="py-4 text-center text-sm text-zinc-500">No pitches charted yet.</div>
+                  ) : (
+                    recentPitches.map((pitch) => (
+                      <div key={pitch.id} className="flex items-center justify-between rounded-xl bg-zinc-900/60 px-4 py-3 text-sm">
+                        <div className="font-medium text-zinc-300">{pitch.order} • {pitch.pitchType}</div>
+                        <div className="flex items-center gap-4">
+                          <span className="rounded bg-zinc-800 px-2 py-1 text-xs font-semibold text-zinc-400">{pitch.count}</span>
+                          <span className={pitch.paResult ? "text-emerald-400 font-bold" : "font-medium text-zinc-400"}>
+                            {pitch.paResult ?? pitchResultLabel(pitch.pitchResult)}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </SurfacePanel>
+            )}
           </div>
         </section>
 
-        {needsPAClosure ? (
-          <SurfacePanel className="border-amber-400/20 bg-[linear-gradient(180deg,rgba(251,191,36,0.08),rgba(9,9,11,0.74))]">
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-              <div className="max-w-2xl">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-200/80">
-                  Plate Appearance Closeout
+        {/* Bottom Static Bar: PA Closeout or Record Pitch */}
+        <section className="flex-shrink-0 border-t border-zinc-800/80 bg-zinc-950/95 p-4 backdrop-blur-xl lg:px-8 lg:py-4 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
+          <div className="mx-auto max-w-7xl">
+            {needsPAClosure ? (
+              <div className="flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+                <div>
+                  <h3 className="text-xl font-bold text-amber-500">{detailTextForClosure(liveState.closureState)}</h3>
+                  <p className="mt-1 text-sm font-medium text-amber-200/60">{guidanceText}</p>
                 </div>
-                <h2 className="mt-3 text-2xl font-black tracking-tight text-zinc-50">
-                  {detailTextForClosure(liveState.closureState)}
-                </h2>
-                <p className="mt-2 text-sm leading-7 text-zinc-200/90">{guidanceText}</p>
-                <p className="mt-3 text-xs uppercase tracking-[0.16em] text-amber-100/70">
-                  Choose the scored result to unlock the next batter.
-                </p>
-              </div>
-              <div className="rounded-2xl border border-amber-400/20 bg-zinc-950/80 px-4 py-3 text-sm text-amber-100/90">
-                Outs on closeout will move the inning automatically. A double play adds {liveState.closureState === "in_play" ? "2 outs when selected." : "the outs attached to the selected result."}
-              </div>
-            </div>
-
-            <div className="mt-8 space-y-6">
-              {closeoutGroups.map((group) => (
-                <div key={group.title}>
-                  <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-                    {group.title}
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-5">
-                    {group.results.map((result) => (
+                <div className="flex flex-wrap gap-3">
+                  {closeoutGroups.map((group) =>
+                    group.results.map((result) => (
                       <button
                         key={result}
                         type="button"
                         onClick={() => handleClosePlateAppearance(result)}
-                        className="group rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-4 text-left transition-all hover:border-amber-300/35 hover:bg-amber-400/10"
+                        className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-6 py-3.5 text-left transition-colors hover:bg-amber-500/20"
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <div className="text-sm font-bold text-zinc-100 group-hover:text-amber-100">
-                              {result}
-                            </div>
-                            <div className="mt-1 text-xs text-zinc-500 group-hover:text-zinc-300">
-                              {detailTextForPAResult(result)}
-                            </div>
-                          </div>
-                          {paResultOutsRecorded(result) > 0 ? (
-                            <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-200">
-                              {paResultOutsRecorded(result)} out
-                              {paResultOutsRecorded(result) > 1 ? "s" : ""}
-                            </span>
-                          ) : null}
-                        </div>
+                        <span className="text-sm font-bold text-amber-100">{result}</span>
+                        {paResultOutsRecorded(result) > 0 && (
+                          <span className="rounded bg-amber-500/20 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-amber-400">{paResultOutsRecorded(result)} out</span>
+                        )}
                       </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </SurfacePanel>
-        ) : null}
-
-        <section className="sticky bottom-4 z-20">
-          <div className="overflow-hidden rounded-[1.75rem] border border-zinc-800 bg-zinc-950/92 shadow-[0_28px_90px_rgba(0,0,0,0.36)] backdrop-blur-xl">
-            <div className="flex flex-col gap-5 px-5 py-5 lg:flex-row lg:items-center lg:justify-between lg:px-6">
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-zinc-800 bg-zinc-900/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
-                    Pending Pitch
-                  </span>
-                  {selectedPitchType ? (
-                    <span className="rounded-full border border-zinc-800 bg-zinc-900/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-300">
-                      {selectedPitchType}
-                    </span>
-                  ) : null}
-                  {selectedPitchResult ? (
-                    <span className="rounded-full border border-zinc-800 bg-zinc-900/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-300">
-                      {pitchResultLabel(selectedPitchResult)}
-                    </span>
-                  ) : null}
-                </div>
-                <div>
-                  <h2 className="text-xl font-black tracking-tight text-zinc-50">
-                      {buildPendingPitchSummary({
-                      selectedPitchType: activePitchType,
-                      selectedLocation,
-                      selectedPitchResult,
-                      pendingVelocity,
-                    })}
-                  </h2>
-                  <p className="mt-2 text-sm text-zinc-400">
-                    {canConfirmPitch
-                      ? "Ready to commit this pitch."
-                      : needsPAClosure
-                      ? guidanceText
-                      : "Select a pitch type, action, and zone before confirming the pitch."}
-                  </p>
+                    ))
+                  )}
                 </div>
               </div>
-
-              <div className="flex flex-col gap-3 lg:min-w-[29rem]">
-                <div className="grid gap-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
-                  <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                    Velocity
-                    <input
-                      value={pendingVelocity}
-                      onChange={(event) =>
-                        setPendingVelocity(event.target.value.replace(/[^0-9]/g, "").slice(0, 3))
-                      }
-                      inputMode="numeric"
-                      placeholder="mph"
-                      className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/85 px-4 text-sm font-medium text-zinc-100 placeholder:text-zinc-600 outline-none transition-colors hover:border-zinc-700 focus:border-emerald-400/35"
-                    />
-                  </label>
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <button
-                      type="button"
-                      onClick={clearPitchDraft}
-                      className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 text-sm font-semibold text-zinc-300 transition-colors hover:border-zinc-700 hover:text-zinc-100"
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                      Clear
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleUndo}
-                      className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 text-sm font-semibold text-zinc-300 transition-colors hover:border-zinc-700 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
-                      disabled={
-                        snapshot.plateAppearances.length === 0 && snapshot.pitches.length === 0
-                      }
-                    >
-                      <Undo2 className="h-4 w-4" />
-                      Undo
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleRecordPitch}
-                      disabled={!canConfirmPitch}
-                      className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-emerald-400/20 bg-emerald-500/12 px-4 text-sm font-semibold text-emerald-100 transition-colors hover:border-emerald-300/30 hover:bg-emerald-500/18 disabled:cursor-not-allowed disabled:border-zinc-800 disabled:bg-zinc-900/70 disabled:text-zinc-500"
-                    >
-                      <ArrowRight className="h-4 w-4" />
-                      Confirm Pitch
-                    </button>
+            ) : (
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 items-center rounded-2xl bg-zinc-900/80 px-5 text-sm font-medium text-zinc-300">
+                    <span className="uppercase tracking-widest text-zinc-500 mr-3 text-[10px] font-bold">Pending</span>
+                    <span className="text-white">{buildPendingPitchSummary({ selectedPitchType: activePitchType, selectedLocation, selectedPitchResult, pendingVelocity })}</span>
                   </div>
+                  <input
+                    value={pendingVelocity}
+                    onChange={(e) => setPendingVelocity(e.target.value.replace(/[^0-9]/g, "").slice(0, 3))}
+                    placeholder="Velo (mph)"
+                    className="h-12 w-32 rounded-2xl border border-zinc-700 bg-zinc-900/80 px-3 text-center text-sm font-bold text-white outline-none focus:border-emerald-500 transition-colors"
+                  />
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button onClick={clearPitchDraft} className="h-12 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-6 text-sm font-semibold text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 transition-all">Clear</button>
+                  <button
+                    onClick={handleUndo}
+                    disabled={snapshot.pitches.length === 0}
+                    className="h-12 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-6 text-sm font-semibold text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-50 transition-all"
+                  >Undo</button>
+                  <button
+                    onClick={handleRecordPitch}
+                    disabled={!canConfirmPitch}
+                    className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-10 font-bold text-zinc-950 transition-colors hover:bg-emerald-400 disabled:bg-zinc-800 disabled:text-zinc-500"
+                  >
+                    <ArrowRight className="h-5 w-5" /> Record Pitch
+                  </button>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </section>
       </div>
@@ -1030,7 +800,7 @@ function SurfacePanel({
 }) {
   return (
     <section
-      className={`rounded-[2rem] border border-zinc-800/80 bg-zinc-950/72 p-5 shadow-[0_26px_70px_rgba(0,0,0,0.28)] ${className}`}
+      className={`rounded-2xl border border-zinc-800/80 bg-zinc-950/72 p-4 shadow-xl ${className}`}
     >
       {children}
     </section>
@@ -1047,14 +817,14 @@ function SectionHeading({
   body: string;
 }) {
   return (
-    <header>
-      <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+    <header className="flex flex-col gap-0.5">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
         {eyebrow}
       </div>
-      <h2 className="mt-3 text-2xl font-black tracking-tight text-zinc-50">
+      <h2 className="text-lg font-bold tracking-tight text-zinc-50 leading-none">
         {title}
       </h2>
-      <p className="mt-2 text-sm leading-7 text-zinc-400">{body}</p>
+      {body && <p className="mt-1 text-xs text-zinc-400">{body}</p>}
     </header>
   );
 }
@@ -1152,15 +922,15 @@ function SelectionButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-2xl border px-4 py-4 text-left transition-all ${selectionToneClass(
+      className={`rounded-xl border px-4 py-4 text-left transition-all ${selectionToneClass(
         tone,
         active
       )}`}
     >
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-sm font-bold">{title}</div>
-          <div className="mt-1 text-xs leading-6 opacity-80">{subtitle}</div>
+          {subtitle && <div className="mt-1 text-xs leading-6 opacity-80">{subtitle}</div>}
         </div>
         {active ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" /> : null}
       </div>
@@ -1178,7 +948,7 @@ function PitchLocationGrid({
   onSelect: (cellId: number) => void;
 }) {
   return (
-    <div className="relative aspect-square w-full max-w-[38rem] rounded-[2.75rem] border border-zinc-800/80 bg-[radial-gradient(circle_at_center,_rgba(59,130,246,0.08),_transparent_48%),linear-gradient(180deg,_rgba(24,24,27,0.96),_rgba(9,9,11,0.95))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+    <div className="relative aspect-square w-full max-w-[26rem] rounded-[2.75rem] border border-zinc-800/80 bg-[radial-gradient(circle_at_center,_rgba(59,130,246,0.08),_transparent_48%),linear-gradient(180deg,_rgba(24,24,27,0.96),_rgba(9,9,11,0.95))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
       <div className="grid h-full grid-cols-5 grid-rows-5 gap-2">
         {LOCATION_CELLS.map((cell) => {
           const active = selectedLocation === cell.id;
@@ -1188,22 +958,20 @@ function PitchLocationGrid({
               type="button"
               onClick={() => onSelect(cell.id)}
               disabled={disabled}
-              className={`${cell.className} relative overflow-hidden border transition-all ${
-                active
-                  ? "border-sky-300/50 bg-sky-400/20 text-white shadow-[0_18px_50px_rgba(59,130,246,0.28)]"
-                  : "border-zinc-700 bg-zinc-900/70 text-zinc-400 hover:border-zinc-500 hover:text-zinc-100"
-              } ${disabled ? "cursor-not-allowed opacity-40" : ""}`}
+              className={`${cell.className} relative overflow-hidden border transition-all ${active
+                ? "border-sky-300/50 bg-sky-400/20 text-white shadow-[0_18px_50px_rgba(59,130,246,0.28)]"
+                : "border-zinc-700 bg-zinc-900/70 text-zinc-400 hover:border-zinc-500 hover:text-zinc-100"
+                } ${disabled ? "cursor-not-allowed opacity-40" : ""}`}
               style={{
                 clipPath: clipPathForCell(cell.kind),
                 borderRadius: cell.kind === "square" ? "1.1rem" : "1.5rem",
               }}
             >
               <span
-                className={`absolute text-lg font-black ${
-                  cell.kind === "square"
-                    ? "inset-0 flex items-center justify-center"
-                    : cornerLabelClass(cell.kind)
-                }`}
+                className={`absolute text-lg font-black ${cell.kind === "square"
+                  ? "inset-0 flex items-center justify-center"
+                  : cornerLabelClass(cell.kind)
+                  }`}
               >
                 {cell.label}
               </span>
@@ -1317,8 +1085,8 @@ function buildPendingPitchSummary({
     selectedPitchResult === "hit_by_pitch"
       ? "No zone"
       : selectedLocation
-      ? `Cell ${selectedLocation}`
-      : "Zone",
+        ? `Cell ${selectedLocation}`
+        : "Zone",
     selectedPitchResult ? pitchResultLabel(selectedPitchResult) : "Action",
   ];
 
@@ -1391,8 +1159,6 @@ function pitchTypeDescription(type: PitchType) {
       return "Offspeed separation pitch.";
     case "Split/Cut":
       return "Splitter, cutter, or hybrid offshoot.";
-    case "Other":
-      return "Track any non-standard family.";
   }
 }
 
@@ -1406,8 +1172,6 @@ function pitchResultLabel(result: PitchResult) {
       return "Swinging Strike";
     case "foul":
       return "Foul";
-    case "bunt_foul":
-      return "Bunt Foul";
     case "in_play":
       return "In Play";
     case "hit_by_pitch":
@@ -1425,8 +1189,6 @@ function pitchResultDescription(result: PitchResult) {
       return "Swing and miss.";
     case "foul":
       return "Foul ball, capped at two strikes.";
-    case "bunt_foul":
-      return "Bunt attempt that stays foul.";
     case "in_play":
       return "Triggers PA closeout selection.";
     case "hit_by_pitch":
@@ -1448,8 +1210,6 @@ function pitchTypeTone(type: PitchType): SelectionTone {
       return "emerald";
     case "Split/Cut":
       return "violet";
-    case "Other":
-      return "slate";
   }
 }
 
@@ -1462,7 +1222,6 @@ function pitchResultTone(result: PitchResult): SelectionTone {
     case "swinging_strike":
       return "amber";
     case "foul":
-    case "bunt_foul":
       return "slate";
     case "in_play":
       return "sky";

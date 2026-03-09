@@ -6,7 +6,6 @@ export const PITCH_TYPES: readonly PitchType[] = [
   "Slider",
   "Changeup",
   "Split/Cut",
-  "Other",
 ] as const;
 
 export const PITCH_RESULTS: readonly PitchResult[] = [
@@ -14,7 +13,6 @@ export const PITCH_RESULTS: readonly PitchResult[] = [
   "called_strike",
   "swinging_strike",
   "foul",
-  "bunt_foul",
   "in_play",
   "hit_by_pitch",
 ] as const;
