@@ -1469,6 +1469,8 @@ function pitchTypeDescription(type: PitchType) {
       return "Offspeed separation pitch.";
     case "Split/Cut":
       return "Splitter, cutter, or hybrid offshoot.";
+    case "Other":
+      return "Unclassified or custom pitch type.";
   }
 }
 
@@ -1482,6 +1484,8 @@ function pitchResultLabel(result: PitchResult) {
       return "Swinging Strike";
     case "foul":
       return "Foul";
+    case "bunt_foul":
+      return "Bunt Foul";
     case "in_play":
       return "In Play";
     case "hit_by_pitch":
@@ -1499,6 +1503,8 @@ function pitchResultDescription(result: PitchResult) {
       return "Swing and miss.";
     case "foul":
       return "Foul ball, capped at two strikes.";
+    case "bunt_foul":
+      return "Bunt attempt foul, capped at two strikes.";
     case "in_play":
       return "Triggers PA closeout selection.";
     case "hit_by_pitch":
@@ -1520,6 +1526,8 @@ function pitchTypeTone(type: PitchType): SelectionTone {
       return "emerald";
     case "Split/Cut":
       return "violet";
+    case "Other":
+      return "slate";
   }
 }
 
@@ -1532,6 +1540,7 @@ function pitchResultTone(result: PitchResult): SelectionTone {
     case "swinging_strike":
       return "amber";
     case "foul":
+    case "bunt_foul":
       return "slate";
     case "in_play":
       return "sky";

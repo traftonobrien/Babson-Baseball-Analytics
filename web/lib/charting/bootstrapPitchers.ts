@@ -85,11 +85,12 @@ export async function buildBootstrapPitchers(): Promise<ChartingBootstrapPitcher
 
     // Only include players who actually pitch (have a defined arsenal in Arsenals.csv)
     if (arsenal && arsenal.length > 0) {
+      const withOther = arsenal.includes("Other") ? arsenal : [...arsenal, "Other"];
       pitchers.push({
         playerId,
         name,
         throws: (HAND_BY_PLAYER_ID[playerId] ?? "R") as "R" | "L",
-        arsenalPitchTypes: arsenal,
+        arsenalPitchTypes: withOther,
       });
     }
   }

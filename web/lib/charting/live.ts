@@ -14,6 +14,7 @@ export const GAME_PITCH_RESULTS = [
   "called_strike",
   "swinging_strike",
   "foul",
+  "bunt_foul",
   "in_play",
   "hit_by_pitch",
 ] as const satisfies readonly PitchResult[];
