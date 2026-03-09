@@ -477,13 +477,19 @@ export function ChartingEditor({
   };
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-zinc-950 text-zinc-100 overflow-hidden">
+    <div
+      className="fixed inset-0 flex flex-col text-zinc-100 overflow-hidden"
+      style={{
+        backgroundImage:
+          "radial-gradient(circle at top left, rgba(var(--babson-green-rgb), 0.18), transparent 24%), radial-gradient(circle at top right, rgba(var(--babson-grey-rgb), 0.14), transparent 26%), linear-gradient(180deg, #09090b 0%, #111827 56%, #09090b 100%)",
+      }}
+    >
       {/* Top Header */}
-      <header className="flex items-center justify-between border-b border-zinc-800/80 bg-zinc-950/90 px-6 py-4 lg:px-8">
+      <header className="flex items-center justify-between border-b border-[rgba(var(--babson-grey-rgb),0.18)] bg-zinc-950/90 px-6 py-4 lg:px-8">
         <div className="flex items-center gap-4">
           <Link
             href={`/charting/games/${snapshot.game.id}`}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-zinc-900 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] text-zinc-400 transition-colors hover:border-[rgba(var(--babson-grey-rgb),0.32)] hover:text-zinc-100"
             aria-label="Back to game view"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -510,7 +516,7 @@ export function ChartingEditor({
         <div className="flex items-center gap-4">
           <button
             onClick={() => setIsTopBarOpen(!isTopBarOpen)}
-            className="flex items-center gap-2 rounded-full bg-zinc-900 border border-zinc-800 px-3 py-1.5 text-xs font-bold text-zinc-300 hover:bg-zinc-800 transition-colors"
+            className="flex items-center gap-2 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 py-1.5 text-xs font-bold text-[rgb(212,220,218)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)] hover:border-[rgba(var(--babson-grey-rgb),0.32)] transition-colors"
           >
             <span>{isTopBarOpen ? "Hide Bar" : "Show Bar"}</span>
             <ChevronDown className={`h-4 w-4 transition-transform ${isTopBarOpen ? 'rotate-180' : ''}`} />
@@ -531,7 +537,7 @@ export function ChartingEditor({
           <select
             value={snapshot.game.status}
             onChange={(event) => handleStatusChange(event.target.value as ChartingGameSnapshot["game"]["status"])}
-            className="h-9 cursor-pointer rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-xs font-medium text-zinc-300 outline-none hover:bg-zinc-800 focus:border-emerald-500"
+            className="h-9 cursor-pointer rounded-lg border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-medium text-zinc-300 outline-none hover:border-[rgba(var(--babson-grey-rgb),0.32)] focus:border-[rgba(var(--babson-green-rgb),0.45)]"
           >
             <option value="draft">Draft</option>
             <option value="active">Active</option>
@@ -555,100 +561,84 @@ export function ChartingEditor({
       {/* Main Workspace */}
       <div className="flex flex-1 flex-col relative">
 
-        {/* Top Horizontal Bar: Matchup, Count, Game State */}
+        {/* Top Bar: Distinct sections for At-Bat, Game State, Pitch Count */}
         {isTopBarOpen && (
-          <section className="border-b border-zinc-800/80 bg-zinc-950 px-4 py-2 lg:px-6">
-            <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
+          <section className="border-b border-[rgba(var(--babson-grey-rgb),0.18)] px-3 py-1.5 lg:px-4" style={{ backgroundImage: "linear-gradient(to bottom, rgba(var(--babson-grey-rgb), 0.04), transparent)" }}>
+            <div className="mx-auto flex max-w-7xl flex-nowrap items-stretch gap-3 overflow-x-auto">
 
-              {/* Matchup */}
-              <div className="flex flex-1 flex-col justify-center gap-1.5">
-                <div className="flex items-center gap-3">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">Current At-Bat</div>
-
-                  <div className="flex gap-2">
-                    <input
-                      list={pitcherDatalistId}
-                      value={pitcherNameInput}
-                      onChange={handlePitcherInputChange}
-                      disabled={currentPitcherLocked}
-                      placeholder="Pitcher Name (e.g. Wilson)"
-                      className="h-10 w-64 rounded-xl border border-zinc-800 bg-zinc-900 px-4 text-sm font-bold text-zinc-100 outline-none transition-colors focus:border-emerald-500 placeholder:font-normal placeholder:text-zinc-600 disabled:opacity-50"
-                    />
-                    <datalist id={pitcherDatalistId}>
-                      {pitchers.map((pitcher) => (
-                        <option key={pitcher.playerId} value={pitcher.name} />
-                      ))}
-                    </datalist>
-                  </div>
-
-                  <div className="text-zinc-600 text-xs text-center px-1 font-semibold italic">vs</div>
-
-                  <div className="flex gap-2">
-                    <input
-                      list={datalistId}
-                      value={hitterName}
-                      onChange={(event) => setHitterName(event.target.value)}
-                      placeholder="Hitter Name (e.g. Smith)"
-                      className="h-10 w-64 rounded-xl border border-zinc-800 bg-zinc-900 px-4 text-sm font-bold text-zinc-100 outline-none transition-colors focus:border-emerald-500 placeholder:font-normal placeholder:text-zinc-600"
-                    />
-                    <datalist id={datalistId}>
-                      {rosterPlayers.map((player) => (
+              {/* Section 1: Current At-Bat */}
+              <div className="flex flex-[3] min-w-0 flex-col rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-2 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
+                <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500 mb-1">Current At-Bat</div>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    list={pitcherDatalistId}
+                    value={pitcherNameInput}
+                    onChange={handlePitcherInputChange}
+                    disabled={currentPitcherLocked}
+                    placeholder="Pitcher Name (e.g. Wilson)"
+                    className="h-7 flex-1 min-w-0 rounded-lg border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-bold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] focus:shadow-[0_0_0_1px_rgba(var(--babson-green-rgb),0.12)] placeholder:font-normal placeholder:text-zinc-600 disabled:opacity-50"
+                  />
+                  <datalist id={pitcherDatalistId}>
+                    {pitchers.map((pitcher) => (
+                      <option key={pitcher.playerId} value={pitcher.name} />
+                    ))}
+                  </datalist>
+                  <span className="text-zinc-600 text-[10px] font-semibold italic shrink-0">vs</span>
+                  <input
+                    list={datalistId}
+                    value={hitterName}
+                    onChange={(event) => setHitterName(event.target.value)}
+                    placeholder="Hitter Name (e.g. Smith)"
+                    className="h-7 flex-1 min-w-0 rounded-lg border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-bold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] focus:shadow-[0_0_0_1px_rgba(var(--babson-green-rgb),0.12)] placeholder:font-normal placeholder:text-zinc-600"
+                  />
+                  <datalist id={datalistId}>
+                    {rosterPlayers
+                      .filter((player) => player.isHitter)
+                      .map((player) => (
                         <option key={player.playerId ?? player.slug} value={player.name} />
                       ))}
-                    </datalist>
-                  </div>
+                  </datalist>
                 </div>
-
-                {/* Game State Override Toggle */}
-                <details className="group">
-                  <summary className="cursor-pointer text-[10px] font-semibold text-zinc-500 hover:text-zinc-300 outline-none flex items-center gap-2">
-                    <span>Adjust Game State Manually</span>
-                    <span className="text-zinc-700">•</span>
-                    <span className="font-medium text-zinc-400">
-                      Inning {liveState.inning}, {liveState.outs} Outs
-                    </span>
-                  </summary>
-                  <div className="mt-2 flex items-center gap-2">
-                    <select value={overrideBase.inning} onChange={(e) => handleOverrideChange("inning", Number(e.target.value))} className="h-7 rounded-md border border-zinc-800 bg-zinc-900 px-2 text-[10px] text-zinc-300">
-                      {INNING_OPTIONS.map((i) => <option key={i} value={i}>Inning {i}</option>)}
-                    </select>
-                    <select value={overrideBase.isTopInning ? "top" : "bottom"} onChange={(e) => handleOverrideChange("isTopInning", e.target.value === "top")} className="h-7 rounded-md border border-zinc-800 bg-zinc-900 px-2 text-[10px] text-zinc-300">
-                      <option value="top">Top</option><option value="bottom">Bot</option>
-                    </select>
-                    <select value={overrideBase.outs} onChange={(e) => handleOverrideChange("outs", Number(e.target.value))} className="h-7 rounded-md border border-zinc-800 bg-zinc-900 px-2 text-[10px] text-zinc-300">
-                      {OUT_OPTIONS.map((o) => <option key={o} value={o}>{o} Outs</option>)}
-                    </select>
-                    {gameStateOverride && (
-                      <button onClick={handleResetOverride} className="text-[10px] text-amber-500 hover:text-amber-400">Reset override</button>
-                    )}
-                  </div>
-                </details>
               </div>
 
-              {/* Pitch Count & Live Count */}
-              <div className="flex items-center gap-6">
-                <div className="text-right flex items-center gap-4">
-                  {needsPAClosure && (
-                    <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-3 py-1 font-bold tracking-widest text-amber-500 text-xs shadow-[0_0_15px_rgba(245,158,11,0.1)]">CLOSE PA</span>
+              {/* Section 2: Game State - two pills with dropdowns */}
+              <div className="flex w-fit shrink-0 flex-col justify-center rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-2 px-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
+                <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500 mb-1">Game State</div>
+                <div className="flex items-center gap-2">
+                  <select value={overrideBase.inning} onChange={(e) => handleOverrideChange("inning", Number(e.target.value))} className="h-7 min-w-[5rem] rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] pl-3 pr-7 py-0 text-xs font-semibold text-[rgb(212,220,218)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
+                    {INNING_OPTIONS.map((i) => <option key={i} value={i}>Inning {i}</option>)}
+                  </select>
+                  <select value={overrideBase.outs} onChange={(e) => handleOverrideChange("outs", Number(e.target.value))} className="h-7 min-w-[4.5rem] rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] pl-3 pr-7 py-0 text-xs font-semibold text-[rgb(212,220,218)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
+                    {OUT_OPTIONS.map((o) => <option key={o} value={o}>{o} Outs</option>)}
+                  </select>
+                  {gameStateOverride && (
+                    <button onClick={handleResetOverride} className="text-[10px] font-semibold text-amber-500 hover:text-amber-400 shrink-0">Reset</button>
                   )}
-                  <div className="flex flex-col items-end">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500 mb-1">Pitch Count</div>
-                    <div className="flex items-center gap-2">
-                      <span className="flex items-center gap-1.5 rounded-full bg-zinc-800 border border-zinc-700/50 px-3 py-1 shadow-sm">
-                        <span className="text-[9px] font-bold tracking-widest text-zinc-400">TOT</span>
-                        <span className="text-sm font-black text-white">{totalPitches}</span>
-                      </span>
-                      <span className="flex items-center gap-1.5 rounded-full bg-zinc-800 border border-zinc-700/50 px-3 py-1 shadow-sm">
-                        <span className="text-[9px] font-bold tracking-widest text-zinc-400">INN</span>
-                        <span className="text-sm font-black text-white">{inningPitches}</span>
-                      </span>
-                    </div>
-                  </div>
                 </div>
-                <div className="border-l border-zinc-800/80 pl-6 text-right">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500 mb-1">Live Count</div>
-                  <div className="text-3xl font-black tracking-tight text-emerald-500 leading-none">
-                    {liveState.balls}-{liveState.strikes}
+              </div>
+
+              {/* Section 3: Pitch Count & Live Count - single row */}
+              <div className="flex flex-[2] min-w-0 flex-col justify-center rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-2 px-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
+                <div className="flex items-center gap-2">
+                  <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500 shrink-0">Pitch Count</div>
+                  {needsPAClosure && (
+                    <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 font-bold tracking-widest text-amber-500 text-[10px] shrink-0">CLOSE PA</span>
+                  )}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="flex items-center gap-1.5 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-2 py-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
+                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[rgb(212,220,218)]">Total</span>
+                      <span className="text-sm font-black text-white">{totalPitches}</span>
+                    </span>
+                    <span className="flex items-center gap-1.5 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-2 py-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
+                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[rgb(212,220,218)]">Inning</span>
+                      <span className="text-sm font-black text-white">{inningPitches}</span>
+                    </span>
+                  </div>
+                  <div className="flex flex-1 min-w-0 items-center justify-end gap-2 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
+                    <span className="text-[9px] font-semibold uppercase tracking-wider text-[rgb(212,220,218)] shrink-0">Live Count</span>
+                    <span className="text-2xl font-black tracking-[0.35em] text-[var(--babson-green)] leading-none tabular-nums">
+                      {liveState.balls}-{liveState.strikes}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -656,16 +646,19 @@ export function ChartingEditor({
           </section>
         )}
 
-        {/* Zone Workspace: Prominent top canvas */}
-        <section className="flex-1 flex flex-col items-center justify-center min-h-0 p-4 overflow-hidden">
-          <div className="flex flex-col items-center w-full max-w-[28rem] h-full min-h-0">
-            <div className="mb-2 flex w-full items-center justify-between gap-4 shrink-0">
+        {/* Middle Content: Zone (Left) & Actions (Right) */}
+        <section className="mx-auto flex w-full max-w-7xl flex-1 gap-6 p-4 min-h-0">
+
+          {/* Left: Zone */}
+          <div className="flex flex-col items-center rounded-[2rem] border border-[rgba(var(--babson-grey-rgb),0.12)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-4 min-h-0 w-fit shrink-0 shadow-[0_24px_64px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
+            <div className="mb-3 flex w-full items-center justify-between gap-4">
               <div className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500 whitespace-nowrap">Zone Workspace</div>
               <div className="inline-flex rounded-full bg-zinc-800/80 px-2 py-0.5 text-[10px] font-medium text-zinc-300">
                 Selected: <span className="ml-1 font-bold text-white">{selectedPitchResult === "hit_by_pitch" ? "HBP" : selectedLocation ? `Cell ${selectedLocation}` : "None"}</span>
               </div>
             </div>
-            <div className="flex-1 w-full aspect-square max-h-full flex items-center justify-center min-h-0">
+
+            <div className="flex-1 w-[24rem] flex items-center justify-center min-h-0">
               <PitchLocationGrid
                 selectedLocation={selectedLocation}
                 disabled={selectedPitchResult === "hit_by_pitch"}
@@ -673,10 +666,89 @@ export function ChartingEditor({
               />
             </div>
           </div>
+
+          {/* Right: Actions */}
+          <div className="flex flex-1 flex-col gap-4 min-w-0 min-h-0">
+            {/* View Toggle */}
+            <div className="flex items-center rounded-xl border border-[rgba(var(--babson-grey-rgb),0.12)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.06),rgba(var(--babson-grey-rgb),0.04)_58%,rgba(9,9,11,0.92)_100%)] p-1 shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
+              <button
+                onClick={() => setShowHistory(false)}
+                className={`flex-1 rounded-lg py-2.5 text-xs font-bold transition-all ${!showHistory ? "bg-zinc-800 text-white shadow-sm ring-1 ring-white/10" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/40"}`}
+              >
+                Arsenal & Action
+              </button>
+              <button
+                onClick={() => setShowHistory(true)}
+                className={`flex-1 rounded-lg py-2.5 text-xs font-bold transition-all ${showHistory ? "bg-zinc-800 text-white shadow-sm ring-1 ring-white/10" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/40"}`}
+              >
+                Pitch History
+              </button>
+            </div>
+
+            {!showHistory ? (
+              <div className="flex flex-1 flex-col gap-4 min-h-0">
+                {/* Column 1: Pitch Family */}
+                <SurfacePanel className="p-3 flex flex-col flex-1 h-0 min-h-0">
+                  <SectionHeading eyebrow="Arsenal" title="Pitch Family" body="" />
+                  <div className="mt-2 flex-1 min-h-0 grid auto-rows-min grid-cols-3 gap-2 overflow-y-auto pr-1">
+                    {availablePitchTypes.map((type) => (
+                      <SelectionButton
+                        key={type}
+                        title={type}
+                        subtitle=""
+                        active={activePitchType === type}
+                        tone={pitchTypeTone(type)}
+                        onClick={() => setSelectedPitchType(type)}
+                      />
+                    ))}
+                  </div>
+                </SurfacePanel>
+
+                {/* Column 2: Pitch Result */}
+                <SurfacePanel className="p-3 flex flex-col flex-1 h-0 min-h-0">
+                  <SectionHeading eyebrow="Action" title="Pitch Result" body="" />
+                  <div className="mt-2 flex-1 min-h-0 grid auto-rows-min grid-cols-3 gap-2 overflow-y-auto pr-1">
+                    {GAME_PITCH_RESULTS.map((result) => (
+                      <SelectionButton
+                        key={result}
+                        title={pitchResultLabel(result)}
+                        subtitle=""
+                        active={selectedPitchResult === result}
+                        tone={pitchResultTone(result)}
+                        onClick={() => handlePitchResultChange(result)}
+                      />
+                    ))}
+                  </div>
+                </SurfacePanel>
+              </div>
+            ) : (
+              /* Column 3: Pitch Log History */
+              <SurfacePanel className="p-5 flex-1 h-0 min-h-0 flex flex-col">
+                <SectionHeading eyebrow="History" title="Recent Pitches" body="" />
+                <div className="mt-4 flex-1 flex flex-col gap-2 overflow-y-auto pr-2">
+                  {recentPitches.length === 0 ? (
+                    <div className="py-4 text-center text-sm text-zinc-500">No pitches charted yet.</div>
+                  ) : (
+                    recentPitches.map((pitch) => (
+                      <div key={pitch.id} className="flex items-center justify-between rounded-xl bg-zinc-900/60 px-4 py-3 text-sm">
+                        <div className="font-medium text-zinc-300">{pitch.order} • {pitch.pitchType}</div>
+                        <div className="flex items-center gap-4">
+                          <span className="rounded bg-zinc-800 px-2 py-1 text-xs font-semibold text-zinc-400">{pitch.count}</span>
+                          <span className={pitch.paResult ? "text-emerald-400 font-bold" : "font-medium text-zinc-400"}>
+                            {pitch.paResult ?? pitchResultLabel(pitch.pitchResult)}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </SurfacePanel>
+            )}
+          </div>
         </section>
 
-        {/* Bottom Dock: 3-column layout for Arsenal, Action, Record */}
-        <section className="flex-shrink-0 border-t border-zinc-800/80 bg-zinc-950/95 p-4 backdrop-blur-xl lg:px-8 lg:py-4 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
+        {/* Bottom Static Bar: PA Closeout or Record Pitch */}
+        <section className="flex-shrink-0 border-t border-[rgba(var(--babson-grey-rgb),0.18)] bg-zinc-950/95 p-4 backdrop-blur-xl lg:px-8 lg:py-4 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
           <div className="mx-auto max-w-7xl">
             {needsPAClosure ? (
               <div className="flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
@@ -703,70 +775,34 @@ export function ChartingEditor({
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
-                {/* Column 1: Pitch Family (Arsenal) */}
-                <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/72 p-3">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500 mb-2">Arsenal</div>
-                  <div className="flex flex-wrap gap-2">
-                    {availablePitchTypes.map((type) => (
-                      <SelectionButton
-                        key={type}
-                        title={type}
-                        subtitle=""
-                        active={activePitchType === type}
-                        tone={pitchTypeTone(type)}
-                        onClick={() => setSelectedPitchType(type)}
-                      />
-                    ))}
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 items-center rounded-2xl border border-[rgba(var(--babson-grey-rgb),0.12)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-5 text-sm font-medium text-zinc-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
+                    <span className="uppercase tracking-widest text-zinc-500 mr-3 text-[10px] font-bold">Pending</span>
+                    <span className="text-white">{buildPendingPitchSummary({ selectedPitchType: activePitchType, selectedLocation, selectedPitchResult, pendingVelocity })}</span>
                   </div>
+                  <input
+                    value={pendingVelocity}
+                    onChange={(e) => setPendingVelocity(e.target.value.replace(/[^0-9]/g, "").slice(0, 3))}
+                    placeholder="Velo (mph)"
+                    className="h-12 w-32 rounded-2xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-center text-sm font-bold text-white outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)] focus:shadow-[0_0_0_1px_rgba(var(--babson-green-rgb),0.12)] transition-colors"
+                  />
                 </div>
 
-                {/* Column 2: Pitch Result (Action) */}
-                <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/72 p-3">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500 mb-2">Action</div>
-                  <div className="flex flex-wrap gap-2">
-                    {GAME_PITCH_RESULTS.map((result) => (
-                      <SelectionButton
-                        key={result}
-                        title={pitchResultLabel(result)}
-                        subtitle=""
-                        active={selectedPitchResult === result}
-                        tone={pitchResultTone(result)}
-                        onClick={() => handlePitchResultChange(result)}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Column 3: Pending, Velo, Record */}
-                <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/72 p-3 flex flex-col gap-3">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <div className="flex-1 min-w-[8rem] flex h-10 items-center rounded-xl bg-zinc-900/80 px-3 text-sm font-medium text-zinc-300 truncate">
-                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mr-2">Pending</span>
-                      <span className="truncate text-white">{buildPendingPitchSummary({ selectedPitchType: activePitchType, selectedLocation, selectedPitchResult, pendingVelocity })}</span>
-                    </div>
-                    <input
-                      value={pendingVelocity}
-                      onChange={(e) => setPendingVelocity(e.target.value.replace(/[^0-9]/g, "").slice(0, 3))}
-                      placeholder="Velo"
-                      className="h-10 w-20 rounded-xl border border-zinc-700 bg-zinc-900/80 px-2 text-center text-sm font-bold text-white outline-none focus:border-emerald-500 transition-colors"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <button onClick={clearPitchDraft} className="h-10 rounded-xl border border-zinc-800 bg-zinc-900/80 px-4 text-xs font-semibold text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 transition-all">Clear</button>
-                    <button
-                      onClick={handleUndo}
-                      disabled={snapshot.pitches.length === 0}
-                      className="h-10 rounded-xl border border-zinc-800 bg-zinc-900/80 px-4 text-xs font-semibold text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-50 transition-all"
-                    >Undo</button>
-                    <button
-                      onClick={handleRecordPitch}
-                      disabled={!canConfirmPitch}
-                      className="flex-1 flex h-10 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 font-bold text-zinc-950 text-sm transition-colors hover:bg-emerald-400 disabled:bg-zinc-800 disabled:text-zinc-500"
-                    >
-                      <ArrowRight className="h-4 w-4" /> Record
-                    </button>
-                  </div>
+                <div className="flex items-center gap-3">
+                  <button onClick={clearPitchDraft} className="h-12 rounded-2xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-6 text-sm font-semibold text-[rgb(212,220,218)] hover:border-[rgba(var(--babson-grey-rgb),0.38)] hover:text-zinc-200 transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">Clear</button>
+                  <button
+                    onClick={handleUndo}
+                    disabled={snapshot.pitches.length === 0}
+                    className="h-12 rounded-2xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-6 text-sm font-semibold text-[rgb(212,220,218)] hover:border-[rgba(var(--babson-grey-rgb),0.38)] hover:text-zinc-200 disabled:opacity-50 transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]"
+                  >Undo</button>
+                  <button
+                    onClick={handleRecordPitch}
+                    disabled={!canConfirmPitch}
+                    className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-transparent bg-[var(--babson-green)] px-10 font-bold text-white shadow-[0_12px_26px_rgba(var(--babson-green-rgb),0.22)] transition-colors hover:bg-[#00573a] disabled:border-[rgba(var(--babson-grey-rgb),0.22)] disabled:bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] disabled:text-zinc-500 disabled:shadow-none"
+                  >
+                    <ArrowRight className="h-5 w-5" /> Record Pitch
+                  </button>
                 </div>
               </div>
             )}
@@ -806,7 +842,7 @@ function SurfacePanel({
 }) {
   return (
     <section
-      className={`rounded-2xl border border-zinc-800/80 bg-zinc-950/72 p-4 shadow-xl ${className}`}
+      className={`rounded-2xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-4 shadow-[0_24px_64px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)] ${className}`}
     >
       {children}
     </section>

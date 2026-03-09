@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Activity,
   BarChart3,
@@ -100,7 +101,16 @@ const NAV_ITEMS: TubelightNavItem[] = [
   },
 ];
 
+function isChartingEditorRoute(pathname: string | null): boolean {
+  return pathname != null && /^\/charting\/games\/[^/]+\/edit$/.test(pathname);
+}
+
 export default function Header() {
+  const pathname = usePathname();
+  if (isChartingEditorRoute(pathname)) {
+    return null;
+  }
+
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-800/70 bg-zinc-900/78 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 sm:px-6">
