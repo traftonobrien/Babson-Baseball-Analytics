@@ -53,7 +53,7 @@ final class GameStore {
             if let rp = rosterPlayers.first(where: { $0.playerId == p.playerId }) {
                 return rp.canAppearInPitcherPicker
             }
-            return true
+            return false
         }
     }
 
