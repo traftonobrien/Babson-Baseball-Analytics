@@ -78,7 +78,7 @@ struct LiveChartingBottomDock: View {
                 pendingPitchFooter
             }
         }
-        .padding(16)
+        .padding(10)
         // Glassmorphic styling for the bottom dock
         .background(.ultraThinMaterial)
         .background(Color(white: 1.0, opacity: 0.85))

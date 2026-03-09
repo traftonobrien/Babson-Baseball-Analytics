@@ -167,7 +167,7 @@ struct LiveChartingTopBar: View {
 
 
     private var topBarWorkspace: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .center, spacing: 10) {
                 topBarMetricsStrip
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -176,16 +176,16 @@ struct LiveChartingTopBar: View {
             }
 
             // Unified Matchup + Count Card to reduce vertical height and clutter
-            HStack(alignment: .center, spacing: 16) {
+            HStack(alignment: .center, spacing: 12) {
                 pitcherSelector
                     .frame(minWidth: 0, maxWidth: .infinity)
 
-                Divider().frame(height: 32)
+                Divider().frame(height: 24)
 
                 hitterSelector
                     .frame(minWidth: 0, maxWidth: .infinity)
 
-                Divider().frame(height: 32)
+                Divider().frame(height: 24)
 
                 CountBadge(
                     title: isLiveABMode ? "Live Count" : "Count",
@@ -195,10 +195,9 @@ struct LiveChartingTopBar: View {
                     canEditPreset: canEditLiveABCountPreset,
                     onSelectPreset: isLiveABMode ? { chartingState.setLiveABCountPreset($0) } : nil
                 )
-                .frame(width: 200, alignment: .trailing)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
             .background(Color.white.opacity(0.5)) // Unified background
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }

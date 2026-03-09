@@ -17,7 +17,7 @@ struct LiveChartingView: View {
     @Environment(\.dismiss) private var dismiss
 
     private let outerPadding: CGFloat = 16
-    private let layoutSpacing: CGFloat = 16
+    private let layoutSpacing: CGFloat = 12
 
     var body: some View {
         GeometryReader { proxy in
@@ -78,7 +78,7 @@ struct LiveChartingView: View {
                 handleUndo: handleUndo
             )
                 .padding(.horizontal, outerPadding)
-                .padding(.bottom, 12)
+                .padding(.bottom, 8)
         }
         .blur(radius: requiresLandscapeOrientation ? 18 : 0)
         .overlay {
@@ -1151,13 +1151,15 @@ struct CountBadge: View {
                         } label: {
                             HStack(spacing: 6) {
                                 Text("Preset \(preset.rawValue)")
+                                Spacer(minLength: 4)
                                 Image(systemName: "chevron.down")
                                     .font(.caption2.bold())
                             }
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(canEditPreset ? .blue : .secondary)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 4)
+                            .frame(minWidth: 100)
                             .background(Color.blue.opacity(canEditPreset ? 0.12 : 0.07))
                             .clipShape(Capsule())
                         }
@@ -1173,15 +1175,15 @@ struct CountBadge: View {
             Spacer(minLength: 0)
 
             Text("\(balls)-\(strikes)")
-                .font(.system(size: 36, weight: .bold, design: .monospaced))
+                .font(.system(size: 32, weight: .bold, design: .monospaced))
                 .foregroundStyle(.blue)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
         .background(Color.white.opacity(0.85))
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
 
@@ -1218,10 +1220,10 @@ struct MatchupSelectorLabel: View {
                 .font(.caption.bold())
                 .foregroundStyle(.secondary)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
         .background(Color.white.opacity(isEnabled ? 0.92 : 0.65))
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .opacity(isEnabled ? 1 : 0.72)
     }
 }
