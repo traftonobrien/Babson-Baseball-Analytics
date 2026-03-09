@@ -1,11 +1,11 @@
 ---
 name: charting-branch-sync
-description: Safely sync the repo's `codex/charting-app` branch with `origin/main` and push the result without moving `main`. Use when the user asks to keep the charting app branch current with main, rebase or merge main into the app branch, check branch drift, or push charting app updates while leaving main untouched.
+description: Safely sync the repo's `codex/charting-app` staging branch with `origin/main`, and promote validated charting work back into `main` when it is ready to ship. Use when the user asks to keep the charting branch current with main, check branch drift, or merge staged charting work into `main`.
 ---
 
 # Charting Branch Sync
 
-Use this skill to update `codex/charting-app` from `origin/main` without changing `main`.
+Use this skill to keep `codex/charting-app` aligned with `origin/main`, or to promote validated charting work from `codex/charting-app` back into `main`.
 
 ## Default Workflow
 
@@ -21,6 +21,12 @@ Use this skill to update `codex/charting-app` from `origin/main` without changin
    - whether the script rebased or merged
    - whether the push happened
    - the new `HEAD` commit
+
+## Current Branch Roles
+
+- `main` is the production branch for the web app and the branch Vercel deploys.
+- `codex/charting-app` is a staging/reference branch for charting work, including legacy iOS context and any isolated charting experiments.
+- If a charting change is web-facing and ready to ship, merge it into `main` instead of leaving it to live indefinitely on `codex/charting-app`.
 
 ## Modes
 
@@ -46,18 +52,26 @@ Use this skill to update `codex/charting-app` from `origin/main` without changin
 ## Rules
 
 - Treat `origin/main` as the source of truth, not local `main`.
-- Do not move `main`.
+- Do not move `main` unless the task is explicitly to promote validated charting work into `main`.
 - Refuse to run if the worktree is dirty unless the user explicitly asks to handle those changes first.
 - Stop on rebase or merge conflicts and report the conflicting files instead of improvising.
 - Prefer the script over manually rewriting the same Git sequence.
 
 ## Deployment Topology
-When working on both the Next.js backend and the iOS App:
+Current expected flow:
 
-- **Web Changes** (`web/` directory): API routes, schema changes, and logic need to be accessible by the iPad in production. **These must be merged into `main`** so Vercel can deploy them.
-- **iOS Changes** (`ios/` directory): Features and native app code live only on the `codex/charting-app` branch. Vercel doesn't build these, so compiling/deploying happens through Xcode natively.
+- **Web changes** (`web/`, charting APIs, schema, shared logic): ship from `main`.
+- **Staged charting work**: can be developed on `codex/charting-app`, but it should be merged back into `main` once validated.
+- **Legacy iOS code** (`ios/`): may remain on `codex/charting-app` as reference material, but it is no longer the deployment target for the charting product.
 
-If you make web API changes on the charting branch, you should check out `main` and manually merge `codex/charting-app` (resolving conflicts by taking the charting version for tracking-related files) and push to `origin/main` to trigger a Vercel deploy.
+When a charting branch commit is ready for production:
+
+1. Fetch `origin`.
+2. Check out `main`.
+3. Prefer `git merge --ff-only codex/charting-app` if `main` is simply behind the staging branch.
+4. If a true merge is required, use a normal non-interactive merge and resolve charting-related conflicts deliberately.
+5. Push `origin/main`.
+6. Fast-forward `codex/charting-app` back to `main` so the staging branch stays aligned after promotion.
 
 ## Resource
 
