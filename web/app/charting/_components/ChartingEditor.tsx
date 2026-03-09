@@ -656,19 +656,16 @@ export function ChartingEditor({
           </section>
         )}
 
-        {/* Middle Content: Zone (Left) & Actions (Right) */}
-        <section className="mx-auto flex w-full max-w-7xl flex-1 gap-6 p-4 min-h-0">
-
-          {/* Left: Zone */}
-          <div className="flex flex-col items-center rounded-[2rem] bg-zinc-900/40 p-4 min-h-0 w-fit shrink-0">
-            <div className="mb-3 flex w-full items-center justify-between gap-4">
+        {/* Zone Workspace: Prominent top canvas */}
+        <section className="flex-1 flex flex-col items-center justify-center min-h-0 p-4 overflow-hidden">
+          <div className="flex flex-col items-center w-full max-w-[28rem] h-full min-h-0">
+            <div className="mb-2 flex w-full items-center justify-between gap-4 shrink-0">
               <div className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500 whitespace-nowrap">Zone Workspace</div>
               <div className="inline-flex rounded-full bg-zinc-800/80 px-2 py-0.5 text-[10px] font-medium text-zinc-300">
                 Selected: <span className="ml-1 font-bold text-white">{selectedPitchResult === "hit_by_pitch" ? "HBP" : selectedLocation ? `Cell ${selectedLocation}` : "None"}</span>
               </div>
             </div>
-
-            <div className="flex-1 w-[24rem] flex items-center justify-center min-h-0">
+            <div className="flex-1 w-full aspect-square max-h-full flex items-center justify-center min-h-0">
               <PitchLocationGrid
                 selectedLocation={selectedLocation}
                 disabled={selectedPitchResult === "hit_by_pitch"}
@@ -676,88 +673,9 @@ export function ChartingEditor({
               />
             </div>
           </div>
-
-          {/* Right: Actions */}
-          <div className="flex flex-1 flex-col gap-4 min-w-0 min-h-0">
-            {/* View Toggle */}
-            <div className="flex items-center rounded-xl bg-zinc-900/60 p-1 shrink-0">
-              <button
-                onClick={() => setShowHistory(false)}
-                className={`flex-1 rounded-lg py-2.5 text-xs font-bold transition-all ${!showHistory ? "bg-zinc-800 text-white shadow-sm ring-1 ring-white/10" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/40"}`}
-              >
-                Arsenal & Action
-              </button>
-              <button
-                onClick={() => setShowHistory(true)}
-                className={`flex-1 rounded-lg py-2.5 text-xs font-bold transition-all ${showHistory ? "bg-zinc-800 text-white shadow-sm ring-1 ring-white/10" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/40"}`}
-              >
-                Pitch History
-              </button>
-            </div>
-
-            {!showHistory ? (
-              <div className="flex flex-1 flex-col gap-4 min-h-0">
-                {/* Column 1: Pitch Family */}
-                <SurfacePanel className="p-3 flex flex-col flex-1 h-0 min-h-0">
-                  <SectionHeading eyebrow="Arsenal" title="Pitch Family" body="" />
-                  <div className="mt-2 flex-1 min-h-0 grid auto-rows-min grid-cols-3 gap-2 overflow-y-auto pr-1">
-                    {availablePitchTypes.map((type) => (
-                      <SelectionButton
-                        key={type}
-                        title={type}
-                        subtitle=""
-                        active={activePitchType === type}
-                        tone={pitchTypeTone(type)}
-                        onClick={() => setSelectedPitchType(type)}
-                      />
-                    ))}
-                  </div>
-                </SurfacePanel>
-
-                {/* Column 2: Pitch Result */}
-                <SurfacePanel className="p-3 flex flex-col flex-1 h-0 min-h-0">
-                  <SectionHeading eyebrow="Action" title="Pitch Result" body="" />
-                  <div className="mt-2 flex-1 min-h-0 grid auto-rows-min grid-cols-3 gap-2 overflow-y-auto pr-1">
-                    {GAME_PITCH_RESULTS.map((result) => (
-                      <SelectionButton
-                        key={result}
-                        title={pitchResultLabel(result)}
-                        subtitle=""
-                        active={selectedPitchResult === result}
-                        tone={pitchResultTone(result)}
-                        onClick={() => handlePitchResultChange(result)}
-                      />
-                    ))}
-                  </div>
-                </SurfacePanel>
-              </div>
-            ) : (
-              /* Column 3: Pitch Log History */
-              <SurfacePanel className="p-5 flex-1 h-0 min-h-0 flex flex-col">
-                <SectionHeading eyebrow="History" title="Recent Pitches" body="" />
-                <div className="mt-4 flex-1 flex flex-col gap-2 overflow-y-auto pr-2">
-                  {recentPitches.length === 0 ? (
-                    <div className="py-4 text-center text-sm text-zinc-500">No pitches charted yet.</div>
-                  ) : (
-                    recentPitches.map((pitch) => (
-                      <div key={pitch.id} className="flex items-center justify-between rounded-xl bg-zinc-900/60 px-4 py-3 text-sm">
-                        <div className="font-medium text-zinc-300">{pitch.order} • {pitch.pitchType}</div>
-                        <div className="flex items-center gap-4">
-                          <span className="rounded bg-zinc-800 px-2 py-1 text-xs font-semibold text-zinc-400">{pitch.count}</span>
-                          <span className={pitch.paResult ? "text-emerald-400 font-bold" : "font-medium text-zinc-400"}>
-                            {pitch.paResult ?? pitchResultLabel(pitch.pitchResult)}
-                          </span>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </SurfacePanel>
-            )}
-          </div>
         </section>
 
-        {/* Bottom Static Bar: PA Closeout or Record Pitch */}
+        {/* Bottom Dock: 3-column layout for Arsenal, Action, Record */}
         <section className="flex-shrink-0 border-t border-zinc-800/80 bg-zinc-950/95 p-4 backdrop-blur-xl lg:px-8 lg:py-4 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
           <div className="mx-auto max-w-7xl">
             {needsPAClosure ? (
@@ -785,34 +703,70 @@ export function ChartingEditor({
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 items-center rounded-2xl bg-zinc-900/80 px-5 text-sm font-medium text-zinc-300">
-                    <span className="uppercase tracking-widest text-zinc-500 mr-3 text-[10px] font-bold">Pending</span>
-                    <span className="text-white">{buildPendingPitchSummary({ selectedPitchType: activePitchType, selectedLocation, selectedPitchResult, pendingVelocity })}</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
+                {/* Column 1: Pitch Family (Arsenal) */}
+                <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/72 p-3">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500 mb-2">Arsenal</div>
+                  <div className="flex flex-wrap gap-2">
+                    {availablePitchTypes.map((type) => (
+                      <SelectionButton
+                        key={type}
+                        title={type}
+                        subtitle=""
+                        active={activePitchType === type}
+                        tone={pitchTypeTone(type)}
+                        onClick={() => setSelectedPitchType(type)}
+                      />
+                    ))}
                   </div>
-                  <input
-                    value={pendingVelocity}
-                    onChange={(e) => setPendingVelocity(e.target.value.replace(/[^0-9]/g, "").slice(0, 3))}
-                    placeholder="Velo (mph)"
-                    className="h-12 w-32 rounded-2xl border border-zinc-700 bg-zinc-900/80 px-3 text-center text-sm font-bold text-white outline-none focus:border-emerald-500 transition-colors"
-                  />
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <button onClick={clearPitchDraft} className="h-12 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-6 text-sm font-semibold text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 transition-all">Clear</button>
-                  <button
-                    onClick={handleUndo}
-                    disabled={snapshot.pitches.length === 0}
-                    className="h-12 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-6 text-sm font-semibold text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-50 transition-all"
-                  >Undo</button>
-                  <button
-                    onClick={handleRecordPitch}
-                    disabled={!canConfirmPitch}
-                    className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-10 font-bold text-zinc-950 transition-colors hover:bg-emerald-400 disabled:bg-zinc-800 disabled:text-zinc-500"
-                  >
-                    <ArrowRight className="h-5 w-5" /> Record Pitch
-                  </button>
+                {/* Column 2: Pitch Result (Action) */}
+                <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/72 p-3">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500 mb-2">Action</div>
+                  <div className="flex flex-wrap gap-2">
+                    {GAME_PITCH_RESULTS.map((result) => (
+                      <SelectionButton
+                        key={result}
+                        title={pitchResultLabel(result)}
+                        subtitle=""
+                        active={selectedPitchResult === result}
+                        tone={pitchResultTone(result)}
+                        onClick={() => handlePitchResultChange(result)}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Column 3: Pending, Velo, Record */}
+                <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/72 p-3 flex flex-col gap-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex-1 min-w-[8rem] flex h-10 items-center rounded-xl bg-zinc-900/80 px-3 text-sm font-medium text-zinc-300 truncate">
+                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mr-2">Pending</span>
+                      <span className="truncate text-white">{buildPendingPitchSummary({ selectedPitchType: activePitchType, selectedLocation, selectedPitchResult, pendingVelocity })}</span>
+                    </div>
+                    <input
+                      value={pendingVelocity}
+                      onChange={(e) => setPendingVelocity(e.target.value.replace(/[^0-9]/g, "").slice(0, 3))}
+                      placeholder="Velo"
+                      className="h-10 w-20 rounded-xl border border-zinc-700 bg-zinc-900/80 px-2 text-center text-sm font-bold text-white outline-none focus:border-emerald-500 transition-colors"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button onClick={clearPitchDraft} className="h-10 rounded-xl border border-zinc-800 bg-zinc-900/80 px-4 text-xs font-semibold text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 transition-all">Clear</button>
+                    <button
+                      onClick={handleUndo}
+                      disabled={snapshot.pitches.length === 0}
+                      className="h-10 rounded-xl border border-zinc-800 bg-zinc-900/80 px-4 text-xs font-semibold text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-50 transition-all"
+                    >Undo</button>
+                    <button
+                      onClick={handleRecordPitch}
+                      disabled={!canConfirmPitch}
+                      className="flex-1 flex h-10 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 font-bold text-zinc-950 text-sm transition-colors hover:bg-emerald-400 disabled:bg-zinc-800 disabled:text-zinc-500"
+                    >
+                      <ArrowRight className="h-4 w-4" /> Record
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
