@@ -3,10 +3,12 @@
 import Link from "next/link";
 import {
   startTransition,
+  useEffect,
   useId,
   useRef,
   useState,
 } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
   ArrowRight,
@@ -25,6 +27,10 @@ import {
 } from "lucide-react";
 import {
   availablePAResultsForClosure,
+  DOUBLE_PLAY_OPTIONS,
+  ERROR_OPTIONS,
+  FIELDERS_CHOICE_OPTIONS,
+  FLY_OUT_OPTIONS,
   GAME_PITCH_RESULTS,
   closeCurrentPlateAppearance,
   closeoutResultGroups,
@@ -32,10 +38,15 @@ import {
   deriveChartingLiveState,
   detailTextForPAResult,
   guidanceTextForClosure,
+  GROUND_OUT_OPTIONS,
+  HIT_OPTIONS,
+  LINE_OUT_OPTIONS,
   lineupNameForSlot,
   paResultOutsRecorded,
+  POP_OUT_OPTIONS,
   recordPitchInSnapshot,
   undoSnapshotAction,
+  UNASSISTED_OUT_OPTIONS,
   updateSnapshotRevision,
   type GameStateOverride,
   type PAResultType,
@@ -64,6 +75,17 @@ type RecentPitchRow = {
 
 const INNING_OPTIONS = Array.from({ length: 20 }, (_, index) => index + 1);
 const OUT_OPTIONS = [0, 1, 2] as const;
+
+const OUT_TYPE_LABELS: Record<string, string> = {
+  ground: "ground out",
+  line: "line out",
+  fly: "fly out",
+  pop: "pop out",
+  unassisted: "unassisted out",
+  dp: "double play",
+  error: "error",
+  fc: "fielder's choice",
+};
 
 const LOCATION_CELLS: LocationCellConfig[] = [
   { id: 11, label: "11", kind: "topLeftCorner", className: "col-[1_/_span_2] row-[1_/_span_2]" },
@@ -124,6 +146,11 @@ export function ChartingEditor({
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  type InPlayStep = "hit_or_out" | "hit_type" | "out_type" | "out_scoring";
+  type InPlayOutType = "ground" | "line" | "fly" | "pop" | "unassisted" | "dp" | "error" | "fc";
+  const [inPlayStep, setInPlayStep] = useState<InPlayStep>("hit_or_out");
+  const [inPlayOutType, setInPlayOutType] = useState<InPlayOutType | null>(null);
+
   const revisionRef = useRef(initialSnapshot.game.revision);
   const saveEpochRef = useRef(0);
   const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
@@ -143,6 +170,14 @@ export function ChartingEditor({
       ? availablePAResultsForClosure(liveState.closureState)
       : []
   );
+
+  useEffect(() => {
+    if (needsPAClosure && liveState.closureState === "in_play") {
+      setInPlayStep("hit_or_out");
+      setInPlayOutType(null);
+    }
+  }, [needsPAClosure, liveState.closureState]);
+
   const selectedPitcher =
     pitchers.find((pitcher) => pitcher.playerId === selectedPitcherId) ??
     (snapshot.segments.length > 0
@@ -750,7 +785,13 @@ export function ChartingEditor({
         {/* Bottom Static Bar: PA Closeout or Record Pitch */}
         <section className="flex-shrink-0 border-t border-[rgba(var(--babson-grey-rgb),0.18)] bg-zinc-950/95 p-4 backdrop-blur-xl lg:px-8 lg:py-4 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
           <div className="mx-auto max-w-7xl">
-            {needsPAClosure ? (
+            {needsPAClosure && liveState.closureState === "in_play" ? (
+              <div className="flex items-center justify-center py-4">
+                <p className="text-sm font-medium text-amber-200/80">
+                  Ball in play — select the result in the popup above
+                </p>
+              </div>
+            ) : needsPAClosure ? (
               <div className="flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
                 <div>
                   <h3 className="text-xl font-bold text-amber-500">{detailTextForClosure(liveState.closureState)}</h3>
@@ -809,8 +850,201 @@ export function ChartingEditor({
           </div>
         </section>
       </div>
+
+      {/* In-Play Result Modal */}
+      <AnimatePresence>
+        {needsPAClosure && liveState.closureState === "in_play" && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="in-play-modal-title"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="w-full max-w-2xl max-h-[85vh] flex flex-col rounded-2xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.92),rgba(9,9,11,0.96))] shadow-[0_24px_64px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]"
+            >
+              <div className="flex items-center justify-between border-b border-[rgba(var(--babson-grey-rgb),0.18)] px-5 py-4 shrink-0">
+                <div className="flex items-center gap-3">
+                  {(inPlayStep === "hit_type" || inPlayStep === "out_type" || inPlayStep === "out_scoring") && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (inPlayStep === "out_scoring") {
+                          setInPlayStep("out_type");
+                          setInPlayOutType(null);
+                        } else {
+                          setInPlayStep("hit_or_out");
+                          if (inPlayStep === "out_type") setInPlayOutType(null);
+                        }
+                      }}
+                      className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[rgba(var(--babson-grey-rgb),0.08)] text-zinc-400 transition-colors hover:border-[rgba(var(--babson-grey-rgb),0.38)] hover:text-zinc-100"
+                      aria-label="Back"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                  )}
+                  <div>
+                    <h2 id="in-play-modal-title" className="text-lg font-bold text-zinc-100">Ball in Play</h2>
+                    <p className="text-xs text-zinc-500 mt-0.5">
+                      {inPlayStep === "hit_or_out" && "Hit or out?"}
+                      {inPlayStep === "hit_type" && "Single, double, triple, or home run?"}
+                      {inPlayStep === "out_type" && "What kind of out?"}
+                      {inPlayStep === "out_scoring" && inPlayOutType && `Select ${OUT_TYPE_LABELS[inPlayOutType]}`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 min-h-0 overflow-y-auto p-5">
+                <InPlayWizardContent
+                  step={inPlayStep}
+                  outType={inPlayOutType}
+                  onSelect={handleClosePlateAppearance}
+                  onStepChange={setInPlayStep}
+                  onOutTypeChange={setInPlayOutType}
+                  paResultOutsRecorded={paResultOutsRecorded}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
+}
+
+const WIZARD_BTN =
+  "flex items-center gap-2 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-4 py-2.5 text-sm font-bold text-[rgb(212,220,218)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)] transition-colors hover:border-[rgba(var(--babson-green-rgb),0.35)] hover:bg-[rgba(var(--babson-green-rgb),0.12)]";
+
+type InPlayStep = "hit_or_out" | "hit_type" | "out_type" | "out_scoring";
+type InPlayOutType = "ground" | "line" | "fly" | "pop" | "unassisted" | "dp" | "error" | "fc";
+
+const OUT_TYPE_TO_OPTIONS: Record<InPlayOutType, readonly PAResultType[]> = {
+  ground: GROUND_OUT_OPTIONS,
+  line: LINE_OUT_OPTIONS,
+  fly: FLY_OUT_OPTIONS,
+  pop: POP_OUT_OPTIONS,
+  unassisted: UNASSISTED_OUT_OPTIONS,
+  dp: DOUBLE_PLAY_OPTIONS,
+  error: ERROR_OPTIONS,
+  fc: FIELDERS_CHOICE_OPTIONS,
+};
+
+const OUT_TYPE_CHOICES: { type: InPlayOutType; label: string }[] = [
+  { type: "ground", label: "Ground Out" },
+  { type: "line", label: "Line Out" },
+  { type: "fly", label: "Fly Out" },
+  { type: "pop", label: "Pop Out" },
+  { type: "unassisted", label: "Unassisted Out" },
+  { type: "dp", label: "Double Play" },
+  { type: "error", label: "Error" },
+  { type: "fc", label: "Fielder's Choice" },
+];
+
+function InPlayWizardContent({
+  step,
+  outType,
+  onSelect,
+  onStepChange,
+  onOutTypeChange,
+  paResultOutsRecorded,
+}: {
+  step: InPlayStep;
+  outType: InPlayOutType | null;
+  onSelect: (result: PAResultType) => void;
+  onStepChange: (s: InPlayStep) => void;
+  onOutTypeChange: (t: InPlayOutType | null) => void;
+  paResultOutsRecorded: (r: PAResultType) => number;
+}) {
+  if (step === "hit_or_out") {
+    return (
+      <div className="flex flex-wrap gap-3">
+        <button
+          type="button"
+          onClick={() => onStepChange("hit_type")}
+          className={WIZARD_BTN}
+        >
+          Hit
+        </button>
+        <button
+          type="button"
+          onClick={() => onStepChange("out_type")}
+          className={WIZARD_BTN}
+        >
+          Out
+        </button>
+      </div>
+    );
+  }
+
+  if (step === "hit_type") {
+    return (
+      <div className="flex flex-wrap gap-2">
+        {HIT_OPTIONS.map((result) => (
+          <button
+            key={result}
+            type="button"
+            onClick={() => onSelect(result)}
+            className={WIZARD_BTN}
+          >
+            {result === "1B" ? "Single" : result === "2B" ? "Double" : result === "3B" ? "Triple" : "Home Run"}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  if (step === "out_type") {
+    return (
+      <div className="flex flex-wrap gap-2">
+        {OUT_TYPE_CHOICES.map(({ type, label }) => (
+          <button
+            key={type}
+            type="button"
+            onClick={() => {
+              onOutTypeChange(type);
+              onStepChange("out_scoring");
+            }}
+            className={WIZARD_BTN}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  if (step === "out_scoring" && outType) {
+    const options = OUT_TYPE_TO_OPTIONS[outType];
+    return (
+      <div className="flex flex-wrap gap-2">
+        {options.map((result) => (
+          <button
+            key={result}
+            type="button"
+            onClick={() => onSelect(result)}
+            className={WIZARD_BTN}
+          >
+            <span>{result}</span>
+            {paResultOutsRecorded(result) > 0 && (
+              <span className="rounded bg-zinc-800/80 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-zinc-400">
+                {paResultOutsRecorded(result)} out
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  return null;
 }
 
 function ControlField({
