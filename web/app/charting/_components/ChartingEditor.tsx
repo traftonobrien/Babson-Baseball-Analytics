@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
+  ChevronDown,
   ChevronLeft,
   CircleDot,
   LoaderCircle,
@@ -105,11 +106,17 @@ export function ChartingEditor({
   const [selectedPitcherId, setSelectedPitcherId] = useState(
     findDefaultPitcherId(initialSnapshot, pitchers)
   );
+  const [pitcherNameInput, setPitcherNameInput] = useState(() => {
+    const defaultId = findDefaultPitcherId(initialSnapshot, pitchers);
+    return pitchers.find((p) => p.playerId === defaultId)?.name ?? "";
+  });
+  const pitcherDatalistId = useId();
+  const [isTopBarOpen, setIsTopBarOpen] = useState(true);
+
   const [selectedPitchType, setSelectedPitchType] = useState<PitchType | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<number | null>(null);
   const [selectedPitchResult, setSelectedPitchResult] = useState<PitchResult | null>(null);
   const [pendingVelocity, setPendingVelocity] = useState("");
-  const [selectedLineupSlot, setSelectedLineupSlot] = useState(initialMatchup.slot);
   const [hitterName, setHitterName] = useState(initialMatchup.hitterName);
   const [showHistory, setShowHistory] = useState(false);
   const [gameStateOverride, setGameStateOverride] = useState<GameStateOverride | null>(null);
@@ -176,6 +183,25 @@ export function ChartingEditor({
     liveState.closureState,
     liveState.openPAId
   );
+
+  // Calculate total pitches for the current pitcher segment
+  const activeSegmentId = liveState.activeSegmentId;
+  const totalPitches = activeSegmentId
+    ? snapshot.plateAppearances
+      .filter(pa => pa.segmentId === activeSegmentId)
+      .reduce((sum, pa) => {
+        return sum + snapshot.pitches.filter(p => p.paId === pa.id).length;
+      }, 0)
+    : 0;
+
+  const inningPitches = activeSegmentId
+    ? snapshot.plateAppearances
+      .filter(pa => pa.segmentId === activeSegmentId && pa.inning === liveState.inning)
+      .reduce((sum, pa) => {
+        return sum + snapshot.pitches.filter(p => p.paId === pa.id).length;
+      }, 0)
+    : 0;
+
   const overrideBase = {
     inning: gameStateOverride?.inning ?? liveState.inning,
     isTopInning: gameStateOverride?.isTopInning ?? liveState.isTopInning,
@@ -194,9 +220,10 @@ export function ChartingEditor({
     nextOverride: GameStateOverride | null
   ) => {
     const nextMatchup = deriveMatchupSelection(nextSnapshot, nextOverride);
-    setSelectedLineupSlot(nextMatchup.slot);
     setHitterName(nextMatchup.hitterName);
-    setSelectedPitcherId(findDefaultPitcherId(nextSnapshot, pitchers));
+    const nextPitcherId = findDefaultPitcherId(nextSnapshot, pitchers);
+    setSelectedPitcherId(nextPitcherId);
+    setPitcherNameInput(pitchers.find((p) => p.playerId === nextPitcherId)?.name ?? "");
   };
 
   const reloadLatestSnapshot = async () => {
@@ -317,13 +344,18 @@ export function ChartingEditor({
     queueSnapshotSave(nextSnapshot, successNote);
   };
 
-  const handlePitcherChange = (nextPitcherId: string) => {
-    setSelectedPitcherId(nextPitcherId);
+  const handlePitcherInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const nextName = e.target.value;
+    setPitcherNameInput(nextName);
+    const matched = pitchers.find((p) => p.name.toLowerCase() === nextName.toLowerCase());
+    if (matched && matched.playerId !== selectedPitcherId) {
+      setSelectedPitcherId(matched.playerId);
+    }
   };
 
-  const handleLineupSlotChange = (nextSlot: number) => {
-    setSelectedLineupSlot(nextSlot);
-    setHitterName(lineupNameForSlot(snapshot.lineup, nextSlot) ?? "");
+  const handlePitcherChange = (nextPitcherId: string) => {
+    setSelectedPitcherId(nextPitcherId);
+    setPitcherNameInput(pitchers.find((p) => p.playerId === nextPitcherId)?.name ?? "");
   };
 
   const handlePitchResultChange = (nextResult: PitchResult) => {
@@ -350,7 +382,7 @@ export function ChartingEditor({
           name: selectedPitcher.name,
         },
         hitterName: hitterName.trim(),
-        lineupSlot: selectedLineupSlot,
+        lineupSlot: 1, // Defaulting to 1 for Live ABs where lineup order doesn't matter
       },
       gameStateOverride
     );
@@ -476,6 +508,13 @@ export function ChartingEditor({
         </div>
 
         <div className="flex items-center gap-4">
+          <button
+            onClick={() => setIsTopBarOpen(!isTopBarOpen)}
+            className="flex items-center gap-2 rounded-full bg-zinc-900 border border-zinc-800 px-3 py-1.5 text-xs font-bold text-zinc-300 hover:bg-zinc-800 transition-colors"
+          >
+            <span>{isTopBarOpen ? "Hide Bar" : "Show Bar"}</span>
+            <ChevronDown className={`h-4 w-4 transition-transform ${isTopBarOpen ? 'rotate-180' : ''}`} />
+          </button>
           <div className="hidden items-center gap-1.5 text-xs text-zinc-500 sm:flex">
             {saveState === "saving" ? (
               <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
@@ -514,95 +553,108 @@ export function ChartingEditor({
       )}
 
       {/* Main Workspace */}
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col relative">
 
         {/* Top Horizontal Bar: Matchup, Count, Game State */}
-        <section className="border-b border-zinc-800/80 bg-zinc-950 px-4 py-2 lg:px-6">
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
+        {isTopBarOpen && (
+          <section className="border-b border-zinc-800/80 bg-zinc-950 px-4 py-2 lg:px-6">
+            <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
 
-            {/* Matchup */}
-            <div className="flex flex-1 flex-col justify-center gap-1.5">
-              <div className="flex items-center gap-3">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">Current At-Bat</div>
+              {/* Matchup */}
+              <div className="flex flex-1 flex-col justify-center gap-1.5">
+                <div className="flex items-center gap-3">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">Current At-Bat</div>
 
-                <select
-                  value={selectedPitcher?.playerId ?? ""}
-                  onChange={(event) => handlePitcherChange(event.target.value)}
-                  disabled={currentPitcherLocked}
-                  className="h-8 w-48 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-xs font-medium text-zinc-100 outline-none transition-colors focus:border-emerald-500 disabled:opacity-50"
-                >
-                  {pitchers.map((pitcher) => (
-                    <option key={pitcher.playerId} value={pitcher.playerId}>{pitcher.name}</option>
-                  ))}
-                </select>
+                  <div className="flex gap-2">
+                    <input
+                      list={pitcherDatalistId}
+                      value={pitcherNameInput}
+                      onChange={handlePitcherInputChange}
+                      disabled={currentPitcherLocked}
+                      placeholder="Pitcher Name (e.g. Wilson)"
+                      className="h-10 w-64 rounded-xl border border-zinc-800 bg-zinc-900 px-4 text-sm font-bold text-zinc-100 outline-none transition-colors focus:border-emerald-500 placeholder:font-normal placeholder:text-zinc-600 disabled:opacity-50"
+                    />
+                    <datalist id={pitcherDatalistId}>
+                      {pitchers.map((pitcher) => (
+                        <option key={pitcher.playerId} value={pitcher.name} />
+                      ))}
+                    </datalist>
+                  </div>
 
-                <div className="text-zinc-600 text-xs">vs</div>
+                  <div className="text-zinc-600 text-xs text-center px-1 font-semibold italic">vs</div>
 
-                <div className="flex gap-2">
-                  <select
-                    value={selectedLineupSlot}
-                    onChange={(event) => handleLineupSlotChange(Number(event.target.value))}
-                    className="h-8 w-16 rounded-lg border border-zinc-800 bg-zinc-900 px-2 text-xs font-medium text-zinc-100 outline-none focus:border-emerald-500"
-                  >
-                    {Array.from({ length: 9 }, (_, i) => i + 1).map((slot) => (
-                      <option key={slot} value={slot}>#{slot}</option>
-                    ))}
-                  </select>
-                  <input
-                    list={datalistId}
-                    value={hitterName}
-                    onChange={(event) => setHitterName(event.target.value)}
-                    placeholder="Hitter name"
-                    className="h-8 w-48 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-xs font-medium text-zinc-100 outline-none focus:border-emerald-500"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      list={datalistId}
+                      value={hitterName}
+                      onChange={(event) => setHitterName(event.target.value)}
+                      placeholder="Hitter Name (e.g. Smith)"
+                      className="h-10 w-64 rounded-xl border border-zinc-800 bg-zinc-900 px-4 text-sm font-bold text-zinc-100 outline-none transition-colors focus:border-emerald-500 placeholder:font-normal placeholder:text-zinc-600"
+                    />
+                    <datalist id={datalistId}>
+                      {rosterPlayers.map((player) => (
+                        <option key={player.playerId ?? player.slug} value={player.name} />
+                      ))}
+                    </datalist>
+                  </div>
                 </div>
+
+                {/* Game State Override Toggle */}
+                <details className="group">
+                  <summary className="cursor-pointer text-[10px] font-semibold text-zinc-500 hover:text-zinc-300 outline-none flex items-center gap-2">
+                    <span>Adjust Game State Manually</span>
+                    <span className="text-zinc-700">•</span>
+                    <span className="font-medium text-zinc-400">
+                      Inning {liveState.inning}, {liveState.outs} Outs
+                    </span>
+                  </summary>
+                  <div className="mt-2 flex items-center gap-2">
+                    <select value={overrideBase.inning} onChange={(e) => handleOverrideChange("inning", Number(e.target.value))} className="h-7 rounded-md border border-zinc-800 bg-zinc-900 px-2 text-[10px] text-zinc-300">
+                      {INNING_OPTIONS.map((i) => <option key={i} value={i}>Inning {i}</option>)}
+                    </select>
+                    <select value={overrideBase.isTopInning ? "top" : "bottom"} onChange={(e) => handleOverrideChange("isTopInning", e.target.value === "top")} className="h-7 rounded-md border border-zinc-800 bg-zinc-900 px-2 text-[10px] text-zinc-300">
+                      <option value="top">Top</option><option value="bottom">Bot</option>
+                    </select>
+                    <select value={overrideBase.outs} onChange={(e) => handleOverrideChange("outs", Number(e.target.value))} className="h-7 rounded-md border border-zinc-800 bg-zinc-900 px-2 text-[10px] text-zinc-300">
+                      {OUT_OPTIONS.map((o) => <option key={o} value={o}>{o} Outs</option>)}
+                    </select>
+                    {gameStateOverride && (
+                      <button onClick={handleResetOverride} className="text-[10px] text-amber-500 hover:text-amber-400">Reset override</button>
+                    )}
+                  </div>
+                </details>
               </div>
 
-              {/* Game State Override Toggle */}
-              <details className="group">
-                <summary className="cursor-pointer text-[10px] font-semibold text-zinc-500 hover:text-zinc-300 outline-none">
-                  Adjust Game State Manually
-                </summary>
-                <div className="mt-1 flex items-center gap-2">
-                  <select value={overrideBase.inning} onChange={(e) => handleOverrideChange("inning", Number(e.target.value))} className="h-7 rounded-md border border-zinc-800 bg-zinc-900 px-2 text-[10px] text-zinc-300">
-                    {INNING_OPTIONS.map((i) => <option key={i} value={i}>Inning {i}</option>)}
-                  </select>
-                  <select value={overrideBase.isTopInning ? "top" : "bottom"} onChange={(e) => handleOverrideChange("isTopInning", e.target.value === "top")} className="h-7 rounded-md border border-zinc-800 bg-zinc-900 px-2 text-[10px] text-zinc-300">
-                    <option value="top">Top</option><option value="bottom">Bot</option>
-                  </select>
-                  <select value={overrideBase.outs} onChange={(e) => handleOverrideChange("outs", Number(e.target.value))} className="h-7 rounded-md border border-zinc-800 bg-zinc-900 px-2 text-[10px] text-zinc-300">
-                    {OUT_OPTIONS.map((o) => <option key={o} value={o}>{o} Outs</option>)}
-                  </select>
-                  {gameStateOverride && (
-                    <button onClick={handleResetOverride} className="text-[10px] text-amber-500 hover:text-amber-400">Reset override</button>
-                  )}
-                </div>
-              </details>
-            </div>
-
-            {/* Game State & Count */}
-            <div className="flex items-center gap-6">
-              <div className="text-right">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">Game State</div>
-                <div className="flex items-center gap-2 text-xs font-medium text-zinc-300">
-                  <span>{liveState.isTopInning ? "Top" : "Bot"} {liveState.inning}</span>
-                  <span className="text-zinc-600">•</span>
-                  <span>{liveState.outs} Outs</span>
+              {/* Pitch Count & Live Count */}
+              <div className="flex items-center gap-6">
+                <div className="text-right flex items-center gap-4">
                   {needsPAClosure && (
-                    <span className="ml-2 rounded-full bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-500">Close PA</span>
+                    <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-3 py-1 font-bold tracking-widest text-amber-500 text-xs shadow-[0_0_15px_rgba(245,158,11,0.1)]">CLOSE PA</span>
                   )}
+                  <div className="flex flex-col items-end">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500 mb-1">Pitch Count</div>
+                    <div className="flex items-center gap-2">
+                      <span className="flex items-center gap-1.5 rounded-full bg-zinc-800 border border-zinc-700/50 px-3 py-1 shadow-sm">
+                        <span className="text-[9px] font-bold tracking-widest text-zinc-400">TOT</span>
+                        <span className="text-sm font-black text-white">{totalPitches}</span>
+                      </span>
+                      <span className="flex items-center gap-1.5 rounded-full bg-zinc-800 border border-zinc-700/50 px-3 py-1 shadow-sm">
+                        <span className="text-[9px] font-bold tracking-widest text-zinc-400">INN</span>
+                        <span className="text-sm font-black text-white">{inningPitches}</span>
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="border-l border-zinc-800/80 pl-6 text-right">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">Live Count</div>
-                <div className="text-3xl font-black tracking-tight text-emerald-500 leading-none">
-                  {liveState.balls}-{liveState.strikes}
+                <div className="border-l border-zinc-800/80 pl-6 text-right">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500 mb-1">Live Count</div>
+                  <div className="text-3xl font-black tracking-tight text-emerald-500 leading-none">
+                    {liveState.balls}-{liveState.strikes}
+                  </div>
                 </div>
               </div>
             </div>
-
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Middle Content: Zone (Left) & Actions (Right) */}
         <section className="mx-auto flex w-full max-w-7xl flex-1 gap-6 p-4 min-h-0">

@@ -30,12 +30,12 @@ function mapArsenalPitchType(rawValue: string): PitchType {
     return "Split/Cut";
   }
 
-  return "Other";
+  // Fallback to Fastball if we don't know what it is (shouldn't happen with our known arsenals)
+  return "Fastball";
 }
 
 function orderPitchTypes(pitchTypes: PitchType[]): PitchType[] {
   const uniqueTypes = new Set<PitchType>(pitchTypes);
-  uniqueTypes.add("Other");
   return PITCH_TYPES.filter((pitchType) => uniqueTypes.has(pitchType));
 }
 
@@ -78,14 +78,21 @@ async function loadArsenalPitchTypesByPlayer(): Promise<Map<string, PitchType[]>
 export async function buildBootstrapPitchers(): Promise<ChartingBootstrapPitcher[]> {
   const arsenalPitchTypesByPlayer = await loadArsenalPitchTypesByPlayer();
 
-  return Object.entries(CANONICAL_BY_PLAYER_ID)
-    .map(([playerId, name]) => ({
-      playerId,
-      name,
-      throws: (HAND_BY_PLAYER_ID[playerId] ?? "R") as "R" | "L",
-      arsenalPitchTypes:
-        arsenalPitchTypesByPlayer.get(playerId) ??
-        [...PITCH_TYPES],
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const pitchers: ChartingBootstrapPitcher[] = [];
+
+  for (const [playerId, name] of Object.entries(CANONICAL_BY_PLAYER_ID)) {
+    const arsenal = arsenalPitchTypesByPlayer.get(playerId);
+
+    // Only include players who actually pitch (have a defined arsenal in Arsenals.csv)
+    if (arsenal && arsenal.length > 0) {
+      pitchers.push({
+        playerId,
+        name,
+        throws: (HAND_BY_PLAYER_ID[playerId] ?? "R") as "R" | "L",
+        arsenalPitchTypes: arsenal,
+      });
+    }
+  }
+
+  return pitchers.sort((a, b) => a.name.localeCompare(b.name));
 }
