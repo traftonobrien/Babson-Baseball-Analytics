@@ -1083,7 +1083,7 @@ private struct CompactDeck: ViewModifier {
     }
 }
 
-private struct MetricPill: View {
+struct MetricPill: View {
     let title: String
     let value: String
     let accent: Color
@@ -1121,7 +1121,7 @@ private struct MetricPill: View {
     }
 }
 
-private struct CountBadge: View {
+struct CountBadge: View {
     let title: String
     let balls: Int
     let strikes: Int
@@ -1193,7 +1193,7 @@ private struct CountBadge: View {
     }
 }
 
-private struct MatchupSelectorLabel: View {
+struct MatchupSelectorLabel: View {
     let title: String
     let value: String
     let subtitle: String?
@@ -1389,7 +1389,7 @@ private struct VeloNumpadPopover: View {
     }
 }
 
-private struct TopBarActionButton: View {
+struct TopBarActionButton: View {
     let title: String
     let systemImage: String
     let accent: Color
