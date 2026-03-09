@@ -379,7 +379,8 @@ final class DomainValidationTests: XCTestCase {
             batsHand: "R",
             throwsHand: "R",
             academicYear: "Sr.",
-            isPitcher: true
+            isPitcher: true,
+            isHitter: false
         )
         let hitterOnly = BootstrapRosterPlayer(
             slug: "hitter-only",
@@ -389,7 +390,8 @@ final class DomainValidationTests: XCTestCase {
             batsHand: "L",
             throwsHand: "L",
             academicYear: "Jr.",
-            isPitcher: false
+            isPitcher: false,
+            isHitter: true
         )
         let twoWay = BootstrapRosterPlayer(
             slug: "two-way",
@@ -399,7 +401,8 @@ final class DomainValidationTests: XCTestCase {
             batsHand: "R",
             throwsHand: "R",
             academicYear: "So.",
-            isPitcher: true
+            isPitcher: true,
+            isHitter: true
         )
 
         XCTAssertTrue(pitcherOnly.canAppearInPitcherPicker)

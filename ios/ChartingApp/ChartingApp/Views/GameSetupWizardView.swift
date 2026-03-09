@@ -40,8 +40,8 @@ struct GameSetupWizardView: View {
     }
 
     private var filteredPitchers: [PersistedBootstrapPitcher] {
-        if searchText.isEmpty { return gameStore.pitchers }
-        return gameStore.pitchers.filter {
+        if searchText.isEmpty { return gameStore.activePitchers }
+        return gameStore.activePitchers.filter {
             $0.name.localizedCaseInsensitiveContains(searchText)
             || $0.playerId.localizedCaseInsensitiveContains(searchText)
         }
@@ -162,7 +162,7 @@ struct GameSetupWizardView: View {
 
     private var step2PitcherSelection: some View {
         VStack(spacing: 0) {
-            if gameStore.pitchers.isEmpty {
+            if gameStore.activePitchers.isEmpty {
                 ContentUnavailableView(
                     "No Pitchers",
                     systemImage: "person.slash",

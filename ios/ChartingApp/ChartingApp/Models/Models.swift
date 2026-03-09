@@ -959,6 +959,7 @@ struct BootstrapRosterPlayer: Codable, Identifiable, Equatable {
     let throwsHand: String?
     let academicYear: String?
     let isPitcher: Bool
+    let isHitter: Bool
 
     var id: String { playerId ?? slug }
 
@@ -966,22 +967,16 @@ struct BootstrapRosterPlayer: Codable, Identifiable, Equatable {
         positions.map { $0.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() }
     }
 
-    var hasNonPitchingPosition: Bool {
-        normalizedPositions.contains { position in
-            position != "P" && position != "RHP" && position != "LHP"
-        }
-    }
-
     var canAppearInPitcherPicker: Bool {
         isPitcher
     }
 
     var canAppearInHitterPicker: Bool {
-        !isPitcher || hasNonPitchingPosition
+        isHitter
     }
 
     var isTwoWayPlayer: Bool {
-        isPitcher && hasNonPitchingPosition
+        isPitcher && isHitter
     }
 
     enum CodingKeys: String, CodingKey {
@@ -993,6 +988,7 @@ struct BootstrapRosterPlayer: Codable, Identifiable, Equatable {
         case throwsHand = "throws"
         case academicYear
         case isPitcher
+        case isHitter
     }
 }
 

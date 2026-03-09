@@ -365,7 +365,7 @@ struct LiveChartingTopBar: View {
 
     private var pitcherSelector: some View {
         Menu {
-            ForEach(gameStore.pitchers, id: \.playerId) { pitcher in
+            ForEach(gameStore.activePitchers, id: \.playerId) { pitcher in
                 Button {
                     selectPitcher(pitcher)
                 } label: {

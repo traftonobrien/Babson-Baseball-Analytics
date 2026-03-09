@@ -111,6 +111,7 @@ export interface ChartingBootstrapRosterPlayer {
   throws: string | null;
   academicYear: string | null;
   isPitcher: boolean;
+  isHitter: boolean;
 }
 
 /** Payload returned by GET /api/charting/bootstrap */

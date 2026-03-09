@@ -47,6 +47,16 @@ final class GameStore {
     /// Cached bootstrap pitchers.
     var pitchers: [PersistedBootstrapPitcher] = []
 
+    /// Available pitchers filtered by `canAppearInPitcherPicker`
+    var activePitchers: [PersistedBootstrapPitcher] {
+        pitchers.filter { p in
+            if let rp = rosterPlayers.first(where: { $0.playerId == p.playerId }) {
+                return rp.canAppearInPitcherPicker
+            }
+            return true
+        }
+    }
+
     /// Cached Babson roster players used for hitter selection and live AB setup.
     var rosterPlayers: [BootstrapRosterPlayer] = []
 

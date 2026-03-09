@@ -115,7 +115,7 @@ struct LiveChartingView: View {
         }
         .sheet(isPresented: $chartingState.isShowingLiveABSetup) {
             LiveABSetupSheet(
-                pitchers: gameStore.pitchers,
+                pitchers: gameStore.activePitchers,
                 rosterPlayers: hitterRosterPlayers,
                 initialSetup: chartingState.currentLiveABSession?.setup ?? chartingState.liveABSetup
             ) { setup in
@@ -305,7 +305,7 @@ struct LiveChartingView: View {
     }
 
     private var canSelectPitcherFromBar: Bool {
-        !gameStore.pitchers.isEmpty && (isLiveABMode || canEditGameMatchup)
+        !gameStore.activePitchers.isEmpty && (isLiveABMode || canEditGameMatchup)
     }
 
     private var hitterRosterPlayers: [BootstrapRosterPlayer] {
