@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronLeft,
+  ChevronRight,
   CircleDot,
   LoaderCircle,
   PencilLine,
@@ -65,6 +66,7 @@ type SaveState = "idle" | "saving" | "saved" | "error";
 
 type RecentPitchRow = {
   id: string;
+  paId: string;
   order: number;
   hitterName: string;
   inning: number;
@@ -142,6 +144,7 @@ export function ChartingEditor({
   const [pendingVelocity, setPendingVelocity] = useState("");
   const [hitterName, setHitterName] = useState(initialMatchup.hitterName);
   const [showHistory, setShowHistory] = useState(false);
+  const [expandedPAs, setExpandedPAs] = useState<Set<string>>(() => new Set());
   const [gameStateOverride, setGameStateOverride] = useState<GameStateOverride | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -214,7 +217,15 @@ export function ChartingEditor({
     Boolean(selectedPitcher) &&
     Boolean(hitterName.trim());
   const hitterSuggestions = buildHitterSuggestions(snapshot, rosterPlayers);
-  const recentPitches = buildRecentPitchRows(snapshot).slice(-12).reverse();
+  const recentPAGroups = buildRecentPAGroups(snapshot).slice(-12).reverse();
+  const lastPaId = recentPAGroups[recentPAGroups.length - 1]?.paId ?? null;
+  const expandedPAsInit = useRef(false);
+  useEffect(() => {
+    if (showHistory && lastPaId && !expandedPAsInit.current) {
+      expandedPAsInit.current = true;
+      setExpandedPAs((prev) => new Set([...prev, lastPaId]));
+    }
+  }, [showHistory, lastPaId]);
   const activePitcherPitchCount = countPitcherPitches(
     snapshot,
     selectedPitcher?.playerId ?? ""
@@ -525,6 +536,27 @@ export function ChartingEditor({
     });
   };
 
+  const handlePAInningChange = (paId: string, inning: number) => {
+    const pa = snapshot.plateAppearances.find((p) => p.id === paId);
+    if (!pa || pa.inning === inning) return;
+    const nextSnapshot: ChartingGameSnapshot = {
+      ...snapshot,
+      plateAppearances: snapshot.plateAppearances.map((p) =>
+        p.id === paId ? { ...p, inning } : p
+      ),
+    };
+    applyOptimisticSnapshot(nextSnapshot, gameStateOverride, "Inning updated");
+  };
+
+  const togglePAExpanded = (paId: string) => {
+    setExpandedPAs((prev) => {
+      const next = new Set(prev);
+      if (next.has(paId)) next.delete(paId);
+      else next.add(paId);
+      return next;
+    });
+  };
+
   return (
     <div
       className="fixed inset-0 flex flex-col text-zinc-100 overflow-hidden"
@@ -772,27 +804,77 @@ export function ChartingEditor({
                 </SurfacePanel>
               </div>
             ) : (
-              /* Column 3: Pitch Log History */
+              /* Column 3: Pitch Log History — grouped by at-bat, expandable */
               <SurfacePanel className="p-5 flex-1 min-h-0 flex flex-col overflow-hidden">
                 <SectionHeading eyebrow="History" title="Recent Pitches" body="" />
                 <div className="mt-4 min-h-0 flex-1 flex flex-col gap-2 overflow-y-auto overflow-x-hidden pr-2 overscroll-contain max-h-[60vh]">
-                  {recentPitches.length === 0 ? (
+                  {recentPAGroups.length === 0 ? (
                     <div className="py-4 text-center text-sm text-zinc-500">No pitches charted yet.</div>
                   ) : (
-                    recentPitches.map((pitch) => (
-                      <div key={pitch.id} className="flex items-center justify-between gap-2 rounded-xl bg-zinc-900/60 px-4 py-3 text-sm">
-                        <div className="min-w-0 flex-1 font-medium text-zinc-300">
-                          <span className="truncate block text-zinc-500 text-xs">{pitch.hitterName}</span>
-                          <span className="truncate block">{pitch.order} • {pitch.pitchType}</span>
+                    recentPAGroups.map((group) => {
+                      const isExpanded = expandedPAs.has(group.paId);
+                      return (
+                        <div key={group.paId} className="rounded-xl bg-zinc-900/60 overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => togglePAExpanded(group.paId)}
+                            className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-zinc-800/50 transition-colors"
+                          >
+                            {isExpanded ? (
+                              <ChevronDown className="h-4 w-4 shrink-0 text-zinc-500" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 shrink-0 text-zinc-500" />
+                            )}
+                            <select
+                              value={group.inning}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                handlePAInningChange(group.paId, Number(e.target.value));
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="h-7 min-w-[3rem] rounded-md border border-zinc-600 bg-zinc-800 px-2 py-0.5 text-xs font-semibold text-zinc-200 outline-none focus:border-emerald-500/50"
+                            >
+                              {INNING_OPTIONS.map((n) => (
+                                <option key={n} value={n}>{n}</option>
+                              ))}
+                            </select>
+                            <span className="text-zinc-500 text-xs font-medium">inning</span>
+                            <span className="truncate flex-1 font-medium text-zinc-300">{group.hitterName}</span>
+                            {group.paResult && (
+                              <span className="text-emerald-400 font-bold text-sm shrink-0">{group.paResult}</span>
+                            )}
+                            <span className="rounded bg-zinc-800 px-2 py-0.5 text-[10px] font-semibold text-zinc-500 shrink-0">
+                              {group.pitches.length} pitch{group.pitches.length !== 1 ? "es" : ""}
+                            </span>
+                          </button>
+                          {isExpanded && (
+                            <div className="border-t border-zinc-800/60 bg-zinc-950/40 rounded-b-xl overflow-hidden">
+                              <div className="max-h-[200px] min-h-0 overflow-y-auto overscroll-contain">
+                                <div className="grid grid-cols-[auto_1fr_auto_auto] gap-x-3 gap-y-0 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 border-b border-zinc-800/60 sticky top-0 bg-zinc-950/95 z-10">
+                                  <span>#</span>
+                                  <span>Pitch</span>
+                                  <span>Count</span>
+                                  <span>Result</span>
+                                </div>
+                                {group.pitches.map((pitch, idx) => (
+                                  <div
+                                    key={pitch.id}
+                                    className="grid grid-cols-[auto_1fr_auto_auto] gap-x-3 gap-y-0 items-center px-4 py-2.5 pl-10 text-sm border-b border-zinc-800/40 last:border-b-0"
+                                  >
+                                    <span className="text-zinc-500 font-mono text-xs">{idx + 1}</span>
+                                    <span className="truncate font-medium text-zinc-300">{pitch.pitchType}</span>
+                                    <span className="rounded bg-zinc-800 px-2 py-0.5 text-xs font-semibold text-zinc-400 shrink-0">{pitch.count}</span>
+                                    <span className={pitch.paResult ? "text-emerald-400 font-bold shrink-0" : "font-medium text-zinc-400 shrink-0"}>
+                                      {pitch.paResult ?? pitchResultLabel(pitch.pitchResult)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <div className="flex items-center gap-4">
-                          <span className="rounded bg-zinc-800 px-2 py-1 text-xs font-semibold text-zinc-400">{pitch.count}</span>
-                          <span className={pitch.paResult ? "text-emerald-400 font-bold" : "font-medium text-zinc-400"}>
-                            {pitch.paResult ?? pitchResultLabel(pitch.pitchResult)}
-                          </span>
-                        </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </SurfacePanel>
@@ -1327,6 +1409,14 @@ function buildHitterSuggestions(
   ).sort((left, right) => left.localeCompare(right));
 }
 
+type RecentPAGroup = {
+  paId: string;
+  inning: number;
+  hitterName: string;
+  paResult: string | null;
+  pitches: RecentPitchRow[];
+};
+
 function buildRecentPitchRows(snapshot: ChartingGameSnapshot): RecentPitchRow[] {
   const paById = new Map(snapshot.plateAppearances.map((pa) => [pa.id, pa]));
 
@@ -1336,6 +1426,7 @@ function buildRecentPitchRows(snapshot: ChartingGameSnapshot): RecentPitchRow[] 
       const pa = paById.get(pitch.paId);
       return {
         id: pitch.id,
+        paId: pitch.paId,
         order: pitch.pitchOrder + 1,
         hitterName: pa?.hitterName ?? "Unknown Hitter",
         inning: pa?.inning ?? 1,
@@ -1343,6 +1434,32 @@ function buildRecentPitchRows(snapshot: ChartingGameSnapshot): RecentPitchRow[] 
         pitchType: pitch.pitchType,
         pitchResult: pitch.pitchResult,
         paResult: pa?.resultCode ?? null,
+      };
+    });
+}
+
+function buildRecentPAGroups(snapshot: ChartingGameSnapshot): RecentPAGroup[] {
+  const rows = buildRecentPitchRows(snapshot);
+  const paById = new Map(snapshot.plateAppearances.map((pa) => [pa.id, pa]));
+  const groupsByPa = new Map<string, RecentPitchRow[]>();
+
+  for (const row of rows) {
+    const paId = row.paId;
+    if (!groupsByPa.has(paId)) groupsByPa.set(paId, []);
+    groupsByPa.get(paId)!.push(row);
+  }
+
+  return [...snapshot.plateAppearances]
+    .sort((a, b) => a.paOrder - b.paOrder)
+    .filter((pa) => groupsByPa.has(pa.id))
+    .map((pa) => {
+      const pitches = groupsByPa.get(pa.id)!;
+      return {
+        paId: pa.id,
+        inning: pa.inning,
+        hitterName: pa.hitterName,
+        paResult: pa.resultCode,
+        pitches,
       };
     });
 }
