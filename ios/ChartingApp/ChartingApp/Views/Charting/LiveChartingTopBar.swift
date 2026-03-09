@@ -154,13 +154,8 @@ struct LiveChartingTopBar: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .top, spacing: 10) {
-                modeCluster
-                    .frame(width: 220, alignment: .leading)
-
-                topBarWorkspace
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
+            topBarWorkspace
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             if correctionLabel != nil || (!isLiveABMode && gameStore.errorMessage != nil) || pitchControlBlockedReason != nil {
                 topBarMessageBanner
@@ -169,27 +164,7 @@ struct LiveChartingTopBar: View {
         // SurfaceCard modifier is applied at the call site in LiveChartingView
     }
 
-    private var modeCluster: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Mode")
-                .font(.system(.subheadline, design: .rounded).bold())
-                .foregroundStyle(.secondary)
 
-            Label(chartingState.mode.rawValue,
-                  systemImage: isLiveABMode ? "figure.baseball" : "list.bullet.clipboard")
-                .font(.subheadline.bold())
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .foregroundStyle(isLiveABMode ? .orange : .blue)
-                .background((isLiveABMode ? Color.orange : Color.blue).opacity(0.12))
-                .clipShape(Capsule())
-
-            topBarStatusBadge
-        }
-        .padding(14)
-        .background(Color.white.opacity(0.4))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-    }
 
     private var topBarWorkspace: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -357,20 +332,7 @@ struct LiveChartingTopBar: View {
         }
     }
 
-    @ViewBuilder
-    private var topBarStatusBadge: some View {
-        if isLiveABMode {
-            Label("Local Practice", systemImage: "figure.baseball")
-                .font(.caption.bold())
-                .foregroundStyle(.orange)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Color.orange.opacity(0.12))
-                .clipShape(Capsule())
-        } else {
-            SyncStatusIndicator(status: gameStore.syncStatus)
-        }
-    }
+
 
     private var topBarMessageBanner: some View {
         VStack(alignment: .leading, spacing: 8) {

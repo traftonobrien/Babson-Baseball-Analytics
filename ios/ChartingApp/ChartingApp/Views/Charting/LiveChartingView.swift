@@ -66,7 +66,7 @@ struct LiveChartingView: View {
             )
             .ignoresSafeArea()
         )
-        .navigationTitle("Live Charting")
+        .navigationTitle(chartingState.mode.rawValue)
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom, spacing: 0) {
             LiveChartingBottomDock(
@@ -748,17 +748,9 @@ struct LiveChartingView: View {
     }
 
     private var controlStack: some View {
-        GeometryReader { proxy in
-            let pitchHeight = min(max(proxy.size.height * 0.24, 156), 210)
-
-            VStack(spacing: layoutSpacing) {
-                pitchTypeCard
-                    .frame(height: pitchHeight)
-
-                actionCard
-                    .frame(maxHeight: .infinity)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        VStack(spacing: layoutSpacing) {
+            pitchTypeCard
+            actionCard
         }
     }
 
