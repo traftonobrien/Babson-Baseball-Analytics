@@ -1,8 +1,17 @@
 import { notFound } from "next/navigation";
 import { format, parseISO } from "date-fns";
-import { ChevronLeft, Download, FileText, MapPin, User, Users } from "lucide-react";
+import {
+    ChevronLeft,
+    Download,
+    FileText,
+    MapPin,
+    PencilLine,
+    User,
+    Users,
+} from "lucide-react";
 import Link from "next/link";
 import { LeaderboardPageFrame } from "@/app/components/leaderboards/LeaderboardChrome";
+import { DeleteChartingGameButton } from "@/app/charting/_components/DeleteChartingGameButton";
 import { buildChartingExportFilename } from "@/lib/charting/export";
 import { buildChartingPdfFilename } from "@/lib/charting/pdf";
 import { loadChartingGameSnapshot } from "@/lib/charting/snapshot";
@@ -120,6 +129,19 @@ export default async function ChartingGamePage({
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-3">
+                    <Link
+                        href={`/charting/games/${game.id}/edit`}
+                        className="inline-flex h-11 items-center gap-2 self-start rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 text-sm font-semibold text-emerald-200 transition-colors hover:border-emerald-400/30 hover:bg-emerald-500/15 hover:text-white"
+                    >
+                        <PencilLine className="h-4 w-4" />
+                        Open Editor
+                    </Link>
+                    <DeleteChartingGameButton
+                        gameId={game.id}
+                        opponent={game.opponent}
+                        gameDate={format(parseISO(game.gameDate), "MMMM do, yyyy")}
+                        redirectHref="/charting"
+                    />
                     <a
                         href={pdfExportHref}
                         download={pdfExportFilename}
@@ -205,7 +227,7 @@ export default async function ChartingGamePage({
                         <p className="text-sm text-zinc-500 italic">No lineup configured.</p>
                     ) : (
                         <ul className="space-y-2">
-                            {lineupEntries.map((p: any) => (
+                            {lineupEntries.map((p) => (
                                 <li key={p.id} className="flex items-center gap-3 text-sm">
                                     <span className="w-4 text-right text-zinc-500 font-mono text-xs">{p.lineupSlot}</span>
                                     <span className="text-zinc-300">{p.hitterName}</span>

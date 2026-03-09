@@ -1,11 +1,17 @@
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
-import { ChevronRight, ClipboardList, PenTool, ShieldCheck } from "lucide-react";
+import {
+    ChevronRight,
+    ClipboardList,
+    PenTool,
+    Plus,
+    ShieldCheck,
+} from "lucide-react";
 import { db } from "@/db";
 import { chartingGames } from "@/db/schema";
 import { desc } from "drizzle-orm";
 import { LeaderboardPageFrame } from "@/app/components/leaderboards/LeaderboardChrome";
-import Header from "@/app/components/Header";
+import { DeleteChartingGameButton } from "@/app/charting/_components/DeleteChartingGameButton";
 
 export const revalidate = 0; // Always fetch fresh data
 
@@ -47,9 +53,16 @@ export default async function ChartingHubPage() {
                         Charting Hub
                     </h1>
                     <p className="text-zinc-400">
-                        Select a synced game to view the lineup, pitch logs, and analytics.
+                        Create a game on the portal, jump into the editor, or open any synced game for review.
                     </p>
                 </div>
+                <Link
+                    href="/charting/new"
+                    className="inline-flex h-11 items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 text-sm font-semibold text-emerald-200 transition-colors hover:border-emerald-400/30 hover:bg-emerald-500/15 hover:text-white"
+                >
+                    <Plus className="h-4 w-4" />
+                    New Game
+                </Link>
             </div>
 
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 overflow-hidden shadow-xl">
@@ -60,20 +73,26 @@ export default async function ChartingHubPage() {
                             No games found
                         </p>
                         <p className="text-zinc-500 text-sm">
-                            Use the iPad app to chart a new game and sync it to the portal.
+                            Start a new portal charting session to create the game shell and open the web editor.
                         </p>
+                        <Link
+                            href="/charting/new"
+                            className="mt-6 inline-flex h-11 items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 text-sm font-semibold text-emerald-200 transition-colors hover:border-emerald-400/30 hover:bg-emerald-500/15 hover:text-white"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Create First Game
+                        </Link>
                     </div>
                 ) : (
                     <div className="divide-y divide-zinc-800/60">
                         {games.map((game) => (
-                            <Link
+                            <div
                                 key={game.id}
-                                href={`/charting/games/${game.id}`}
-                                className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 hover:bg-zinc-800/40 transition-colors"
+                                className="group flex flex-col gap-4 p-5 transition-colors hover:bg-zinc-800/40 sm:flex-row sm:items-center sm:justify-between"
                             >
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-3">
-                                        <h3 className="text-lg font-bold text-zinc-100 group-hover:text-emerald-400 transition-colors">
+                                        <h3 className="text-lg font-bold text-zinc-100 transition-colors group-hover:text-emerald-400">
                                             {game.opponent}
                                         </h3>
                                         <StatusBadge status={game.status} />
@@ -90,11 +109,28 @@ export default async function ChartingHubPage() {
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex items-center text-zinc-500 group-hover:text-emerald-400 transition-colors">
-                                    <span className="text-sm font-medium mr-2">View Data</span>
-                                    <ChevronRight className="h-4 w-4" />
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <Link
+                                        href={`/charting/games/${game.id}/edit`}
+                                        className="inline-flex h-10 items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 text-sm font-semibold text-emerald-200 transition-colors hover:border-emerald-400/30 hover:bg-emerald-500/15 hover:text-white"
+                                    >
+                                        Open Editor
+                                    </Link>
+                                    <DeleteChartingGameButton
+                                        gameId={game.id}
+                                        opponent={game.opponent}
+                                        gameDate={format(parseISO(game.gameDate), "MMMM do, yyyy")}
+                                        compact
+                                    />
+                                    <Link
+                                        href={`/charting/games/${game.id}`}
+                                        className="inline-flex items-center text-zinc-500 transition-colors group-hover:text-emerald-400"
+                                    >
+                                        <span className="mr-2 text-sm font-medium">View Data</span>
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Link>
                                 </div>
-                            </Link>
+                            </div>
                         ))}
                     </div>
                 )}

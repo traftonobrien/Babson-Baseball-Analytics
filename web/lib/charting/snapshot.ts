@@ -15,6 +15,11 @@ import type {
   ChartingPitcherSegment,
   ChartingPlateAppearance,
 } from "./types";
+import {
+  isMissingVelocityColumnError,
+  legacyChartingPitches,
+  mapLegacyPitchRow,
+} from "./pitchStorage";
 
 export async function loadChartingGameSnapshot(
   gameId: string
@@ -44,11 +49,7 @@ export async function loadChartingGameSnapshot(
       .from(chartingPlateAppearances)
       .where(eq(chartingPlateAppearances.gameId, gameId))
       .orderBy(asc(chartingPlateAppearances.paOrder)),
-    db
-      .select()
-      .from(chartingPitches)
-      .where(eq(chartingPitches.gameId, gameId))
-      .orderBy(asc(chartingPitches.pitchOrder)),
+    loadChartingPitches(gameId),
   ]);
 
   return {
@@ -74,13 +75,37 @@ export async function loadChartingGameSnapshot(
           ...pa,
         }) satisfies ChartingPlateAppearance
     ),
-    pitches: pitches.map(
+    pitches,
+  };
+}
+
+async function loadChartingPitches(gameId: string): Promise<ChartingPitch[]> {
+  try {
+    const pitches = await db
+      .select()
+      .from(chartingPitches)
+      .where(eq(chartingPitches.gameId, gameId))
+      .orderBy(asc(chartingPitches.pitchOrder));
+
+    return pitches.map(
       (pitch) =>
         ({
           ...pitch,
           pitchType: pitch.pitchType as ChartingPitch["pitchType"],
           pitchResult: pitch.pitchResult as ChartingPitch["pitchResult"],
         }) satisfies ChartingPitch
-    ),
-  };
+    );
+  } catch (error) {
+    if (!isMissingVelocityColumnError(error)) {
+      throw error;
+    }
+
+    const legacyPitches = await db
+      .select()
+      .from(legacyChartingPitches)
+      .where(eq(legacyChartingPitches.gameId, gameId))
+      .orderBy(asc(legacyChartingPitches.pitchOrder));
+
+    return legacyPitches.map(mapLegacyPitchRow);
+  }
 }

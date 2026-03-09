@@ -9,7 +9,12 @@ import {
   chartingPitches,
 } from "@/db/schema";
 import { isValidGameStatus } from "@/lib/charting/domain";
+import {
+  isMissingVelocityColumnError,
+  legacyChartingPitches,
+} from "@/lib/charting/pitchStorage";
 import { loadChartingGameSnapshot } from "@/lib/charting/snapshot";
+import type { ChartingGameSnapshot } from "@/lib/charting/types";
 
 export const runtime = "nodejs";
 
@@ -76,11 +81,19 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     // Snapshot sync — full game payload from iPad SyncQueueManager
     // ---------------------------------------------------------------
     if (isSnapshotSync) {
-      const gamePayload = body.game;
-      const segmentsPayload: unknown[] = body.segments ?? [];
-      const lineupPayload: unknown[] = body.lineup ?? [];
-      const pasPayload: unknown[] = body.plateAppearances ?? [];
-      const pitchesPayload: unknown[] = body.pitches ?? [];
+      const snapshotBody = body as {
+        game: Partial<ChartingGameSnapshot["game"]>;
+        segments?: ChartingGameSnapshot["segments"];
+        lineup?: ChartingGameSnapshot["lineup"];
+        plateAppearances?: ChartingGameSnapshot["plateAppearances"];
+        pitches?: ChartingGameSnapshot["pitches"];
+        revision?: number;
+      };
+      const gamePayload = snapshotBody.game;
+      const segmentsPayload = snapshotBody.segments ?? [];
+      const lineupPayload = snapshotBody.lineup ?? [];
+      const pasPayload = snapshotBody.plateAppearances ?? [];
+      const pitchesPayload = snapshotBody.pitches ?? [];
 
       // Validate status if present
       if (
@@ -95,129 +108,40 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
 
       const now = new Date().toISOString();
 
-      // Run everything in a transaction for atomicity
-      const result = await db.transaction(async (tx) => {
-        // 1. Conditional update on the game row (optimistic lock)
-        const gamePatch: Record<string, unknown> = { updatedAt: now };
-        const gameFields = [
-          "opponent",
-          "gameDate",
-          "status",
-          "charter",
-          "weather",
-          "homeCatcher",
-          "awayCatcher",
-          "babsonRecord",
-          "standing",
-          "tomorrowStarter",
-          "tomorrowOpponent",
-          "notes",
-        ] as const;
-        for (const key of gameFields) {
-          if (key in gamePayload) gamePatch[key] = gamePayload[key];
-        }
+      const gamePatch: Record<string, unknown> = { updatedAt: now };
+      const gameFields = [
+        "opponent",
+        "gameDate",
+        "status",
+        "charter",
+        "weather",
+        "homeCatcher",
+        "awayCatcher",
+        "babsonRecord",
+        "standing",
+        "tomorrowStarter",
+        "tomorrowOpponent",
+        "notes",
+      ] as const;
+      for (const key of gameFields) {
+        if (key in gamePayload) gamePatch[key] = gamePayload[key];
+      }
 
-        const updated = await tx
-          .update(chartingGames)
-          .set({ ...gamePatch, revision: clientRevision + 1 })
-          .where(
-            and(
-              eq(chartingGames.id, id),
-              eq(chartingGames.revision, clientRevision)
-            )
+      const updated = await db
+        .update(chartingGames)
+        .set({ ...gamePatch, revision: clientRevision + 1 })
+        .where(
+          and(
+            eq(chartingGames.id, id),
+            eq(chartingGames.revision, clientRevision)
           )
-          .returning();
+        )
+        .returning();
 
-        if (updated.length === 0) {
-          return { conflict: true };
-        }
-
-        // 2. Replace segments
-        await tx
-          .delete(chartingPitcherSegments)
-          .where(eq(chartingPitcherSegments.gameId, id));
-
-        if (segmentsPayload.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await tx.insert(chartingPitcherSegments).values(
-            segmentsPayload.map((s: any) => ({
-              id: s.id,
-              gameId: id,
-              playerId: s.playerId,
-              displayName: s.displayName,
-              segmentOrder: s.segmentOrder,
-              enteredInning: s.enteredInning ?? null,
-              exitedInning: s.exitedInning ?? null,
-              runsOverride: s.runsOverride ?? null,
-              earnedRunsOverride: s.earnedRunsOverride ?? null,
-            }))
-          );
-        }
-
-        // 3. Replace lineup
-        await tx
-          .delete(chartingLineupEntries)
-          .where(eq(chartingLineupEntries.gameId, id));
-
-        if (lineupPayload.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await tx.insert(chartingLineupEntries).values(
-            lineupPayload.map((e: any) => ({
-              id: e.id,
-              gameId: id,
-              lineupSlot: e.lineupSlot,
-              hitterName: e.hitterName,
-            }))
-          );
-        }
-
-        // 4. Replace plate appearances
-        await tx
-          .delete(chartingPlateAppearances)
-          .where(eq(chartingPlateAppearances.gameId, id));
-
-        if (pasPayload.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await tx.insert(chartingPlateAppearances).values(
-            pasPayload.map((pa: any) => ({
-              id: pa.id,
-              gameId: id,
-              segmentId: pa.segmentId,
-              paOrder: pa.paOrder,
-              inning: pa.inning,
-              hitterName: pa.hitterName,
-              lineupSlot: pa.lineupSlot,
-              resultCode: pa.resultCode ?? null,
-              buntContext: pa.buntContext ?? false,
-            }))
-          );
-        }
-
-        // 5. Replace pitches (including velocity)
-        await tx
-          .delete(chartingPitches)
-          .where(eq(chartingPitches.gameId, id));
-
-        if (pitchesPayload.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await tx.insert(chartingPitches).values(
-            pitchesPayload.map((p: any) => ({
-              id: p.id,
-              gameId: id,
-              paId: p.paId,
-              pitchOrder: p.pitchOrder,
-              pitchType: p.pitchType,
-              locationCell: p.locationCell ?? null,
-              pitchResult: p.pitchResult,
-              ballsBefore: p.ballsBefore,
-              strikesBefore: p.strikesBefore,
-              velocity: p.velocity ?? null,
-            }))
-          );
-        }
-
-        return { conflict: false, game: updated[0] };
-      });
+      const result =
+        updated.length === 0
+          ? { conflict: true as const, game: null }
+          : { conflict: false as const, game: updated[0] };
 
       if (result.conflict) {
         // Check existence vs. stale revision
@@ -233,6 +157,102 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
           { error: "Stale revision — fetch the latest game and retry" },
           { status: 409 }
         );
+      }
+
+      await db
+        .delete(chartingPitcherSegments)
+        .where(eq(chartingPitcherSegments.gameId, id));
+
+      if (segmentsPayload.length > 0) {
+        await db.insert(chartingPitcherSegments).values(
+          segmentsPayload.map((s) => ({
+            id: s.id,
+            gameId: id,
+            playerId: s.playerId,
+            displayName: s.displayName,
+            segmentOrder: s.segmentOrder,
+            enteredInning: s.enteredInning ?? null,
+            exitedInning: s.exitedInning ?? null,
+            runsOverride: s.runsOverride ?? null,
+            earnedRunsOverride: s.earnedRunsOverride ?? null,
+          }))
+        );
+      }
+
+      await db
+        .delete(chartingLineupEntries)
+        .where(eq(chartingLineupEntries.gameId, id));
+
+      if (lineupPayload.length > 0) {
+        await db.insert(chartingLineupEntries).values(
+          lineupPayload.map((e) => ({
+            id: e.id,
+            gameId: id,
+            lineupSlot: e.lineupSlot,
+            hitterName: e.hitterName,
+          }))
+        );
+      }
+
+      await db
+        .delete(chartingPlateAppearances)
+        .where(eq(chartingPlateAppearances.gameId, id));
+
+      if (pasPayload.length > 0) {
+        await db.insert(chartingPlateAppearances).values(
+          pasPayload.map((pa) => ({
+            id: pa.id,
+            gameId: id,
+            segmentId: pa.segmentId,
+            paOrder: pa.paOrder,
+            inning: pa.inning,
+            hitterName: pa.hitterName,
+            lineupSlot: pa.lineupSlot,
+            resultCode: pa.resultCode ?? null,
+            buntContext: pa.buntContext ?? false,
+          }))
+        );
+      }
+
+      await db
+        .delete(chartingPitches)
+        .where(eq(chartingPitches.gameId, id));
+
+      if (pitchesPayload.length > 0) {
+        const pitchValues = pitchesPayload.map((p) => ({
+          id: p.id,
+          gameId: id,
+          paId: p.paId,
+          pitchOrder: p.pitchOrder,
+          pitchType: p.pitchType,
+          locationCell: p.locationCell ?? null,
+          pitchResult: p.pitchResult,
+          ballsBefore: p.ballsBefore,
+          strikesBefore: p.strikesBefore,
+          velocity: p.velocity ?? null,
+        }));
+
+        try {
+          await db.insert(chartingPitches).values(pitchValues);
+        } catch (error) {
+          if (!isMissingVelocityColumnError(error)) {
+            throw error;
+          }
+
+          await db.insert(legacyChartingPitches).values(
+            pitchValues.map((pitch) => ({
+              id: pitch.id,
+              gameId: pitch.gameId,
+              paId: pitch.paId,
+              pitchOrder: pitch.pitchOrder,
+              pitchType: pitch.pitchType,
+              locationCell: pitch.locationCell,
+              pitchResult: pitch.pitchResult,
+              ballsBefore: pitch.ballsBefore,
+              strikesBefore: pitch.strikesBefore,
+            }))
+          );
+        }
       }
 
       return NextResponse.json({ game: result.game });
@@ -314,6 +334,53 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     console.error(`charting/games/${id} PATCH:`, err);
     return NextResponse.json(
       { error: "Failed to update charting game" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE /api/charting/games/[id]
+ * Permanently removes a charting game and all child rows.
+ */
+export async function DELETE(_req: NextRequest, { params }: RouteContext) {
+  const { id } = await params;
+
+  try {
+    const [existing] = await db
+      .select({ id: chartingGames.id })
+      .from(chartingGames)
+      .where(eq(chartingGames.id, id));
+
+    if (!existing) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    await db
+      .delete(chartingPitches)
+      .where(eq(chartingPitches.gameId, id));
+
+    await db
+      .delete(chartingPlateAppearances)
+      .where(eq(chartingPlateAppearances.gameId, id));
+
+    await db
+      .delete(chartingLineupEntries)
+      .where(eq(chartingLineupEntries.gameId, id));
+
+    await db
+      .delete(chartingPitcherSegments)
+      .where(eq(chartingPitcherSegments.gameId, id));
+
+    await db
+      .delete(chartingGames)
+      .where(eq(chartingGames.id, id));
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error(`charting/games/${id} DELETE:`, err);
+    return NextResponse.json(
+      { error: "Failed to delete charting game" },
       { status: 500 }
     );
   }
