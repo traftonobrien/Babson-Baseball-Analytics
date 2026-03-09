@@ -20,7 +20,6 @@ enum CSVExporter {
         pitches: [PersistedPitch]
     ) -> String {
         let segmentById = Dictionary(uniqueKeysWithValues: segments.map { ($0.id, $0) })
-        let paById = Dictionary(uniqueKeysWithValues: plateAppearances.map { ($0.id, $0) })
         let pitchesByPA = Dictionary(grouping: pitches) { $0.paId }
 
         let header = "inning,pitcher_id,pitcher,hitter_id,hitter,lineup_slot,pitch_number,count,pitch_type,pitch_result,location,velocity,pa_result"
@@ -34,21 +33,21 @@ enum CSVExporter {
 
             for (i, pitch) in paPitches.enumerated() {
                 let isLast = i == lastIndex && pa.resultCode != nil
-                let row = [
-                    String(pa.inning),
-                    segment?.playerId ?? "",
-                    csvEscape(segment?.displayName ?? ""),
-                    "", // hitter_id — opponent hitters don't have IDs
-                    csvEscape(pa.hitterName),
-                    String(pa.lineupSlot),
-                    String(i + 1),
-                    "\(pitch.ballsBefore)-\(pitch.strikesBefore)",
-                    csvEscape(pitch.pitchType),
-                    csvEscape(pitch.pitchResult),
-                    pitch.locationCell.map(String.init) ?? "",
-                    pitch.velocity.map(String.init) ?? "",
-                    isLast ? csvEscape(pa.resultCode ?? "") : "",
-                ]
+                var row = [String]()
+                row.append(String(pa.inning))
+                row.append(segment?.playerId ?? "")
+                row.append(CSVExporter.csvEscape(segment?.displayName ?? ""))
+                row.append("") // hitter_id
+                row.append(CSVExporter.csvEscape(pa.hitterName))
+                row.append(String(pa.lineupSlot))
+                row.append(String(i + 1))
+                row.append("\(pitch.ballsBefore)-\(pitch.strikesBefore)")
+                row.append(CSVExporter.csvEscape(pitch.pitchType))
+                row.append(CSVExporter.csvEscape(pitch.pitchResult))
+                row.append(pitch.locationCell.map(String.init) ?? "")
+                row.append(pitch.velocity.map(String.init) ?? "")
+                row.append(isLast ? CSVExporter.csvEscape(pa.resultCode ?? "") : "")
+
                 rows.append(row.joined(separator: ","))
             }
         }
@@ -67,22 +66,22 @@ enum CSVExporter {
             let lastIndex = session.pitches.count - 1
             for (i, pitch) in session.pitches.enumerated() {
                 let isLast = i == lastIndex && session.result != nil
-                let row = [
-                    String(session.setup.inning),
-                    session.setup.pitcherPlayerId,
-                    csvEscape(session.setup.pitcherName),
-                    "", // hitter_id — could be filled if roster lookup available
-                    csvEscape(session.setup.hitterName),
-                    "", // lineup_slot — not applicable for Live AB
-                    String(i + 1),
-                    "\(pitch.ballsBefore)-\(pitch.strikesBefore)",
-                    csvEscape(pitch.pitchType),
-                    csvEscape(pitch.pitchResult),
-                    pitch.locationCell.map(String.init) ?? "",
-                    pitch.velocity.map(String.init) ?? "",
-                    isLast ? session.result?.rawValue ?? "" : "",
-                    session.setup.countPreset.rawValue,
-                ]
+                var row = [String]()
+                row.append(String(session.setup.inning))
+                row.append(session.setup.pitcherPlayerId)
+                row.append(CSVExporter.csvEscape(session.setup.pitcherName))
+                row.append("") // hitter_id
+                row.append(CSVExporter.csvEscape(session.setup.hitterName))
+                row.append("") // lineup_slot
+                row.append(String(i + 1))
+                row.append("\(pitch.ballsBefore)-\(pitch.strikesBefore)")
+                row.append(CSVExporter.csvEscape(pitch.pitchType.rawValue))
+                row.append(CSVExporter.csvEscape(pitch.pitchResult.rawValue))
+                row.append(pitch.locationCell.map(String.init) ?? "")
+                row.append(pitch.velocity.map(String.init) ?? "")
+                row.append(isLast ? session.result?.rawValue ?? "" : "")
+                row.append(session.setup.countPreset.rawValue)
+
                 rows.append(row.joined(separator: ","))
             }
         }

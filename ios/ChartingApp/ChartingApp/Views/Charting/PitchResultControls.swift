@@ -18,7 +18,7 @@ struct PitchResultControls: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text("Action")
-                    .font(.headline)
+                    .font(.system(.title3, design: .rounded).weight(.semibold))
 
                 Spacer()
 
@@ -79,7 +79,7 @@ struct PitchResultControls: View {
                         .font(.body.bold())
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 60, alignment: .leading)
             .padding(.horizontal, 12)
                 .background(isSelected ? color.opacity(0.92) : color.opacity(0.16))
                 .foregroundStyle(isSelected ? .white : color)
@@ -98,19 +98,17 @@ struct PitchResultControls: View {
     private func color(for result: PitchResultType) -> Color {
         switch result {
         case .ball:
-            return .green
+            return Color(red: 0.25, green: 0.75, blue: 0.4)
         case .calledStrike:
-            return .red
+            return Color(red: 0.9, green: 0.3, blue: 0.35)
         case .swingingStrike:
-            return .orange
-        case .foul:
-            return .gray
-        case .buntFoul:
-            return .gray
+            return Color(red: 0.95, green: 0.55, blue: 0.2)
+        case .foul, .buntFoul:
+            return Color(red: 0.55, green: 0.6, blue: 0.65)
         case .inPlay:
-            return .blue
+            return Color(red: 0.2, green: 0.6, blue: 0.95)
         case .hitByPitch:
-            return .purple
+            return Color(red: 0.6, green: 0.35, blue: 0.85)
         }
     }
 }

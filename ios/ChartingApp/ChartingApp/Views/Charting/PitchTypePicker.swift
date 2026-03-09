@@ -14,7 +14,7 @@ struct PitchTypePicker: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text("Pitch Type")
-                    .font(.headline)
+                    .font(.system(.title3, design: .rounded).weight(.semibold))
 
                 Spacer()
 
@@ -57,7 +57,7 @@ struct PitchTypePicker: View {
                         .font(.title3)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 60, alignment: .leading)
             .padding(.horizontal, 14)
                 .background(isSelected ? color.opacity(0.9) : color.opacity(0.16))
                 .foregroundStyle(isSelected ? .white : color)
@@ -74,17 +74,17 @@ struct PitchTypePicker: View {
     private func pitchColor(for type: PitchType) -> Color {
         switch type {
         case .fastball:
-            return .red
+            return Color(red: 0.9, green: 0.3, blue: 0.35)
         case .slider:
-            return .orange
+            return Color(red: 0.95, green: 0.55, blue: 0.2)
         case .curveball:
-            return .blue
+            return Color(red: 0.2, green: 0.6, blue: 0.95)
         case .changeup:
-            return .green
+            return Color(red: 0.25, green: 0.75, blue: 0.4)
         case .splitCut:
-            return .purple
+            return Color(red: 0.6, green: 0.35, blue: 0.85)
         case .other:
-            return .gray
+            return Color(red: 0.55, green: 0.6, blue: 0.65)
         }
     }
 }

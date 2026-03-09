@@ -22,11 +22,21 @@ struct LiveChartingView: View {
     var body: some View {
         GeometryReader { proxy in
             let contentWidth = max(proxy.size.width - outerPadding * 2, 1)
-            let zoneWidth = min(max(contentWidth * 0.54, 470), 680)
-            let controlWidth = max(contentWidth - zoneWidth - layoutSpacing, 280)
+            let zoneWidth = contentWidth * 0.45
+            let controlWidth = contentWidth - zoneWidth - layoutSpacing
 
             VStack(spacing: layoutSpacing) {
-                topUtilityBar
+                LiveChartingTopBar(
+                    gameStore: gameStore,
+                    chartingState: chartingState,
+                    hitterRosterPlayers: hitterRosterPlayers,
+                    presentHistory: presentHistory,
+                    presentGameCorrection: presentGameCorrection,
+                    selectPitcher: selectPitcher,
+                    selectLineupHitter: selectLineupHitter,
+                    selectRosterHitter: selectRosterHitter,
+                    pitchControlBlockedReason: pitchControlBlockedReason
+                )
 
                 HStack(alignment: .top, spacing: layoutSpacing) {
                     zoneWorkspace
@@ -47,10 +57,26 @@ struct LiveChartingView: View {
                 updateOrientationRequirement(for: newSize)
             }
         }
+        .background(
+            RadialGradient(
+                colors: [Color(white: 1.0), Color(white: 0.92)],
+                center: .top,
+                startRadius: 0,
+                endRadius: 1000
+            )
+            .ignoresSafeArea()
+        )
         .navigationTitle("Live Charting")
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            bottomWorkflowDock
+            LiveChartingBottomDock(
+                gameStore: gameStore,
+                chartingState: chartingState,
+                pitchControlBlockedReason: pitchControlBlockedReason,
+                isUndoDisabled: historyEntries.isEmpty,
+                presentPACloseout: presentPACloseout,
+                handleUndo: handleUndo
+            )
                 .padding(.horizontal, outerPadding)
                 .padding(.bottom, 12)
         }
@@ -712,8 +738,11 @@ struct LiveChartingView: View {
                     .clipShape(Capsule())
             }
 
+            Spacer(minLength: 0)
             ZoneGridView(state: chartingState)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity)
+                .aspectRatio(1.0, contentMode: .fit)
+            Spacer(minLength: 0)
         }
         .modifier(SurfaceCard())
     }
@@ -974,8 +1003,14 @@ private struct SurfaceCard: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(16)
-            .background(Color(white: 0.97))
+            .background(.thinMaterial)
+//            .background(Color(white: 1.0, opacity: 0.85)) // Alternative fallback
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(Color.white.opacity(0.6), lineWidth: 1.5)
+            )
+            .shadow(color: Color.black.opacity(0.08), radius: 18, y: 6)
     }
 }
 
@@ -1199,7 +1234,7 @@ private struct MatchupSelectorLabel: View {
     }
 }
 
-private struct VeloInputWidget: View {
+struct VeloInputWidget: View {
     @Binding var velocity: Int?
     @State private var isShowingNumpad = false
 

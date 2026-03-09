@@ -12,6 +12,7 @@
 		1598433189114F7E29390C95 /* PitchResultControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25CBF757CE782B6761BC77FE /* PitchResultControls.swift */; };
 		15D254ED579240598C45681D /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DD8D47EBF522F777D689468 /* MainTabView.swift */; };
 		17D6170EFC38B17FF5220125 /* ChartingAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9C9358A35A299C359EF799C /* ChartingAppTests.swift */; };
+		21CE41BF82C9678BF2FF1540 /* LiveChartingTopBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F91825AFE06A205904B5462 /* LiveChartingTopBar.swift */; };
 		2F756CC5ECE55074C098ADE6 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 244CE9AE10702DA41C6F83FB /* Models.swift */; };
 		451E897B21ACE8AF7743E1AB /* GameSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD72253BAED4B32A89A9685 /* GameSetupView.swift */; };
 		461C6273DB8DCFA156B4B5DF /* FinalizeGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8850A7374E5984F5C2C57F91 /* FinalizeGameView.swift */; };
@@ -20,18 +21,19 @@
 		9BAAC659E843437ACAB83D50 /* GameDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E37DD99BD3B37AC77CA4DEF /* GameDetailView.swift */; };
 		A109AA81B31A72E0C6FB2F50 /* SyncStatusIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE06E7606199A7120C56D45B /* SyncStatusIndicator.swift */; };
 		A16EB36AA6F83566B8104417 /* ChartingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92CBC625E578199096529FD3 /* ChartingState.swift */; };
+		AA01BB02CC03DD04EE05FF06 /* LiveABHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA01BB02CC03DD04EE05FF07 /* LiveABHomeView.swift */; };
 		B58FF45C40C30F2D3B34A1D6 /* PersistentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78153598EF8692A3C996D6F6 /* PersistentModels.swift */; };
+		BB02CC03DD04EE05FF06AA01 /* CSVExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB02CC03DD04EE05FF06AA02 /* CSVExporter.swift */; };
 		C16E0C10EF8C4602E9C1D200 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72CCBB2C3CD4054FFE112238 /* LoginView.swift */; };
 		C1DDF5D835DD21F96C8137D8 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1212C37A6D740BA8415BC95E /* APIClient.swift */; };
+		CC03DD04EE05FF06AA01BB02 /* GameSetupWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC03DD04EE05FF06AA01BB03 /* GameSetupWizardView.swift */; };
 		D35A92AB879D104BF0C420B1 /* PAResultControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40B26F6AB1C0BB4E764F641 /* PAResultControls.swift */; };
 		E5568C67FA7443E9DCF8FA51 /* ZoneGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE78DF14FD0F398E84B632BC /* ZoneGridView.swift */; };
 		E569EB8A403F2BE7FAA5A13D /* ChartingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BECAD2A6AD92DF3C7DA23860 /* ChartingApp.swift */; };
+		EE795426177C87770A29A9F5 /* LiveChartingBottomDock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A39678BD1BDDA78A1FA255BC /* LiveChartingBottomDock.swift */; };
 		F36F2F978E03F94D832B45C5 /* LiveChartingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5052E76F596F437F44F56C84 /* LiveChartingView.swift */; };
 		F6A4434CA7A01CD18D9746C5 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FA96D3E279594E81F9FD7C5 /* RootView.swift */; };
 		FEEE9AB5A29DA272A75D1588 /* GamesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 711154F2DF6A0DFB35809540 /* GamesListView.swift */; };
-		AA01BB02CC03DD04EE05FF06 /* LiveABHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA01BB02CC03DD04EE05FF07 /* LiveABHomeView.swift */; };
-		BB02CC03DD04EE05FF06AA01 /* CSVExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB02CC03DD04EE05FF06AA02 /* CSVExporter.swift */; };
-		CC03DD04EE05FF06AA01BB02 /* GameSetupWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC03DD04EE05FF06AA01BB03 /* GameSetupWizardView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,20 +60,22 @@
 		57E33246FF3AAF40D8FE10EE /* PitchHistoryList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchHistoryList.swift; sourceTree = "<group>"; };
 		5FA96D3E279594E81F9FD7C5 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		711154F2DF6A0DFB35809540 /* GamesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamesListView.swift; sourceTree = "<group>"; };
-		AA01BB02CC03DD04EE05FF07 /* LiveABHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveABHomeView.swift; sourceTree = "<group>"; };
 		72CCBB2C3CD4054FFE112238 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		78153598EF8692A3C996D6F6 /* PersistentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentModels.swift; sourceTree = "<group>"; };
 		8850A7374E5984F5C2C57F91 /* FinalizeGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinalizeGameView.swift; sourceTree = "<group>"; };
+		8F91825AFE06A205904B5462 /* LiveChartingTopBar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveChartingTopBar.swift; sourceTree = "<group>"; };
 		92CBC625E578199096529FD3 /* ChartingState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartingState.swift; sourceTree = "<group>"; };
+		A39678BD1BDDA78A1FA255BC /* LiveChartingBottomDock.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveChartingBottomDock.swift; sourceTree = "<group>"; };
+		AA01BB02CC03DD04EE05FF07 /* LiveABHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveABHomeView.swift; sourceTree = "<group>"; };
 		AE06E7606199A7120C56D45B /* SyncStatusIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatusIndicator.swift; sourceTree = "<group>"; };
+		BB02CC03DD04EE05FF06AA02 /* CSVExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVExporter.swift; sourceTree = "<group>"; };
 		BECAD2A6AD92DF3C7DA23860 /* ChartingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartingApp.swift; sourceTree = "<group>"; };
 		C9C9358A35A299C359EF799C /* ChartingAppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartingAppTests.swift; sourceTree = "<group>"; };
+		CC03DD04EE05FF06AA01BB03 /* GameSetupWizardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSetupWizardView.swift; sourceTree = "<group>"; };
 		CE930E3E392B4115453722B6 /* ChartingApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ChartingApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D40B26F6AB1C0BB4E764F641 /* PAResultControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PAResultControls.swift; sourceTree = "<group>"; };
 		E8C8D0D69C4D548918A63000 /* PitchTypePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchTypePicker.swift; sourceTree = "<group>"; };
 		EE78DF14FD0F398E84B632BC /* ZoneGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneGridView.swift; sourceTree = "<group>"; };
-		BB02CC03DD04EE05FF06AA02 /* CSVExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVExporter.swift; sourceTree = "<group>"; };
-		CC03DD04EE05FF06AA01BB03 /* GameSetupWizardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSetupWizardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -150,6 +154,8 @@
 				25CBF757CE782B6761BC77FE /* PitchResultControls.swift */,
 				E8C8D0D69C4D548918A63000 /* PitchTypePicker.swift */,
 				EE78DF14FD0F398E84B632BC /* ZoneGridView.swift */,
+				8F91825AFE06A205904B5462 /* LiveChartingTopBar.swift */,
+				A39678BD1BDDA78A1FA255BC /* LiveChartingBottomDock.swift */,
 			);
 			path = Charting;
 			sourceTree = "<group>";
@@ -195,8 +201,6 @@
 				2A3832BE6577481AE3E26FCE /* PBXTargetDependency */,
 			);
 			name = ChartingAppTests;
-			packageProductDependencies = (
-			);
 			productName = ChartingAppTests;
 			productReference = 26B5EEB9C6A104865310AA2A /* ChartingAppTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -212,8 +216,6 @@
 			dependencies = (
 			);
 			name = ChartingApp;
-			packageProductDependencies = (
-			);
 			productName = ChartingApp;
 			productReference = CE930E3E392B4115453722B6 /* ChartingApp.app */;
 			productType = "com.apple.product-type.application";
@@ -278,6 +280,8 @@
 				BB02CC03DD04EE05FF06AA01 /* CSVExporter.swift in Sources */,
 				CC03DD04EE05FF06AA01BB02 /* GameSetupWizardView.swift in Sources */,
 				E5568C67FA7443E9DCF8FA51 /* ZoneGridView.swift in Sources */,
+				21CE41BF82C9678BF2FF1540 /* LiveChartingTopBar.swift in Sources */,
+				EE795426177C87770A29A9F5 /* LiveChartingBottomDock.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
