@@ -248,8 +248,8 @@ struct LiveChartingView: View {
         let types = isLiveABMode
             ? (currentPitcherProfile?.arsenalPitchTypes ?? PitchType.allCases)
             : gameStore.availablePitchTypesForActivePitcher()
-        let uniqueTypes = Set(types + [.other])
-        return PitchType.allCases.filter { uniqueTypes.contains($0) }
+        let uniqueTypes = Set(types)
+        return PitchType.allCases.filter { uniqueTypes.contains($0) && $0 != .other }
     }
 
     private var historyEntries: [PitchHistoryEntry] {
