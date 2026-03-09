@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect, useMemo, useCallback, type ReactNode } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pencil } from "lucide-react";
 import { usePitchData } from "../../hooks/usePitchData";
 import { applyFilters } from "../../utils";
 import type { Pitch, Filters } from "../../types";
@@ -70,6 +70,28 @@ function saveOverrides(outingId: string, overrides: Overrides): void {
     localStorage.removeItem(storageKey(outingId));
   } else {
     localStorage.setItem(storageKey(outingId), JSON.stringify(overrides));
+  }
+}
+
+function outingLabelKey(outingId: string): string {
+  return `outingLabel:${outingId}`;
+}
+
+function loadOutingLabel(outingId: string): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(outingLabelKey(outingId));
+  } catch {
+    return null;
+  }
+}
+
+function saveOutingLabel(outingId: string, label: string): void {
+  if (typeof window === "undefined") return;
+  if (label.trim() === "") {
+    localStorage.removeItem(outingLabelKey(outingId));
+  } else {
+    localStorage.setItem(outingLabelKey(outingId), label.trim());
   }
 }
 
@@ -155,10 +177,27 @@ export default function PlayerDashboard({
   const [heatmapPitchType, setHeatmapPitchType] = useState("All");
   const [outingMeta, setOutingMeta] = useState<OutingMeta | null>(null);
   const [statsByGame, setStatsByGame] = useState<Record<string, PlayerGameStats | null>>({});
+  const [outingLabelOverride, setOutingLabelOverride] = useState<string | null>(null);
+  const [isEditingOutingLabel, setIsEditingOutingLabel] = useState(false);
+  const [outingLabelInput, setOutingLabelInput] = useState("");
 
-  // Load overrides from localStorage on mount / outing change
+  const displayOutingLabel = outingLabelOverride ?? outing.label;
+
+  // Build label overrides map for OutingSelect (all player outings)
+  const labelOverridesMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const o of player.outings) {
+      const override = o.id === outing.id ? outingLabelOverride : loadOutingLabel(o.id);
+      if (override) map[o.id] = override;
+    }
+    return Object.keys(map).length > 0 ? map : undefined;
+  }, [player.outings, outing.id, outingLabelOverride]);
+
+  // Load overrides and label from localStorage on mount / outing change
   useEffect(() => {
     setOverrides(loadOverrides(outing.id));
+    setOutingLabelOverride(loadOutingLabel(outing.id));
+    setIsEditingOutingLabel(false);
   }, [outing.id]);
 
   useEffect(() => {
@@ -351,9 +390,53 @@ export default function PlayerDashboard({
                 <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300">
                   {player.name}
                 </div>
-                <h1 className="mt-2 text-2xl font-black tracking-tight text-zinc-50 sm:text-4xl">
-                  {outing.label}
-                </h1>
+                {isEditingOutingLabel ? (
+                  <div className="mt-2 flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={outingLabelInput}
+                      onChange={(e) => setOutingLabelInput(e.target.value)}
+                      onBlur={() => {
+                        const trimmed = outingLabelInput.trim();
+                        if (trimmed) {
+                          saveOutingLabel(outing.id, trimmed);
+                          setOutingLabelOverride(trimmed);
+                        } else {
+                          saveOutingLabel(outing.id, "");
+                          setOutingLabelOverride(null);
+                        }
+                        setIsEditingOutingLabel(false);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.currentTarget.blur();
+                        }
+                        if (e.key === "Escape") {
+                          setOutingLabelInput(displayOutingLabel);
+                          setIsEditingOutingLabel(false);
+                          e.currentTarget.blur();
+                        }
+                      }}
+                      autoFocus
+                      className="min-w-[12rem] flex-1 rounded-lg border border-zinc-600 bg-zinc-900/80 px-3 py-2 text-xl font-black tracking-tight text-zinc-50 outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/30 sm:text-3xl"
+                    />
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOutingLabelInput(displayOutingLabel);
+                      setIsEditingOutingLabel(true);
+                    }}
+                    className="mt-2 flex cursor-pointer items-center gap-2 text-left transition-opacity hover:opacity-90 group rounded-lg -ml-1 pl-1 pr-2 -mr-2 py-1 hover:bg-zinc-800/40"
+                    aria-label="Edit outing name"
+                  >
+                    <h1 className="text-2xl font-black tracking-tight text-zinc-50 sm:text-4xl">
+                      {displayOutingLabel}
+                    </h1>
+                    <Pencil className="h-4 w-4 shrink-0 text-zinc-500 opacity-60 group-hover:opacity-100 sm:h-5 sm:w-5" aria-hidden />
+                  </button>
+                )}
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   {currentSeason ? (
                     <LeaderboardPill tone="orange">{currentSeason} season</LeaderboardPill>
@@ -373,6 +456,7 @@ export default function PlayerDashboard({
                     playerId={player.id}
                     outings={player.outings}
                     selectedOutingId={outing.id}
+                    labelOverrides={labelOverridesMap}
                   />
                 ) : null}
                 <div className="flex flex-wrap gap-2">

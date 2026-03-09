@@ -531,6 +531,39 @@ export function undoSnapshotAction(snapshot: ChartingGameSnapshot): ChartingGame
   return nextSnapshot;
 }
 
+export function syncHitterToSnapshot(
+  snapshot: ChartingGameSnapshot,
+  hitterName: string,
+  lineupSlot: number,
+  gameStateOverride?: GameStateOverride | null
+): ChartingGameSnapshot {
+  const trimmed = hitterName.trim();
+  if (!trimmed) return snapshot;
+
+  const liveState = deriveChartingLiveState(
+    snapshot.segments,
+    snapshot.plateAppearances,
+    snapshot.pitches,
+    gameStateOverride
+  );
+
+  const nextSnapshot = cloneSnapshot(snapshot);
+  upsertLineupEntry(
+    nextSnapshot.lineup,
+    nextSnapshot.game.id,
+    clamp(lineupSlot, 1, 9),
+    trimmed
+  );
+
+  const openPA = nextSnapshot.plateAppearances.find((pa) => pa.id === liveState.openPAId);
+  if (openPA) {
+    openPA.hitterName = trimmed;
+    openPA.lineupSlot = clamp(lineupSlot, 1, 9);
+  }
+
+  return nextSnapshot;
+}
+
 export function updateSnapshotRevision(
   snapshot: ChartingGameSnapshot,
   revision: number,

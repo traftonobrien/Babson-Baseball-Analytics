@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { LeaderboardPageFrame } from "@/app/components/leaderboards/LeaderboardChrome";
 import { DeleteChartingGameButton } from "@/app/charting/_components/DeleteChartingGameButton";
+import { EditableChartingGameTitle } from "@/app/charting/_components/EditableChartingGameTitle";
 import { buildChartingExportFilename } from "@/lib/charting/export";
 import { buildChartingPdfFilename } from "@/lib/charting/pdf";
 import { loadChartingGameSnapshot } from "@/lib/charting/snapshot";
@@ -21,7 +22,7 @@ export const revalidate = 0; // Always fetch fresh data
 
 function Badge({ children, className = "" }: { children: React.ReactNode; className?: string }) {
     return (
-        <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider ${className}`}>
+        <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${className}`}>
             {children}
         </span>
     );
@@ -113,16 +114,20 @@ export default async function ChartingGamePage({
                         <ChevronLeft className="h-5 w-5" />
                     </Link>
                     <div>
-                        <h1 className="flex items-center gap-3 text-3xl font-black tracking-tight text-white">
-                            {game.opponent}
-                            {game.status === "final" ? (
-                                <Badge className="border-emerald-500/20 bg-emerald-500/10 text-emerald-300">Final</Badge>
-                            ) : game.status === "active" ? (
-                                <Badge className="border-sky-500/20 bg-sky-500/10 text-sky-300">Live</Badge>
-                            ) : (
-                                <Badge className="border-zinc-500/20 bg-zinc-500/10 text-zinc-300">Draft</Badge>
-                            )}
-                        </h1>
+                        <EditableChartingGameTitle
+                            gameId={game.id}
+                            initialOpponent={game.opponent}
+                            revision={game.revision}
+                            statusBadge={
+                                game.status === "final" ? (
+                                    <Badge className="border-emerald-500/20 bg-emerald-500/10 text-emerald-300">Final</Badge>
+                                ) : game.status === "active" ? (
+                                    <Badge className="border-sky-500/20 bg-sky-500/10 text-sky-300">Live</Badge>
+                                ) : (
+                                    <Badge className="border-zinc-500/20 bg-zinc-500/10 text-zinc-300">Draft</Badge>
+                                )
+                            }
+                        />
                         <p className="mt-1 text-zinc-400">
                             {format(parseISO(game.gameDate), "EEEE, MMMM do, yyyy")}
                         </p>
@@ -131,9 +136,9 @@ export default async function ChartingGamePage({
                 <div className="flex flex-wrap gap-3">
                     <Link
                         href={`/charting/games/${game.id}/edit`}
-                        className="inline-flex h-11 items-center gap-2 self-start rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 text-sm font-semibold text-emerald-200 transition-colors hover:border-emerald-400/30 hover:bg-emerald-500/15 hover:text-white"
+                        className="inline-flex items-center gap-2 self-start rounded-full border border-emerald-500/25 bg-emerald-500/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-200 transition-colors hover:border-emerald-400/35 hover:bg-emerald-500/15"
                     >
-                        <PencilLine className="h-4 w-4" />
+                        <PencilLine className="h-3.5 w-3.5" />
                         Open Editor
                     </Link>
                     <DeleteChartingGameButton
@@ -145,17 +150,17 @@ export default async function ChartingGamePage({
                     <a
                         href={pdfExportHref}
                         download={pdfExportFilename}
-                        className="inline-flex h-11 items-center gap-2 self-start rounded-full border border-sky-500/20 bg-sky-500/10 px-4 text-sm font-semibold text-sky-200 transition-colors hover:border-sky-400/30 hover:bg-sky-500/15 hover:text-white"
+                        className="inline-flex items-center gap-2 self-start rounded-full border border-sky-500/25 bg-sky-500/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-200 transition-colors hover:border-sky-400/35 hover:bg-sky-500/15"
                     >
-                        <FileText className="h-4 w-4" />
+                        <FileText className="h-3.5 w-3.5" />
                         Download PDF
                     </a>
                     <a
                         href={exportHref}
                         download={exportFilename}
-                        className="inline-flex h-11 items-center gap-2 self-start rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 text-sm font-semibold text-emerald-200 transition-colors hover:border-emerald-400/30 hover:bg-emerald-500/15 hover:text-white"
+                        className="inline-flex items-center gap-2 self-start rounded-full border border-emerald-500/25 bg-emerald-500/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-200 transition-colors hover:border-emerald-400/35 hover:bg-emerald-500/15"
                     >
-                        <Download className="h-4 w-4" />
+                        <Download className="h-3.5 w-3.5" />
                         Download CSV
                     </a>
                 </div>

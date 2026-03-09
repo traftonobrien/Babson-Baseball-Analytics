@@ -67,8 +67,8 @@ export function DeleteChartingGameButton({
         disabled={pending}
         className={
           compact
-            ? "inline-flex h-10 items-center gap-2 rounded-full border border-rose-500/20 bg-rose-500/10 px-4 text-sm font-semibold text-rose-200 transition-colors hover:border-rose-400/30 hover:bg-rose-500/15 hover:text-white disabled:cursor-not-allowed disabled:border-zinc-800 disabled:bg-zinc-900/70 disabled:text-zinc-500"
-            : "inline-flex h-11 items-center gap-2 self-start rounded-full border border-rose-500/20 bg-rose-500/10 px-4 text-sm font-semibold text-rose-200 transition-colors hover:border-rose-400/30 hover:bg-rose-500/15 hover:text-white disabled:cursor-not-allowed disabled:border-zinc-800 disabled:bg-zinc-900/70 disabled:text-zinc-500"
+            ? "inline-flex items-center gap-2 rounded-full border border-rose-500/25 bg-rose-500/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-rose-200 transition-colors hover:border-rose-400/30 hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:border-zinc-800 disabled:bg-zinc-900/70 disabled:text-zinc-500"
+            : "inline-flex items-center gap-2 self-start rounded-full border border-rose-500/25 bg-rose-500/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-rose-200 transition-colors hover:border-rose-400/30 hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:border-zinc-800 disabled:bg-zinc-900/70 disabled:text-zinc-500"
         }
       >
         {pending ? (

@@ -63,7 +63,7 @@ export function ChartingCreateForm() {
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
       <section className="overflow-hidden rounded-[2rem] border border-emerald-500/18 bg-zinc-950/80 shadow-[0_26px_80px_rgba(0,0,0,0.32)]">
         <div className="border-b border-zinc-800/80 px-6 py-6 lg:px-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/18 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-200">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-200">
             <ClipboardPenLine className="h-3.5 w-3.5" />
             New Web Charting Session
           </div>
@@ -142,7 +142,7 @@ export function ChartingCreateForm() {
             <button
               type="submit"
               disabled={pending}
-              className="inline-flex h-12 items-center gap-2 rounded-2xl border border-emerald-400/20 bg-emerald-500/12 px-5 text-sm font-semibold text-emerald-100 transition-colors hover:border-emerald-300/30 hover:bg-emerald-500/18 disabled:cursor-not-allowed disabled:border-zinc-800 disabled:bg-zinc-900/70 disabled:text-zinc-500"
+              className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-200 transition-colors hover:border-emerald-400/35 hover:bg-emerald-500/15 disabled:cursor-not-allowed disabled:border-zinc-800 disabled:bg-zinc-900/70 disabled:text-zinc-500"
             >
               {pending ? "Creating…" : "Create And Open Editor"}
               <ArrowRight className="h-4 w-4" />

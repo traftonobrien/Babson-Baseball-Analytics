@@ -8,30 +8,19 @@ import {
 import { db } from "@/db";
 import { chartingGames } from "@/db/schema";
 import { desc } from "drizzle-orm";
-import { DeleteChartingGameButton } from "@/app/charting/_components/DeleteChartingGameButton";
+import { LeaderboardIntro, LeaderboardPageFrame, LeaderboardPanel, LeaderboardPill } from "@/app/components/leaderboards/LeaderboardChrome";
+import { EditableChartingGameNameInList } from "@/app/charting/_components/EditableChartingGameNameInList";
 
 export const revalidate = 0; // Always fetch fresh data
 
 function StatusBadge({ status }: { status: string }) {
     if (status === "active") {
-        return (
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold capitalize bg-emerald-500 text-white">
-                Active
-            </span>
-        );
+        return <LeaderboardPill tone="emerald">Active</LeaderboardPill>;
     }
     if (status === "final") {
-        return (
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold capitalize bg-blue-500 text-white">
-                Final
-            </span>
-        );
+        return <LeaderboardPill tone="blue">Final</LeaderboardPill>;
     }
-    return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold capitalize bg-orange-500 text-white">
-            Draft
-        </span>
-    );
+    return <LeaderboardPill tone="orange">Draft</LeaderboardPill>;
 }
 
 export default async function ChartingHubPage() {
@@ -41,40 +30,43 @@ export default async function ChartingHubPage() {
         .orderBy(desc(chartingGames.gameDate));
 
     return (
-        <main className="min-h-screen bg-zinc-950 text-zinc-100">
-            <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-
-                {/* iOS-style Navigation Header */}
-                <div className="mb-6 flex items-end justify-between">
-                    <h1 className="text-[34px] font-bold tracking-tight text-white leading-none">
-                        Games
-                    </h1>
+        <LeaderboardPageFrame maxWidth="max-w-3xl">
+            <LeaderboardIntro
+                breadcrumbs={[{ label: "Home", href: "/" }, { label: "Charting" }]}
+                actions={
                     <Link
                         href="/charting/new"
-                        className="text-emerald-500 hover:text-emerald-400 transition-colors pb-1"
+                        className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-200 transition-colors hover:border-emerald-400/35 hover:bg-emerald-500/15"
                         aria-label="New Game"
                     >
-                        <Plus className="h-[26px] w-[26px]" strokeWidth={2.5} />
+                        <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+                        New Game
                     </Link>
-                </div>
+                }
+            >
+                <section>
+                    <h1 className="text-2xl font-bold tracking-tight text-white">Games</h1>
+                </section>
+            </LeaderboardIntro>
 
-                {games.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-32 text-center mt-12">
-                        <ClipboardList className="h-[68px] w-[68px] text-zinc-500 mb-4 stroke-1" />
-                        <h2 className="text-xl font-bold text-white mb-2">No Games</h2>
-                        <p className="text-zinc-500 text-[15px] max-w-xs mb-8">
-                            Create a new game or pull down to refresh from the server.
-                        </p>
-                        <Link
-                            href="/charting/new"
-                            className="inline-flex h-12 items-center justify-center rounded-xl bg-emerald-600 px-8 font-semibold text-white transition-colors hover:bg-emerald-500 shadow-sm text-[15px]"
-                        >
-                            New Game
-                        </Link>
-                    </div>
-                ) : (
-                    <div className="overflow-hidden rounded-[14px] bg-zinc-900/80 ring-1 ring-white/5">
-                        <ul className="divide-y divide-white/5">
+            {games.length === 0 ? (
+                <LeaderboardPanel className="mt-6 flex flex-col items-center justify-center py-24 text-center">
+                    <ClipboardList className="h-[68px] w-[68px] text-zinc-500 mb-4 stroke-1" />
+                    <h2 className="text-xl font-bold text-white mb-2">No Games</h2>
+                    <p className="text-zinc-500 text-[15px] max-w-xs mb-8">
+                        Create a new game or pull down to refresh from the server.
+                    </p>
+                    <Link
+                        href="/charting/new"
+                        className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/15 px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-200 transition-colors hover:border-emerald-400/35 hover:bg-emerald-500/20"
+                    >
+                        <Plus className="h-4 w-4" strokeWidth={2.5} />
+                        New Game
+                    </Link>
+                </LeaderboardPanel>
+            ) : (
+                <LeaderboardPanel className="mt-6 overflow-hidden p-0">
+                    <ul className="divide-y divide-white/5">
                             {games.map((game) => (
                                 <li key={game.id} className="group relative">
                                     <div className="flex items-center justify-between p-4 transition-colors hover:bg-zinc-800/60">
@@ -84,34 +76,38 @@ export default async function ChartingHubPage() {
                                             aria-label={`View data for game against ${game.opponent}`}
                                         />
 
-                                        <div className="flex flex-col gap-1 pr-4">
-                                            <h3 className="text-[17px] font-semibold text-white">
-                                                vs {game.opponent}
-                                            </h3>
-                                            <div className="flex items-center gap-2 text-[15px] text-zinc-500">
-                                                <span>
-                                                    {format(parseISO(game.gameDate), "MMM d, yyyy")}
-                                                </span>
+                                        <div className="flex items-center gap-3 pr-4">
+                                            <StatusBadge status={game.status} />
+                                            <div className="flex flex-col gap-1">
+                                                <h3 className="text-[17px] font-semibold">
+                                                    <EditableChartingGameNameInList
+                                                        gameId={game.id}
+                                                        initialOpponent={game.opponent}
+                                                        revision={game.revision}
+                                                    />
+                                                </h3>
+                                                <div className="flex items-center gap-2 text-[15px] text-zinc-500">
+                                                    <span>
+                                                        {format(parseISO(game.gameDate), "MMM d, yyyy")}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
 
                                         <div className="flex items-center gap-3 z-20">
-                                            <StatusBadge status={game.status} />
-
-                                            {/* Suble Actions (Visible on hover on desktop, or can just be revealed) */}
-                                            <div className="hidden sm:flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                                            <div className="flex items-center gap-2">
+                                                <Link
+                                                    href={`/charting/games/${game.id}`}
+                                                    className="inline-flex items-center rounded-full border border-zinc-600/50 bg-zinc-800/60 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-300 transition-colors hover:border-zinc-500/60 hover:bg-zinc-700/70 hover:text-white"
+                                                >
+                                                    Overview
+                                                </Link>
                                                 <Link
                                                     href={`/charting/games/${game.id}/edit`}
-                                                    className="rounded-lg bg-zinc-800/80 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-zinc-700 transition-colors"
+                                                    className="inline-flex items-center rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-200 transition-colors hover:border-emerald-400/35 hover:bg-emerald-500/15"
                                                 >
                                                     Edit
                                                 </Link>
-                                                <DeleteChartingGameButton
-                                                    gameId={game.id}
-                                                    opponent={game.opponent}
-                                                    gameDate={format(parseISO(game.gameDate), "MMM d, yyyy")}
-                                                    compact
-                                                />
                                             </div>
 
                                             <ChevronRight className="h-5 w-5 text-zinc-600 ml-1" />
@@ -120,9 +116,8 @@ export default async function ChartingHubPage() {
                                 </li>
                             ))}
                         </ul>
-                    </div>
-                )}
-            </div>
-        </main>
+                </LeaderboardPanel>
+            )}
+        </LeaderboardPageFrame>
     );
 }

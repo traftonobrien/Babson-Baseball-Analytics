@@ -17,6 +17,8 @@ type OutingSelectProps = {
   playerId: string;
   outings: Outing[];
   selectedOutingId: string;
+  /** Optional overrides for outing labels (e.g. from localStorage edits) */
+  labelOverrides?: Record<string, string>;
 };
 
 const CURRENT_SEASON = 2026;
@@ -25,6 +27,7 @@ export default function OutingSelect({
   playerId,
   outings,
   selectedOutingId,
+  labelOverrides,
 }: OutingSelectProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -124,7 +127,7 @@ export default function OutingSelect({
         >
           {filtered.map((outing) => (
             <option key={outing.id} value={outing.id}>
-              {outing.label}
+              {labelOverrides?.[outing.id] ?? outing.label}
             </option>
           ))}
         </select>

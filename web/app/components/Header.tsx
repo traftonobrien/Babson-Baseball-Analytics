@@ -7,6 +7,7 @@ import {
   Activity,
   BarChart3,
   BookOpen,
+  ClipboardList,
   Film,
   Sparkles,
   Target,
@@ -72,6 +73,16 @@ const NAV_ITEMS: TubelightNavItem[] = [
     url: "/command",
     icon: Target,
     match: (pathname) => pathname === "/command",
+    section: "tracking",
+  },
+  {
+    name: "Charting",
+    url: "/charting",
+    icon: ClipboardList,
+    match: (pathname) =>
+      pathname === "/charting" ||
+      pathname.startsWith("/charting/games/") ||
+      pathname === "/charting/new",
     section: "tracking",
   },
   {
