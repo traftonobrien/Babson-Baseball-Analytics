@@ -314,6 +314,8 @@ struct LiveChartingTopBar: View {
     private var topBarActions: some View {
         HStack(spacing: 8) {
             if !isLiveABMode {
+                SyncStatusIndicator(status: gameStore.syncStatus)
+
                 TopBarActionButton(
                     title: chartingState.hasGameCorrection ? "Queued AB" : "Next AB",
                     systemImage: "arrow.triangle.branch",
