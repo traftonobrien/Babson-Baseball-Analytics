@@ -565,6 +565,31 @@ export function syncHitterToSnapshot(
   return nextSnapshot;
 }
 
+export function updatePitchVelocityInSnapshot(
+  snapshot: ChartingGameSnapshot,
+  pitchId: string,
+  velocity: number | null
+): ChartingGameSnapshot {
+  const existingPitch = snapshot.pitches.find((pitch) => pitch.id === pitchId);
+  if (!existingPitch) {
+    return snapshot;
+  }
+
+  const normalizedVelocity = velocity ?? null;
+  if ((existingPitch.velocity ?? null) === normalizedVelocity) {
+    return snapshot;
+  }
+
+  const nextSnapshot = cloneSnapshot(snapshot);
+  const targetPitch = nextSnapshot.pitches.find((pitch) => pitch.id === pitchId);
+  if (!targetPitch) {
+    return snapshot;
+  }
+
+  targetPitch.velocity = normalizedVelocity;
+  return nextSnapshot;
+}
+
 export function updateSnapshotRevision(
   snapshot: ChartingGameSnapshot,
   revision: number,
@@ -586,6 +611,47 @@ export function lineupNameForSlot(
 ): string | null {
   const entry = lineup.find((item) => item.lineupSlot === slot);
   return entry?.hitterName ?? null;
+}
+
+export function countPitcherPitches(
+  snapshot: Pick<ChartingGameSnapshot, "segments" | "plateAppearances" | "pitches">,
+  pitcherId: string
+): number {
+  if (!pitcherId) {
+    return 0;
+  }
+
+  const segmentIds = segmentIdsForPitcher(snapshot.segments, pitcherId);
+  if (segmentIds.size === 0) {
+    return 0;
+  }
+
+  const paById = new Map(snapshot.plateAppearances.map((pa) => [pa.id, pa]));
+  return snapshot.pitches.filter((pitch) => {
+    const pa = paById.get(pitch.paId);
+    return pa ? segmentIds.has(pa.segmentId) : false;
+  }).length;
+}
+
+export function countPitcherInningPitches(
+  snapshot: Pick<ChartingGameSnapshot, "segments" | "plateAppearances" | "pitches">,
+  pitcherId: string,
+  inning: number
+): number {
+  if (!pitcherId) {
+    return 0;
+  }
+
+  const segmentIds = segmentIdsForPitcher(snapshot.segments, pitcherId);
+  if (segmentIds.size === 0) {
+    return 0;
+  }
+
+  const paById = new Map(snapshot.plateAppearances.map((pa) => [pa.id, pa]));
+  return snapshot.pitches.filter((pitch) => {
+    const pa = paById.get(pitch.paId);
+    return pa ? segmentIds.has(pa.segmentId) && pa.inning === inning : false;
+  }).length;
 }
 
 export function isPAResultType(value: string): value is PAResultType {
@@ -707,6 +773,17 @@ function removePlateAppearanceAndOrphanSegment(
       (segment) => segment.id !== plateAppearance.segmentId
     );
   }
+}
+
+function segmentIdsForPitcher(
+  segments: ChartingPitcherSegment[],
+  pitcherId: string
+): Set<string> {
+  return new Set(
+    segments
+      .filter((segment) => segment.playerId === pitcherId)
+      .map((segment) => segment.id)
+  );
 }
 
 function clamp(value: number, min: number, max: number): number {

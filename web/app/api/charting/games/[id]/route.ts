@@ -94,6 +94,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
       const lineupPayload = snapshotBody.lineup ?? [];
       const pasPayload = snapshotBody.plateAppearances ?? [];
       const pitchesPayload = snapshotBody.pitches ?? [];
+      const warnings: string[] = [];
 
       // Validate status if present
       if (
@@ -239,6 +240,10 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
             throw error;
           }
 
+          warnings.push(
+            "Velocity could not be persisted because the charting_pitches table is missing the velocity column. Run migration 0003_charting_pitch_velocity before exporting CSV velo."
+          );
+
           await db.insert(legacyChartingPitches).values(
             pitchValues.map((pitch) => ({
               id: pitch.id,
@@ -255,7 +260,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
         }
       }
 
-      return NextResponse.json({ game: result.game });
+      return NextResponse.json({ game: result.game, warnings });
     }
 
     // ---------------------------------------------------------------

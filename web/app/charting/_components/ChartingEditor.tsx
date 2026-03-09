@@ -34,6 +34,8 @@ import {
   FLY_OUT_OPTIONS,
   GAME_PITCH_RESULTS,
   closeCurrentPlateAppearance,
+  countPitcherInningPitches,
+  countPitcherPitches,
   closeoutResultGroups,
   createGameStateOverride,
   deriveChartingLiveState,
@@ -49,6 +51,7 @@ import {
   syncHitterToSnapshot,
   undoSnapshotAction,
   UNASSISTED_OUT_OPTIONS,
+  updatePitchVelocityInSnapshot,
   updateSnapshotRevision,
   type GameStateOverride,
   type PAResultType,
@@ -73,6 +76,7 @@ type RecentPitchRow = {
   count: string;
   pitchType: PitchType;
   pitchResult: PitchResult;
+  velocity: number | null;
   paResult: string | null;
 };
 
@@ -145,6 +149,7 @@ export function ChartingEditor({
   const [hitterName, setHitterName] = useState(initialMatchup.hitterName);
   const [showHistory, setShowHistory] = useState(false);
   const [expandedPAs, setExpandedPAs] = useState<Set<string>>(() => new Set());
+  const [velocityDrafts, setVelocityDrafts] = useState<Record<string, string>>({});
   const [gameStateOverride, setGameStateOverride] = useState<GameStateOverride | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -237,29 +242,16 @@ export function ChartingEditor({
     liveState.openPAId
   );
 
-  // Calculate total pitches for the current pitcher segment
-  const activeSegmentId = liveState.activeSegmentId;
-  const totalPitches = activeSegmentId
-    ? snapshot.plateAppearances
-      .filter(pa => pa.segmentId === activeSegmentId)
-      .reduce((sum, pa) => {
-        return sum + snapshot.pitches.filter(p => p.paId === pa.id).length;
-      }, 0)
-    : 0;
-
-  const inningPitches = activeSegmentId
-    ? snapshot.plateAppearances
-      .filter(pa => pa.segmentId === activeSegmentId && pa.inning === liveState.inning)
-      .reduce((sum, pa) => {
-        return sum + snapshot.pitches.filter(p => p.paId === pa.id).length;
-      }, 0)
-    : 0;
-
   const overrideBase = {
     inning: gameStateOverride?.inning ?? liveState.inning,
     isTopInning: gameStateOverride?.isTopInning ?? liveState.isTopInning,
     outs: gameStateOverride?.outs ?? liveState.outs,
   };
+  const inningPitches = countPitcherInningPitches(
+    snapshot,
+    selectedPitcher?.playerId ?? "",
+    overrideBase.inning
+  );
 
   const clearPitchDraft = () => {
     setSelectedPitchType(null);
@@ -347,6 +339,7 @@ export function ChartingEditor({
 
       const data = (await response.json()) as {
         game: { revision: number; updatedAt?: string };
+        warnings?: string[];
       };
       revisionRef.current = data.game.revision;
 
@@ -363,7 +356,7 @@ export function ChartingEditor({
           )
         );
         setSaveState("saved");
-        setStatusMessage(successNote);
+        setStatusMessage(data.warnings?.[0] ?? successNote);
         setErrorMessage(null);
       });
     }).catch((error: unknown) => {
@@ -409,6 +402,41 @@ export function ChartingEditor({
   const handlePitcherChange = (nextPitcherId: string) => {
     setSelectedPitcherId(nextPitcherId);
     setPitcherNameInput(pitchers.find((p) => p.playerId === nextPitcherId)?.name ?? "");
+  };
+
+  const clearVelocityDraft = (pitchId: string) => {
+    setVelocityDrafts((prev) => {
+      if (!(pitchId in prev)) {
+        return prev;
+      }
+      const next = { ...prev };
+      delete next[pitchId];
+      return next;
+    });
+  };
+
+  const handleVelocityDraftChange = (pitchId: string, value: string) => {
+    setVelocityDrafts((prev) => ({
+      ...prev,
+      [pitchId]: value.replace(/[^0-9]/g, "").slice(0, 3),
+    }));
+  };
+
+  const handlePitchVelocityCommit = (pitchId: string, rawValue: string) => {
+    const nextVelocity = parseVelocity(rawValue);
+    const nextSnapshot = updatePitchVelocityInSnapshot(snapshot, pitchId, nextVelocity);
+
+    clearVelocityDraft(pitchId);
+
+    if (nextSnapshot === snapshot) {
+      return;
+    }
+
+    applyOptimisticSnapshot(
+      nextSnapshot,
+      gameStateOverride,
+      nextVelocity === null ? "Velocity cleared" : `Velocity updated to ${nextVelocity} mph`
+    );
   };
 
   const handlePitchResultChange = (nextResult: PitchResult) => {
@@ -709,7 +737,7 @@ export function ChartingEditor({
                   <div className="flex items-center gap-1.5 shrink-0">
                     <span className="flex items-center gap-1.5 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-2 py-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
                       <span className="text-[9px] font-semibold uppercase tracking-wider text-[rgb(212,220,218)]">Total</span>
-                      <span className="text-sm font-black text-white">{totalPitches}</span>
+                      <span className="text-sm font-black text-white">{activePitcherPitchCount}</span>
                     </span>
                     <span className="flex items-center gap-1.5 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-2 py-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
                       <span className="text-[9px] font-semibold uppercase tracking-wider text-[rgb(212,220,218)]">Inning</span>
@@ -734,7 +762,10 @@ export function ChartingEditor({
           {/* Left: Zone */}
           <div className="flex flex-col items-center rounded-[2rem] border border-[rgba(var(--babson-grey-rgb),0.12)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-4 min-h-0 w-fit shrink-0 shadow-[0_24px_64px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
             <div className="mb-3 flex w-full items-center justify-between gap-4">
-              <div className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500 whitespace-nowrap">Zone Workspace</div>
+              <div className="flex min-w-0 flex-col">
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500 whitespace-nowrap">Zone Workspace</div>
+                <div className="text-[10px] text-zinc-500">Catcher view</div>
+              </div>
               <div className="inline-flex rounded-full bg-zinc-800/80 px-2 py-0.5 text-[10px] font-medium text-zinc-300">
                 Selected: <span className="ml-1 font-bold text-white">{selectedPitchResult === "hit_by_pitch" ? "HBP" : selectedLocation ? `Cell ${selectedLocation}` : "None"}</span>
               </div>
@@ -850,20 +881,41 @@ export function ChartingEditor({
                           {isExpanded && (
                             <div className="border-t border-zinc-800/60 bg-zinc-950/40 rounded-b-xl overflow-hidden">
                               <div className="max-h-[200px] min-h-0 overflow-y-auto overscroll-contain">
-                                <div className="grid grid-cols-[auto_1fr_auto_auto] gap-x-3 gap-y-0 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 border-b border-zinc-800/60 sticky top-0 bg-zinc-950/95 z-10">
+                                <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto_auto] gap-x-3 gap-y-0 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 border-b border-zinc-800/60 sticky top-0 bg-zinc-950/95 z-10">
                                   <span>#</span>
                                   <span>Pitch</span>
                                   <span>Count</span>
+                                  <span>Velo</span>
                                   <span>Result</span>
                                 </div>
                                 {group.pitches.map((pitch, idx) => (
                                   <div
                                     key={pitch.id}
-                                    className="grid grid-cols-[auto_1fr_auto_auto] gap-x-3 gap-y-0 items-center px-4 py-2.5 pl-10 text-sm border-b border-zinc-800/40 last:border-b-0"
+                                    className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto_auto] gap-x-3 gap-y-0 items-center px-4 py-2.5 pl-10 text-sm border-b border-zinc-800/40 last:border-b-0"
                                   >
                                     <span className="text-zinc-500 font-mono text-xs">{idx + 1}</span>
                                     <span className="truncate font-medium text-zinc-300">{pitch.pitchType}</span>
                                     <span className="rounded bg-zinc-800 px-2 py-0.5 text-xs font-semibold text-zinc-400 shrink-0">{pitch.count}</span>
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      <input
+                                        value={velocityDrafts[pitch.id] ?? (pitch.velocity?.toString() ?? "")}
+                                        onChange={(event) => handleVelocityDraftChange(pitch.id, event.target.value)}
+                                        onBlur={(event) => handlePitchVelocityCommit(pitch.id, event.target.value)}
+                                        onKeyDown={(event) => {
+                                          if (event.key === "Enter") {
+                                            event.currentTarget.blur();
+                                          } else if (event.key === "Escape") {
+                                            clearVelocityDraft(pitch.id);
+                                            event.currentTarget.blur();
+                                          }
+                                        }}
+                                        inputMode="numeric"
+                                        placeholder="mph"
+                                        aria-label={`Velocity for pitch ${idx + 1}`}
+                                        className="h-7 w-16 rounded-md border border-zinc-700 bg-zinc-900/80 px-2 text-center text-xs font-semibold text-zinc-200 outline-none transition-colors placeholder:text-zinc-600 focus:border-emerald-500/50 focus:bg-zinc-900"
+                                      />
+                                      <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-600">mph</span>
+                                    </div>
                                     <span className={pitch.paResult ? "text-emerald-400 font-bold shrink-0" : "font-medium text-zinc-400 shrink-0"}>
                                       {pitch.paResult ?? pitchResultLabel(pitch.pitchResult)}
                                     </span>
@@ -1433,6 +1485,7 @@ function buildRecentPitchRows(snapshot: ChartingGameSnapshot): RecentPitchRow[] 
         count: `${pitch.ballsBefore}-${pitch.strikesBefore}`,
         pitchType: pitch.pitchType,
         pitchResult: pitch.pitchResult,
+        velocity: pitch.velocity,
         paResult: pa?.resultCode ?? null,
       };
     });
@@ -1462,27 +1515,6 @@ function buildRecentPAGroups(snapshot: ChartingGameSnapshot): RecentPAGroup[] {
         pitches,
       };
     });
-}
-
-function countPitcherPitches(
-  snapshot: ChartingGameSnapshot,
-  pitcherId: string
-) {
-  if (!pitcherId) {
-    return 0;
-  }
-
-  const paById = new Map(snapshot.plateAppearances.map((pa) => [pa.id, pa]));
-  const segmentIds = new Set(
-    snapshot.segments
-      .filter((segment) => segment.playerId === pitcherId)
-      .map((segment) => segment.id)
-  );
-
-  return snapshot.pitches.filter((pitch) => {
-    const pa = paById.get(pitch.paId);
-    return pa ? segmentIds.has(pa.segmentId) : false;
-  }).length;
 }
 
 function findDefaultPitcherId(

@@ -8,6 +8,27 @@
       "when": 1771855650799,
       "tag": "0000_simple_black_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773097855073,
+      "tag": "0001_charting_domain",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773097855074,
+      "tag": "0002_charting_lineup",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1773097855075,
+      "tag": "0003_charting_pitch_velocity",
+      "breakpoints": true
     }
   ]
 }

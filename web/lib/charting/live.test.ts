@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  updatePitchVelocityInSnapshot,
+  countPitcherInningPitches,
+  countPitcherPitches,
   closeCurrentPlateAppearance,
   createGameStateOverride,
   deriveChartingLiveState,
@@ -8,6 +11,7 @@ import {
   recordPitchInSnapshot,
   undoSnapshotAction,
 } from "./live";
+import { fixtureGameSnapshot } from "./fixtures";
 import type { ChartingGameSnapshot } from "./types";
 
 const baseSnapshot: ChartingGameSnapshot = {
@@ -82,6 +86,14 @@ describe("derivePAPitchProgress", () => {
 });
 
 describe("snapshot mutations", () => {
+  it("counts totals and inning pitches for the selected pitcher", () => {
+    expect(countPitcherPitches(fixtureGameSnapshot, "DJames1")).toBe(7);
+    expect(countPitcherPitches(fixtureGameSnapshot, "CBurrows1")).toBe(1);
+    expect(countPitcherInningPitches(fixtureGameSnapshot, "DJames1", 1)).toBe(7);
+    expect(countPitcherInningPitches(fixtureGameSnapshot, "CBurrows1", 1)).toBe(0);
+    expect(countPitcherInningPitches(fixtureGameSnapshot, "CBurrows1", 6)).toBe(1);
+  });
+
   it("records a first pitch by creating a segment and PA", () => {
     const snapshot = recordPitchInSnapshot(baseSnapshot, {
       pitchType: "Fastball",
@@ -191,6 +203,37 @@ describe("snapshot mutations", () => {
     const emptied = undoSnapshotAction(reopened);
     expect(emptied.plateAppearances).toHaveLength(0);
     expect(emptied.pitches).toHaveLength(0);
+  });
+
+  it("updates a pitch velocity without changing plate appearance state", () => {
+    const snapshot = recordPitchInSnapshot(baseSnapshot, {
+      pitchType: "Fastball",
+      pitchResult: "called_strike",
+      locationCell: 5,
+      velocity: null,
+      pitcher: {
+        playerId: "DJames1",
+        name: "D. James",
+      },
+      hitterName: "Wyatt Miller",
+      lineupSlot: 1,
+    });
+
+    const pitchId = snapshot.pitches[0]!.id;
+    const updated = updatePitchVelocityInSnapshot(snapshot, pitchId, 94);
+
+    expect(updated.pitches[0]?.velocity).toBe(94);
+    expect(updated.pitches[0]?.pitchType).toBe("Fastball");
+
+    const liveState = deriveChartingLiveState(
+      updated.segments,
+      updated.plateAppearances,
+      updated.pitches
+    );
+    expect(liveState.strikes).toBe(1);
+
+    const cleared = updatePitchVelocityInSnapshot(updated, pitchId, null);
+    expect(cleared.pitches[0]?.velocity).toBeNull();
   });
 
   it("removes an orphaned pitcher segment when undo clears the only pitch", () => {

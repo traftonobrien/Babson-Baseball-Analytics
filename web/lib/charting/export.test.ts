@@ -44,6 +44,18 @@ describe("buildChartingExportRows", () => {
     // Third PA (1 pitch, no result) — should be null
     expect(rows[7]?.pa_result).toBeNull();
   });
+
+  it("preserves velocity in export rows when it exists on the pitch", () => {
+    const snapshot = {
+      ...fixtureGameSnapshot,
+      pitches: fixtureGameSnapshot.pitches.map((pitch, index) =>
+        index === 0 ? { ...pitch, velocity: 93 } : pitch
+      ),
+    };
+
+    const [firstRow] = buildChartingExportRows(snapshot);
+    expect(firstRow?.velocity).toBe(93);
+  });
 });
 
 describe("buildChartingExportCsv", () => {
