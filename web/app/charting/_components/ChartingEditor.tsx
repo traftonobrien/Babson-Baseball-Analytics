@@ -150,6 +150,8 @@ export function ChartingEditor({
   type InPlayOutType = "ground" | "line" | "fly" | "pop" | "unassisted" | "dp" | "error" | "fc";
   const [inPlayStep, setInPlayStep] = useState<InPlayStep>("hit_or_out");
   const [inPlayOutType, setInPlayOutType] = useState<InPlayOutType | null>(null);
+  const [showPitchRecordedFlash, setShowPitchRecordedFlash] = useState(false);
+  const pitchRecordedFlashRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const revisionRef = useRef(initialSnapshot.game.revision);
   const saveEpochRef = useRef(0);
@@ -177,6 +179,10 @@ export function ChartingEditor({
       setInPlayOutType(null);
     }
   }, [needsPAClosure, liveState.closureState]);
+
+  useEffect(() => () => {
+    if (pitchRecordedFlashRef.current) clearTimeout(pitchRecordedFlashRef.current);
+  }, []);
 
   const selectedPitcher =
     pitchers.find((pitcher) => pitcher.playerId === selectedPitcherId) ??
@@ -433,6 +439,13 @@ export function ChartingEditor({
 
     clearPitchDraft();
     applyOptimisticSnapshot(nextSnapshot, gameStateOverride, "Pitch saved");
+
+    if (pitchRecordedFlashRef.current) clearTimeout(pitchRecordedFlashRef.current);
+    setShowPitchRecordedFlash(true);
+    pitchRecordedFlashRef.current = setTimeout(() => {
+      setShowPitchRecordedFlash(false);
+      pitchRecordedFlashRef.current = null;
+    }, 1500);
   };
 
   const handleClosePlateAppearance = (result: PAResultType) => {
@@ -580,18 +593,6 @@ export function ChartingEditor({
           </select>
         </div>
       </header>
-
-      {(errorMessage || statusMessage) && (
-        <div className={`border-b px-6 py-2.5 text-sm font-medium ${errorMessage
-          ? "border-amber-500/20 bg-amber-500/10 text-amber-200"
-          : "border-emerald-500/20 bg-emerald-500/10 text-emerald-200"
-          }`}>
-          <div className="mx-auto flex max-w-7xl items-center gap-2">
-            {errorMessage ? <AlertTriangle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
-            {errorMessage || statusMessage}
-          </div>
-        </div>
-      )}
 
       {/* Main Workspace */}
       <div className="flex flex-1 flex-col relative">
@@ -783,7 +784,23 @@ export function ChartingEditor({
         </section>
 
         {/* Bottom Static Bar: PA Closeout or Record Pitch */}
-        <section className="flex-shrink-0 border-t border-[rgba(var(--babson-grey-rgb),0.18)] bg-zinc-950/95 p-4 backdrop-blur-xl lg:px-8 lg:py-4 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
+        <section className="relative flex-shrink-0 border-t border-[rgba(var(--babson-grey-rgb),0.18)] bg-zinc-950/95 p-4 backdrop-blur-xl lg:px-8 lg:py-4 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
+          {/* Pitch recorded flash overlay — does not affect layout */}
+          <AnimatePresence>
+            {showPitchRecordedFlash && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"
+              >
+                <span className="rounded-xl bg-[var(--babson-green)]/90 px-6 py-2.5 text-sm font-bold text-white shadow-lg">
+                  Pitch recorded
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <div className="mx-auto max-w-7xl">
             {needsPAClosure && liveState.closureState === "in_play" ? (
               <div className="flex items-center justify-center py-4">
