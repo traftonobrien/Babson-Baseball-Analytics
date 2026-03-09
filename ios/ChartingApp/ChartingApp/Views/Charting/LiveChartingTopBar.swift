@@ -218,96 +218,88 @@ struct LiveChartingTopBar: View {
 
     @ViewBuilder
     private var inningMetricPill: some View {
-        if isLiveABMode {
-            MetricPill(title: "Inning", value: "\(currentHalfInning.shortLabel) \(currentInning)", accent: .blue)
-        } else {
-            Menu {
-                Section("Top") {
-                    ForEach(1...12, id: \.self) { inning in
-                        Button {
-                            gameStore.applyGameStateOverride(
-                                inning: inning,
-                                halfInning: .top,
-                                outs: currentOuts
-                            )
-                        } label: {
-                            HStack {
-                                Text("Top \(inning)")
-                                if currentHalfInning == .top && currentInning == inning {
-                                    Spacer()
-                                    Image(systemName: "checkmark")
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Section("Bottom") {
-                    ForEach(1...12, id: \.self) { inning in
-                        Button {
-                            gameStore.applyGameStateOverride(
-                                inning: inning,
-                                halfInning: .bottom,
-                                outs: currentOuts
-                            )
-                        } label: {
-                            HStack {
-                                Text("Bot \(inning)")
-                                if currentHalfInning == .bottom && currentInning == inning {
-                                    Spacer()
-                                    Image(systemName: "checkmark")
-                                }
-                            }
-                        }
-                    }
-                }
-            } label: {
-                MetricPill(
-                    title: "Inning",
-                    value: "\(currentHalfInning.shortLabel) \(currentInning)",
-                    accent: .blue,
-                    showsDisclosure: true
-                )
-            }
-            .buttonStyle(.plain)
-            .disabled(!gameStore.canEditGameState)
-        }
-    }
-
-    @ViewBuilder
-    private var outsMetricPill: some View {
-        if isLiveABMode {
-            MetricPill(title: "Outs", value: "\(currentOuts)", accent: .orange)
-        } else {
-            Menu {
-                ForEach(0...2, id: \.self) { outs in
+        Menu {
+            Section("Top") {
+                ForEach(1...12, id: \.self) { inning in
                     Button {
-                        gameStore.applyGameStateOverride(
-                            inning: currentInning,
-                            halfInning: currentHalfInning,
-                            outs: outs
-                        )
+                        if isLiveABMode {
+                            chartingState.setLiveABGameState(inning: inning, halfInning: .top, outs: currentOuts)
+                        } else {
+                            gameStore.applyGameStateOverride(inning: inning, halfInning: .top, outs: currentOuts)
+                        }
                     } label: {
                         HStack {
-                            Text("\(outs) Outs")
-                            if currentOuts == outs {
+                            Text("Top \(inning)")
+                            if currentHalfInning == .top && currentInning == inning {
                                 Spacer()
                                 Image(systemName: "checkmark")
                             }
                         }
                     }
                 }
-            } label: {
-                MetricPill(
-                    title: "Outs",
-                    value: "\(currentOuts)",
-                    accent: .orange,
-                    showsDisclosure: true
-                )
             }
-            .buttonStyle(.plain)
-            .disabled(!gameStore.canEditGameState)
+
+            Section("Bottom") {
+                ForEach(1...12, id: \.self) { inning in
+                    Button {
+                        if isLiveABMode {
+                            chartingState.setLiveABGameState(inning: inning, halfInning: .bottom, outs: currentOuts)
+                        } else {
+                            gameStore.applyGameStateOverride(inning: inning, halfInning: .bottom, outs: currentOuts)
+                        }
+                    } label: {
+                        HStack {
+                            Text("Bot \(inning)")
+                            if currentHalfInning == .bottom && currentInning == inning {
+                                Spacer()
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
+            }
+        } label: {
+            MetricPill(
+                title: "Inning",
+                value: "\(currentHalfInning.shortLabel) \(currentInning)",
+                accent: .blue,
+                showsDisclosure: true
+            )
         }
+        .buttonStyle(.plain)
+        .disabled(!isLiveABMode && !gameStore.canEditGameState)
+    }
+
+    @ViewBuilder
+    private var outsMetricPill: some View {
+        Menu {
+            ForEach(0...2, id: \.self) { outs in
+                Button {
+                    if isLiveABMode {
+                        chartingState.setLiveABGameState(inning: currentInning, halfInning: currentHalfInning, outs: outs)
+                    } else {
+                        gameStore.applyGameStateOverride(inning: currentInning, halfInning: currentHalfInning, outs: outs)
+                    }
+                } label: {
+                    HStack {
+                        Text("\(outs) Outs")
+                        if currentOuts == outs {
+                            Spacer()
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+            }
+        } label: {
+            MetricPill(
+                title: "Outs",
+                value: "\(currentOuts)",
+                accent: .orange,
+                showsDisclosure: true
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(!isLiveABMode && !gameStore.canEditGameState)
     }
 
     @ViewBuilder

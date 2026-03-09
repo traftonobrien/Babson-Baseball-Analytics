@@ -148,6 +148,19 @@ final class ChartingState {
         self.selectedPitchResult = nil
     }
 
+    func setLiveABGameState(inning: Int, halfInning: ChartingHalfInning, outs: Int) {
+        if var session = activeLiveABSession {
+            session.setup.inning = inning
+            session.setup.halfInning = halfInning
+            session.setup.outs = outs
+            activeLiveABSession = session
+        } else {
+            liveABSetup.inning = inning
+            liveABSetup.halfInning = halfInning
+            liveABSetup.outs = outs
+        }
+    }
+
     func setLiveABHitter(name: String) {
         liveABSetup.hitterName = name
 
