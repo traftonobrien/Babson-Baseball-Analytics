@@ -251,7 +251,8 @@ final class ModelRoundTripTests: XCTestCase {
             batsHand: "R",
             throwsHand: "R",
             academicYear: "Sr.",
-            isPitcher: false
+            isPitcher: false,
+            isHitter: true
         )
 
         let data = try encoder.encode(player)
@@ -274,7 +275,8 @@ final class ModelRoundTripTests: XCTestCase {
                     batsHand: "R",
                     throwsHand: "R",
                     academicYear: "Sr.",
-                    isPitcher: false
+                    isPitcher: false,
+                    isHitter: true
                 ),
             ],
             recentGames: []
@@ -282,10 +284,11 @@ final class ModelRoundTripTests: XCTestCase {
 
         let data = try encoder.encode(response)
         let decoded = try decoder.decode(BootstrapResponse.self, from: data)
+        let expectedArsenal: [PitchType] = [.fastball, .slider, .other]
         XCTAssertEqual(decoded.pitchers.count, 2)
         XCTAssertEqual(decoded.rosterPlayers.count, 1)
         XCTAssertTrue(decoded.recentGames.isEmpty)
-        XCTAssertEqual(decoded.pitchers[0].arsenalPitchTypes, [.fastball, .slider, .other])
+        XCTAssertEqual(decoded.pitchers[0].arsenalPitchTypes, expectedArsenal)
     }
 
     // MARK: ChartingGameSnapshot

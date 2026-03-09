@@ -12,6 +12,8 @@
 		1598433189114F7E29390C95 /* PitchResultControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25CBF757CE782B6761BC77FE /* PitchResultControls.swift */; };
 		15D254ED579240598C45681D /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DD8D47EBF522F777D689468 /* MainTabView.swift */; };
 		17D6170EFC38B17FF5220125 /* ChartingAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9C9358A35A299C359EF799C /* ChartingAppTests.swift */; };
+		18A1B2C3D4E5F60718293A4B /* DebugActivePitchersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18A1B2C3D4E5F60718293A4C /* DebugActivePitchersTests.swift */; };
+		18A1B2C3D4E5F60718293A4D /* FilterActivePitcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18A1B2C3D4E5F60718293A4E /* FilterActivePitcherTests.swift */; };
 		21CE41BF82C9678BF2FF1540 /* LiveChartingTopBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F91825AFE06A205904B5462 /* LiveChartingTopBar.swift */; };
 		2F756CC5ECE55074C098ADE6 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 244CE9AE10702DA41C6F83FB /* Models.swift */; };
 		451E897B21ACE8AF7743E1AB /* GameSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD72253BAED4B32A89A9685 /* GameSetupView.swift */; };
@@ -49,6 +51,8 @@
 /* Begin PBXFileReference section */
 		1212C37A6D740BA8415BC95E /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 		132823EAFE9828F954DF089D /* GameStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStore.swift; sourceTree = "<group>"; };
+		18A1B2C3D4E5F60718293A4C /* DebugActivePitchersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugActivePitchersTests.swift; sourceTree = "<group>"; };
+		18A1B2C3D4E5F60718293A4E /* FilterActivePitcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterActivePitcherTests.swift; sourceTree = "<group>"; };
 		19E4639798C9876EAD84A273 /* SyncQueueManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncQueueManager.swift; sourceTree = "<group>"; };
 		1DD8D47EBF522F777D689468 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		244CE9AE10702DA41C6F83FB /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
@@ -131,6 +135,8 @@
 			isa = PBXGroup;
 			children = (
 				C9C9358A35A299C359EF799C /* ChartingAppTests.swift */,
+				18A1B2C3D4E5F60718293A4C /* DebugActivePitchersTests.swift */,
+				18A1B2C3D4E5F60718293A4E /* FilterActivePitcherTests.swift */,
 			);
 			path = ChartingAppTests;
 			sourceTree = "<group>";
@@ -290,6 +296,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				17D6170EFC38B17FF5220125 /* ChartingAppTests.swift in Sources */,
+				18A1B2C3D4E5F60718293A4B /* DebugActivePitchersTests.swift in Sources */,
+				18A1B2C3D4E5F60718293A4D /* FilterActivePitcherTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
