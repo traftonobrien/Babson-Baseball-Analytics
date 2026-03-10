@@ -4,6 +4,8 @@ import { useState } from "react";
 import {
   Activity,
   ChartColumnIncreasing,
+  ChevronDown,
+  ChevronUp,
   Radar,
   UserRound,
   UsersRound,
@@ -201,10 +203,14 @@ function CompactPitchGroup({
 
 function PitcherCard({ model, index }: { model: PitcherOverviewModel; index: number }) {
   const inningsCount = new Set(model.segments.map((s) => s.enteredInning)).size;
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <article className="overflow-hidden flex flex-col rounded-[1.8rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(18,18,22,0.84),rgba(9,9,11,0.96))] shadow-[0_24px_64px_rgba(0,0,0,0.24)]">
-      <div className="border-b border-zinc-800/70 bg-[linear-gradient(135deg,rgba(16,185,129,0.12),rgba(9,9,11,0.94))] px-6 py-4">
+    <article className="overflow-hidden flex flex-col rounded-[1.8rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(18,18,22,0.84),rgba(9,9,11,0.96))] shadow-[0_24px_64px_rgba(0,0,0,0.24)] transition-all duration-300">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full text-left border-b border-zinc-800/70 bg-[linear-gradient(135deg,rgba(16,185,129,0.12),rgba(9,9,11,0.94))] px-6 py-4 hover:bg-[linear-gradient(135deg,rgba(16,185,129,0.18),rgba(9,9,11,0.94))] transition-colors"
+      >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)]"></div>
@@ -215,62 +221,71 @@ function PitcherCard({ model, index }: { model: PitcherOverviewModel; index: num
               <div className="mt-0.5 text-lg font-black text-white">{model.displayName}</div>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <LeaderboardPill tone="neutral">{inningsCount} {inningsCount === 1 ? "Inning" : "Innings"}</LeaderboardPill>
             <LeaderboardPill tone="neutral">{model.pitches.length} Pitches</LeaderboardPill>
             <LeaderboardPill tone="neutral">{model.outcomes.closedPas} PAs</LeaderboardPill>
+            <div className="ml-2 p-1 rounded-full bg-zinc-800/50 text-zinc-400">
+              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </div>
           </div>
         </div>
-      </div>
+      </button>
 
-      <div className="p-6 grid gap-8 md:grid-cols-[1.1fr_1fr]">
-        <div className="flex flex-col gap-6 w-full">
-          <div className="space-y-4">
+      {isExpanded && (
+        <div className="p-6 grid gap-8 md:grid-cols-[1.1fr_1fr]">
+          <div className="flex flex-col gap-6 w-full">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                <Activity className="h-3.5 w-3.5" /> True Outcomes
+              </div>
+              <div className="bg-zinc-900/30 border border-zinc-800/50 p-4 rounded-2xl">
+                <OutcomeFunnel outcomes={model.outcomes} />
+              </div>
+            </div>
+
+            <div className="space-y-4 mt-auto">
+              <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                <MapPin className="h-3.5 w-3.5" /> Zone Coverage
+              </div>
+              <MicroZoneMapTrigger counts={model.zoneFrequency} label={model.displayName} />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-              <Activity className="h-3.5 w-3.5" /> True Outcomes
-            </div>
-            <div className="bg-zinc-900/30 border border-zinc-800/50 p-4 rounded-2xl">
-              <OutcomeFunnel outcomes={model.outcomes} />
-            </div>
-          </div>
-
-          <div className="space-y-4 mt-auto">
-            <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-              <MapPin className="h-3.5 w-3.5" /> Zone Coverage
-            </div>
-            <MicroZoneMapTrigger counts={model.zoneFrequency} label={model.displayName} />
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-            <ChartColumnIncreasing className="h-3.5 w-3.5" /> Pitch Mix & Aggression
-          </div>
-
-          <div className="grid grid-cols-[1fr_1.2fr] gap-3 h-full">
-            <div className="flex flex-col justify-start gap-2 h-full">
-              <CompactStatChip label="Strike" value={formatPct(model.stats?.strikePct ?? null)} tone="sky" />
-              <CompactStatChip label="Zone" value={formatPct(model.stats?.zonePct ?? null)} tone="sky" />
-              <CompactStatChip label="Whiff" value={formatPct(model.stats?.whiffPct ?? null)} tone="amber" />
-              <CompactStatChip label="Chase" value={formatPct(model.stats?.chasePct ?? null)} tone="amber" />
-              <CompactStatChip label="FPS" value={formatPct(model.stats?.fpsPct ?? null)} tone="amber" />
+              <ChartColumnIncreasing className="h-3.5 w-3.5" /> Pitch Mix & Aggression
             </div>
 
-            <CompactPitchMixColumn entries={model.pitchMixEntries} />
+            <div className="grid grid-cols-[1fr_1.2fr] gap-3 h-full">
+              <div className="flex flex-col justify-start gap-2 h-full">
+                <CompactStatChip label="Strike" value={formatPct(model.stats?.strikePct ?? null)} tone="sky" />
+                <CompactStatChip label="Zone" value={formatPct(model.stats?.zonePct ?? null)} tone="sky" />
+                <CompactStatChip label="Whiff" value={formatPct(model.stats?.whiffPct ?? null)} tone="amber" />
+                <CompactStatChip label="Chase" value={formatPct(model.stats?.chasePct ?? null)} tone="amber" />
+                <CompactStatChip label="FPS" value={formatPct(model.stats?.fpsPct ?? null)} tone="amber" />
+              </div>
+
+              <CompactPitchMixColumn entries={model.pitchMixEntries} />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </article>
   );
 }
 
 function HitterCard({ model }: { model: HitterOverviewModel }) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const resultLabel =
     model.outcomes.results.length > 0 ? model.outcomes.results.join(" • ") : "Open only";
 
   return (
-    <article className="overflow-hidden flex flex-col rounded-[1.8rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(18,18,22,0.84),rgba(9,9,11,0.96))] shadow-[0_24px_64px_rgba(0,0,0,0.24)]">
-      <div className="border-b border-zinc-800/70 bg-[linear-gradient(135deg,rgba(56,189,248,0.12),rgba(9,9,11,0.94))] px-6 py-4">
+    <article className="overflow-hidden flex flex-col rounded-[1.8rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(18,18,22,0.84),rgba(9,9,11,0.96))] shadow-[0_24px_64px_rgba(0,0,0,0.24)] transition-all duration-300">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full text-left border-b border-zinc-800/70 bg-[linear-gradient(135deg,rgba(56,189,248,0.12),rgba(9,9,11,0.94))] px-6 py-4 hover:bg-[linear-gradient(135deg,rgba(56,189,248,0.18),rgba(9,9,11,0.94))] transition-colors"
+      >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 rounded-full bg-sky-500 shadow-[0_0_12px_rgba(56,189,248,0.5)]"></div>
@@ -281,61 +296,66 @@ function HitterCard({ model }: { model: HitterOverviewModel }) {
               <div className="mt-0.5 text-lg font-black text-white">{model.hitterName}</div>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <LeaderboardPill tone="neutral">{model.pitches.length} Pitches Seen</LeaderboardPill>
             <LeaderboardPill tone="neutral">{model.plateAppearances.length} PAs</LeaderboardPill>
+            <div className="ml-2 p-1 rounded-full bg-zinc-800/50 text-zinc-400">
+              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </div>
           </div>
         </div>
-      </div>
+      </button>
 
-      <div className="p-6 grid gap-8 md:grid-cols-[1.1fr_1fr]">
-        <div className="flex flex-col gap-6 w-full">
-          <div className="space-y-4">
+      {isExpanded && (
+        <div className="p-6 grid gap-8 md:grid-cols-[1.1fr_1fr]">
+          <div className="flex flex-col gap-6 w-full">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                <Activity className="h-3.5 w-3.5" /> True Outcomes
+              </div>
+              <div className="bg-zinc-900/30 border border-zinc-800/50 p-4 rounded-2xl">
+                <OutcomeFunnel outcomes={model.outcomes} />
+              </div>
+            </div>
+
+            <div className="space-y-4 mt-auto">
+              <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                <MapPin className="h-3.5 w-3.5" /> Zone Coverage
+              </div>
+              <MicroZoneMapTrigger counts={model.zoneFrequency} label={model.hitterName} />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-              <Activity className="h-3.5 w-3.5" /> True Outcomes
-            </div>
-            <div className="bg-zinc-900/30 border border-zinc-800/50 p-4 rounded-2xl">
-              <OutcomeFunnel outcomes={model.outcomes} />
-            </div>
-          </div>
-
-          <div className="space-y-4 mt-auto">
-            <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-              <MapPin className="h-3.5 w-3.5" /> Zone Coverage
-            </div>
-            <MicroZoneMapTrigger counts={model.zoneFrequency} label={model.hitterName} />
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-            <ChartColumnIncreasing className="h-3.5 w-3.5" /> Approach & Results
-          </div>
-
-          <div className="grid grid-cols-[1fr_1.2fr] gap-3">
-            <div className="flex flex-col justify-start gap-2">
-              <CompactStatChip label="Pitches" value={String(model.stats?.totalPitches ?? model.pitches.length)} tone="sky" />
-              <CompactStatChip label="Chase" value={formatPct(model.stats?.chasePct ?? null)} tone="amber" />
-              <CompactStatChip label="Contact" value={formatPct(model.stats?.contactPct ?? null)} tone="emerald" />
-              <CompactStatChip label="K%" value={formatPct(model.stats?.kPct ?? null)} tone="emerald" />
-              <CompactStatChip label="BB%" value={formatPct(model.stats?.bbPct ?? null)} tone="sky" />
+              <ChartColumnIncreasing className="h-3.5 w-3.5" /> Approach & Results
             </div>
 
-            <div className="flex flex-col justify-start gap-2 h-full">
-              <CompactPitchGroup label="Fastball" pitches={model.stats?.vsFastball.pitches ?? 0} whiffPct={model.stats?.vsFastball.whiffPct ?? null} />
-              <CompactPitchGroup label="Breaking" pitches={model.stats?.vsBreaking.pitches ?? 0} whiffPct={model.stats?.vsBreaking.whiffPct ?? null} />
-              <CompactPitchGroup label="Offspeed" pitches={model.stats?.vsOffspeed.pitches ?? 0} whiffPct={model.stats?.vsOffspeed.whiffPct ?? null} />
-            </div>
-          </div>
+            <div className="grid grid-cols-[1fr_1.2fr] gap-3">
+              <div className="flex flex-col justify-start gap-2">
+                <CompactStatChip label="Pitches" value={String(model.stats?.totalPitches ?? model.pitches.length)} tone="sky" />
+                <CompactStatChip label="Chase" value={formatPct(model.stats?.chasePct ?? null)} tone="amber" />
+                <CompactStatChip label="Contact" value={formatPct(model.stats?.contactPct ?? null)} tone="emerald" />
+                <CompactStatChip label="K%" value={formatPct(model.stats?.kPct ?? null)} tone="emerald" />
+                <CompactStatChip label="BB%" value={formatPct(model.stats?.bbPct ?? null)} tone="sky" />
+              </div>
 
-          <div className="mt-1 flex flex-col justify-center rounded-xl border border-zinc-800/80 bg-zinc-950/70 px-4 py-3 min-h-[50px]">
-            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 mb-2">
-              <Radar className="h-3.5 w-3.5" /> Result Trail
+              <div className="flex flex-col justify-start gap-2 h-full">
+                <CompactPitchGroup label="Fastball" pitches={model.stats?.vsFastball.pitches ?? 0} whiffPct={model.stats?.vsFastball.whiffPct ?? null} />
+                <CompactPitchGroup label="Breaking" pitches={model.stats?.vsBreaking.pitches ?? 0} whiffPct={model.stats?.vsBreaking.whiffPct ?? null} />
+                <CompactPitchGroup label="Offspeed" pitches={model.stats?.vsOffspeed.pitches ?? 0} whiffPct={model.stats?.vsOffspeed.whiffPct ?? null} />
+              </div>
             </div>
-            <div className="text-[11px] text-zinc-300 truncate font-mono bg-zinc-900/80 px-3 py-2 rounded-lg border border-zinc-800/50">{resultLabel}</div>
+
+            <div className="mt-1 flex flex-col justify-center rounded-xl border border-zinc-800/80 bg-zinc-950/70 px-4 py-3 min-h-[50px]">
+              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 mb-2">
+                <Radar className="h-3.5 w-3.5" /> Result Trail
+              </div>
+              <div className="text-[11px] text-zinc-300 truncate font-mono bg-zinc-900/80 px-3 py-2 rounded-lg border border-zinc-800/50">{resultLabel}</div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </article>
   );
 }
