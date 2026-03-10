@@ -1,5 +1,4 @@
-import { Calendar, Cloud, Crosshair, UserCircle, Users } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { UserCircle, Users } from "lucide-react";
 import type { ChartingGame, ChartingLineupEntry } from "@/lib/charting/types";
 import type { PitcherOverviewModel } from "@/lib/charting/sessionOverview";
 
@@ -12,56 +11,8 @@ export function GameDetailsSidebar({
     pitcherOverviewModels: PitcherOverviewModel[];
     lineupEntries: ChartingLineupEntry[];
 }) {
-    // Current "Live" match up, grabbing the last ones from lists or just generally describing what's happening.
-    // In a fully live scenario we might track the active pitcher/hitter specifically, but here we can just show the most recent.
-    const activePitcher = pitcherOverviewModels.length > 0 ? pitcherOverviewModels[0].displayName : "Unknown";
-    const activeHitter = lineupEntries.length > 0 ? lineupEntries[0].hitterName : "Unknown";
-
     return (
         <div className="flex flex-col gap-4">
-            {/* Game Details */}
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
-                <h3 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                    Game Details
-                </h3>
-                <dl className="space-y-3 text-sm">
-                    <div className="flex items-center gap-3">
-                        <Calendar className="h-4 w-4 text-zinc-500 shrink-0" />
-                        <span className="text-zinc-300">
-                            {format(parseISO(game.gameDate), "MMM do, yyyy")}
-                        </span>
-                    </div>
-                    <div className="flex justify-between border-t border-zinc-800/50 pt-3">
-                        <dt className="text-zinc-500 flex items-center gap-2"><UserCircle className="h-3.5 w-3.5" /> Charter</dt>
-                        <dd className="text-zinc-200 font-medium">{game.charter || "—"}</dd>
-                    </div>
-                    <div className="flex justify-between">
-                        <dt className="text-zinc-500 flex items-center gap-2"><Cloud className="h-3.5 w-3.5" /> Weather</dt>
-                        <dd className="text-zinc-200 font-medium">{game.weather || "—"}</dd>
-                    </div>
-                    <div className="flex justify-between">
-                        <dt className="text-zinc-500 flex items-center gap-2"><Crosshair className="h-3.5 w-3.5" /> Home Catcher</dt>
-                        <dd className="text-zinc-200 font-medium">{game.homeCatcher || "—"}</dd>
-                    </div>
-                    <div className="flex justify-between">
-                        <dt className="text-zinc-500 flex items-center gap-2"><Crosshair className="h-3.5 w-3.5" /> Away Catcher</dt>
-                        <dd className="text-zinc-200 font-medium">{game.awayCatcher || "—"}</dd>
-                    </div>
-                </dl>
-            </div>
-
-            {/* Live Matchup */}
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
-                <h3 className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                    Current At-Bat
-                </h3>
-                <div className="flex items-center gap-2 text-sm">
-                    <span className="font-bold text-emerald-400 uppercase tracking-widest text-[10px] border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 rounded">Live</span>
-                    <span className="text-zinc-200 font-medium">{activePitcher}</span>
-                    <span className="text-zinc-500 text-xs mx-1">vs</span>
-                    <span className="text-zinc-200 font-medium">{activeHitter}</span>
-                </div>
-            </div>
 
             {/* Pitchers Used (Compact) */}
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">

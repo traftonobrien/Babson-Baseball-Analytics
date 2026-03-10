@@ -129,7 +129,15 @@ export default async function ChartingGamePage({
                 </div>
             </div>
 
-            <div className="flex flex-col gap-6 w-full">
+            <div className="grid gap-6 xl:grid-cols-[18rem_1fr] items-start">
+                <aside className="sticky top-6">
+                    <GameDetailsSidebar
+                        game={game}
+                        pitcherOverviewModels={pitcherOverviewModels}
+                        lineupEntries={lineupEntries}
+                    />
+                </aside>
+
                 <div className="flex flex-col min-w-0">
                     <PitcherBreakdownSection models={pitcherOverviewModels} />
                     <HitterBreakdownSection models={hitterOverviewModels} />
