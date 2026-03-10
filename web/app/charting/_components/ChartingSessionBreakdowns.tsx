@@ -23,48 +23,6 @@ function formatPct(value: number | null): string {
   return value === null ? "—" : `${value.toFixed(1)}%`;
 }
 
-// === Micro Modal & Heatmap ===
-
-function MicroZoneMapTrigger({ counts, label }: { counts: Partial<Record<number, number>>; label: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  // simple 3x3 aggregation just to look cool and glowing. 
-  // It's a tiny visual proxy for the main map.
-  return (
-    <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="w-full flex flex-col items-center justify-center p-4 rounded-[1.2rem] border border-zinc-800/80 bg-zinc-950/60 transition-colors hover:bg-zinc-900/80"
-      >
-        <div className="flex flex-col gap-1 w-[4.5rem] h-[4.5rem]">
-          {/* Tiny dummy 3x3 grid */}
-          <div className="grid grid-cols-3 gap-1 w-full h-full p-[2px]">
-            {[...Array(9)].map((_, i) => (
-              <div key={i} className={`rounded-[3px] w-full h-full ${i === 4 ? 'bg-sky-500/40 shadow-[0_0_8px_rgba(56,189,248,0.5)]' : i === 7 ? 'bg-amber-500/40' : 'bg-zinc-800/80'}`}></div>
-            ))}
-          </div>
-        </div>
-        <div className="mt-3 text-[10px] uppercase font-bold tracking-widest text-zinc-500">View Zone Data</div>
-      </button>
-
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="relative w-full max-w-md rounded-3xl border border-zinc-800 bg-zinc-950 shadow-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2"><MapPin className="h-5 w-5 text-emerald-400" /> {label} Zone Coverage</h3>
-              <button onClick={() => setIsOpen(false)} className="rounded-full p-2 bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <ChartingZoneHeatmap counts={counts} emptyLabel="No tracked zone coverage" />
-            <p className="mt-4 text-xs text-zinc-500 text-center">Matches the charting editor zone layout. Pitch frequency is shown relative to the most targeted zone.</p>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
 // === Outcomes ===
 
 function OutcomeFunnel({ outcomes }: { outcomes: OutcomeSummary }) {
@@ -163,7 +121,7 @@ function CompactPitchMixColumn({ entries }: { entries: PitchMixEntry[] }) {
           className="flex flex-col justify-center rounded-xl border border-zinc-800/80 bg-zinc-950/75 px-3 py-[9px]"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-300 truncate max-w-[65px]">{entry.pitchType}</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-300">{entry.pitchType}</span>
             <span className="text-[10px] font-medium text-zinc-400">{entry.pct.toFixed(1)}%</span>
           </div>
           <div className="mt-1.5 flex h-1.5 w-full overflow-hidden rounded-full bg-zinc-900 border border-zinc-800">
@@ -200,9 +158,7 @@ function CompactPitchGroup({
 // === Cards ===
 
 function PitcherCard({ model, index }: { model: PitcherOverviewModel; index: number }) {
-  const spanLabel = [
-    ...new Set(model.segments.map((s) => s.enteredInning))
-  ].join(", ");
+  const inningsCount = new Set(model.segments.map((s) => s.enteredInning)).size;
 
   return (
     <article className="overflow-hidden flex flex-col rounded-[1.8rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(18,18,22,0.84),rgba(9,9,11,0.96))] shadow-[0_24px_64px_rgba(0,0,0,0.24)]">
@@ -218,8 +174,7 @@ function PitcherCard({ model, index }: { model: PitcherOverviewModel; index: num
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            {spanLabel && <LeaderboardPill tone="neutral">Inn. {spanLabel}</LeaderboardPill>}
-            <LeaderboardPill tone="neutral">{model.segments.length} Seg</LeaderboardPill>
+            <LeaderboardPill tone="neutral">{inningsCount} {inningsCount === 1 ? "Inning" : "Innings"}</LeaderboardPill>
             <LeaderboardPill tone="neutral">{model.pitches.length} Pitches</LeaderboardPill>
             <LeaderboardPill tone="neutral">{model.outcomes.closedPas} PAs</LeaderboardPill>
           </div>
@@ -238,10 +193,10 @@ function PitcherCard({ model, index }: { model: PitcherOverviewModel; index: num
           </div>
 
           <div className="space-y-4 mt-auto">
-            <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500 mb-2">
               <MapPin className="h-3.5 w-3.5" /> Zone Coverage
             </div>
-            <MicroZoneMapTrigger counts={model.zoneFrequency} label={model.displayName} />
+            <ChartingZoneHeatmap counts={model.zoneFrequency} emptyLabel="No tracked zone coverage" />
           </div>
         </div>
 
@@ -303,10 +258,10 @@ function HitterCard({ model }: { model: HitterOverviewModel }) {
           </div>
 
           <div className="space-y-4 mt-auto">
-            <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500 mb-2">
               <MapPin className="h-3.5 w-3.5" /> Zone Coverage
             </div>
-            <MicroZoneMapTrigger counts={model.zoneFrequency} label={model.hitterName} />
+            <ChartingZoneHeatmap counts={model.zoneFrequency} emptyLabel="No tracked zone coverage" />
           </div>
         </div>
 

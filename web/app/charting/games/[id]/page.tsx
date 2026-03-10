@@ -55,10 +55,14 @@ export default async function ChartingGamePage({
     const {
         game,
         segments,
-        lineup: lineupEntries,
         plateAppearances,
         pitches,
     } = snapshot;
+
+    const lineupEntries = Array.isArray(snapshot.lineup)
+        ? snapshot.lineup.sort((a, b) => a.lineupSlot - b.lineupSlot)
+        : [];
+
     const pitcherOverviewModels = buildPitcherOverviewModels(
         segments,
         plateAppearances,
@@ -66,7 +70,8 @@ export default async function ChartingGamePage({
     );
     const hitterOverviewModels = buildHitterOverviewModels(
         plateAppearances,
-        pitches
+        pitches,
+        lineupEntries
     );
     const paById = new Map(plateAppearances.map((pa) => [pa.id, pa]));
     const exportHref = `/api/charting/games/${game.id}/export`;
@@ -124,15 +129,7 @@ export default async function ChartingGamePage({
                 </div>
             </div>
 
-            <div className="grid gap-6 xl:grid-cols-[18rem_1fr] items-start">
-                <aside className="sticky top-6">
-                    <GameDetailsSidebar
-                        game={game}
-                        pitcherOverviewModels={pitcherOverviewModels}
-                        lineupEntries={lineupEntries}
-                    />
-                </aside>
-
+            <div className="flex flex-col gap-6 w-full">
                 <div className="flex flex-col min-w-0">
                     <PitcherBreakdownSection models={pitcherOverviewModels} />
                     <HitterBreakdownSection models={hitterOverviewModels} />

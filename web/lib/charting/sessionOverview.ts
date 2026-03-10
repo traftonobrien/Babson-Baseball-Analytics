@@ -193,44 +193,56 @@ export function buildPitcherOverviewModels(
   }
 
   return [...segmentsByPitcher.entries()].map(([pitcherKey, pitcherSegments]) => {
-      const segmentIds = new Set(pitcherSegments.map((segment) => segment.id));
-      const outingPas = plateAppearances
-        .filter((plateAppearance) => segmentIds.has(plateAppearance.segmentId))
-        .sort((left, right) => left.paOrder - right.paOrder);
-      const outingPitches = orderedPitchesForPlateAppearances(
-        outingPas,
-        pitchesByPaId
-      );
-      const stats = computeSegmentStats_pure(outingPitches, outingPas);
-      const leadSegment = pitcherSegments[0];
+    const segmentIds = new Set(pitcherSegments.map((segment) => segment.id));
+    const outingPas = plateAppearances
+      .filter((plateAppearance) => segmentIds.has(plateAppearance.segmentId))
+      .sort((left, right) => left.paOrder - right.paOrder);
+    const outingPitches = orderedPitchesForPlateAppearances(
+      outingPas,
+      pitchesByPaId
+    );
+    const stats = computeSegmentStats_pure(outingPitches, outingPas);
+    const leadSegment = pitcherSegments[0];
 
-      return {
-        pitcherKey,
-        pitcherId: leadSegment?.playerId.trim() || null,
-        displayName: leadSegment?.displayName ?? "Unknown Pitcher",
-        segments: pitcherSegments,
-        pitches: outingPitches,
-        plateAppearances: outingPas,
-        stats,
-        pitchMixEntries: buildPitchMixEntries(stats),
-        zoneFrequency: buildZoneFrequency(outingPitches),
-        outcomes: summarizeOutcomes(outingPas),
-      };
-    });
+    return {
+      pitcherKey,
+      pitcherId: leadSegment?.playerId.trim() || null,
+      displayName: leadSegment?.displayName ?? "Unknown Pitcher",
+      segments: pitcherSegments,
+      pitches: outingPitches,
+      plateAppearances: outingPas,
+      stats,
+      pitchMixEntries: buildPitchMixEntries(stats),
+      zoneFrequency: buildZoneFrequency(outingPitches),
+      outcomes: summarizeOutcomes(outingPas),
+    };
+  });
 }
 
 export function buildHitterOverviewModels(
   plateAppearances: ChartingPlateAppearance[],
-  pitches: ChartingPitch[]
+  pitches: ChartingPitch[],
+  lineupEntries?: { hitterName: string; lineupSlot: number }[]
 ): HitterOverviewModel[] {
   const firstSeenOrder = new Map<string, number>();
   const plateAppearancesByHitter = new Map<string, ChartingPlateAppearance[]>();
+  const lineupSlots = new Map<string, number>();
+
+  if (lineupEntries) {
+    for (const entry of lineupEntries) {
+      if (entry.hitterName.trim()) {
+        lineupSlots.set(entry.hitterName, entry.lineupSlot);
+        firstSeenOrder.set(entry.hitterName, entry.lineupSlot);
+        plateAppearancesByHitter.set(entry.hitterName, []);
+      }
+    }
+  }
 
   for (const plateAppearance of [...plateAppearances].sort(
     (left, right) => left.paOrder - right.paOrder
   )) {
     if (!firstSeenOrder.has(plateAppearance.hitterName)) {
-      firstSeenOrder.set(plateAppearance.hitterName, plateAppearance.paOrder);
+      firstSeenOrder.set(plateAppearance.hitterName, 100 + plateAppearance.paOrder);
     }
 
     const group = plateAppearancesByHitter.get(plateAppearance.hitterName) ?? [];
@@ -256,7 +268,7 @@ export function buildHitterOverviewModels(
 
       return {
         hitterName,
-        lineupSlot: orderedPas[0]?.lineupSlot ?? 0,
+        lineupSlot: orderedPas[0]?.lineupSlot ?? lineupSlots.get(hitterName) ?? 0,
         plateAppearances: orderedPas,
         pitches: hitterPitches,
         stats,
