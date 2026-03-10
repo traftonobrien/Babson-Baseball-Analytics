@@ -2,10 +2,13 @@ import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
 import {
   chartingGames,
   chartingPitcherSegments,
-  chartingPlateAppearances,
   chartingPitches,
 } from "@/db/schema";
 import { countPitcherInnings } from "./innings";
+import {
+  legacyChartingPlateAppearances,
+  mapLegacyPlateAppearanceRow,
+} from "./plateAppearanceStorage";
 import type {
   ChartingPitch,
   ChartingPlateAppearance,
@@ -208,17 +211,9 @@ function mapPitchRows(rows: typeof chartingPitches.$inferSelect[]): ChartingPitc
 }
 
 function mapPlateAppearanceRows(
-  rows: typeof chartingPlateAppearances.$inferSelect[]
+  rows: typeof legacyChartingPlateAppearances.$inferSelect[]
 ): ChartingPlateAppearance[] {
-  return rows.map(
-    (plateAppearance) =>
-      ({
-        ...plateAppearance,
-        initialCount:
-          (plateAppearance.initialCount as ChartingPlateAppearance["initialCount"]) ??
-          "0-0",
-      }) satisfies ChartingPlateAppearance
-  );
+  return rows.map(mapLegacyPlateAppearanceRow);
 }
 
 function computePitchGroup(
@@ -339,9 +334,9 @@ export async function computeSegmentStats(
   const pas = mapPlateAppearanceRows(
     await db
       .select()
-      .from(chartingPlateAppearances)
-      .where(eq(chartingPlateAppearances.segmentId, segmentId))
-      .orderBy(asc(chartingPlateAppearances.paOrder))
+      .from(legacyChartingPlateAppearances)
+      .where(eq(legacyChartingPlateAppearances.segmentId, segmentId))
+      .orderBy(asc(legacyChartingPlateAppearances.paOrder))
   );
 
   if (pas.length === 0) {
@@ -425,9 +420,9 @@ export async function aggregatePitcherStats(
   const pas = mapPlateAppearanceRows(
     await db
       .select()
-      .from(chartingPlateAppearances)
-      .where(inArray(chartingPlateAppearances.segmentId, segmentIds))
-      .orderBy(asc(chartingPlateAppearances.paOrder))
+      .from(legacyChartingPlateAppearances)
+      .where(inArray(legacyChartingPlateAppearances.segmentId, segmentIds))
+      .orderBy(asc(legacyChartingPlateAppearances.paOrder))
   );
 
   if (pas.length === 0) {
@@ -557,9 +552,9 @@ export async function computeHitterStats(
     (
       await db
         .select()
-        .from(chartingPlateAppearances)
-        .where(eq(chartingPlateAppearances.gameId, gameId))
-        .orderBy(asc(chartingPlateAppearances.paOrder))
+        .from(legacyChartingPlateAppearances)
+        .where(eq(legacyChartingPlateAppearances.gameId, gameId))
+        .orderBy(asc(legacyChartingPlateAppearances.paOrder))
     ).filter((pa) => pa.hitterName === hitterName)
   );
 
@@ -614,18 +609,18 @@ export async function aggregateHitterStats(
     filteredGameIds === null
       ? await db
         .select()
-        .from(chartingPlateAppearances)
+        .from(legacyChartingPlateAppearances)
         .orderBy(
-          asc(chartingPlateAppearances.gameId),
-          asc(chartingPlateAppearances.paOrder)
+          asc(legacyChartingPlateAppearances.gameId),
+          asc(legacyChartingPlateAppearances.paOrder)
         )
       : await db
         .select()
-        .from(chartingPlateAppearances)
-        .where(inArray(chartingPlateAppearances.gameId, filteredGameIds))
+        .from(legacyChartingPlateAppearances)
+        .where(inArray(legacyChartingPlateAppearances.gameId, filteredGameIds))
         .orderBy(
-          asc(chartingPlateAppearances.gameId),
-          asc(chartingPlateAppearances.paOrder)
+          asc(legacyChartingPlateAppearances.gameId),
+          asc(legacyChartingPlateAppearances.paOrder)
         )
   ).filter((pa) => pa.hitterName === hitterName);
 
