@@ -206,12 +206,13 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
   3. `computeHitterStats(hitterName, gameId)` returns Chase%, contact rate, whiff rate, K%, BB%, zone frequency map, and pitch-type split (vs Fastball/Breaking/Offspeed).
   4. `aggregateHitterStats(hitterName, options)` aggregates hitter stats across sessions with the same filter options as pitchers.
   5. All functions are pure/testable and consumed by Phase 11 and Phase 12 without duplication.
-**Plans**: 3 plans
+**Plans**: 4 plans
 
 Plans:
-- [ ] 10-01: Define stat computation types, helpers, and pitcher segment analytics
-- [ ] 10-02: Build hitter analytics (per-session and cross-session)
-- [ ] 10-03: Write unit tests and verify output against a known charting session fixture
+- [ ] 10-00-PLAN.md — Create analytics-fixtures.ts and failing test stubs (Wave 0 RED state)
+- [ ] 10-01-PLAN.md — Implement pitcher analytics: computeSegmentStats_pure, computeSegmentStats, aggregatePitcherStats
+- [ ] 10-02-PLAN.md — Implement hitter analytics: computeHitterStats_pure, computeHitterStats, aggregateHitterStats
+- [ ] 10-03-PLAN.md — Full test suite green, TypeScript build clean, phase gate verification
 
 ### Phase 11: Session Overview Enhancements
 **Goal**: Enrich the existing /charting/games/[id] page with a full per-pitcher breakdown section and a full per-hitter breakdown section below the current summary.
@@ -271,7 +272,7 @@ Plans:
 | 7. Export Fidelity | 3/3 | Complete | 2026-03-06 |
 | 8. Charting Engine Hardening | 3/3 | Complete | 2026-03-06 |
 | 9. Pilot Hardening and TestFlight | 0/3 | Not started | - |
-| 10. Analytics Foundation | 0/3 | Not started | - |
+| 10. Analytics Foundation | 0/4 | Not started | - |
 | 11. Session Overview Enhancements | 0/3 | Not started | - |
 | 12. Live AB Leaderboard | 0/3 | Not started | - |
 | 13. Per-Player Drill-Down | 0/2 | Not started | - |
