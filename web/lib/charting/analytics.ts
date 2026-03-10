@@ -43,6 +43,8 @@ export interface SegmentStats {
   strikePct: number | null;
   zonePct: number | null;
   baa: number | null;
+  babip: number | null;
+  whip: number | null;
   whiffPct: number | null;
   chasePct: number | null;
   fpsPct: number | null;
@@ -284,6 +286,19 @@ export function computeSegmentStats_pure(
   const atBats = closedPas.length - walkCount - hbpCount;
   const baa = atBats > 0 ? hits / atBats : null;
 
+  // WHIP Calculation: (Walks + Hits) / Innings Pitched
+  // In charting, a "segment" roughly correlates to an inning's worth of work. 
+  // For the purest definition on a per-segment basis, we treat 1 segment = 1 IP. 
+  // If grouping segments, this is properly summed outside in aggregation.
+  // For standard segment stat calculation, (W + H) = raw WHIP.
+  const whip = (walkCount + hits);
+
+  // BABIP Calculation: (H - HR) / (AB - K - HR + SF)
+  // Re-deriving in-play at bats. We don't currently track SF distinctively in charting, 
+  // so (AB - K - HR) is the closest approximation with current data structure.
+  const babipDenominator = atBats - strikeoutCount - homeRuns;
+  const babip = babipDenominator > 0 ? (hits - homeRuns) / babipDenominator : null;
+
   const pitchMix = emptyPitchMix();
 
   for (const pitch of pitches) {
@@ -303,6 +318,8 @@ export function computeSegmentStats_pure(
     strikePct: pct(strikeCount, pitches.length),
     zonePct: pct(inZoneCount, locatedPitches.length),
     baa,
+    babip,
+    whip,
     whiffPct: pct(whiffs, swings),
     chasePct: pct(chaseSwings, outOfZoneLocatedPitches.length),
     fpsPct: pct(firstPitchStrikes, firstPitches.length),
@@ -356,8 +373,16 @@ export function computePitcherAggregation(
     return null;
   }
 
+  // Re-scale WHIP to match the total innings being aggregated since the pure segment
+  // calculation inherently assumes 1 segment = 1 inning.
+  let trueWhip: number | null = null;
+  if (base.whip !== null && innings > 0) {
+    trueWhip = base.whip / innings;
+  }
+
   return {
     ...base,
+    whip: trueWhip,
     sessions,
     innings,
     totalPAs: allPas.length,
