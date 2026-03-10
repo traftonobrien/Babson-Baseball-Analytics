@@ -238,13 +238,14 @@ describe("computeHitterStats_pure", () => {
 
 describe("computePitcherAggregation", () => {
   it("returns null when no segments are provided", () => {
-    expect(computePitcherAggregation([], [], 0)).toBeNull();
+    expect(computePitcherAggregation([], [], 0, 0)).toBeNull();
   });
 
   it("aggregates two segments by summing raw counts before dividing", () => {
     const stats = computePitcherAggregation(
       [...fx.pitchesForSegA, ...fx.pitchesForSegB],
       [...fx.pasForSegA, ...fx.pasForSegB],
+      2,
       2
     );
 
@@ -257,6 +258,7 @@ describe("computePitcherAggregation", () => {
     const stats = computePitcherAggregation(
       [...fx.pitchesForSegA, ...fx.pitchesForSegB],
       [...fx.pasForSegA, ...fx.pasForSegB],
+      2,
       2
     );
 

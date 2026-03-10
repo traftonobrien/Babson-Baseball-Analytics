@@ -22,7 +22,7 @@ This roadmap takes the project from a brownfield repo with no live charting doma
 - [x] **Phase 10: Analytics Foundation** - Build shared stat engine for pitcher and hitter metrics from charting pitch/PA data
 - [x] **Phase 11: Session Overview Enhancements** - Enrich /charting/games/[id] with per-pitcher and per-hitter breakdown sections
 - [x] **Phase 12: Live AB Leaderboard** - New /charting/leaderboard with Pitchers + Hitters tabs, filters, and sortable columns
-- [ ] **Phase 13: Per-Player Drill-Down** - Session-by-session history pages for any pitcher (/pitcher/[playerId]) or hitter (/hitter/[name])
+- [ ] **Phase 13: Integrated At-A-Glance Dashboard** - Redesign the game session overview into a dense, vertical-scrolling-free compact layout.
 
 ## Phase Details
 
@@ -251,19 +251,19 @@ Plans:
 - [x] 12-02: Build pitcher leaderboard table with sort and filter integration
 - [x] 12-03: Build hitter leaderboard table with sort and filter integration
 
-### Phase 13: Per-Player Drill-Down
-**Goal**: Deliver session-by-session history pages for any pitcher or hitter linked from the leaderboard.
-**Depends on**: Phase 12
+### Phase 13: Integrated At-A-Glance Dashboard
+**Goal**: Maintain the aggressive, dark, data-dense aesthetic while eliminating vertical scrolling by packing all key pitcher and hitter insights into compact, single-screen cards within a two-column layout.
+**Depends on**: Phase 11
 **Success Criteria** (what must be TRUE):
-  1. /charting/leaderboard/pitcher/[playerId] shows career totals at the top plus a session-by-session breakdown table (date, pitch count, Strike%, Zone%, Whiff%, Chase%).
-  2. /charting/leaderboard/hitter/[name] shows the same structure from the hitter side (PAs, Chase%, Contact%, K%, BB%).
-  3. Each session row links directly to /charting/games/[id] for full game review.
-  4. Both pages handle pitchers/hitters with only one session gracefully.
-**Plans**: 2 plans
-
-Plans:
-- [ ] 13-01: Build per-pitcher drill-down page with career totals and session history
-- [ ] 13-02: Build per-hitter drill-down page with career totals and session history
+  1. The page header is a single horizontal row housing back navigation, session actions dropdown, and editable titles.
+  2. The left 25% of the page holds a consolidated sidebar with Game Details, weather/catchers, and the Live Pitcher vs Hitter matchup.
+  3. The right 75% of the page contains an integrated grid of Pitcher Outing Cards and Hitter Summary Cards.
+  4. Pitcher Outing Cards feature a horizontal stacked bar for true outcomes, grouped stats/pitch mix, and a micro modal-triggering heatmap.
+  5. Hitter Summary Cards feature horizontal stacked outcomes, approach metrics, result trails, and a micro modal-triggering heatmap.
+**Plans**:
+- [ ] 13-01: Redesign the page layout with a compacted top bar, 25% left Game Details sidebar, and a 75% right card canvas.
+- [ ] 13-02: Implement the Outcome Funnel (horizontal stacked bar) and Vertical Stat/Mix containers for Pitchers and Hitters.
+- [ ] 13-03: Implement the 3x3 Micro-Map and link it to the full 14-cell Zone Coverage modal.
 
 ## Updated Progress
 
@@ -281,4 +281,4 @@ Plans:
 | 10. Analytics Foundation | 0/4 | Not started | - |
 | 11. Session Overview Enhancements | 0/3 | Not started | - |
 | 12. Live AB Leaderboard | 3/3 | Complete | 2026-03-09 |
-| 13. Per-Player Drill-Down | 0/2 | Not started | - |
+| 13. Integrated At-A-Glance Dashboard | 0/3 | Not started | - |

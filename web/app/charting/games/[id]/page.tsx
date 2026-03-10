@@ -16,8 +16,9 @@ import {
     HitterBreakdownSection,
     PitcherBreakdownSection,
 } from "@/app/charting/_components/ChartingSessionBreakdowns";
-import { DeleteChartingGameButton } from "@/app/charting/_components/DeleteChartingGameButton";
 import { EditableChartingGameTitle } from "@/app/charting/_components/EditableChartingGameTitle";
+import { GameSessionActions } from "./GameSessionActions";
+import { GameDetailsSidebar } from "./GameDetailsSidebar";
 import { computeSegmentStats_pure } from "@/lib/charting/analytics";
 import { buildChartingExportFilename } from "@/lib/charting/export";
 import { buildChartingPdfFilename } from "@/lib/charting/pdf";
@@ -37,15 +38,7 @@ function Badge({ children, className = "" }: { children: React.ReactNode; classN
     );
 }
 
-function StatCard({ label, value, suffix = "%" }: { label: string, value: number | null, suffix?: string }) {
-    if (value === null) return null;
-    return (
-        <div className="flex flex-col items-center justify-center p-4 rounded-xl border border-zinc-800 bg-zinc-900/40 text-center">
-            <div className="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-1">{label}</div>
-            <div className="text-2xl font-black text-white">{value.toFixed(1)}<span className="text-sm font-medium text-zinc-500 ml-0.5">{suffix}</span></div>
-        </div>
-    );
-}
+
 
 export default async function ChartingGamePage({
     params,
@@ -66,7 +59,6 @@ export default async function ChartingGamePage({
         plateAppearances,
         pitches,
     } = snapshot;
-    const stats = computeSegmentStats_pure(pitches, plateAppearances);
     const pitcherOverviewModels = buildPitcherOverviewModels(
         segments,
         plateAppearances,
@@ -83,8 +75,8 @@ export default async function ChartingGamePage({
     const pdfExportFilename = buildChartingPdfFilename(game);
 
     return (
-        <LeaderboardPageFrame maxWidth="max-w-6xl">
-            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <LeaderboardPageFrame maxWidth="max-w-[1400px]">
+            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-zinc-800/60 pb-5">
                 <div className="flex items-center gap-4">
                     <Link
                         href="/charting"
@@ -112,186 +104,99 @@ export default async function ChartingGamePage({
                         </p>
                     </div>
                 </div>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex items-center gap-3">
                     <Link
                         href={`/charting/games/${game.id}/edit`}
-                        className="inline-flex items-center gap-2 self-start rounded-full border border-emerald-500/25 bg-emerald-500/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-200 transition-colors hover:border-emerald-400/35 hover:bg-emerald-500/15"
+                        className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-200 transition-colors hover:border-emerald-400/35 hover:bg-emerald-500/15"
                     >
                         <PencilLine className="h-3.5 w-3.5" />
                         Open Editor
                     </Link>
-                    <DeleteChartingGameButton
+                    <GameSessionActions
                         gameId={game.id}
                         opponent={game.opponent}
                         gameDate={format(parseISO(game.gameDate), "MMMM do, yyyy")}
-                        redirectHref="/charting"
+                        pdfExportHref={pdfExportHref}
+                        pdfExportFilename={pdfExportFilename}
+                        csvExportHref={exportHref}
+                        csvExportFilename={exportFilename}
                     />
-                    <a
-                        href={pdfExportHref}
-                        download={pdfExportFilename}
-                        className="inline-flex items-center gap-2 self-start rounded-full border border-sky-500/25 bg-sky-500/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-200 transition-colors hover:border-sky-400/35 hover:bg-sky-500/15"
-                    >
-                        <FileText className="h-3.5 w-3.5" />
-                        Download PDF
-                    </a>
-                    <a
-                        href={exportHref}
-                        download={exportFilename}
-                        className="inline-flex items-center gap-2 self-start rounded-full border border-emerald-500/25 bg-emerald-500/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-200 transition-colors hover:border-emerald-400/35 hover:bg-emerald-500/15"
-                    >
-                        <Download className="h-3.5 w-3.5" />
-                        Download CSV
-                    </a>
                 </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-3 mb-8">
-                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
-                    <div className="flex items-center gap-2 mb-4 text-zinc-300 font-semibold">
-                        <FileText className="h-4 w-4" /> Game Details
-                    </div>
-                    <dl className="space-y-3 text-sm">
-                        <div className="flex justify-between">
-                            <dt className="text-zinc-500">Charter</dt>
-                            <dd className="text-zinc-200 font-medium">{game.charter || "—"}</dd>
+            <div className="grid gap-6 xl:grid-cols-[18rem_1fr] items-start">
+                <aside className="sticky top-6">
+                    <GameDetailsSidebar
+                        game={game}
+                        pitcherOverviewModels={pitcherOverviewModels}
+                        lineupEntries={lineupEntries}
+                    />
+                </aside>
+
+                <div className="flex flex-col min-w-0">
+                    <PitcherBreakdownSection models={pitcherOverviewModels} />
+                    <HitterBreakdownSection models={hitterOverviewModels} />
+
+                    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-hidden mt-2">
+                        <div className="border-b border-zinc-800/60 bg-zinc-900/80 px-5 py-4 flex items-center gap-2">
+                            <Activity className="h-4 w-4 text-zinc-400" />
+                            <h2 className="font-semibold text-zinc-200">Play-by-Play Pitch Log</h2>
                         </div>
-                        <div className="flex justify-between">
-                            <dt className="text-zinc-500">Weather</dt>
-                            <dd className="text-zinc-200 font-medium">{game.weather || "—"}</dd>
-                        </div>
-                        <div className="flex justify-between">
-                            <dt className="text-zinc-500">Home Catcher</dt>
-                            <dd className="text-zinc-200 font-medium">{game.homeCatcher || "—"}</dd>
-                        </div>
-                        <div className="flex justify-between">
-                            <dt className="text-zinc-500">Away Catcher</dt>
-                            <dd className="text-zinc-200 font-medium">{game.awayCatcher || "—"}</dd>
-                        </div>
-                    </dl>
-                    {game.notes && (
-                        <div className="mt-4 pt-4 border-t border-zinc-800/60">
-                            <p className="text-xs text-zinc-500 mb-1">Notes</p>
-                            <p className="text-sm text-zinc-300 leading-relaxed">{game.notes}</p>
-                        </div>
-                    )}
-                </div>
 
-                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
-                    <div className="flex items-center gap-2 mb-4 text-zinc-300 font-semibold">
-                        <User className="h-4 w-4" /> Pitchers Used
-                    </div>
-                    {pitcherOverviewModels.length === 0 ? (
-                        <p className="text-sm text-zinc-500 italic">No pitchers mapped yet.</p>
-                    ) : (
-                        <ul className="space-y-3">
-                            {pitcherOverviewModels.map((pitcher, idx) => (
-                                <li key={pitcher.pitcherKey} className="flex items-center justify-between text-sm">
-                                    <div className="flex items-center gap-3">
-                                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-800 text-[10px] font-bold text-zinc-400">
-                                            {idx + 1}
-                                        </span>
-                                        <span className="text-zinc-200 font-medium">{pitcher.displayName}</span>
-                                    </div>
-                                    <span className="text-zinc-500 font-mono text-xs">
-                                        {pitcher.segments.length} seg • {pitcher.pitches.length} pit
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-
-                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
-                    <div className="flex items-center gap-2 mb-4 text-zinc-300 font-semibold">
-                        <Users className="h-4 w-4" /> Starting Lineup
-                    </div>
-                    {lineupEntries.length === 0 ? (
-                        <p className="text-sm text-zinc-500 italic">No lineup configured.</p>
-                    ) : (
-                        <ul className="space-y-2">
-                            {lineupEntries.map((p) => (
-                                <li key={p.id} className="flex items-center gap-3 text-sm">
-                                    <span className="w-4 text-right text-zinc-500 font-mono text-xs">{p.lineupSlot}</span>
-                                    <span className="text-zinc-300">{p.hitterName}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-            </div>
-
-            {pitches.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-                    <StatCard label="Strike %" value={stats?.strikePct ?? null} />
-                    <StatCard label="Zone %" value={stats?.zonePct ?? null} />
-                    <StatCard label="Whiff %" value={stats?.whiffPct ?? null} />
-                    <StatCard label="Chase %" value={stats?.chasePct ?? null} />
-                    <StatCard label="1st Pitch Strike %" value={stats?.fpsPct ?? null} />
-                </div>
-            )}
-
-            <PitcherBreakdownSection models={pitcherOverviewModels} />
-            <HitterBreakdownSection models={hitterOverviewModels} />
-
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-hidden mt-2">
-                <div className="border-b border-zinc-800/60 bg-zinc-900/80 px-5 py-4 flex items-center gap-2">
-                    <Activity className="h-4 w-4 text-zinc-400" />
-                    <h2 className="font-semibold text-zinc-200">Play-by-Play Pitch Log</h2>
-                </div>
-
-                {plateAppearances.length === 0 ? (
-                    <div className="p-8 text-center text-zinc-500 text-sm italic">
-                        No plate appearances charted yet.
-                    </div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm whitespace-nowrap">
-                            <thead className="bg-zinc-900/30 text-xs uppercase tracking-wider text-zinc-500 border-b border-zinc-800">
-                                <tr>
-                                    <th className="px-5 py-3 font-medium">Seq</th>
-                                    <th className="px-5 py-3 font-medium">Inning</th>
-                                    <th className="px-5 py-3 font-medium">Batter</th>
-                                    <th className="px-5 py-3 font-medium">Count</th>
-                                    <th className="px-5 py-3 font-medium">Pitch</th>
-                                    <th className="px-5 py-3 font-medium">Result</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-zinc-800/40">
-                                {pitches.map((pitch, idx) => {
-                                    const pa = paById.get(pitch.paId);
-                                    const isLastInPA = idx === pitches.length - 1 || pitches[idx + 1].paId !== pitch.paId;
-
-                                    return (
-                                        <tr key={pitch.id} className={`hover:bg-zinc-800/20 ${isLastInPA ? 'border-b-2 border-zinc-800' : ''}`}>
-                                            <td className="px-5 py-2.5 text-zinc-500 font-mono text-xs">
-                                                {idx + 1}
-                                            </td>
-                                            <td className="px-5 py-2.5 text-zinc-400">
-                                                Top {pa?.inning ?? "?"}
-                                            </td>
-                                            <td className="px-5 py-2.5 text-zinc-300 font-medium">
-                                                {pa?.hitterName ?? "Unknown"}
-                                            </td>
-                                            <td className="px-5 py-2.5 text-zinc-400 font-mono">
-                                                {pitch.ballsBefore}-{pitch.strikesBefore}
-                                            </td>
-                                            <td className="px-5 py-2.5">
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-zinc-800 text-zinc-300">
-                                                    {pitch.pitchType}
-                                                </span>
-                                            </td>
-                                            <td className="px-5 py-2.5 font-medium text-zinc-300">
-                                                {pitch.pitchResult} {isLastInPA && pa?.resultCode ? ` → ${pa.resultCode}` : ''}
-                                            </td>
+                        {plateAppearances.length === 0 ? (
+                            <div className="p-8 text-center text-zinc-500 text-sm italic">
+                                No plate appearances charted yet.
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-sm whitespace-nowrap">
+                                    <thead className="bg-zinc-900/30 text-xs uppercase tracking-wider text-zinc-500 border-b border-zinc-800">
+                                        <tr>
+                                            <th className="px-5 py-3 font-medium">Seq</th>
+                                            <th className="px-5 py-3 font-medium">Inning</th>
+                                            <th className="px-5 py-3 font-medium">Batter</th>
+                                            <th className="px-5 py-3 font-medium">Count</th>
+                                            <th className="px-5 py-3 font-medium">Pitch</th>
+                                            <th className="px-5 py-3 font-medium">Result</th>
                                         </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-            </div>
+                                    </thead>
+                                    <tbody className="divide-y divide-zinc-800/40">
+                                        {pitches.map((pitch, idx) => {
+                                            const pa = paById.get(pitch.paId);
+                                            const isLastInPA = idx === pitches.length - 1 || pitches[idx + 1].paId !== pitch.paId;
 
+                                            return (
+                                                <tr key={pitch.id} className={`hover:bg-zinc-800/20 ${isLastInPA ? 'border-b-2 border-zinc-800' : ''}`}>
+                                                    <td className="px-5 py-2.5 text-zinc-500 font-mono text-xs">
+                                                        {idx + 1}
+                                                    </td>
+                                                    <td className="px-5 py-2.5 text-zinc-400">
+                                                        Top {pa?.inning ?? "?"}
+                                                    </td>
+                                                    <td className="px-5 py-2.5 text-zinc-300 font-medium">
+                                                        {pa?.hitterName ?? "Unknown"}
+                                                    </td>
+                                                    <td className="px-5 py-2.5 text-zinc-400 font-mono">
+                                                        {pitch.ballsBefore}-{pitch.strikesBefore}
+                                                    </td>
+                                                    <td className="px-5 py-2.5">
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-zinc-800 text-zinc-300">
+                                                            {pitch.pitchType}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-5 py-2.5 font-medium text-zinc-300">
+                                                        {pitch.pitchResult} {isLastInPA && pa?.resultCode ? ` → ${pa.resultCode}` : ''}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
         </LeaderboardPageFrame>
     );
 }

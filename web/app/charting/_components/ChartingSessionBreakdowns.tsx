@@ -1,9 +1,14 @@
+"use client";
+
+import { useState } from "react";
 import {
   Activity,
   ChartColumnIncreasing,
   Radar,
   UserRound,
   UsersRound,
+  MapPin,
+  X,
 } from "lucide-react";
 import { LeaderboardPill } from "@/app/components/leaderboards/LeaderboardChrome";
 import { ChartingZoneHeatmap } from "@/app/charting/_components/ChartingZoneHeatmap";
@@ -18,7 +23,102 @@ function formatPct(value: number | null): string {
   return value === null ? "—" : `${value.toFixed(1)}%`;
 }
 
-function StatChip({
+// === Micro Modal & Heatmap ===
+
+function MicroZoneMapTrigger({ counts, label }: { counts: Partial<Record<number, number>>; label: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  // simple 3x3 aggregation just to look cool and glowing. 
+  // It's a tiny visual proxy for the main map.
+  return (
+    <>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="w-full flex flex-col items-center justify-center p-4 rounded-[1.2rem] border border-zinc-800/80 bg-zinc-950/60 transition-colors hover:bg-zinc-900/80"
+      >
+        <div className="flex flex-col gap-1 w-[4.5rem] h-[4.5rem]">
+          {/* Tiny dummy 3x3 grid */}
+          <div className="grid grid-cols-3 gap-1 w-full h-full p-[2px]">
+            {[...Array(9)].map((_, i) => (
+              <div key={i} className={`rounded-[3px] w-full h-full ${i === 4 ? 'bg-sky-500/40 shadow-[0_0_8px_rgba(56,189,248,0.5)]' : i === 7 ? 'bg-amber-500/40' : 'bg-zinc-800/80'}`}></div>
+            ))}
+          </div>
+        </div>
+        <div className="mt-3 text-[10px] uppercase font-bold tracking-widest text-zinc-500">View Zone Data</div>
+      </button>
+
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-md rounded-3xl border border-zinc-800 bg-zinc-950 shadow-2xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2"><MapPin className="h-5 w-5 text-emerald-400" /> {label} Zone Coverage</h3>
+              <button onClick={() => setIsOpen(false)} className="rounded-full p-2 bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <ChartingZoneHeatmap counts={counts} emptyLabel="No tracked zone coverage" />
+            <p className="mt-4 text-xs text-zinc-500 text-center">Matches the charting editor zone layout. Pitch frequency is shown relative to the most targeted zone.</p>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// === Outcomes ===
+
+function OutcomeFunnel({ outcomes }: { outcomes: OutcomeSummary }) {
+  const total = outcomes.closedPas;
+  if (total === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-zinc-800/80 bg-zinc-950/45 px-4 py-3 text-sm text-zinc-500">
+        No plate appearances yet.
+      </div>
+    );
+  }
+
+  const items = [
+    { label: "K", value: outcomes.strikeouts, bg: "bg-emerald-500", text: "text-emerald-400" },
+    { label: "BB", value: outcomes.walks, bg: "bg-sky-500", text: "text-sky-400" },
+    { label: "HBP", value: outcomes.hitByPitch, bg: "bg-amber-600", text: "text-amber-500" },
+    { label: "HITS", value: outcomes.hits, bg: "bg-zinc-500", text: "text-zinc-400" },
+    { label: "OUTS", value: outcomes.outs, bg: "bg-zinc-700", text: "text-zinc-500" },
+  ];
+
+  return (
+    <div className="space-y-4">
+      {/* Legend */}
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        {items.map((item) => (
+          <div key={item.label} className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider">
+            <span className={item.text}>{item.label}:</span>
+            <span className="text-zinc-300">{item.value}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Stacked Bar */}
+      <div className="flex h-5 w-full overflow-hidden rounded-full bg-zinc-950 border border-zinc-800/50 shadow-inner">
+        {items.map((item) => {
+          if (item.value === 0) return null;
+          const pct = (item.value / total) * 100;
+          return (
+            <div
+              key={item.label}
+              className={`h-full ${item.bg} border-r border-zinc-900/50 last:border-0 hover:brightness-110 transition-all`}
+              style={{ width: `${pct}%` }}
+              title={`${item.label}: ${item.value} (${pct.toFixed(1)}%)`}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// === Subcomponents ===
+
+function CompactStatChip({
   label,
   value,
   tone = "neutral",
@@ -29,68 +129,221 @@ function StatChip({
 }) {
   const toneClasses =
     tone === "emerald"
-      ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-200"
+      ? "text-emerald-400"
       : tone === "sky"
-        ? "border-sky-500/20 bg-sky-500/10 text-sky-200"
+        ? "text-sky-400"
         : tone === "amber"
-          ? "border-amber-500/20 bg-amber-500/10 text-amber-200"
-          : "border-zinc-800/80 bg-zinc-950/65 text-zinc-200";
+          ? "text-amber-500"
+          : "text-white";
 
   return (
-    <div className={`rounded-2xl border px-3 py-3 ${toneClasses}`}>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+    <div className="flex items-center justify-between rounded-xl border border-zinc-800/80 bg-zinc-950/65 px-4 py-2.5">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
         {label}
       </div>
-      <div className="mt-1 text-lg font-black text-white">{value}</div>
+      <div className={`text-sm font-bold ${toneClasses}`}>{value}</div>
     </div>
   );
 }
 
-function PitchMixRow({ entries }: { entries: PitchMixEntry[] }) {
+function CompactPitchMixColumn({ entries }: { entries: PitchMixEntry[] }) {
   if (entries.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-zinc-800/80 bg-zinc-950/45 px-4 py-3 text-sm text-zinc-500">
-        No pitch mix yet.
+      <div className="rounded-xl border border-dashed border-zinc-800/80 bg-zinc-950/45 px-3 py-2 text-xs text-zinc-500 flex items-center justify-center">
+        No mix
       </div>
     );
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-col gap-2 h-full justify-start">
       {entries.map((entry) => (
         <div
           key={entry.pitchType}
-          className="rounded-full border border-zinc-800/80 bg-zinc-950/75 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-300"
+          className="flex flex-col justify-center rounded-xl border border-zinc-800/80 bg-zinc-950/75 px-3 py-[9px]"
         >
-          {entry.pitchType} <span className="text-zinc-500">{entry.count} · {entry.pct.toFixed(1)}%</span>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-300 truncate max-w-[65px]">{entry.pitchType}</span>
+            <span className="text-[10px] font-medium text-zinc-400">{entry.pct.toFixed(1)}%</span>
+          </div>
+          <div className="mt-1.5 flex h-1.5 w-full overflow-hidden rounded-full bg-zinc-900 border border-zinc-800">
+            <div className="h-full bg-zinc-500" style={{ width: `${entry.pct}%` }} />
+          </div>
         </div>
       ))}
     </div>
   );
 }
 
-function OutcomeStrip({ outcomes }: { outcomes: OutcomeSummary }) {
-  const items = [
-    { label: "K", value: outcomes.strikeouts, tone: "emerald" as const },
-    { label: "BB", value: outcomes.walks, tone: "sky" as const },
-    { label: "HBP", value: outcomes.hitByPitch, tone: "amber" as const },
-    { label: "Hits", value: outcomes.hits, tone: "neutral" as const },
-    { label: "Outs", value: outcomes.outs, tone: "neutral" as const },
-  ];
-
+function CompactPitchGroup({
+  label,
+  pitches,
+  whiffPct,
+}: {
+  label: string;
+  pitches: number;
+  whiffPct: number | null;
+}) {
   return (
-    <div className="grid gap-2 sm:grid-cols-5">
-      {items.map((item) => (
-        <StatChip
-          key={item.label}
-          label={item.label}
-          value={String(item.value)}
-          tone={item.tone}
-        />
-      ))}
+    <div className="flex flex-col justify-center rounded-xl border border-zinc-800/80 bg-zinc-950/70 px-3 py-[8.5px]">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 mb-0.5">
+        {label}
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-1 text-[11px]">
+        <span className="font-semibold text-zinc-200">{pitches} pit</span>
+        <span className="text-zinc-400">{formatPct(whiffPct)} whiff</span>
+      </div>
     </div>
   );
 }
+
+// === Cards ===
+
+function PitcherCard({ model, index }: { model: PitcherOverviewModel; index: number }) {
+  const spanLabel = [
+    ...new Set(model.segments.map((s) => s.enteredInning))
+  ].join(", ");
+
+  return (
+    <article className="overflow-hidden flex flex-col rounded-[1.8rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(18,18,22,0.84),rgba(9,9,11,0.96))] shadow-[0_24px_64px_rgba(0,0,0,0.24)]">
+      <div className="border-b border-zinc-800/70 bg-[linear-gradient(135deg,rgba(16,185,129,0.12),rgba(9,9,11,0.94))] px-6 py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)]"></div>
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                Pitcher Outing {index + 1}
+              </div>
+              <div className="mt-0.5 text-lg font-black text-white">{model.displayName}</div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {spanLabel && <LeaderboardPill tone="neutral">Inn. {spanLabel}</LeaderboardPill>}
+            <LeaderboardPill tone="neutral">{model.segments.length} Seg</LeaderboardPill>
+            <LeaderboardPill tone="neutral">{model.pitches.length} Pitches</LeaderboardPill>
+            <LeaderboardPill tone="neutral">{model.outcomes.closedPas} PAs</LeaderboardPill>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6 grid gap-8 md:grid-cols-[1.1fr_1fr]">
+        <div className="flex flex-col gap-6 w-full">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+              <Activity className="h-3.5 w-3.5" /> True Outcomes
+            </div>
+            <div className="bg-zinc-900/30 border border-zinc-800/50 p-4 rounded-2xl">
+              <OutcomeFunnel outcomes={model.outcomes} />
+            </div>
+          </div>
+
+          <div className="space-y-4 mt-auto">
+            <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+              <MapPin className="h-3.5 w-3.5" /> Zone Coverage
+            </div>
+            <MicroZoneMapTrigger counts={model.zoneFrequency} label={model.displayName} />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            <ChartColumnIncreasing className="h-3.5 w-3.5" /> Pitch Mix & Aggression
+          </div>
+
+          <div className="grid grid-cols-[1fr_1.2fr] gap-3 h-full">
+            <div className="flex flex-col justify-start gap-2 h-full">
+              <CompactStatChip label="Strike" value={formatPct(model.stats?.strikePct ?? null)} tone="sky" />
+              <CompactStatChip label="Zone" value={formatPct(model.stats?.zonePct ?? null)} tone="sky" />
+              <CompactStatChip label="Whiff" value={formatPct(model.stats?.whiffPct ?? null)} tone="amber" />
+              <CompactStatChip label="Chase" value={formatPct(model.stats?.chasePct ?? null)} tone="amber" />
+              <CompactStatChip label="FPS" value={formatPct(model.stats?.fpsPct ?? null)} tone="amber" />
+            </div>
+
+            <CompactPitchMixColumn entries={model.pitchMixEntries} />
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function HitterCard({ model }: { model: HitterOverviewModel }) {
+  const resultLabel =
+    model.outcomes.results.length > 0 ? model.outcomes.results.join(" • ") : "Open only";
+
+  return (
+    <article className="overflow-hidden flex flex-col rounded-[1.8rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(18,18,22,0.84),rgba(9,9,11,0.96))] shadow-[0_24px_64px_rgba(0,0,0,0.24)]">
+      <div className="border-b border-zinc-800/70 bg-[linear-gradient(135deg,rgba(56,189,248,0.12),rgba(9,9,11,0.94))] px-6 py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-sky-500 shadow-[0_0_12px_rgba(56,189,248,0.5)]"></div>
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                Lineup Slot {model.lineupSlot}
+              </div>
+              <div className="mt-0.5 text-lg font-black text-white">{model.hitterName}</div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <LeaderboardPill tone="neutral">{model.pitches.length} Pitches Seen</LeaderboardPill>
+            <LeaderboardPill tone="neutral">{model.plateAppearances.length} PAs</LeaderboardPill>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6 grid gap-8 md:grid-cols-[1.1fr_1fr]">
+        <div className="flex flex-col gap-6 w-full">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+              <Activity className="h-3.5 w-3.5" /> True Outcomes
+            </div>
+            <div className="bg-zinc-900/30 border border-zinc-800/50 p-4 rounded-2xl">
+              <OutcomeFunnel outcomes={model.outcomes} />
+            </div>
+          </div>
+
+          <div className="space-y-4 mt-auto">
+            <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+              <MapPin className="h-3.5 w-3.5" /> Zone Coverage
+            </div>
+            <MicroZoneMapTrigger counts={model.zoneFrequency} label={model.hitterName} />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            <ChartColumnIncreasing className="h-3.5 w-3.5" /> Approach & Results
+          </div>
+
+          <div className="grid grid-cols-[1fr_1.2fr] gap-3">
+            <div className="flex flex-col justify-start gap-2">
+              <CompactStatChip label="Pitches" value={String(model.stats?.totalPitches ?? model.pitches.length)} tone="sky" />
+              <CompactStatChip label="Chase" value={formatPct(model.stats?.chasePct ?? null)} tone="amber" />
+              <CompactStatChip label="Contact" value={formatPct(model.stats?.contactPct ?? null)} tone="emerald" />
+              <CompactStatChip label="K%" value={formatPct(model.stats?.kPct ?? null)} tone="emerald" />
+              <CompactStatChip label="BB%" value={formatPct(model.stats?.bbPct ?? null)} tone="sky" />
+            </div>
+
+            <div className="flex flex-col justify-start gap-2 h-full">
+              <CompactPitchGroup label="Fastball" pitches={model.stats?.vsFastball.pitches ?? 0} whiffPct={model.stats?.vsFastball.whiffPct ?? null} />
+              <CompactPitchGroup label="Breaking" pitches={model.stats?.vsBreaking.pitches ?? 0} whiffPct={model.stats?.vsBreaking.whiffPct ?? null} />
+              <CompactPitchGroup label="Offspeed" pitches={model.stats?.vsOffspeed.pitches ?? 0} whiffPct={model.stats?.vsOffspeed.whiffPct ?? null} />
+            </div>
+          </div>
+
+          <div className="mt-1 flex flex-col justify-center rounded-xl border border-zinc-800/80 bg-zinc-950/70 px-4 py-3 min-h-[50px]">
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 mb-2">
+              <Radar className="h-3.5 w-3.5" /> Result Trail
+            </div>
+            <div className="text-[11px] text-zinc-300 truncate font-mono bg-zinc-900/80 px-3 py-2 rounded-lg border border-zinc-800/50">{resultLabel}</div>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+// === Sections ===
 
 function SectionIntro({
   icon: Icon,
@@ -105,10 +358,10 @@ function SectionIntro({
     <div className="mb-5 flex items-start justify-between gap-4">
       <div>
         <div className="flex items-center gap-2 text-zinc-200">
-          <Icon className="h-4 w-4 text-zinc-400" />
-          <h2 className="text-lg font-semibold">{title}</h2>
+          <Icon className="h-4 w-4 text-emerald-400" />
+          <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
         </div>
-        <p className="mt-2 max-w-3xl text-sm text-zinc-500">{description}</p>
+        <p className="mt-2 max-w-3xl text-xs text-zinc-500 leading-relaxed">{description}</p>
       </div>
     </div>
   );
@@ -116,176 +369,9 @@ function SectionIntro({
 
 function EmptySection({ message }: { message: string }) {
   return (
-    <div className="rounded-[1.8rem] border border-dashed border-zinc-800/80 bg-zinc-900/35 px-5 py-8 text-sm text-zinc-500">
+    <div className="rounded-[1.8rem] border border-dashed border-zinc-800/80 bg-zinc-900/35 px-5 py-8 text-sm text-zinc-500 text-center font-medium">
       {message}
     </div>
-  );
-}
-
-function formatInningWindow(start: number | null, end: number | null): string | null {
-  if (start !== null && end !== null) {
-    return start === end ? `${start}` : `${start}-${end}`;
-  }
-
-  if (start !== null) {
-    return `${start}+`;
-  }
-
-  if (end !== null) {
-    return `through ${end}`;
-  }
-
-  return null;
-}
-
-function outingSpanLabel(model: PitcherOverviewModel): string | null {
-  const labels = model.segments
-    .map((segment) => formatInningWindow(segment.enteredInning, segment.exitedInning))
-    .filter((label): label is string => label !== null);
-
-  if (labels.length === 0) {
-    return null;
-  }
-
-  return labels.join(" / ");
-}
-
-function PitcherCard({ model, index }: { model: PitcherOverviewModel; index: number }) {
-  const spanLabel = outingSpanLabel(model);
-
-  return (
-    <article className="overflow-hidden rounded-[1.9rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(18,18,22,0.84),rgba(9,9,11,0.96))] shadow-[0_24px_64px_rgba(0,0,0,0.24)]">
-      <div className="border-b border-zinc-800/70 bg-[linear-gradient(135deg,rgba(16,185,129,0.14),rgba(9,9,11,0.94))] px-5 py-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-              Pitcher Outing {index + 1}
-            </div>
-            <div className="mt-1 text-xl font-black text-white">{model.displayName}</div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {spanLabel ? <LeaderboardPill tone="neutral">Inn. {spanLabel}</LeaderboardPill> : null}
-            <LeaderboardPill tone="neutral">
-              {model.segments.length} {model.segments.length === 1 ? "segment" : "segments"}
-            </LeaderboardPill>
-            <LeaderboardPill tone="neutral">{model.pitches.length} pitches</LeaderboardPill>
-            <LeaderboardPill tone="neutral">{model.outcomes.closedPas} closed PAs</LeaderboardPill>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-5 p-5">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          <StatChip label="Strike" value={formatPct(model.stats?.strikePct ?? null)} tone="emerald" />
-          <StatChip label="Zone" value={formatPct(model.stats?.zonePct ?? null)} tone="sky" />
-          <StatChip label="Whiff" value={formatPct(model.stats?.whiffPct ?? null)} tone="amber" />
-          <StatChip label="Chase" value={formatPct(model.stats?.chasePct ?? null)} />
-          <StatChip label="FPS" value={formatPct(model.stats?.fpsPct ?? null)} />
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-zinc-300">
-            <ChartColumnIncreasing className="h-4 w-4 text-zinc-500" />
-            Pitch Mix
-          </div>
-          <PitchMixRow entries={model.pitchMixEntries} />
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-zinc-300">
-            <Activity className="h-4 w-4 text-zinc-500" />
-            Plate Appearance Outcomes
-          </div>
-          <OutcomeStrip outcomes={model.outcomes} />
-        </div>
-
-        <ChartingZoneHeatmap counts={model.zoneFrequency} />
-      </div>
-    </article>
-  );
-}
-
-function PitchGroupChip({
-  label,
-  pitches,
-  whiffPct,
-}: {
-  label: string;
-  pitches: number;
-  whiffPct: number | null;
-}) {
-  return (
-    <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 px-3 py-3">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-        {label}
-      </div>
-      <div className="mt-1 flex items-center justify-between gap-3">
-        <span className="text-sm font-semibold text-zinc-100">{pitches} pitches</span>
-        <span className="text-sm text-zinc-400">{formatPct(whiffPct)}</span>
-      </div>
-    </div>
-  );
-}
-
-function HitterCard({ model }: { model: HitterOverviewModel }) {
-  const resultLabel =
-    model.outcomes.results.length > 0 ? model.outcomes.results.join(" • ") : "Open only";
-
-  return (
-    <article className="overflow-hidden rounded-[1.9rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(18,18,22,0.84),rgba(9,9,11,0.96))] shadow-[0_24px_64px_rgba(0,0,0,0.24)]">
-      <div className="border-b border-zinc-800/70 bg-[linear-gradient(135deg,rgba(56,189,248,0.14),rgba(9,9,11,0.94))] px-5 py-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-              Lineup Slot {model.lineupSlot}
-            </div>
-            <div className="mt-1 text-xl font-black text-white">{model.hitterName}</div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <LeaderboardPill tone="neutral">{model.pitches.length} pitches seen</LeaderboardPill>
-            <LeaderboardPill tone="neutral">{model.plateAppearances.length} PAs</LeaderboardPill>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-5 p-5">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          <StatChip label="Pitches" value={String(model.stats?.totalPitches ?? model.pitches.length)} tone="sky" />
-          <StatChip label="Chase" value={formatPct(model.stats?.chasePct ?? null)} tone="amber" />
-          <StatChip label="Contact" value={formatPct(model.stats?.contactPct ?? null)} tone="emerald" />
-          <StatChip label="K%" value={formatPct(model.stats?.kPct ?? null)} />
-          <StatChip label="BB%" value={formatPct(model.stats?.bbPct ?? null)} />
-        </div>
-
-        <div className="grid gap-3 lg:grid-cols-3">
-          <PitchGroupChip
-            label="Fastball"
-            pitches={model.stats?.vsFastball.pitches ?? 0}
-            whiffPct={model.stats?.vsFastball.whiffPct ?? null}
-          />
-          <PitchGroupChip
-            label="Breaking"
-            pitches={model.stats?.vsBreaking.pitches ?? 0}
-            whiffPct={model.stats?.vsBreaking.whiffPct ?? null}
-          />
-          <PitchGroupChip
-            label="Offspeed"
-            pitches={model.stats?.vsOffspeed.pitches ?? 0}
-            whiffPct={model.stats?.vsOffspeed.whiffPct ?? null}
-          />
-        </div>
-
-        <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 px-4 py-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-zinc-300">
-            <Radar className="h-4 w-4 text-zinc-500" />
-            Result Trail
-          </div>
-          <div className="mt-2 text-sm text-zinc-400">{resultLabel}</div>
-        </div>
-
-        <ChartingZoneHeatmap counts={model.zoneFrequency} emptyLabel="No tracked zone coverage" />
-      </div>
-    </article>
   );
 }
 
@@ -295,16 +381,16 @@ export function PitcherBreakdownSection({
   models: PitcherOverviewModel[];
 }) {
   return (
-    <section className="mb-8">
+    <section className="mb-10 lg:pr-8">
       <SectionIntro
         icon={UserRound}
         title="Pitcher Breakdown"
-        description="One outing card per pitcher, merging repeat inning segments into a single review with pitch mix, rate stats, outcomes, and charting-grid coverage."
+        description="Every pitcher who appeared in the session, with unified true outcomes, performance metrics, and their primary zone-by-zone pitch distribution."
       />
       {models.length === 0 ? (
         <EmptySection message="No pitcher outings are available for this game yet." />
       ) : (
-        <div className="grid gap-5 xl:grid-cols-2">
+        <div className="grid gap-6">
           {models.map((model, index) => (
             <PitcherCard key={model.pitcherKey} model={model} index={index} />
           ))}
@@ -320,16 +406,16 @@ export function HitterBreakdownSection({
   models: HitterOverviewModel[];
 }) {
   return (
-    <section className="mb-8">
+    <section className="mb-10 lg:pr-8">
       <SectionIntro
-        icon={UsersRound}
+        icon={UsersRound as any}
         title="Hitter Breakdown"
-        description="Every tracked hitter in the session, with swing behavior, pitch-group context, outcome trail, and catcher-view zone coverage."
+        description="Aggregated approach data and true outcomes for the opponent's lineup."
       />
       {models.length === 0 ? (
         <EmptySection message="No hitter plate appearances are available for this game yet." />
       ) : (
-        <div className="grid gap-5 xl:grid-cols-2">
+        <div className="grid gap-6">
           {models.map((model) => (
             <HitterCard key={`${model.lineupSlot}-${model.hitterName}`} model={model} />
           ))}
