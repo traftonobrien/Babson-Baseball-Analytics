@@ -51,6 +51,7 @@ import {
   syncHitterToSnapshot,
   undoSnapshotAction,
   UNASSISTED_OUT_OPTIONS,
+  updatePAHitterNameInSnapshot,
   updatePitchVelocityInSnapshot,
   updateSnapshotRevision,
   type GameStateOverride,
@@ -426,6 +427,20 @@ export function ChartingEditor({
     if (nextResult === "hit_by_pitch") {
       setSelectedLocation(null);
     }
+  };
+
+  const handlePAHitterChange = (paId: string, nextName: string) => {
+    const nextSnapshot = updatePAHitterNameInSnapshot(snapshot, paId, nextName);
+
+    if (nextSnapshot === snapshot) {
+      return;
+    }
+
+    applyOptimisticSnapshot(
+      nextSnapshot,
+      gameStateOverride,
+      `Hitter updated to ${nextName.trim()}`
+    );
   };
 
   const handleRecordPitch = () => {
@@ -851,8 +866,23 @@ export function ChartingEditor({
                                 <option key={n} value={n}>{n}</option>
                               ))}
                             </select>
-                            <span className="text-zinc-500 text-xs font-medium">inning</span>
-                            <span className="truncate flex-1 font-medium text-zinc-300">{group.hitterName}</span>
+                            <span className="text-zinc-500 text-xs font-medium shrink-0">inning</span>
+                            <div className="flex-1 min-w-0 pr-2">
+                              <input
+                                defaultValue={group.hitterName}
+                                list={datalistId}
+                                onClick={(e) => e.stopPropagation()}
+                                onBlur={(e) => handlePAHitterChange(group.paId, e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.currentTarget.blur();
+                                  }
+                                }}
+                                className="w-full truncate bg-transparent font-medium text-zinc-300 hover:text-white focus:text-white outline-none focus:border-b focus:border-emerald-500/50 transition-colors"
+                                placeholder="Hitter Name"
+                                aria-label={`Edit hitter for ${group.hitterName} at-bat`}
+                              />
+                            </div>
                             {group.paResult && (
                               <span className="text-emerald-400 font-bold text-sm shrink-0">{group.paResult}</span>
                             )}

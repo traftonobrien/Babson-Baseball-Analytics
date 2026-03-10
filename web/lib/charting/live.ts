@@ -590,6 +590,33 @@ export function updatePitchVelocityInSnapshot(
   return nextSnapshot;
 }
 
+export function updatePAHitterNameInSnapshot(
+  snapshot: ChartingGameSnapshot,
+  paId: string,
+  newHitterName: string
+): ChartingGameSnapshot {
+  const trimmed = newHitterName.trim();
+  if (!trimmed) return snapshot;
+
+  const existingPA = snapshot.plateAppearances.find((pa) => pa.id === paId);
+  if (!existingPA) {
+    return snapshot;
+  }
+
+  if (existingPA.hitterName === trimmed) {
+    return snapshot;
+  }
+
+  const nextSnapshot = cloneSnapshot(snapshot);
+  const targetPA = nextSnapshot.plateAppearances.find((pa) => pa.id === paId);
+  if (!targetPA) return snapshot;
+
+  targetPA.hitterName = trimmed;
+  upsertLineupEntry(nextSnapshot.lineup, nextSnapshot.game.id, targetPA.lineupSlot, trimmed);
+
+  return nextSnapshot;
+}
+
 export function updateSnapshotRevision(
   snapshot: ChartingGameSnapshot,
   revision: number,
