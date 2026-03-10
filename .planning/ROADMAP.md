@@ -21,7 +21,7 @@ This roadmap takes the project from a brownfield repo with no live charting doma
 
 - [x] **Phase 10: Analytics Foundation** - Build shared stat engine for pitcher and hitter metrics from charting pitch/PA data
 - [x] **Phase 11: Session Overview Enhancements** - Enrich /charting/games/[id] with per-pitcher and per-hitter breakdown sections
-- [ ] **Phase 12: Live AB Leaderboard** - New /charting/leaderboard with Pitchers + Hitters tabs, filters, and sortable columns
+- [x] **Phase 12: Live AB Leaderboard** - New /charting/leaderboard with Pitchers + Hitters tabs, filters, and sortable columns
 - [ ] **Phase 13: Per-Player Drill-Down** - Session-by-session history pages for any pitcher (/pitcher/[playerId]) or hitter (/hitter/[name])
 
 ## Phase Details
@@ -247,9 +247,9 @@ Current status:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 12-01: Build /charting/leaderboard route and shared filter/tab chrome
-- [ ] 12-02: Build pitcher leaderboard table with sort and filter integration
-- [ ] 12-03: Build hitter leaderboard table with sort and filter integration
+- [x] 12-01: Build /charting/leaderboard route and shared filter/tab chrome
+- [x] 12-02: Build pitcher leaderboard table with sort and filter integration
+- [x] 12-03: Build hitter leaderboard table with sort and filter integration
 
 ### Phase 13: Per-Player Drill-Down
 **Goal**: Deliver session-by-session history pages for any pitcher or hitter linked from the leaderboard.
@@ -280,5 +280,5 @@ Plans:
 | 9. Pilot Hardening and TestFlight | 0/3 | Not started | - |
 | 10. Analytics Foundation | 0/4 | Not started | - |
 | 11. Session Overview Enhancements | 0/3 | Not started | - |
-| 12. Live AB Leaderboard | 0/3 | Not started | - |
+| 12. Live AB Leaderboard | 3/3 | Complete | 2026-03-09 |
 | 13. Per-Player Drill-Down | 0/2 | Not started | - |

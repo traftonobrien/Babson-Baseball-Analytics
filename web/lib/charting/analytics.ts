@@ -59,6 +59,7 @@ export interface AggregateOptions {
 
 export interface AggregatedPitcherStats extends SegmentStats {
   sessions: number;
+  innings: number;
   totalPAs: number;
 }
 
@@ -72,11 +73,19 @@ export interface PitchGroupStats {
 export interface HitterStats {
   totalPitches: number;
   totalPAs: number;
+  avg: number | null;
+  obp: number | null;
+  slg: number | null;
+  ops: number | null;
   chasePct: number | null;
   contactPct: number | null;
   whiffPct: number | null;
   kPct: number | null;
   bbPct: number | null;
+  zoneWfPct: number | null;
+  zoneSwingPct: number | null;
+  babip: number | null;
+  iso: number | null;
   zoneFrequency: Partial<Record<number, number>>;
   vsFastball: PitchGroupStats;
   vsBreaking: PitchGroupStats;
@@ -162,9 +171,9 @@ async function resolveFilteredGameIds(
     const dateFilter =
       fromDate && toDate
         ? and(
-            gte(chartingGames.gameDate, fromDate),
-            lte(chartingGames.gameDate, toDate)
-          )
+          gte(chartingGames.gameDate, fromDate),
+          lte(chartingGames.gameDate, toDate)
+        )
         : fromDate
           ? gte(chartingGames.gameDate, fromDate)
           : lte(chartingGames.gameDate, toDate!);
@@ -326,7 +335,8 @@ export async function computeSegmentStats(
 export function computePitcherAggregation(
   allPitches: ChartingPitch[],
   allPas: ChartingPlateAppearance[],
-  sessions: number
+  sessions: number,
+  innings: number
 ): AggregatedPitcherStats | null {
   const base = computeSegmentStats_pure(allPitches, allPas);
   if (!base) {
@@ -336,6 +346,7 @@ export function computePitcherAggregation(
   return {
     ...base,
     sessions,
+    innings,
     totalPAs: allPas.length,
   };
 }
@@ -354,9 +365,9 @@ export async function aggregatePitcherStats(
     filteredGameIds === null
       ? eq(chartingPitcherSegments.playerId, playerId)
       : and(
-          eq(chartingPitcherSegments.playerId, playerId),
-          inArray(chartingPitcherSegments.gameId, filteredGameIds)
-        );
+        eq(chartingPitcherSegments.playerId, playerId),
+        inArray(chartingPitcherSegments.gameId, filteredGameIds)
+      );
   const segments = await db
     .select()
     .from(chartingPitcherSegments)
@@ -397,7 +408,10 @@ export async function aggregatePitcherStats(
       .orderBy(asc(chartingPitches.pitchOrder))
   );
 
-  return computePitcherAggregation(pitches, pas, segments.length);
+  const sessions = new Set(segments.map((s) => s.gameId)).size;
+  const innings = segments.length;
+
+  return computePitcherAggregation(pitches, pas, sessions, innings);
 }
 
 export function computeHitterStats_pure(
@@ -415,6 +429,17 @@ export function computeHitterStats_pure(
   const outOfZoneSwings = outOfZoneLocatedPitches.filter((pitch) =>
     SWING_RESULTS.includes(pitch.pitchResult)
   ).length;
+
+  const inZoneLocatedPitches = locatedPitches.filter(
+    (pitch) => pitch.locationCell >= 1 && pitch.locationCell <= 9
+  );
+  const inZoneSwings = inZoneLocatedPitches.filter((pitch) =>
+    SWING_RESULTS.includes(pitch.pitchResult)
+  ).length;
+  const inZoneWhiffs = inZoneLocatedPitches.filter(
+    (pitch) => pitch.pitchResult === "swinging_strike"
+  ).length;
+
   const whiffs = pitches.filter(
     (pitch) => pitch.pitchResult === "swinging_strike"
   ).length;
@@ -427,6 +452,32 @@ export function computeHitterStats_pure(
     isStrikeout(pa.resultCode)
   ).length;
   const walkCount = closedPas.filter((pa) => pa.resultCode === "BB").length;
+  const hbpCount = closedPas.filter((pa) => pa.resultCode === "HBP").length;
+
+  const singles = closedPas.filter((pa) => pa.resultCode === "1B").length;
+  const doubles = closedPas.filter((pa) => pa.resultCode === "2B").length;
+  const triples = closedPas.filter((pa) => pa.resultCode === "3B").length;
+  const homeRuns = closedPas.filter((pa) => pa.resultCode === "HR").length;
+
+  const hits = singles + doubles + triples + homeRuns;
+  const totalBases = singles + 2 * doubles + 3 * triples + 4 * homeRuns;
+  const atBats = closedPas.length - walkCount - hbpCount;
+
+  const avg = atBats > 0 ? hits / atBats : null;
+  const obp =
+    closedPas.length > 0
+      ? (hits + walkCount + hbpCount) / closedPas.length
+      : null;
+  const slg = atBats > 0 ? totalBases / atBats : null;
+  const ops = obp !== null ? obp + (slg ?? 0) : null;
+  const iso = slg !== null && avg !== null ? slg - avg : null;
+
+  // BABIP Calculation: (H - HR) / (AB - K - HR + SF)
+  // Re-deriving in-play at bats. We don't currently track SF distinctively in charting, 
+  // so (AB - K - HR) is the closest approximation with current data structure.
+  const babipDenominator = atBats - strikeoutCount - homeRuns;
+  const babip = babipDenominator > 0 ? (hits - homeRuns) / babipDenominator : null;
+
   const zoneFrequency = locatedPitches.reduce<Partial<Record<number, number>>>(
     (frequency, pitch) => {
       frequency[pitch.locationCell] = (frequency[pitch.locationCell] ?? 0) + 1;
@@ -438,11 +489,19 @@ export function computeHitterStats_pure(
   return {
     totalPitches: pitches.length,
     totalPAs: pas.length,
+    avg,
+    obp,
+    slg,
+    ops,
     chasePct: pct(outOfZoneSwings, outOfZoneLocatedPitches.length),
     contactPct: pct(contacts, contacts + whiffs),
     whiffPct: pct(whiffs, swings),
+    zoneWfPct: pct(inZoneWhiffs, inZoneSwings),
+    zoneSwingPct: pct(inZoneSwings, inZoneLocatedPitches.length),
     kPct: pct(strikeoutCount, closedPas.length),
     bbPct: pct(walkCount, closedPas.length),
+    babip,
+    iso,
     zoneFrequency,
     vsFastball: computePitchGroup(pitches, FASTBALL_TYPES),
     vsBreaking: computePitchGroup(pitches, BREAKING_TYPES),
@@ -515,20 +574,20 @@ export async function aggregateHitterStats(
   const pas = mapPlateAppearanceRows(
     filteredGameIds === null
       ? await db
-          .select()
-          .from(chartingPlateAppearances)
-          .orderBy(
-            asc(chartingPlateAppearances.gameId),
-            asc(chartingPlateAppearances.paOrder)
-          )
+        .select()
+        .from(chartingPlateAppearances)
+        .orderBy(
+          asc(chartingPlateAppearances.gameId),
+          asc(chartingPlateAppearances.paOrder)
+        )
       : await db
-          .select()
-          .from(chartingPlateAppearances)
-          .where(inArray(chartingPlateAppearances.gameId, filteredGameIds))
-          .orderBy(
-            asc(chartingPlateAppearances.gameId),
-            asc(chartingPlateAppearances.paOrder)
-          )
+        .select()
+        .from(chartingPlateAppearances)
+        .where(inArray(chartingPlateAppearances.gameId, filteredGameIds))
+        .orderBy(
+          asc(chartingPlateAppearances.gameId),
+          asc(chartingPlateAppearances.paOrder)
+        )
   ).filter((pa) => pa.hitterName === hitterName);
 
   if (pas.length === 0) {

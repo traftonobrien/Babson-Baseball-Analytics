@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import {
+    BarChart3,
     ChevronRight,
     ClipboardList,
     Plus,
@@ -34,14 +35,24 @@ export default async function ChartingHubPage() {
             <LeaderboardIntro
                 breadcrumbs={[{ label: "Home", href: "/" }, { label: "Charting" }]}
                 actions={
-                    <Link
-                        href="/charting/new"
-                        className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-200 transition-colors hover:border-emerald-400/35 hover:bg-emerald-500/15"
-                        aria-label="New Game"
-                    >
-                        <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
-                        New Game
-                    </Link>
+                    <div className="flex items-center gap-3">
+                        <Link
+                            href="/charting/leaderboard"
+                            className="inline-flex items-center gap-2 rounded-full border border-sky-500/25 bg-sky-500/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-200 transition-colors hover:border-sky-400/35 hover:bg-sky-500/15"
+                            aria-label="Leaderboards"
+                        >
+                            <BarChart3 className="h-3.5 w-3.5" strokeWidth={2.5} />
+                            Leaderboards
+                        </Link>
+                        <Link
+                            href="/charting/new"
+                            className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-200 transition-colors hover:border-emerald-400/35 hover:bg-emerald-500/15"
+                            aria-label="New Game"
+                        >
+                            <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+                            New Game
+                        </Link>
+                    </div>
                 }
             >
                 <section>
@@ -67,55 +78,51 @@ export default async function ChartingHubPage() {
             ) : (
                 <LeaderboardPanel className="mt-6 overflow-hidden p-0">
                     <ul className="divide-y divide-white/5">
-                            {games.map((game) => (
-                                <li key={game.id} className="group relative">
-                                    <div className="flex items-center justify-between p-4 transition-colors hover:bg-zinc-800/60">
-                                        <Link
-                                            href={`/charting/games/${game.id}`}
-                                            className="absolute inset-0 z-10"
-                                            aria-label={`View data for game against ${game.opponent}`}
-                                        />
+                        {games.map((game) => (
+                            <li key={game.id} className="group relative">
+                                <div className="flex items-center justify-between p-4 transition-colors hover:bg-zinc-800/60">
+                                    <Link
+                                        href={`/charting/games/${game.id}`}
+                                        className="absolute inset-0 z-10"
+                                        aria-label={`View data for game against ${game.opponent}`}
+                                    />
 
-                                        <div className="flex items-center gap-3 pr-4">
-                                            <StatusBadge status={game.status} />
-                                            <div className="flex flex-col gap-1">
-                                                <h3 className="text-[17px] font-semibold">
-                                                    <EditableChartingGameNameInList
-                                                        gameId={game.id}
-                                                        initialOpponent={game.opponent}
-                                                        revision={game.revision}
-                                                    />
-                                                </h3>
-                                                <div className="flex items-center gap-2 text-[15px] text-zinc-500">
-                                                    <span>
-                                                        {format(parseISO(game.gameDate), "MMM d, yyyy")}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-3 z-20">
-                                            <div className="flex items-center gap-2">
-                                                <Link
-                                                    href={`/charting/games/${game.id}`}
-                                                    className="inline-flex items-center rounded-full border border-zinc-600/50 bg-zinc-800/60 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-300 transition-colors hover:border-zinc-500/60 hover:bg-zinc-700/70 hover:text-white"
-                                                >
-                                                    Overview
-                                                </Link>
-                                                <Link
-                                                    href={`/charting/games/${game.id}/edit`}
-                                                    className="inline-flex items-center rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-200 transition-colors hover:border-emerald-400/35 hover:bg-emerald-500/15"
-                                                >
-                                                    Edit
-                                                </Link>
-                                            </div>
-
-                                            <ChevronRight className="h-5 w-5 text-zinc-600 ml-1" />
+                                    <div className="flex items-center gap-3 pr-4">
+                                        <StatusBadge status={game.status} />
+                                        <div className="flex flex-col gap-1">
+                                            <h3 className="text-[17px] font-semibold">
+                                                <EditableChartingGameNameInList
+                                                    gameId={game.id}
+                                                    initialOpponent={game.opponent}
+                                                    initialGameDate={game.gameDate}
+                                                    revision={game.revision}
+                                                />
+                                            </h3>
                                         </div>
                                     </div>
-                                </li>
-                            ))}
-                        </ul>
+
+                                    <div className="flex items-center gap-3 z-20">
+                                        <div className="flex items-center gap-2">
+                                            <Link
+                                                href={`/charting/games/${game.id}`}
+                                                className="inline-flex items-center rounded-full border border-zinc-600/50 bg-zinc-800/60 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-300 transition-colors hover:border-zinc-500/60 hover:bg-zinc-700/70 hover:text-white"
+                                            >
+                                                Overview
+                                            </Link>
+                                            <Link
+                                                href={`/charting/games/${game.id}/edit`}
+                                                className="inline-flex items-center rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-200 transition-colors hover:border-emerald-400/35 hover:bg-emerald-500/15"
+                                            >
+                                                Edit
+                                            </Link>
+                                        </div>
+
+                                        <ChevronRight className="h-5 w-5 text-zinc-600 ml-1" />
+                                    </div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
                 </LeaderboardPanel>
             )}
         </LeaderboardPageFrame>

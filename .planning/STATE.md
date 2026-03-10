@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Live AB Analytics
-current_phase: 12
-current_phase_name: live ab leaderboard
+current_phase: 13
+current_phase_name: per-player drill-down
 current_plan: Not started
 status: ready_to_plan
-stopped_at: Phase 11 Session Overview Enhancements completed and verified. Phase 12 leaderboard work is next while Phase 9 TestFlight work remains independently pending.
-last_updated: "2026-03-10T03:10:00.000Z"
-last_activity: 2026-03-10
+stopped_at: Phase 12 Live AB Leaderboard completed and verified. Phase 13 per-player drill-down is next.
+last_updated: "2026-03-09T23:50:00.000Z"
+last_activity: 2026-03-09
 progress:
   total_phases: 13
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 39
   completed_plans: 31
   percent: 79
@@ -28,15 +28,15 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 
 ## Current Position
 
-**Current Phase:** 12
-**Current Phase Name:** live ab leaderboard
+**Current Phase:** 13
+**Current Phase Name:** per-player drill-down
 **Total Phases:** 13
 **Current Plan:** Not started
-**Total Plans in Phase:** 3
+**Total Plans in Phase:** 2
 **Status:** Ready to plan
-**Last Activity:** 2026-03-10
-**Last Activity Description:** Phase 11 complete and verified with per-pitcher and per-hitter breakdown cards, reusable zone heat maps, and a clean web build
-**Progress:** 79%
+**Last Activity:** 2026-03-09
+**Last Activity Description:** Phase 12 complete and verified with pitcher and hitter global leaderboard tables
+**Progress:** 85%
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | 8. Charting Engine Hardening | 3 | - | - |
 | 10. Analytics Foundation | 4 | - | - |
 | 11. Session Overview Enhancements | 3 | - | - |
+| 12. Live AB Leaderboard | 3 | - | - |
 
 **Recent Trend:**
 - Last 5 plans: 10-02, 10-03, 11-01, 11-02, 11-03
@@ -81,8 +82,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 
 ## Pending Todos
 
-- Plan Phase 12 around `/charting/leaderboard` tabs, sortable tables, and date/session filters
-- Decide how the charting leaderboard should link into the existing `/charting/games/[id]` review surface and upcoming player drill-down pages
+- Plan Phase 13 around per-player drill-downs (`/charting/leaderboard/pitcher/[playerId]` and `/charting/leaderboard/hitter/[name]`)
 - Return to Phase 9 to finish TestFlight packaging, pilot diagnostics, and operator runbook coverage
 
 ## Blockers
@@ -91,6 +91,6 @@ None.
 
 ## Session
 
-**Last Date:** 2026-03-10 03:10
-**Stopped At:** Phase 11 complete and verified; the session overview page now shows pitcher and hitter breakdown sections backed by the shared analytics engine
+**Last Date:** 2026-03-09 23:50
+**Stopped At:** Phase 12 complete and verified; the leaderboard page now allows cross-session aggregations with tabs and filters
 **Resume File:** None
