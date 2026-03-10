@@ -1,19 +1,38 @@
 "use client";
-import { useState } from "react";
-import { HitterLeaderboardTable, type HitterLeaderboardRow, type StatGroup } from "./HitterLeaderboardTable";
+import { useEffect, useState } from "react";
+import { HitterLeaderboardTable, type HitterLeaderboardRow } from "./HitterLeaderboardTable";
 import { LeaderboardClientState } from "./LeaderboardClientState";
+import { LeaderboardPanel } from "@/app/components/leaderboards/LeaderboardChrome";
+import type { StatGroup } from "./types";
 
 interface HitsProps {
     hitters: HitterLeaderboardRow[];
     searchQuery: string;
+    initialStatGroup: StatGroup;
     tab: string;
     range: string;
     session: string;
     games: any;
+    scopeLabel: string;
+    scopeGameCount: number;
 }
 
-export function HitterStatGroupWrapper({ hitters, searchQuery, tab, range, session, games }: HitsProps) {
-    const [statGroup, setStatGroup] = useState<StatGroup>("basic");
+export function HitterStatGroupWrapper({
+    hitters,
+    searchQuery,
+    initialStatGroup,
+    tab,
+    range,
+    session,
+    games,
+    scopeLabel,
+    scopeGameCount,
+}: HitsProps) {
+    const [statGroup, setStatGroup] = useState<StatGroup>(initialStatGroup);
+
+    useEffect(() => {
+        setStatGroup(initialStatGroup);
+    }, [initialStatGroup]);
 
     return (
         <>
@@ -24,16 +43,21 @@ export function HitterStatGroupWrapper({ hitters, searchQuery, tab, range, sessi
                 searchQuery={searchQuery}
                 games={games}
                 statGroup={statGroup}
-                setStatGroup={setStatGroup}
+                onStatGroupChange={setStatGroup}
+                rowCount={hitters.length}
+                scopeLabel={scopeLabel}
+                scopeGameCount={scopeGameCount}
             />
 
-            <div className="mt-6 rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-6 shadow-xl">
-                <HitterLeaderboardTable
-                    hitters={hitters}
-                    searchQuery={searchQuery}
-                    statGroup={statGroup}
-                />
-            </div>
+            <LeaderboardPanel className="mt-6 overflow-hidden">
+                <div className="max-h-[70vh] overflow-auto">
+                    <HitterLeaderboardTable
+                        hitters={hitters}
+                        searchQuery={searchQuery}
+                        statGroup={statGroup}
+                    />
+                </div>
+            </LeaderboardPanel>
         </>
     );
 }

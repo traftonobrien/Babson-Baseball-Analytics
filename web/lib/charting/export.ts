@@ -1,8 +1,9 @@
 import type { ChartingGame, ChartingGameSnapshot, ChartingPitch } from "./types";
 import { PLAYER_ID_BY_ALIAS } from "../canonicalPlayersData";
+import { resolvePlateAppearanceInitialCount } from "./live";
 
 /**
- * Simplified charting CSV — 13 essential pitch-level columns.
+ * Simplified charting CSV — 14 essential pitch-level columns.
  * Game-level metadata (date, opponent, etc.) lives in the filename, not every row.
  */
 export const CHARTING_EXPORT_COLUMNS = [
@@ -19,6 +20,7 @@ export const CHARTING_EXPORT_COLUMNS = [
   "location",
   "velocity",
   "pa_result",
+  "initial_count",
 ] as const;
 
 type ChartingExportColumn = (typeof CHARTING_EXPORT_COLUMNS)[number];
@@ -72,9 +74,10 @@ export function buildChartingExportRows(
   return orderedEntries.map(({ pitch, pitchNumberInPa }) => {
     const pa = paById.get(pitch.paId) ?? null;
     const segment = pa ? segmentById.get(pa.segmentId) ?? null : null;
+    const paPitches = pa ? pitchesByPaId.get(pa.id) ?? [] : [];
     const isLastPitchInPA =
       pa && pitchNumberInPa != null
-        ? pitchNumberInPa === (pitchesByPaId.get(pa.id) ?? []).length
+        ? pitchNumberInPa === paPitches.length
         : false;
 
     return {
@@ -91,6 +94,7 @@ export function buildChartingExportRows(
       location: pitch.locationCell,
       velocity: pitch.velocity,
       pa_result: isLastPitchInPA && pa?.resultCode ? pa.resultCode : null,
+      initial_count: pa ? resolvePlateAppearanceInitialCount(pa, paPitches) : null,
     };
   });
 }

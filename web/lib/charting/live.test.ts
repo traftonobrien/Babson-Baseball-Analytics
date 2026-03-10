@@ -83,6 +83,27 @@ describe("derivePAPitchProgress", () => {
     expect(progress.strikes).toBe(3);
     expect(progress.closureState).toBe("strikeout");
   });
+
+  it("treats a two-strike bunt foul as strike three", () => {
+    const progress = derivePAPitchProgress([
+      {
+        id: "pitch-1",
+        gameId: "game-1",
+        paId: "pa-1",
+        pitchOrder: 0,
+        pitchType: "Fastball",
+        locationCell: 5,
+        pitchResult: "bunt_foul",
+        ballsBefore: 0,
+        strikesBefore: 2,
+        velocity: null,
+      },
+    ]);
+
+    expect(progress.strikes).toBe(3);
+    expect(progress.closureState).toBe("strikeout");
+    expect(progress.lastPitchResult).toBe("bunt_foul");
+  });
 });
 
 describe("snapshot mutations", () => {
@@ -110,6 +131,7 @@ describe("snapshot mutations", () => {
 
     expect(snapshot.segments).toHaveLength(1);
     expect(snapshot.plateAppearances).toHaveLength(1);
+    expect(snapshot.plateAppearances[0]?.initialCount).toBe("0-0");
     expect(snapshot.pitches).toHaveLength(1);
     expect(snapshot.lineup[0]?.hitterName).toBe("Wyatt Miller");
   });
@@ -183,6 +205,88 @@ describe("snapshot mutations", () => {
     expect(state.inning).toBe(4);
     expect(state.isTopInning).toBe(false);
     expect(state.outs).toBe(2);
+  });
+
+  it("surfaces a seeded count before the first pitch of a new PA", () => {
+    const state = deriveChartingLiveState([], [], [], null, {
+      nextPASeed: {
+        balls: 2,
+        strikes: 1,
+      },
+    });
+
+    expect(state.balls).toBe(2);
+    expect(state.strikes).toBe(1);
+    expect(state.openPAId).toBeNull();
+  });
+
+  it("records the first pitch from a 2-1 starting state", () => {
+    const snapshot = recordPitchInSnapshot(
+      baseSnapshot,
+      {
+        pitchType: "Fastball",
+        pitchResult: "ball",
+        locationCell: 12,
+        velocity: null,
+        pitcher: { playerId: "DJames1", name: "D. James" },
+        hitterName: "Lead Off",
+        lineupSlot: 1,
+      },
+      null,
+      {
+        nextPASeed: {
+          balls: 2,
+          strikes: 1,
+        },
+      }
+    );
+
+    expect(snapshot.pitches[0]?.ballsBefore).toBe(2);
+    expect(snapshot.pitches[0]?.strikesBefore).toBe(1);
+    expect(snapshot.plateAppearances[0]?.initialCount).toBe("2-1");
+
+    const liveState = deriveChartingLiveState(
+      snapshot.segments,
+      snapshot.plateAppearances,
+      snapshot.pitches
+    );
+    expect(liveState.balls).toBe(3);
+    expect(liveState.strikes).toBe(1);
+  });
+
+  it("normalizes bunt-mode fouls and marks the plate appearance as a bunt rep", () => {
+    const snapshot = recordPitchInSnapshot(
+      baseSnapshot,
+      {
+        pitchType: "Fastball",
+        pitchResult: "foul",
+        locationCell: 5,
+        velocity: null,
+        pitcher: { playerId: "DJames1", name: "D. James" },
+        hitterName: "Lead Off",
+        lineupSlot: 1,
+      },
+      null,
+      {
+        nextPASeed: {
+          balls: 0,
+          strikes: 0,
+          buntMode: true,
+        },
+      }
+    );
+
+    expect(snapshot.pitches[0]?.pitchResult).toBe("bunt_foul");
+    expect(snapshot.plateAppearances[0]?.buntContext).toBe(true);
+    expect(snapshot.plateAppearances[0]?.initialCount).toBe("Bunt");
+
+    const liveState = deriveChartingLiveState(
+      snapshot.segments,
+      snapshot.plateAppearances,
+      snapshot.pitches
+    );
+    expect(liveState.strikes).toBe(1);
+    expect(liveState.closureState).toBe("none");
   });
 
   it("undoes a closed plate appearance before removing pitches", () => {

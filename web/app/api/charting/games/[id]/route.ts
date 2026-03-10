@@ -10,6 +10,10 @@ import {
 } from "@/db/schema";
 import { isValidGameStatus } from "@/lib/charting/domain";
 import {
+  isMissingInitialCountColumnError,
+  legacyChartingPlateAppearances,
+} from "@/lib/charting/plateAppearanceStorage";
+import {
   isMissingVelocityColumnError,
   legacyChartingPitches,
 } from "@/lib/charting/pitchStorage";
@@ -200,19 +204,44 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
         .where(eq(chartingPlateAppearances.gameId, id));
 
       if (pasPayload.length > 0) {
-        await db.insert(chartingPlateAppearances).values(
-          pasPayload.map((pa) => ({
-            id: pa.id,
-            gameId: id,
-            segmentId: pa.segmentId,
-            paOrder: pa.paOrder,
-            inning: pa.inning,
-            hitterName: pa.hitterName,
-            lineupSlot: pa.lineupSlot,
-            resultCode: pa.resultCode ?? null,
-            buntContext: pa.buntContext ?? false,
-          }))
-        );
+        const plateAppearanceValues = pasPayload.map((pa) => ({
+          id: pa.id,
+          gameId: id,
+          segmentId: pa.segmentId,
+          paOrder: pa.paOrder,
+          inning: pa.inning,
+          hitterName: pa.hitterName,
+          lineupSlot: pa.lineupSlot,
+          resultCode: pa.resultCode ?? null,
+          initialCount: pa.initialCount ?? "0-0",
+          buntContext: pa.buntContext ?? false,
+        }));
+
+        try {
+          await db.insert(chartingPlateAppearances).values(plateAppearanceValues);
+        } catch (error) {
+          if (!isMissingInitialCountColumnError(error)) {
+            throw error;
+          }
+
+          warnings.push(
+            "Initial count could not be persisted because the charting_plate_appearances table is missing the initial_count column. Run migration 0004_charting_pa_initial_count before relying on PA start state in CSV exports."
+          );
+
+          await db.insert(legacyChartingPlateAppearances).values(
+            plateAppearanceValues.map((plateAppearance) => ({
+              id: plateAppearance.id,
+              gameId: plateAppearance.gameId,
+              segmentId: plateAppearance.segmentId,
+              paOrder: plateAppearance.paOrder,
+              inning: plateAppearance.inning,
+              hitterName: plateAppearance.hitterName,
+              lineupSlot: plateAppearance.lineupSlot,
+              resultCode: plateAppearance.resultCode,
+              buntContext: plateAppearance.buntContext,
+            }))
+          );
+        }
       }
 
       await db

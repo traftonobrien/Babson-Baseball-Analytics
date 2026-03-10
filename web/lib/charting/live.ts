@@ -1,6 +1,7 @@
 import { nextSegmentOrder } from "./domain";
 import type {
   ChartingGameSnapshot,
+  ChartingInitialCount,
   ChartingLineupEntry,
   ChartingPitch,
   ChartingPitcherSegment,
@@ -95,6 +96,63 @@ export interface GameStateOverride {
   isTopInning: boolean;
   outs: number;
   anchorPAOrder: number;
+}
+
+export interface NextPASeed {
+  balls: number;
+  strikes: number;
+  buntMode?: boolean;
+}
+
+export interface LiveStateOptions {
+  nextPASeed?: NextPASeed | null;
+}
+
+export function initialCountFromSeed(seed?: NextPASeed | null): ChartingInitialCount {
+  if (seed?.buntMode) {
+    return "Bunt";
+  }
+  if (seed?.balls === 2 && seed?.strikes === 1) {
+    return "2-1";
+  }
+  return "0-0";
+}
+
+export function nextPASeedFromInitialCount(
+  initialCount?: ChartingInitialCount | null
+): NextPASeed {
+  switch (initialCount) {
+    case "2-1":
+      return { balls: 2, strikes: 1, buntMode: false };
+    case "Bunt":
+      return { balls: 0, strikes: 0, buntMode: true };
+    case "0-0":
+    default:
+      return { balls: 0, strikes: 0, buntMode: false };
+  }
+}
+
+export function inferInitialCountFromPitches(
+  pitches: ChartingPitch[],
+  buntContext = false
+): ChartingInitialCount {
+  if (buntContext) {
+    return "Bunt";
+  }
+
+  const firstPitch = sortByPitchOrder(pitches)[0];
+  if (firstPitch?.ballsBefore === 2 && firstPitch.strikesBefore === 1) {
+    return "2-1";
+  }
+
+  return "0-0";
+}
+
+export function resolvePlateAppearanceInitialCount(
+  plateAppearance: Pick<ChartingPlateAppearance, "initialCount" | "buntContext">,
+  pitches: ChartingPitch[]
+): ChartingInitialCount {
+  return plateAppearance.initialCount ?? inferInitialCountFromPitches(pitches, plateAppearance.buntContext);
 }
 
 export interface RecordPitchInput {
@@ -287,7 +345,8 @@ export function deriveChartingLiveState(
   segments: ChartingPitcherSegment[],
   plateAppearances: ChartingPlateAppearance[],
   pitches: ChartingPitch[],
-  gameStateOverride?: GameStateOverride | null
+  gameStateOverride?: GameStateOverride | null,
+  options?: LiveStateOptions
 ): ChartingLiveState {
   const orderedSegments = [...segments].sort((lhs, rhs) => {
     if (lhs.segmentOrder === rhs.segmentOrder) {
@@ -332,7 +391,14 @@ export function deriveChartingLiveState(
 
     const paPitches = pitchesByPA.get(pa.id) ?? [];
     if (!pa.resultCode) {
-      const progress = derivePAPitchProgress(paPitches);
+      const initialSeed = nextPASeedFromInitialCount(
+        resolvePlateAppearanceInitialCount(pa, paPitches)
+      );
+      const progress = derivePAPitchProgress(
+        paPitches,
+        initialSeed.balls,
+        initialSeed.strikes
+      );
       state.balls = progress.balls;
       state.strikes = progress.strikes;
       state.batterSlot = pa.lineupSlot;
@@ -368,6 +434,11 @@ export function deriveChartingLiveState(
       state.inning > lastPA.inning;
   }
 
+  if (!state.openPAId && options?.nextPASeed) {
+    state.balls = clamp(options.nextPASeed.balls, 0, 3);
+    state.strikes = clamp(options.nextPASeed.strikes, 0, 2);
+  }
+
   return state;
 }
 
@@ -391,13 +462,15 @@ export function createGameStateOverride(
 export function recordPitchInSnapshot(
   snapshot: ChartingGameSnapshot,
   input: RecordPitchInput,
-  gameStateOverride?: GameStateOverride | null
+  gameStateOverride?: GameStateOverride | null,
+  options?: LiveStateOptions
 ): ChartingGameSnapshot {
   const liveState = deriveChartingLiveState(
     snapshot.segments,
     snapshot.plateAppearances,
     snapshot.pitches,
-    gameStateOverride
+    gameStateOverride,
+    options
   );
 
   if (liveState.closureState !== "none") {
@@ -437,6 +510,12 @@ export function recordPitchInSnapshot(
   }
 
   let openPA = nextSnapshot.plateAppearances.find((pa) => pa.id === liveState.openPAId) ?? null;
+  const shouldSeedBuntMode = !openPA && Boolean(options?.nextPASeed?.buntMode);
+  const normalizedPitchResult = normalizePitchResultForBunt(
+    input.pitchResult,
+    shouldSeedBuntMode || openPA?.buntContext === true
+  );
+
   if (!openPA) {
     openPA = {
       id: crypto.randomUUID(),
@@ -447,13 +526,16 @@ export function recordPitchInSnapshot(
       hitterName: input.hitterName.trim(),
       lineupSlot: clamp(input.lineupSlot, 1, 9),
       resultCode: null,
-      buntContext: false,
+      initialCount: initialCountFromSeed(options?.nextPASeed),
+      buntContext: shouldSeedBuntMode || normalizedPitchResult === "bunt_foul",
     };
     nextSnapshot.plateAppearances.push(openPA);
   } else {
+    const existingPitches = nextSnapshot.pitches.filter((pitch) => pitch.paId === openPA?.id);
     openPA.hitterName = input.hitterName.trim();
     openPA.lineupSlot = clamp(input.lineupSlot, 1, 9);
-    openPA.buntContext = openPA.buntContext || false;
+    openPA.initialCount = resolvePlateAppearanceInitialCount(openPA, existingPitches);
+    openPA.buntContext = openPA.buntContext || normalizedPitchResult === "bunt_foul";
   }
 
   nextSnapshot.pitches.push({
@@ -462,8 +544,8 @@ export function recordPitchInSnapshot(
     paId: openPA.id,
     pitchOrder: nextPitchOrder(nextSnapshot.pitches),
     pitchType: input.pitchType,
-    locationCell: input.pitchResult === "hit_by_pitch" ? null : input.locationCell,
-    pitchResult: input.pitchResult,
+    locationCell: normalizedPitchResult === "hit_by_pitch" ? null : input.locationCell,
+    pitchResult: normalizedPitchResult,
     ballsBefore: liveState.balls,
     strikesBefore: liveState.strikes,
     velocity: input.velocity ?? null,
@@ -723,6 +805,14 @@ function applyPitchResult(progress: PAPitchProgress, result: PitchResult) {
         progress.strikes += 1;
       }
       break;
+    case "bunt_foul":
+      if (progress.strikes >= 2) {
+        progress.strikes = 3;
+        progress.closureState = "strikeout";
+      } else {
+        progress.strikes += 1;
+      }
+      break;
     case "in_play":
       progress.closureState = "in_play";
       break;
@@ -730,6 +820,13 @@ function applyPitchResult(progress: PAPitchProgress, result: PitchResult) {
       progress.closureState = "hit_by_pitch";
       break;
   }
+}
+
+function normalizePitchResultForBunt(result: PitchResult, buntMode: boolean): PitchResult {
+  if (buntMode && result === "foul") {
+    return "bunt_foul";
+  }
+  return result;
 }
 
 function cloneSnapshot(snapshot: ChartingGameSnapshot): ChartingGameSnapshot {

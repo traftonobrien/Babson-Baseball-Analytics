@@ -45,9 +45,11 @@ import {
   HIT_OPTIONS,
   LINE_OUT_OPTIONS,
   lineupNameForSlot,
+  nextPASeedFromInitialCount,
   paResultOutsRecorded,
   POP_OUT_OPTIONS,
   recordPitchInSnapshot,
+  resolvePlateAppearanceInitialCount,
   syncHitterToSnapshot,
   undoSnapshotAction,
   UNASSISTED_OUT_OPTIONS,
@@ -72,6 +74,7 @@ import type {
 } from "@/lib/charting/types";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
+type LiveABCountPreset = "0-0" | "2-1" | "bunt";
 
 type RecentPitchRow = {
   id: string;
@@ -88,6 +91,16 @@ type RecentPitchRow = {
 
 const INNING_OPTIONS = Array.from({ length: 20 }, (_, index) => index + 1);
 const OUT_OPTIONS = [0, 1, 2] as const;
+const BUNT_MODE_PITCH_RESULTS: readonly PitchResult[] = ["ball", "foul", "in_play"];
+const COUNT_PRESET_OPTIONS: {
+  value: LiveABCountPreset;
+  label: string;
+  detail: string;
+}[] = [
+  { value: "0-0", label: "0-0", detail: "Fresh count" },
+  { value: "2-1", label: "2-1", detail: "Start ahead in the rep" },
+  { value: "bunt", label: "Bunt", detail: "Bunt-only actions" },
+];
 
 const OUT_TYPE_LABELS: Record<string, string> = {
   ground: "ground out",
@@ -128,6 +141,7 @@ export function ChartingEditor({
   const [selectedPitchType, setSelectedPitchType] = useState<PitchType | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<number | null>(null);
   const [selectedPitchResult, setSelectedPitchResult] = useState<PitchResult | null>(null);
+  const [countPreset, setCountPreset] = useState<LiveABCountPreset>("0-0");
   const [pendingVelocity, setPendingVelocity] = useState("");
   const [hitterName, setHitterName] = useState(initialMatchup.hitterName);
   const [showHistory, setShowHistory] = useState(false);
@@ -149,14 +163,31 @@ export function ChartingEditor({
   const saveEpochRef = useRef(0);
   const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
 
+  const selectedPresetSeed = nextPASeedFromInitialCount(
+    countPreset === "bunt" ? "Bunt" : countPreset
+  );
   const liveState = deriveChartingLiveState(
     snapshot.segments,
     snapshot.plateAppearances,
     snapshot.pitches,
-    gameStateOverride
+    gameStateOverride,
+    {
+      nextPASeed: selectedPresetSeed,
+    }
   );
   const openPlateAppearance =
     snapshot.plateAppearances.find((pa) => pa.id === liveState.openPAId) ?? null;
+  const activeCountPreset = openPlateAppearance
+    ? deriveEditorCountPresetFromPA(snapshot, openPlateAppearance.id)
+    : countPreset;
+  const effectiveBuntMode =
+    openPlateAppearance
+      ? activeCountPreset === "bunt"
+      : Boolean(selectedPresetSeed.buntMode);
+  const availablePitchResults: readonly PitchResult[] = effectiveBuntMode
+    ? BUNT_MODE_PITCH_RESULTS
+    : GAME_PITCH_RESULTS;
+  const canEditCountPreset = liveState.openPAId === null;
   const needsPAClosure =
     liveState.openPAId !== null && liveState.closureState !== "none";
   const closeoutGroups = closeoutResultGroups(
@@ -171,6 +202,12 @@ export function ChartingEditor({
       setInPlayOutType(null);
     }
   }, [needsPAClosure, liveState.closureState]);
+
+  useEffect(() => {
+    if (selectedPitchResult && !availablePitchResults.includes(selectedPitchResult)) {
+      setSelectedPitchResult(null);
+    }
+  }, [availablePitchResults, selectedPitchResult]);
 
   useEffect(() => () => {
     if (pitchRecordedFlashRef.current) clearTimeout(pitchRecordedFlashRef.current);
@@ -448,6 +485,7 @@ export function ChartingEditor({
       return;
     }
 
+    const isStartingNewPA = liveState.openPAId === null;
     const nextSnapshot = recordPitchInSnapshot(
       snapshot,
       {
@@ -462,7 +500,10 @@ export function ChartingEditor({
         hitterName: hitterName.trim(),
         lineupSlot: 1, // Defaulting to 1 for Live ABs where lineup order doesn't matter
       },
-      gameStateOverride
+      gameStateOverride,
+      {
+        nextPASeed: selectedPresetSeed,
+      }
     );
 
     if (nextSnapshot === snapshot) {
@@ -475,6 +516,9 @@ export function ChartingEditor({
     }
 
     clearPitchDraft();
+    if (isStartingNewPA) {
+      setCountPreset("0-0");
+    }
     applyOptimisticSnapshot(nextSnapshot, gameStateOverride, "Pitch saved");
 
     if (pitchRecordedFlashRef.current) clearTimeout(pitchRecordedFlashRef.current);
@@ -511,7 +555,11 @@ export function ChartingEditor({
       return;
     }
 
+    const restoredCountPreset = deriveCountPresetForUndo(snapshot, nextSnapshot);
     clearPitchDraft();
+    if (restoredCountPreset) {
+      setCountPreset(restoredCountPreset);
+    }
     applyOptimisticSnapshot(nextSnapshot, gameStateOverride, "Last action undone");
   };
 
@@ -726,26 +774,58 @@ export function ChartingEditor({
 
               {/* Section 3: Pitch Count & Live Count - single row */}
               <div className="flex flex-[2] min-w-0 flex-col justify-center rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-2 px-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
-                <div className="flex items-center gap-2">
-                  <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500 shrink-0">Pitch Count</div>
-                  {needsPAClosure && (
-                    <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 font-bold tracking-widest text-amber-500 text-[10px] shrink-0">CLOSE PA</span>
-                  )}
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="flex items-center gap-1.5 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-2 py-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
-                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[rgb(212,220,218)]">Total</span>
-                      <span className="text-sm font-black text-white">{activePitcherPitchCount}</span>
-                    </span>
-                    <span className="flex items-center gap-1.5 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-2 py-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
-                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[rgb(212,220,218)]">Inning</span>
-                      <span className="text-sm font-black text-white">{inningPitches}</span>
-                    </span>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500 shrink-0">Pitch Count</div>
+                    {needsPAClosure && (
+                      <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 font-bold tracking-widest text-amber-500 text-[10px] shrink-0">CLOSE PA</span>
+                    )}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="flex items-center gap-1.5 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-2 py-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
+                        <span className="text-[9px] font-semibold uppercase tracking-wider text-[rgb(212,220,218)]">Total</span>
+                        <span className="text-sm font-black text-white">{activePitcherPitchCount}</span>
+                      </span>
+                      <span className="flex items-center gap-1.5 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-2 py-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
+                        <span className="text-[9px] font-semibold uppercase tracking-wider text-[rgb(212,220,218)]">Inning</span>
+                        <span className="text-sm font-black text-white">{inningPitches}</span>
+                      </span>
+                    </div>
+                    <div className="flex flex-1 min-w-0 items-center justify-between gap-2 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
+                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[rgb(212,220,218)] shrink-0">Live Count</span>
+                      <span className="text-2xl font-black tracking-[0.35em] text-[var(--babson-green)] leading-none tabular-nums shrink-0">
+                        {liveState.balls}-{liveState.strikes}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-1 min-w-0 items-center justify-between gap-2 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
-                    <span className="text-[9px] font-semibold uppercase tracking-wider text-[rgb(212,220,218)] shrink-0">Live Count</span>
-                    <span className="text-2xl font-black tracking-[0.35em] text-[var(--babson-green)] leading-none tabular-nums shrink-0">
-                      {liveState.balls}-{liveState.strikes}
-                    </span>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500 shrink-0">Start State</span>
+                      <div className="inline-flex flex-wrap items-center gap-1 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
+                        {COUNT_PRESET_OPTIONS.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            disabled={!canEditCountPreset}
+                            onClick={() => setCountPreset(option.value)}
+                            className={countPresetButtonClass(option.value === activeCountPreset, !canEditCountPreset)}
+                            aria-pressed={option.value === activeCountPreset}
+                            title={option.detail}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                      {effectiveBuntMode && (
+                        <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-emerald-300">
+                          Bunt Active
+                        </span>
+                      )}
+                      <span>
+                        {COUNT_PRESET_OPTIONS.find((option) => option.value === activeCountPreset)?.detail}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -818,10 +898,10 @@ export function ChartingEditor({
                 <SurfacePanel className="p-3 flex flex-col flex-1 h-0 min-h-0">
                   <SectionHeading eyebrow="Action" title="Pitch Result" body="" />
                   <div className="mt-2 flex-1 min-h-0 grid auto-rows-min grid-cols-3 gap-2 overflow-y-auto pr-1">
-                    {GAME_PITCH_RESULTS.map((result) => (
+                    {availablePitchResults.map((result) => (
                       <SelectionButton
                         key={result}
-                        title={pitchResultLabel(result)}
+                        title={pitchResultLabel(result, effectiveBuntMode)}
                         subtitle=""
                         active={selectedPitchResult === result}
                         tone={pitchResultTone(result)}
@@ -1000,7 +1080,7 @@ export function ChartingEditor({
                 <div className="flex items-center gap-4">
                   <div className="flex h-12 items-center rounded-2xl border border-[rgba(var(--babson-grey-rgb),0.12)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-5 text-sm font-medium text-zinc-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
                     <span className="uppercase tracking-widest text-zinc-500 mr-3 text-[10px] font-bold">Pending</span>
-                    <span className="text-white">{buildPendingPitchSummary({ selectedPitchType: activePitchType, selectedLocation, selectedPitchResult, pendingVelocity })}</span>
+                    <span className="text-white">{buildPendingPitchSummary({ selectedPitchType: activePitchType, selectedLocation, selectedPitchResult, pendingVelocity, buntMode: effectiveBuntMode })}</span>
                   </div>
                   <input
                     value={pendingVelocity}
@@ -1529,6 +1609,70 @@ function buildRecentPAGroups(snapshot: ChartingGameSnapshot): RecentPAGroup[] {
     });
 }
 
+function deriveEditorCountPresetFromPA(
+  snapshot: ChartingGameSnapshot,
+  paId: string
+): LiveABCountPreset {
+  const plateAppearance =
+    snapshot.plateAppearances.find((entry) => entry.id === paId) ?? null;
+  if (!plateAppearance) {
+    return "0-0";
+  }
+
+  const initialCount = resolvePlateAppearanceInitialCount(
+    plateAppearance,
+    snapshot.pitches.filter((pitch) => pitch.paId === paId)
+  );
+
+  switch (initialCount) {
+    case "2-1":
+      return "2-1";
+    case "Bunt":
+      return "bunt";
+    case "0-0":
+    default:
+      return "0-0";
+  }
+}
+
+function deriveCountPresetForUndo(
+  previousSnapshot: ChartingGameSnapshot,
+  nextSnapshot: ChartingGameSnapshot
+): LiveABCountPreset | null {
+  const removedPAIds = new Set(previousSnapshot.plateAppearances.map((pa) => pa.id));
+  for (const pa of nextSnapshot.plateAppearances) {
+    removedPAIds.delete(pa.id);
+  }
+
+  const removedPAId = removedPAIds.values().next().value;
+  if (!removedPAId) {
+    return null;
+  }
+
+  const removedPA =
+    previousSnapshot.plateAppearances.find((pa) => pa.id === removedPAId) ?? null;
+  if (!removedPA || removedPA.resultCode) {
+    return null;
+  }
+
+  const removedPitches = previousSnapshot.pitches
+    .filter((pitch) => pitch.paId === removedPA.id)
+    .sort((left, right) => left.pitchOrder - right.pitchOrder);
+  if (removedPitches.length !== 1) {
+    return null;
+  }
+
+  switch (resolvePlateAppearanceInitialCount(removedPA, removedPitches)) {
+    case "2-1":
+      return "2-1";
+    case "Bunt":
+      return "bunt";
+    case "0-0":
+    default:
+      return "0-0";
+  }
+}
+
 function findDefaultPitcherId(
   snapshot: ChartingGameSnapshot,
   pitchers: ChartingBootstrapPitcher[]
@@ -1545,11 +1689,13 @@ function buildPendingPitchSummary({
   selectedLocation,
   selectedPitchResult,
   pendingVelocity,
+  buntMode,
 }: {
   selectedPitchType: PitchType | null;
   selectedLocation: number | null;
   selectedPitchResult: PitchResult | null;
   pendingVelocity: string;
+  buntMode: boolean;
 }) {
   const pieces = [
     selectedPitchType ?? "Pitch type",
@@ -1558,14 +1704,14 @@ function buildPendingPitchSummary({
       : selectedLocation
         ? `Cell ${selectedLocation}`
         : "Zone",
-    selectedPitchResult ? pitchResultLabel(selectedPitchResult) : "Action",
+    selectedPitchResult ? pitchResultLabel(selectedPitchResult, buntMode) : "Action",
   ];
 
   if (pendingVelocity) {
     pieces.push(`${pendingVelocity} mph`);
   }
 
-  return pieces.join(" • ");
+  return `${buntMode ? "Bunt • " : ""}${pieces.join(" • ")}`;
 }
 
 function detailTextForClosure(closureState: string) {
@@ -1635,7 +1781,7 @@ function pitchTypeDescription(type: PitchType) {
   }
 }
 
-function pitchResultLabel(result: PitchResult) {
+function pitchResultLabel(result: PitchResult, isBuntMode = false) {
   switch (result) {
     case "ball":
       return "Ball";
@@ -1644,17 +1790,17 @@ function pitchResultLabel(result: PitchResult) {
     case "swinging_strike":
       return "Swinging Strike";
     case "foul":
-      return "Foul";
+      return isBuntMode ? "Foul Bunt" : "Foul";
     case "bunt_foul":
-      return "Bunt Foul";
+      return isBuntMode ? "Foul Bunt" : "Bunt Foul";
     case "in_play":
-      return "In Play";
+      return isBuntMode ? "Fair Bunt" : "In Play";
     case "hit_by_pitch":
       return "HBP";
   }
 }
 
-function pitchResultDescription(result: PitchResult) {
+function pitchResultDescription(result: PitchResult, isBuntMode = false) {
   switch (result) {
     case "ball":
       return "Advances the count toward a walk.";
@@ -1663,11 +1809,11 @@ function pitchResultDescription(result: PitchResult) {
     case "swinging_strike":
       return "Swing and miss.";
     case "foul":
-      return "Foul ball, capped at two strikes.";
+      return isBuntMode ? "Foul bunt, strikeout on two strikes." : "Foul ball, capped at two strikes.";
     case "bunt_foul":
-      return "Bunt attempt foul, capped at two strikes.";
+      return "Bunt attempt foul, strikeout on two strikes.";
     case "in_play":
-      return "Triggers PA closeout selection.";
+      return isBuntMode ? "Triggers bunt-result closeout selection." : "Triggers PA closeout selection.";
     case "hit_by_pitch":
       return "No zone required for commit.";
   }
@@ -1733,6 +1879,16 @@ function selectionToneClass(tone: SelectionTone, active: boolean) {
   };
 
   return palette[tone];
+}
+
+function countPresetButtonClass(active: boolean, disabled: boolean) {
+  return [
+    "rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors",
+    active
+      ? "bg-[var(--babson-green)] text-white shadow-[0_10px_22px_rgba(var(--babson-green-rgb),0.2)]"
+      : "text-[rgb(212,220,218)] hover:bg-white/6",
+    disabled ? "cursor-not-allowed opacity-70 hover:bg-transparent" : "",
+  ].join(" ");
 }
 
 function metricToneClass(tone: "emerald" | "amber" | "sky" | "slate") {

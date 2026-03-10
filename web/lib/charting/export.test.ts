@@ -26,6 +26,7 @@ describe("buildChartingExportRows", () => {
       pitcher_id: "DJames1",
       pitcher: "D. James",
       hitter: "Smith",
+      initial_count: "0-0",
       pitch_type: "Fastball",
       pitch_result: "called_strike",
       count: "0-0",
@@ -71,6 +72,7 @@ describe("buildChartingExportCsv", () => {
     expect(parsed.data).toHaveLength(fixtureGameSnapshot.pitches.length);
     expect(parsed.data[0]?.pitcher_id).toBe("DJames1");
     expect(parsed.data[0]?.pitch_number).toBe("1");
+    expect(parsed.data[0]?.initial_count).toBe("0-0");
     expect(parsed.data[7]?.pitch_type).toBe("Split/Cut");
     expect(parsed.data[7]?.pa_result).toBe("");
   });

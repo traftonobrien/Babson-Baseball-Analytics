@@ -27,6 +27,7 @@ import {
     buildPitcherOverviewModels,
 } from "@/lib/charting/sessionOverview";
 import { loadChartingGameSnapshot } from "@/lib/charting/snapshot";
+import { resolvePlateAppearanceInitialCount } from "@/lib/charting/live";
 
 export const revalidate = 0; // Always fetch fresh data
 
@@ -74,6 +75,12 @@ export default async function ChartingGamePage({
         lineupEntries
     );
     const paById = new Map(plateAppearances.map((pa) => [pa.id, pa]));
+    const pitchesByPaId = new Map<string, typeof pitches>();
+    for (const pitch of pitches) {
+        const existing = pitchesByPaId.get(pitch.paId) ?? [];
+        existing.push(pitch);
+        pitchesByPaId.set(pitch.paId, existing);
+    }
     const exportHref = `/api/charting/games/${game.id}/export`;
     const exportFilename = buildChartingExportFilename(game);
     const pdfExportHref = `/api/charting/games/${game.id}/export-pdf`;
@@ -160,6 +167,7 @@ export default async function ChartingGamePage({
                                             <th className="px-5 py-3 font-medium">Seq</th>
                                             <th className="px-5 py-3 font-medium">Inning</th>
                                             <th className="px-5 py-3 font-medium">Batter</th>
+                                            <th className="px-5 py-3 font-medium">Start</th>
                                             <th className="px-5 py-3 font-medium">Count</th>
                                             <th className="px-5 py-3 font-medium">Pitch</th>
                                             <th className="px-5 py-3 font-medium">Result</th>
@@ -168,6 +176,8 @@ export default async function ChartingGamePage({
                                     <tbody className="divide-y divide-zinc-800/40">
                                         {pitches.map((pitch, idx) => {
                                             const pa = paById.get(pitch.paId);
+                                            const paPitches = pa ? pitchesByPaId.get(pa.id) ?? [] : [];
+                                            const isFirstInPA = idx === 0 || pitches[idx - 1].paId !== pitch.paId;
                                             const isLastInPA = idx === pitches.length - 1 || pitches[idx + 1].paId !== pitch.paId;
 
                                             return (
@@ -180,6 +190,11 @@ export default async function ChartingGamePage({
                                                     </td>
                                                     <td className="px-5 py-2.5 text-zinc-300 font-medium">
                                                         {pa?.hitterName ?? "Unknown"}
+                                                    </td>
+                                                    <td className="px-5 py-2.5 text-zinc-400 font-mono">
+                                                        {isFirstInPA && pa
+                                                            ? resolvePlateAppearanceInitialCount(pa, paPitches)
+                                                            : ""}
                                                     </td>
                                                     <td className="px-5 py-2.5 text-zinc-400 font-mono">
                                                         {pitch.ballsBefore}-{pitch.strikesBefore}

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { LeaderboardPill } from "@/app/components/leaderboards/LeaderboardChrome";
 import { ChartingZoneHeatmap } from "@/app/charting/_components/ChartingZoneHeatmap";
+import { countPitcherInnings } from "@/lib/charting/innings";
 import type {
   HitterOverviewModel,
   OutcomeSummary,
@@ -202,7 +203,7 @@ function CompactPitchGroup({
 // === Cards ===
 
 function PitcherCard({ model, index }: { model: PitcherOverviewModel; index: number }) {
-  const inningsCount = new Set(model.segments.map((s) => s.enteredInning)).size;
+  const inningsCount = countPitcherInnings(model.segments, model.plateAppearances);
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (

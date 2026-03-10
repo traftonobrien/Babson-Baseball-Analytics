@@ -1,8 +1,5 @@
-import { Suspense } from "react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { format, parseISO, subDays } from "date-fns";
-import { BarChart3, ChevronLeft } from "lucide-react";
 import { desc } from "drizzle-orm";
 import { db } from "@/db";
 import { chartingGames, chartingPitcherSegments, chartingPlateAppearances } from "@/db/schema";
@@ -13,12 +10,51 @@ import {
 } from "@/lib/charting/analytics";
 import { PitcherStatGroupWrapper } from "./PitcherStatGroupWrapper";
 import { type PitcherLeaderboardRow } from "./PitcherLeaderboardTable";
-import { LeaderboardClientState } from "./LeaderboardClientState";
 import { HitterStatGroupWrapper } from "./HitterStatGroupWrapper";
-import { type HitterLeaderboardRow, type StatGroup } from "./HitterLeaderboardTable";
-import { LeaderboardPageFrame, LeaderboardPanel } from "@/app/components/leaderboards/LeaderboardChrome";
+import { type HitterLeaderboardRow } from "./HitterLeaderboardTable";
+import type { StatGroup } from "./types";
+import { LeaderboardPageFrame } from "@/app/components/leaderboards/LeaderboardChrome";
 
 export const revalidate = 0;
+
+function buildScopeLabel(
+    range: string,
+    session: string,
+    games: Array<{ id: string; gameDate: string; opponent: string | null }>
+): string {
+    if (session !== "all") {
+        const activeGame = games.find((game) => game.id === session);
+        if (!activeGame) {
+            return "Single Session";
+        }
+        return `${activeGame.opponent || "Live AB"} • ${format(parseISO(activeGame.gameDate), "M/d/yy")}`;
+    }
+
+    if (range === "7d") {
+        return "Last 7 Days";
+    }
+    if (range === "30d") {
+        return "Last 30 Days";
+    }
+    return "All Sessions";
+}
+
+function getScopedGameCount(
+    range: string,
+    session: string,
+    games: Array<{ id: string; gameDate: string; opponent: string | null }>
+): number {
+    if (session !== "all") {
+        return games.some((game) => game.id === session) ? 1 : 0;
+    }
+
+    if (range === "all") {
+        return games.length;
+    }
+
+    const windowStart = range === "7d" ? subDays(new Date(), 7) : subDays(new Date(), 30);
+    return games.filter((game) => parseISO(game.gameDate) >= windowStart).length;
+}
 
 export default async function ChartingLeaderboardPage(props: {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -29,8 +65,11 @@ export default async function ChartingLeaderboardPage(props: {
         const range = typeof searchParams.range === "string" ? searchParams.range : "all";
         const session = typeof searchParams.session === "string" ? searchParams.session : "all";
         const searchQuery = typeof searchParams.q === "string" ? searchParams.q : "";
-        const statGroup = typeof searchParams.statGroup === "string" ? (searchParams.statGroup as StatGroup) : "basic";
-
+        const statGroupParam = searchParams.statGroup;
+        const statGroup: StatGroup =
+            typeof statGroupParam === "string" && statGroupParam === "advanced"
+                ? "advanced"
+                : "basic";
 
         const validTabs = ["pitchers", "hitters"];
         if (!validTabs.includes(tab)) {
@@ -46,6 +85,9 @@ export default async function ChartingLeaderboardPage(props: {
             })
             .from(chartingGames)
             .orderBy(desc(chartingGames.gameDate));
+
+        const scopeLabel = buildScopeLabel(range, session, games);
+        const scopeGameCount = getScopedGameCount(range, session, games);
 
         // Determine aggregate options
         let options: AggregateOptions = {};
@@ -110,19 +152,25 @@ export default async function ChartingLeaderboardPage(props: {
                     <PitcherStatGroupWrapper
                         pitchers={pitcherRows}
                         searchQuery={searchQuery}
+                        initialStatGroup={statGroup}
                         tab={tab}
                         range={range}
                         session={session}
                         games={games}
+                        scopeLabel={scopeLabel}
+                        scopeGameCount={scopeGameCount}
                     />
                 ) : (
                     <HitterStatGroupWrapper
                         hitters={hitterRows}
                         searchQuery={searchQuery}
+                        initialStatGroup={statGroup}
                         tab={tab}
                         range={range}
                         session={session}
                         games={games}
+                        scopeLabel={scopeLabel}
+                        scopeGameCount={scopeGameCount}
                     />
                 )}
             </LeaderboardPageFrame>

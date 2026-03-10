@@ -17,6 +17,8 @@ export type PitchResult =
   | "in_play"
   | "hit_by_pitch";
 
+export type ChartingInitialCount = "0-0" | "2-1" | "Bunt";
+
 /** Open-ended string for PA result codes like "K", "BB", "HBP", "1B", "F8", "6-3". */
 export type PAResultCode = string;
 
@@ -66,6 +68,7 @@ export interface ChartingPlateAppearance {
   /** 1-9 */
   lineupSlot: number;
   resultCode: PAResultCode | null;
+  initialCount?: ChartingInitialCount | null;
   buntContext: boolean;
 }
 

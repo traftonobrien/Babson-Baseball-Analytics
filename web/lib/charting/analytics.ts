@@ -5,6 +5,7 @@ import {
   chartingPlateAppearances,
   chartingPitches,
 } from "@/db/schema";
+import { countPitcherInnings } from "./innings";
 import type {
   ChartingPitch,
   ChartingPlateAppearance,
@@ -213,6 +214,9 @@ function mapPlateAppearanceRows(
     (plateAppearance) =>
       ({
         ...plateAppearance,
+        initialCount:
+          (plateAppearance.initialCount as ChartingPlateAppearance["initialCount"]) ??
+          "0-0",
       }) satisfies ChartingPlateAppearance
   );
 }
@@ -287,10 +291,8 @@ export function computeSegmentStats_pure(
   const baa = atBats > 0 ? hits / atBats : null;
 
   // WHIP Calculation: (Walks + Hits) / Innings Pitched
-  // In charting, a "segment" roughly correlates to an inning's worth of work. 
-  // For the purest definition on a per-segment basis, we treat 1 segment = 1 IP. 
-  // If grouping segments, this is properly summed outside in aggregation.
-  // For standard segment stat calculation, (W + H) = raw WHIP.
+  // Preserve the raw numerator here and defer inning scaling to aggregation,
+  // which has access to the full inning span for the outing.
   const whip = (walkCount + hits);
 
   // BABIP Calculation: (H - HR) / (AB - K - HR + SF)
@@ -373,8 +375,7 @@ export function computePitcherAggregation(
     return null;
   }
 
-  // Re-scale WHIP to match the total innings being aggregated since the pure segment
-  // calculation inherently assumes 1 segment = 1 inning.
+  // Re-scale WHIP using the caller-supplied inning count.
   let trueWhip: number | null = null;
   if (base.whip !== null && innings > 0) {
     trueWhip = base.whip / innings;
@@ -447,7 +448,7 @@ export async function aggregatePitcherStats(
   );
 
   const sessions = new Set(segments.map((s) => s.gameId)).size;
-  const innings = segments.length;
+  const innings = countPitcherInnings(segments, pas);
 
   return computePitcherAggregation(pitches, pas, sessions, innings);
 }

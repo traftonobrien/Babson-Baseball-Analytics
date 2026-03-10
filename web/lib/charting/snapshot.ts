@@ -20,6 +20,12 @@ import {
   legacyChartingPitches,
   mapLegacyPitchRow,
 } from "./pitchStorage";
+import {
+  isMissingInitialCountColumnError,
+  legacyChartingPlateAppearances,
+  mapLegacyPlateAppearanceRow,
+} from "./plateAppearanceStorage";
+import { resolvePlateAppearanceInitialCount } from "./live";
 
 export async function loadChartingGameSnapshot(
   gameId: string
@@ -44,13 +50,16 @@ export async function loadChartingGameSnapshot(
       .from(chartingLineupEntries)
       .where(eq(chartingLineupEntries.gameId, gameId))
       .orderBy(asc(chartingLineupEntries.lineupSlot)),
-    db
-      .select()
-      .from(chartingPlateAppearances)
-      .where(eq(chartingPlateAppearances.gameId, gameId))
-      .orderBy(asc(chartingPlateAppearances.paOrder)),
+    loadChartingPlateAppearances(gameId),
     loadChartingPitches(gameId),
   ]);
+
+  const pitchesByPaId = new Map<string, ChartingPitch[]>();
+  for (const pitch of pitches) {
+    const existing = pitchesByPaId.get(pitch.paId) ?? [];
+    existing.push(pitch);
+    pitchesByPaId.set(pitch.paId, existing);
+  }
 
   return {
     game: {
@@ -73,10 +82,48 @@ export async function loadChartingGameSnapshot(
       (pa) =>
         ({
           ...pa,
+          initialCount: resolvePlateAppearanceInitialCount(
+            pa,
+            pitchesByPaId.get(pa.id) ?? []
+          ),
         }) satisfies ChartingPlateAppearance
     ),
     pitches,
   };
+}
+
+async function loadChartingPlateAppearances(
+  gameId: string
+): Promise<ChartingPlateAppearance[]> {
+  try {
+    const plateAppearances = await db
+      .select()
+      .from(chartingPlateAppearances)
+      .where(eq(chartingPlateAppearances.gameId, gameId))
+      .orderBy(asc(chartingPlateAppearances.paOrder));
+
+    return plateAppearances.map(
+      (plateAppearance) =>
+        ({
+          ...plateAppearance,
+          initialCount:
+            (plateAppearance.initialCount as ChartingPlateAppearance["initialCount"]) ??
+            "0-0",
+        }) satisfies ChartingPlateAppearance
+    );
+  } catch (error) {
+    if (!isMissingInitialCountColumnError(error)) {
+      throw error;
+    }
+
+    const legacyPlateAppearances = await db
+      .select()
+      .from(legacyChartingPlateAppearances)
+      .where(eq(legacyChartingPlateAppearances.gameId, gameId))
+      .orderBy(asc(legacyChartingPlateAppearances.paOrder));
+
+    return legacyPlateAppearances.map(mapLegacyPlateAppearanceRow);
+  }
 }
 
 async function loadChartingPitches(gameId: string): Promise<ChartingPitch[]> {

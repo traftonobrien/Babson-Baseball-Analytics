@@ -107,6 +107,8 @@ export const chartingPlateAppearances = pgTable("charting_plate_appearances", {
   lineupSlot: integer("lineup_slot").notNull(),
   /** e.g. "K", "BB", "HBP", "1B", "F8", "6-3"; null while PA is open */
   resultCode: text("result_code"),
+  /** "0-0" | "2-1" | "Bunt" */
+  initialCount: text("initial_count").notNull().default("0-0"),
   buntContext: boolean("bunt_context").notNull().default(false),
 });
 
