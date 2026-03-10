@@ -19,8 +19,8 @@ This roadmap takes the project from a brownfield repo with no live charting doma
 ---
 ## Milestone v2.0: Live AB Analytics
 
-- [ ] **Phase 10: Analytics Foundation** - Build shared stat engine for pitcher and hitter metrics from charting pitch/PA data
-- [ ] **Phase 11: Session Overview Enhancements** - Enrich /charting/games/[id] with per-pitcher and per-hitter breakdown sections
+- [x] **Phase 10: Analytics Foundation** - Build shared stat engine for pitcher and hitter metrics from charting pitch/PA data
+- [x] **Phase 11: Session Overview Enhancements** - Enrich /charting/games/[id] with per-pitcher and per-hitter breakdown sections
 - [ ] **Phase 12: Live AB Leaderboard** - New /charting/leaderboard with Pitchers + Hitters tabs, filters, and sortable columns
 - [ ] **Phase 13: Per-Player Drill-Down** - Session-by-session history pages for any pitcher (/pitcher/[playerId]) or hitter (/hitter/[name])
 
@@ -209,10 +209,13 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 **Plans**: 4 plans
 
 Plans:
-- [ ] 10-00-PLAN.md — Create analytics-fixtures.ts and failing test stubs (Wave 0 RED state)
-- [ ] 10-01-PLAN.md — Implement pitcher analytics: computeSegmentStats_pure, computeSegmentStats, aggregatePitcherStats
-- [ ] 10-02-PLAN.md — Implement hitter analytics: computeHitterStats_pure, computeHitterStats, aggregateHitterStats
-- [ ] 10-03-PLAN.md — Full test suite green, TypeScript build clean, phase gate verification
+- [x] 10-00-PLAN.md — Create analytics-fixtures.ts and failing test stubs (Wave 0 RED state)
+- [x] 10-01-PLAN.md — Implement pitcher analytics: computeSegmentStats_pure, computeSegmentStats, aggregatePitcherStats
+- [x] 10-02-PLAN.md — Implement hitter analytics: computeHitterStats_pure, computeHitterStats, aggregateHitterStats
+- [x] 10-03-PLAN.md — Full test suite green, TypeScript build clean, phase gate verification
+
+Current status:
+- Shared analytics now lives in `web/lib/charting/analytics.ts` with 29 dedicated analytics tests, a green full web test suite, and a clean production build as of 2026-03-10.
 
 ### Phase 11: Session Overview Enhancements
 **Goal**: Enrich the existing /charting/games/[id] page with a full per-pitcher breakdown section and a full per-hitter breakdown section below the current summary.
@@ -225,9 +228,12 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 11-01: Build per-pitcher breakdown section with stat cards and pitch mix
-- [ ] 11-02: Build 14-cell zone heat map component (reusable for pitchers and hitters)
-- [ ] 11-03: Build per-hitter breakdown section with zone coverage and pitch-type splits
+- [x] 11-01: Build per-pitcher breakdown section with stat cards and pitch mix
+- [x] 11-02: Build 14-cell zone heat map component (reusable for pitchers and hitters)
+- [x] 11-03: Build per-hitter breakdown section with zone coverage and pitch-type splits
+
+Current status:
+- `/charting/games/[id]` now shows per-pitcher and per-hitter breakdown cards powered by the shared Phase 10 analytics engine, including reusable zone coverage maps and session-overview helper tests as of 2026-03-10.
 
 ### Phase 12: Live AB Leaderboard
 **Goal**: Deliver /charting/leaderboard with two tabs (Pitchers | Hitters), sortable stat columns, and filters for date range and specific session.

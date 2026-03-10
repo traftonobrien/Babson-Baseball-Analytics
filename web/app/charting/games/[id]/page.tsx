@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import {
+    Activity,
     ChevronLeft,
     Download,
     FileText,
@@ -11,12 +12,20 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { LeaderboardPageFrame } from "@/app/components/leaderboards/LeaderboardChrome";
+import {
+    HitterBreakdownSection,
+    PitcherBreakdownSection,
+} from "@/app/charting/_components/ChartingSessionBreakdowns";
 import { DeleteChartingGameButton } from "@/app/charting/_components/DeleteChartingGameButton";
 import { EditableChartingGameTitle } from "@/app/charting/_components/EditableChartingGameTitle";
+import { computeSegmentStats_pure } from "@/lib/charting/analytics";
 import { buildChartingExportFilename } from "@/lib/charting/export";
 import { buildChartingPdfFilename } from "@/lib/charting/pdf";
+import {
+    buildHitterOverviewModels,
+    buildPitcherOverviewModels,
+} from "@/lib/charting/sessionOverview";
 import { loadChartingGameSnapshot } from "@/lib/charting/snapshot";
-import type { ChartingPitch } from "@/lib/charting/types";
 
 export const revalidate = 0; // Always fetch fresh data
 
@@ -26,45 +35,6 @@ function Badge({ children, className = "" }: { children: React.ReactNode; classN
             {children}
         </span>
     );
-}
-
-// -- Analytics Engine --
-
-function calculateStats(pitches: ChartingPitch[]) {
-    if (!pitches.length) return null;
-
-    const total = pitches.length;
-    const locatedPitches = pitches.filter(
-        (pitch): pitch is ChartingPitch & { locationCell: number } =>
-            pitch.locationCell !== null
-    );
-
-    // Basic outcomes
-    const strikes = pitches.filter(p => ["called_strike", "swinging_strike", "foul", "in_play", "bunt_foul"].includes(p.pitchResult)).length;
-    const whiffs = pitches.filter(p => p.pitchResult === "swinging_strike").length;
-    const inPlay = pitches.filter(p => p.pitchResult === "in_play").length;
-
-    // Location
-    const inZone = locatedPitches.filter(p => p.locationCell >= 1 && p.locationCell <= 9).length;
-    const totalLocated = locatedPitches.length;
-
-    // Swings
-    const swings = whiffs + inPlay + pitches.filter(p => ["foul", "bunt_foul"].includes(p.pitchResult)).length;
-    const swingsOZone = locatedPitches.filter(p => p.locationCell > 9 && ["swinging_strike", "foul", "in_play", "bunt_foul"].includes(p.pitchResult)).length;
-    const totalOZone = locatedPitches.filter(p => p.locationCell > 9).length;
-
-    // First pitch strikes
-    const firstPitches = pitches.filter(p => p.ballsBefore === 0 && p.strikesBefore === 0);
-    const firstPitchStrikes = firstPitches.filter(p => ["called_strike", "swinging_strike", "foul", "in_play", "bunt_foul"].includes(p.pitchResult)).length;
-
-    return {
-        total,
-        strikePct: (strikes / total) * 100,
-        whiffPct: swings > 0 ? (whiffs / swings) * 100 : 0,
-        zonePct: totalLocated > 0 ? (inZone / totalLocated) * 100 : 0,
-        chasePct: totalOZone > 0 ? (swingsOZone / totalOZone) * 100 : 0,
-        fpsPct: firstPitches.length > 0 ? (firstPitchStrikes / firstPitches.length) * 100 : 0
-    };
 }
 
 function StatCard({ label, value, suffix = "%" }: { label: string, value: number | null, suffix?: string }) {
@@ -96,7 +66,16 @@ export default async function ChartingGamePage({
         plateAppearances,
         pitches,
     } = snapshot;
-    const stats = calculateStats(pitches);
+    const stats = computeSegmentStats_pure(pitches, plateAppearances);
+    const pitcherOverviewModels = buildPitcherOverviewModels(
+        segments,
+        plateAppearances,
+        pitches
+    );
+    const hitterOverviewModels = buildHitterOverviewModels(
+        plateAppearances,
+        pitches
+    );
     const paById = new Map(plateAppearances.map((pa) => [pa.id, pa]));
     const exportHref = `/api/charting/games/${game.id}/export`;
     const exportFilename = buildChartingExportFilename(game);
@@ -201,23 +180,21 @@ export default async function ChartingGamePage({
                     <div className="flex items-center gap-2 mb-4 text-zinc-300 font-semibold">
                         <User className="h-4 w-4" /> Pitchers Used
                     </div>
-                    {segments.length === 0 ? (
+                    {pitcherOverviewModels.length === 0 ? (
                         <p className="text-sm text-zinc-500 italic">No pitchers mapped yet.</p>
                     ) : (
                         <ul className="space-y-3">
-                            {segments.map((seg, idx) => (
-                                <li key={seg.id} className="flex items-center justify-between text-sm">
+                            {pitcherOverviewModels.map((pitcher, idx) => (
+                                <li key={pitcher.pitcherKey} className="flex items-center justify-between text-sm">
                                     <div className="flex items-center gap-3">
                                         <span className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-800 text-[10px] font-bold text-zinc-400">
                                             {idx + 1}
                                         </span>
-                                        <span className="text-zinc-200 font-medium">{seg.displayName}</span>
+                                        <span className="text-zinc-200 font-medium">{pitcher.displayName}</span>
                                     </div>
-                                    {seg.runsOverride != null && (
-                                        <span className="text-zinc-500 font-mono text-xs">
-                                            {seg.runsOverride}R {seg.earnedRunsOverride}ER
-                                        </span>
-                                    )}
+                                    <span className="text-zinc-500 font-mono text-xs">
+                                        {pitcher.segments.length} seg • {pitcher.pitches.length} pit
+                                    </span>
                                 </li>
                             ))}
                         </ul>
@@ -253,9 +230,12 @@ export default async function ChartingGamePage({
                 </div>
             )}
 
+            <PitcherBreakdownSection models={pitcherOverviewModels} />
+            <HitterBreakdownSection models={hitterOverviewModels} />
+
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-hidden mt-2">
                 <div className="border-b border-zinc-800/60 bg-zinc-900/80 px-5 py-4 flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-zinc-400" />
+                    <Activity className="h-4 w-4 text-zinc-400" />
                     <h2 className="font-semibold text-zinc-200">Play-by-Play Pitch Log</h2>
                 </div>
 

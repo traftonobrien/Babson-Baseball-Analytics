@@ -44,10 +44,10 @@ describe("GameStatsSection", () => {
     const html = renderToStaticMarkup(
       GameStatsSection({ meta, statsByGame }),
     );
-    expect(html).toContain("Game Stats");
+    expect(html).toContain("Pitching Line");
     expect(html).toContain("Suffolk");
     expect(html).toContain("5.0"); // IP value rendered in pitching grid
-    expect(html).toContain("ip");  // stat label
+    expect(html).toContain("IP");  // stat label
   });
 
   it("renders fallback when stats missing", () => {

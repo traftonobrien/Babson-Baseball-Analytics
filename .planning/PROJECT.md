@@ -33,8 +33,8 @@ One coach can chart an entire Babson outing on one iPad and trust that the resul
 
 ### Active — Milestone v2.0: Live AB Analytics
 
-- [ ] Build a shared analytics engine that computes per-segment pitcher stats and per-hitter stats from charting pitch/PA data
-- [ ] Enrich the session overview page with per-pitcher and per-hitter breakdown sections (stat cards, pitch mix, zone heat map, outcomes)
+- [x] Build a shared analytics engine that computes per-segment pitcher stats and per-hitter stats from charting pitch/PA data
+- [x] Enrich the session overview page with per-pitcher and per-hitter breakdown sections (stat cards, pitch mix, zone heat map, outcomes)
 - [ ] Deliver a `/charting/leaderboard` page with Pitchers and Hitters tabs, sortable columns, and date-range + session filters
 - [ ] Deliver per-player drill-down pages showing session-by-session history for any pitcher or hitter
 
@@ -90,4 +90,4 @@ The current paper workflow is represented by [Charting Example.pdf](/Users/traft
 | Milestone v2.0: Live AB Analytics | Staff want cross-session pitcher and hitter insight from charted live ABs | Analytics foundation → session enhancements → leaderboard → per-player drill-down |
 
 ---
-*Last updated: 2026-03-09 after Milestone v2.0 initialization (Live AB Analytics)*
+*Last updated: 2026-03-10 after Phase 11 session overview enhancements completion*
