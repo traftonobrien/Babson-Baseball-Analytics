@@ -42,6 +42,7 @@ export interface SegmentStats {
   totalPitches: number;
   strikePct: number | null;
   zonePct: number | null;
+  baa: number | null;
   whiffPct: number | null;
   chasePct: number | null;
   fpsPct: number | null;
@@ -272,6 +273,17 @@ export function computeSegmentStats_pure(
     isStrikeout(pa.resultCode)
   ).length;
   const walkCount = closedPas.filter((pa) => pa.resultCode === "BB").length;
+  const hbpCount = closedPas.filter((pa) => pa.resultCode === "HBP").length;
+
+  const singles = closedPas.filter((pa) => pa.resultCode === "1B").length;
+  const doubles = closedPas.filter((pa) => pa.resultCode === "2B").length;
+  const triples = closedPas.filter((pa) => pa.resultCode === "3B").length;
+  const homeRuns = closedPas.filter((pa) => pa.resultCode === "HR").length;
+
+  const hits = singles + doubles + triples + homeRuns;
+  const atBats = closedPas.length - walkCount - hbpCount;
+  const baa = atBats > 0 ? hits / atBats : null;
+
   const pitchMix = emptyPitchMix();
 
   for (const pitch of pitches) {
@@ -290,6 +302,7 @@ export function computeSegmentStats_pure(
     totalPitches: pitches.length,
     strikePct: pct(strikeCount, pitches.length),
     zonePct: pct(inZoneCount, locatedPitches.length),
+    baa,
     whiffPct: pct(whiffs, swings),
     chasePct: pct(chaseSwings, outOfZoneLocatedPitches.length),
     fpsPct: pct(firstPitchStrikes, firstPitches.length),

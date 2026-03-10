@@ -11,7 +11,8 @@ import {
     aggregateHitterStats,
     aggregatePitcherStats,
 } from "@/lib/charting/analytics";
-import { PitcherLeaderboardTable, type PitcherLeaderboardRow } from "./PitcherLeaderboardTable";
+import { PitcherStatGroupWrapper } from "./PitcherStatGroupWrapper";
+import { type PitcherLeaderboardRow } from "./PitcherLeaderboardTable";
 import { LeaderboardClientState } from "./LeaderboardClientState";
 import { HitterStatGroupWrapper } from "./HitterStatGroupWrapper";
 import { type HitterLeaderboardRow, type StatGroup } from "./HitterLeaderboardTable";
@@ -106,20 +107,14 @@ export default async function ChartingLeaderboardPage(props: {
         return (
             <LeaderboardPageFrame maxWidth="max-w-7xl">
                 {tab === "pitchers" ? (
-                    <>
-                        <LeaderboardClientState
-                            tab={tab}
-                            range={range}
-                            session={session}
-                            searchQuery={searchQuery}
-                            games={games}
-                        />
-                        <LeaderboardPanel className="mt-6 overflow-hidden">
-                            <div className="mt-6 rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-6 shadow-xl">
-                                <PitcherLeaderboardTable pitchers={pitcherRows} searchQuery={searchQuery} />
-                            </div>
-                        </LeaderboardPanel>
-                    </>
+                    <PitcherStatGroupWrapper
+                        pitchers={pitcherRows}
+                        searchQuery={searchQuery}
+                        tab={tab}
+                        range={range}
+                        session={session}
+                        games={games}
+                    />
                 ) : (
                     <HitterStatGroupWrapper
                         hitters={hitterRows}

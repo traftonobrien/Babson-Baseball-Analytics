@@ -116,35 +116,33 @@ export function LeaderboardClientState({
             <LeaderboardToolbar className="mt-4">
                 <div className="grid gap-4 xl:grid-cols-[minmax(12rem,14rem)_minmax(14rem,18rem)_minmax(0,1fr)_auto] xl:items-end">
 
-                    {tab === "hitters" ? (
-                        <div className="space-y-2">
-                            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-                                Stat Group
-                            </div>
-                            <div className="flex items-center">
-                                <div className="inline-flex rounded-xl border border-zinc-800/80 bg-zinc-950/80 p-1">
-                                    <button
-                                        onClick={() => setStatGroup?.("basic")}
-                                        className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${statGroup === "basic"
+                    <div className="space-y-2">
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+                            Stat Group
+                        </div>
+                        <div className="flex items-center">
+                            <div className="inline-flex rounded-xl border border-zinc-800/80 bg-zinc-950/80 p-1">
+                                <button
+                                    onClick={() => setStatGroup?.("basic")}
+                                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${statGroup === "basic"
                                             ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/20"
                                             : "text-zinc-500 hover:text-zinc-300 border border-transparent"
-                                            }`}
-                                    >
-                                        Basic
-                                    </button>
-                                    <button
-                                        onClick={() => setStatGroup?.("advanced")}
-                                        className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${statGroup === "advanced"
+                                        }`}
+                                >
+                                    Basic
+                                </button>
+                                <button
+                                    onClick={() => setStatGroup?.("advanced")}
+                                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${statGroup === "advanced"
                                             ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/20"
                                             : "text-zinc-500 hover:text-zinc-300 border border-transparent"
-                                            }`}
-                                    >
-                                        Advanced
-                                    </button>
-                                </div>
+                                        }`}
+                                >
+                                    Advanced
+                                </button>
                             </div>
                         </div>
-                    ) : null}
+                    </div>
 
                     <div className="space-y-2">
                         <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">

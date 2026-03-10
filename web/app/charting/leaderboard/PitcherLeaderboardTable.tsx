@@ -9,12 +9,15 @@ export interface PitcherLeaderboardRow extends AggregatedPitcherStats {
     displayName: string;
 }
 
+export type StatGroup = "basic" | "advanced";
+
 type SortKey = keyof Omit<PitcherLeaderboardRow, "playerId" | "displayName" | "pitchMix" | "pitchMixPct">;
 
 const SORT_KEYS: { key: SortKey; label: string; lowerBetter?: boolean; format?: (val: number | null) => string }[] = [
     { key: "sessions", label: "Sessions", lowerBetter: false, format: (v) => v?.toString() ?? "—" },
     { key: "innings", label: "Innings", lowerBetter: false, format: (v) => v?.toString() ?? "—" },
     { key: "totalPitches", label: "Pitches", lowerBetter: false, format: (v) => v?.toString() ?? "—" },
+    { key: "baa", label: "BAA", lowerBetter: true, format: (v) => v !== null ? v.toFixed(3).replace(/^0\./, '.') : "—" },
     { key: "strikePct", label: "Strike%", lowerBetter: false, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
     { key: "zonePct", label: "Zone%", lowerBetter: false, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
     { key: "whiffPct", label: "Whiff%", lowerBetter: false, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
@@ -23,6 +26,9 @@ const SORT_KEYS: { key: SortKey; label: string; lowerBetter?: boolean; format?: 
     { key: "kPct", label: "K%", lowerBetter: false, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
     { key: "bbPct", label: "BB%", lowerBetter: true, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
 ];
+
+const BASIC_KEYS: SortKey[] = ["sessions", "innings", "totalPitches", "baa", "strikePct", "kPct", "bbPct"];
+const ADVANCED_KEYS: SortKey[] = ["sessions", "innings", "totalPitches", "zonePct", "whiffPct", "chasePct", "fpsPct"];
 
 function rankColor(i: number): string {
     const glow = "[text-shadow:0_0_8px_currentColor]";
@@ -35,12 +41,16 @@ function rankColor(i: number): string {
 export function PitcherLeaderboardTable({
     pitchers,
     searchQuery,
+    statGroup,
 }: {
     pitchers: PitcherLeaderboardRow[];
     searchQuery: string;
+    statGroup: StatGroup;
 }) {
     const [sortKey, setSortKey] = useState<SortKey>("innings");
     const [sortDesc, setSortDesc] = useState(true);
+
+    const visibleColumns = statGroup === "basic" ? BASIC_KEYS : ADVANCED_KEYS;
 
     const filtered = useMemo(() => {
         if (!searchQuery.trim()) return pitchers;
@@ -81,7 +91,7 @@ export function PitcherLeaderboardTable({
                         <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-48">
                             Pitcher
                         </th>
-                        {SORT_KEYS.map(({ key, label }) => (
+                        {SORT_KEYS.filter(k => visibleColumns.includes(k.key)).map(({ key, label }) => (
                             <th
                                 key={key}
                                 className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-emerald-300 transition-colors whitespace-nowrap select-none"
@@ -120,7 +130,7 @@ export function PitcherLeaderboardTable({
                                     {p.displayName}
                                 </span>
                             </td>
-                            {SORT_KEYS.map(({ key, format }) => {
+                            {SORT_KEYS.filter(k => visibleColumns.includes(k.key)).map(({ key, format }) => {
                                 const val = p[key] as number | null;
                                 return (
                                     <td key={key} className="px-4 py-3 text-right font-mono text-zinc-300">
