@@ -16,6 +16,14 @@ This roadmap takes the project from a brownfield repo with no live charting doma
 - [x] **Phase 8: Charting Engine Hardening** - Make the live charting state machine deterministic, validated, and regression-tested
 - [ ] **Phase 9: Pilot Hardening and TestFlight** - Prepare internal beta delivery, diagnostics, and operational guidance
 
+---
+## Milestone v2.0: Live AB Analytics
+
+- [ ] **Phase 10: Analytics Foundation** - Build shared stat engine for pitcher and hitter metrics from charting pitch/PA data
+- [ ] **Phase 11: Session Overview Enhancements** - Enrich /charting/games/[id] with per-pitcher and per-hitter breakdown sections
+- [ ] **Phase 12: Live AB Leaderboard** - New /charting/leaderboard with Pitchers + Hitters tabs, filters, and sortable columns
+- [ ] **Phase 13: Per-Player Drill-Down** - Session-by-session history pages for any pitcher (/pitcher/[playerId]) or hitter (/hitter/[name])
+
 ## Phase Details
 
 ### Phase 1: Charting Domain Foundation
@@ -184,3 +192,86 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. Export Fidelity | 3/3 | Complete | 2026-03-06 |
 | 8. Charting Engine Hardening | 3/3 | Complete | 2026-03-06 |
 | 9. Pilot Hardening and TestFlight | 0/3 | Not started | - |
+
+---
+
+## Milestone v2.0 Phase Details
+
+### Phase 10: Analytics Foundation
+**Goal**: Build a shared analytics engine that computes per-segment pitcher stats and per-hitter stats from existing charting pitch and PA data, with cross-session aggregation support.
+**Depends on**: Phase 9 (or can run in parallel — no iOS dependency)
+**Success Criteria** (what must be TRUE):
+  1. `computeSegmentStats(segmentId)` returns Strike%, Zone%, Whiff%, Chase%, FPS%, pitch mix %, K%, BB% from pitch + PA records.
+  2. `aggregatePitcherStats(playerId, options)` aggregates those values across multiple games with optional date-range and gameId filters.
+  3. `computeHitterStats(hitterName, gameId)` returns Chase%, contact rate, whiff rate, K%, BB%, zone frequency map, and pitch-type split (vs Fastball/Breaking/Offspeed).
+  4. `aggregateHitterStats(hitterName, options)` aggregates hitter stats across sessions with the same filter options as pitchers.
+  5. All functions are pure/testable and consumed by Phase 11 and Phase 12 without duplication.
+**Plans**: 3 plans
+
+Plans:
+- [ ] 10-01: Define stat computation types, helpers, and pitcher segment analytics
+- [ ] 10-02: Build hitter analytics (per-session and cross-session)
+- [ ] 10-03: Write unit tests and verify output against a known charting session fixture
+
+### Phase 11: Session Overview Enhancements
+**Goal**: Enrich the existing /charting/games/[id] page with a full per-pitcher breakdown section and a full per-hitter breakdown section below the current summary.
+**Depends on**: Phase 10
+**Success Criteria** (what must be TRUE):
+  1. Below the existing stat card row, each Babson pitcher who appeared in the game has a breakdown card showing their pitch mix, Strike%, Zone%, Whiff%, Chase%, FPS%, and PA outcomes (K/BB/HBP/hits/outs).
+  2. Each pitcher card includes a 14-cell zone frequency heat map (catcher-view) colored by pitch frequency.
+  3. Below the pitcher section, each hitter who batted has a breakdown showing pitches seen, Chase%, Contact%, K/BB result, and a zone coverage map.
+  4. Both sections degrade gracefully when no pitches or PAs are recorded.
+**Plans**: 3 plans
+
+Plans:
+- [ ] 11-01: Build per-pitcher breakdown section with stat cards and pitch mix
+- [ ] 11-02: Build 14-cell zone heat map component (reusable for pitchers and hitters)
+- [ ] 11-03: Build per-hitter breakdown section with zone coverage and pitch-type splits
+
+### Phase 12: Live AB Leaderboard
+**Goal**: Deliver /charting/leaderboard with two tabs (Pitchers | Hitters), sortable stat columns, and filters for date range and specific session.
+**Depends on**: Phase 10
+**Success Criteria** (what must be TRUE):
+  1. /charting/leaderboard renders with Pitchers and Hitters tabs; each tab shows a sortable table of all players who have appeared in any charting session.
+  2. Pitcher columns: Name, Sessions, Pitches, Strike%, Zone%, Whiff%, Chase%, FPS%, K%, BB%.
+  3. Hitter columns: Name, Sessions, PAs, Chase%, Contact%, K%, BB%, plus Fastball/Breaking/Offspeed whiff%.
+  4. Filters: Last 7 days / Last 30 days / All time + a session picker that limits stats to a single session.
+  5. Visual style matches the existing /leaderboards page chrome (LeaderboardPanel, LeaderboardPill, etc.).
+**Plans**: 3 plans
+
+Plans:
+- [ ] 12-01: Build /charting/leaderboard route and shared filter/tab chrome
+- [ ] 12-02: Build pitcher leaderboard table with sort and filter integration
+- [ ] 12-03: Build hitter leaderboard table with sort and filter integration
+
+### Phase 13: Per-Player Drill-Down
+**Goal**: Deliver session-by-session history pages for any pitcher or hitter linked from the leaderboard.
+**Depends on**: Phase 12
+**Success Criteria** (what must be TRUE):
+  1. /charting/leaderboard/pitcher/[playerId] shows career totals at the top plus a session-by-session breakdown table (date, pitch count, Strike%, Zone%, Whiff%, Chase%).
+  2. /charting/leaderboard/hitter/[name] shows the same structure from the hitter side (PAs, Chase%, Contact%, K%, BB%).
+  3. Each session row links directly to /charting/games/[id] for full game review.
+  4. Both pages handle pitchers/hitters with only one session gracefully.
+**Plans**: 2 plans
+
+Plans:
+- [ ] 13-01: Build per-pitcher drill-down page with career totals and session history
+- [ ] 13-02: Build per-hitter drill-down page with career totals and session history
+
+## Updated Progress
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 1. Charting Domain Foundation | 3/3 | Complete | 2026-03-06 |
+| 2. Access and Game Setup | 3/3 | Complete | 2026-03-06 |
+| 3. Local iPad Persistence | 3/3 | Complete | 2026-03-06 |
+| 4. Live Charting Workflow | 3/3 | Complete | 2026-03-06 |
+| 5. Sync and Finalization | 3/3 | Complete | 2026-03-06 |
+| 6. Portal Charting Surfaces | 3/3 | Complete | 2026-03-06 |
+| 7. Export Fidelity | 3/3 | Complete | 2026-03-06 |
+| 8. Charting Engine Hardening | 3/3 | Complete | 2026-03-06 |
+| 9. Pilot Hardening and TestFlight | 0/3 | Not started | - |
+| 10. Analytics Foundation | 0/3 | Not started | - |
+| 11. Session Overview Enhancements | 0/3 | Not started | - |
+| 12. Live AB Leaderboard | 0/3 | Not started | - |
+| 13. Per-Player Drill-Down | 0/2 | Not started | - |

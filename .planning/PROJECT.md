@@ -31,6 +31,13 @@ One coach can chart an entire Babson outing on one iPad and trust that the resul
 - [ ] Preserve the live charting rough layout baseline as the page grows: top zone canvas, bottom operator dock, compact secondary rails
 - [ ] Prepare the iPad app and support tooling for internal pilot/TestFlight use after the charting mechanics are trustworthy
 
+### Active — Milestone v2.0: Live AB Analytics
+
+- [ ] Build a shared analytics engine that computes per-segment pitcher stats and per-hitter stats from charting pitch/PA data
+- [ ] Enrich the session overview page with per-pitcher and per-hitter breakdown sections (stat cards, pitch mix, zone heat map, outcomes)
+- [ ] Deliver a `/charting/leaderboard` page with Pitchers and Hitters tabs, sortable columns, and date-range + session filters
+- [ ] Deliver per-player drill-down pages showing session-by-session history for any pitcher or hitter
+
 ### Out of Scope
 
 - Full baserunner engine — excluded from v1 to keep scoring speed high and reduce game-state complexity
@@ -80,5 +87,7 @@ The current paper workflow is represented by [Charting Example.pdf](/Users/traft
 | Generate paper-style PDF exports from the same shared chart snapshot as CSV | PDF output must stay recognizable to staff without diverging from the synced chart data | Implemented via `pdf-lib` renderer and `/api/charting/games/[id]/export-pdf` |
 | Harden charting mechanics before pilot/TestFlight work | Staff trust depends more on deterministic count/outs/PA logic than on early beta packaging | Implemented in Phase 8 before pilot delivery work begins |
 
+| Milestone v2.0: Live AB Analytics | Staff want cross-session pitcher and hitter insight from charted live ABs | Analytics foundation → session enhancements → leaderboard → per-player drill-down |
+
 ---
-*Last updated: 2026-03-06 after Phase 8 charting-engine hardening completion and Phase 9 handoff*
+*Last updated: 2026-03-09 after Milestone v2.0 initialization (Live AB Analytics)*
