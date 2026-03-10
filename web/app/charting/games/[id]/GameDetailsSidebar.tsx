@@ -1,15 +1,15 @@
 import { UserCircle, Users } from "lucide-react";
-import type { ChartingGame, ChartingLineupEntry } from "@/lib/charting/types";
-import type { PitcherOverviewModel } from "@/lib/charting/sessionOverview";
+import type { ChartingGame } from "@/lib/charting/types";
+import type { PitcherOverviewModel, HitterOverviewModel } from "@/lib/charting/sessionOverview";
 
 export function GameDetailsSidebar({
     game,
     pitcherOverviewModels,
-    lineupEntries,
+    hitterOverviewModels,
 }: {
     game: ChartingGame;
     pitcherOverviewModels: PitcherOverviewModel[];
-    lineupEntries: ChartingLineupEntry[];
+    hitterOverviewModels: HitterOverviewModel[];
 }) {
     return (
         <div className="flex flex-col gap-4">
@@ -40,14 +40,14 @@ export function GameDetailsSidebar({
                 <div className="flex items-center gap-2 mb-3 text-zinc-400 font-semibold text-xs uppercase tracking-wider">
                     <Users className="h-3.5 w-3.5" /> Hitters
                 </div>
-                {lineupEntries.length === 0 ? (
-                    <p className="text-xs text-zinc-600 italic">No lineup configured.</p>
+                {hitterOverviewModels.length === 0 ? (
+                    <p className="text-xs text-zinc-600 italic">No hitters mapped yet.</p>
                 ) : (
                     <ul className="space-y-2 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
-                        {lineupEntries.map((p) => (
-                            <li key={p.id} className="flex items-center gap-3 text-sm">
-                                <span className="w-4 text-right text-zinc-600 font-mono text-[10px]">{p.lineupSlot}</span>
-                                <span className="text-zinc-400 truncate">{p.hitterName}</span>
+                        {hitterOverviewModels.map((hitter, idx) => (
+                            <li key={hitter.hitterName} className="flex items-center gap-3 text-sm">
+                                <span className="w-4 text-right text-zinc-600 font-mono text-[10px]">{hitter.lineupSlot > 0 ? hitter.lineupSlot : "—"}</span>
+                                <span className="text-zinc-400 truncate">{hitter.hitterName}</span>
                             </li>
                         ))}
                     </ul>

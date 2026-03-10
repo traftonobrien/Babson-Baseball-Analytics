@@ -134,7 +134,7 @@ export default async function ChartingGamePage({
                     <GameDetailsSidebar
                         game={game}
                         pitcherOverviewModels={pitcherOverviewModels}
-                        lineupEntries={lineupEntries}
+                        hitterOverviewModels={hitterOverviewModels}
                     />
                 </aside>
 
