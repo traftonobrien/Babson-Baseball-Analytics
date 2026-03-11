@@ -7,6 +7,11 @@ import {
   type AggregatedHitterStats,
   type AggregatedPitcherStats,
 } from "./analytics";
+import {
+  buildHitterPerformanceInsightsData,
+  type BatterHand,
+  type HitterPerformanceInsightsData,
+} from "./hitterInsights";
 import { countPitcherInnings } from "./innings";
 import {
   legacyChartingPlateAppearances,
@@ -51,9 +56,28 @@ export interface LiveAbPitcherProfile {
 export interface LiveAbHitterProfile {
   playerId: string | null;
   displayName: string;
+  batterHand: BatterHand;
   matchedHitterNames: string[];
   stats: AggregatedHitterStats | null;
   sessions: LiveAbHitterSession[];
+  insights: HitterPerformanceInsightsData | null;
+}
+
+export interface ChartingHitterInsightsDirectorySource {
+  slug: string;
+  name: string;
+  bats?: BatterHand;
+}
+
+export interface ChartingHitterInsightsDirectoryEntry {
+  playerSlug: string;
+  playerId: string | null;
+  displayName: string;
+  batterHand: BatterHand;
+  matchedHitterNames: string[];
+  sessionCount: number;
+  pitchCount: number;
+  insights: HitterPerformanceInsightsData;
 }
 
 export interface ChartingPlayerProfile {
@@ -68,6 +92,7 @@ export interface ChartingPlayerProfile {
 
 interface BuildChartingPlayerProfileInput {
   playerSlug: string;
+  batterHand?: BatterHand;
   games: ChartingProfileGame[];
   segments: ChartingPitcherSegment[];
   plateAppearances: ChartingPlateAppearance[];
@@ -144,6 +169,7 @@ function mapPitchRows(rows: typeof chartingPitches.$inferSelect[]): ChartingPitc
 
 export function buildChartingPlayerProfile({
   playerSlug,
+  batterHand = null,
   games,
   segments,
   plateAppearances,
@@ -220,6 +246,7 @@ export function buildChartingPlayerProfile({
       ? {
           playerId,
           displayName,
+          batterHand,
           matchedHitterNames,
           stats:
             hitterPitches.length > 0
@@ -253,6 +280,15 @@ export function buildChartingPlayerProfile({
               })
               .filter((session): session is LiveAbHitterSession => session !== null)
           ),
+          insights: buildHitterPerformanceInsightsData({
+            hitterId: playerId,
+            hitterName: displayName,
+            batterHand,
+            matchedHitterNames,
+            games,
+            plateAppearances: matchedHitterPas,
+            pitches: hitterPitches,
+          }),
         } satisfies LiveAbHitterProfile
       : null;
 
@@ -271,13 +307,63 @@ export function buildChartingPlayerProfile({
   };
 }
 
+export function buildChartingHitterInsightsDirectory({
+  players,
+  games,
+  plateAppearances,
+  pitches,
+}: {
+  players: ChartingHitterInsightsDirectorySource[];
+  games: ChartingProfileGame[];
+  plateAppearances: ChartingPlateAppearance[];
+  pitches: ChartingPitch[];
+}): ChartingHitterInsightsDirectoryEntry[] {
+  return players
+    .map((player) => {
+      const profile = buildChartingPlayerProfile({
+        playerSlug: player.slug,
+        batterHand: player.bats ?? null,
+        games,
+        segments: [],
+        plateAppearances,
+        pitches,
+      });
+
+      if (!profile.hitter?.insights) {
+        return null;
+      }
+
+      return {
+        playerSlug: player.slug,
+        playerId: profile.playerId,
+        displayName: profile.displayName,
+        batterHand: profile.hitter.batterHand,
+        matchedHitterNames: profile.hitter.matchedHitterNames,
+        sessionCount: profile.hitter.sessions.length,
+        pitchCount: profile.hitter.insights.pitches.length,
+        insights: profile.hitter.insights,
+      } satisfies ChartingHitterInsightsDirectoryEntry;
+    })
+    .filter((entry): entry is ChartingHitterInsightsDirectoryEntry => entry !== null)
+    .sort((left, right) => {
+      const sessionDiff = right.sessionCount - left.sessionCount;
+      if (sessionDiff !== 0) return sessionDiff;
+
+      const pitchDiff = right.pitchCount - left.pitchCount;
+      if (pitchDiff !== 0) return pitchDiff;
+
+      return left.displayName.localeCompare(right.displayName);
+    });
+}
+
 async function getDb() {
   const { db } = await import("@/db");
   return db;
 }
 
 export async function loadChartingPlayerProfile(
-  playerSlug: string
+  playerSlug: string,
+  options?: { batterHand?: BatterHand }
 ): Promise<ChartingPlayerProfile> {
   const playerId = getCanonicalPlayerId(playerSlug);
   const displayName = getCanonicalName(playerSlug);
@@ -314,6 +400,7 @@ export async function loadChartingPlayerProfile(
   if (relevantGameIds.length === 0) {
     return buildChartingPlayerProfile({
       playerSlug,
+      batterHand: options?.batterHand ?? null,
       games: [],
       segments: [],
       plateAppearances: [],
@@ -349,9 +436,57 @@ export async function loadChartingPlayerProfile(
 
   return buildChartingPlayerProfile({
     playerSlug,
+    batterHand: options?.batterHand ?? null,
     games,
     segments: pitcherSegments,
     plateAppearances: relevantPas,
+    pitches,
+  });
+}
+
+export async function loadChartingHitterInsightsDirectory(
+  players: ChartingHitterInsightsDirectorySource[]
+): Promise<ChartingHitterInsightsDirectoryEntry[]> {
+  const db = await getDb();
+  const games = await db
+    .select({
+      id: chartingGames.id,
+      gameDate: chartingGames.gameDate,
+      opponent: chartingGames.opponent,
+    })
+    .from(chartingGames)
+    .orderBy(desc(chartingGames.gameDate));
+
+  const plateAppearances = (
+    await db
+      .select()
+      .from(legacyChartingPlateAppearances)
+      .orderBy(
+        desc(legacyChartingPlateAppearances.gameId),
+        desc(legacyChartingPlateAppearances.paOrder)
+      )
+  ).map(mapLegacyPlateAppearanceRow);
+
+  if (plateAppearances.length === 0) {
+    return [];
+  }
+
+  const paIds = [...new Set(plateAppearances.map((plateAppearance) => plateAppearance.id))];
+  const pitches =
+    paIds.length > 0
+      ? mapPitchRows(
+          await db
+            .select()
+            .from(chartingPitches)
+            .where(inArray(chartingPitches.paId, paIds))
+            .orderBy(desc(chartingPitches.gameId), desc(chartingPitches.pitchOrder))
+        )
+      : [];
+
+  return buildChartingHitterInsightsDirectory({
+    players,
+    games,
+    plateAppearances,
     pitches,
   });
 }

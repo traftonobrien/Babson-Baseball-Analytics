@@ -8,6 +8,7 @@ import {
     FilePenLine,
     Plus,
     Search,
+    Target,
 } from "lucide-react";
 import { desc } from "drizzle-orm";
 import { db } from "@/db";
@@ -138,6 +139,24 @@ export default async function ChartingHubPage(props: {
                                                 </div>
                                                 <div className="mt-1 text-sm font-semibold text-zinc-100">
                                                     Open Leaderboards
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Link>
+
+                                <Link href="/charting/insights" className="block">
+                                    <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-smooth hover:border-teal-500/25">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-teal-500/20 bg-teal-500/10 text-teal-300">
+                                                <Target className="h-4 w-4" />
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                                                    Insights
+                                                </div>
+                                                <div className="mt-1 text-sm font-semibold text-zinc-100">
+                                                    Open Hitter Explorer
                                                 </div>
                                             </div>
                                         </div>

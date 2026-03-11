@@ -326,33 +326,35 @@ export default function PlayersHubView({
               />
             }
             side={
-              <Link href="/players/faq" className="block">
-                <div className="relative overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-smooth hover:border-emerald-500/30">
-                  <GlowingEffect
-                    glow
-                    disabled={false}
-                    proximity={56}
-                    inactiveZone={0.22}
-                    spread={24}
-                    movementDuration={0.8}
-                    borderWidth={2}
-                    className="opacity-80"
-                  />
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-300">
-                      <BookOpen className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                        Guide
+              <div className="grid gap-3">
+                <Link href="/players/faq" className="block">
+                  <div className="relative overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-smooth hover:border-emerald-500/30">
+                    <GlowingEffect
+                      glow
+                      disabled={false}
+                      proximity={56}
+                      inactiveZone={0.22}
+                      spread={24}
+                      movementDuration={0.8}
+                      borderWidth={2}
+                      className="opacity-80"
+                    />
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-300">
+                        <BookOpen className="h-4 w-4" />
                       </div>
-                      <div className="mt-1 text-sm font-semibold text-zinc-100">
-                        Metrics Dictionary
+                      <div>
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                          Guide
+                        </div>
+                        <div className="mt-1 text-sm font-semibold text-zinc-100">
+                          Metrics Dictionary
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </div>
             }
           />
         </LeaderboardIntro>

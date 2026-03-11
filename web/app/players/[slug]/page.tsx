@@ -789,7 +789,12 @@ export default async function PlayerProfilePage({
             : "LHP"
           : `T ${throwHand}`
         : null;
-  const liveAbProfile = await loadChartingPlayerProfile(player.slug);
+  const liveAbProfile = await loadChartingPlayerProfile(player.slug, {
+    batterHand:
+      player.bats === "R" || player.bats === "L" || player.bats === "S"
+        ? player.bats
+        : null,
+  });
 
   const mechanicsIndex = await readMechanicsIndex();
   const mechanicsEntry = getMechanicsForPlayer(mechanicsIndex, {

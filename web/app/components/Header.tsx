@@ -59,6 +59,7 @@ const NAV_ITEMS: TubelightNavItem[] = [
       pathname === "/charting" ||
       pathname === "/charting/leaderboard" ||
       pathname === "/charting/faq" ||
+      pathname.startsWith("/charting/insights") ||
       pathname.startsWith("/charting/games/") ||
       pathname === "/charting/new",
     section: "tracking",

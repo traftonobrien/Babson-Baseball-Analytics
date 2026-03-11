@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { buildChartingPlayerProfile, type ChartingProfileGame } from "./playerProfile";
+import {
+  buildChartingHitterInsightsDirectory,
+  buildChartingPlayerProfile,
+  type ChartingProfileGame,
+} from "./playerProfile";
 import type {
   ChartingPitch,
   ChartingPitcherSegment,
@@ -188,5 +192,42 @@ describe("buildChartingPlayerProfile", () => {
     expect(profile.defaultRole).toBeNull();
     expect(profile.pitcher).toBeNull();
     expect(profile.hitter).toBeNull();
+  });
+
+  it("builds a hitter insights directory from roster hitters with charted data", () => {
+    const games = [
+      makeGame("game-1", "2026-03-01", "MIT"),
+      makeGame("game-2", "2026-03-05", "WPI"),
+    ];
+    const plateAppearances = [
+      makePa("pa-1", "game-1", "seg-1", 0, 1, "Dylan Drazka", "1B"),
+      makePa("pa-2", "game-2", "seg-2", 0, 1, "Drazka, Dylan", "BB"),
+      makePa("pa-3", "game-1", "seg-1", 1, 1, "Other Hitter", "K"),
+    ];
+    const pitches = [
+      makePitch("pitch-1", "game-1", "pa-1", 0, "in_play", 5),
+      makePitch("pitch-2", "game-2", "pa-2", 0, "ball", 11),
+      makePitch("pitch-3", "game-2", "pa-2", 1, "ball", 12),
+      makePitch("pitch-4", "game-2", "pa-2", 2, "ball", 13),
+      makePitch("pitch-5", "game-2", "pa-2", 3, "ball", 14),
+      makePitch("pitch-6", "game-1", "pa-3", 0, "swinging_strike", 8),
+    ];
+
+    const directory = buildChartingHitterInsightsDirectory({
+      players: [
+        { slug: "drazka_dylan", name: "Dylan Drazka", bats: "R" },
+        { slug: "wilson_alexander", name: "Alexander Wilson", bats: "L" },
+      ],
+      games,
+      plateAppearances,
+      pitches,
+    });
+
+    expect(directory).toHaveLength(1);
+    expect(directory[0]?.playerSlug).toBe("drazka_dylan");
+    expect(directory[0]?.matchedHitterNames).toEqual(["Dylan Drazka", "Drazka, Dylan"]);
+    expect(directory[0]?.sessionCount).toBe(2);
+    expect(directory[0]?.pitchCount).toBe(5);
+    expect(directory[0]?.insights.summary.totalPlateAppearances).toBe(2);
   });
 });
