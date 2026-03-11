@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useDeferredValue, useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
-import { BarChart3, ClipboardList, Search } from "lucide-react";
+import { BarChart3, BookOpen, ClipboardList, Search } from "lucide-react";
 import {
     LeaderboardHero,
     LeaderboardIntro,
@@ -138,15 +138,24 @@ export function LeaderboardClientState({
                     side={(
                         <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                             <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-                                Navigation
+                                Resources
                             </div>
-                            <Link
-                                href="/charting"
-                                className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3.5 text-sm font-semibold text-emerald-300 transition-smooth hover:border-emerald-400/40 hover:text-emerald-200"
-                            >
-                                <ClipboardList className="h-4 w-4" />
-                                Charting Hub
-                            </Link>
+                            <div className="mt-3 grid gap-3">
+                                <Link
+                                    href="/charting"
+                                    className="inline-flex items-center gap-2 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3.5 text-sm font-semibold text-emerald-300 transition-smooth hover:border-emerald-400/40 hover:text-emerald-200"
+                                >
+                                    <ClipboardList className="h-4 w-4" />
+                                    Charting Hub
+                                </Link>
+                                <Link
+                                    href="/charting/faq"
+                                    className="inline-flex items-center gap-2 rounded-2xl border border-zinc-700/80 bg-zinc-900/80 px-4 py-3.5 text-sm font-semibold text-zinc-200 transition-smooth hover:border-emerald-400/30 hover:text-emerald-200"
+                                >
+                                    <BookOpen className="h-4 w-4" />
+                                    Metrics Dictionary
+                                </Link>
+                            </div>
                         </div>
                     )}
                 />

@@ -4,11 +4,10 @@ import { cache } from "react";
 import path from "path";
 import { promises as fs } from "fs";
 import { and, eq, ne } from "drizzle-orm";
-import players from "@/data/players.json";
 import rosterData from "@/data/roster.json";
 import { db } from "@/db";
 import { stuffPlusArsenal } from "@/db/schema";
-import { fetchPitchingLeaderboard } from "@/lib/d3db";
+import { fetchBattingLeaderboard, fetchPitchingLeaderboard } from "@/lib/d3db";
 import { getHand } from "@/lib/canonicalPlayers";
 import {
   buildCommandPlusBaselines,
@@ -23,6 +22,7 @@ import {
   computePitchingPlus,
   type PitchingPlusResult,
 } from "@/lib/pitchingPlus";
+import { getPlayerBySlug, type PlayerRegistryEntry } from "@/lib/playerRegistry";
 import { seasonFromDateId } from "@/lib/season";
 import { buildStuffPlusLookupCandidates } from "@/lib/stuffPlusLookup";
 import {
@@ -30,28 +30,10 @@ import {
   LeaderboardPill,
 } from "@/app/components/leaderboards/LeaderboardChrome";
 import PlayerProfileTabs from "./PlayerProfileTabs";
+import { loadChartingPlayerProfile } from "@/lib/charting/playerProfile";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-interface RawPlayerEntry {
-  player_slug?: string;
-  slug?: string;
-  full_name?: string;
-  name?: string;
-  team?: string;
-  school?: string;
-  role?: string;
-  d3_player_id?: number | string | null;
-}
-
-interface PlayerRegistryEntry {
-  slug: string;
-  name: string;
-  team: string;
-  role: string;
-  d3_player_id: string | null;
-}
 
 type D3Row = Record<string, unknown>;
 
@@ -104,11 +86,9 @@ type PercentileMetric = {
   note?: string;
 };
 
-const TARGET_YEAR = 2025;
+type ProfileMode = "pitcher" | "hitter" | "two-way";
 
-const registry = (players as RawPlayerEntry[])
-  .map((entry) => normalizePlayerEntry(entry))
-  .filter((entry): entry is PlayerRegistryEntry => entry != null);
+const TARGET_YEAR = 2025;
 
 
 const PITCHING_KEYS = {
@@ -141,22 +121,6 @@ const BATTING_KEYS = {
   war: ["war", "bwar", "fwar", "off_war", "owar"],
   wrc_plus: ["wrc_plus", "wrcplus"],
 };
-
-function normalizePlayerEntry(entry: RawPlayerEntry): PlayerRegistryEntry | null {
-  const slug = entry.slug ?? entry.player_slug ?? "";
-  const name = entry.name ?? entry.full_name ?? "";
-  const team = entry.team ?? entry.school ?? "";
-  const role = entry.role ?? "";
-  if (!slug || !name) return null;
-
-  return {
-    slug,
-    name,
-    team,
-    role,
-    d3_player_id: entry.d3_player_id != null ? String(entry.d3_player_id) : null,
-  };
-}
 
 function normalizeKey(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -661,6 +625,39 @@ function getD3PlayerId(player: PlayerRegistryEntry): string | null {
   return player.d3_player_id != null ? String(player.d3_player_id) : null;
 }
 
+function normalizePlayerName(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function resolveProfileMode(player: PlayerRegistryEntry): ProfileMode {
+  if (player.isTwoWay) {
+    return "two-way";
+  }
+  return player.isPitcher ? "pitcher" : "hitter";
+}
+
+function findLeaderboardRow(
+  leaderboardRows: D3Row[],
+  player: PlayerRegistryEntry,
+): D3Row | null {
+  const d3PlayerId = getD3PlayerId(player);
+  if (d3PlayerId) {
+    const byId = leaderboardRows.find((row) => String(row.player_id ?? "") === d3PlayerId);
+    if (byId) {
+      return byId;
+    }
+  }
+
+  const normalizedName = normalizePlayerName(player.name);
+  return (
+    leaderboardRows.find((row) => {
+      const rowName = normalizePlayerName(String(row.player_name ?? row.name ?? ""));
+      const rowTeam = normalizePlayerName(String(row.team_name ?? row.team ?? ""));
+      return rowName === normalizedName && (!rowTeam || rowTeam === "babson");
+    }) ?? null
+  );
+}
+
 function buildSeasonStats(metrics: MetricDefinition[], statsSource: D3Row): { label: string; value: string }[] {
   return metrics.map((metric) => {
     const value = getMetricValue(statsSource, metric);
@@ -722,36 +719,41 @@ export default async function PlayerProfilePage({
   const { slug } = await params;
   const sp = await searchParams;
   const initialTab = typeof sp.tab === "string" ? sp.tab : undefined;
-  const player = registry.find((entry) => entry.slug === slug);
+  const player = getPlayerBySlug(slug);
 
   if (!player) {
     notFound();
   }
 
-  const d3PlayerId = getD3PlayerId(player);
+  const profileMode = resolveProfileMode(player);
+  const overviewMode = profileMode === "hitter" ? "hitting" : "pitching";
 
   let leaderboardRows: D3Row[] = [];
   let fetchError: string | null = null;
 
   try {
-    const data = await fetchPitchingLeaderboard(String(TARGET_YEAR), 3);
+    const data =
+      overviewMode === "pitching"
+        ? await fetchPitchingLeaderboard(String(TARGET_YEAR), 3)
+        : await fetchBattingLeaderboard(String(TARGET_YEAR), 3);
     leaderboardRows = Array.isArray(data) ? data : extractRows(data);
   } catch (err) {
     fetchError = String(err);
     console.error("[PlayerProfile] leaderboard fetch failed:", fetchError);
   }
 
-  // ID-only match. No fuzzy/name fallback.
-  const playerRow = d3PlayerId
-    ? (leaderboardRows.find((row) => row.player_id === d3PlayerId) ?? null)
-    : null;
+  const playerRow = findLeaderboardRow(leaderboardRows, player);
+  const snapshotMetrics =
+    overviewMode === "pitching" ? PITCHING_SNAPSHOT_METRICS : BATTING_SNAPSHOT_METRICS;
+  const percentileMetrics =
+    overviewMode === "pitching" ? PITCHING_PERCENTILE_METRICS : BATTING_PERCENTILE_METRICS;
 
   const seasonStats = playerRow
-    ? buildSeasonStats(PITCHING_SNAPSHOT_METRICS, playerRow)
+    ? buildSeasonStats(snapshotMetrics, playerRow)
     : [];
   const d3Percentiles = playerRow
     ? buildD3Percentiles(
-        PITCHING_PERCENTILE_METRICS,
+        percentileMetrics,
         leaderboardRows,
         playerRow,
         playerRow,
@@ -760,25 +762,34 @@ export default async function PlayerProfilePage({
 
   const debugInfo = {
     foundRow: Boolean(playerRow),
-    playerId: d3PlayerId ?? "Unresolved",
+    playerId: getD3PlayerId(player) ?? "Unresolved",
     leaderboardCount: leaderboardRows.length,
-    sourceUsed: playerRow ? "leaderboard" : "none",
+    sourceUsed: playerRow ? overviewMode : "none",
     error: fetchError,
   };
 
   // Always log in server logs (visible in Vercel function logs)
   console.log("[PlayerProfile]", player.name, debugInfo);
 
-  const statsUnavailable = !playerRow && d3PlayerId != null && fetchError != null;
-
-  const roleLabel =
-    player.role.length > 0
-      ? `${player.role.charAt(0).toUpperCase()}${player.role.slice(1)}`
-      : player.role;
+  const statsUnavailable = !playerRow && fetchError != null;
+  const roleLabel = player.role;
   const seasonNote = undefined;
   const roster = rosterData as Record<string, { height?: string; weight?: string; class?: string }>;
   const rosterInfo = roster[player.slug];
-  const hand = getHand(player.slug);
+  const throwHand =
+    getHand(player.slug) ??
+    (player.throws === "R" || player.throws === "L" ? player.throws : null);
+  const handBadge =
+    player.bats && player.throws
+      ? `${player.bats}/${player.throws}`
+      : throwHand
+        ? player.isPitcher && !player.isHitter
+          ? throwHand === "R"
+            ? "RHP"
+            : "LHP"
+          : `T ${throwHand}`
+        : null;
+  const liveAbProfile = await loadChartingPlayerProfile(player.slug);
 
   const mechanicsIndex = await readMechanicsIndex();
   const mechanicsEntry = getMechanicsForPlayer(mechanicsIndex, {
@@ -908,12 +919,12 @@ export default async function PlayerProfilePage({
 
             <div className="relative">
               <div className="flex flex-wrap items-center gap-2">
-                <LeaderboardPill tone="emerald">Pitching Profile</LeaderboardPill>
-                {hand && (
+                <LeaderboardPill tone="emerald">Player Profile</LeaderboardPill>
+                {handBadge && throwHand && (
                   <span
-                    className={`rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] ${handBadgeClasses(hand)}`}
+                    className={`rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] ${handBadgeClasses(throwHand)}`}
                   >
-                    {hand === "R" ? "RHP" : "LHP"}
+                    {handBadge}
                   </span>
                 )}
               </div>
@@ -926,9 +937,16 @@ export default async function PlayerProfilePage({
                 <LeaderboardPill tone="neutral">{player.team}</LeaderboardPill>
                 <LeaderboardPill tone="neutral">{roleLabel}</LeaderboardPill>
                 <LeaderboardPill tone="neutral">{TARGET_YEAR}</LeaderboardPill>
-                {(rosterInfo?.height || rosterInfo?.weight || rosterInfo?.class) && (
+                {player.positions.length > 0 && (
+                  <LeaderboardPill tone="neutral">{player.positions.join(" / ")}</LeaderboardPill>
+                )}
+                {(rosterInfo?.height || rosterInfo?.weight || rosterInfo?.class || player.academicYear) && (
                   <LeaderboardPill tone="neutral">
-                    {[rosterInfo.height, rosterInfo.weight && `${rosterInfo.weight} lbs`, rosterInfo.class]
+                    {[
+                      rosterInfo?.height,
+                      rosterInfo?.weight && `${rosterInfo.weight} lbs`,
+                      rosterInfo?.class ?? player.academicYear,
+                    ]
                       .filter(Boolean)
                       .join(" · ")}
                   </LeaderboardPill>
@@ -940,17 +958,19 @@ export default async function PlayerProfilePage({
 
         {statsUnavailable && (
           <div className="mt-4 rounded-2xl border border-amber-800/40 bg-amber-950/30 px-4 py-3 text-sm text-amber-300">
-            2025 stats temporarily unavailable. Check back soon.
+            2025 {overviewMode} stats temporarily unavailable. Check back soon.
           </div>
         )}
 
-        {!d3PlayerId && (
+        {!playerRow && !statsUnavailable && (
           <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-500">
             No 2025 stats available
           </div>
         )}
 
         <PlayerProfileTabs
+          profileMode={profileMode}
+          percentileAudienceLabel={overviewMode === "pitching" ? "pitchers" : "hitters"}
           seasonStats={seasonStats}
           seasonYear={TARGET_YEAR}
           seasonNote={seasonNote}
@@ -965,6 +985,7 @@ export default async function PlayerProfilePage({
           initialStuffPitches={initialStuff.pitches}
           initialTab={initialTab}
           mechanicsEntry={mechanicsEntry ?? null}
+          liveAbProfile={liveAbProfile}
         />
       </div>
     </LeaderboardPageFrame>

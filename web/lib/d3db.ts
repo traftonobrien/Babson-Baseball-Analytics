@@ -15,15 +15,33 @@ const D3_BASE = "https://d3-dashboard.com/api";
 // Cache (daily sync via .github/workflows/sync-d3-daily.yml)
 // ---------------------------------------------------------------------------
 
-async function readCachedLeaderboard(year: string): Promise<unknown | null> {
+async function readCachedLeaderboard(
+  endpoint: "pitching" | "batting",
+  year: string,
+): Promise<unknown | null> {
   try {
     const cwd = process.cwd();
-    const cachePath = path.join(cwd, "public", "d3", `${year}.json`);
-    const raw = await readFile(cachePath, "utf-8");
-    return JSON.parse(raw) as unknown;
+    const candidates =
+      endpoint === "pitching"
+        ? [
+            path.join(cwd, "public", "d3", `${year}.json`),
+            path.join(cwd, "public", "d3", `pitching-${year}.json`),
+          ]
+        : [path.join(cwd, "public", "d3", `batting-${year}.json`)];
+
+    for (const cachePath of candidates) {
+      try {
+        const raw = await readFile(cachePath, "utf-8");
+        return JSON.parse(raw) as unknown;
+      } catch {
+        continue;
+      }
+    }
   } catch {
     return null;
   }
+
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -85,10 +103,23 @@ export async function fetchPitchingLeaderboard(
   year: string,
   division = 3,
 ): Promise<unknown> {
-  const cached = await readCachedLeaderboard(year);
+  const cached = await readCachedLeaderboard("pitching", year);
   if (cached != null) return cached;
 
   return fetchD3Direct("pitching", {
+    years: year,
+    division: String(division),
+  });
+}
+
+export async function fetchBattingLeaderboard(
+  year: string,
+  division = 3,
+): Promise<unknown> {
+  const cached = await readCachedLeaderboard("batting", year);
+  if (cached != null) return cached;
+
+  return fetchD3Direct("batting", {
     years: year,
     division: String(division),
   });

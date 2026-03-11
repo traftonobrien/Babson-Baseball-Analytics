@@ -7,6 +7,7 @@ import {
   Film,
   BarChart3,
   Sparkles,
+  ClipboardList,
 } from "lucide-react";
 import {
   DictionaryHubCard,
@@ -55,6 +56,13 @@ const DICTIONARY_ITEMS = [
     description: "Traditional stats, value metrics, and season rankings.",
     icon: BarChart3,
     tone: "sky" as const,
+  },
+  {
+    href: "/charting/faq",
+    label: "Live ABs",
+    description: "Charted pitcher and hitter metrics from Live AB sessions.",
+    icon: ClipboardList,
+    tone: "emerald" as const,
   },
 ];
 

@@ -45,17 +45,29 @@ const NAV_ITEMS: TubelightNavItem[] = [
   { name: "Home", url: "/", match: (pathname) => pathname === "/", section: "primary" },
   { name: "Players", url: "/players", icon: Users, section: "primary" },
   {
-    name: "Pitching+",
-    url: "/pitching-plus/leaderboard",
-    icon: Sparkles,
-    match: (pathname) => pathname === "/pitching-plus/leaderboard",
-    section: "tracking",
-  },
-  {
     name: "Statistics",
     url: "/team-stats/leaderboard",
     icon: BarChart3,
     match: (pathname) => pathname === "/team-stats/leaderboard" || pathname === "/team-stats",
+    section: "tracking",
+  },
+  {
+    name: "Live AB",
+    url: "/charting",
+    icon: ClipboardList,
+    match: (pathname) =>
+      pathname === "/charting" ||
+      pathname === "/charting/leaderboard" ||
+      pathname === "/charting/faq" ||
+      pathname.startsWith("/charting/games/") ||
+      pathname === "/charting/new",
+    section: "tracking",
+  },
+  {
+    name: "Pitching+",
+    url: "/pitching-plus/leaderboard",
+    icon: Sparkles,
+    match: (pathname) => pathname === "/pitching-plus/leaderboard",
     section: "tracking",
   },
   {
@@ -73,16 +85,6 @@ const NAV_ITEMS: TubelightNavItem[] = [
     url: "/command",
     icon: Target,
     match: (pathname) => pathname === "/command",
-    section: "tracking",
-  },
-  {
-    name: "Charting",
-    url: "/charting",
-    icon: ClipboardList,
-    match: (pathname) =>
-      pathname === "/charting" ||
-      pathname.startsWith("/charting/games/") ||
-      pathname === "/charting/new",
     section: "tracking",
   },
   {

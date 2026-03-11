@@ -2,47 +2,47 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Live AB Analytics
-current_phase: 13
-current_phase_name: per-player drill-down
-current_plan: Not started
-status: ready_to_plan
-stopped_at: Phase 12 Live AB Leaderboard completed and verified. Phase 13 per-player drill-down is next.
-last_updated: "2026-03-09T23:50:00.000Z"
-last_activity: 2026-03-09
+current_phase: 12.1
+current_phase_name: live-ab-player-profile-integration
+current_plan: 12.1-03
+status: ready_to_execute
+stopped_at: Phase 12.1 plans 01 and 02 are implemented; final polish and validation for 12.1-03 are next.
+last_updated: "2026-03-11T01:26:50.000Z"
+last_activity: 2026-03-10
 progress:
-  total_phases: 13
+  total_phases: 14
   completed_phases: 11
-  total_plans: 39
-  completed_plans: 31
-  percent: 79
+  total_plans: 43
+  completed_plans: 36
+  percent: 84
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-06)
+See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core Value:** One coach can chart an entire Babson outing on one iPad and trust that the result survives offline use, syncs cleanly, and exports well enough to replace the current paper workflow.
-**Current Focus:** Phase 12: Live AB Leaderboard
+**Current Focus:** Phase 12.1: Live AB player profile integration
 
 ## Current Position
 
-**Current Phase:** 13
-**Current Phase Name:** per-player drill-down
-**Total Phases:** 13
-**Current Plan:** Not started
-**Total Plans in Phase:** 2
-**Status:** Ready to plan
-**Last Activity:** 2026-03-09
-**Last Activity Description:** Phase 12 complete and verified with pitcher and hitter global leaderboard tables
-**Progress:** 85%
+**Current Phase:** 12.1
+**Current Phase Name:** live-ab-player-profile-integration
+**Total Phases:** 14
+**Current Plan:** 12.1-03
+**Total Plans in Phase:** 3
+**Status:** Ready to execute
+**Last Activity:** 2026-03-10
+**Last Activity Description:** Phase 12.1 plans 01 and 02 implemented with a shared Live AB profile helper and player-profile tab integration
+**Progress:** 84%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 31 roadmap plans shipped across Phases 1-8, 10, and 11
-- Documented phase summaries on disk: 19
+- Total plans completed: 36 roadmap plans shipped across Phases 1-8 and 10-12.1
+- Documented phase summaries on disk: 21
 - Total execution time: -
 
 **By Phase:**
@@ -60,9 +60,10 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | 10. Analytics Foundation | 4 | - | - |
 | 11. Session Overview Enhancements | 3 | - | - |
 | 12. Live AB Leaderboard | 3 | - | - |
+| 12.1. Live AB Player Profile Integration | 3 | - | - |
 
 **Recent Trend:**
-- Last 5 plans: 10-02, 10-03, 11-01, 11-02, 11-03
+- Last 5 plans: 12-01, 12-02, 12-03, 12.1-01, 12.1-02
 - Trend: Stable
 
 ## Decisions Made
@@ -78,11 +79,17 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 | 10 | Centralize Live AB analytics in `web/lib/charting/analytics.ts` with pure helpers plus async DB wrappers | Phase 11 and Phase 12 need one reusable analytics engine instead of duplicating page-local formulas |
 | 10 | Keep the analytics module lazily connected to Neon | Pure Vitest coverage must run without requiring `DATABASE_URL`, while server routes can still query the real DB |
 | 11 | Keep session review on the existing `/charting/games/[id]` route instead of splitting analytics onto a new page | Staff should review one charted game in one place before navigating into cross-session leaderboard views |
-| 11 | Use a reusable discrete zone heat map for both pitcher and hitter cards | Phase 12 and Phase 13 should inherit one charting-specific coverage visual rather than forking new heatmap implementations |
+| 11 | Use a reusable discrete zone heat map for both pitcher and hitter cards | Phase 12 and Phase 12.1 should inherit one charting-specific coverage visual rather than forking new heatmap implementations |
+
+## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 12.1 inserted after Phase 12: Live AB player profile integration (URGENT)
 
 ## Pending Todos
 
-- Plan Phase 13 around per-player drill-downs (`/charting/leaderboard/pitcher/[playerId]` and `/charting/leaderboard/hitter/[name]`)
+- Finish Phase 12.1-03 with mixed-role polish, review, and final validation
 - Return to Phase 9 to finish TestFlight packaging, pilot diagnostics, and operator runbook coverage
 
 ## Blockers
@@ -91,6 +98,6 @@ None.
 
 ## Session
 
-**Last Date:** 2026-03-09 23:50
-**Stopped At:** Phase 12 complete and verified; the leaderboard page now allows cross-session aggregations with tabs and filters
+**Last Date:** 2026-03-10 21:26
+**Stopped At:** Phase 12.1 plans 01 and 02 are implemented; final polish/review/validation remain in 12.1-03
 **Resume File:** None

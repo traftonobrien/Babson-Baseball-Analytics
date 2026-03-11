@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Activity, Target, ArrowRight, ScanLine, ChevronDown, ChevronUp } from "lucide-react";
 import SavantPercentileBar from "./SavantPercentileBar";
+import LiveAbProfilePanel from "./LiveAbProfilePanel";
 import MechanicsProfileCard from "@/app/components/mechanics/MechanicsProfileCard";
 import {
   LeaderboardPanel,
@@ -20,9 +21,12 @@ import { computeTotalStuffPlus, plusMetricBadgeStyle } from "@/lib/stuffPlusUtil
 import type { CommandPlusResult } from "@/lib/commandPlus";
 import type { PitchingPlusResult } from "@/lib/pitchingPlus";
 import type { HubPlayerEntry } from "@/lib/mechanics/hub";
+import type { ChartingPlayerProfile } from "@/lib/charting/playerProfile";
 
-const TABS = ["Overview", "Trackman", "Command", "Mechanics"] as const;
-type Tab = (typeof TABS)[number];
+const ALL_TABS = ["Overview", "Trackman", "Command", "Mechanics", "Live AB"] as const;
+const HITTER_TABS = ["Overview", "Live AB"] as const;
+type Tab = (typeof ALL_TABS)[number];
+type ProfileMode = "pitcher" | "hitter" | "two-way";
 type HeroTone = "amber" | "orange" | "blue";
 type HubTone = "blue" | "orange" | "violet";
 
@@ -93,6 +97,8 @@ interface PitchingHeroState {
 }
 
 interface Props {
+  profileMode: ProfileMode;
+  percentileAudienceLabel: string;
   seasonStats: SeasonStat[];
   seasonYear: number;
   seasonNote?: string;
@@ -107,6 +113,7 @@ interface Props {
   initialStuffPitches: StuffPlusApiPitch[];
   initialTab?: string;
   mechanicsEntry?: HubPlayerEntry | null;
+  liveAbProfile: ChartingPlayerProfile;
 }
 
 const HUB_TONE_STYLES: Record<
@@ -144,13 +151,21 @@ function formatDateLabel(raw: string): string {
   return raw;
 }
 
-function resolveInitialTab(raw?: string): Tab {
-  if (!raw) return "Overview";
+function resolveInitialTab(raw: string | undefined, tabs: readonly Tab[]): Tab {
+  if (!raw) return tabs[0] ?? "Overview";
   const lower = raw.toLowerCase();
-  if (lower === "trackman") return "Trackman";
-  if (lower === "command") return "Command";
-  if (lower === "mechanics") return "Mechanics";
-  return "Overview";
+  const resolved =
+    lower === "trackman"
+      ? "Trackman"
+      : lower === "command"
+        ? "Command"
+        : lower === "mechanics"
+          ? "Mechanics"
+          : lower === "live-ab" || lower === "liveab"
+            ? "Live AB"
+            : "Overview";
+
+  return tabs.includes(resolved) ? resolved : tabs[0] ?? "Overview";
 }
 
 const HERO_TONE_STYLES: Record<
@@ -374,6 +389,8 @@ function ProfileHubLink({
 }
 
 export default function PlayerProfileTabs({
+  profileMode,
+  percentileAudienceLabel,
   seasonStats,
   seasonYear,
   seasonNote,
@@ -388,10 +405,16 @@ export default function PlayerProfileTabs({
   initialStuffPitches,
   initialTab,
   mechanicsEntry,
+  liveAbProfile,
 }: Props) {
-  const [activeTab, setActiveTab] = useState<Tab>(resolveInitialTab(initialTab));
+  const availableTabs = profileMode === "hitter" ? HITTER_TABS : ALL_TABS;
+  const [activeTab, setActiveTab] = useState<Tab>(resolveInitialTab(initialTab, availableTabs));
   const [commandSeasonFilter, setCommandSeasonFilter] = useState<string>("2026");
   const [expandedMetric, setExpandedMetric] = useState<"pitching" | "command" | "stuff" | null>(null);
+  const seasonStatMap = useMemo(
+    () => new Map(seasonStats.map((stat) => [stat.label, stat.value])),
+    [seasonStats],
+  );
 
   const sortedSessions = useMemo(() => {
     return [...trackmanSessions].sort((a, b) => b.date.localeCompare(a.date));
@@ -526,9 +549,9 @@ export default function PlayerProfileTabs({
       <div className="overflow-x-auto rounded-[1.5rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(17,24,39,0.64),rgba(9,9,11,0.9))] p-2 shadow-[0_20px_48px_rgba(0,0,0,0.20)] scrollbar-hide">
         <div
           className="grid min-w-[30rem] gap-2 md:min-w-full"
-          style={{ gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))` }}
+          style={{ gridTemplateColumns: `repeat(${availableTabs.length}, minmax(0, 1fr))` }}
         >
-          {TABS.map((tab) => (
+          {availableTabs.map((tab) => (
             <button
               key={tab}
               type="button"
@@ -555,102 +578,154 @@ export default function PlayerProfileTabs({
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
             className="mt-8 space-y-8"
           >
-            <section className="space-y-7">
-              <div className="space-y-3">
-                <ProfileHeroTile
-                  index={0}
-                  label={heroTiles.pitchingTile.label}
-                  value={heroTiles.pitchingTile.value}
-                  note={heroTiles.pitchingTile.note}
-                  tone={heroTiles.pitchingTile.tone}
-                  badgeStyle={heroTiles.pitchingTile.badgeStyle}
-                  onClick={heroTiles.pitchingTile.onClick}
-                  active={heroTiles.pitchingTile.active}
-                  featured={heroTiles.pitchingTile.featured}
-                />
-
-                <div className="grid gap-3 md:grid-cols-2">
-                  {heroTiles.secondaryTiles.map((tile, index) => (
-                    <ProfileHeroTile
-                      key={tile.label}
-                      index={index + 1}
-                      label={tile.label}
-                      value={tile.value}
-                      note={tile.note}
-                      tone={tile.tone}
-                      badgeStyle={tile.badgeStyle}
-                      onClick={tile.onClick}
-                      active={tile.active}
-                      featured={tile.featured}
-                    />
-                  ))}
+            {profileMode === "hitter" ? (
+              <section className="space-y-5">
+                <div>
+                  <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
+                    Hitting Snapshot
+                  </h2>
+                  <p className="mt-1 text-sm text-zinc-500">
+                    Season production and plate-discipline context for this hitter profile.
+                  </p>
                 </div>
-              </div>
 
-              <AnimatePresence initial={false} mode="wait">
-                {expandedMetric === "pitching" && (
-                  <motion.div
-                    key="pitching-plus-model"
-                    initial={{ opacity: 0, y: -8, height: 0 }}
-                    animate={{ opacity: 1, y: 0, height: "auto" }}
-                    exit={{ opacity: 0, y: -6, height: 0 }}
-                    transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-                    className="overflow-hidden"
-                  >
-                    <PitchingPlusModelCard
-                      season={latestCommandSeason}
-                      loading={isPitchingHeroLoading}
-                      note={pitchingModel.note}
-                      result={pitchingModel.result}
-                    />
-                  </motion.div>
-                )}
-                {expandedMetric === "command" && (
-                  <motion.div
-                    key="command-plus-model"
-                    initial={{ opacity: 0, y: -8, height: 0 }}
-                    animate={{ opacity: 1, y: 0, height: "auto" }}
-                    exit={{ opacity: 0, y: -6, height: 0 }}
-                    transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-                    className="overflow-hidden"
-                  >
-                    <CommandPlusModelCard
-                      season={latestCommandSeason}
-                      note={
-                        currentCommandHero?.score != null && currentCommandHero.season != null
-                          ? `${currentCommandHero.outingCount} outing${currentCommandHero.outingCount === 1 ? "" : "s"} | ${currentCommandHero.pitchCount} pitch${currentCommandHero.pitchCount === 1 ? "" : "es"} in ${currentCommandHero.season}`
-                          : latestCommandSeason != null
-                            ? `No qualified score yet for ${latestCommandSeason}`
-                            : "No command outings yet"
-                      }
-                      result={initialCommandResult}
-                    />
-                  </motion.div>
-                )}
-                {expandedMetric === "stuff" && (
-                  <motion.div
-                    key="stuff-plus-model"
-                    initial={{ opacity: 0, y: -8, height: 0 }}
-                    animate={{ opacity: 1, y: 0, height: "auto" }}
-                    exit={{ opacity: 0, y: -6, height: 0 }}
-                    transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-                    className="overflow-hidden"
-                  >
-                    <StuffPlusModelCard
-                      note={
-                        currentStuffHero?.total != null
-                          ? `${currentStuffHero.pitchTypeCount} pitch type${currentStuffHero.pitchTypeCount === 1 ? "" : "s"} across ${currentStuffHero.sessionCount ?? 0} session${currentStuffHero.sessionCount === 1 ? "" : "s"}`
-                          : trackmanSessions.length > 0
-                            ? "Trackman sessions found, no Stuff+ grade yet"
-                            : "No Trackman arsenal yet"
-                      }
-                      overall={currentStuffHero?.total ?? null}
-                      pitches={initialStuffPitches}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </section>
+                <div className="grid gap-3 md:grid-cols-4 xl:grid-cols-6">
+                  <LeaderboardStatBlock
+                    label="AVG"
+                    value={seasonStatMap.get("AVG") ?? "--"}
+                    detail="batting average"
+                    emphasisClassName="text-emerald-300"
+                  />
+                  <LeaderboardStatBlock
+                    label="OPS"
+                    value={seasonStatMap.get("OPS") ?? "--"}
+                    detail="on-base plus slugging"
+                    emphasisClassName="text-zinc-100"
+                  />
+                  <LeaderboardStatBlock
+                    label="HR"
+                    value={seasonStatMap.get("HR") ?? "--"}
+                    detail="home runs"
+                    emphasisClassName="text-zinc-100"
+                  />
+                  <LeaderboardStatBlock
+                    label="RBI"
+                    value={seasonStatMap.get("RBI") ?? "--"}
+                    detail="runs batted in"
+                    emphasisClassName="text-zinc-100"
+                  />
+                  <LeaderboardStatBlock
+                    label="BB%"
+                    value={seasonStatMap.get("BB%") ?? "--"}
+                    detail="walk rate"
+                    emphasisClassName="text-zinc-100"
+                  />
+                  <LeaderboardStatBlock
+                    label="K%"
+                    value={seasonStatMap.get("K%") ?? "--"}
+                    detail="strikeout rate"
+                    emphasisClassName="text-zinc-100"
+                  />
+                </div>
+              </section>
+            ) : (
+              <section className="space-y-7">
+                <div className="space-y-3">
+                  <ProfileHeroTile
+                    index={0}
+                    label={heroTiles.pitchingTile.label}
+                    value={heroTiles.pitchingTile.value}
+                    note={heroTiles.pitchingTile.note}
+                    tone={heroTiles.pitchingTile.tone}
+                    badgeStyle={heroTiles.pitchingTile.badgeStyle}
+                    onClick={heroTiles.pitchingTile.onClick}
+                    active={heroTiles.pitchingTile.active}
+                    featured={heroTiles.pitchingTile.featured}
+                  />
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {heroTiles.secondaryTiles.map((tile, index) => (
+                      <ProfileHeroTile
+                        key={tile.label}
+                        index={index + 1}
+                        label={tile.label}
+                        value={tile.value}
+                        note={tile.note}
+                        tone={tile.tone}
+                        badgeStyle={tile.badgeStyle}
+                        onClick={tile.onClick}
+                        active={tile.active}
+                        featured={tile.featured}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <AnimatePresence initial={false} mode="wait">
+                  {expandedMetric === "pitching" && (
+                    <motion.div
+                      key="pitching-plus-model"
+                      initial={{ opacity: 0, y: -8, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: "auto" }}
+                      exit={{ opacity: 0, y: -6, height: 0 }}
+                      transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <PitchingPlusModelCard
+                        season={latestCommandSeason}
+                        loading={isPitchingHeroLoading}
+                        note={pitchingModel.note}
+                        result={pitchingModel.result}
+                      />
+                    </motion.div>
+                  )}
+                  {expandedMetric === "command" && (
+                    <motion.div
+                      key="command-plus-model"
+                      initial={{ opacity: 0, y: -8, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: "auto" }}
+                      exit={{ opacity: 0, y: -6, height: 0 }}
+                      transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <CommandPlusModelCard
+                        season={latestCommandSeason}
+                        note={
+                          currentCommandHero?.score != null && currentCommandHero.season != null
+                            ? `${currentCommandHero.outingCount} outing${currentCommandHero.outingCount === 1 ? "" : "s"} | ${currentCommandHero.pitchCount} pitch${currentCommandHero.pitchCount === 1 ? "" : "es"} in ${currentCommandHero.season}`
+                            : latestCommandSeason != null
+                              ? `No qualified score yet for ${latestCommandSeason}`
+                              : "No command outings yet"
+                        }
+                        result={initialCommandResult}
+                      />
+                    </motion.div>
+                  )}
+                  {expandedMetric === "stuff" && (
+                    <motion.div
+                      key="stuff-plus-model"
+                      initial={{ opacity: 0, y: -8, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: "auto" }}
+                      exit={{ opacity: 0, y: -6, height: 0 }}
+                      transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <StuffPlusModelCard
+                        note={
+                          currentStuffHero?.total != null
+                            ? `${currentStuffHero.pitchTypeCount} pitch type${currentStuffHero.pitchTypeCount === 1 ? "" : "s"} across ${currentStuffHero.sessionCount ?? 0} session${currentStuffHero.sessionCount === 1 ? "" : "s"}`
+                            : trackmanSessions.length > 0
+                              ? "Trackman sessions found, no Stuff+ grade yet"
+                              : "No Trackman arsenal yet"
+                        }
+                        overall={currentStuffHero?.total ?? null}
+                        pitches={initialStuffPitches}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </section>
+            )}
 
             {seasonStats.length === 0 && d3Percentiles.length === 0 ? (
               <LeaderboardPanel className="p-5 text-sm text-zinc-500">
@@ -700,7 +775,7 @@ export default function PlayerProfileTabs({
                         D3 Percentile Rankings
                       </h2>
                       <p className="mt-1 text-sm text-zinc-500">
-                        Versus Division III pitchers in {seasonYear}.
+                        Versus Division III {percentileAudienceLabel} in {seasonYear}.
                       </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -729,7 +804,7 @@ export default function PlayerProfileTabs({
           </motion.div>
         )}
 
-        {activeTab === "Trackman" && (
+        {profileMode !== "hitter" && activeTab === "Trackman" && (
           <motion.div
             key="Trackman"
             initial={{ opacity: 0, y: 8 }}
@@ -828,7 +903,7 @@ export default function PlayerProfileTabs({
           </motion.div>
         )}
 
-        {activeTab === "Command" && (
+        {profileMode !== "hitter" && activeTab === "Command" && (
           <motion.div
             key="Command"
             initial={{ opacity: 0, y: 8 }}
@@ -942,7 +1017,7 @@ export default function PlayerProfileTabs({
           </motion.div>
         )}
 
-        {activeTab === "Mechanics" && (
+        {profileMode !== "hitter" && activeTab === "Mechanics" && (
           <motion.div
             key="Mechanics"
             initial={{ opacity: 0, y: 8 }}
@@ -1012,6 +1087,19 @@ export default function PlayerProfileTabs({
                 <MechanicsProfileCard entry={mechanicsEntry ?? null} profileSlug={playerSlug} />
               </LeaderboardPanel>
             </section>
+          </motion.div>
+        )}
+
+        {activeTab === "Live AB" && (
+          <motion.div
+            key="LiveAB"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            className="mt-8 space-y-6"
+          >
+            <LiveAbProfilePanel profile={liveAbProfile} />
           </motion.div>
         )}
       </AnimatePresence>

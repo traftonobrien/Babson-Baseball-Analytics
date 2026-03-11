@@ -16,9 +16,9 @@ const SORT_KEYS: { key: SortKey; label: string; lowerBetter?: boolean; format?: 
     { key: "sessions", label: "Sessions", lowerBetter: false, format: (v) => v?.toString() ?? "—" },
     { key: "innings", label: "Innings", lowerBetter: false, format: (v) => v?.toString() ?? "—" },
     { key: "totalPitches", label: "Pitches", lowerBetter: false, format: (v) => v?.toString() ?? "—" },
+    { key: "totalPAs", label: "TBF", lowerBetter: false, format: (v) => v?.toString() ?? "—" },
     { key: "baa", label: "BAA", lowerBetter: true, format: (v) => v !== null ? v.toFixed(3).replace(/^0\./, ".") : "—" },
     { key: "babip", label: "BABIP", lowerBetter: true, format: (v) => v !== null ? v.toFixed(3).replace(/^0\./, ".") : "—" },
-    { key: "whip", label: "WHIP", lowerBetter: true, format: (v) => v !== null ? v.toFixed(2) : "—" },
     { key: "strikePct", label: "Strike%", lowerBetter: false, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
     { key: "zonePct", label: "Zone%", lowerBetter: false, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
     { key: "whiffPct", label: "Whiff%", lowerBetter: false, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
@@ -28,8 +28,8 @@ const SORT_KEYS: { key: SortKey; label: string; lowerBetter?: boolean; format?: 
     { key: "bbPct", label: "BB%", lowerBetter: true, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
 ];
 
-const BASIC_KEYS: SortKey[] = ["sessions", "innings", "totalPitches", "baa", "whip", "strikePct", "kPct", "bbPct"];
-const ADVANCED_KEYS: SortKey[] = ["sessions", "innings", "totalPitches", "babip", "zonePct", "whiffPct", "chasePct", "fpsPct"];
+const BASIC_KEYS: SortKey[] = ["sessions", "innings", "totalPitches", "totalPAs", "baa", "strikePct", "kPct", "bbPct"];
+const ADVANCED_KEYS: SortKey[] = ["sessions", "innings", "totalPitches", "totalPAs", "babip", "zonePct", "whiffPct", "chasePct", "fpsPct"];
 
 function rankColor(i: number): string {
     const glow = "[text-shadow:0_0_8px_currentColor]";

@@ -15,16 +15,9 @@ import {
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { getCanonicalName, getHand } from "@/lib/canonicalPlayers";
 import { handBadgeClasses } from "@/lib/handBadge";
+import type { PlayerRegistryEntry } from "@/lib/playerRegistry";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
 import { cn } from "@/lib/utils";
-
-export interface PlayerRegistryEntry {
-  slug: string;
-  name: string;
-  team: string;
-  role: string;
-  d3_player_id: string | null;
-}
 
 export interface RosterEntry {
   height?: string;
@@ -33,6 +26,7 @@ export interface RosterEntry {
 }
 
 type HandFilter = "all" | "R" | "L";
+type RoleFilter = "pitchers" | "hitters";
 
 const CLASS_SORT_ORDER: Record<string, number> = {
   GR: 0,
@@ -80,6 +74,28 @@ function getLastNameInitial(name: string): string {
   return initial || "#";
 }
 
+function getThrowHand(player: PlayerRegistryEntry): "R" | "L" | null {
+  const canonical = getHand(player.slug);
+  if (canonical) return canonical;
+  return player.throws === "R" || player.throws === "L" ? player.throws : null;
+}
+
+function getHandBadgeLabel(player: PlayerRegistryEntry): string | null {
+  if (player.bats && player.throws) {
+    return `${player.bats}/${player.throws}`;
+  }
+
+  const throwHand = getThrowHand(player);
+  if (throwHand && player.isPitcher && !player.isHitter) {
+    return throwHand === "R" ? "RHP" : "LHP";
+  }
+  if (throwHand) {
+    return `T ${throwHand}`;
+  }
+
+  return null;
+}
+
 function PlayerCard({
   player,
   rosterInfo,
@@ -89,7 +105,8 @@ function PlayerCard({
   rosterInfo?: RosterEntry;
   pinned?: boolean;
 }) {
-  const hand = getHand(player.slug);
+  const hand = getThrowHand(player);
+  const handBadge = getHandBadgeLabel(player);
   const canonicalName = getCanonicalName(player.name);
   const details = formatRosterDetails(rosterInfo);
   const accentClasses =
@@ -149,14 +166,14 @@ function PlayerCard({
               </p>
             </div>
 
-            {hand ? (
+            {handBadge ? (
               <span
                 className={cn(
                   "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em]",
-                  handBadgeClasses(hand),
+                  handBadgeClasses(hand ?? "R"),
                 )}
               >
-                {hand === "R" ? "RHP" : "LHP"}
+                {handBadge}
               </span>
             ) : null}
           </div>
@@ -196,6 +213,7 @@ export default function PlayersHubView({
   roster?: Record<string, RosterEntry>;
 }) {
   const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>("pitchers");
   const [handFilter, setHandFilter] = useState<HandFilter>("all");
   const [classFilter, setClassFilter] = useState("all");
   const { slug: selectedSlug } = useSelectedPlayer();
@@ -218,6 +236,12 @@ export default function PlayersHubView({
   const filtered = useMemo(() => {
     let result = registry;
 
+    if (roleFilter === "pitchers") {
+      result = result.filter((player) => player.isPitcher);
+    } else if (roleFilter === "hitters") {
+      result = result.filter((player) => player.isHitter);
+    }
+
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
@@ -228,7 +252,7 @@ export default function PlayersHubView({
     }
 
     if (handFilter !== "all") {
-      result = result.filter((player) => getHand(player.slug) === handFilter);
+      result = result.filter((player) => getThrowHand(player) === handFilter);
     }
 
     if (classFilter !== "all") {
@@ -250,7 +274,7 @@ export default function PlayersHubView({
 
       return a.slug.localeCompare(b.slug);
     });
-  }, [classFilter, handFilter, registry, roster, search]);
+  }, [classFilter, handFilter, registry, roleFilter, roster, search]);
 
   const featuredPlayer = selectedSlug
     ? filtered.find((player) => player.slug === selectedSlug) ?? null
@@ -282,22 +306,22 @@ export default function PlayersHubView({
           <LeaderboardHero
             tone="emerald"
             icon={Users}
-            eyebrow="Pitching Hub"
+            eyebrow="Roster Hub"
             title="Player Profiles"
-            description="Start with the roster. Every card opens a full player page with season production, Trackman movement, command, and development context."
+            description="Start with the full Babson roster. Every card opens one player page with role-aware stats, Live AB context, and system-specific development data when it exists."
             meta={
               <>
                 <LeaderboardPill tone="emerald">
-                  {registry.length} Pitcher{registry.length !== 1 ? "s" : ""}
+                  {registry.length} Player{registry.length !== 1 ? "s" : ""}
                 </LeaderboardPill>
-                <LeaderboardPill tone="neutral">Full Data Stack</LeaderboardPill>
+                <LeaderboardPill tone="neutral">Pitchers + Hitters</LeaderboardPill>
               </>
             }
             summary={
               <LeaderboardStatBlock
                 label="Roster"
                 value={String(registry.length)}
-                detail="pitchers currently in the directory"
+                detail="players currently in the directory"
                 emphasisClassName="text-emerald-300"
               />
             }
@@ -335,6 +359,38 @@ export default function PlayersHubView({
 
         <LeaderboardToolbar>
           <div className="grid gap-4">
+            <div className="grid gap-3 md:grid-cols-2">
+              {([
+                {
+                  value: "pitchers",
+                  label: "Pitchers",
+                },
+                {
+                  value: "hitters",
+                  label: "Hitters",
+                },
+              ] as const).map((option) => {
+                const active = roleFilter === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setRoleFilter(option.value)}
+                    className={cn(
+                      "w-full rounded-[1.25rem] border px-5 py-4 text-center transition-smooth",
+                      active
+                        ? "border-emerald-400/40 bg-emerald-500/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_0_1px_rgba(52,211,153,0.10),0_0_24px_rgba(16,185,129,0.08)]"
+                        : "border-zinc-800 bg-zinc-950/75 hover:border-zinc-700 hover:bg-zinc-950/90",
+                    )}
+                  >
+                    <div className="text-[11px] font-black uppercase tracking-[0.22em] text-zinc-500">
+                      {option.label}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
             <div className="relative">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
               <input
@@ -354,8 +410,8 @@ export default function PlayersHubView({
                   </span>
                   {([
                     { value: "all", label: "All" },
-                    { value: "R", label: "RHP" },
-                    { value: "L", label: "LHP" },
+                    { value: "R", label: "R" },
+                    { value: "L", label: "L" },
                   ] as const).map((option) => {
                     const active = handFilter === option.value;
                     return (
@@ -408,6 +464,7 @@ export default function PlayersHubView({
                     type="button"
                     onClick={() => {
                       setSearch("");
+                      setRoleFilter("pitchers");
                       setHandFilter("all");
                       setClassFilter("all");
                     }}
@@ -421,6 +478,9 @@ export default function PlayersHubView({
               <div className="flex flex-wrap items-center gap-2 xl:justify-end">
                 <LeaderboardPill tone="neutral">
                   {filtered.length} Visible
+                </LeaderboardPill>
+                <LeaderboardPill tone="neutral">
+                  {roleFilter === "pitchers" ? "Pitchers" : "Hitters"}
                 </LeaderboardPill>
                 {classFilter !== "all" ? (
                   <LeaderboardPill tone="neutral">{classFilter}</LeaderboardPill>

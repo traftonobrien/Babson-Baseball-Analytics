@@ -26,7 +26,7 @@ export default function PlayersFaqView() {
         tone="indigo"
         icon={LayoutDashboard}
         title="The Unified Profile"
-        description="Each pitcher has one canonical profile that acts as the home base for reports, models, and historical context."
+        description="Each player has one canonical profile that acts as the home base for reports, models, and historical context."
       >
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <DictionaryCard>
@@ -65,7 +65,7 @@ export default function PlayersFaqView() {
           <DictionaryCard className="sm:px-8">
             <h3 className="text-lg font-bold text-zinc-200">Search and Filters</h3>
               <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-              Use handedness filters and the search bar to move through the
+              Use throwing-hand filters and the search bar to move through the
               roster quickly. Partial name search is supported.
               </p>
           </DictionaryCard>

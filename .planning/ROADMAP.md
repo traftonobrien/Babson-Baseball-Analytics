@@ -22,6 +22,7 @@ This roadmap takes the project from a brownfield repo with no live charting doma
 - [x] **Phase 10: Analytics Foundation** - Build shared stat engine for pitcher and hitter metrics from charting pitch/PA data
 - [x] **Phase 11: Session Overview Enhancements** - Enrich /charting/games/[id] with per-pitcher and per-hitter breakdown sections
 - [x] **Phase 12: Live AB Leaderboard** - New /charting/leaderboard with Pitchers + Hitters tabs, filters, and sortable columns
+- [ ] **Phase 12.1: Live AB Player Profile Integration** - Bring charted pitcher and hitter analytics into the main player profile tabs as a new Live AB surface
 - [ ] **Phase 13: Integrated At-A-Glance Dashboard** - Redesign the game session overview into a dense, vertical-scrolling-free compact layout.
 
 ## Phase Details
@@ -251,6 +252,27 @@ Plans:
 - [x] 12-02: Build pitcher leaderboard table with sort and filter integration
 - [x] 12-03: Build hitter leaderboard table with sort and filter integration
 
+### Phase 12.1: Live AB player profile integration (INSERTED)
+
+**Goal:** Integrate cross-session Live AB analytics into the existing player profile experience so coaches can evaluate charted pitcher and hitter performance from each player page.
+**Requirements**: [PORT-05]
+**Depends on:** Phase 12
+**Success Criteria** (what must be TRUE):
+  1. Player profiles expose a new Live AB tab within the existing profile tab system.
+  2. Pitcher-capable players show a Live AB overview and recent-session history built from shared charting analytics.
+  3. Hitter-capable players show a Live AB overview and recent-session history built from shared charting analytics.
+  4. Two-way players and no-data states are handled cleanly without requiring separate profile routes.
+**Plans:** 3 plans
+
+Plans:
+- [x] 12.1-01: Build role-aware Live AB profile aggregation and hitter identity resolution helpers
+- [x] 12.1-02: Integrate the Live AB tab into `/players/[slug]` with pitcher and hitter profile overviews
+- [ ] 12.1-03: Polish mixed-role states, session links, and final validation coverage
+
+Current status:
+- `/players/[slug]` now exposes a Live AB tab backed by shared charting profile data, including pitcher/hitter overview cards and recent session links.
+- Final mixed-role polish and the broader validation gate remain before Phase 12.1 can be closed.
+
 ### Phase 13: Integrated At-A-Glance Dashboard
 **Goal**: Maintain the aggressive, dark, data-dense aesthetic while eliminating vertical scrolling by packing all key pitcher and hitter insights into compact, single-screen cards within a two-column layout.
 **Depends on**: Phase 11
@@ -278,7 +300,8 @@ Plans:
 | 7. Export Fidelity | 3/3 | Complete | 2026-03-06 |
 | 8. Charting Engine Hardening | 3/3 | Complete | 2026-03-06 |
 | 9. Pilot Hardening and TestFlight | 0/3 | Not started | - |
-| 10. Analytics Foundation | 0/4 | Not started | - |
-| 11. Session Overview Enhancements | 0/3 | Not started | - |
+| 10. Analytics Foundation | 4/4 | Complete | 2026-03-10 |
+| 11. Session Overview Enhancements | 3/3 | Complete | 2026-03-10 |
 | 12. Live AB Leaderboard | 3/3 | Complete | 2026-03-09 |
+| 12.1. Live AB Player Profile Integration | 2/3 | In progress | - |
 | 13. Integrated At-A-Glance Dashboard | 0/3 | Not started | - |

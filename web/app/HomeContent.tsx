@@ -295,18 +295,18 @@ export default function HomeContent() {
               </div>
               <div>
                 <h1 className="text-3xl font-black tracking-tight text-zinc-50 sm:text-[2.65rem] sm:leading-[1.02]">
-                  Babson Baseball Pitching Portal
+                  Babson Baseball Data Insights Portal
                 </h1>
                 <p className="mt-2 max-w-2xl text-sm leading-7 text-zinc-400 sm:text-[15px]">
-                  The full pitching operating system for the staff: profiles,
-                  live tracking, model grades, rankings, and definitions in one
-                  place.
+                  The team-wide portal for player profiles, season statistics,
+                  Live AB data, and the pitcher-specific tools staff uses every
+                  day.
                 </p>
               </div>
             </div>
 
             <div className="mt-6 flex flex-wrap gap-2">
-              {["Profiles", "Tracking", "Rankings", "Definitions"].map(
+              {["Player Profiles", "Season Statistics", "Live AB", "Pitcher Tools"].map(
                 (chip) => (
                   <span
                     key={chip}
@@ -335,30 +335,29 @@ export default function HomeContent() {
             icon={Users}
             eyebrow="Foundation"
             title="Player Profiles"
-            description="Open the roster, then move from each pitcher into stats, Trackman, command, and video."
-            details={["Roster", "Profiles", "Comparisons"]}
-            className="lg:col-span-6"
+            description="Open the full roster, then move into role-aware player pages with season context and Live AB data."
+            details={["Roster", "Profiles", "Live AB"]}
+            className="lg:col-span-4"
           />
           <HomeLinkCard
             href="/team-stats/leaderboard"
             tone="sky"
             icon={BarChart3}
             eyebrow="Production"
-            title="Statistics"
-            description="Season production for the staff, laid out in one ranked board."
-            details={["ERA", "WHIP", "K%", "BB%"]}
-            className="lg:col-span-3"
+            title="Season Statistics"
+            description="Season production for the whole team in one leaderboard and dictionary flow."
+            details={["Team Stats", "Rankings", "Definitions"]}
+            className="lg:col-span-4"
           />
           <HomeLinkCard
-            href="/mechanics"
-            tone="violet"
-            icon={Film}
-            eyebrow="Video"
-            title="Mechanics"
-            description="Phase-by-phase delivery review with session-level breakdowns."
-            details={["Video", "Phases", "Sessions"]}
-            badge="Beta"
-            className="lg:col-span-3"
+            href="/charting"
+            tone="emerald"
+            icon={ClipboardList}
+            eyebrow="Tracking"
+            title="Live AB Portal"
+            description="Open charted sessions, synced game logs, and the Live AB leaderboard for pitchers and hitters."
+            details={["Sessions", "Leaderboard", "Game Review"]}
+            className="lg:col-span-4"
           />
         </div>
       </motion.div>
@@ -369,7 +368,7 @@ export default function HomeContent() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.09 }}
       >
-        <SectionMarker label="Daily Work" />
+        <SectionMarker label="Pitcher Tools" />
         <div className="mt-3 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <HomeLinkCard
             href="/trackman"
@@ -390,22 +389,23 @@ export default function HomeContent() {
             details={["Strikes", "Misses", "Outings"]}
           />
           <HomeLinkCard
-            href="/charting"
-            tone="emerald"
-            icon={ClipboardList}
-            eyebrow="Tracking"
-            title="Charting Hub"
-            description="View synced pitcher charts, play-by-play logs, and derived analytics from the iPad app."
-            details={["Logs", "Pitches", "Analytics"]}
-          />
-          <HomeLinkCard
             href="/pitching-plus/leaderboard"
             tone="amber"
             icon={Sparkles}
             eyebrow="Blend"
-            title="Pitching+"
+            title="Pitching+ Hub"
             description="See how live stuff and command blend into one leaderboard view."
             details={["Pitching+", "Command+", "Stuff+"]}
+          />
+          <HomeLinkCard
+            href="/mechanics"
+            tone="violet"
+            icon={Film}
+            eyebrow="Video"
+            title="Mechanics Hub"
+            description="Phase-by-phase delivery review with session-level breakdowns."
+            details={["Video", "Phases", "Sessions"]}
+            badge="Beta"
           />
         </div>
       </motion.div>

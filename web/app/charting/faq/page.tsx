@@ -1,0 +1,10 @@
+import type { Metadata } from "next";
+import ChartingFaqView from "./ChartingFaqView";
+
+export const metadata: Metadata = {
+  title: "Live AB Guide — Babson Baseball",
+};
+
+export default function ChartingFaqPage() {
+  return <ChartingFaqView />;
+}

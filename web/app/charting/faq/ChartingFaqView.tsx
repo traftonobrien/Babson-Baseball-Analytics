@@ -1,0 +1,241 @@
+"use client";
+
+import { BarChart3, BookOpen, ClipboardList, Target } from "lucide-react";
+import {
+  DictionaryCard,
+  DictionaryPageShell,
+  DictionarySection,
+  DictionaryTableShell,
+} from "@/app/components/dictionary/DictionaryChrome";
+
+const PITCHER_STATS = [
+  {
+    stat: "Sessions",
+    definition: "Unique charted Live AB sessions that match the selected date range or single-session filter.",
+  },
+  {
+    stat: "Innings",
+    definition: "The actual innings touched by the pitcher in the charted plate appearances, not just the number of stints logged.",
+  },
+  {
+    stat: "Pitches",
+    definition: "Total charted pitches thrown by that pitcher inside the current leaderboard scope.",
+  },
+  {
+    stat: "TBF",
+    definition: "Total batters faced. This replaces WHIP on the Live AB board because scrimmage innings are often non-standard.",
+  },
+  {
+    stat: "BAA",
+    definition: "Batting average against using charted outcomes only. Walks and hit-by-pitch are removed from the denominator.",
+  },
+  {
+    stat: "BABIP",
+    definition: "Batting average on balls in play. Home runs and strikeouts are removed; sacrifice flies are not tracked separately in this charting model.",
+  },
+  {
+    stat: "Strike%",
+    definition: "Share of all charted pitches that became a strike result, including called strikes, swinging strikes, fouls, bunts put in play, and balls in play.",
+  },
+  {
+    stat: "Zone%",
+    definition: "Share of charted pitches with a recorded location that finished in the 3x3 strike-zone grid.",
+  },
+  {
+    stat: "Whiff%",
+    definition: "Swinging strikes divided by all swings.",
+  },
+  {
+    stat: "Chase%",
+    definition: "Swings on pitches outside the tracked zone divided by all located pitches outside the zone.",
+  },
+  {
+    stat: "FPS%",
+    definition: "First-pitch strike rate. Only pitches thrown in a 0-0 count are included.",
+  },
+  {
+    stat: "K% / BB%",
+    definition: "Strikeouts or walks divided by completed plate appearances.",
+  },
+];
+
+const HITTER_STATS = [
+  {
+    stat: "Sessions",
+    definition: "Unique charted Live AB sessions that include that hitter.",
+  },
+  {
+    stat: "PAs",
+    definition: "Total charted plate appearances for the hitter in the current scope.",
+  },
+  {
+    stat: "AVG / OBP / SLG / OPS",
+    definition: "Traditional slash-line stats built from charted plate-appearance outcomes.",
+  },
+  {
+    stat: "Chase%",
+    definition: "Swings at located pitches outside the zone divided by all located pitches outside the zone.",
+  },
+  {
+    stat: "Contact%",
+    definition: "Any foul or ball in play divided by all swings.",
+  },
+  {
+    stat: "K% / BB%",
+    definition: "Strikeouts or walks divided by completed plate appearances.",
+  },
+  {
+    stat: "FB / BRK / OFF Whiff%",
+    definition: "Whiff rate against fastballs, breaking balls, or offspeed pitches using the charting pitch groups below.",
+  },
+  {
+    stat: "Z-Swing%",
+    definition: "Swings at located pitches in the tracked zone divided by all located pitches in the zone.",
+  },
+  {
+    stat: "Z-Whiff%",
+    definition: "Swinging strikes on pitches in the tracked zone divided by all swings at pitches in the zone.",
+  },
+  {
+    stat: "BABIP",
+    definition: "Balls-in-play average from charted outcomes, with the same no-sac-fly caveat as the pitcher view.",
+  },
+  {
+    stat: "ISO",
+    definition: "Isolated power, calculated as slugging minus batting average.",
+  },
+];
+
+export default function ChartingFaqView() {
+  return (
+    <DictionaryPageShell
+      tone="emerald"
+      icon={ClipboardList}
+      title="Live AB Guide"
+      description="This guide explains the charted pitcher and hitter metrics used on the Live AB leaderboard."
+      breadcrumbs={[
+        { label: "Home", href: "/" },
+        { label: "Metrics Dictionary", href: "/dictionary" },
+        { label: "Live ABs" },
+      ]}
+      maxWidth="max-w-5xl"
+    >
+      <DictionarySection
+        tone="emerald"
+        icon={BookOpen}
+        title="What This Board Measures"
+        description="The Live AB leaderboard is built from manually charted scrimmage plate appearances, pitch results, and pitch locations."
+      >
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <DictionaryCard>
+            <h3 className="text-lg font-bold text-emerald-400">Scope</h3>
+            <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+              Every row updates from the current session filter or date range. A
+              single-session view shows only one charted outing. Wider scopes
+              aggregate every matching Live AB session.
+            </p>
+          </DictionaryCard>
+
+          <DictionaryCard>
+            <h3 className="text-lg font-bold text-zinc-200">Location Rules</h3>
+            <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+              Zone and chase metrics only use pitches with a recorded location
+              cell. If a pitch was charted without location, it stays in pitch
+              totals but drops out of zone-based percentages.
+            </p>
+          </DictionaryCard>
+
+          <DictionaryCard className="border-emerald-900/30 bg-emerald-950/15">
+            <h3 className="text-lg font-bold text-emerald-300">Why TBF, Not WHIP</h3>
+            <p className="mt-3 text-sm leading-relaxed text-emerald-100/70">
+              Live AB innings often continue past three outs or stop early for
+              training reasons. Total batters faced is the cleaner workload
+              number for this environment, so the leaderboard uses TBF instead
+              of WHIP.
+            </p>
+          </DictionaryCard>
+        </div>
+      </DictionarySection>
+
+      <DictionarySection
+        tone="emerald"
+        icon={Target}
+        title="Pitcher Leaderboard Metrics"
+        description="These are the columns used to rank pitchers on the Live AB page."
+      >
+        <DictionaryTableShell>
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-zinc-800/60 bg-zinc-900/85 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
+              <tr>
+                <th className="w-32 px-6 py-4">Stat</th>
+                <th className="px-6 py-4">Definition</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800/40 text-zinc-400">
+              {PITCHER_STATS.map(({ stat, definition }) => (
+                <tr key={stat} className="transition-smooth hover:bg-zinc-800/20">
+                  <td className="px-6 py-4 font-mono font-medium text-zinc-200">{stat}</td>
+                  <td className="px-6 py-4">{definition}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </DictionaryTableShell>
+      </DictionarySection>
+
+      <DictionarySection
+        tone="emerald"
+        icon={BarChart3}
+        title="Hitter Leaderboard Metrics"
+        description="The hitter tabs blend outcome stats with swing-decision and contact quality indicators."
+      >
+        <div className="space-y-6">
+          <DictionaryTableShell>
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-zinc-800/60 bg-zinc-900/85 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
+                <tr>
+                  <th className="w-36 px-6 py-4">Stat</th>
+                  <th className="px-6 py-4">Definition</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-800/40 text-zinc-400">
+                {HITTER_STATS.map(({ stat, definition }) => (
+                  <tr key={stat} className="transition-smooth hover:bg-zinc-800/20">
+                    <td className="px-6 py-4 font-mono font-medium text-zinc-200">{stat}</td>
+                    <td className="px-6 py-4">{definition}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </DictionaryTableShell>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <DictionaryCard>
+              <h3 className="text-lg font-bold text-zinc-200">Fastball Group</h3>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+                Includes pitches charted as <strong className="text-zinc-300">Fastball</strong>.
+              </p>
+            </DictionaryCard>
+
+            <DictionaryCard>
+              <h3 className="text-lg font-bold text-zinc-200">Breaking Group</h3>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+                Includes <strong className="text-zinc-300">Curveball</strong> and{" "}
+                <strong className="text-zinc-300">Slider</strong>.
+              </p>
+            </DictionaryCard>
+
+            <DictionaryCard>
+              <h3 className="text-lg font-bold text-zinc-200">Offspeed Group</h3>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+                Includes <strong className="text-zinc-300">Changeup</strong>,{" "}
+                <strong className="text-zinc-300">Split/Cut</strong>, and{" "}
+                <strong className="text-zinc-300">Other</strong>.
+              </p>
+            </DictionaryCard>
+          </div>
+        </div>
+      </DictionarySection>
+    </DictionaryPageShell>
+  );
+}
