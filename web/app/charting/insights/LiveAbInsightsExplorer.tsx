@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 import {
   startTransition,
@@ -14,11 +15,12 @@ import {
   BarChart3,
   BookOpen,
   ClipboardList,
+  Crosshair,
+  RotateCcw,
   Search,
+  SlidersHorizontal,
   Sparkles,
-  Target,
 } from "lucide-react";
-import HitterPerformanceInsights from "@/app/players/[slug]/HitterPerformanceInsights";
 import {
   LeaderboardHero,
   LeaderboardIntro,
@@ -27,151 +29,1496 @@ import {
   LeaderboardStatBlock,
   LeaderboardToolbar,
 } from "@/app/components/leaderboards/LeaderboardChrome";
-import type { ChartingHitterInsightsDirectoryEntry } from "@/lib/charting/playerProfile";
-import type { HitterInsightPitchRecord } from "@/lib/charting/hitterInsights";
+import {
+  CHARTING_PLAYER_COMPARISON_EVENTS,
+  CHARTING_PLAYER_COMPARISON_METRICS,
+  buildChartingPlayerComparisonPitchMix,
+  buildChartingPlayerComparisonZoneBuckets,
+  filterChartingPlayerComparisonPitches,
+  hiddenChartingPlayerComparisonZonePitchCount,
+  metricValueForChartingPlayerComparisonSummary,
+  summarizeChartingPlayerComparisonPitches,
+  type ChartingPlayerComparisonDirectoryEntry,
+  type ChartingPlayerComparisonEventId,
+  type ChartingPlayerComparisonMetricId,
+  type ChartingPlayerComparisonSummary,
+  type ChartingPlayerComparisonVelocityRange,
+  type ChartingPlayerComparisonZoneBucket,
+} from "@/lib/charting/playerComparison";
+import { clipPathForLocationCell } from "@/lib/charting/locationGrid";
+import { config } from "@/lib/config";
+import { comparePitchTypes } from "@/lib/pitchTypeOrder";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
+import { SIZE, toSvg } from "@/app/components/ZoneOverlay";
 
-type ResultLensId =
-  | "all"
-  | "hits"
-  | "xbh"
-  | "strikeouts"
-  | "walks"
-  | "whiffs"
-  | "chases";
+type Catalog = {
+  seasons: string[];
+  pitchTypes: string[];
+  counts: string[];
+  velocityRange: ChartingPlayerComparisonVelocityRange | null;
+};
 
-const RESULT_LENSES: Array<{
-  id: ResultLensId;
-  label: string;
-  note: string;
+type ZoneDisplayMode = "heatmap" | "sections";
+
+const SEARCH_RESULT_LIMIT = 8;
+
+const ZONE_BUCKET_LAYOUT: Record<
+  ChartingPlayerComparisonZoneBucket["id"],
+  {
+    label: string;
+    caption: string;
+    style: CSSProperties;
+    strikeZone?: boolean;
+    chaseKind?: "topLeftCorner" | "topRightCorner" | "bottomLeftCorner" | "bottomRightCorner";
+  }
+> = {
+  chaseUpperLeft: {
+    label: "Chase UL",
+    caption: "Upper-left chase",
+    style: { left: "6%", top: "6%", width: "30%", height: "30%" },
+    chaseKind: "topLeftCorner",
+  },
+  chaseUpperRight: {
+    label: "Chase UR",
+    caption: "Upper-right chase",
+    style: { right: "6%", top: "6%", width: "30%", height: "30%" },
+    chaseKind: "topRightCorner",
+  },
+  chaseLowerLeft: {
+    label: "Chase LL",
+    caption: "Lower-left chase",
+    style: { left: "6%", bottom: "6%", width: "30%", height: "30%" },
+    chaseKind: "bottomLeftCorner",
+  },
+  chaseLowerRight: {
+    label: "Chase LR",
+    caption: "Lower-right chase",
+    style: { right: "6%", bottom: "6%", width: "30%", height: "30%" },
+    chaseKind: "bottomRightCorner",
+  },
+  upperLeft: {
+    label: "Upper Left",
+    caption: "Cells 1 + 2",
+    strikeZone: true,
+    style: { left: "23%", top: "23%", width: "27%", height: "27%" },
+  },
+  upperRight: {
+    label: "Upper Right",
+    caption: "Cells 3 + 6",
+    strikeZone: true,
+    style: { left: "50%", top: "23%", width: "27%", height: "27%" },
+  },
+  lowerLeft: {
+    label: "Lower Left",
+    caption: "Cells 4 + 7",
+    strikeZone: true,
+    style: { left: "23%", top: "50%", width: "27%", height: "27%" },
+  },
+  lowerRight: {
+    label: "Lower Right",
+    caption: "Cells 8 + 9",
+    strikeZone: true,
+    style: { left: "50%", top: "50%", width: "27%", height: "27%" },
+  },
+  heart: {
+    label: "Heart",
+    caption: "Cell 5",
+    strikeZone: true,
+    style: {
+      left: "50%",
+      top: "50%",
+      width: "22%",
+      height: "22%",
+      transform: "translate(-50%, -50%)",
+    },
+  },
+};
+
+const HEAT_BUCKET_SHAPES: Record<
+  ChartingPlayerComparisonZoneBucket["id"],
+  {
+    kind: "ellipse" | "rect";
+    cx?: number;
+    cy?: number;
+    rx?: number;
+    ry?: number;
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+    radius?: number;
+  }
+> = {
+  chaseUpperLeft: { kind: "ellipse", cx: 106, cy: 96, rx: 56, ry: 64 },
+  chaseUpperRight: { kind: "ellipse", cx: 214, cy: 96, rx: 56, ry: 64 },
+  chaseLowerLeft: { kind: "ellipse", cx: 106, cy: 228, rx: 58, ry: 68 },
+  chaseLowerRight: { kind: "ellipse", cx: 214, cy: 228, rx: 58, ry: 68 },
+  upperLeft: { kind: "ellipse", cx: 124, cy: 122, rx: 48, ry: 40 },
+  upperRight: { kind: "ellipse", cx: 194, cy: 128, rx: 48, ry: 42 },
+  lowerLeft: { kind: "ellipse", cx: 124, cy: 194, rx: 54, ry: 48 },
+  lowerRight: { kind: "ellipse", cx: 200, cy: 198, rx: 54, ry: 48 },
+  heart: { kind: "ellipse", cx: 160, cy: 164, rx: 30, ry: 30 },
+};
+
+const ZONE_SECTION_GRID_ITEMS: Array<{
+  key: string;
+  bucketId: ChartingPlayerComparisonZoneBucket["id"];
+  cellId?: number;
+  className: string;
+  labelText: string;
+  clipPath?: string;
+  labelCornerClass?: string;
+  chase?: boolean;
+  heart?: boolean;
 }> = [
-  {
-    id: "all",
-    label: "All",
-    note: "Every charted pitch in scope.",
-  },
-  {
-    id: "hits",
-    label: "Hits",
-    note: "Terminal pitches that ended in a hit.",
-  },
-  {
-    id: "xbh",
-    label: "Damage",
-    note: "Terminal doubles, triples, and homers.",
-  },
-  {
-    id: "strikeouts",
-    label: "K",
-    note: "Terminal pitches that finished strikeouts.",
-  },
-  {
-    id: "walks",
-    label: "Free Pass",
-    note: "Terminal walks and hit-by-pitches.",
-  },
-  {
-    id: "whiffs",
-    label: "Whiffs",
-    note: "Swing-and-miss events only.",
-  },
-  {
-    id: "chases",
-    label: "Chases",
-    note: "Swings at pitches outside the zone.",
-  },
+  { key: "chaseUpperLeft",  bucketId: "chaseUpperLeft",  className: "col-[1_/_span_2] row-[1_/_span_2]", labelText: "UL", clipPath: clipPathForLocationCell("topLeftCorner"),     labelCornerClass: "left-4 top-3",    chase: true },
+  { key: "chaseUpperRight", bucketId: "chaseUpperRight", className: "col-[4_/_span_2] row-[1_/_span_2]", labelText: "UR", clipPath: clipPathForLocationCell("topRightCorner"),    labelCornerClass: "right-4 top-3",   chase: true },
+  { key: "chaseLowerLeft",  bucketId: "chaseLowerLeft",  className: "col-[1_/_span_2] row-[4_/_span_2]", labelText: "LL", clipPath: clipPathForLocationCell("bottomLeftCorner"),  labelCornerClass: "left-4 bottom-3", chase: true },
+  { key: "chaseLowerRight", bucketId: "chaseLowerRight", className: "col-[4_/_span_2] row-[4_/_span_2]", labelText: "LR", clipPath: clipPathForLocationCell("bottomRightCorner"), labelCornerClass: "right-4 bottom-3", chase: true },
+  { key: "cell-1", bucketId: "upperLeft",  cellId: 1, className: "col-start-2 row-start-2", labelText: "1" },
+  { key: "cell-2", bucketId: "upperLeft",  cellId: 2, className: "col-start-3 row-start-2", labelText: "2" },
+  { key: "cell-3", bucketId: "upperRight", cellId: 3, className: "col-start-4 row-start-2", labelText: "3" },
+  { key: "cell-4", bucketId: "lowerLeft",  cellId: 4, className: "col-start-2 row-start-3", labelText: "4" },
+  { key: "cell-5", bucketId: "heart",      cellId: 5, className: "col-start-3 row-start-3", labelText: "5", heart: true },
+  { key: "cell-6", bucketId: "upperRight", cellId: 6, className: "col-start-4 row-start-3", labelText: "6" },
+  { key: "cell-7", bucketId: "lowerLeft",  cellId: 7, className: "col-start-2 row-start-4", labelText: "7" },
+  { key: "cell-8", bucketId: "lowerRight", cellId: 8, className: "col-start-3 row-start-4", labelText: "8" },
+  { key: "cell-9", bucketId: "lowerRight", cellId: 9, className: "col-start-4 row-start-4", labelText: "9" },
 ];
 
 function joinClasses(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(" ");
 }
 
-function normalizeQuery(value: string): string {
-  return value.trim().toLowerCase();
+function parseNumberParam(value: string | null): number | null {
+  if (!value) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
-function countUniqueGames(entries: ChartingHitterInsightsDirectoryEntry[]): number {
-  return new Set(entries.flatMap((entry) => entry.insights.games.map((game) => game.id))).size;
+function formatRate(value: number | null): string {
+  if (value === null) return "—";
+  return value.toFixed(3).replace(/^0(?=\.)/, "");
 }
 
-function parseResultLens(raw: string | null | undefined): ResultLensId {
-  return RESULT_LENSES.some((lens) => lens.id === raw) ? (raw as ResultLensId) : "all";
+function formatPct(value: number | null, digits = 1): string {
+  if (value === null) return "—";
+  return `${value.toFixed(digits)}%`;
 }
 
-function applyResultLens(
-  pitches: HitterInsightPitchRecord[],
-  resultLens: ResultLensId
-): HitterInsightPitchRecord[] {
-  switch (resultLens) {
-    case "hits":
-      return pitches.filter((pitch) => pitch.terminalHit);
-    case "xbh":
-      return pitches.filter((pitch) => pitch.terminalExtraBaseHit);
-    case "strikeouts":
-      return pitches.filter((pitch) => pitch.outcomeCategory === "strikeout");
-    case "walks":
-      return pitches.filter(
-        (pitch) =>
-          pitch.outcomeCategory === "walk" || pitch.outcomeCategory === "hitByPitch"
-      );
-    case "whiffs":
-      return pitches.filter((pitch) => pitch.isWhiff);
-    case "chases":
-      return pitches.filter((pitch) => pitch.isSwing && pitch.isInZone === false);
-    case "all":
-    default:
-      return pitches;
+function formatCount(value: number): string {
+  return new Intl.NumberFormat("en-US").format(value);
+}
+
+function formatMetricValue(metricId: ChartingPlayerComparisonMetricId, value: number | null) {
+  switch (metricId) {
+    case "avg":
+    case "woba":
+      return formatRate(value);
+    case "swingPct":
+    case "whiffPct":
+      return formatPct(value, 0);
   }
 }
 
-function BlankZonePlaceholder({
+function buildCatalog(entries: ChartingPlayerComparisonDirectoryEntry[]): Catalog {
+  const seasons = [...new Set(entries.flatMap((entry) => entry.seasons))].sort((left, right) =>
+    right.localeCompare(left)
+  );
+  const pitchTypes = [...new Set(entries.flatMap((entry) => entry.pitchTypes))].sort(
+    comparePitchTypes
+  );
+  const counts = [...new Set(entries.flatMap((entry) => entry.counts))].sort((left, right) => {
+    const [leftBalls, leftStrikes] = left.split("-").map(Number);
+    const [rightBalls, rightStrikes] = right.split("-").map(Number);
+    if (Number.isNaN(leftBalls) || Number.isNaN(rightBalls)) {
+      return left.localeCompare(right);
+    }
+    if (leftBalls !== rightBalls) return leftBalls - rightBalls;
+    return leftStrikes - rightStrikes;
+  });
+  const velocityRanges = entries
+    .map((entry) => entry.velocityRange)
+    .filter((range): range is ChartingPlayerComparisonVelocityRange => range !== null);
+
+  return {
+    seasons,
+    pitchTypes,
+    counts,
+    velocityRange:
+      velocityRanges.length > 0
+        ? {
+            min: Math.min(...velocityRanges.map((range) => range.min)),
+            max: Math.max(...velocityRanges.map((range) => range.max)),
+          }
+        : null,
+  };
+}
+
+function normalizeEvent(value: string | null): ChartingPlayerComparisonEventId {
+  return CHARTING_PLAYER_COMPARISON_EVENTS.some((event) => event.id === value)
+    ? (value as ChartingPlayerComparisonEventId)
+    : "all";
+}
+
+function bucketHeat(
+  buckets: ChartingPlayerComparisonZoneBucket[],
+  bucket: ChartingPlayerComparisonZoneBucket,
+  metricId: ChartingPlayerComparisonMetricId
+): number {
+  const option = CHARTING_PLAYER_COMPARISON_METRICS.find((metric) => metric.id === metricId);
+  const values = buckets
+    .map((candidate) =>
+      metricValueForChartingPlayerComparisonSummary(candidate.summary, metricId)
+    )
+    .filter((value): value is number => value !== null);
+  const currentValue = metricValueForChartingPlayerComparisonSummary(bucket.summary, metricId);
+
+  if (!option || currentValue === null || values.length === 0) {
+    return 0;
+  }
+
+  const minimum = Math.min(...values);
+  const maximum = Math.max(...values);
+  if (minimum === maximum) {
+    return 0.55;
+  }
+
+  const normalized = (currentValue - minimum) / (maximum - minimum);
+  return option.lowerBetter ? 1 - normalized : normalized;
+}
+
+function cellHeat(
+  cellSummaries: Map<number, ChartingPlayerComparisonSummary>,
+  cellId: number,
+  metricId: ChartingPlayerComparisonMetricId
+): number {
+  const option = CHARTING_PLAYER_COMPARISON_METRICS.find((metric) => metric.id === metricId);
+  const values = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    .map((id) => {
+      const s = cellSummaries.get(id);
+      return s ? metricValueForChartingPlayerComparisonSummary(s, metricId) : null;
+    })
+    .filter((v): v is number => v !== null);
+  const summary = cellSummaries.get(cellId);
+  const currentValue = summary
+    ? metricValueForChartingPlayerComparisonSummary(summary, metricId)
+    : null;
+  if (!option || currentValue === null || values.length === 0) return 0;
+  const minimum = Math.min(...values);
+  const maximum = Math.max(...values);
+  if (minimum === maximum) return 0.55;
+  const normalized = (currentValue - minimum) / (maximum - minimum);
+  return option.lowerBetter ? 1 - normalized : normalized;
+}
+
+function cellRow(cellId: number): number { return Math.floor((cellId - 1) / 3); }
+function cellCol(cellId: number): number { return (cellId - 1) % 3; }
+
+const ZONE_ROW_LABELS = ["High", "Mid", "Low"] as const;
+const ZONE_COL_LABELS = ["L", "Ctr", "R"] as const;
+
+function interpolateChannel(start: number, end: number, t: number) {
+  return Math.round(start + (end - start) * t);
+}
+
+function bucketPalette(heat: number): { solid: string; glow: string; border: string } {
+  if (heat <= 0.5) {
+    const t = heat / 0.5;
+    const start: [number, number, number] = [59, 130, 246];
+    const end: [number, number, number] = [226, 232, 240];
+    const rgb = start.map((value, index) => interpolateChannel(value, end[index]!, t));
+    return {
+      solid: `rgb(${rgb.join(",")})`,
+      glow: `rgba(${rgb.join(",")}, ${0.18 + t * 0.12})`,
+      border: `rgba(${rgb.join(",")}, ${0.24 + t * 0.18})`,
+    };
+  }
+
+  const t = (heat - 0.5) / 0.5;
+  const start: [number, number, number] = [254, 226, 226];
+  const end: [number, number, number] = [239, 68, 68];
+  const rgb = start.map((value, index) => interpolateChannel(value, end[index]!, t));
+  return {
+    solid: `rgb(${rgb.join(",")})`,
+    glow: `rgba(${rgb.join(",")}, ${0.24 + t * 0.18})`,
+    border: `rgba(${rgb.join(",")}, ${0.28 + t * 0.2})`,
+  };
+}
+
+function withAlpha(color: string, alpha: number) {
+  if (!color.startsWith("rgb(")) {
+    return color;
+  }
+  return color.replace("rgb(", "rgba(").replace(")", `, ${alpha})`);
+}
+
+function zoneSectionStyle({
+  heat,
+  selected,
+  empty,
+  chase = false,
+}: {
+  heat: number;
+  selected: boolean;
+  empty: boolean;
+  chase?: boolean;
+}): CSSProperties {
+  if (empty) {
+    return {
+      borderColor: selected ? "rgba(244,244,245,0.18)" : "rgba(39,39,42,0.5)",
+      background: "rgba(9,9,11,0.7)",
+    };
+  }
+
+  const palette = bucketPalette(heat);
+  const fillAlpha = chase ? 0.05 + heat * 0.07 : 0.1 + heat * 0.18;
+  return {
+    borderColor: selected
+      ? "rgba(255,255,255,0.28)"
+      : withAlpha(palette.solid, chase ? 0.12 : 0.22),
+    background: withAlpha(palette.solid, fillAlpha),
+  };
+}
+
+function SimpleBatterSilhouette() {
+  return (
+    <g opacity={0.14}>
+      <circle cx="88" cy="110" r="16" fill="#f4f4f5" />
+      <path
+        d="M82 126c-20 10-28 34-26 60l2 30-10 42c-3 13 5 24 18 24h22c10 0 18-9 17-19l-4-35 7-31 18 45c4 9 13 14 22 12l18-2c11-1 18-13 13-23l-20-40-8-54c-2-16-12-29-27-35l-20-7-22 33z"
+        fill="#f4f4f5"
+      />
+      <path
+        d="M108 122l50-56"
+        stroke="#f4f4f5"
+        strokeWidth="12"
+        strokeLinecap="round"
+      />
+      <path
+        d="M78 176l48 38"
+        stroke="#f4f4f5"
+        strokeWidth="10"
+        strokeLinecap="round"
+      />
+    </g>
+  );
+}
+
+function SimpleZoneOverlay() {
+  const zx1 = toSvg(-config.zoneWidth);
+  const zx2 = toSvg(config.zoneWidth);
+  const zy1 = toSvg(-config.zoneHeight);
+  const zy2 = toSvg(config.zoneHeight);
+  const zw = zx2 - zx1;
+  const zh = zy2 - zy1;
+  const col1 = zx1 + zw / 3;
+  const col2 = zx1 + (2 * zw) / 3;
+  const row1 = zy1 + zh / 3;
+  const row2 = zy1 + (2 * zh) / 3;
+
+  return (
+    <g>
+      <rect
+        x="20"
+        y="20"
+        width={SIZE - 40}
+        height={SIZE - 40}
+        rx="28"
+        fill="none"
+        stroke="rgba(255,255,255,0.08)"
+      />
+      <rect
+        x={zx1}
+        y={zy1}
+        width={zw}
+        height={zh}
+        rx="8"
+        fill="none"
+        stroke="#71717a"
+        strokeWidth="1.4"
+        strokeDasharray="4 3"
+      />
+      <line x1={col1} x2={col1} y1={zy1} y2={zy2} stroke="#3f3f46" strokeWidth="1" />
+      <line x1={col2} x2={col2} y1={zy1} y2={zy2} stroke="#3f3f46" strokeWidth="1" />
+      <line x1={zx1} x2={zx2} y1={row1} y2={row1} stroke="#3f3f46" strokeWidth="1" />
+      <line x1={zx1} x2={zx2} y1={row2} y2={row2} stroke="#3f3f46" strokeWidth="1" />
+      <path
+        d="M144 286h32l8 18-24 8-24-8 8-18z"
+        fill="#d4d4d8"
+        opacity="0.18"
+      />
+    </g>
+  );
+}
+
+function placeholderVelocityText(
+  value: number | null,
+  fallback: number | null,
+  boundary: "min" | "max"
+) {
+  if (value !== null) return `${value} mph`;
+  if (fallback === null) return "N/A";
+  return boundary === "min" ? `${fallback} mph floor` : `${fallback} mph ceiling`;
+}
+
+function SearchResultCard({
+  entry,
+  active,
+  onClick,
+}: {
+  entry: ChartingPlayerComparisonDirectoryEntry;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={joinClasses(
+        "rounded-[1.5rem] border px-4 py-4 text-left transition-smooth",
+        active
+          ? "border-emerald-400/35 bg-emerald-500/10 shadow-[0_22px_48px_rgba(16,185,129,0.10)]"
+          : "border-zinc-800 bg-zinc-950/75 hover:border-zinc-700 hover:bg-zinc-950/90"
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-sm font-bold text-zinc-100">{entry.displayName}</div>
+          <div className="mt-1 text-[11px] text-zinc-500">
+            {entry.seasons[0] ?? "No season"} • {formatCount(entry.totalPitches)} pitches
+          </div>
+        </div>
+        <ArrowRight
+          className={joinClasses(
+            "mt-0.5 h-4 w-4 shrink-0",
+            active ? "text-emerald-300" : "text-zinc-600"
+          )}
+        />
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <span className="rounded-full border border-zinc-800 bg-zinc-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
+          {entry.sessionCount} session{entry.sessionCount === 1 ? "" : "s"}
+        </span>
+        {entry.batterHand ? (
+          <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-200">
+            {entry.batterHand}HH
+          </span>
+        ) : null}
+      </div>
+    </button>
+  );
+}
+
+function FilterSelect({
+  label,
+  value,
+  onChange,
+  children,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  children: ReactNode;
+}) {
+  return (
+    <label className="space-y-2">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+        {label}
+      </div>
+      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+        <select
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className="w-full rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2.5 text-sm font-semibold text-zinc-100 outline-none"
+        >
+          {children}
+        </select>
+      </div>
+    </label>
+  );
+}
+
+function VelocityRangeControl({
+  label,
+  boundary,
+  value,
+  fallback,
+  range,
+  onChange,
+}: {
+  label: string;
+  boundary: "min" | "max";
+  value: number | null;
+  fallback: number | null;
+  range: ChartingPlayerComparisonVelocityRange | null;
+  onChange: (next: number | null) => void;
+}) {
+  if (!range) {
+    return (
+      <div className="rounded-[1.4rem] border border-zinc-800 bg-zinc-950/70 px-4 py-4">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+          {label}
+        </div>
+        <div className="mt-2 text-sm text-zinc-500">No tracked velocity</div>
+      </div>
+    );
+  }
+
+  const resolved = value ?? (boundary === "min" ? range.min : range.max);
+
+  return (
+    <div className="rounded-[1.4rem] border border-zinc-800 bg-zinc-950/70 px-4 py-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+          {label}
+        </div>
+        <span className="rounded-full border border-zinc-800 bg-zinc-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-300">
+          {placeholderVelocityText(value, fallback, boundary)}
+        </span>
+      </div>
+      <div className="mt-4">
+        <input
+          type="range"
+          min={range.min}
+          max={range.max}
+          step={1}
+          value={resolved}
+          onChange={(event) => {
+            const next = Number(event.target.value);
+            onChange(
+              boundary === "min"
+                ? next <= range.min
+                  ? null
+                  : next
+                : next >= range.max
+                  ? null
+                  : next
+            );
+          }}
+          className="w-full accent-emerald-400"
+        />
+      </div>
+      <div className="mt-3 flex items-center justify-between text-[11px] text-zinc-500">
+        <span>{range.min} mph</span>
+        <span>{range.max} mph</span>
+      </div>
+    </div>
+  );
+}
+
+function MetricToggle({
+  value,
+  onChange,
+}: {
+  value: ChartingPlayerComparisonMetricId;
+  onChange: (value: ChartingPlayerComparisonMetricId) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+        Metric
+      </span>
+      <div className="inline-flex flex-wrap items-center gap-1 rounded-full border border-zinc-800 bg-zinc-950/80 p-1">
+        {CHARTING_PLAYER_COMPARISON_METRICS.map((metric) => (
+          <button
+            key={metric.id}
+            type="button"
+            onClick={() => onChange(metric.id)}
+            className={joinClasses(
+              "rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-smooth",
+              value === metric.id
+                ? "bg-emerald-500/12 text-emerald-200 shadow-[inset_0_0_0_1px_rgba(52,211,153,0.35)]"
+                : "text-zinc-500 hover:text-zinc-100"
+            )}
+          >
+            {metric.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function sectionLabelText(bucketId: ChartingPlayerComparisonZoneBucket["id"], label: string) {
+  switch (bucketId) {
+    case "upperLeft":
+      return "UL";
+    case "upperRight":
+      return "UR";
+    case "lowerLeft":
+      return "LL";
+    case "lowerRight":
+      return "LR";
+    case "heart":
+      return "HEART";
+    case "chaseUpperLeft":
+      return "CH UL";
+    case "chaseUpperRight":
+      return "CH UR";
+    case "chaseLowerLeft":
+      return "CH LL";
+    case "chaseLowerRight":
+      return "CH LR";
+    default:
+      return label;
+  }
+}
+
+function ZoneSectionRegion({
+  bucket,
+  summary,
+  selected,
+  subdued,
+  labelText,
+  chase = false,
+  clipPath,
+  labelCornerClass,
+  className,
+  metricId,
+  style,
+  onHoverStart,
+  onHoverEnd,
+  onSelect,
+}: {
+  bucket: ChartingPlayerComparisonZoneBucket;
+  summary: ChartingPlayerComparisonSummary;
+  selected: boolean;
+  subdued: boolean;
+  labelText: string;
+  chase?: boolean;
+  clipPath?: string;
+  labelCornerClass?: string;
+  className?: string;
+  metricId: ChartingPlayerComparisonMetricId;
+  style: CSSProperties;
+  onHoverStart: () => void;
+  onHoverEnd: () => void;
+  onSelect: () => void;
+}) {
+  const empty = summary.totalPitches === 0;
+  const lowSample = !empty && summary.totalPitches < 3;
+  const count = summary.totalPitches;
+  const metricValue = metricValueForChartingPlayerComparisonSummary(summary, metricId);
+
+  return (
+    <button
+      type="button"
+      onMouseEnter={onHoverStart}
+      onMouseLeave={onHoverEnd}
+      onFocus={onHoverStart}
+      onBlur={onHoverEnd}
+      onClick={onSelect}
+      title={`${ZONE_BUCKET_LAYOUT[bucket.id].label}: ${ZONE_BUCKET_LAYOUT[bucket.id].caption}`}
+      aria-pressed={selected}
+      className={joinClasses(
+        "relative overflow-hidden rounded-[0.65rem] border text-left transition-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/60",
+        className
+      )}
+      style={{
+        ...style,
+        clipPath: clipPath ?? "none",
+        borderRadius: chase ? "1.5rem" : "0.65rem",
+        opacity: subdued ? (chase ? 0.28 : 0.4) : 1,
+      }}
+    >
+      {/* Label — outer corner for chase, top-left for zone */}
+      <span
+        className={joinClasses(
+          "absolute font-bold uppercase leading-none tracking-wider",
+          chase
+            ? joinClasses("text-[8px] text-zinc-500", labelCornerClass ?? "left-4 top-3")
+            : "left-1.5 top-1.5 text-[8px] text-zinc-500"
+        )}
+      >
+        {labelText}
+      </span>
+
+      {/* Metric value — center (in-zone cells only) */}
+      {!chase && (
+        <span
+          className={joinClasses(
+            "absolute inset-0 flex items-center justify-center font-black tabular-nums tracking-tight",
+            empty ? "text-[11px] text-zinc-700" : lowSample ? "text-sm text-zinc-400" : "text-sm text-zinc-50"
+          )}
+        >
+          {empty ? "—" : formatMetricValue(metricId, metricValue)}
+        </span>
+      )}
+
+      {/* Count — positioned inside visible clip area for chase, bottom-right for zone */}
+      {!empty && (
+        <span
+          className={joinClasses(
+            "absolute leading-none tabular-nums",
+            chase
+              ? "bottom-3 right-3 text-[10px] font-semibold text-zinc-400"
+              : "bottom-1.5 right-1.5 text-[8px] font-semibold text-zinc-500"
+          )}
+        >
+          {count}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function ZoneDisplayModeToggle({
+  value,
+  onChange,
+}: {
+  value: ZoneDisplayMode;
+  onChange: (value: ZoneDisplayMode) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+        View
+      </span>
+      <div className="inline-flex flex-wrap items-center gap-1 rounded-full border border-zinc-800 bg-zinc-950/80 p-1">
+        {[
+          { id: "heatmap", label: "Heatmap" },
+          { id: "sections", label: "Zone Sections" },
+        ].map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            onClick={() => onChange(option.id as ZoneDisplayMode)}
+            className={joinClasses(
+              "rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-smooth",
+              value === option.id
+                ? "bg-zinc-100 text-zinc-950"
+                : "text-zinc-500 hover:text-zinc-100"
+            )}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MiniStat({
+  label,
+  value,
+  tone = "neutral",
+}: {
+  label: string;
+  value: string;
+  tone?: "neutral" | "emerald" | "sky";
+}) {
+  const emphasis =
+    tone === "emerald"
+      ? "text-emerald-200"
+      : tone === "sky"
+        ? "text-sky-200"
+        : "text-zinc-100";
+
+  return (
+    <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/65 px-4 py-3">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+        {label}
+      </div>
+      <div className={joinClasses("mt-2 text-xl font-black tracking-tight", emphasis)}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function PitchMixPanel({
+  title,
+  subtitle,
+  pitches,
+}: {
+  title: string;
+  subtitle: string;
+  pitches: ReturnType<typeof buildChartingPlayerComparisonPitchMix>;
+}) {
+  return (
+    <div className="rounded-[1.6rem] border border-zinc-800/80 bg-zinc-950/60 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+            {title}
+          </div>
+          <div className="mt-1 text-[11px] text-zinc-500">{subtitle}</div>
+        </div>
+        <div className="rounded-full border border-zinc-800 bg-zinc-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-300">
+          {pitches.length} type{pitches.length === 1 ? "" : "s"}
+        </div>
+      </div>
+
+      {pitches.length === 0 ? (
+        <div className="mt-4 rounded-2xl border border-dashed border-zinc-800 bg-zinc-950/60 px-4 py-5 text-sm text-zinc-500">
+          No pitches in this sample.
+        </div>
+      ) : (
+        <>
+          <div className="mt-4 flex h-3 overflow-hidden rounded-full border border-zinc-800 bg-zinc-950/80">
+            {pitches.map((item) => (
+              <div
+                key={item.pitchType}
+                style={{ width: `${Math.max(item.share, 6)}%`, backgroundColor: item.color }}
+                className="h-full"
+              />
+            ))}
+          </div>
+          <div className="mt-4 grid gap-2">
+            {pitches.map((item) => (
+              <div
+                key={item.pitchType}
+                className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3 rounded-2xl border border-zinc-800/80 bg-zinc-950/65 px-3 py-2.5"
+              >
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: item.color, boxShadow: `0 0 12px ${item.color}` }}
+                />
+                <div className="min-w-0 text-sm font-semibold text-zinc-100">{item.label}</div>
+                <div className="text-xs text-zinc-500">{formatCount(item.count)}</div>
+                <div className="text-xs font-semibold text-zinc-300">
+                  {formatPct(item.share, 1)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function ZoneCanvas({
+  buckets,
+  metricId,
+  displayMode,
+  selectedBucketId,
+  selectedCellId,
+  selectedRowId,
+  selectedColId,
+  cellSummaries,
+  rowSummaries,
+  colSummaries,
+  onSelectBucket,
+  onSelectCell,
+  onSelectRow,
+  onSelectCol,
+}: {
+  buckets: ChartingPlayerComparisonZoneBucket[];
+  metricId: ChartingPlayerComparisonMetricId;
+  displayMode: ZoneDisplayMode;
+  selectedBucketId: ChartingPlayerComparisonZoneBucket["id"] | null;
+  selectedCellId: number | null;
+  selectedRowId: number | null;
+  selectedColId: number | null;
+  cellSummaries: Map<number, ChartingPlayerComparisonSummary>;
+  rowSummaries: Map<number, ChartingPlayerComparisonSummary>;
+  colSummaries: Map<number, ChartingPlayerComparisonSummary>;
+  onSelectBucket: (bucketId: ChartingPlayerComparisonZoneBucket["id"] | null) => void;
+  onSelectCell: (cellId: number | null) => void;
+  onSelectRow: (rowId: number | null) => void;
+  onSelectCol: (colId: number | null) => void;
+}) {
+  const [hoveredBucketId, setHoveredBucketId] =
+    useState<ChartingPlayerComparisonZoneBucket["id"] | null>(null);
+  const [hoveredCellId, setHoveredCellId] = useState<number | null>(null);
+  const [hoveredRowId, setHoveredRowId] = useState<number | null>(null);
+  const [hoveredColId, setHoveredColId] = useState<number | null>(null);
+  const activeMetric =
+    CHARTING_PLAYER_COMPARISON_METRICS.find((metric) => metric.id === metricId)?.label ??
+    metricId;
+  const hoveredBucket =
+    hoveredBucketId !== null
+      ? buckets.find((bucket) => bucket.id === hoveredBucketId) ?? null
+      : null;
+  const selectedBucket =
+    selectedBucketId !== null
+      ? buckets.find((bucket) => bucket.id === selectedBucketId) ?? null
+      : null;
+  const focusBucket = hoveredBucket ?? selectedBucket;
+  const focusLayout = focusBucket ? ZONE_BUCKET_LAYOUT[focusBucket.id] : null;
+  const focusCellId = hoveredCellId ?? selectedCellId;
+  const focusRowId = hoveredRowId ?? selectedRowId;
+  const focusColId = hoveredColId ?? selectedColId;
+  const focusCellSummary = focusCellId !== null ? cellSummaries.get(focusCellId) ?? null : null;
+  const focusRowSummary = focusRowId !== null ? rowSummaries.get(focusRowId) ?? null : null;
+  const focusColSummary = focusColId !== null ? colSummaries.get(focusColId) ?? null : null;
+  const hasAnyFocus = focusCellId !== null || focusBucket !== null || focusRowId !== null || focusColId !== null;
+  const allPitches = buckets.flatMap((bucket) => bucket.pitches);
+  const displayedSummary =
+    (selectedCellId !== null ? cellSummaries.get(selectedCellId) : null) ??
+    (selectedRowId !== null ? rowSummaries.get(selectedRowId) : null) ??
+    (selectedColId !== null ? colSummaries.get(selectedColId) : null) ??
+    selectedBucket?.summary ??
+    summarizeChartingPlayerComparisonPitches(allPitches);
+  const focusSummary = focusCellSummary ?? focusRowSummary ?? focusColSummary ?? focusBucket?.summary ?? null;
+  const focusLabel =
+    focusCellId !== null ? `Zone Cell ${focusCellId}`
+    : focusRowId !== null ? `Row: ${ZONE_ROW_LABELS[focusRowId] ?? focusRowId}`
+    : focusColId !== null ? `Col: ${ZONE_COL_LABELS[focusColId] ?? focusColId}`
+    : focusLayout?.label ?? null;
+  const focusShare =
+    focusSummary && allPitches.length > 0
+      ? (focusSummary.totalPitches / allPitches.length) * 100
+      : null;
+
+  return (
+    <div className="rounded-[1.9rem] border border-zinc-800/80 bg-[radial-gradient(circle_at_50%_28%,rgba(45,212,191,0.08),transparent_30%),linear-gradient(180deg,rgba(24,24,27,0.96),rgba(9,9,11,0.95))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+            {displayMode === "heatmap" ? "Pitch Heatmap" : "Zone Sections"}
+          </div>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-zinc-500">
+            <span>{activeMetric}</span>
+            <span className="text-zinc-700">•</span>
+            <span>
+              {displayMode === "heatmap"
+                ? "Pitch location adjusted to batter zone"
+                : "Rough bucket sections"}
+            </span>
+            {(selectedBucket || selectedCellId !== null || selectedRowId !== null || selectedColId !== null) ? (
+              <>
+                <span className="text-zinc-700">•</span>
+                <span className="text-zinc-300">
+                  {selectedCellId !== null ? `Cell ${selectedCellId}`
+                    : selectedRowId !== null ? `${ZONE_ROW_LABELS[selectedRowId]} row`
+                    : selectedColId !== null ? `${ZONE_COL_LABELS[selectedColId]} col`
+                    : selectedBucket?.label} selected
+                </span>
+              </>
+            ) : null}
+          </div>
+        </div>
+        {(selectedBucket || selectedCellId !== null || selectedRowId !== null || selectedColId !== null) ? (
+          <button
+            type="button"
+            onClick={() => { onSelectBucket(null); onSelectCell(null); onSelectRow(null); onSelectCol(null); }}
+            className="rounded-full border border-zinc-800 bg-zinc-950/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
+          >
+            Clear Selection
+          </button>
+        ) : null}
+      </div>
+
+      {displayMode === "heatmap" ? (
+        <div className="relative aspect-[0.92] overflow-hidden rounded-[2.15rem] border border-zinc-800/80 bg-[radial-gradient(circle_at_50%_38%,rgba(37,99,235,0.10),transparent_34%),linear-gradient(180deg,rgba(17,24,39,0.98),rgba(9,9,11,0.96))] p-3">
+          <svg
+            viewBox={`0 0 ${SIZE} ${SIZE}`}
+            className="absolute inset-3 h-[calc(100%-1.5rem)] w-[calc(100%-1.5rem)]"
+          >
+            <defs>
+              <filter id="player-comparison-heat-blur" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="18" />
+              </filter>
+            </defs>
+
+            <SimpleBatterSilhouette />
+
+            {buckets.map((bucket) => {
+              const heat = bucketHeat(buckets, bucket, metricId);
+              const selected = selectedBucketId === bucket.id;
+              const empty = bucket.summary.totalPitches === 0;
+              const shape = HEAT_BUCKET_SHAPES[bucket.id];
+              const palette = bucketPalette(heat);
+              const opacity = empty ? 0.02 : 0.12 + heat * 0.52;
+              const crispOpacity = empty ? 0.02 : 0.08 + heat * 0.12;
+
+              if (shape.kind === "ellipse") {
+                return (
+                  <g key={bucket.id}>
+                    <ellipse
+                      cx={shape.cx}
+                      cy={shape.cy}
+                      rx={shape.rx}
+                      ry={shape.ry}
+                      fill={palette.solid}
+                      opacity={opacity}
+                      filter="url(#player-comparison-heat-blur)"
+                    />
+                    <ellipse
+                      cx={shape.cx}
+                      cy={shape.cy}
+                      rx={shape.rx}
+                      ry={shape.ry}
+                      fill={palette.solid}
+                      opacity={crispOpacity}
+                    />
+                    {selected ? (
+                      <ellipse
+                        cx={shape.cx}
+                        cy={shape.cy}
+                        rx={shape.rx}
+                        ry={shape.ry}
+                        fill="none"
+                        stroke="rgba(255,255,255,0.68)"
+                        strokeWidth="2"
+                      />
+                    ) : null}
+                  </g>
+                );
+              }
+
+              return (
+                <g key={bucket.id}>
+                  <rect
+                    x={shape.x}
+                    y={shape.y}
+                    width={shape.width}
+                    height={shape.height}
+                    rx={shape.radius}
+                    fill={palette.solid}
+                    opacity={opacity}
+                    filter="url(#player-comparison-heat-blur)"
+                  />
+                  <rect
+                    x={shape.x}
+                    y={shape.y}
+                    width={shape.width}
+                    height={shape.height}
+                    rx={shape.radius}
+                    fill={palette.solid}
+                    opacity={crispOpacity}
+                  />
+                  {selected ? (
+                    <rect
+                      x={shape.x}
+                      y={shape.y}
+                      width={shape.width}
+                      height={shape.height}
+                      rx={shape.radius}
+                      fill="none"
+                      stroke="rgba(255,255,255,0.68)"
+                      strokeWidth="2"
+                    />
+                  ) : null}
+                </g>
+              );
+            })}
+
+            <SimpleZoneOverlay />
+          </svg>
+
+          {buckets.map((bucket) => {
+            const layout = ZONE_BUCKET_LAYOUT[bucket.id];
+            const selected = selectedBucketId === bucket.id;
+
+            return (
+              <button
+                key={bucket.id}
+                type="button"
+                onClick={() => onSelectBucket(selected ? null : bucket.id)}
+                title={`${layout.label}: ${layout.caption}`}
+                className={joinClasses(
+                  "absolute rounded-[1.2rem] border border-transparent transition-smooth hover:border-white/12",
+                  selected ? "border-white/25 bg-white/[0.03]" : "bg-transparent"
+                )}
+                style={{
+                  ...layout.style,
+                  clipPath: layout.chaseKind ? clipPathForLocationCell(layout.chaseKind) : "none",
+                }}
+              />
+            );
+          })}
+          <div className="pointer-events-none absolute inset-3 rounded-[1.9rem] border border-white/5" />
+        </div>
+      ) : (
+        <div className="relative rounded-[2.15rem] border border-zinc-800/80 bg-[radial-gradient(circle_at_50%_38%,rgba(37,99,235,0.10),transparent_34%),linear-gradient(180deg,rgba(17,24,39,0.98),rgba(9,9,11,0.96))] p-3">
+          {/* Row / Col bar selectors */}
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-600">Row</span>
+              {([0, 1, 2] as const).map((row) => (
+                <button
+                  key={row}
+                  type="button"
+                  onMouseEnter={() => setHoveredRowId(row)}
+                  onMouseLeave={() => setHoveredRowId(null)}
+                  onClick={() => {
+                    onSelectRow(selectedRowId === row ? null : row);
+                    onSelectCol(null);
+                    onSelectCell(null);
+                    onSelectBucket(null);
+                  }}
+                  className={joinClasses(
+                    "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition-smooth",
+                    selectedRowId === row
+                      ? "bg-sky-500/18 text-sky-200 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.35)]"
+                      : "text-zinc-500 hover:bg-zinc-800/60 hover:text-zinc-200"
+                  )}
+                >
+                  {ZONE_ROW_LABELS[row]}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-600">Col</span>
+              {([0, 1, 2] as const).map((col) => (
+                <button
+                  key={col}
+                  type="button"
+                  onMouseEnter={() => setHoveredColId(col)}
+                  onMouseLeave={() => setHoveredColId(null)}
+                  onClick={() => {
+                    onSelectCol(selectedColId === col ? null : col);
+                    onSelectRow(null);
+                    onSelectCell(null);
+                    onSelectBucket(null);
+                  }}
+                  className={joinClasses(
+                    "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition-smooth",
+                    selectedColId === col
+                      ? "bg-sky-500/18 text-sky-200 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.35)]"
+                      : "text-zinc-500 hover:bg-zinc-800/60 hover:text-zinc-200"
+                  )}
+                >
+                  {ZONE_COL_LABELS[col]}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="aspect-[0.92] overflow-hidden rounded-[1.75rem]">
+          <div className="grid h-full grid-cols-5 grid-rows-5 gap-2">
+            {ZONE_SECTION_GRID_ITEMS.map((item) => {
+              const bucket = buckets.find((candidate) => candidate.id === item.bucketId);
+              if (!bucket) return null;
+
+              const isZoneCell = item.cellId !== undefined;
+              const summary = isZoneCell
+                ? (cellSummaries.get(item.cellId!) ?? bucket.summary)
+                : bucket.summary;
+              const heat = isZoneCell
+                ? cellHeat(cellSummaries, item.cellId!, metricId)
+                : bucketHeat(buckets, bucket, metricId);
+              const selected = isZoneCell
+                ? selectedCellId === item.cellId
+                : selectedBucketId === bucket.id;
+              let subdued = false;
+              if (hasAnyFocus) {
+                if (focusCellId !== null) {
+                  subdued = isZoneCell ? focusCellId !== item.cellId : true;
+                } else if (focusRowId !== null) {
+                  subdued = isZoneCell ? cellRow(item.cellId!) !== focusRowId : true;
+                } else if (focusColId !== null) {
+                  subdued = isZoneCell ? cellCol(item.cellId!) !== focusColId : true;
+                } else if (focusBucket !== null) {
+                  subdued = item.chase ? focusBucket.id !== bucket.id : true;
+                }
+              }
+              const style = zoneSectionStyle({
+                heat,
+                selected,
+                empty: summary.totalPitches === 0,
+                chase: item.chase,
+              });
+
+              return (
+                <ZoneSectionRegion
+                  key={item.key}
+                  bucket={bucket}
+                  summary={summary}
+                  selected={selected}
+                  subdued={subdued}
+                  labelText={item.labelText}
+                  chase={item.chase}
+                  clipPath={item.clipPath}
+                  labelCornerClass={item.labelCornerClass}
+                  className={item.className}
+                  metricId={metricId}
+                  style={style}
+                  onHoverStart={() => {
+                    if (isZoneCell) setHoveredCellId(item.cellId!);
+                    else setHoveredBucketId(bucket.id);
+                  }}
+                  onHoverEnd={() => {
+                    if (isZoneCell) setHoveredCellId((c) => c === item.cellId ? null : c);
+                    else setHoveredBucketId((c) => c === bucket.id ? null : c);
+                  }}
+                  onSelect={() => {
+                    if (isZoneCell) {
+                      onSelectCell(selectedCellId === item.cellId ? null : item.cellId!);
+                      onSelectBucket(null);
+                      onSelectRow(null);
+                      onSelectCol(null);
+                    } else {
+                      onSelectBucket(selectedBucketId === bucket.id ? null : bucket.id);
+                      onSelectCell(null);
+                      onSelectRow(null);
+                      onSelectCol(null);
+                    }
+                  }}
+                />
+              );
+            })}
+          </div>
+          </div>{/* end aspect wrapper */}
+
+          {hasAnyFocus && focusSummary ? (
+            <div className="pointer-events-none absolute right-3 top-16 rounded-[0.75rem] border border-white/10 bg-zinc-950/92 px-3 py-2 text-[11px] text-zinc-300 shadow-[0_8px_20px_rgba(0,0,0,0.4)] backdrop-blur-sm">
+              <div className="font-semibold text-zinc-100">{focusLabel}</div>
+              <div className="mt-1 flex flex-wrap items-center gap-3">
+                <span>
+                  n=<span className="font-semibold text-zinc-100">{focusSummary.totalPitches}</span>
+                </span>
+                <span>
+                  {activeMetric}{" "}
+                  <span className="font-semibold text-zinc-100">
+                    {formatMetricValue(
+                      metricId,
+                      metricValueForChartingPlayerComparisonSummary(focusSummary, metricId)
+                    )}
+                  </span>
+                </span>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      )}
+
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[1.4rem] border border-zinc-800/70 bg-zinc-950/55 px-4 py-3">
+        <div className="text-[11px] text-zinc-500">
+          {hasAnyFocus ? (
+            <>
+              <span className="font-semibold text-zinc-200">{focusLabel}</span>
+              {focusLayout?.caption && focusCellId === null && focusRowId === null && focusColId === null ? (
+                <>
+                  <span className="mx-2 text-zinc-700">•</span>
+                  <span>{focusLayout.caption}</span>
+                </>
+              ) : null}
+            </>
+          ) : (
+            displayMode === "sections"
+              ? "Hover or click a cell to inspect that zone."
+              : "Click a zone to isolate that rough bucket."
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-4 text-[11px]">
+          {hasAnyFocus && focusSummary ? (
+            <>
+              <span className="text-zinc-500">
+                Pitches{" "}
+                <span className="font-semibold text-zinc-100">
+                  {formatCount(focusSummary.totalPitches)}
+                </span>
+              </span>
+              <span className="text-zinc-500">
+                {activeMetric}{" "}
+                <span className="font-semibold text-zinc-100">
+                  {formatMetricValue(
+                    metricId,
+                    metricValueForChartingPlayerComparisonSummary(focusSummary, metricId)
+                  )}
+                </span>
+              </span>
+              <span className="text-zinc-500">
+                Share{" "}
+                <span className="font-semibold text-zinc-100">
+                  {focusShare === null ? "—" : formatPct(focusShare, 0)}
+                </span>
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="text-zinc-500">
+                Pitches{" "}
+                <span className="font-semibold text-zinc-100">
+                  {formatCount(displayedSummary.totalPitches)}
+                </span>
+              </span>
+              <span className="text-zinc-500">
+                {activeMetric}{" "}
+                <span className="font-semibold text-zinc-100">
+                  {formatMetricValue(
+                    metricId,
+                    metricValueForChartingPlayerComparisonSummary(displayedSummary, metricId)
+                  )}
+                </span>
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SummaryTable({
+  entry,
+  seasonLabel,
+  summary,
+  pitchMix,
+}: {
+  entry: ChartingPlayerComparisonDirectoryEntry;
+  seasonLabel: string;
+  summary: ReturnType<typeof summarizeChartingPlayerComparisonPitches>;
+  pitchMix: ReturnType<typeof buildChartingPlayerComparisonPitchMix>;
+}) {
+  return (
+    <LeaderboardPanel className="overflow-hidden">
+      <div className="border-b border-zinc-800/80 px-5 py-4 sm:px-6">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+              Summary Table
+            </div>
+            <div className="mt-1 text-sm text-zinc-500">
+              Filtered season-line summary for the selected hitter.
+            </div>
+          </div>
+          <LeaderboardPill tone="neutral">{seasonLabel}</LeaderboardPill>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-[1180px] w-full">
+          <thead>
+            <tr className="border-b border-zinc-800/80 bg-zinc-950/40">
+              {[
+                "Player",
+                "Season",
+                "Pitches",
+                "Pitch Mix",
+                "PA",
+                "AB",
+                "H",
+                "1B",
+                "2B",
+                "3B",
+                "HR",
+                "BA",
+                "SO",
+                "K%",
+                "wOBA",
+              ].map((label) => (
+                <th
+                  key={label}
+                  className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500"
+                >
+                  {label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {summary.totalPitches === 0 ? (
+              <tr>
+                <td colSpan={15} className="px-6 py-10 text-center text-sm text-zinc-500">
+                  No pitches match the current player and filter scope.
+                </td>
+              </tr>
+            ) : (
+              <tr className="border-b border-zinc-800/70 transition-smooth hover:bg-emerald-500/5">
+                <td className="px-4 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-sm font-black text-emerald-200">
+                      {entry.displayName
+                        .split(/\s+/)
+                        .slice(0, 2)
+                        .map((part) => part.charAt(0))
+                        .join("")}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-zinc-100">{entry.displayName}</div>
+                      <div className="mt-1 text-[11px] text-zinc-500">
+                        {entry.batterHand ? `${entry.batterHand}HH` : "Hand unknown"}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-4 text-sm font-semibold text-zinc-100">{seasonLabel}</td>
+                <td className="px-4 py-4 text-sm text-zinc-200">
+                  {formatCount(summary.totalPitches)}
+                </td>
+                <td className="px-4 py-4">
+                  <div className="w-48 space-y-2">
+                    <div className="flex h-2 overflow-hidden rounded-full border border-zinc-800 bg-zinc-950/80">
+                      {pitchMix.map((item) => (
+                        <div
+                          key={item.pitchType}
+                          style={{
+                            width: `${Math.max(item.share, 6)}%`,
+                            backgroundColor: item.color,
+                          }}
+                          className="h-full"
+                        />
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {pitchMix.map((item) => (
+                        <span
+                          key={item.pitchType}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-950/80 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-300"
+                        >
+                          <span
+                            className="h-2 w-2 rounded-full"
+                            style={{ backgroundColor: item.color }}
+                          />
+                          {item.label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-4 text-sm text-zinc-200">{summary.plateAppearances}</td>
+                <td className="px-4 py-4 text-sm text-zinc-200">{summary.atBats}</td>
+                <td className="px-4 py-4 text-sm text-zinc-200">{summary.hits}</td>
+                <td className="px-4 py-4 text-sm text-zinc-200">{summary.singles}</td>
+                <td className="px-4 py-4 text-sm text-zinc-200">{summary.doubles}</td>
+                <td className="px-4 py-4 text-sm text-zinc-200">{summary.triples}</td>
+                <td className="px-4 py-4 text-sm text-zinc-200">{summary.homeRuns}</td>
+                <td className="px-4 py-4 text-sm font-semibold text-emerald-200">
+                  {formatRate(summary.battingAverage)}
+                </td>
+                <td className="px-4 py-4 text-sm text-zinc-200">{summary.strikeouts}</td>
+                <td className="px-4 py-4 text-sm text-zinc-200">
+                  {formatPct(summary.strikeoutRate, 1)}
+                </td>
+                <td className="px-4 py-4 text-sm font-semibold text-sky-200">
+                  {formatRate(summary.woba)}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </LeaderboardPanel>
+  );
+}
+
+function EmptyState({
+  filteredEntries,
   pinnedSlug,
   onOpenPinned,
 }: {
+  filteredEntries: ChartingPlayerComparisonDirectoryEntry[];
   pinnedSlug: string | null;
   onOpenPinned: (() => void) | null;
 }) {
   return (
-    <LeaderboardPanel className="overflow-hidden p-5 sm:p-6">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(45,212,191,0.12),transparent_28%),radial-gradient(circle_at_84%_20%,rgba(34,197,94,0.08),transparent_22%),linear-gradient(180deg,rgba(12,18,17,0.76),rgba(9,9,11,0.95))]" />
-      <div className="relative grid gap-6 xl:grid-cols-[minmax(18rem,0.9fr)_minmax(0,1.1fr)] xl:items-center">
+    <LeaderboardPanel className="overflow-hidden p-6 sm:p-7">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(14,165,233,0.14),transparent_24%),radial-gradient(circle_at_86%_22%,rgba(16,185,129,0.12),transparent_22%),linear-gradient(180deg,rgba(13,18,21,0.86),rgba(9,9,11,0.95))]" />
+      <div className="relative grid gap-6 xl:grid-cols-[minmax(18rem,0.85fr)_minmax(0,1.15fr)] xl:items-center">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
-            <Target className="h-3.5 w-3.5" />
-            Insights Explorer
+          <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-200">
+            <ClipboardList className="h-3.5 w-3.5" />
+            Player Visuals
           </div>
           <h2 className="mt-4 text-3xl font-black tracking-tight text-zinc-50">
-            Pick a hitter to open the zone.
+            Search a hitter to open the visuals.
           </h2>
           <p className="mt-3 max-w-xl text-sm leading-7 text-zinc-400">
-            Search the roster, choose a result lens, and load the full hitter
-            performance workspace with zone, pitch type, velocity, and chase detail.
+            This page mirrors the Savant workflow with the Babson data we actually capture:
+            player search, season and pitch filters, pitch-speed scope, rough zone buckets, and
+            a one-line season table below.
           </p>
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 px-4 py-3">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                1. Search
-              </div>
-              <div className="mt-2 text-sm font-semibold text-zinc-100">
-                Find a roster hitter
-              </div>
-            </div>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 px-4 py-3">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                2. Lens
-              </div>
-              <div className="mt-2 text-sm font-semibold text-zinc-100">
-                Focus on hits, damage, chase, or whiffs
-              </div>
-            </div>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 px-4 py-3">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                3. Click
-              </div>
-              <div className="mt-2 text-sm font-semibold text-zinc-100">
-                Drill into the zone and supporting detail
-              </div>
-            </div>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <LeaderboardPill tone="sky">
+              {filteredEntries.length} roster hitter{filteredEntries.length === 1 ? "" : "s"}
+            </LeaderboardPill>
+            <LeaderboardPill tone="neutral">9 rough zone buckets</LeaderboardPill>
+            <LeaderboardPill tone="neutral">No EV or contour layer</LeaderboardPill>
           </div>
           {pinnedSlug && onOpenPinned ? (
             <button
@@ -179,39 +1526,35 @@ function BlankZonePlaceholder({
               onClick={onOpenPinned}
               className="mt-5 inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950/80 px-4 py-2 text-sm font-semibold text-zinc-200 transition-smooth hover:border-emerald-400/25 hover:text-emerald-200"
             >
-              Reopen pinned player
+              Reopen pinned hitter
               <ArrowRight className="h-4 w-4" />
             </button>
           ) : null}
         </div>
 
-        <div className="mx-auto aspect-square w-full max-w-[26rem] rounded-[2.3rem] border border-zinc-800/80 bg-[radial-gradient(circle_at_center,_rgba(45,212,191,0.08),_transparent_48%),linear-gradient(180deg,rgba(24,24,27,0.96),rgba(9,9,11,0.96))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-          <div className="grid h-full grid-cols-3 grid-rows-3 gap-3">
-            {[
-              "High Inner",
-              "High Heart",
-              "High Away",
-              "Mid Inner",
-              "Heart",
-              "Mid Away",
-              "Low Inner",
-              "Low Heart",
-              "Low Away",
-            ].map((label) => (
+        <div className="rounded-[2rem] border border-zinc-800/80 bg-[radial-gradient(circle_at_50%_30%,rgba(45,212,191,0.08),transparent_34%),linear-gradient(180deg,rgba(24,24,27,0.96),rgba(9,9,11,0.96))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+          <div className="relative aspect-square rounded-[1.75rem] border border-zinc-800/80 bg-zinc-950/60">
+            <div className="pointer-events-none absolute inset-[22%] rounded-[1.5rem] border border-dashed border-zinc-500/30" />
+            {Object.values(ZONE_BUCKET_LAYOUT).map((bucket) => (
               <div
-                key={label}
-                className="rounded-[1.4rem] border border-zinc-800/80 bg-zinc-950/70 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+                key={bucket.label}
+                className="absolute overflow-hidden rounded-[1.4rem] border border-zinc-800/80 bg-zinc-950/70"
+                style={{
+                  ...bucket.style,
+                  clipPath: bucket.chaseKind ? clipPathForLocationCell(bucket.chaseKind) : "none",
+                }}
               >
-                <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
-                  {label}
-                </div>
-                <div className="mt-6 text-2xl font-black tracking-tight text-zinc-700">
-                  --
+                <div className="p-2.5">
+                  <div className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">
+                    {bucket.label}
+                  </div>
+                  <div className="mt-6 text-right text-xl font-black tracking-tight text-zinc-700">
+                    —
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-          <div className="pointer-events-none absolute inset-4 rounded-[1.9rem] border border-white/5" />
         </div>
       </div>
     </LeaderboardPanel>
@@ -221,22 +1564,84 @@ function BlankZonePlaceholder({
 export default function LiveAbInsightsExplorer({
   entries,
 }: {
-  entries: ChartingHitterInsightsDirectoryEntry[];
+  entries: ChartingPlayerComparisonDirectoryEntry[];
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { slug: pinnedSlug, setSelectedPlayer } = useSelectedPlayer();
   const [searchInput, setSearchInput] = useState("");
+  const [selectedMetric, setSelectedMetric] =
+    useState<ChartingPlayerComparisonMetricId>("woba");
+  const [zoneDisplayMode, setZoneDisplayMode] = useState<ZoneDisplayMode>("heatmap");
+  const [selectedBucketId, setSelectedBucketId] =
+    useState<ChartingPlayerComparisonZoneBucket["id"] | null>(null);
+  const [selectedCellId, setSelectedCellId] = useState<number | null>(null);
+  const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
+  const [selectedColId, setSelectedColId] = useState<number | null>(null);
   const deferredSearch = useDeferredValue(searchInput);
 
-  const selectedPlayerSlug = searchParams.get("player");
-  const resultLens = parseResultLens(searchParams.get("result"));
   const entryBySlug = useMemo(
     () => new Map(entries.map((entry) => [entry.playerSlug, entry])),
     [entries]
   );
+  const globalCatalog = useMemo(() => buildCatalog(entries), [entries]);
+  const totalPitches = useMemo(
+    () => entries.reduce((sum, entry) => sum + entry.totalPitches, 0),
+    [entries]
+  );
+  const totalSeasons = globalCatalog.seasons.length;
+
+  const selectedPlayerSlug = searchParams.get("player");
   const selectedEntry = selectedPlayerSlug ? entryBySlug.get(selectedPlayerSlug) ?? null : null;
+
+  const catalog = selectedEntry
+    ? {
+        seasons: selectedEntry.seasons,
+        pitchTypes: selectedEntry.pitchTypes,
+        counts: selectedEntry.counts,
+        velocityRange: selectedEntry.velocityRange,
+      }
+    : globalCatalog;
+
+  const rawSeason = searchParams.get("season");
+  const rawPitchType = searchParams.get("pitchType");
+  const rawCount = searchParams.get("count");
+  const rawEvent = searchParams.get("event");
+  const rawVeloMin = parseNumberParam(searchParams.get("veloMin"));
+  const rawVeloMax = parseNumberParam(searchParams.get("veloMax"));
+  const latestSeason = catalog.seasons[0] ?? null;
+  const resolvedSeasonUi =
+    rawSeason === "all"
+      ? "all"
+      : rawSeason && catalog.seasons.includes(rawSeason)
+        ? rawSeason
+        : latestSeason ?? "all";
+  const resolvedPitchType =
+    rawPitchType && catalog.pitchTypes.includes(rawPitchType) ? rawPitchType : null;
+  const resolvedCount = rawCount && catalog.counts.includes(rawCount) ? rawCount : null;
+  const resolvedEvent = normalizeEvent(rawEvent);
+
+  const resolvedVeloMin =
+    catalog.velocityRange && rawVeloMin !== null
+      ? Math.max(catalog.velocityRange.min, Math.min(rawVeloMin, catalog.velocityRange.max))
+      : null;
+  const resolvedVeloMax =
+    catalog.velocityRange && rawVeloMax !== null
+      ? Math.max(catalog.velocityRange.min, Math.min(rawVeloMax, catalog.velocityRange.max))
+      : null;
+  const constrainedVeloMin =
+    resolvedVeloMin !== null &&
+    resolvedVeloMax !== null &&
+    resolvedVeloMin > resolvedVeloMax
+      ? resolvedVeloMax
+      : resolvedVeloMin;
+  const constrainedVeloMax =
+    resolvedVeloMin !== null &&
+    resolvedVeloMax !== null &&
+    resolvedVeloMax < resolvedVeloMin
+      ? resolvedVeloMin
+      : resolvedVeloMax;
 
   useEffect(() => {
     if (selectedPlayerSlug) {
@@ -245,53 +1650,185 @@ export default function LiveAbInsightsExplorer({
   }, [selectedPlayerSlug, setSelectedPlayer]);
 
   const filteredEntries = useMemo(() => {
-    const query = normalizeQuery(deferredSearch);
-    if (!query) return entries;
+    const query = deferredSearch.trim().toLowerCase();
+    if (!query) {
+      return entries;
+    }
 
     return entries.filter((entry) => {
-      const haystack = [
-        entry.displayName,
-        entry.playerSlug,
-        ...entry.matchedHitterNames,
-      ]
+      const haystack = [entry.displayName, entry.playerSlug, ...entry.matchedHitterNames]
         .join(" ")
         .toLowerCase();
       return haystack.includes(query);
     });
   }, [deferredSearch, entries]);
 
-  const scopedEntry = useMemo(() => {
-    if (!selectedEntry) return null;
-    return {
-      ...selectedEntry,
-      insights: {
-        ...selectedEntry.insights,
-        pitches: applyResultLens(selectedEntry.insights.pitches, resultLens),
-      },
-    };
-  }, [resultLens, selectedEntry]);
+  const filteredPitches = useMemo(() => {
+    if (!selectedEntry) {
+      return [];
+    }
 
-  const totalGames = useMemo(() => countUniqueGames(entries), [entries]);
-  const totalPitches = useMemo(
-    () => entries.reduce((sum, entry) => sum + entry.pitchCount, 0),
-    [entries]
+    return filterChartingPlayerComparisonPitches(selectedEntry.pitches, {
+      season: resolvedSeasonUi === "all" ? null : resolvedSeasonUi,
+      pitchType: resolvedPitchType,
+      count: resolvedCount,
+      event: resolvedEvent,
+      veloMin: constrainedVeloMin,
+      veloMax: constrainedVeloMax,
+    });
+  }, [
+    constrainedVeloMax,
+    constrainedVeloMin,
+    resolvedCount,
+    resolvedEvent,
+    resolvedPitchType,
+    resolvedSeasonUi,
+    selectedEntry,
+  ]);
+
+  const filteredSummary = useMemo(
+    () => summarizeChartingPlayerComparisonPitches(filteredPitches),
+    [filteredPitches]
   );
+  const filteredPitchMix = useMemo(
+    () => buildChartingPlayerComparisonPitchMix(filteredPitches),
+    [filteredPitches]
+  );
+  const zoneBuckets = useMemo(
+    () => buildChartingPlayerComparisonZoneBuckets(filteredPitches),
+    [filteredPitches]
+  );
+  const selectedBucket =
+    selectedBucketId !== null
+      ? zoneBuckets.find((bucket) => bucket.id === selectedBucketId) ?? null
+      : null;
+  const cellSummaries = useMemo(() => {
+    const map = new Map<number, ChartingPlayerComparisonSummary>();
+    for (const cellId of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+      const cellPitches = filteredPitches.filter((p) => p.locationCell === cellId);
+      map.set(cellId, summarizeChartingPlayerComparisonPitches(cellPitches));
+    }
+    return map;
+  }, [filteredPitches]);
+  const rowSummaries = useMemo(() => {
+    const map = new Map<number, ChartingPlayerComparisonSummary>();
+    for (const row of [0, 1, 2]) {
+      const rowPitches = filteredPitches.filter(
+        (p) => p.locationCell !== undefined && p.locationCell !== null && cellRow(p.locationCell) === row
+      );
+      map.set(row, summarizeChartingPlayerComparisonPitches(rowPitches));
+    }
+    return map;
+  }, [filteredPitches]);
+  const colSummaries = useMemo(() => {
+    const map = new Map<number, ChartingPlayerComparisonSummary>();
+    for (const col of [0, 1, 2]) {
+      const colPitches = filteredPitches.filter(
+        (p) => p.locationCell !== undefined && p.locationCell !== null && cellCol(p.locationCell) === col
+      );
+      map.set(col, summarizeChartingPlayerComparisonPitches(colPitches));
+    }
+    return map;
+  }, [filteredPitches]);
+  const selectedCellSummary =
+    selectedCellId !== null ? cellSummaries.get(selectedCellId) ?? null : null;
+  const selectedRowSummary =
+    selectedRowId !== null ? rowSummaries.get(selectedRowId) ?? null : null;
+  const selectedColSummary =
+    selectedColId !== null ? colSummaries.get(selectedColId) ?? null : null;
+  const selectionSummary =
+    selectedCellSummary ?? selectedRowSummary ?? selectedColSummary ?? selectedBucket?.summary ?? filteredSummary;
+  const selectionPitchMix = useMemo(
+    () =>
+      buildChartingPlayerComparisonPitchMix(
+        selectedCellId !== null
+          ? filteredPitches.filter((p) => p.locationCell === selectedCellId)
+          : selectedRowId !== null
+            ? filteredPitches.filter(
+                (p) => p.locationCell !== undefined && p.locationCell !== null && cellRow(p.locationCell) === selectedRowId
+              )
+            : selectedColId !== null
+              ? filteredPitches.filter(
+                  (p) => p.locationCell !== undefined && p.locationCell !== null && cellCol(p.locationCell) === selectedColId
+                )
+              : selectedBucket
+                ? selectedBucket.pitches
+                : filteredPitches
+      ),
+    [filteredPitches, selectedBucket, selectedCellId, selectedRowId, selectedColId]
+  );
+  const hiddenZonePitchCount = useMemo(
+    () => hiddenChartingPlayerComparisonZonePitchCount(filteredPitches),
+    [filteredPitches]
+  );
+
+  const activeFilterChips = useMemo(() => {
+    const chips = [
+      { label: "Season", value: resolvedSeasonUi === "all" ? "All seasons" : resolvedSeasonUi },
+    ];
+
+    if (resolvedPitchType) {
+      chips.push({ label: "Pitch Type", value: resolvedPitchType });
+    }
+    if (resolvedCount) {
+      chips.push({ label: "Count", value: resolvedCount });
+    }
+    if (resolvedEvent !== "all") {
+      chips.push({
+        label: "Event",
+        value:
+          CHARTING_PLAYER_COMPARISON_EVENTS.find((event) => event.id === resolvedEvent)?.label ??
+          resolvedEvent,
+      });
+    }
+    if (constrainedVeloMin !== null || constrainedVeloMax !== null) {
+      chips.push({
+        label: "Pitch Speed",
+        value: `${constrainedVeloMin ?? catalog.velocityRange?.min ?? "—"}-${constrainedVeloMax ?? catalog.velocityRange?.max ?? "—"} mph`,
+      });
+    }
+
+    return chips;
+  }, [
+    catalog.velocityRange?.max,
+    catalog.velocityRange?.min,
+    constrainedVeloMax,
+    constrainedVeloMin,
+    resolvedCount,
+    resolvedEvent,
+    resolvedPitchType,
+    resolvedSeasonUi,
+  ]);
 
   function updateParams(updates: Record<string, string | null>) {
     const next = new URLSearchParams(searchParams.toString());
+
     for (const [key, value] of Object.entries(updates)) {
-      if (value) {
-        next.set(key, value);
-      } else {
+      if (value === null) {
         next.delete(key);
+      } else {
+        next.set(key, value);
       }
     }
+
     const query = next.toString();
     const href = query ? `${pathname}?${query}` : pathname;
     startTransition(() => {
       router.replace(href);
     });
   }
+
+  function handleSelectPlayer(playerSlug: string) {
+    setSearchInput("");
+    setSelectedBucketId(null);
+    setSelectedCellId(null);
+    setSelectedRowId(null);
+    setSelectedColId(null);
+    updateParams({ player: playerSlug });
+  }
+
+  const resultsVisible = deferredSearch.trim().length > 0 || !selectedEntry;
+  const visibleResults = resultsVisible ? filteredEntries.slice(0, SEARCH_RESULT_LIMIT) : [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -306,29 +1843,24 @@ export default function LiveAbInsightsExplorer({
           tone="emerald"
           icon={ClipboardList}
           eyebrow="Charting"
-          title={<>Hitter Performance Insights</>}
-          description="Search Babson hitters, apply a result lens, and open the premium zone-performance workspace directly inside the charting hub."
+          title={<>Player Comparison Visuals</>}
+          description="A Babson take on the Savant player-visuals workflow, rebuilt around the charting fields we actually capture today: player search, season scope, pitch-speed filters, rough zone buckets, and a one-line season table."
           meta={
             <>
               <LeaderboardPill tone="emerald">
-                {entries.length} hitter{entries.length === 1 ? "" : "s"} with charted data
+                {entries.length} hitter{entries.length === 1 ? "" : "s"}
               </LeaderboardPill>
               <LeaderboardPill tone="neutral">
-                {totalGames} session{totalGames === 1 ? "" : "s"} loaded
+                {formatCount(totalPitches)} charted pitches
               </LeaderboardPill>
-              <LeaderboardPill tone="neutral">
-                {totalPitches.toLocaleString()} charted pitches
-              </LeaderboardPill>
-              <LeaderboardPill tone="neutral">
-                {RESULT_LENSES.find((lens) => lens.id === resultLens)?.label ?? "All"} lens
-              </LeaderboardPill>
+              <LeaderboardPill tone="neutral">{totalSeasons} season view</LeaderboardPill>
             </>
           }
           summary={
             <LeaderboardStatBlock
-              label="Explorer"
-              value={String(entries.length)}
-              detail="hitters available for interactive zone review"
+              label="Zone Schema"
+              value="9"
+              detail="4 rough quadrants, heart, and 4 chase corners"
               emphasisClassName="text-emerald-300"
             />
           }
@@ -374,183 +1906,357 @@ export default function LiveAbInsightsExplorer({
       </LeaderboardIntro>
 
       <LeaderboardToolbar>
-        <div className="grid gap-5 xl:grid-cols-[minmax(18rem,0.72fr)_minmax(0,1.28fr)]">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-            <input
-              type="text"
-              placeholder="Search hitters by name, slug, or charted alias"
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
-              className="w-full rounded-2xl border border-zinc-800 bg-zinc-950/80 py-3 pl-11 pr-4 text-sm text-zinc-200 placeholder-zinc-600 outline-none transition-smooth focus:border-emerald-500/30"
-            />
+        <div className="grid gap-5">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_auto] xl:items-end">
+            <div className="space-y-2">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                Player Search
+              </div>
+              <label className="flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <Search className="h-4 w-4 shrink-0 text-zinc-500" />
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(event) => setSearchInput(event.target.value)}
+                  placeholder="Search hitter by name, slug, or charted alias"
+                  className="w-full bg-transparent text-sm text-zinc-100 outline-none placeholder:text-zinc-600"
+                />
+              </label>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 xl:justify-end">
+              {selectedEntry ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedBucketId(null);
+                    setSelectedCellId(null);
+                    setSelectedRowId(null);
+                    setSelectedColId(null);
+                    updateParams({ player: null });
+                  }}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-300 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
+                >
+                  Clear Player
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={() =>
+                  updateParams({
+                    season: null,
+                    pitchType: null,
+                    count: null,
+                    event: null,
+                    veloMin: null,
+                    veloMax: null,
+                  })
+                }
+                className="inline-flex items-center gap-2 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200 transition-smooth hover:border-emerald-400/35 hover:bg-emerald-500/15"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Clear Filters
+              </button>
+            </div>
           </div>
 
-          <div className="grid gap-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                Result lens
-              </span>
-              {RESULT_LENSES.map((lens) => (
-                <button
-                  key={lens.id}
-                  type="button"
-                  onClick={() => updateParams({ result: lens.id === "all" ? null : lens.id })}
-                  className={joinClasses(
-                    "rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-smooth",
-                    resultLens === lens.id
-                      ? "border-emerald-400/40 bg-emerald-500/12 text-emerald-200 shadow-[0_0_18px_rgba(16,185,129,0.10)]"
-                      : "border-zinc-800 bg-zinc-950/80 text-zinc-400 hover:border-zinc-700 hover:text-zinc-100"
-                  )}
-                >
-                  {lens.label}
-                </button>
-              ))}
+          {resultsVisible ? (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {visibleResults.length === 0 ? (
+                <div className="col-span-full flex min-h-32 items-center justify-center rounded-[1.4rem] border border-dashed border-zinc-800 bg-zinc-950/60 px-5 text-center text-sm text-zinc-500">
+                  No hitters match this search.
+                </div>
+              ) : (
+                visibleResults.map((entry) => (
+                  <SearchResultCard
+                    key={entry.playerSlug}
+                    entry={entry}
+                    active={selectedPlayerSlug === entry.playerSlug}
+                    onClick={() => handleSelectPlayer(entry.playerSlug)}
+                  />
+                ))
+              )}
             </div>
-            <div className="text-[11px] text-zinc-500">
-              {RESULT_LENSES.find((lens) => lens.id === resultLens)?.note}
+          ) : null}
+
+          <div className="grid gap-4 xl:grid-cols-4">
+            <FilterSelect
+              label="Season"
+              value={resolvedSeasonUi}
+              onChange={(value) =>
+                updateParams({ season: value === (latestSeason ?? "all") ? null : value })
+              }
+            >
+              {latestSeason ? (
+                <option value={latestSeason}>{latestSeason}</option>
+              ) : (
+                <option value="all">All seasons</option>
+              )}
+              <option value="all">All seasons</option>
+              {catalog.seasons
+                .filter((season) => season !== latestSeason)
+                .map((season) => (
+                  <option key={season} value={season}>
+                    {season}
+                  </option>
+                ))}
+            </FilterSelect>
+
+            <FilterSelect
+              label="Pitch Type"
+              value={resolvedPitchType ?? "all"}
+              onChange={(value) => updateParams({ pitchType: value === "all" ? null : value })}
+            >
+              <option value="all">All pitch types</option>
+              {catalog.pitchTypes.map((pitchType) => (
+                <option key={pitchType} value={pitchType}>
+                  {pitchType}
+                </option>
+              ))}
+            </FilterSelect>
+
+            <FilterSelect
+              label="Count"
+              value={resolvedCount ?? "all"}
+              onChange={(value) => updateParams({ count: value === "all" ? null : value })}
+            >
+              <option value="all">All counts</option>
+              {catalog.counts.map((count) => (
+                <option key={count} value={count}>
+                  {count}
+                </option>
+              ))}
+            </FilterSelect>
+
+            <FilterSelect
+              label="Event / Result"
+              value={resolvedEvent}
+              onChange={(value) => updateParams({ event: value === "all" ? null : value })}
+            >
+              {CHARTING_PLAYER_COMPARISON_EVENTS.map((event) => (
+                <option key={event.id} value={event.id}>
+                  {event.label}
+                </option>
+              ))}
+            </FilterSelect>
+          </div>
+
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] xl:items-end">
+            <VelocityRangeControl
+              label="Pitch Speed Min"
+              boundary="min"
+              value={constrainedVeloMin}
+              fallback={catalog.velocityRange?.min ?? null}
+              range={catalog.velocityRange}
+              onChange={(next) => {
+                if (!catalog.velocityRange) return;
+                const safeMax = constrainedVeloMax ?? catalog.velocityRange.max;
+                const safeNext = next === null ? null : Math.min(next, safeMax);
+                updateParams({
+                  veloMin: safeNext === null ? null : String(safeNext),
+                });
+              }}
+            />
+
+            <VelocityRangeControl
+              label="Pitch Speed Max"
+              boundary="max"
+              value={constrainedVeloMax}
+              fallback={catalog.velocityRange?.max ?? null}
+              range={catalog.velocityRange}
+              onChange={(next) => {
+                if (!catalog.velocityRange) return;
+                const safeMin = constrainedVeloMin ?? catalog.velocityRange.min;
+                const safeNext = next === null ? null : Math.max(next, safeMin);
+                updateParams({
+                  veloMax: safeNext === null ? null : String(safeNext),
+                });
+              }}
+            />
+
+            <div className="rounded-[1.4rem] border border-zinc-800 bg-zinc-950/70 px-4 py-4">
+              <div className="flex items-center gap-2 text-zinc-200">
+                <SlidersHorizontal className="h-4 w-4 text-emerald-300" />
+                <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                  Active Scope
+                </div>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {activeFilterChips.map((chip) => (
+                  <span
+                    key={`${chip.label}-${chip.value}`}
+                    className="rounded-full border border-zinc-800 bg-zinc-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-300"
+                  >
+                    {chip.label}: {chip.value}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </LeaderboardToolbar>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(19rem,0.62fr)_minmax(0,1.38fr)]">
-        <LeaderboardPanel className="overflow-hidden p-4 sm:p-5">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-                Roster Hitters
+      {selectedEntry ? (
+        <>
+          <LeaderboardPanel className="overflow-hidden">
+            <div className="border-b border-zinc-800/80 px-5 py-5 sm:px-6">
+              <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Current Hitter
+                  </div>
+                  <h2 className="mt-4 text-3xl font-black tracking-tight text-zinc-50">
+                    {selectedEntry.displayName}
+                  </h2>
+                  <p className="mt-2 max-w-3xl text-sm leading-7 text-zinc-400">
+                    Single-player charting visuals modeled after the Savant workflow, scoped to
+                    the filters currently applied across this hitter’s Babson Live AB data.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href={`/players/${selectedEntry.playerSlug}?tab=live-ab`}
+                    className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950/80 px-4 py-2 text-sm font-semibold text-zinc-200 transition-smooth hover:border-zinc-700 hover:text-white"
+                  >
+                    Open player page
+                  </Link>
+                </div>
               </div>
-              <div className="mt-1 text-sm text-zinc-500">
-                {filteredEntries.length} player
-                {filteredEntries.length === 1 ? "" : "s"} match the current search.
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                {activeFilterChips.map((chip) => (
+                  <LeaderboardPill key={`${chip.label}-${chip.value}`} tone="neutral">
+                    {chip.label}: {chip.value}
+                  </LeaderboardPill>
+                ))}
               </div>
             </div>
-            {selectedEntry ? (
-              <LeaderboardPill tone="emerald">
-                <Sparkles className="h-3.5 w-3.5" />
-                Active
-              </LeaderboardPill>
-            ) : null}
-          </div>
 
-          <div className="mt-4 grid max-h-[72vh] gap-3 overflow-y-auto pr-1">
-            {filteredEntries.length === 0 ? (
-              <div className="flex min-h-40 items-center justify-center rounded-[1.4rem] border border-dashed border-zinc-800 bg-zinc-950/60 px-5 text-center text-sm text-zinc-500">
-                No hitters match this search.
+            <div className="grid gap-6 px-5 py-5 sm:px-6 sm:py-6 xl:grid-cols-[minmax(20rem,0.95fr)_minmax(0,1.05fr)]">
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <MetricToggle value={selectedMetric} onChange={setSelectedMetric} />
+                  <ZoneDisplayModeToggle
+                    value={zoneDisplayMode}
+                    onChange={setZoneDisplayMode}
+                  />
+                </div>
+                <ZoneCanvas
+                  buckets={zoneBuckets}
+                  metricId={selectedMetric}
+                  displayMode={zoneDisplayMode}
+                  selectedBucketId={selectedBucketId}
+                  selectedCellId={selectedCellId}
+                  selectedRowId={selectedRowId}
+                  selectedColId={selectedColId}
+                  cellSummaries={cellSummaries}
+                  rowSummaries={rowSummaries}
+                  colSummaries={colSummaries}
+                  onSelectBucket={(id) => { setSelectedBucketId(id); setSelectedCellId(null); setSelectedRowId(null); setSelectedColId(null); }}
+                  onSelectCell={(id) => { setSelectedCellId(id); setSelectedBucketId(null); setSelectedRowId(null); setSelectedColId(null); }}
+                  onSelectRow={(id) => { setSelectedRowId(id); setSelectedCellId(null); setSelectedBucketId(null); setSelectedColId(null); }}
+                  onSelectCol={(id) => { setSelectedColId(id); setSelectedCellId(null); setSelectedBucketId(null); setSelectedRowId(null); }}
+                />
+                <div className="rounded-[1.5rem] border border-zinc-800/80 bg-zinc-950/60 px-4 py-3 text-[11px] text-zinc-500">
+                  {hiddenZonePitchCount > 0
+                    ? `${hiddenZonePitchCount} filtered pitch${hiddenZonePitchCount === 1 ? "" : "es"} fall outside the visible rough-zone buckets and are omitted from the grid.`
+                    : "All mapped pitches in the current sample land inside the visible rough-zone schema."}
+                </div>
               </div>
-            ) : (
-              filteredEntries.map((entry) => {
-                const active = selectedPlayerSlug === entry.playerSlug;
-                return (
-                  <button
-                    key={entry.playerSlug}
-                    type="button"
-                    onClick={() => updateParams({ player: entry.playerSlug })}
-                    className={joinClasses(
-                      "rounded-[1.5rem] border px-4 py-4 text-left transition-smooth",
-                      active
-                        ? "border-emerald-400/35 bg-emerald-500/10 shadow-[0_22px_48px_rgba(16,185,129,0.10)]"
-                        : "border-zinc-800 bg-zinc-950/75 hover:border-zinc-700 hover:bg-zinc-950/90"
-                    )}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <div className="text-sm font-bold text-zinc-100">
-                          {entry.displayName}
-                        </div>
-                        <div className="mt-1 text-[11px] text-zinc-500">
-                          {entry.batterHand ? `${entry.batterHand}HH` : "Hand unknown"}
-                          {entry.matchedHitterNames.length > 1
-                            ? ` • ${entry.matchedHitterNames.length} aliases`
-                            : ""}
-                        </div>
-                      </div>
-                      <ArrowRight
-                        className={joinClasses(
-                          "mt-0.5 h-4 w-4 shrink-0",
-                          active ? "text-emerald-300" : "text-zinc-600"
-                        )}
-                      />
-                    </div>
-                    <div className="mt-4 grid grid-cols-2 gap-2">
-                      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-3 py-2.5">
-                        <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
-                          Sessions
-                        </div>
-                        <div className="mt-1 text-lg font-black tracking-tight text-zinc-100">
-                          {entry.sessionCount}
-                        </div>
-                      </div>
-                      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-3 py-2.5">
-                        <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
-                          Pitches
-                        </div>
-                        <div className="mt-1 text-lg font-black tracking-tight text-zinc-100">
-                          {entry.pitchCount}
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })
-            )}
-          </div>
-        </LeaderboardPanel>
 
-        <div className="space-y-5">
-          {selectedEntry ? (
-            <>
-              <LeaderboardPanel className="p-5 sm:p-6">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                      Current hitter
-                    </div>
-                    <h2 className="mt-2 text-2xl font-black tracking-tight text-zinc-50">
-                      {selectedEntry.displayName}
-                    </h2>
-                    <p className="mt-1 text-sm text-zinc-500">
-                      Result lens:{" "}
-                      {RESULT_LENSES.find((lens) => lens.id === resultLens)?.label ?? "All"}
-                    </p>
+              <div className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <MiniStat
+                    label={
+                    selectedCellId !== null ? `Zone Cell ${selectedCellId}`
+                    : selectedRowId !== null ? `${ZONE_ROW_LABELS[selectedRowId]} Row`
+                    : selectedColId !== null ? `${ZONE_COL_LABELS[selectedColId]} Col`
+                    : selectedBucket ? selectedBucket.label
+                    : "Filtered Sample"
+                  }
+                    value={formatCount(selectionSummary.totalPitches)}
+                    tone="emerald"
+                  />
+                  <MiniStat
+                    label="Plate Appearances"
+                    value={formatCount(selectionSummary.plateAppearances)}
+                  />
+                  <MiniStat
+                    label="Swing%"
+                    value={formatPct(selectionSummary.swingPct, 1)}
+                    tone="sky"
+                  />
+                  <MiniStat
+                    label="Whiff%"
+                    value={formatPct(selectionSummary.whiffPct, 1)}
+                  />
+                  <MiniStat
+                    label="AVG"
+                    value={formatRate(selectionSummary.battingAverage)}
+                    tone="emerald"
+                  />
+                  <MiniStat label="wOBA" value={formatRate(selectionSummary.woba)} tone="sky" />
+                </div>
+
+                <PitchMixPanel
+                  title={
+                    selectedCellId !== null ? `Cell ${selectedCellId} Mix`
+                    : selectedRowId !== null ? `${ZONE_ROW_LABELS[selectedRowId]} Row Mix`
+                    : selectedColId !== null ? `${ZONE_COL_LABELS[selectedColId]} Col Mix`
+                    : selectedBucket ? `${selectedBucket.label} Mix`
+                    : "Filtered Pitch Mix"
+                  }
+                  subtitle={
+                    selectedCellId !== null ? "Pitch distribution in this zone cell."
+                    : selectedRowId !== null ? "Pitch distribution across this horizontal row."
+                    : selectedColId !== null ? "Pitch distribution across this vertical column."
+                    : selectedBucket ? "Pitch distribution inside the active rough bucket."
+                    : "Pitch distribution for the full filtered player scope."
+                  }
+                  pitches={selectionPitchMix}
+                />
+
+                <div className="rounded-[1.6rem] border border-zinc-800/80 bg-zinc-950/60 p-4">
+                  <div className="flex items-center gap-2 text-zinc-200">
+                    <Crosshair className="h-4 w-4 text-sky-300" />
+                    <div className="text-sm font-bold tracking-tight">What This View Has</div>
                   </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <Link
-                      href={`/players/${selectedEntry.playerSlug}?tab=live-ab`}
-                      className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950/80 px-4 py-2 text-sm font-semibold text-zinc-200 transition-smooth hover:border-zinc-700 hover:text-white"
-                    >
-                      Open player page
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => updateParams({ player: null })}
-                      className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950/80 px-4 py-2 text-sm font-semibold text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
-                    >
-                      Clear player
-                    </button>
+                  <div className="mt-3 grid gap-2 text-sm text-zinc-400">
+                    <div className="rounded-2xl border border-zinc-800/70 bg-zinc-950/70 px-3 py-2.5">
+                      Exact player search, season scope, pitch type, count, event, and pitch-speed filters.
+                    </div>
+                    <div className="rounded-2xl border border-zinc-800/70 bg-zinc-950/70 px-3 py-2.5">
+                      Rough zone buckets based on the current charting cell model, not contour geometry.
+                    </div>
+                    <div className="rounded-2xl border border-zinc-800/70 bg-zinc-950/70 px-3 py-2.5">
+                      No exit velocity, launch-speed, quality-of-contact, or handedness controls in v1.
+                    </div>
                   </div>
                 </div>
-              </LeaderboardPanel>
+              </div>
+            </div>
+          </LeaderboardPanel>
 
-              <HitterPerformanceInsights
-                key={`${selectedEntry.playerSlug}-${resultLens}`}
-                data={scopedEntry!.insights}
-              />
-            </>
-          ) : (
-            <BlankZonePlaceholder
-              pinnedSlug={pinnedSlug}
-              onOpenPinned={
-                pinnedSlug && entryBySlug.has(pinnedSlug)
-                  ? () => updateParams({ player: pinnedSlug })
-                  : null
-              }
-            />
-          )}
-        </div>
-      </div>
+          <SummaryTable
+            entry={selectedEntry}
+            seasonLabel={resolvedSeasonUi}
+            summary={filteredSummary}
+            pitchMix={filteredPitchMix}
+          />
+        </>
+      ) : (
+        <EmptyState
+          filteredEntries={filteredEntries}
+          pinnedSlug={pinnedSlug}
+          onOpenPinned={
+            pinnedSlug && entryBySlug.has(pinnedSlug)
+              ? () => updateParams({ player: pinnedSlug })
+              : null
+          }
+        />
+      )}
     </div>
   );
 }

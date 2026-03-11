@@ -156,7 +156,7 @@ export default async function ChartingHubPage(props: {
                                                     Insights
                                                 </div>
                                                 <div className="mt-1 text-sm font-semibold text-zinc-100">
-                                                    Open Hitter Explorer
+                                                    Open Player Visuals
                                                 </div>
                                             </div>
                                         </div>

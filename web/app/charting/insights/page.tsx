@@ -3,6 +3,7 @@ import {
   loadChartingHitterInsightsDirectory,
   type ChartingHitterInsightsDirectorySource,
 } from "@/lib/charting/playerProfile";
+import { buildChartingPlayerComparisonDirectory } from "@/lib/charting/playerComparison";
 import { LeaderboardPageFrame } from "@/app/components/leaderboards/LeaderboardChrome";
 import LiveAbInsightsExplorer from "./LiveAbInsightsExplorer";
 
@@ -20,7 +21,9 @@ export default async function ChartingInsightsPage() {
           : null,
     }));
 
-  const entries = await loadChartingHitterInsightsDirectory(hitterSources);
+  const entries = buildChartingPlayerComparisonDirectory(
+    await loadChartingHitterInsightsDirectory(hitterSources)
+  );
 
   return (
     <LeaderboardPageFrame maxWidth="max-w-7xl">
