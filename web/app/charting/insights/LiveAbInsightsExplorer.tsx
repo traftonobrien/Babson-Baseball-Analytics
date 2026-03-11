@@ -1137,9 +1137,6 @@ function ZoneCanvas({
                   onMouseLeave={() => setHoveredRowId(null)}
                   onClick={() => {
                     onSelectRow(selectedRowId === row ? null : row);
-                    onSelectCol(null);
-                    onSelectCell(null);
-                    onSelectBucket(null);
                   }}
                   className={joinClasses(
                     "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition-smooth",
@@ -1162,9 +1159,6 @@ function ZoneCanvas({
                   onMouseLeave={() => setHoveredColId(null)}
                   onClick={() => {
                     onSelectCol(selectedColId === col ? null : col);
-                    onSelectRow(null);
-                    onSelectCell(null);
-                    onSelectBucket(null);
                   }}
                   className={joinClasses(
                     "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition-smooth",
@@ -1238,14 +1232,8 @@ function ZoneCanvas({
                   onSelect={() => {
                     if (isZoneCell) {
                       onSelectCell(selectedCellId === item.cellId ? null : item.cellId!);
-                      onSelectBucket(null);
-                      onSelectRow(null);
-                      onSelectCol(null);
                     } else {
                       onSelectBucket(selectedBucketId === bucket.id ? null : bucket.id);
-                      onSelectCell(null);
-                      onSelectRow(null);
-                      onSelectCol(null);
                     }
                   }}
                 />
