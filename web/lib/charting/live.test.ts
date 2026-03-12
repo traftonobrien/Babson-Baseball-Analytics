@@ -10,6 +10,7 @@ import {
   derivePAPitchProgress,
   recordPitchInSnapshot,
   undoSnapshotAction,
+  updatePlateAppearanceDetailsInSnapshot,
 } from "./live";
 import { fixtureGameSnapshot } from "./fixtures";
 import type { ChartingGameSnapshot } from "./types";
@@ -360,5 +361,88 @@ describe("snapshot mutations", () => {
     expect(undone.plateAppearances).toHaveLength(0);
     expect(undone.pitches).toHaveLength(0);
     expect(undone.segments).toHaveLength(0);
+  });
+
+  it("updates history details for a completed plate appearance", () => {
+    let snapshot = recordPitchInSnapshot(baseSnapshot, {
+      pitchType: "Fastball",
+      pitchResult: "foul",
+      locationCell: 5,
+      velocity: 91,
+      pitcher: { playerId: "DJames1", name: "D. James" },
+      hitterName: "Lead Off",
+      lineupSlot: 1,
+    });
+    snapshot = recordPitchInSnapshot(snapshot, {
+      pitchType: "Slider",
+      pitchResult: "in_play",
+      locationCell: 9,
+      velocity: 83,
+      pitcher: { playerId: "DJames1", name: "D. James" },
+      hitterName: "Lead Off",
+      lineupSlot: 1,
+    });
+    snapshot = closeCurrentPlateAppearance(snapshot, "6-3");
+
+    const paId = snapshot.plateAppearances[0]!.id;
+    const updated = updatePlateAppearanceDetailsInSnapshot(snapshot, {
+      paId,
+      pitcher: { playerId: "SVyse1", name: "S. Vyse" },
+      hitterName: "Edited Hitter",
+      initialCount: "2-1",
+      resultCode: "1B",
+    });
+
+    expect(updated.segments).toHaveLength(1);
+    expect(updated.segments[0]?.playerId).toBe("SVyse1");
+    expect(updated.segments[0]?.displayName).toBe("S. Vyse");
+    expect(updated.segments[0]?.segmentOrder).toBe(0);
+    expect(updated.plateAppearances[0]?.segmentId).toBe(updated.segments[0]?.id);
+    expect(updated.plateAppearances[0]?.hitterName).toBe("Edited Hitter");
+    expect(updated.plateAppearances[0]?.initialCount).toBe("2-1");
+    expect(updated.plateAppearances[0]?.resultCode).toBe("1B");
+    expect(updated.pitches[0]?.ballsBefore).toBe(2);
+    expect(updated.pitches[0]?.strikesBefore).toBe(1);
+    expect(updated.pitches[1]?.ballsBefore).toBe(2);
+    expect(updated.pitches[1]?.strikesBefore).toBe(2);
+  });
+
+  it("rebuilds bunt history pitch trails when the starting count changes to bunt", () => {
+    let snapshot = recordPitchInSnapshot(baseSnapshot, {
+      pitchType: "Fastball",
+      pitchResult: "foul",
+      locationCell: 5,
+      velocity: null,
+      pitcher: { playerId: "DJames1", name: "D. James" },
+      hitterName: "Lead Off",
+      lineupSlot: 1,
+    });
+    snapshot = recordPitchInSnapshot(snapshot, {
+      pitchType: "Changeup",
+      pitchResult: "in_play",
+      locationCell: 7,
+      velocity: null,
+      pitcher: { playerId: "DJames1", name: "D. James" },
+      hitterName: "Lead Off",
+      lineupSlot: 1,
+    });
+    snapshot = closeCurrentPlateAppearance(snapshot, "5-3");
+
+    const paId = snapshot.plateAppearances[0]!.id;
+    const updated = updatePlateAppearanceDetailsInSnapshot(snapshot, {
+      paId,
+      pitcher: { playerId: "DJames1", name: "D. James" },
+      hitterName: "Lead Off",
+      initialCount: "Bunt",
+      resultCode: "1B",
+    });
+
+    expect(updated.plateAppearances[0]?.initialCount).toBe("Bunt");
+    expect(updated.plateAppearances[0]?.buntContext).toBe(true);
+    expect(updated.plateAppearances[0]?.resultCode).toBe("1B");
+    expect(updated.pitches[0]?.pitchResult).toBe("bunt_foul");
+    expect(updated.pitches[0]?.ballsBefore).toBe(0);
+    expect(updated.pitches[0]?.strikesBefore).toBe(0);
+    expect(updated.pitches[1]?.strikesBefore).toBe(1);
   });
 });

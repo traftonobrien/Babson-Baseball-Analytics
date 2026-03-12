@@ -43,17 +43,19 @@ import {
   guidanceTextForClosure,
   GROUND_OUT_OPTIONS,
   HIT_OPTIONS,
+  isPAResultType,
   LINE_OUT_OPTIONS,
   lineupNameForSlot,
   nextPASeedFromInitialCount,
   paResultOutsRecorded,
+  PA_RESULT_OPTIONS,
   POP_OUT_OPTIONS,
   recordPitchInSnapshot,
   resolvePlateAppearanceInitialCount,
   syncHitterToSnapshot,
   undoSnapshotAction,
   UNASSISTED_OUT_OPTIONS,
-  updatePAHitterNameInSnapshot,
+  updatePlateAppearanceDetailsInSnapshot,
   updatePitchVelocityInSnapshot,
   updateSnapshotRevision,
   type GameStateOverride,
@@ -67,6 +69,7 @@ import {
 } from "@/lib/charting/locationGrid";
 import type {
   ChartingBootstrapPitcher,
+  ChartingInitialCount,
   ChartingBootstrapRosterPlayer,
   ChartingGameSnapshot,
   PitchResult,
@@ -87,6 +90,15 @@ type RecentPitchRow = {
   pitchResult: PitchResult;
   velocity: number | null;
   paResult: string | null;
+};
+
+type HistoryEditDraft = {
+  paId: string;
+  pitcherId: string;
+  pitcherName: string;
+  hitterName: string;
+  initialCount: LiveABCountPreset;
+  resultCode: PAResultType | "";
 };
 
 const INNING_OPTIONS = Array.from({ length: 20 }, (_, index) => index + 1);
@@ -126,6 +138,7 @@ export function ChartingEditor({
 }: ChartingEditorProps) {
   const initialMatchup = deriveMatchupSelection(initialSnapshot, null);
   const datalistId = useId();
+  const historyPitcherDatalistId = useId();
 
   const [snapshot, setSnapshot] = useState(initialSnapshot);
   const [selectedPitcherId, setSelectedPitcherId] = useState(
@@ -148,6 +161,7 @@ export function ChartingEditor({
   const [expandedPAs, setExpandedPAs] = useState<Set<string>>(() => new Set());
   const [velocityDrafts, setVelocityDrafts] = useState<Record<string, string>>({});
   const [gameStateOverride, setGameStateOverride] = useState<GameStateOverride | null>(null);
+  const [historyEditDraft, setHistoryEditDraft] = useState<HistoryEditDraft | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -223,6 +237,7 @@ export function ChartingEditor({
         arsenalPitchTypes: [...PITCH_TYPES],
       }
       : null);
+  const historyPitcherOptions = buildHistoryPitcherOptions(snapshot, pitchers);
   const availablePitchTypes =
     selectedPitcher?.arsenalPitchTypes.length
       ? selectedPitcher.arsenalPitchTypes
@@ -242,15 +257,10 @@ export function ChartingEditor({
     Boolean(selectedPitcher) &&
     Boolean(hitterName.trim());
   const hitterSuggestions = buildHitterSuggestions(snapshot, rosterPlayers);
-  const recentPAGroups = buildRecentPAGroups(snapshot).slice(-12).reverse();
-  const lastPaId = recentPAGroups[recentPAGroups.length - 1]?.paId ?? null;
-  const expandedPAsInit = useRef(false);
-  useEffect(() => {
-    if (showHistory && lastPaId && !expandedPAsInit.current) {
-      expandedPAsInit.current = true;
-      setExpandedPAs((prev) => new Set([...prev, lastPaId]));
-    }
-  }, [showHistory, lastPaId]);
+  const recentPAGroups = buildRecentPAGroups(snapshot).reverse();
+  const editingHistoryGroup = historyEditDraft
+    ? recentPAGroups.find((group) => group.paId === historyEditDraft.paId) ?? null
+    : null;
   const activePitcherPitchCount = countPitcherPitches(
     snapshot,
     selectedPitcher?.playerId ?? ""
@@ -466,18 +476,49 @@ export function ChartingEditor({
     }
   };
 
-  const handlePAHitterChange = (paId: string, nextName: string) => {
-    const nextSnapshot = updatePAHitterNameInSnapshot(snapshot, paId, nextName);
+  const handleOpenHistoryEdit = (group: RecentPAGroup) => {
+    setHistoryEditDraft({
+      paId: group.paId,
+      pitcherId: group.pitcherId,
+      pitcherName: group.pitcherName,
+      hitterName: group.hitterName,
+      initialCount: countPresetFromInitialCount(group.initialCount),
+      resultCode: group.paResult ?? "",
+    });
+  };
 
-    if (nextSnapshot === snapshot) {
+  const handleHistoryEditSave = () => {
+    if (!historyEditDraft) {
       return;
     }
 
-    applyOptimisticSnapshot(
-      nextSnapshot,
-      gameStateOverride,
-      `Hitter updated to ${nextName.trim()}`
-    );
+    const selectedHistoryPitcher =
+      findHistoryPitcherOptionByName(historyPitcherOptions, historyEditDraft.pitcherName) ??
+      historyPitcherOptions.find((pitcher) => pitcher.playerId === historyEditDraft.pitcherId) ??
+      null;
+    if (!selectedHistoryPitcher) {
+      setErrorMessage("Select a valid pitcher before saving the at-bat edit.");
+      return;
+    }
+
+    const nextSnapshot = updatePlateAppearanceDetailsInSnapshot(snapshot, {
+      paId: historyEditDraft.paId,
+      pitcher: {
+        playerId: selectedHistoryPitcher.playerId,
+        name: selectedHistoryPitcher.name,
+      },
+      hitterName: historyEditDraft.hitterName,
+      initialCount: initialCountFromPreset(historyEditDraft.initialCount),
+      resultCode: historyEditDraft.resultCode || null,
+    });
+
+    if (nextSnapshot === snapshot) {
+      setHistoryEditDraft(null);
+      return;
+    }
+
+    applyOptimisticSnapshot(nextSnapshot, gameStateOverride, "At-bat history updated");
+    setHistoryEditDraft(null);
   };
 
   const handleRecordPitch = () => {
@@ -868,7 +909,10 @@ export function ChartingEditor({
                 Arsenal & Action
               </button>
               <button
-                onClick={() => setShowHistory(true)}
+                onClick={() => {
+                  setExpandedPAs(new Set());
+                  setShowHistory(true);
+                }}
                 className={`flex-1 rounded-lg py-2.5 text-xs font-bold transition-all ${showHistory ? "bg-zinc-800 text-white shadow-sm ring-1 ring-white/10" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/40"}`}
               >
                 Pitch History
@@ -915,110 +959,158 @@ export function ChartingEditor({
               /* Column 3: Pitch Log History — grouped by at-bat, expandable */
               <SurfacePanel className="p-5 flex-1 min-h-0 flex flex-col overflow-hidden">
                 <SectionHeading eyebrow="History" title="Recent Pitches" body="" />
-                <div className="mt-4 min-h-0 flex-1 flex flex-col gap-2 overflow-y-auto overflow-x-hidden pr-2 overscroll-contain max-h-[60vh]">
+                <div className="mt-4 min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-2 pb-2 overscroll-contain">
                   {recentPAGroups.length === 0 ? (
                     <div className="py-4 text-center text-sm text-zinc-500">No pitches charted yet.</div>
                   ) : (
-                    recentPAGroups.map((group) => {
-                      const isExpanded = expandedPAs.has(group.paId);
-                      return (
-                        <div key={group.paId} className="rounded-xl bg-zinc-900/60 overflow-hidden">
-                          <button
-                            type="button"
-                            onClick={() => togglePAExpanded(group.paId)}
-                            className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-zinc-800/50 transition-colors"
+                    <div className="space-y-3">
+                      {recentPAGroups.map((group) => {
+                        const isExpanded = expandedPAs.has(group.paId);
+                        return (
+                          <div
+                            key={group.paId}
+                            className="shrink-0 overflow-hidden rounded-xl border border-zinc-800/70 bg-zinc-900/60"
                           >
-                            {isExpanded ? (
-                              <ChevronDown className="h-4 w-4 shrink-0 text-zinc-500" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4 shrink-0 text-zinc-500" />
-                            )}
-                            <select
-                              value={group.inning}
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                handlePAInningChange(group.paId, Number(e.target.value));
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                              className="h-7 min-w-[3rem] rounded-md border border-zinc-600 bg-zinc-800 px-2 py-0.5 text-xs font-semibold text-zinc-200 outline-none focus:border-emerald-500/50"
-                            >
-                              {INNING_OPTIONS.map((n) => (
-                                <option key={n} value={n}>{n}</option>
-                              ))}
-                            </select>
-                            <span className="text-zinc-500 text-xs font-medium shrink-0">inning</span>
-                            <div className="flex-1 min-w-0 pr-2">
-                              <input
-                                defaultValue={group.hitterName}
-                                list={datalistId}
-                                onClick={(e) => e.stopPropagation()}
-                                onBlur={(e) => handlePAHitterChange(group.paId, e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    e.currentTarget.blur();
-                                  }
-                                }}
-                                className="w-full truncate bg-transparent font-medium text-zinc-300 hover:text-white focus:text-white outline-none focus:border-b focus:border-emerald-500/50 transition-colors"
-                                placeholder="Hitter Name"
-                                aria-label={`Edit hitter for ${group.hitterName} at-bat`}
-                              />
-                            </div>
-                            {group.paResult && (
-                              <span className="text-emerald-400 font-bold text-sm shrink-0">{group.paResult}</span>
-                            )}
-                            <span className="rounded bg-zinc-800 px-2 py-0.5 text-[10px] font-semibold text-zinc-500 shrink-0">
-                              {group.pitches.length} pitch{group.pitches.length !== 1 ? "es" : ""}
-                            </span>
-                          </button>
-                          {isExpanded && (
-                            <div className="border-t border-zinc-800/60 bg-zinc-950/40 rounded-b-xl overflow-hidden">
-                              <div className="max-h-[200px] min-h-0 overflow-y-auto overscroll-contain">
-                                <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto_auto] gap-x-3 gap-y-0 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 border-b border-zinc-800/60 sticky top-0 bg-zinc-950/95 z-10">
-                                  <span>#</span>
-                                  <span>Pitch</span>
-                                  <span>Count</span>
-                                  <span>Velo</span>
-                                  <span>Result</span>
-                                </div>
-                                {group.pitches.map((pitch, idx) => (
-                                  <div
-                                    key={pitch.id}
-                                    className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto_auto] gap-x-3 gap-y-0 items-center px-4 py-2.5 pl-10 text-sm border-b border-zinc-800/40 last:border-b-0"
-                                  >
-                                    <span className="text-zinc-500 font-mono text-xs">{idx + 1}</span>
-                                    <span className="truncate font-medium text-zinc-300">{pitch.pitchType}</span>
-                                    <span className="rounded bg-zinc-800 px-2 py-0.5 text-xs font-semibold text-zinc-400 shrink-0">{pitch.count}</span>
-                                    <div className="flex items-center gap-1 shrink-0">
-                                      <input
-                                        value={velocityDrafts[pitch.id] ?? (pitch.velocity?.toString() ?? "")}
-                                        onChange={(event) => handleVelocityDraftChange(pitch.id, event.target.value)}
-                                        onBlur={(event) => handlePitchVelocityCommit(pitch.id, event.target.value)}
-                                        onKeyDown={(event) => {
-                                          if (event.key === "Enter") {
-                                            event.currentTarget.blur();
-                                          } else if (event.key === "Escape") {
-                                            clearVelocityDraft(pitch.id);
-                                            event.currentTarget.blur();
-                                          }
-                                        }}
-                                        inputMode="numeric"
-                                        placeholder="mph"
-                                        aria-label={`Velocity for pitch ${idx + 1}`}
-                                        className="h-7 w-16 rounded-md border border-zinc-700 bg-zinc-900/80 px-2 text-center text-xs font-semibold text-zinc-200 outline-none transition-colors placeholder:text-zinc-600 focus:border-emerald-500/50 focus:bg-zinc-900"
-                                      />
-                                      <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-600">mph</span>
-                                    </div>
-                                    <span className={pitch.paResult ? "text-emerald-400 font-bold shrink-0" : "font-medium text-zinc-400 shrink-0"}>
-                                      {pitch.paResult ?? pitchResultLabel(pitch.pitchResult)}
-                                    </span>
-                                  </div>
-                                ))}
+                            <div className="flex items-center gap-2 px-4 py-2.5 hover:bg-zinc-800/40 transition-colors">
+                              <button
+                                type="button"
+                                onClick={() => togglePAExpanded(group.paId)}
+                                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-zinc-500 transition-colors hover:bg-zinc-800/80 hover:text-zinc-100"
+                                aria-label={`${isExpanded ? "Collapse" : "Expand"} ${group.hitterName} at-bat`}
+                              >
+                                {isExpanded ? (
+                                  <ChevronDown className="h-4 w-4" />
+                                ) : (
+                                  <ChevronRight className="h-4 w-4" />
+                                )}
+                              </button>
+
+                              <div className="flex shrink-0 items-center gap-2">
+                                <select
+                                  value={group.inning}
+                                  onChange={(e) => handlePAInningChange(group.paId, Number(e.target.value))}
+                                  className="h-8 min-w-[3.2rem] rounded-md border border-zinc-700 bg-zinc-800 px-2 text-xs font-semibold text-zinc-200 outline-none focus:border-emerald-500/50"
+                                  aria-label={`Inning for ${group.hitterName}`}
+                                >
+                                  {INNING_OPTIONS.map((n) => (
+                                    <option key={n} value={n}>{n}</option>
+                                  ))}
+                                </select>
+                                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
+                                  inning
+                                </span>
                               </div>
+
+                              <button
+                                type="button"
+                                onClick={() => togglePAExpanded(group.paId)}
+                                className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <div className="truncate text-lg font-medium leading-none text-zinc-200">
+                                    {group.hitterName}
+                                  </div>
+                                </div>
+                                <div className="hidden min-w-0 items-center gap-2 lg:flex">
+                                  <span className="max-w-[11rem] truncate rounded-full border border-zinc-700/70 bg-zinc-950/80 px-2.5 py-1 text-[10px] font-semibold normal-case tracking-normal text-zinc-300">
+                                    {group.pitcherName}
+                                  </span>
+                                  <span className="rounded-full border border-zinc-700/70 bg-zinc-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-400">
+                                    Start {group.initialCount}
+                                  </span>
+                                </div>
+                                <div className="flex shrink-0 items-center gap-2">
+                                  {group.paResult ? (
+                                    <span className="text-xl font-bold leading-none text-emerald-400">
+                                      {group.paResult}
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-300/80">
+                                      Open
+                                    </span>
+                                  )}
+                                  <span className="rounded bg-zinc-800 px-2 py-1 text-[10px] font-semibold text-zinc-500">
+                                    {group.pitches.length} pitch{group.pitches.length !== 1 ? "es" : ""}
+                                  </span>
+                                </div>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleOpenHistoryEdit(group)}
+                                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[rgba(var(--babson-grey-rgb),0.08)] text-zinc-400 transition-colors hover:border-[rgba(var(--babson-green-rgb),0.35)] hover:text-zinc-100"
+                                aria-label={`Edit ${group.hitterName} at-bat`}
+                              >
+                                <PencilLine className="h-4 w-4" />
+                              </button>
                             </div>
-                          )}
-                        </div>
-                      );
-                    })
+                            {isExpanded && (
+                              <div className="border-t border-zinc-800/70 bg-zinc-950/45 px-4 py-3">
+                                <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                                  <span>Pitch Trail</span>
+                                  <span className="h-px flex-1 bg-zinc-800/70" />
+                                </div>
+                                <div className="space-y-2">
+                                  {group.pitches.map((pitch, idx) => (
+                                    <div
+                                      key={pitch.id}
+                                      className="rounded-xl border border-zinc-800/70 bg-zinc-950/80 px-3 py-3"
+                                    >
+                                      <div className="flex flex-wrap items-start justify-between gap-3">
+                                        <div className="min-w-0 flex-1">
+                                          <div className="flex flex-wrap items-center gap-2">
+                                            <span className="text-xs font-mono text-zinc-500">#{idx + 1}</span>
+                                            <span className="text-sm font-semibold text-zinc-200">
+                                              {pitch.pitchType}
+                                            </span>
+                                          </div>
+                                          <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                                            <span className="rounded-full border border-zinc-700/70 bg-zinc-900 px-2.5 py-1 text-zinc-400">
+                                              Count {pitch.count}
+                                            </span>
+                                            <span
+                                              className={
+                                                pitch.paResult
+                                                  ? "rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-emerald-300"
+                                                  : "rounded-full border border-zinc-700/70 bg-zinc-900 px-2.5 py-1 text-zinc-400"
+                                              }
+                                            >
+                                              {pitch.paResult ?? pitchResultLabel(pitch.pitchResult)}
+                                            </span>
+                                          </div>
+                                        </div>
+                                        <label className="flex items-center gap-2 rounded-full border border-zinc-700/70 bg-zinc-900/80 px-2.5 py-1.5">
+                                          <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
+                                            Velo
+                                          </span>
+                                          <input
+                                            value={velocityDrafts[pitch.id] ?? (pitch.velocity?.toString() ?? "")}
+                                            onChange={(event) => handleVelocityDraftChange(pitch.id, event.target.value)}
+                                            onBlur={(event) => handlePitchVelocityCommit(pitch.id, event.target.value)}
+                                            onKeyDown={(event) => {
+                                              if (event.key === "Enter") {
+                                                event.currentTarget.blur();
+                                              } else if (event.key === "Escape") {
+                                                clearVelocityDraft(pitch.id);
+                                                event.currentTarget.blur();
+                                              }
+                                            }}
+                                            inputMode="numeric"
+                                            placeholder="mph"
+                                            aria-label={`Velocity for pitch ${idx + 1}`}
+                                            className="h-8 w-16 rounded-md border border-zinc-700 bg-zinc-950 px-2 text-center text-xs font-semibold text-zinc-200 outline-none transition-colors placeholder:text-zinc-600 focus:border-emerald-500/50 focus:bg-zinc-950"
+                                          />
+                                        </label>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   )}
                 </div>
               </SurfacePanel>
@@ -1110,6 +1202,228 @@ export function ChartingEditor({
           </div>
         </section>
       </div>
+
+      <AnimatePresence>
+        {historyEditDraft && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="history-edit-modal-title"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="w-full max-w-3xl rounded-2xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.94),rgba(9,9,11,0.98))] shadow-[0_24px_64px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]"
+            >
+              <div className="flex items-start justify-between gap-4 border-b border-[rgba(var(--babson-grey-rgb),0.18)] px-5 py-4">
+                <div>
+                  <h2 id="history-edit-modal-title" className="text-lg font-bold text-zinc-100">
+                    Edit At-Bat
+                  </h2>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    Update pitcher, hitter, starting count, and outcome for this history entry.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setHistoryEditDraft(null)}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[rgba(var(--babson-grey-rgb),0.08)] text-zinc-400 transition-colors hover:border-[rgba(var(--babson-grey-rgb),0.38)] hover:text-zinc-100"
+                  aria-label="Close history editor"
+                >
+                  <ChevronRight className="h-4 w-4 rotate-45" />
+                </button>
+              </div>
+
+              <div className="grid gap-5 px-5 py-5 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+                <div className="space-y-4">
+                  <label className="block">
+                    <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                      Pitcher
+                    </span>
+                    <input
+                      list={historyPitcherDatalistId}
+                      value={historyEditDraft.pitcherName}
+                      onChange={(event) =>
+                        setHistoryEditDraft((current) =>
+                          current
+                            ? {
+                              ...current,
+                              pitcherName: event.target.value,
+                              pitcherId:
+                                findHistoryPitcherOptionByName(historyPitcherOptions, event.target.value)?.playerId ?? "",
+                            }
+                            : current
+                        )
+                      }
+                      className="h-11 w-full rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-4 text-sm font-semibold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)]"
+                      placeholder="Pitcher name"
+                    />
+                    <datalist id={historyPitcherDatalistId}>
+                      {historyPitcherOptions.map((pitcher) => (
+                        <option key={pitcher.playerId} value={pitcher.name} />
+                      ))}
+                    </datalist>
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                      Hitter
+                    </span>
+                    <input
+                      list={datalistId}
+                      value={historyEditDraft.hitterName}
+                      onChange={(event) =>
+                        setHistoryEditDraft((current) =>
+                          current
+                            ? { ...current, hitterName: event.target.value }
+                            : current
+                        )
+                      }
+                      className="h-11 w-full rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-4 text-sm font-semibold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] placeholder:text-zinc-600"
+                      placeholder="Hitter name"
+                    />
+                  </label>
+
+                  <div>
+                    <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                      Starting Count
+                    </span>
+                    <div className="grid grid-cols-3 gap-2">
+                      {COUNT_PRESET_OPTIONS.map((option) => {
+                        const active = historyEditDraft.initialCount === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() =>
+                              setHistoryEditDraft((current) =>
+                                current
+                                  ? { ...current, initialCount: option.value }
+                                  : current
+                              )
+                            }
+                            className={`rounded-xl border px-3 py-3 text-left transition-colors ${
+                              active
+                                ? "border-emerald-500/45 bg-emerald-500/12 text-white shadow-[0_0_0_1px_rgba(16,185,129,0.16)]"
+                                : "border-[rgba(var(--babson-grey-rgb),0.22)] bg-zinc-950/70 text-zinc-400 hover:border-[rgba(var(--babson-grey-rgb),0.38)] hover:text-zinc-200"
+                            }`}
+                          >
+                            <div className="text-sm font-bold">{option.label}</div>
+                            <div className="mt-1 text-[11px] text-zinc-500">{option.detail}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <label className="block">
+                    <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                      Outcome
+                    </span>
+                    <select
+                      value={historyEditDraft.resultCode}
+                      onChange={(event) =>
+                        setHistoryEditDraft((current) =>
+                          current
+                            ? {
+                              ...current,
+                              resultCode: event.target.value as PAResultType | "",
+                            }
+                            : current
+                        )
+                      }
+                      className="h-11 w-full rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-4 text-sm font-semibold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)]"
+                    >
+                      {editingHistoryGroup?.paResult === null && (
+                        <option value="">Open PA</option>
+                      )}
+                      {PA_RESULT_OPTIONS.map((result) => (
+                        <option key={result} value={result}>
+                          {result} • {detailTextForPAResult(result)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+
+                <div className="rounded-2xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-zinc-950/60 p-4">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                    Session Snapshot
+                  </div>
+                  <div className="mt-3 space-y-3">
+                    <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-3">
+                      <div className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
+                        At-Bat
+                      </div>
+                      <div className="mt-2 text-sm font-semibold text-zinc-100">
+                        {editingHistoryGroup?.hitterName ?? historyEditDraft.hitterName}
+                      </div>
+                      <div className="mt-1 text-xs text-zinc-500">
+                        Inning {editingHistoryGroup?.inning ?? "—"} • {editingHistoryGroup?.pitches.length ?? 0} pitch
+                        {(editingHistoryGroup?.pitches.length ?? 0) === 1 ? "" : "es"}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-3">
+                      <div className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
+                        Current Trail
+                      </div>
+                      <div className="mt-2 space-y-2">
+                        {editingHistoryGroup?.pitches.map((pitch, index) => (
+                          <div key={pitch.id} className="flex items-center justify-between gap-3 text-xs text-zinc-400">
+                            <span className="font-mono text-zinc-500">{index + 1}</span>
+                            <span className="min-w-0 flex-1 truncate text-zinc-300">{pitch.pitchType}</span>
+                            <span className="rounded bg-zinc-900 px-2 py-0.5 text-[11px] font-semibold text-zinc-500">
+                              {pitch.count}
+                            </span>
+                            <span className="font-medium text-zinc-300">{pitch.paResult ?? pitchResultLabel(pitch.pitchResult)}</span>
+                          </div>
+                        )) ?? (
+                          <div className="text-sm text-zinc-500">No pitches logged.</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between border-t border-[rgba(var(--babson-grey-rgb),0.18)] px-5 py-4">
+                <p className="text-xs text-zinc-500">
+                  History edits save through the same snapshot patch as live charting.
+                </p>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setHistoryEditDraft(null)}
+                    className="h-11 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-zinc-950/70 px-5 text-sm font-semibold text-zinc-300 transition-colors hover:border-[rgba(var(--babson-grey-rgb),0.38)] hover:text-zinc-100"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleHistoryEditSave}
+                    disabled={
+                      !findHistoryPitcherOptionByName(historyPitcherOptions, historyEditDraft.pitcherName) ||
+                      !historyEditDraft.hitterName.trim() ||
+                      (editingHistoryGroup?.paResult !== null && !historyEditDraft.resultCode)
+                    }
+                    className="inline-flex h-11 items-center gap-2 rounded-xl bg-[var(--babson-green)] px-5 text-sm font-bold text-white shadow-[0_12px_26px_rgba(var(--babson-green-rgb),0.22)] transition-colors hover:bg-[#00573a] disabled:bg-zinc-800 disabled:text-zinc-500 disabled:shadow-none"
+                  >
+                    <Save className="h-4 w-4" />
+                    Save At-Bat
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* In-Play Result Modal */}
       <AnimatePresence>
@@ -1557,7 +1871,10 @@ type RecentPAGroup = {
   paId: string;
   inning: number;
   hitterName: string;
-  paResult: string | null;
+  pitcherId: string;
+  pitcherName: string;
+  initialCount: ChartingInitialCount;
+  paResult: PAResultType | null;
   pitches: RecentPitchRow[];
 };
 
@@ -1585,13 +1902,19 @@ function buildRecentPitchRows(snapshot: ChartingGameSnapshot): RecentPitchRow[] 
 
 function buildRecentPAGroups(snapshot: ChartingGameSnapshot): RecentPAGroup[] {
   const rows = buildRecentPitchRows(snapshot);
-  const paById = new Map(snapshot.plateAppearances.map((pa) => [pa.id, pa]));
+  const segmentById = new Map(snapshot.segments.map((segment) => [segment.id, segment]));
   const groupsByPa = new Map<string, RecentPitchRow[]>();
+  const rawPitchesByPa = new Map<string, ChartingGameSnapshot["pitches"]>();
 
   for (const row of rows) {
     const paId = row.paId;
     if (!groupsByPa.has(paId)) groupsByPa.set(paId, []);
     groupsByPa.get(paId)!.push(row);
+  }
+  for (const pitch of snapshot.pitches) {
+    const existing = rawPitchesByPa.get(pitch.paId) ?? [];
+    existing.push(pitch);
+    rawPitchesByPa.set(pitch.paId, existing);
   }
 
   return [...snapshot.plateAppearances]
@@ -1599,11 +1922,16 @@ function buildRecentPAGroups(snapshot: ChartingGameSnapshot): RecentPAGroup[] {
     .filter((pa) => groupsByPa.has(pa.id))
     .map((pa) => {
       const pitches = groupsByPa.get(pa.id)!;
+      const segment = segmentById.get(pa.segmentId);
+      const rawPitches = rawPitchesByPa.get(pa.id) ?? [];
       return {
         paId: pa.id,
         inning: pa.inning,
         hitterName: pa.hitterName,
-        paResult: pa.resultCode,
+        pitcherId: segment?.playerId ?? "",
+        pitcherName: segment?.displayName ?? "Unknown Pitcher",
+        initialCount: resolvePlateAppearanceInitialCount(pa, rawPitches),
+        paResult: pa.resultCode && isPAResultType(pa.resultCode) ? pa.resultCode : null,
         pitches,
       };
     });
@@ -1682,6 +2010,63 @@ function findDefaultPitcherId(
     pitchers[0]?.playerId ??
     ""
   );
+}
+
+function buildHistoryPitcherOptions(
+  snapshot: ChartingGameSnapshot,
+  pitchers: ChartingBootstrapPitcher[]
+) {
+  const options = new Map<string, { playerId: string; name: string }>();
+  for (const pitcher of pitchers) {
+    options.set(pitcher.playerId, {
+      playerId: pitcher.playerId,
+      name: pitcher.name,
+    });
+  }
+  for (const segment of snapshot.segments) {
+    if (!options.has(segment.playerId)) {
+      options.set(segment.playerId, {
+        playerId: segment.playerId,
+        name: segment.displayName,
+      });
+    }
+  }
+  return [...options.values()].sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function findHistoryPitcherOptionByName(
+  options: { playerId: string; name: string }[],
+  name: string
+) {
+  const normalizedName = name.trim().toLowerCase();
+  if (!normalizedName) {
+    return null;
+  }
+  return options.find((option) => option.name.trim().toLowerCase() === normalizedName) ?? null;
+}
+
+function countPresetFromInitialCount(initialCount: ChartingInitialCount): LiveABCountPreset {
+  switch (initialCount) {
+    case "2-1":
+      return "2-1";
+    case "Bunt":
+      return "bunt";
+    case "0-0":
+    default:
+      return "0-0";
+  }
+}
+
+function initialCountFromPreset(initialCount: LiveABCountPreset): ChartingInitialCount {
+  switch (initialCount) {
+    case "2-1":
+      return "2-1";
+    case "bunt":
+      return "Bunt";
+    case "0-0":
+    default:
+      return "0-0";
+  }
 }
 
 function buildPendingPitchSummary({

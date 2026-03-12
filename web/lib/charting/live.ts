@@ -699,6 +699,95 @@ export function updatePAHitterNameInSnapshot(
   return nextSnapshot;
 }
 
+export interface UpdatePlateAppearanceDetailsInput {
+  paId: string;
+  pitcher: {
+    playerId: string;
+    name: string;
+  };
+  hitterName: string;
+  initialCount: ChartingInitialCount;
+  resultCode: PAResultType | null;
+}
+
+export function updatePlateAppearanceDetailsInSnapshot(
+  snapshot: ChartingGameSnapshot,
+  input: UpdatePlateAppearanceDetailsInput
+): ChartingGameSnapshot {
+  const trimmedHitter = input.hitterName.trim();
+  const trimmedPitcherId = input.pitcher.playerId.trim();
+  const trimmedPitcherName = input.pitcher.name.trim();
+  if (!trimmedHitter || !trimmedPitcherId || !trimmedPitcherName) {
+    return snapshot;
+  }
+
+  const existingPA = snapshot.plateAppearances.find((pa) => pa.id === input.paId);
+  if (!existingPA) {
+    return snapshot;
+  }
+
+  const existingSegment = snapshot.segments.find((segment) => segment.id === existingPA.segmentId) ?? null;
+  const currentPitches = sortByPitchOrder(snapshot.pitches.filter((pitch) => pitch.paId === existingPA.id));
+  const normalizedPitches = rebuildPitchesForInitialCount(currentPitches, input.initialCount);
+  const currentInitialCount = resolvePlateAppearanceInitialCount(existingPA, currentPitches);
+  const resultCode = input.resultCode ?? null;
+
+  const pitchTrailChanged = normalizedPitches.some((pitch, index) => {
+    const currentPitch = currentPitches[index];
+    return (
+      !currentPitch ||
+      currentPitch.pitchResult !== pitch.pitchResult ||
+      currentPitch.ballsBefore !== pitch.ballsBefore ||
+      currentPitch.strikesBefore !== pitch.strikesBefore
+    );
+  });
+
+  if (
+    existingSegment?.playerId === trimmedPitcherId &&
+    existingSegment.displayName === trimmedPitcherName &&
+    existingPA.hitterName === trimmedHitter &&
+    currentInitialCount === input.initialCount &&
+    existingPA.resultCode === resultCode &&
+    !pitchTrailChanged
+  ) {
+    return snapshot;
+  }
+
+  const nextSnapshot = cloneSnapshot(snapshot);
+  const targetPA = nextSnapshot.plateAppearances.find((pa) => pa.id === input.paId);
+  if (!targetPA) {
+    return snapshot;
+  }
+
+  const targetSegment = ensureSegmentForPlateAppearance(
+    nextSnapshot,
+    targetPA,
+    trimmedPitcherId,
+    trimmedPitcherName
+  );
+
+  targetPA.segmentId = targetSegment.id;
+  targetPA.hitterName = trimmedHitter;
+  targetPA.initialCount = input.initialCount;
+  targetPA.buntContext = input.initialCount === "Bunt";
+  targetPA.resultCode = resultCode;
+
+  upsertLineupEntry(
+    nextSnapshot.lineup,
+    nextSnapshot.game.id,
+    targetPA.lineupSlot,
+    trimmedHitter
+  );
+
+  const rebuiltPitchesById = new Map(normalizedPitches.map((pitch) => [pitch.id, pitch]));
+  nextSnapshot.pitches = nextSnapshot.pitches.map((pitch) =>
+    pitch.paId === targetPA.id ? rebuiltPitchesById.get(pitch.id) ?? pitch : pitch
+  );
+
+  reconcileSnapshotSegments(nextSnapshot);
+  return nextSnapshot;
+}
+
 export function updateSnapshotRevision(
   snapshot: ChartingGameSnapshot,
   revision: number,
@@ -826,6 +915,9 @@ function normalizePitchResultForBunt(result: PitchResult, buntMode: boolean): Pi
   if (buntMode && result === "foul") {
     return "bunt_foul";
   }
+  if (!buntMode && result === "bunt_foul") {
+    return "foul";
+  }
   return result;
 }
 
@@ -897,6 +989,96 @@ function removePlateAppearanceAndOrphanSegment(
       (segment) => segment.id !== plateAppearance.segmentId
     );
   }
+}
+
+function rebuildPitchesForInitialCount(
+  pitches: ChartingPitch[],
+  initialCount: ChartingInitialCount
+): ChartingPitch[] {
+  const seed = nextPASeedFromInitialCount(initialCount);
+  const progress: PAPitchProgress = {
+    balls: clamp(seed.balls, 0, 3),
+    strikes: clamp(seed.strikes, 0, 2),
+    closureState: "none",
+    lastPitchResult: null,
+  };
+
+  return sortByPitchOrder(pitches).map((pitch) => {
+    const normalizedResult = normalizePitchResultForBunt(pitch.pitchResult, Boolean(seed.buntMode));
+    const rebuiltPitch: ChartingPitch = {
+      ...pitch,
+      pitchResult: normalizedResult,
+      ballsBefore: progress.balls,
+      strikesBefore: progress.strikes,
+    };
+    applyPitchResult(progress, normalizedResult);
+    return rebuiltPitch;
+  });
+}
+
+function ensureSegmentForPlateAppearance(
+  snapshot: ChartingGameSnapshot,
+  plateAppearance: ChartingPlateAppearance,
+  pitcherId: string,
+  pitcherName: string
+): ChartingPitcherSegment {
+  const currentSegment = snapshot.segments.find((segment) => segment.id === plateAppearance.segmentId) ?? null;
+  if (currentSegment?.playerId === pitcherId) {
+    currentSegment.displayName = pitcherName;
+    return currentSegment;
+  }
+
+  const existingSegment = snapshot.segments.find((segment) => segment.playerId === pitcherId) ?? null;
+  if (existingSegment) {
+    existingSegment.displayName = pitcherName;
+    return existingSegment;
+  }
+
+  const nextSegment: ChartingPitcherSegment = {
+    id: crypto.randomUUID(),
+    gameId: snapshot.game.id,
+    playerId: pitcherId,
+    displayName: pitcherName,
+    segmentOrder: nextSegmentOrder(snapshot.segments),
+    enteredInning: plateAppearance.inning,
+    exitedInning: null,
+    runsOverride: null,
+    earnedRunsOverride: null,
+  };
+  snapshot.segments.push(nextSegment);
+  return nextSegment;
+}
+
+function reconcileSnapshotSegments(snapshot: ChartingGameSnapshot) {
+  const paGroups = new Map<string, ChartingPlateAppearance[]>();
+  for (const plateAppearance of snapshot.plateAppearances) {
+    const existing = paGroups.get(plateAppearance.segmentId) ?? [];
+    existing.push(plateAppearance);
+    paGroups.set(plateAppearance.segmentId, existing);
+  }
+
+  snapshot.segments = snapshot.segments
+    .filter((segment) => paGroups.has(segment.id))
+    .sort((left, right) => {
+      const leftPAs = paGroups.get(left.id) ?? [];
+      const rightPAs = paGroups.get(right.id) ?? [];
+      const leftFirstOrder = Math.min(...leftPAs.map((pa) => pa.paOrder));
+      const rightFirstOrder = Math.min(...rightPAs.map((pa) => pa.paOrder));
+      if (leftFirstOrder === rightFirstOrder) {
+        return left.segmentOrder - right.segmentOrder;
+      }
+      return leftFirstOrder - rightFirstOrder;
+    })
+    .map((segment, index, orderedSegments) => {
+      const pas = [...(paGroups.get(segment.id) ?? [])].sort((left, right) => left.paOrder - right.paOrder);
+      const lastInning = pas.reduce((max, pa) => Math.max(max, pa.inning), pas[0]?.inning ?? 1);
+      return {
+        ...segment,
+        segmentOrder: index,
+        enteredInning: pas[0]?.inning ?? segment.enteredInning,
+        exitedInning: index === orderedSegments.length - 1 ? null : lastInning,
+      };
+    });
 }
 
 function segmentIdsForPitcher(
