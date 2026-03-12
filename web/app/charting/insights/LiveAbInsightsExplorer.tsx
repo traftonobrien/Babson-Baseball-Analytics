@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowRight,
   BarChart3,
@@ -30,24 +30,53 @@ import {
 import {
   CHARTING_PLAYER_COMPARISON_EVENTS,
   CHARTING_PLAYER_COMPARISON_METRICS,
+  CHARTING_PLAYER_COMPARISON_PITCHER_HAND_OPTIONS,
   buildChartingPlayerComparisonPitchMix,
   buildChartingPlayerComparisonZoneBuckets,
   filterChartingPlayerComparisonPitches,
   hiddenChartingPlayerComparisonZonePitchCount,
   metricValueForChartingPlayerComparisonSummary,
   summarizeChartingPlayerComparisonPitches,
+  type ChartingPlayerComparisonPitchRecord,
   type ChartingPlayerComparisonDirectoryEntry,
   type ChartingPlayerComparisonEventId,
   type ChartingPlayerComparisonMetricId,
+  type ChartingPlayerComparisonPitcherHandFilter,
   type ChartingPlayerComparisonSummary,
   type ChartingPlayerComparisonVelocityRange,
-  type ChartingPlayerComparisonZoneBucket,
 } from "@/lib/charting/playerComparison";
+import {
+  PITCHER_COMPARISON_EVENTS,
+  PITCHER_COMPARISON_METRICS,
+  buildPitcherComparisonPitchMix,
+  buildPitcherComparisonZoneBuckets,
+  filterPitcherComparisonPitches,
+  hiddenPitcherComparisonZonePitchCount,
+  metricValueForPitcherComparisonSummary,
+  summarizePitcherComparisonPitches,
+  type PitcherComparisonDirectoryEntry,
+  type PitcherComparisonEventId,
+  type PitcherComparisonMetricId,
+  type PitcherComparisonPitchMixItem,
+  type PitcherComparisonPitchRecord,
+  type PitcherComparisonSummary,
+} from "@/lib/charting/pitcherComparison";
 import { clipPathForLocationCell } from "@/lib/charting/locationGrid";
 import { config } from "@/lib/config";
 import { comparePitchTypes } from "@/lib/pitchTypeOrder";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
 import { SIZE, toSvg } from "@/app/components/ZoneOverlay";
+import {
+  buildHitterExplorerQuery,
+  buildPitcherExplorerQuery,
+  normalizeHitterEvent,
+  normalizePitcherEvent,
+  normalizePitcherHandFilter,
+  readHitterExplorerQuery,
+  readPitcherExplorerQuery,
+  type ComparisonView,
+} from "./explorerState";
+import type { ComparisonZoneBucketId } from "@/lib/charting/comparisonZones";
 
 type Catalog = {
   seasons: string[];
@@ -57,11 +86,36 @@ type Catalog = {
 };
 
 type ZoneDisplayMode = "heatmap" | "sections";
+type ComparisonMetricId = ChartingPlayerComparisonMetricId | PitcherComparisonMetricId;
+type ComparisonEventId = ChartingPlayerComparisonEventId | PitcherComparisonEventId;
+type ExplorerEntry = ChartingPlayerComparisonDirectoryEntry | PitcherComparisonDirectoryEntry;
+type ExplorerPitch = ChartingPlayerComparisonPitchRecord | PitcherComparisonPitchRecord;
+type ExplorerSummary = ChartingPlayerComparisonSummary | PitcherComparisonSummary;
+type ExplorerZoneBucket = {
+  id: ComparisonZoneBucketId;
+  label: string;
+  placement: "chase" | "zone";
+  cellIds: number[];
+  pitches: ExplorerPitch[];
+  summary: ExplorerSummary;
+};
+type ComparisonMetricOption = {
+  id: ComparisonMetricId;
+  label: string;
+  description: string;
+  lowerBetter: boolean;
+};
+type ComparisonEventOption = {
+  id: ComparisonEventId;
+  label: string;
+  description: string;
+};
+type ComparisonPitchMixItem = ReturnType<typeof buildChartingPlayerComparisonPitchMix>[number] | PitcherComparisonPitchMixItem;
 
 const SEARCH_RESULT_LIMIT = 8;
 
 const ZONE_BUCKET_LAYOUT: Record<
-  ChartingPlayerComparisonZoneBucket["id"],
+  ComparisonZoneBucketId,
   {
     label: string;
     caption: string;
@@ -133,7 +187,7 @@ const ZONE_BUCKET_LAYOUT: Record<
 };
 
 const HEAT_BUCKET_SHAPES: Record<
-  ChartingPlayerComparisonZoneBucket["id"],
+  ComparisonZoneBucketId,
   {
     kind: "ellipse" | "rect";
     cx?: number;
@@ -160,7 +214,7 @@ const HEAT_BUCKET_SHAPES: Record<
 
 const ZONE_SECTION_GRID_ITEMS: Array<{
   key: string;
-  bucketId: ChartingPlayerComparisonZoneBucket["id"];
+  bucketId: ComparisonZoneBucketId;
   cellId?: number;
   className: string;
   labelText: string;
@@ -188,84 +242,6 @@ function joinClasses(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(" ");
 }
 
-function parseNumberParam(value: string | null): number | null {
-  if (!value) return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-type SearchParamReader = {
-  get: (key: string) => string | null;
-};
-
-type ExplorerQueryState = {
-  playerSlug: string | null;
-  season: string | null;
-  pitchType: string | null;
-  count: string | null;
-  event: ChartingPlayerComparisonEventId;
-  veloMin: number | null;
-  veloMax: number | null;
-};
-
-function readExplorerQuery(params: SearchParamReader): ExplorerQueryState {
-  return {
-    playerSlug: params.get("player"),
-    season: params.get("season"),
-    pitchType: params.get("pitchType"),
-    count: params.get("count"),
-    event: normalizeEvent(params.get("event")),
-    veloMin: parseNumberParam(params.get("veloMin")),
-    veloMax: parseNumberParam(params.get("veloMax")),
-  };
-}
-
-function buildExplorerQuery({
-  playerSlug,
-  season,
-  latestSeason,
-  pitchType,
-  count,
-  event,
-  veloMin,
-  veloMax,
-}: {
-  playerSlug: string | null;
-  season: string;
-  latestSeason: string | null;
-  pitchType: string | null;
-  count: string | null;
-  event: ChartingPlayerComparisonEventId;
-  veloMin: number | null;
-  veloMax: number | null;
-}) {
-  const next = new URLSearchParams();
-
-  if (playerSlug) {
-    next.set("player", playerSlug);
-  }
-  if (season !== (latestSeason ?? "all")) {
-    next.set("season", season);
-  }
-  if (pitchType) {
-    next.set("pitchType", pitchType);
-  }
-  if (count) {
-    next.set("count", count);
-  }
-  if (event !== "all") {
-    next.set("event", event);
-  }
-  if (veloMin !== null) {
-    next.set("veloMin", String(veloMin));
-  }
-  if (veloMax !== null) {
-    next.set("veloMax", String(veloMax));
-  }
-
-  return next.toString();
-}
-
 function formatRate(value: number | null): string {
   if (value === null) return "—";
   return value.toFixed(3).replace(/^0(?=\.)/, "");
@@ -280,18 +256,7 @@ function formatCount(value: number): string {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
-function formatMetricValue(metricId: ChartingPlayerComparisonMetricId, value: number | null) {
-  switch (metricId) {
-    case "avg":
-    case "woba":
-      return formatRate(value);
-    case "swingPct":
-    case "whiffPct":
-      return formatPct(value, 0);
-  }
-}
-
-function buildCatalog(entries: ChartingPlayerComparisonDirectoryEntry[]): Catalog {
+function buildCatalog(entries: ExplorerEntry[]): Catalog {
   const seasons = [...new Set(entries.flatMap((entry) => entry.seasons))].sort((left, right) =>
     right.localeCompare(left)
   );
@@ -325,24 +290,221 @@ function buildCatalog(entries: ChartingPlayerComparisonDirectoryEntry[]): Catalo
   };
 }
 
-function normalizeEvent(value: string | null): ChartingPlayerComparisonEventId {
-  return CHARTING_PLAYER_COMPARISON_EVENTS.some((event) => event.id === value)
-    ? (value as ChartingPlayerComparisonEventId)
-    : "all";
+function isPitcherView(view: ComparisonView) {
+  return view === "pitchers";
+}
+
+function metricOptionsForView(view: ComparisonView): ComparisonMetricOption[] {
+  return isPitcherView(view) ? PITCHER_COMPARISON_METRICS : CHARTING_PLAYER_COMPARISON_METRICS;
+}
+
+function eventOptionsForView(view: ComparisonView): ComparisonEventOption[] {
+  return isPitcherView(view) ? PITCHER_COMPARISON_EVENTS : CHARTING_PLAYER_COMPARISON_EVENTS;
+}
+
+function defaultMetricForView(view: ComparisonView): ComparisonMetricId {
+  return isPitcherView(view) ? "strikePct" : "avg";
+}
+
+function formatMetricValue(view: ComparisonView, metricId: ComparisonMetricId, value: number | null) {
+  if (value === null) {
+    return "—";
+  }
+
+  if (isPitcherView(view)) {
+    if (metricId === "baa") {
+      return formatRate(value);
+    }
+
+    return formatPct(value, 0);
+  }
+
+  switch (metricId) {
+    case "avg":
+    case "woba":
+      return formatRate(value);
+    case "swingPct":
+    case "whiffPct":
+      return formatPct(value, 0);
+    default:
+      return formatPct(value, 0);
+  }
+}
+
+function metricValueForSummary(
+  view: ComparisonView,
+  summary: ExplorerSummary,
+  metricId: ComparisonMetricId
+): number | null {
+  return isPitcherView(view)
+    ? metricValueForPitcherComparisonSummary(summary as PitcherComparisonSummary, metricId as PitcherComparisonMetricId)
+    : metricValueForChartingPlayerComparisonSummary(
+        summary as ChartingPlayerComparisonSummary,
+        metricId as ChartingPlayerComparisonMetricId
+      );
+}
+
+function summarizeExplorerPitches(view: ComparisonView, pitches: ExplorerPitch[]): ExplorerSummary {
+  return isPitcherView(view)
+    ? summarizePitcherComparisonPitches(pitches as PitcherComparisonPitchRecord[])
+    : summarizeChartingPlayerComparisonPitches(pitches as ChartingPlayerComparisonPitchRecord[]);
+}
+
+function buildExplorerZoneBuckets(view: ComparisonView, pitches: ExplorerPitch[]): ExplorerZoneBucket[] {
+  return isPitcherView(view)
+    ? buildPitcherComparisonZoneBuckets(pitches as PitcherComparisonPitchRecord[])
+    : buildChartingPlayerComparisonZoneBuckets(pitches as ChartingPlayerComparisonPitchRecord[]);
+}
+
+function buildExplorerPitchMix(view: ComparisonView, pitches: ExplorerPitch[]): ComparisonPitchMixItem[] {
+  return isPitcherView(view)
+    ? buildPitcherComparisonPitchMix(pitches as PitcherComparisonPitchRecord[])
+    : buildChartingPlayerComparisonPitchMix(pitches as ChartingPlayerComparisonPitchRecord[]);
+}
+
+function hiddenExplorerZonePitchCount(view: ComparisonView, pitches: ExplorerPitch[]): number {
+  return isPitcherView(view)
+    ? hiddenPitcherComparisonZonePitchCount(pitches as PitcherComparisonPitchRecord[])
+    : hiddenChartingPlayerComparisonZonePitchCount(pitches as ChartingPlayerComparisonPitchRecord[]);
+}
+
+function filterExplorerPitches(
+  view: ComparisonView,
+  pitches: ExplorerPitch[],
+  filters: {
+    season: string | null;
+    pitchType: string | null;
+    count: string | null;
+    event: ComparisonEventId;
+    veloMin: number | null;
+    veloMax: number | null;
+    pitcherHand: ChartingPlayerComparisonPitcherHandFilter;
+  }
+): ExplorerPitch[] {
+  return isPitcherView(view)
+    ? filterPitcherComparisonPitches(pitches as PitcherComparisonPitchRecord[], {
+        season: filters.season,
+        pitchType: filters.pitchType,
+        count: filters.count,
+        event: filters.event as PitcherComparisonEventId,
+        veloMin: filters.veloMin,
+        veloMax: filters.veloMax,
+      })
+    : filterChartingPlayerComparisonPitches(pitches as ChartingPlayerComparisonPitchRecord[], {
+        season: filters.season,
+        pitcherHand: filters.pitcherHand,
+        pitchType: filters.pitchType,
+        count: filters.count,
+        event: filters.event as ChartingPlayerComparisonEventId,
+        veloMin: filters.veloMin,
+        veloMax: filters.veloMax,
+      });
+}
+
+function handLabelForEntry(view: ComparisonView, entry: ExplorerEntry): string | null {
+  if (isPitcherView(view)) {
+    const pitcherEntry = entry as PitcherComparisonDirectoryEntry;
+    return pitcherEntry.throws ? `${pitcherEntry.throws}HP` : null;
+  }
+
+  const hitterEntry = entry as ChartingPlayerComparisonDirectoryEntry;
+  return hitterEntry.batterHand ? `${hitterEntry.batterHand}HH` : null;
+}
+
+function searchPlaceholderForView(view: ComparisonView): string {
+  return isPitcherView(view)
+    ? "Search pitcher by name or slug"
+    : "Search hitter by name, slug, or charted alias";
+}
+
+function countNounForView(view: ComparisonView): string {
+  return isPitcherView(view) ? "pitcher" : "hitter";
+}
+
+function heroDescriptionForView(view: ComparisonView): string {
+  if (isPitcherView(view)) {
+    return "A Babson take on the Savant player-visuals workflow, rebuilt for charted pitchers: player search, season scope, pitch-speed filters, command/result event slices, the same rough zone map, and a one-line summary table.";
+  }
+
+  return "A Babson take on the Savant player-visuals workflow, rebuilt around the charting fields we actually capture today: player search, pitcher-hand filters, season scope, pitch-speed filters, rough zone buckets, and a one-line season table.";
+}
+
+function eventLabelForView(view: ComparisonView, eventId: ComparisonEventId): string {
+  return (
+    eventOptionsForView(view).find((event) => event.id === eventId)?.label ??
+    eventId
+  );
+}
+
+function buildExplorerHref({
+  view,
+  pathname,
+  playerSlug,
+  pitcherHand,
+  season,
+  latestSeason,
+  pitchType,
+  count,
+  event,
+  veloMin,
+  veloMax,
+}: {
+  view: ComparisonView;
+  pathname: string;
+  playerSlug: string | null;
+  pitcherHand: ChartingPlayerComparisonPitcherHandFilter;
+  season: string;
+  latestSeason: string | null;
+  pitchType: string | null;
+  count: string | null;
+  event: ComparisonEventId;
+  veloMin: number | null;
+  veloMax: number | null;
+}) {
+  const params = new URLSearchParams(
+    isPitcherView(view)
+      ? buildPitcherExplorerQuery({
+          playerSlug,
+          season,
+          latestSeason,
+          pitchType,
+          count,
+          event: normalizePitcherEvent(event),
+          veloMin,
+          veloMax,
+        })
+      : buildHitterExplorerQuery({
+          playerSlug,
+          pitcherHand,
+          season,
+          latestSeason,
+          pitchType,
+          count,
+          event: normalizeHitterEvent(event),
+          veloMin,
+          veloMax,
+        })
+  );
+
+  if (isPitcherView(view)) {
+    params.set("view", "pitchers");
+  }
+
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
 }
 
 function bucketHeat(
-  buckets: ChartingPlayerComparisonZoneBucket[],
-  bucket: ChartingPlayerComparisonZoneBucket,
-  metricId: ChartingPlayerComparisonMetricId
+  view: ComparisonView,
+  buckets: ExplorerZoneBucket[],
+  bucket: ExplorerZoneBucket,
+  metricId: ComparisonMetricId
 ): number {
-  const option = CHARTING_PLAYER_COMPARISON_METRICS.find((metric) => metric.id === metricId);
+  const option = metricOptionsForView(view).find((metric) => metric.id === metricId);
   const values = buckets
-    .map((candidate) =>
-      metricValueForChartingPlayerComparisonSummary(candidate.summary, metricId)
-    )
+    .map((candidate) => metricValueForSummary(view, candidate.summary, metricId))
     .filter((value): value is number => value !== null);
-  const currentValue = metricValueForChartingPlayerComparisonSummary(bucket.summary, metricId);
+  const currentValue = metricValueForSummary(view, bucket.summary, metricId);
 
   if (!option || currentValue === null || values.length === 0) {
     return 0;
@@ -359,21 +521,20 @@ function bucketHeat(
 }
 
 function cellHeat(
-  cellSummaries: Map<number, ChartingPlayerComparisonSummary>,
+  view: ComparisonView,
+  cellSummaries: Map<number, ExplorerSummary>,
   cellId: number,
-  metricId: ChartingPlayerComparisonMetricId
+  metricId: ComparisonMetricId
 ): number {
-  const option = CHARTING_PLAYER_COMPARISON_METRICS.find((metric) => metric.id === metricId);
+  const option = metricOptionsForView(view).find((metric) => metric.id === metricId);
   const values = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     .map((id) => {
       const s = cellSummaries.get(id);
-      return s ? metricValueForChartingPlayerComparisonSummary(s, metricId) : null;
+      return s ? metricValueForSummary(view, s, metricId) : null;
     })
     .filter((v): v is number => v !== null);
   const summary = cellSummaries.get(cellId);
-  const currentValue = summary
-    ? metricValueForChartingPlayerComparisonSummary(summary, metricId)
-    : null;
+  const currentValue = summary ? metricValueForSummary(view, summary, metricId) : null;
   if (!option || currentValue === null || values.length === 0) return 0;
   const minimum = Math.min(...values);
   const maximum = Math.max(...values);
@@ -533,14 +694,18 @@ function placeholderVelocityText(
 }
 
 function SearchResultCard({
+  view,
   entry,
   active,
   onClick,
 }: {
-  entry: ChartingPlayerComparisonDirectoryEntry;
+  view: ComparisonView;
+  entry: ExplorerEntry;
   active: boolean;
   onClick: () => void;
 }) {
+  const handLabel = handLabelForEntry(view, entry);
+
   return (
     <button
       type="button"
@@ -570,9 +735,9 @@ function SearchResultCard({
         <span className="rounded-full border border-zinc-800 bg-zinc-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
           {entry.sessionCount} session{entry.sessionCount === 1 ? "" : "s"}
         </span>
-        {entry.batterHand ? (
+        {handLabel ? (
           <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-200">
-            {entry.batterHand}HH
+            {handLabel}
           </span>
         ) : null}
       </div>
@@ -606,6 +771,42 @@ function FilterSelect({
         </select>
       </div>
     </label>
+  );
+}
+
+function ComparisonViewToggle({
+  view,
+  onChange,
+}: {
+  view: ComparisonView;
+  onChange: (view: ComparisonView) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+        View
+      </span>
+      <div className="inline-flex items-center gap-1 rounded-full border border-zinc-800 bg-zinc-950/80 p-1">
+        {([
+          { id: "hitters", label: "Hitters" },
+          { id: "pitchers", label: "Pitchers" },
+        ] as const).map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            onClick={() => onChange(option.id)}
+            className={joinClasses(
+              "rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-smooth",
+              view === option.id
+                ? "bg-emerald-500/12 text-emerald-200 shadow-[inset_0_0_0_1px_rgba(52,211,153,0.35)]"
+                : "text-zinc-500 hover:text-zinc-100"
+            )}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -678,11 +879,13 @@ function VelocityRangeControl({
 }
 
 function MetricToggle({
+  view,
   value,
   onChange,
 }: {
-  value: ChartingPlayerComparisonMetricId;
-  onChange: (value: ChartingPlayerComparisonMetricId) => void;
+  view: ComparisonView;
+  value: ComparisonMetricId;
+  onChange: (value: ComparisonMetricId) => void;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -690,7 +893,7 @@ function MetricToggle({
         Metric
       </span>
       <div className="inline-flex flex-wrap items-center gap-1 rounded-full border border-zinc-800 bg-zinc-950/80 p-1">
-        {CHARTING_PLAYER_COMPARISON_METRICS.map((metric) => (
+        {metricOptionsForView(view).map((metric) => (
           <button
             key={metric.id}
             type="button"
@@ -711,6 +914,7 @@ function MetricToggle({
 }
 
 function ZoneSectionRegion({
+  view,
   bucket,
   summary,
   selected,
@@ -726,8 +930,9 @@ function ZoneSectionRegion({
   onHoverEnd,
   onSelect,
 }: {
-  bucket: ChartingPlayerComparisonZoneBucket;
-  summary: ChartingPlayerComparisonSummary;
+  view: ComparisonView;
+  bucket: ExplorerZoneBucket;
+  summary: ExplorerSummary;
   selected: boolean;
   subdued: boolean;
   labelText: string;
@@ -735,7 +940,7 @@ function ZoneSectionRegion({
   clipPath?: string;
   labelCornerClass?: string;
   className?: string;
-  metricId: ChartingPlayerComparisonMetricId;
+  metricId: ComparisonMetricId;
   style: CSSProperties;
   onHoverStart: () => void;
   onHoverEnd: () => void;
@@ -744,7 +949,7 @@ function ZoneSectionRegion({
   const empty = summary.totalPitches === 0;
   const lowSample = !empty && summary.totalPitches < 3;
   const count = summary.totalPitches;
-  const metricValue = metricValueForChartingPlayerComparisonSummary(summary, metricId);
+  const metricValue = metricValueForSummary(view, summary, metricId);
 
   return (
     <button
@@ -787,7 +992,7 @@ function ZoneSectionRegion({
             empty ? "text-[11px] text-zinc-700" : lowSample ? "text-sm text-zinc-400" : "text-sm text-zinc-50"
           )}
         >
-          {empty ? "—" : formatMetricValue(metricId, metricValue)}
+          {empty ? "—" : formatMetricValue(view, metricId, metricValue)}
         </span>
       )}
 
@@ -879,7 +1084,7 @@ function PitchMixPanel({
 }: {
   title: string;
   subtitle: string;
-  pitches: ReturnType<typeof buildChartingPlayerComparisonPitchMix>;
+  pitches: ComparisonPitchMixItem[];
 }) {
   return (
     <div className="rounded-[1.6rem] border border-zinc-800/80 bg-zinc-950/60 p-4">
@@ -935,8 +1140,10 @@ function PitchMixPanel({
 }
 
 function ZoneCanvas({
+  view,
   buckets,
   metricId,
+  metricOptions,
   displayMode,
   selectedBucketId,
   selectedCellId,
@@ -945,34 +1152,38 @@ function ZoneCanvas({
   cellSummaries,
   rowSummaries,
   colSummaries,
+  allSummary,
+  allPitchCount,
   onSelectBucket,
   onSelectCell,
   onSelectRow,
   onSelectCol,
 }: {
-  buckets: ChartingPlayerComparisonZoneBucket[];
-  metricId: ChartingPlayerComparisonMetricId;
+  view: ComparisonView;
+  buckets: ExplorerZoneBucket[];
+  metricId: ComparisonMetricId;
+  metricOptions: ComparisonMetricOption[];
   displayMode: ZoneDisplayMode;
-  selectedBucketId: ChartingPlayerComparisonZoneBucket["id"] | null;
+  selectedBucketId: ComparisonZoneBucketId | null;
   selectedCellId: number | null;
   selectedRowId: number | null;
   selectedColId: number | null;
-  cellSummaries: Map<number, ChartingPlayerComparisonSummary>;
-  rowSummaries: Map<number, ChartingPlayerComparisonSummary>;
-  colSummaries: Map<number, ChartingPlayerComparisonSummary>;
-  onSelectBucket: (bucketId: ChartingPlayerComparisonZoneBucket["id"] | null) => void;
+  cellSummaries: Map<number, ExplorerSummary>;
+  rowSummaries: Map<number, ExplorerSummary>;
+  colSummaries: Map<number, ExplorerSummary>;
+  allSummary: ExplorerSummary;
+  allPitchCount: number;
+  onSelectBucket: (bucketId: ComparisonZoneBucketId | null) => void;
   onSelectCell: (cellId: number | null) => void;
   onSelectRow: (rowId: number | null) => void;
   onSelectCol: (colId: number | null) => void;
 }) {
   const [hoveredBucketId, setHoveredBucketId] =
-    useState<ChartingPlayerComparisonZoneBucket["id"] | null>(null);
+    useState<ComparisonZoneBucketId | null>(null);
   const [hoveredCellId, setHoveredCellId] = useState<number | null>(null);
   const [hoveredRowId, setHoveredRowId] = useState<number | null>(null);
   const [hoveredColId, setHoveredColId] = useState<number | null>(null);
-  const activeMetric =
-    CHARTING_PLAYER_COMPARISON_METRICS.find((metric) => metric.id === metricId)?.label ??
-    metricId;
+  const activeMetric = metricOptions.find((metric) => metric.id === metricId)?.label ?? metricId;
   const hoveredBucket =
     hoveredBucketId !== null
       ? buckets.find((bucket) => bucket.id === hoveredBucketId) ?? null
@@ -990,13 +1201,12 @@ function ZoneCanvas({
   const focusRowSummary = focusRowId !== null ? rowSummaries.get(focusRowId) ?? null : null;
   const focusColSummary = focusColId !== null ? colSummaries.get(focusColId) ?? null : null;
   const hasAnyFocus = focusCellId !== null || focusBucket !== null || focusRowId !== null || focusColId !== null;
-  const allPitches = buckets.flatMap((bucket) => bucket.pitches);
   const displayedSummary =
     (selectedCellId !== null ? cellSummaries.get(selectedCellId) : null) ??
     (selectedRowId !== null ? rowSummaries.get(selectedRowId) : null) ??
     (selectedColId !== null ? colSummaries.get(selectedColId) : null) ??
     selectedBucket?.summary ??
-    summarizeChartingPlayerComparisonPitches(allPitches);
+    allSummary;
   const focusSummary = focusCellSummary ?? focusRowSummary ?? focusColSummary ?? focusBucket?.summary ?? null;
   const focusLabel =
     focusCellId !== null ? `Zone Cell ${focusCellId}`
@@ -1004,8 +1214,8 @@ function ZoneCanvas({
     : focusColId !== null ? `Col: ${ZONE_COL_LABELS[focusColId] ?? focusColId}`
     : focusLayout?.label ?? null;
   const focusShare =
-    focusSummary && allPitches.length > 0
-      ? (focusSummary.totalPitches / allPitches.length) * 100
+    focusSummary && allPitchCount > 0
+      ? (focusSummary.totalPitches / allPitchCount) * 100
       : null;
 
   return (
@@ -1062,7 +1272,7 @@ function ZoneCanvas({
             <SimpleBatterSilhouette />
 
             {buckets.map((bucket) => {
-              const heat = bucketHeat(buckets, bucket, metricId);
+              const heat = bucketHeat(view, buckets, bucket, metricId);
               const selected = selectedBucketId === bucket.id;
               const empty = bucket.summary.totalPitches === 0;
               const shape = HEAT_BUCKET_SHAPES[bucket.id];
@@ -1228,8 +1438,8 @@ function ZoneCanvas({
                 ? (cellSummaries.get(item.cellId!) ?? bucket.summary)
                 : bucket.summary;
               const heat = isZoneCell
-                ? cellHeat(cellSummaries, item.cellId!, metricId)
-                : bucketHeat(buckets, bucket, metricId);
+                ? cellHeat(view, cellSummaries, item.cellId!, metricId)
+                : bucketHeat(view, buckets, bucket, metricId);
               const selected = isZoneCell
                 ? selectedCellId === item.cellId
                 : selectedBucketId === bucket.id;
@@ -1255,6 +1465,7 @@ function ZoneCanvas({
               return (
                 <ZoneSectionRegion
                   key={item.key}
+                  view={view}
                   bucket={bucket}
                   summary={summary}
                   selected={selected}
@@ -1297,10 +1508,7 @@ function ZoneCanvas({
                 <span>
                   {activeMetric}{" "}
                   <span className="font-semibold text-zinc-100">
-                    {formatMetricValue(
-                      metricId,
-                      metricValueForChartingPlayerComparisonSummary(focusSummary, metricId)
-                    )}
+                    {formatMetricValue(view, metricId, metricValueForSummary(view, focusSummary, metricId))}
                   </span>
                 </span>
               </div>
@@ -1339,10 +1547,7 @@ function ZoneCanvas({
               <span className="text-zinc-500">
                 {activeMetric}{" "}
                 <span className="font-semibold text-zinc-100">
-                  {formatMetricValue(
-                    metricId,
-                    metricValueForChartingPlayerComparisonSummary(focusSummary, metricId)
-                  )}
+                  {formatMetricValue(view, metricId, metricValueForSummary(view, focusSummary, metricId))}
                 </span>
               </span>
               <span className="text-zinc-500">
@@ -1363,10 +1568,7 @@ function ZoneCanvas({
               <span className="text-zinc-500">
                 {activeMetric}{" "}
                 <span className="font-semibold text-zinc-100">
-                  {formatMetricValue(
-                    metricId,
-                    metricValueForChartingPlayerComparisonSummary(displayedSummary, metricId)
-                  )}
+                  {formatMetricValue(view, metricId, metricValueForSummary(view, displayedSummary, metricId))}
                 </span>
               </span>
             </>
@@ -1378,14 +1580,118 @@ function ZoneCanvas({
 }
 
 function SummaryTable({
+  view,
   entry,
   seasonLabel,
   summary,
 }: {
-  entry: ChartingPlayerComparisonDirectoryEntry;
+  view: ComparisonView;
+  entry: ExplorerEntry;
   seasonLabel: string;
-  summary: ReturnType<typeof summarizeChartingPlayerComparisonPitches>;
+  summary: ExplorerSummary;
 }) {
+  if (isPitcherView(view)) {
+    const pitcherEntry = entry as PitcherComparisonDirectoryEntry;
+    const pitcherSummary = summary as PitcherComparisonSummary;
+
+    return (
+      <LeaderboardPanel className="overflow-hidden">
+        <div className="border-b border-zinc-800/80 px-5 py-4 sm:px-6">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                Summary Table
+              </div>
+              <div className="mt-1 text-sm text-zinc-500">
+                Filtered season-line summary for the selected pitcher.
+              </div>
+            </div>
+            <LeaderboardPill tone="neutral">{seasonLabel}</LeaderboardPill>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="min-w-[1040px] w-full">
+            <thead>
+              <tr className="border-b border-zinc-800/80 bg-zinc-950/40">
+                {[
+                  "Player",
+                  "Throw",
+                  "Season",
+                  "Pitches",
+                  "TBF",
+                  "Strike%",
+                  "Zone%",
+                  "Whiff%",
+                  "Chase%",
+                  "BAA",
+                  "K%",
+                  "BB%",
+                ].map((label) => (
+                  <th
+                    key={label}
+                    className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500"
+                  >
+                    {label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {pitcherSummary.totalPitches === 0 ? (
+                <tr>
+                  <td colSpan={12} className="px-6 py-10 text-center text-sm text-zinc-500">
+                    No pitches match the current player and filter scope.
+                  </td>
+                </tr>
+              ) : (
+                <tr className="border-b border-zinc-800/70 transition-smooth hover:bg-emerald-500/5">
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-sm font-black text-emerald-200">
+                        {pitcherEntry.displayName
+                          .split(/\s+/)
+                          .slice(0, 2)
+                          .map((part) => part.charAt(0))
+                          .join("")}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-zinc-100">{pitcherEntry.displayName}</div>
+                        <div className="mt-1 text-[11px] text-zinc-500">
+                          {pitcherEntry.throws ? `${pitcherEntry.throws}HP` : "Hand unknown"}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 text-sm text-zinc-200">
+                    {pitcherEntry.throws ? `${pitcherEntry.throws}HP` : "—"}
+                  </td>
+                  <td className="px-4 py-4 text-sm font-semibold text-zinc-100">{seasonLabel}</td>
+                  <td className="px-4 py-4 text-sm text-zinc-200">
+                    {formatCount(pitcherSummary.totalPitches)}
+                  </td>
+                  <td className="px-4 py-4 text-sm text-zinc-200">{pitcherSummary.plateAppearances}</td>
+                  <td className="px-4 py-4 text-sm text-zinc-200">{formatPct(pitcherSummary.strikePct, 1)}</td>
+                  <td className="px-4 py-4 text-sm text-zinc-200">{formatPct(pitcherSummary.zonePct, 1)}</td>
+                  <td className="px-4 py-4 text-sm text-zinc-200">{formatPct(pitcherSummary.whiffPct, 1)}</td>
+                  <td className="px-4 py-4 text-sm text-zinc-200">{formatPct(pitcherSummary.chasePct, 1)}</td>
+                  <td className="px-4 py-4 text-sm font-semibold text-emerald-200">
+                    {formatRate(pitcherSummary.baa)}
+                  </td>
+                  <td className="px-4 py-4 text-sm text-zinc-200">{formatPct(pitcherSummary.kPct, 1)}</td>
+                  <td className="px-4 py-4 text-sm text-zinc-200">{formatPct(pitcherSummary.bbPct, 1)}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </LeaderboardPanel>
+    );
+  }
+
+  const hitterEntry = entry as ChartingPlayerComparisonDirectoryEntry;
+  const hitterSummary = summary as ChartingPlayerComparisonSummary;
+
   return (
     <LeaderboardPanel className="overflow-hidden">
       <div className="border-b border-zinc-800/80 px-5 py-4 sm:px-6">
@@ -1432,7 +1738,7 @@ function SummaryTable({
             </tr>
           </thead>
           <tbody>
-            {summary.totalPitches === 0 ? (
+            {hitterSummary.totalPitches === 0 ? (
               <tr>
                 <td colSpan={14} className="px-6 py-10 text-center text-sm text-zinc-500">
                   No pitches match the current player and filter scope.
@@ -1450,33 +1756,33 @@ function SummaryTable({
                         .join("")}
                     </div>
                     <div>
-                      <div className="font-semibold text-zinc-100">{entry.displayName}</div>
+                      <div className="font-semibold text-zinc-100">{hitterEntry.displayName}</div>
                       <div className="mt-1 text-[11px] text-zinc-500">
-                        {entry.batterHand ? `${entry.batterHand}HH` : "Hand unknown"}
+                        {hitterEntry.batterHand ? `${hitterEntry.batterHand}HH` : "Hand unknown"}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td className="px-4 py-4 text-sm font-semibold text-zinc-100">{seasonLabel}</td>
                 <td className="px-4 py-4 text-sm text-zinc-200">
-                  {formatCount(summary.totalPitches)}
+                  {formatCount(hitterSummary.totalPitches)}
                 </td>
-                <td className="px-4 py-4 text-sm text-zinc-200">{summary.plateAppearances}</td>
-                <td className="px-4 py-4 text-sm text-zinc-200">{summary.atBats}</td>
-                <td className="px-4 py-4 text-sm text-zinc-200">{summary.hits}</td>
-                <td className="px-4 py-4 text-sm text-zinc-200">{summary.singles}</td>
-                <td className="px-4 py-4 text-sm text-zinc-200">{summary.doubles}</td>
-                <td className="px-4 py-4 text-sm text-zinc-200">{summary.triples}</td>
-                <td className="px-4 py-4 text-sm text-zinc-200">{summary.homeRuns}</td>
+                <td className="px-4 py-4 text-sm text-zinc-200">{hitterSummary.plateAppearances}</td>
+                <td className="px-4 py-4 text-sm text-zinc-200">{hitterSummary.atBats}</td>
+                <td className="px-4 py-4 text-sm text-zinc-200">{hitterSummary.hits}</td>
+                <td className="px-4 py-4 text-sm text-zinc-200">{hitterSummary.singles}</td>
+                <td className="px-4 py-4 text-sm text-zinc-200">{hitterSummary.doubles}</td>
+                <td className="px-4 py-4 text-sm text-zinc-200">{hitterSummary.triples}</td>
+                <td className="px-4 py-4 text-sm text-zinc-200">{hitterSummary.homeRuns}</td>
                 <td className="px-4 py-4 text-sm font-semibold text-emerald-200">
-                  {formatRate(summary.battingAverage)}
+                  {formatRate(hitterSummary.battingAverage)}
                 </td>
-                <td className="px-4 py-4 text-sm text-zinc-200">{summary.strikeouts}</td>
+                <td className="px-4 py-4 text-sm text-zinc-200">{hitterSummary.strikeouts}</td>
                 <td className="px-4 py-4 text-sm text-zinc-200">
-                  {formatPct(summary.strikeoutRate, 1)}
+                  {formatPct(hitterSummary.strikeoutRate, 1)}
                 </td>
                 <td className="px-4 py-4 text-sm font-semibold text-sky-200">
-                  {formatRate(summary.woba)}
+                  {formatRate(hitterSummary.woba)}
                 </td>
               </tr>
             )}
@@ -1488,14 +1794,18 @@ function SummaryTable({
 }
 
 function EmptyState({
+  view,
   filteredEntries,
   pinnedSlug,
   onOpenPinned,
 }: {
-  filteredEntries: ChartingPlayerComparisonDirectoryEntry[];
+  view: ComparisonView;
+  filteredEntries: ExplorerEntry[];
   pinnedSlug: string | null;
   onOpenPinned: (() => void) | null;
 }) {
+  const isPitcher = isPitcherView(view);
+
   return (
     <LeaderboardPanel className="overflow-hidden p-6 sm:p-7">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(14,165,233,0.14),transparent_24%),radial-gradient(circle_at_86%_22%,rgba(16,185,129,0.12),transparent_22%),linear-gradient(180deg,rgba(13,18,21,0.86),rgba(9,9,11,0.95))]" />
@@ -1506,16 +1816,17 @@ function EmptyState({
             Player Visuals
           </div>
           <h2 className="mt-4 text-3xl font-black tracking-tight text-zinc-50">
-            Search a hitter to open the visuals.
+            Search a {isPitcher ? "pitcher" : "hitter"} to open the visuals.
           </h2>
           <p className="mt-3 max-w-xl text-sm leading-7 text-zinc-400">
-            This page mirrors the Savant workflow with the Babson data we actually capture:
-            player search, season and pitch filters, pitch-speed scope, rough zone buckets, and
-            a one-line season table below.
+            {isPitcher
+              ? "This page mirrors the Savant workflow with the Babson pitcher data we actually capture: player search, season and pitch filters, pitch-speed scope, command/result slices, rough zone buckets, and a one-line season table below."
+              : "This page mirrors the Savant workflow with the Babson data we actually capture: player search, pitcher hand, season and pitch filters, pitch-speed scope, rough zone buckets, and a one-line season table below."}
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
             <LeaderboardPill tone="sky">
-              {filteredEntries.length} roster hitter{filteredEntries.length === 1 ? "" : "s"}
+              {filteredEntries.length} roster {countNounForView(view)}
+              {filteredEntries.length === 1 ? "" : "s"}
             </LeaderboardPill>
             <LeaderboardPill tone="neutral">9 rough zone buckets</LeaderboardPill>
             <LeaderboardPill tone="neutral">No EV or contour layer</LeaderboardPill>
@@ -1526,7 +1837,7 @@ function EmptyState({
               onClick={onOpenPinned}
               className="mt-5 inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950/80 px-4 py-2 text-sm font-semibold text-zinc-200 transition-smooth hover:border-emerald-400/25 hover:text-emerald-200"
             >
-              Reopen pinned hitter
+              Reopen pinned {countNounForView(view)}
               <ArrowRight className="h-4 w-4" />
             </button>
           ) : null}
@@ -1563,30 +1874,43 @@ function EmptyState({
 
 export default function LiveAbInsightsExplorer({
   entries,
+  view,
 }: {
-  entries: ChartingPlayerComparisonDirectoryEntry[];
+  entries: ExplorerEntry[];
+  view: ComparisonView;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const { slug: pinnedSlug, setSelectedPlayer } = useSelectedPlayer();
-  const initialQuery = useMemo(() => readExplorerQuery(searchParams), [searchParams]);
+  const hitterQuery = useMemo(() => readHitterExplorerQuery(searchParams), [searchParams]);
+  const pitcherQuery = useMemo(() => readPitcherExplorerQuery(searchParams), [searchParams]);
+  const isPitcher = isPitcherView(view);
+  const initialQuery = isPitcher ? pitcherQuery : hitterQuery;
   const [searchInput, setSearchInput] = useState("");
   const [selectedMetric, setSelectedMetric] =
-    useState<ChartingPlayerComparisonMetricId>("avg");
+    useState<ComparisonMetricId>(defaultMetricForView(view));
   const [zoneDisplayMode, setZoneDisplayMode] = useState<ZoneDisplayMode>("heatmap");
   const [selectedBucketId, setSelectedBucketId] =
-    useState<ChartingPlayerComparisonZoneBucket["id"] | null>(null);
+    useState<ComparisonZoneBucketId | null>(null);
   const [selectedCellId, setSelectedCellId] = useState<number | null>(null);
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
   const [selectedColId, setSelectedColId] = useState<number | null>(null);
-  const [selectedPlayerSlug, setSelectedPlayerSlug] = useState<string | null>(initialQuery.playerSlug);
+  const [selectedPlayerSlug, setSelectedPlayerSlug] = useState<string | null>(
+    initialQuery.playerSlug
+  );
+  const [pitcherHandParam, setPitcherHandParam] =
+    useState<ChartingPlayerComparisonPitcherHandFilter>(
+      isPitcher ? "all" : hitterQuery.pitcherHand
+    );
   const [seasonParam, setSeasonParam] = useState<string | null>(initialQuery.season);
   const [pitchTypeParam, setPitchTypeParam] = useState<string | null>(initialQuery.pitchType);
   const [countParam, setCountParam] = useState<string | null>(initialQuery.count);
-  const [eventParam, setEventParam] = useState<ChartingPlayerComparisonEventId>(initialQuery.event);
+  const [eventParam, setEventParam] = useState<ComparisonEventId>(initialQuery.event);
   const [veloMinParam, setVeloMinParam] = useState<number | null>(initialQuery.veloMin);
   const [veloMaxParam, setVeloMaxParam] = useState<number | null>(initialQuery.veloMax);
   const deferredSearch = useDeferredValue(searchInput);
+  const metricOptions = useMemo(() => metricOptionsForView(view), [view]);
 
   const entryBySlug = useMemo(
     () => new Map(entries.map((entry) => [entry.playerSlug, entry])),
@@ -1622,7 +1946,9 @@ export default function LiveAbInsightsExplorer({
   const resolvedPitchType =
     pitchTypeParam && catalog.pitchTypes.includes(pitchTypeParam) ? pitchTypeParam : null;
   const resolvedCount = countParam && catalog.counts.includes(countParam) ? countParam : null;
-  const resolvedEvent = eventParam;
+  const resolvedEvent = isPitcher
+    ? normalizePitcherEvent(eventParam)
+    : normalizeHitterEvent(eventParam);
 
   const resolvedVeloMin =
     catalog.velocityRange && veloMinParam !== null
@@ -1652,8 +1978,11 @@ export default function LiveAbInsightsExplorer({
   }, [resolvedPlayerSlug, setSelectedPlayer]);
 
   useEffect(() => {
-    const nextQuery = buildExplorerQuery({
+    const nextHref = buildExplorerHref({
+      view,
+      pathname,
       playerSlug: resolvedPlayerSlug,
+      pitcherHand: isPitcher ? "all" : pitcherHandParam,
       season: resolvedSeasonUi,
       latestSeason,
       pitchType: resolvedPitchType,
@@ -1662,7 +1991,6 @@ export default function LiveAbInsightsExplorer({
       veloMin: constrainedVeloMin,
       veloMax: constrainedVeloMax,
     });
-    const nextHref = nextQuery ? `${pathname}?${nextQuery}` : pathname;
     const currentHref = `${pathname}${window.location.search}`;
     if (currentHref !== nextHref) {
       window.history.replaceState(window.history.state, "", nextHref);
@@ -1670,30 +1998,36 @@ export default function LiveAbInsightsExplorer({
   }, [
     constrainedVeloMax,
     constrainedVeloMin,
+    isPitcher,
     latestSeason,
     pathname,
+    pitcherHandParam,
     resolvedCount,
     resolvedEvent,
     resolvedPitchType,
     resolvedPlayerSlug,
     resolvedSeasonUi,
+    view,
   ]);
 
   useEffect(() => {
     const handlePopState = () => {
-      const next = readExplorerQuery(new URLSearchParams(window.location.search));
-      setSelectedPlayerSlug(next.playerSlug);
-      setSeasonParam(next.season);
-      setPitchTypeParam(next.pitchType);
-      setCountParam(next.count);
-      setEventParam(next.event);
-      setVeloMinParam(next.veloMin);
-      setVeloMaxParam(next.veloMax);
+      const nextQuery = isPitcher
+        ? readPitcherExplorerQuery(new URLSearchParams(window.location.search))
+        : readHitterExplorerQuery(new URLSearchParams(window.location.search));
+      setSelectedPlayerSlug(nextQuery.playerSlug);
+      setPitcherHandParam(isPitcher ? "all" : hitterQuery.pitcherHand);
+      setSeasonParam(nextQuery.season);
+      setPitchTypeParam(nextQuery.pitchType);
+      setCountParam(nextQuery.count);
+      setEventParam(nextQuery.event);
+      setVeloMinParam(nextQuery.veloMin);
+      setVeloMaxParam(nextQuery.veloMax);
     };
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
+  }, [hitterQuery.pitcherHand, isPitcher]);
 
   const filteredEntries = useMemo(() => {
     const query = deferredSearch.trim().toLowerCase();
@@ -1702,7 +2036,8 @@ export default function LiveAbInsightsExplorer({
     }
 
     return entries.filter((entry) => {
-      const haystack = [entry.displayName, entry.playerSlug, ...entry.matchedHitterNames]
+      const aliases = "matchedHitterNames" in entry ? entry.matchedHitterNames : [];
+      const haystack = [entry.displayName, entry.playerSlug, ...aliases]
         .join(" ")
         .toLowerCase();
       return haystack.includes(query);
@@ -1714,8 +2049,9 @@ export default function LiveAbInsightsExplorer({
       return [];
     }
 
-    return filterChartingPlayerComparisonPitches(selectedEntry.pitches, {
+    return filterExplorerPitches(view, selectedEntry.pitches, {
       season: resolvedSeasonUi === "all" ? null : resolvedSeasonUi,
+      pitcherHand: isPitcher ? "all" : pitcherHandParam,
       pitchType: resolvedPitchType,
       count: resolvedCount,
       event: resolvedEvent,
@@ -1725,53 +2061,62 @@ export default function LiveAbInsightsExplorer({
   }, [
     constrainedVeloMax,
     constrainedVeloMin,
+    isPitcher,
+    pitcherHandParam,
     resolvedCount,
     resolvedEvent,
     resolvedPitchType,
     resolvedSeasonUi,
     selectedEntry,
+    view,
   ]);
 
   const filteredSummary = useMemo(
-    () => summarizeChartingPlayerComparisonPitches(filteredPitches),
-    [filteredPitches]
+    () => summarizeExplorerPitches(view, filteredPitches),
+    [filteredPitches, view]
   );
   const zoneBuckets = useMemo(
-    () => buildChartingPlayerComparisonZoneBuckets(filteredPitches),
-    [filteredPitches]
+    () => buildExplorerZoneBuckets(view, filteredPitches),
+    [filteredPitches, view]
   );
   const selectedBucket =
     selectedBucketId !== null
       ? zoneBuckets.find((bucket) => bucket.id === selectedBucketId) ?? null
       : null;
   const cellSummaries = useMemo(() => {
-    const map = new Map<number, ChartingPlayerComparisonSummary>();
+    const map = new Map<number, ExplorerSummary>();
     for (const cellId of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
-      const cellPitches = filteredPitches.filter((p) => p.locationCell === cellId);
-      map.set(cellId, summarizeChartingPlayerComparisonPitches(cellPitches));
+      const cellPitches = filteredPitches.filter((pitch) => pitch.locationCell === cellId);
+      map.set(cellId, summarizeExplorerPitches(view, cellPitches));
     }
     return map;
-  }, [filteredPitches]);
+  }, [filteredPitches, view]);
   const rowSummaries = useMemo(() => {
-    const map = new Map<number, ChartingPlayerComparisonSummary>();
+    const map = new Map<number, ExplorerSummary>();
     for (const row of [0, 1, 2]) {
       const rowPitches = filteredPitches.filter(
-        (p) => p.locationCell !== undefined && p.locationCell !== null && cellRow(p.locationCell) === row
+        (pitch) =>
+          pitch.locationCell !== undefined &&
+          pitch.locationCell !== null &&
+          cellRow(pitch.locationCell) === row
       );
-      map.set(row, summarizeChartingPlayerComparisonPitches(rowPitches));
+      map.set(row, summarizeExplorerPitches(view, rowPitches));
     }
     return map;
-  }, [filteredPitches]);
+  }, [filteredPitches, view]);
   const colSummaries = useMemo(() => {
-    const map = new Map<number, ChartingPlayerComparisonSummary>();
+    const map = new Map<number, ExplorerSummary>();
     for (const col of [0, 1, 2]) {
       const colPitches = filteredPitches.filter(
-        (p) => p.locationCell !== undefined && p.locationCell !== null && cellCol(p.locationCell) === col
+        (pitch) =>
+          pitch.locationCell !== undefined &&
+          pitch.locationCell !== null &&
+          cellCol(pitch.locationCell) === col
       );
-      map.set(col, summarizeChartingPlayerComparisonPitches(colPitches));
+      map.set(col, summarizeExplorerPitches(view, colPitches));
     }
     return map;
-  }, [filteredPitches]);
+  }, [filteredPitches, view]);
   const selectedCellSummary =
     selectedCellId !== null ? cellSummaries.get(selectedCellId) ?? null : null;
   const selectedRowSummary =
@@ -1779,36 +2124,61 @@ export default function LiveAbInsightsExplorer({
   const selectedColSummary =
     selectedColId !== null ? colSummaries.get(selectedColId) ?? null : null;
   const selectionSummary =
-    selectedCellSummary ?? selectedRowSummary ?? selectedColSummary ?? selectedBucket?.summary ?? filteredSummary;
+    selectedCellSummary ??
+    selectedRowSummary ??
+    selectedColSummary ??
+    selectedBucket?.summary ??
+    filteredSummary;
+  const selectionPitches = useMemo(() => {
+    if (selectedCellId !== null) {
+      return filteredPitches.filter((pitch) => pitch.locationCell === selectedCellId);
+    }
+    if (selectedRowId !== null) {
+      return filteredPitches.filter(
+        (pitch) =>
+          pitch.locationCell !== undefined &&
+          pitch.locationCell !== null &&
+          cellRow(pitch.locationCell) === selectedRowId
+      );
+    }
+    if (selectedColId !== null) {
+      return filteredPitches.filter(
+        (pitch) =>
+          pitch.locationCell !== undefined &&
+          pitch.locationCell !== null &&
+          cellCol(pitch.locationCell) === selectedColId
+      );
+    }
+
+    return selectedBucket ? selectedBucket.pitches : filteredPitches;
+  }, [filteredPitches, selectedBucket, selectedCellId, selectedColId, selectedRowId]);
   const selectionPitchMix = useMemo(
-    () =>
-      buildChartingPlayerComparisonPitchMix(
-        selectedCellId !== null
-          ? filteredPitches.filter((p) => p.locationCell === selectedCellId)
-          : selectedRowId !== null
-            ? filteredPitches.filter(
-                (p) => p.locationCell !== undefined && p.locationCell !== null && cellRow(p.locationCell) === selectedRowId
-              )
-            : selectedColId !== null
-              ? filteredPitches.filter(
-                  (p) => p.locationCell !== undefined && p.locationCell !== null && cellCol(p.locationCell) === selectedColId
-                )
-              : selectedBucket
-                ? selectedBucket.pitches
-                : filteredPitches
-      ),
-    [filteredPitches, selectedBucket, selectedCellId, selectedRowId, selectedColId]
+    () => buildExplorerPitchMix(view, selectionPitches),
+    [selectionPitches, view]
   );
   const hiddenZonePitchCount = useMemo(
-    () => hiddenChartingPlayerComparisonZonePitchCount(filteredPitches),
-    [filteredPitches]
+    () => hiddenExplorerZonePitchCount(view, filteredPitches),
+    [filteredPitches, view]
   );
+  const selectionLabel =
+    selectedCellId !== null
+      ? `Zone Cell ${selectedCellId}`
+      : selectedRowId !== null
+        ? `${ZONE_ROW_LABELS[selectedRowId]} Row`
+        : selectedColId !== null
+          ? `${ZONE_COL_LABELS[selectedColId]} Col`
+          : selectedBucket
+            ? selectedBucket.label
+            : "Filtered Sample";
 
   const activeFilterChips = useMemo(() => {
     const chips = [
       { label: "Season", value: resolvedSeasonUi === "all" ? "All seasons" : resolvedSeasonUi },
     ];
 
+    if (!isPitcher && pitcherHandParam !== "all") {
+      chips.push({ label: "Pitcher Hand", value: `${pitcherHandParam}HP` });
+    }
     if (resolvedPitchType) {
       chips.push({ label: "Pitch Type", value: resolvedPitchType });
     }
@@ -1816,12 +2186,7 @@ export default function LiveAbInsightsExplorer({
       chips.push({ label: "Count", value: resolvedCount });
     }
     if (resolvedEvent !== "all") {
-      chips.push({
-        label: "Event",
-        value:
-          CHARTING_PLAYER_COMPARISON_EVENTS.find((event) => event.id === resolvedEvent)?.label ??
-          resolvedEvent,
-      });
+      chips.push({ label: "Event", value: eventLabelForView(view, resolvedEvent) });
     }
     if (constrainedVeloMin !== null || constrainedVeloMax !== null) {
       chips.push({
@@ -1836,10 +2201,13 @@ export default function LiveAbInsightsExplorer({
     catalog.velocityRange?.min,
     constrainedVeloMax,
     constrainedVeloMin,
+    isPitcher,
+    pitcherHandParam,
     resolvedCount,
     resolvedEvent,
     resolvedPitchType,
     resolvedSeasonUi,
+    view,
   ]);
 
   function handleSelectPlayer(playerSlug: string) {
@@ -1849,6 +2217,32 @@ export default function LiveAbInsightsExplorer({
     setSelectedRowId(null);
     setSelectedColId(null);
     setSelectedPlayerSlug(playerSlug);
+  }
+
+  function handleChangeView(nextView: ComparisonView) {
+    if (nextView === view) {
+      return;
+    }
+
+    const nextHref = buildExplorerHref({
+      view: nextView,
+      pathname,
+      playerSlug: resolvedPlayerSlug,
+      pitcherHand: nextView === "hitters" ? pitcherHandParam : "all",
+      season: resolvedSeasonUi,
+      latestSeason,
+      pitchType: resolvedPitchType,
+      count: resolvedCount,
+      event:
+        nextView === "pitchers"
+          ? normalizePitcherEvent(resolvedEvent)
+          : normalizeHitterEvent(resolvedEvent),
+      veloMin: constrainedVeloMin,
+      veloMax: constrainedVeloMax,
+    });
+
+    setSearchInput("");
+    router.replace(nextHref);
   }
 
   const resultsVisible = deferredSearch.trim().length > 0 || !selectedEntry;
@@ -1868,16 +2262,19 @@ export default function LiveAbInsightsExplorer({
           icon={ClipboardList}
           eyebrow="Charting"
           title={<>Player Comparison Visuals</>}
-          description="A Babson take on the Savant player-visuals workflow, rebuilt around the charting fields we actually capture today: player search, season scope, pitch-speed filters, rough zone buckets, and a one-line season table."
+          description={heroDescriptionForView(view)}
           meta={
             <>
               <LeaderboardPill tone="emerald">
-                {entries.length} hitter{entries.length === 1 ? "" : "s"}
+                {entries.length} {countNounForView(view)}
+                {entries.length === 1 ? "" : "s"}
               </LeaderboardPill>
               <LeaderboardPill tone="neutral">
                 {formatCount(totalPitches)} charted pitches
               </LeaderboardPill>
-              <LeaderboardPill tone="neutral">{totalSeasons} season view</LeaderboardPill>
+              <LeaderboardPill tone="neutral">
+                {totalSeasons} season{totalSeasons === 1 ? "" : "s"}
+              </LeaderboardPill>
             </>
           }
           summary={
@@ -1890,7 +2287,10 @@ export default function LiveAbInsightsExplorer({
           }
           side={
             <div className="grid gap-3">
-              <Link href="/charting/leaderboard?tab=hitters" className="block">
+              <Link
+                href={`/charting/leaderboard?tab=${isPitcher ? "pitchers" : "hitters"}`}
+                className="block"
+              >
                 <div className="rounded-3xl border border-emerald-500/20 bg-emerald-500/10 p-4 transition-smooth hover:border-emerald-400/35">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-500/20 bg-zinc-950/70 text-emerald-300">
@@ -1901,7 +2301,7 @@ export default function LiveAbInsightsExplorer({
                         Compare
                       </div>
                       <div className="mt-1 text-sm font-semibold text-emerald-50">
-                        Open Hitter Leaderboard
+                        Open {isPitcher ? "Pitcher" : "Hitter"} Leaderboard
                       </div>
                     </div>
                   </div>
@@ -1931,7 +2331,9 @@ export default function LiveAbInsightsExplorer({
 
       <LeaderboardToolbar>
         <div className="grid gap-5">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_auto] xl:items-end">
+          <div className="grid gap-4 xl:grid-cols-[auto_minmax(0,1.2fr)_auto] xl:items-end">
+            <ComparisonViewToggle view={view} onChange={handleChangeView} />
+
             <div className="space-y-2">
               <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
                 Player Search
@@ -1942,7 +2344,7 @@ export default function LiveAbInsightsExplorer({
                   type="text"
                   value={searchInput}
                   onChange={(event) => setSearchInput(event.target.value)}
-                  placeholder="Search hitter by name, slug, or charted alias"
+                  placeholder={searchPlaceholderForView(view)}
                   className="w-full bg-transparent text-sm text-zinc-100 outline-none placeholder:text-zinc-600"
                 />
               </label>
@@ -1967,6 +2369,7 @@ export default function LiveAbInsightsExplorer({
               <button
                 type="button"
                 onClick={() => {
+                  setPitcherHandParam("all");
                   setSeasonParam(null);
                   setPitchTypeParam(null);
                   setCountParam(null);
@@ -1986,12 +2389,13 @@ export default function LiveAbInsightsExplorer({
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {visibleResults.length === 0 ? (
                 <div className="col-span-full flex min-h-32 items-center justify-center rounded-[1.4rem] border border-dashed border-zinc-800 bg-zinc-950/60 px-5 text-center text-sm text-zinc-500">
-                  No hitters match this search.
+                  No {countNounForView(view)}s match this search.
                 </div>
               ) : (
                 visibleResults.map((entry) => (
                   <SearchResultCard
                     key={entry.playerSlug}
+                    view={view}
                     entry={entry}
                     active={resolvedPlayerSlug === entry.playerSlug}
                     onClick={() => handleSelectPlayer(entry.playerSlug)}
@@ -2001,7 +2405,12 @@ export default function LiveAbInsightsExplorer({
             </div>
           ) : null}
 
-          <div className="grid gap-4 xl:grid-cols-4">
+          <div
+            className={joinClasses(
+              "grid gap-4 md:grid-cols-2",
+              isPitcher ? "xl:grid-cols-4" : "xl:grid-cols-5"
+            )}
+          >
             <FilterSelect
               label="Season"
               value={resolvedSeasonUi}
@@ -2021,6 +2430,20 @@ export default function LiveAbInsightsExplorer({
                   </option>
                 ))}
             </FilterSelect>
+
+            {!isPitcher ? (
+              <FilterSelect
+                label="Pitcher Hand"
+                value={pitcherHandParam}
+                onChange={(value) => setPitcherHandParam(normalizePitcherHandFilter(value))}
+              >
+                {CHARTING_PLAYER_COMPARISON_PITCHER_HAND_OPTIONS.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </FilterSelect>
+            ) : null}
 
             <FilterSelect
               label="Pitch Type"
@@ -2051,9 +2474,11 @@ export default function LiveAbInsightsExplorer({
             <FilterSelect
               label="Event / Result"
               value={resolvedEvent}
-              onChange={(value) => setEventParam(normalizeEvent(value))}
+              onChange={(value) =>
+                setEventParam(isPitcher ? normalizePitcherEvent(value) : normalizeHitterEvent(value))
+              }
             >
-              {CHARTING_PLAYER_COMPARISON_EVENTS.map((event) => (
+              {eventOptionsForView(view).map((event) => (
                 <option key={event.id} value={event.id}>
                   {event.label}
                 </option>
@@ -2101,14 +2526,15 @@ export default function LiveAbInsightsExplorer({
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
                     <Sparkles className="h-3.5 w-3.5" />
-                    Current Hitter
+                    Current {isPitcher ? "Pitcher" : "Hitter"}
                   </div>
                   <h2 className="mt-4 text-3xl font-black tracking-tight text-zinc-50">
                     {selectedEntry.displayName}
                   </h2>
                   <p className="mt-2 max-w-3xl text-sm leading-7 text-zinc-400">
-                    Single-player charting visuals modeled after the Savant workflow, scoped to
-                    the filters currently applied across this hitter’s Babson Live AB data.
+                    {isPitcher
+                      ? "Single-player charting visuals modeled after the Savant workflow, scoped to the filters currently applied across this pitcher’s Babson Live AB data."
+                      : "Single-player charting visuals modeled after the Savant workflow, scoped to the filters currently applied across this hitter’s Babson Live AB data."}
                   </p>
                 </div>
 
@@ -2134,15 +2560,14 @@ export default function LiveAbInsightsExplorer({
             <div className="grid gap-6 px-5 py-5 sm:px-6 sm:py-6 xl:grid-cols-[minmax(20rem,0.95fr)_minmax(0,1.05fr)]">
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <MetricToggle value={selectedMetric} onChange={setSelectedMetric} />
-                  <ZoneDisplayModeToggle
-                    value={zoneDisplayMode}
-                    onChange={setZoneDisplayMode}
-                  />
+                  <MetricToggle view={view} value={selectedMetric} onChange={setSelectedMetric} />
+                  <ZoneDisplayModeToggle value={zoneDisplayMode} onChange={setZoneDisplayMode} />
                 </div>
                 <ZoneCanvas
+                  view={view}
                   buckets={zoneBuckets}
                   metricId={selectedMetric}
+                  metricOptions={metricOptions}
                   displayMode={zoneDisplayMode}
                   selectedBucketId={selectedBucketId}
                   selectedCellId={selectedCellId}
@@ -2151,10 +2576,32 @@ export default function LiveAbInsightsExplorer({
                   cellSummaries={cellSummaries}
                   rowSummaries={rowSummaries}
                   colSummaries={colSummaries}
-                  onSelectBucket={(id) => { setSelectedBucketId(id); setSelectedCellId(null); setSelectedRowId(null); setSelectedColId(null); }}
-                  onSelectCell={(id) => { setSelectedCellId(id); setSelectedBucketId(null); setSelectedRowId(null); setSelectedColId(null); }}
-                  onSelectRow={(id) => { setSelectedRowId(id); setSelectedCellId(null); setSelectedBucketId(null); setSelectedColId(null); }}
-                  onSelectCol={(id) => { setSelectedColId(id); setSelectedCellId(null); setSelectedBucketId(null); setSelectedRowId(null); }}
+                  allSummary={filteredSummary}
+                  allPitchCount={filteredSummary.totalPitches}
+                  onSelectBucket={(id) => {
+                    setSelectedBucketId(id);
+                    setSelectedCellId(null);
+                    setSelectedRowId(null);
+                    setSelectedColId(null);
+                  }}
+                  onSelectCell={(id) => {
+                    setSelectedCellId(id);
+                    setSelectedBucketId(null);
+                    setSelectedRowId(null);
+                    setSelectedColId(null);
+                  }}
+                  onSelectRow={(id) => {
+                    setSelectedRowId(id);
+                    setSelectedCellId(null);
+                    setSelectedBucketId(null);
+                    setSelectedColId(null);
+                  }}
+                  onSelectCol={(id) => {
+                    setSelectedColId(id);
+                    setSelectedCellId(null);
+                    setSelectedBucketId(null);
+                    setSelectedRowId(null);
+                  }}
                 />
                 <div className="rounded-[1.5rem] border border-zinc-800/80 bg-zinc-950/60 px-4 py-3 text-[11px] text-zinc-500">
                   {hiddenZonePitchCount > 0
@@ -2164,53 +2611,117 @@ export default function LiveAbInsightsExplorer({
               </div>
 
               <div className="space-y-4">
+                <div className="rounded-[1.6rem] border border-zinc-800/80 bg-zinc-950/60 px-4 py-3">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                    Selection Scope
+                  </div>
+                  <div className="mt-2 text-lg font-black tracking-tight text-zinc-100">
+                    {selectionLabel}
+                  </div>
+                  <div className="mt-1 text-[11px] text-zinc-500">
+                    {selectionSummary.totalPitches === filteredSummary.totalPitches
+                      ? "Current filters with no zone slice applied."
+                      : "Current filters with a zone-level slice applied."}
+                  </div>
+                </div>
+
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <MiniStat
-                    label={
-                    selectedCellId !== null ? `Zone Cell ${selectedCellId}`
-                    : selectedRowId !== null ? `${ZONE_ROW_LABELS[selectedRowId]} Row`
-                    : selectedColId !== null ? `${ZONE_COL_LABELS[selectedColId]} Col`
-                    : selectedBucket ? selectedBucket.label
-                    : "Filtered Sample"
-                  }
-                    value={formatCount(selectionSummary.totalPitches)}
-                    tone="emerald"
-                  />
-                  <MiniStat
-                    label="Plate Appearances"
-                    value={formatCount(selectionSummary.plateAppearances)}
-                  />
-                  <MiniStat
-                    label="Swing%"
-                    value={formatPct(selectionSummary.swingPct, 1)}
-                    tone="sky"
-                  />
-                  <MiniStat
-                    label="Whiff%"
-                    value={formatPct(selectionSummary.whiffPct, 1)}
-                  />
-                  <MiniStat
-                    label="AVG"
-                    value={formatRate(selectionSummary.battingAverage)}
-                    tone="emerald"
-                  />
-                  <MiniStat label="wOBA" value={formatRate(selectionSummary.woba)} tone="sky" />
+                  <MiniStat label="Pitches" value={formatCount(selectionSummary.totalPitches)} tone="emerald" />
+                  {isPitcher ? (
+                    <>
+                      <MiniStat
+                        label="TBF"
+                        value={formatCount(
+                          (selectionSummary as PitcherComparisonSummary).plateAppearances
+                        )}
+                      />
+                      <MiniStat
+                        label="Strike%"
+                        value={formatPct(
+                          (selectionSummary as PitcherComparisonSummary).strikePct,
+                          1
+                        )}
+                        tone="sky"
+                      />
+                      <MiniStat
+                        label="Whiff%"
+                        value={formatPct(
+                          (selectionSummary as PitcherComparisonSummary).whiffPct,
+                          1
+                        )}
+                      />
+                      <MiniStat
+                        label="BAA"
+                        value={formatRate((selectionSummary as PitcherComparisonSummary).baa)}
+                        tone="emerald"
+                      />
+                      <MiniStat
+                        label="K%"
+                        value={formatPct((selectionSummary as PitcherComparisonSummary).kPct, 1)}
+                        tone="sky"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <MiniStat
+                        label="PA"
+                        value={formatCount(
+                          (selectionSummary as ChartingPlayerComparisonSummary).plateAppearances
+                        )}
+                      />
+                      <MiniStat
+                        label="Swing%"
+                        value={formatPct(
+                          (selectionSummary as ChartingPlayerComparisonSummary).swingPct,
+                          1
+                        )}
+                        tone="sky"
+                      />
+                      <MiniStat
+                        label="Whiff%"
+                        value={formatPct(
+                          (selectionSummary as ChartingPlayerComparisonSummary).whiffPct,
+                          1
+                        )}
+                      />
+                      <MiniStat
+                        label="AVG"
+                        value={formatRate(
+                          (selectionSummary as ChartingPlayerComparisonSummary).battingAverage
+                        )}
+                        tone="emerald"
+                      />
+                      <MiniStat
+                        label="wOBA"
+                        value={formatRate((selectionSummary as ChartingPlayerComparisonSummary).woba)}
+                        tone="sky"
+                      />
+                    </>
+                  )}
                 </div>
 
                 <PitchMixPanel
                   title={
-                    selectedCellId !== null ? `Cell ${selectedCellId} Mix`
-                    : selectedRowId !== null ? `${ZONE_ROW_LABELS[selectedRowId]} Row Mix`
-                    : selectedColId !== null ? `${ZONE_COL_LABELS[selectedColId]} Col Mix`
-                    : selectedBucket ? `${selectedBucket.label} Mix`
-                    : "Filtered Pitch Mix"
+                    selectedCellId !== null
+                      ? `Cell ${selectedCellId} Mix`
+                      : selectedRowId !== null
+                        ? `${ZONE_ROW_LABELS[selectedRowId]} Row Mix`
+                        : selectedColId !== null
+                          ? `${ZONE_COL_LABELS[selectedColId]} Col Mix`
+                          : selectedBucket
+                            ? `${selectedBucket.label} Mix`
+                            : "Filtered Pitch Mix"
                   }
                   subtitle={
-                    selectedCellId !== null ? "Pitch distribution in this zone cell."
-                    : selectedRowId !== null ? "Pitch distribution across this horizontal row."
-                    : selectedColId !== null ? "Pitch distribution across this vertical column."
-                    : selectedBucket ? "Pitch distribution inside the active rough bucket."
-                    : "Pitch distribution for the full filtered player scope."
+                    selectedCellId !== null
+                      ? "Pitch distribution in this zone cell."
+                      : selectedRowId !== null
+                        ? "Pitch distribution across this horizontal row."
+                        : selectedColId !== null
+                          ? "Pitch distribution across this vertical column."
+                          : selectedBucket
+                            ? "Pitch distribution inside the active rough bucket."
+                            : `Pitch distribution for the full filtered ${countNounForView(view)} scope.`
                   }
                   pitches={selectionPitchMix}
                 />
@@ -2222,13 +2733,17 @@ export default function LiveAbInsightsExplorer({
                   </div>
                   <div className="mt-3 grid gap-2 text-sm text-zinc-400">
                     <div className="rounded-2xl border border-zinc-800/70 bg-zinc-950/70 px-3 py-2.5">
-                      Exact player search, season scope, pitch type, count, event, and pitch-speed filters.
+                      {isPitcher
+                        ? "Exact player search, season scope, pitch type, count, event, and pitch-speed filters."
+                        : "Exact player search, pitcher hand, season scope, pitch type, count, event, and pitch-speed filters."}
                     </div>
                     <div className="rounded-2xl border border-zinc-800/70 bg-zinc-950/70 px-3 py-2.5">
-                      Rough zone buckets based on the current charting cell model, not contour geometry.
+                      Same 9 rough zone buckets and the same heatmap versus sections layout used by the hitter visuals.
                     </div>
                     <div className="rounded-2xl border border-zinc-800/70 bg-zinc-950/70 px-3 py-2.5">
-                      No exit velocity, launch-speed, quality-of-contact, or handedness controls in v1.
+                      {isPitcher
+                        ? "Command and result metrics only in v1: Strike%, Whiff%, Chase%, BAA, filtered pitch mix, and the one-line summary table."
+                        : "No exit velocity, launch-speed, or quality-of-contact controls in this visuals view."}
                     </div>
                   </div>
                 </div>
@@ -2237,6 +2752,7 @@ export default function LiveAbInsightsExplorer({
           </LeaderboardPanel>
 
           <SummaryTable
+            view={view}
             entry={selectedEntry}
             seasonLabel={resolvedSeasonUi}
             summary={filteredSummary}
@@ -2244,6 +2760,7 @@ export default function LiveAbInsightsExplorer({
         </>
       ) : (
         <EmptyState
+          view={view}
           filteredEntries={filteredEntries}
           pinnedSlug={pinnedSlug}
           onOpenPinned={

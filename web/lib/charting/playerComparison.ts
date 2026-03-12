@@ -1,7 +1,18 @@
 import { comparePitchTypes } from "@/lib/pitchTypeOrder";
 import { pitchColor } from "@/lib/pitchColors";
 import { pitchDisplayName } from "@/lib/pitchNames";
-import type { BatterHand, HitterInsightPitchRecord } from "./hitterInsights";
+import type {
+  BatterHand,
+  HitterInsightPitchRecord,
+  PitcherHand,
+} from "./hitterInsights";
+import {
+  buildComparisonZoneBuckets,
+  hiddenComparisonZonePitchCount,
+  zoneBucketForLocationCell,
+  type ComparisonZoneBucket,
+  type ComparisonZoneBucketId,
+} from "./comparisonZones";
 import type { ChartingHitterInsightsDirectoryEntry } from "./playerProfile";
 
 export type ChartingPlayerComparisonMetricId =
@@ -18,16 +29,7 @@ export type ChartingPlayerComparisonEventId =
   | "whiffs"
   | "fouls"
   | "chases";
-export type ChartingPlayerComparisonZoneBucketId =
-  | "chaseUpperLeft"
-  | "chaseUpperRight"
-  | "chaseLowerLeft"
-  | "chaseLowerRight"
-  | "upperLeft"
-  | "upperRight"
-  | "lowerLeft"
-  | "lowerRight"
-  | "heart";
+export type ChartingPlayerComparisonZoneBucketId = ComparisonZoneBucketId;
 
 export interface ChartingPlayerComparisonMetricOption {
   id: ChartingPlayerComparisonMetricId;
@@ -42,12 +44,20 @@ export interface ChartingPlayerComparisonEventOption {
   description: string;
 }
 
+export type ChartingPlayerComparisonPitcherHandFilter = "all" | "R" | "L";
+
+export interface ChartingPlayerComparisonPitcherHandOption {
+  id: ChartingPlayerComparisonPitcherHandFilter;
+  label: string;
+}
+
 export interface ChartingPlayerComparisonPitchRecord {
   id: string;
   paId: string;
   gameId: string;
   gameDate: string;
   opponent: string | null;
+  pitcherHand: PitcherHand;
   pitchOrder: number;
   pitchType: string;
   locationCell: number | null;
@@ -101,14 +111,10 @@ export interface ChartingPlayerComparisonPitchMixItem {
   color: string;
 }
 
-export interface ChartingPlayerComparisonZoneBucket {
-  id: ChartingPlayerComparisonZoneBucketId;
-  label: string;
-  placement: "chase" | "zone";
-  cellIds: number[];
-  pitches: ChartingPlayerComparisonPitchRecord[];
-  summary: ChartingPlayerComparisonSummary;
-}
+export type ChartingPlayerComparisonZoneBucket = ComparisonZoneBucket<
+  ChartingPlayerComparisonPitchRecord,
+  ChartingPlayerComparisonSummary
+>;
 
 export interface ChartingPlayerComparisonVelocityRange {
   min: number;
@@ -133,6 +139,7 @@ export interface ChartingPlayerComparisonDirectoryEntry {
 
 export interface ChartingPlayerComparisonFilters {
   season: string | null;
+  pitcherHand: ChartingPlayerComparisonPitcherHandFilter;
   pitchType: string | null;
   count: string | null;
   event: ChartingPlayerComparisonEventId;
@@ -142,6 +149,7 @@ export interface ChartingPlayerComparisonFilters {
 
 export const DEFAULT_CHARTING_PLAYER_COMPARISON_FILTERS: ChartingPlayerComparisonFilters = {
   season: null,
+  pitcherHand: "all",
   pitchType: null,
   count: null,
   event: "all",
@@ -219,66 +227,10 @@ export const CHARTING_PLAYER_COMPARISON_EVENTS: ChartingPlayerComparisonEventOpt
   },
 ];
 
-const ZONE_BUCKET_CONFIG: Array<{
-  id: ChartingPlayerComparisonZoneBucketId;
-  label: string;
-  placement: "chase" | "zone";
-  cellIds: number[];
-}> = [
-  {
-    id: "chaseUpperLeft",
-    label: "Chase Upper Left",
-    placement: "chase",
-    cellIds: [11],
-  },
-  {
-    id: "chaseUpperRight",
-    label: "Chase Upper Right",
-    placement: "chase",
-    cellIds: [12],
-  },
-  {
-    id: "chaseLowerLeft",
-    label: "Chase Lower Left",
-    placement: "chase",
-    cellIds: [13],
-  },
-  {
-    id: "chaseLowerRight",
-    label: "Chase Lower Right",
-    placement: "chase",
-    cellIds: [14],
-  },
-  {
-    id: "upperLeft",
-    label: "Upper Left",
-    placement: "zone",
-    cellIds: [1, 2],
-  },
-  {
-    id: "upperRight",
-    label: "Upper Right",
-    placement: "zone",
-    cellIds: [3, 6],
-  },
-  {
-    id: "lowerLeft",
-    label: "Lower Left",
-    placement: "zone",
-    cellIds: [4, 7],
-  },
-  {
-    id: "lowerRight",
-    label: "Lower Right",
-    placement: "zone",
-    cellIds: [8, 9],
-  },
-  {
-    id: "heart",
-    label: "Heart",
-    placement: "zone",
-    cellIds: [5],
-  },
+export const CHARTING_PLAYER_COMPARISON_PITCHER_HAND_OPTIONS: ChartingPlayerComparisonPitcherHandOption[] = [
+  { id: "all", label: "All pitchers" },
+  { id: "R", label: "vs RHP" },
+  { id: "L", label: "vs LHP" },
 ];
 
 function seasonFromDate(gameDate: string): string | null {
@@ -358,6 +310,7 @@ function mapComparisonPitch(
     gameId: pitch.gameId,
     gameDate: pitch.gameDate,
     opponent: pitch.opponent,
+    pitcherHand: pitch.pitcherHand,
     pitchOrder: pitch.pitchOrder,
     pitchType: pitch.pitchType,
     locationCell: pitch.locationCell,
@@ -453,38 +406,19 @@ export function buildChartingPlayerComparisonPitchMix(
     });
 }
 
-export function zoneBucketForLocationCell(
-  locationCell: number | null
-): ChartingPlayerComparisonZoneBucketId | null {
-  if (locationCell === null) return null;
-  return (
-    ZONE_BUCKET_CONFIG.find((bucket) => bucket.cellIds.includes(locationCell))?.id ?? null
-  );
-}
-
 export function buildChartingPlayerComparisonZoneBuckets(
   pitches: ChartingPlayerComparisonPitchRecord[]
 ): ChartingPlayerComparisonZoneBucket[] {
-  return ZONE_BUCKET_CONFIG.map((bucket) => {
-    const bucketPitches = pitches.filter(
-      (pitch) => zoneBucketForLocationCell(pitch.locationCell) === bucket.id
-    );
-
-    return {
-      id: bucket.id,
-      label: bucket.label,
-      placement: bucket.placement,
-      cellIds: bucket.cellIds,
-      pitches: bucketPitches,
-      summary: summarizeChartingPlayerComparisonPitches(bucketPitches),
-    } satisfies ChartingPlayerComparisonZoneBucket;
+  return buildComparisonZoneBuckets(pitches, {
+    getLocationCell: (pitch) => pitch.locationCell,
+    summarize: summarizeChartingPlayerComparisonPitches,
   });
 }
 
 export function hiddenChartingPlayerComparisonZonePitchCount(
   pitches: ChartingPlayerComparisonPitchRecord[]
 ): number {
-  return pitches.filter((pitch) => zoneBucketForLocationCell(pitch.locationCell) === null).length;
+  return hiddenComparisonZonePitchCount(pitches, (pitch) => pitch.locationCell);
 }
 
 export function filterChartingPlayerComparisonPitches(
@@ -493,6 +427,9 @@ export function filterChartingPlayerComparisonPitches(
 ): ChartingPlayerComparisonPitchRecord[] {
   return pitches.filter((pitch) => {
     if (filters.season && seasonFromDate(pitch.gameDate) !== filters.season) {
+      return false;
+    }
+    if (filters.pitcherHand !== "all" && pitch.pitcherHand !== filters.pitcherHand) {
       return false;
     }
     if (filters.pitchType && pitch.pitchType !== filters.pitchType) {
@@ -566,3 +503,5 @@ export function metricValueForChartingPlayerComparisonSummary(
 ): number | null {
   return metricValue(summary, metricId);
 }
+
+export { zoneBucketForLocationCell };

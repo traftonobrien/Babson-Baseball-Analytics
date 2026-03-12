@@ -1,33 +1,48 @@
-import { playerRegistry } from "@/lib/playerRegistry";
-import {
-  loadChartingHitterInsightsDirectory,
-  type ChartingHitterInsightsDirectorySource,
-} from "@/lib/charting/playerProfile";
-import { buildChartingPlayerComparisonDirectory } from "@/lib/charting/playerComparison";
 import { LeaderboardPageFrame } from "@/app/components/leaderboards/LeaderboardChrome";
 import LiveAbInsightsExplorer from "./LiveAbInsightsExplorer";
+import { normalizeComparisonView } from "./explorerState";
+import {
+  loadChartingHitterComparisonDirectory,
+  loadChartingPitcherComparisonDirectory,
+} from "@/lib/charting/comparisonDirectory";
 
 export const revalidate = 0;
 
-export default async function ChartingInsightsPage() {
-  const hitterSources: ChartingHitterInsightsDirectorySource[] = playerRegistry
-    .filter((player) => player.isHitter)
-    .map((player) => ({
-      slug: player.slug,
-      name: player.name,
-      bats:
-        player.bats === "R" || player.bats === "L" || player.bats === "S"
-          ? player.bats
-          : null,
-    }));
-
-  const entries = buildChartingPlayerComparisonDirectory(
-    await loadChartingHitterInsightsDirectory(hitterSources)
+export default async function ChartingInsightsPage(props: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const searchParams = await props.searchParams;
+  const view = normalizeComparisonView(
+    typeof searchParams.view === "string" ? searchParams.view : null
   );
+  const explorerParams = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (typeof value === "string") {
+      explorerParams.set(key, value);
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        explorerParams.append(key, item);
+      }
+    }
+  }
+
+  explorerParams.sort();
+  const entries =
+    view === "pitchers"
+      ? await loadChartingPitcherComparisonDirectory()
+      : await loadChartingHitterComparisonDirectory();
 
   return (
     <LeaderboardPageFrame maxWidth="max-w-7xl">
-      <LiveAbInsightsExplorer entries={entries} />
+      <LiveAbInsightsExplorer
+        key={`${view}:${explorerParams.toString()}`}
+        entries={entries}
+        view={view}
+      />
     </LeaderboardPageFrame>
   );
 }
