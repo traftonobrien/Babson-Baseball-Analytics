@@ -110,6 +110,7 @@ describe("hitterInsights", () => {
       games,
       plateAppearances,
       pitches,
+      pitcherHandBySegmentId: new Map([["seg-1", "R"]]),
     });
 
     expect(data).not.toBeNull();
@@ -125,6 +126,8 @@ describe("hitterInsights", () => {
     expect(singlePitch?.velocityBand).toBe("90_94");
     expect(singlePitch?.outcomeLabel).toBe("Single");
     expect(singlePitch?.terminalHit).toBe(true);
+    expect(singlePitch?.pitcherHand).toBe("R");
+    expect(data?.capabilities.pitcherHand).toBe(true);
 
     const strikeoutPitch = data?.pitches.find((pitch) => pitch.id === "pitch-3");
     expect(strikeoutPitch?.countCategory).toBe("twoStrike");

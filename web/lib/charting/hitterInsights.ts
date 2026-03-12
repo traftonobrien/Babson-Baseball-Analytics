@@ -1,6 +1,7 @@
 import type { ChartingPitch, ChartingPlateAppearance, PitchResult, PitchType } from "./types";
 
 export type BatterHand = "R" | "L" | "S" | null;
+export type PitcherHand = "R" | "L" | null;
 export type HitterInsightMetricId =
   | "avg"
   | "slg"
@@ -45,6 +46,7 @@ export interface HitterInsightPitchRecord {
   gameId: string;
   gameDate: string;
   opponent: string | null;
+  pitcherHand: PitcherHand;
   inning: number;
   lineupSlot: number;
   paId: string;
@@ -418,6 +420,7 @@ export function buildHitterPerformanceInsightsData({
   games,
   plateAppearances,
   pitches,
+  pitcherHandBySegmentId = new Map<string, PitcherHand>(),
 }: {
   hitterId: string | null;
   hitterName: string;
@@ -426,6 +429,7 @@ export function buildHitterPerformanceInsightsData({
   games: HitterInsightGameContext[];
   plateAppearances: ChartingPlateAppearance[];
   pitches: ChartingPitch[];
+  pitcherHandBySegmentId?: Map<string, PitcherHand>;
 }): HitterPerformanceInsightsData | null {
   if (plateAppearances.length === 0 || pitches.length === 0) {
     return null;
@@ -461,6 +465,7 @@ export function buildHitterPerformanceInsightsData({
         gameId: pitch.gameId,
         gameDate: game?.gameDate ?? "",
         opponent: game?.opponent ?? null,
+        pitcherHand: pitcherHandBySegmentId.get(plateAppearance.segmentId) ?? null,
         inning: plateAppearance.inning,
         lineupSlot: plateAppearance.lineupSlot,
         paId: pitch.paId,
@@ -522,7 +527,7 @@ export function buildHitterPerformanceInsightsData({
       ops: summary.ops,
     },
     capabilities: {
-      pitcherHand: false,
+      pitcherHand: derivedPitches.some((pitch) => pitch.pitcherHand !== null),
       qualityOfContact: false,
       expectedMetrics: false,
       exactPitchLocations: false,

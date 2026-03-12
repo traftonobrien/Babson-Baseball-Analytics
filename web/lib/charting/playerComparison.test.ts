@@ -132,6 +132,7 @@ function makeEntry() {
     games,
     plateAppearances,
     pitches,
+    pitcherHandBySegmentId: new Map([["seg-1", "R"]]),
   });
 
   if (!insights) {
@@ -169,6 +170,7 @@ describe("playerComparison", () => {
 
     const filtered = filterChartingPlayerComparisonPitches(entry.pitches, {
       season: "2026",
+      pitcherHand: "R",
       pitchType: "Slider",
       count: "1-2",
       event: "whiffs",
@@ -177,6 +179,34 @@ describe("playerComparison", () => {
     });
 
     expect(filtered.map((pitch) => pitch.id)).toEqual(["pitch-3"]);
+  });
+
+  it("filters comparison pitches by pitcher handedness", () => {
+    const entry = makeEntry();
+
+    expect(
+      filterChartingPlayerComparisonPitches(entry.pitches, {
+        season: null,
+        pitcherHand: "R",
+        pitchType: null,
+        count: null,
+        event: "all",
+        veloMin: null,
+        veloMax: null,
+      }).map((pitch) => pitch.id)
+    ).toEqual(["pitch-1", "pitch-2", "pitch-3", "pitch-4", "pitch-5"]);
+
+    expect(
+      filterChartingPlayerComparisonPitches(entry.pitches, {
+        season: null,
+        pitcherHand: "L",
+        pitchType: null,
+        count: null,
+        event: "all",
+        veloMin: null,
+        veloMax: null,
+      })
+    ).toEqual([]);
   });
 
   it("maps rough zone buckets and reports hidden out-of-schema locations", () => {
