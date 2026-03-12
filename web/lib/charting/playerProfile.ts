@@ -1,6 +1,7 @@
 import { desc, eq, inArray } from "drizzle-orm";
 import { chartingGames, chartingPitcherSegments, chartingPitches } from "@/db/schema";
 import { getCanonicalName, getCanonicalPlayerId } from "@/lib/canonicalPlayers";
+import { playerRegistry } from "@/lib/playerRegistry";
 import {
   computeHitterAggregation,
   computePitcherAggregation,
@@ -11,6 +12,7 @@ import {
   buildHitterPerformanceInsightsData,
   type BatterHand,
   type HitterPerformanceInsightsData,
+  type PitcherHand,
 } from "./hitterInsights";
 import { countPitcherInnings } from "./innings";
 import {
@@ -136,6 +138,23 @@ function buildNameCandidates(displayName: string, slug: string): Set<string> {
 function buildSessionLabel(game: Pick<ChartingProfileGame, "opponent" | "gameDate">): string {
   return `${game.opponent || "Live AB"} • ${game.gameDate}`;
 }
+
+function normalizePitcherHand(value: string | null): PitcherHand {
+  return value === "R" || value === "L" ? value : null;
+}
+
+const PITCHER_HAND_BY_PLAYER_ID = new Map(
+  playerRegistry
+    .map((player) => {
+      const playerId = getCanonicalPlayerId(player.slug);
+      if (!playerId) {
+        return null;
+      }
+
+      return [playerId, normalizePitcherHand(player.throws)] as const;
+    })
+    .filter((entry): entry is readonly [string, PitcherHand] => entry !== null)
+);
 
 function matchesHitterName(
   hitterName: string,
@@ -288,6 +307,12 @@ export function buildChartingPlayerProfile({
             games,
             plateAppearances: matchedHitterPas,
             pitches: hitterPitches,
+            pitcherHandBySegmentId: new Map(
+              segments.map((segment) => [
+                segment.id,
+                PITCHER_HAND_BY_PLAYER_ID.get(segment.playerId) ?? null,
+              ])
+            ),
           }),
         } satisfies LiveAbHitterProfile
       : null;
@@ -310,11 +335,13 @@ export function buildChartingPlayerProfile({
 export function buildChartingHitterInsightsDirectory({
   players,
   games,
+  segments = [],
   plateAppearances,
   pitches,
 }: {
   players: ChartingHitterInsightsDirectorySource[];
   games: ChartingProfileGame[];
+  segments?: ChartingPitcherSegment[];
   plateAppearances: ChartingPlateAppearance[];
   pitches: ChartingPitch[];
 }): ChartingHitterInsightsDirectoryEntry[] {
@@ -324,7 +351,7 @@ export function buildChartingHitterInsightsDirectory({
         playerSlug: player.slug,
         batterHand: player.bats ?? null,
         games,
-        segments: [],
+        segments,
         plateAppearances,
         pitches,
       });
@@ -422,6 +449,18 @@ export async function loadChartingPlayerProfile(
   const relevantPas = allPas.filter(
     (pa) => relevantSegmentIds.has(pa.segmentId) || matchesHitterName(pa.hitterName, playerId, displayName, playerSlug)
   );
+  const relevantSegments =
+    relevantPas.length > 0
+      ? await db
+          .select()
+          .from(chartingPitcherSegments)
+          .where(
+            inArray(
+              chartingPitcherSegments.id,
+              [...new Set(relevantPas.map((plateAppearance) => plateAppearance.segmentId))]
+            )
+          )
+      : [];
   const relevantPaIds = [...new Set(relevantPas.map((pa) => pa.id))];
   const pitches =
     relevantPaIds.length > 0
@@ -438,7 +477,7 @@ export async function loadChartingPlayerProfile(
     playerSlug,
     batterHand: options?.batterHand ?? null,
     games,
-    segments: pitcherSegments,
+    segments: relevantSegments,
     plateAppearances: relevantPas,
     pitches,
   });
@@ -471,6 +510,11 @@ export async function loadChartingHitterInsightsDirectory(
     return [];
   }
 
+  const segments = await db
+    .select()
+    .from(chartingPitcherSegments)
+    .orderBy(desc(chartingPitcherSegments.gameId), desc(chartingPitcherSegments.segmentOrder));
+
   const paIds = [...new Set(plateAppearances.map((plateAppearance) => plateAppearance.id))];
   const pitches =
     paIds.length > 0
@@ -486,6 +530,7 @@ export async function loadChartingHitterInsightsDirectory(
   return buildChartingHitterInsightsDirectory({
     players,
     games,
+    segments,
     plateAppearances,
     pitches,
   });
