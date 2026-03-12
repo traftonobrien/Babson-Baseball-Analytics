@@ -14,6 +14,7 @@ type SortKey =
     | "obp"
     | "slg"
     | "ops"
+    | "woba"
     | "chasePct"
     | "contactPct"
     | "kPct"
@@ -33,6 +34,7 @@ const SORT_KEYS: { key: SortKey; label: string; lowerBetter?: boolean; format?: 
     { key: "obp", label: "OBP", lowerBetter: false, getValue: (row) => row.obp, format: (v) => v !== null ? v.toFixed(3).replace(/^0\./, ".") : "—" },
     { key: "slg", label: "SLG", lowerBetter: false, getValue: (row) => row.slg, format: (v) => v !== null ? v.toFixed(3).replace(/^0\./, ".") : "—" },
     { key: "ops", label: "OPS", lowerBetter: false, getValue: (row) => row.ops, format: (v) => v !== null ? v.toFixed(3).replace(/^0\./, ".") : "—" },
+    { key: "woba", label: "wOBA", lowerBetter: false, getValue: (row) => row.woba, format: (v) => v !== null ? v.toFixed(3).replace(/^0\./, ".") : "—" },
     { key: "chasePct", label: "Chase%", lowerBetter: true, getValue: (row) => row.chasePct, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
     { key: "contactPct", label: "Contact%", lowerBetter: false, getValue: (row) => row.contactPct, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
     { key: "kPct", label: "K%", lowerBetter: true, getValue: (row) => row.kPct, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
@@ -46,7 +48,7 @@ const SORT_KEYS: { key: SortKey; label: string; lowerBetter?: boolean; format?: 
     { key: "iso", label: "ISO", lowerBetter: false, getValue: (row) => row.iso, format: (v) => v !== null ? v.toFixed(3).replace(/^0\./, ".") : "—" },
 ];
 
-const BASIC_KEYS: SortKey[] = ["sessions", "totalPAs", "avg", "obp", "slg", "ops", "chasePct", "contactPct", "kPct", "bbPct"];
+const BASIC_KEYS: SortKey[] = ["sessions", "totalPAs", "avg", "obp", "slg", "ops", "woba", "chasePct", "contactPct", "kPct", "bbPct"];
 const ADVANCED_KEYS: SortKey[] = ["sessions", "totalPAs", "fbWhiff", "brkWhiff", "offWhiff", "zoneSwingPct", "zoneWfPct", "babip", "iso"];
 
 function rankColor(i: number): string {

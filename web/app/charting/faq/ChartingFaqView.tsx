@@ -73,12 +73,20 @@ const HITTER_STATS = [
     definition: "Traditional slash-line stats built from charted plate-appearance outcomes.",
   },
   {
+    stat: "wOBA",
+    definition: "Weighted on-base average using the Live AB outcome weights in this system: BB 0.69, HBP 0.72, 1B 0.89, 2B 1.27, 3B 1.62, HR 2.10.",
+  },
+  {
     stat: "Chase%",
     definition: "Swings at located pitches outside the zone divided by all located pitches outside the zone.",
   },
   {
     stat: "Contact%",
     definition: "Any foul or ball in play divided by all swings.",
+  },
+  {
+    stat: "Whiff%",
+    definition: "Swinging strikes divided by all swings.",
   },
   {
     stat: "K% / BB%",
@@ -106,13 +114,48 @@ const HITTER_STATS = [
   },
 ];
 
+const PLAYER_VISUAL_STATS = [
+  {
+    stat: "AVG / wOBA / Swing% / Whiff%",
+    definition: "These are the four metric-toggle options on the player visuals zone view. AVG and wOBA measure production inside the selected bucket, while Swing% and Whiff% measure decision and miss behavior.",
+  },
+  {
+    stat: "Pitches",
+    definition: "Total charted pitches that remain after the current player, season, pitch type, count, event/result, and pitch-speed filters.",
+  },
+  {
+    stat: "PA / AB / H",
+    definition: "Plate appearances, official at-bats, and hits inside the current filtered player sample.",
+  },
+  {
+    stat: "1B / 2B / 3B / HR",
+    definition: "Hit-type breakdown for terminal outcomes inside the current filtered player sample.",
+  },
+  {
+    stat: "BA",
+    definition: "Batting average on filtered at-bats in the player visuals summary table.",
+  },
+  {
+    stat: "SO / K%",
+    definition: "Strikeout total and strikeout rate based on terminal plate appearances in the filtered player sample.",
+  },
+  {
+    stat: "wOBA",
+    definition: "Weighted on-base average for the filtered player sample or selected zone bucket using the same Live AB weights as the leaderboard.",
+  },
+  {
+    stat: "Pitch Mix Panel",
+    definition: "A separate detail panel that shows pitch-type share for the active filtered sample or zone selection. It is not part of the summary table.",
+  },
+];
+
 export default function ChartingFaqView() {
   return (
     <DictionaryPageShell
       tone="emerald"
       icon={ClipboardList}
       title="Live AB Guide"
-      description="This guide explains the charted pitcher and hitter metrics used on the Live AB leaderboard."
+      description="This guide explains the charted pitcher and hitter metrics used across the Live AB leaderboard and player visuals."
       breadcrumbs={[
         { label: "Home", href: "/" },
         { label: "Metrics Dictionary", href: "/dictionary" },
@@ -123,8 +166,8 @@ export default function ChartingFaqView() {
       <DictionarySection
         tone="emerald"
         icon={BookOpen}
-        title="What This Board Measures"
-        description="The Live AB leaderboard is built from manually charted scrimmage plate appearances, pitch results, and pitch locations."
+        title="What This Guide Covers"
+        description="The Live AB leaderboard and player visuals are built from manually charted scrimmage plate appearances, pitch results, and pitch locations."
       >
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <DictionaryCard>
@@ -187,7 +230,7 @@ export default function ChartingFaqView() {
         tone="emerald"
         icon={BarChart3}
         title="Hitter Leaderboard Metrics"
-        description="The hitter tabs blend outcome stats with swing-decision and contact quality indicators."
+        description="The hitter tabs blend outcome stats with swing-decision and contact indicators."
       >
         <div className="space-y-6">
           <DictionaryTableShell>
@@ -235,6 +278,32 @@ export default function ChartingFaqView() {
             </DictionaryCard>
           </div>
         </div>
+      </DictionarySection>
+
+      <DictionarySection
+        tone="emerald"
+        icon={ClipboardList}
+        title="Player Visuals Metrics"
+        description="These are the filters and stat outputs used on the charting insights player visuals page, including the summary table below the zone view."
+      >
+        <DictionaryTableShell>
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-zinc-800/60 bg-zinc-900/85 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
+              <tr>
+                <th className="w-40 px-6 py-4">Stat</th>
+                <th className="px-6 py-4">Definition</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800/40 text-zinc-400">
+              {PLAYER_VISUAL_STATS.map(({ stat, definition }) => (
+                <tr key={stat} className="transition-smooth hover:bg-zinc-800/20">
+                  <td className="px-6 py-4 font-mono font-medium text-zinc-200">{stat}</td>
+                  <td className="px-6 py-4">{definition}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </DictionaryTableShell>
       </DictionarySection>
     </DictionaryPageShell>
   );
