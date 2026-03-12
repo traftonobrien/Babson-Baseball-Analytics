@@ -184,6 +184,12 @@ describe("computeHitterStats_pure", () => {
     expect(stats?.bbPct).toBeCloseTo(0.0, 1);
   });
 
+  it("computes wOBA from closed plate appearance outcomes", () => {
+    const stats = computeHitterStats_pure(fx.pitchesForSmith, fx.pasForSmith);
+
+    expect(stats?.woba).toBeCloseTo(0.445, 3);
+  });
+
   it("builds a zoneFrequency map with counts per non-null cell", () => {
     const stats = computeHitterStats_pure(fx.pitchesForSmith, fx.pasForSmith);
 

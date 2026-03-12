@@ -3,13 +3,12 @@
 import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 import {
-  startTransition,
   useDeferredValue,
   useEffect,
   useMemo,
   useState,
 } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   ArrowRight,
   BarChart3,
@@ -18,7 +17,6 @@ import {
   Crosshair,
   RotateCcw,
   Search,
-  SlidersHorizontal,
   Sparkles,
 } from "lucide-react";
 import {
@@ -194,6 +192,78 @@ function parseNumberParam(value: string | null): number | null {
   if (!value) return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+type SearchParamReader = {
+  get: (key: string) => string | null;
+};
+
+type ExplorerQueryState = {
+  playerSlug: string | null;
+  season: string | null;
+  pitchType: string | null;
+  count: string | null;
+  event: ChartingPlayerComparisonEventId;
+  veloMin: number | null;
+  veloMax: number | null;
+};
+
+function readExplorerQuery(params: SearchParamReader): ExplorerQueryState {
+  return {
+    playerSlug: params.get("player"),
+    season: params.get("season"),
+    pitchType: params.get("pitchType"),
+    count: params.get("count"),
+    event: normalizeEvent(params.get("event")),
+    veloMin: parseNumberParam(params.get("veloMin")),
+    veloMax: parseNumberParam(params.get("veloMax")),
+  };
+}
+
+function buildExplorerQuery({
+  playerSlug,
+  season,
+  latestSeason,
+  pitchType,
+  count,
+  event,
+  veloMin,
+  veloMax,
+}: {
+  playerSlug: string | null;
+  season: string;
+  latestSeason: string | null;
+  pitchType: string | null;
+  count: string | null;
+  event: ChartingPlayerComparisonEventId;
+  veloMin: number | null;
+  veloMax: number | null;
+}) {
+  const next = new URLSearchParams();
+
+  if (playerSlug) {
+    next.set("player", playerSlug);
+  }
+  if (season !== (latestSeason ?? "all")) {
+    next.set("season", season);
+  }
+  if (pitchType) {
+    next.set("pitchType", pitchType);
+  }
+  if (count) {
+    next.set("count", count);
+  }
+  if (event !== "all") {
+    next.set("event", event);
+  }
+  if (veloMin !== null) {
+    next.set("veloMin", String(veloMin));
+  }
+  if (veloMax !== null) {
+    next.set("veloMax", String(veloMax));
+  }
+
+  return next.toString();
 }
 
 function formatRate(value: number | null): string {
@@ -638,31 +708,6 @@ function MetricToggle({
       </div>
     </div>
   );
-}
-
-function sectionLabelText(bucketId: ChartingPlayerComparisonZoneBucket["id"], label: string) {
-  switch (bucketId) {
-    case "upperLeft":
-      return "UL";
-    case "upperRight":
-      return "UR";
-    case "lowerLeft":
-      return "LL";
-    case "lowerRight":
-      return "LR";
-    case "heart":
-      return "HEART";
-    case "chaseUpperLeft":
-      return "CH UL";
-    case "chaseUpperRight":
-      return "CH UR";
-    case "chaseLowerLeft":
-      return "CH LL";
-    case "chaseLowerRight":
-      return "CH LR";
-    default:
-      return label;
-  }
 }
 
 function ZoneSectionRegion({
@@ -1336,12 +1381,10 @@ function SummaryTable({
   entry,
   seasonLabel,
   summary,
-  pitchMix,
 }: {
   entry: ChartingPlayerComparisonDirectoryEntry;
   seasonLabel: string;
   summary: ReturnType<typeof summarizeChartingPlayerComparisonPitches>;
-  pitchMix: ReturnType<typeof buildChartingPlayerComparisonPitchMix>;
 }) {
   return (
     <LeaderboardPanel className="overflow-hidden">
@@ -1360,14 +1403,13 @@ function SummaryTable({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-[1180px] w-full">
+        <table className="min-w-[1020px] w-full">
           <thead>
             <tr className="border-b border-zinc-800/80 bg-zinc-950/40">
               {[
                 "Player",
                 "Season",
                 "Pitches",
-                "Pitch Mix",
                 "PA",
                 "AB",
                 "H",
@@ -1392,7 +1434,7 @@ function SummaryTable({
           <tbody>
             {summary.totalPitches === 0 ? (
               <tr>
-                <td colSpan={15} className="px-6 py-10 text-center text-sm text-zinc-500">
+                <td colSpan={14} className="px-6 py-10 text-center text-sm text-zinc-500">
                   No pitches match the current player and filter scope.
                 </td>
               </tr>
@@ -1418,36 +1460,6 @@ function SummaryTable({
                 <td className="px-4 py-4 text-sm font-semibold text-zinc-100">{seasonLabel}</td>
                 <td className="px-4 py-4 text-sm text-zinc-200">
                   {formatCount(summary.totalPitches)}
-                </td>
-                <td className="px-4 py-4">
-                  <div className="w-48 space-y-2">
-                    <div className="flex h-2 overflow-hidden rounded-full border border-zinc-800 bg-zinc-950/80">
-                      {pitchMix.map((item) => (
-                        <div
-                          key={item.pitchType}
-                          style={{
-                            width: `${Math.max(item.share, 6)}%`,
-                            backgroundColor: item.color,
-                          }}
-                          className="h-full"
-                        />
-                      ))}
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {pitchMix.map((item) => (
-                        <span
-                          key={item.pitchType}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-950/80 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-300"
-                        >
-                          <span
-                            className="h-2 w-2 rounded-full"
-                            style={{ backgroundColor: item.color }}
-                          />
-                          {item.label}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
                 </td>
                 <td className="px-4 py-4 text-sm text-zinc-200">{summary.plateAppearances}</td>
                 <td className="px-4 py-4 text-sm text-zinc-200">{summary.atBats}</td>
@@ -1554,19 +1566,26 @@ export default function LiveAbInsightsExplorer({
 }: {
   entries: ChartingPlayerComparisonDirectoryEntry[];
 }) {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { slug: pinnedSlug, setSelectedPlayer } = useSelectedPlayer();
+  const initialQuery = useMemo(() => readExplorerQuery(searchParams), [searchParams]);
   const [searchInput, setSearchInput] = useState("");
   const [selectedMetric, setSelectedMetric] =
-    useState<ChartingPlayerComparisonMetricId>("woba");
+    useState<ChartingPlayerComparisonMetricId>("avg");
   const [zoneDisplayMode, setZoneDisplayMode] = useState<ZoneDisplayMode>("heatmap");
   const [selectedBucketId, setSelectedBucketId] =
     useState<ChartingPlayerComparisonZoneBucket["id"] | null>(null);
   const [selectedCellId, setSelectedCellId] = useState<number | null>(null);
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
   const [selectedColId, setSelectedColId] = useState<number | null>(null);
+  const [selectedPlayerSlug, setSelectedPlayerSlug] = useState<string | null>(initialQuery.playerSlug);
+  const [seasonParam, setSeasonParam] = useState<string | null>(initialQuery.season);
+  const [pitchTypeParam, setPitchTypeParam] = useState<string | null>(initialQuery.pitchType);
+  const [countParam, setCountParam] = useState<string | null>(initialQuery.count);
+  const [eventParam, setEventParam] = useState<ChartingPlayerComparisonEventId>(initialQuery.event);
+  const [veloMinParam, setVeloMinParam] = useState<number | null>(initialQuery.veloMin);
+  const [veloMaxParam, setVeloMaxParam] = useState<number | null>(initialQuery.veloMax);
   const deferredSearch = useDeferredValue(searchInput);
 
   const entryBySlug = useMemo(
@@ -1580,8 +1599,9 @@ export default function LiveAbInsightsExplorer({
   );
   const totalSeasons = globalCatalog.seasons.length;
 
-  const selectedPlayerSlug = searchParams.get("player");
-  const selectedEntry = selectedPlayerSlug ? entryBySlug.get(selectedPlayerSlug) ?? null : null;
+  const resolvedPlayerSlug =
+    selectedPlayerSlug && entryBySlug.has(selectedPlayerSlug) ? selectedPlayerSlug : null;
+  const selectedEntry = resolvedPlayerSlug ? entryBySlug.get(resolvedPlayerSlug) ?? null : null;
 
   const catalog = selectedEntry
     ? {
@@ -1592,31 +1612,25 @@ export default function LiveAbInsightsExplorer({
       }
     : globalCatalog;
 
-  const rawSeason = searchParams.get("season");
-  const rawPitchType = searchParams.get("pitchType");
-  const rawCount = searchParams.get("count");
-  const rawEvent = searchParams.get("event");
-  const rawVeloMin = parseNumberParam(searchParams.get("veloMin"));
-  const rawVeloMax = parseNumberParam(searchParams.get("veloMax"));
   const latestSeason = catalog.seasons[0] ?? null;
   const resolvedSeasonUi =
-    rawSeason === "all"
+    seasonParam === "all"
       ? "all"
-      : rawSeason && catalog.seasons.includes(rawSeason)
-        ? rawSeason
+      : seasonParam && catalog.seasons.includes(seasonParam)
+        ? seasonParam
         : latestSeason ?? "all";
   const resolvedPitchType =
-    rawPitchType && catalog.pitchTypes.includes(rawPitchType) ? rawPitchType : null;
-  const resolvedCount = rawCount && catalog.counts.includes(rawCount) ? rawCount : null;
-  const resolvedEvent = normalizeEvent(rawEvent);
+    pitchTypeParam && catalog.pitchTypes.includes(pitchTypeParam) ? pitchTypeParam : null;
+  const resolvedCount = countParam && catalog.counts.includes(countParam) ? countParam : null;
+  const resolvedEvent = eventParam;
 
   const resolvedVeloMin =
-    catalog.velocityRange && rawVeloMin !== null
-      ? Math.max(catalog.velocityRange.min, Math.min(rawVeloMin, catalog.velocityRange.max))
+    catalog.velocityRange && veloMinParam !== null
+      ? Math.max(catalog.velocityRange.min, Math.min(veloMinParam, catalog.velocityRange.max))
       : null;
   const resolvedVeloMax =
-    catalog.velocityRange && rawVeloMax !== null
-      ? Math.max(catalog.velocityRange.min, Math.min(rawVeloMax, catalog.velocityRange.max))
+    catalog.velocityRange && veloMaxParam !== null
+      ? Math.max(catalog.velocityRange.min, Math.min(veloMaxParam, catalog.velocityRange.max))
       : null;
   const constrainedVeloMin =
     resolvedVeloMin !== null &&
@@ -1632,10 +1646,54 @@ export default function LiveAbInsightsExplorer({
       : resolvedVeloMax;
 
   useEffect(() => {
-    if (selectedPlayerSlug) {
-      setSelectedPlayer(selectedPlayerSlug);
+    if (resolvedPlayerSlug) {
+      setSelectedPlayer(resolvedPlayerSlug);
     }
-  }, [selectedPlayerSlug, setSelectedPlayer]);
+  }, [resolvedPlayerSlug, setSelectedPlayer]);
+
+  useEffect(() => {
+    const nextQuery = buildExplorerQuery({
+      playerSlug: resolvedPlayerSlug,
+      season: resolvedSeasonUi,
+      latestSeason,
+      pitchType: resolvedPitchType,
+      count: resolvedCount,
+      event: resolvedEvent,
+      veloMin: constrainedVeloMin,
+      veloMax: constrainedVeloMax,
+    });
+    const nextHref = nextQuery ? `${pathname}?${nextQuery}` : pathname;
+    const currentHref = `${pathname}${window.location.search}`;
+    if (currentHref !== nextHref) {
+      window.history.replaceState(window.history.state, "", nextHref);
+    }
+  }, [
+    constrainedVeloMax,
+    constrainedVeloMin,
+    latestSeason,
+    pathname,
+    resolvedCount,
+    resolvedEvent,
+    resolvedPitchType,
+    resolvedPlayerSlug,
+    resolvedSeasonUi,
+  ]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const next = readExplorerQuery(new URLSearchParams(window.location.search));
+      setSelectedPlayerSlug(next.playerSlug);
+      setSeasonParam(next.season);
+      setPitchTypeParam(next.pitchType);
+      setCountParam(next.count);
+      setEventParam(next.event);
+      setVeloMinParam(next.veloMin);
+      setVeloMaxParam(next.veloMax);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   const filteredEntries = useMemo(() => {
     const query = deferredSearch.trim().toLowerCase();
@@ -1676,10 +1734,6 @@ export default function LiveAbInsightsExplorer({
 
   const filteredSummary = useMemo(
     () => summarizeChartingPlayerComparisonPitches(filteredPitches),
-    [filteredPitches]
-  );
-  const filteredPitchMix = useMemo(
-    () => buildChartingPlayerComparisonPitchMix(filteredPitches),
     [filteredPitches]
   );
   const zoneBuckets = useMemo(
@@ -1788,31 +1842,13 @@ export default function LiveAbInsightsExplorer({
     resolvedSeasonUi,
   ]);
 
-  function updateParams(updates: Record<string, string | null>) {
-    const next = new URLSearchParams(searchParams.toString());
-
-    for (const [key, value] of Object.entries(updates)) {
-      if (value === null) {
-        next.delete(key);
-      } else {
-        next.set(key, value);
-      }
-    }
-
-    const query = next.toString();
-    const href = query ? `${pathname}?${query}` : pathname;
-    startTransition(() => {
-      router.replace(href);
-    });
-  }
-
   function handleSelectPlayer(playerSlug: string) {
     setSearchInput("");
     setSelectedBucketId(null);
     setSelectedCellId(null);
     setSelectedRowId(null);
     setSelectedColId(null);
-    updateParams({ player: playerSlug });
+    setSelectedPlayerSlug(playerSlug);
   }
 
   const resultsVisible = deferredSearch.trim().length > 0 || !selectedEntry;
@@ -1921,7 +1957,7 @@ export default function LiveAbInsightsExplorer({
                     setSelectedCellId(null);
                     setSelectedRowId(null);
                     setSelectedColId(null);
-                    updateParams({ player: null });
+                    setSelectedPlayerSlug(null);
                   }}
                   className="inline-flex items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-300 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
                 >
@@ -1930,16 +1966,14 @@ export default function LiveAbInsightsExplorer({
               ) : null}
               <button
                 type="button"
-                onClick={() =>
-                  updateParams({
-                    season: null,
-                    pitchType: null,
-                    count: null,
-                    event: null,
-                    veloMin: null,
-                    veloMax: null,
-                  })
-                }
+                onClick={() => {
+                  setSeasonParam(null);
+                  setPitchTypeParam(null);
+                  setCountParam(null);
+                  setEventParam("all");
+                  setVeloMinParam(null);
+                  setVeloMaxParam(null);
+                }}
                 className="inline-flex items-center gap-2 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200 transition-smooth hover:border-emerald-400/35 hover:bg-emerald-500/15"
               >
                 <RotateCcw className="h-4 w-4" />
@@ -1959,7 +1993,7 @@ export default function LiveAbInsightsExplorer({
                   <SearchResultCard
                     key={entry.playerSlug}
                     entry={entry}
-                    active={selectedPlayerSlug === entry.playerSlug}
+                    active={resolvedPlayerSlug === entry.playerSlug}
                     onClick={() => handleSelectPlayer(entry.playerSlug)}
                   />
                 ))
@@ -1971,9 +2005,7 @@ export default function LiveAbInsightsExplorer({
             <FilterSelect
               label="Season"
               value={resolvedSeasonUi}
-              onChange={(value) =>
-                updateParams({ season: value === (latestSeason ?? "all") ? null : value })
-              }
+              onChange={(value) => setSeasonParam(value === (latestSeason ?? "all") ? null : value)}
             >
               {latestSeason ? (
                 <option value={latestSeason}>{latestSeason}</option>
@@ -1993,7 +2025,7 @@ export default function LiveAbInsightsExplorer({
             <FilterSelect
               label="Pitch Type"
               value={resolvedPitchType ?? "all"}
-              onChange={(value) => updateParams({ pitchType: value === "all" ? null : value })}
+              onChange={(value) => setPitchTypeParam(value === "all" ? null : value)}
             >
               <option value="all">All pitch types</option>
               {catalog.pitchTypes.map((pitchType) => (
@@ -2006,7 +2038,7 @@ export default function LiveAbInsightsExplorer({
             <FilterSelect
               label="Count"
               value={resolvedCount ?? "all"}
-              onChange={(value) => updateParams({ count: value === "all" ? null : value })}
+              onChange={(value) => setCountParam(value === "all" ? null : value)}
             >
               <option value="all">All counts</option>
               {catalog.counts.map((count) => (
@@ -2019,7 +2051,7 @@ export default function LiveAbInsightsExplorer({
             <FilterSelect
               label="Event / Result"
               value={resolvedEvent}
-              onChange={(value) => updateParams({ event: value === "all" ? null : value })}
+              onChange={(value) => setEventParam(normalizeEvent(value))}
             >
               {CHARTING_PLAYER_COMPARISON_EVENTS.map((event) => (
                 <option key={event.id} value={event.id}>
@@ -2029,7 +2061,7 @@ export default function LiveAbInsightsExplorer({
             </FilterSelect>
           </div>
 
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] xl:items-end">
+          <div className="grid gap-4 xl:grid-cols-2 xl:items-end">
             <VelocityRangeControl
               label="Pitch Speed Min"
               boundary="min"
@@ -2040,9 +2072,7 @@ export default function LiveAbInsightsExplorer({
                 if (!catalog.velocityRange) return;
                 const safeMax = constrainedVeloMax ?? catalog.velocityRange.max;
                 const safeNext = next === null ? null : Math.min(next, safeMax);
-                updateParams({
-                  veloMin: safeNext === null ? null : String(safeNext),
-                });
+                setVeloMinParam(safeNext);
               }}
             />
 
@@ -2056,30 +2086,9 @@ export default function LiveAbInsightsExplorer({
                 if (!catalog.velocityRange) return;
                 const safeMin = constrainedVeloMin ?? catalog.velocityRange.min;
                 const safeNext = next === null ? null : Math.max(next, safeMin);
-                updateParams({
-                  veloMax: safeNext === null ? null : String(safeNext),
-                });
+                setVeloMaxParam(safeNext);
               }}
             />
-
-            <div className="rounded-[1.4rem] border border-zinc-800 bg-zinc-950/70 px-4 py-4">
-              <div className="flex items-center gap-2 text-zinc-200">
-                <SlidersHorizontal className="h-4 w-4 text-emerald-300" />
-                <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                  Active Scope
-                </div>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {activeFilterChips.map((chip) => (
-                  <span
-                    key={`${chip.label}-${chip.value}`}
-                    className="rounded-full border border-zinc-800 bg-zinc-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-300"
-                  >
-                    {chip.label}: {chip.value}
-                  </span>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </LeaderboardToolbar>
@@ -2231,7 +2240,6 @@ export default function LiveAbInsightsExplorer({
             entry={selectedEntry}
             seasonLabel={resolvedSeasonUi}
             summary={filteredSummary}
-            pitchMix={filteredPitchMix}
           />
         </>
       ) : (
@@ -2240,7 +2248,7 @@ export default function LiveAbInsightsExplorer({
           pinnedSlug={pinnedSlug}
           onOpenPinned={
             pinnedSlug && entryBySlug.has(pinnedSlug)
-              ? () => updateParams({ player: pinnedSlug })
+              ? () => setSelectedPlayerSlug(pinnedSlug)
               : null
           }
         />

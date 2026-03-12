@@ -84,6 +84,7 @@ export interface HitterStats {
   obp: number | null;
   slg: number | null;
   ops: number | null;
+  woba: number | null;
   chasePct: number | null;
   contactPct: number | null;
   whiffPct: number | null;
@@ -132,6 +133,25 @@ function isClosedPa(
 
 function isStrikeout(resultCode: string | null): boolean {
   return resultCode === "K" || resultCode === "KL";
+}
+
+function wobaWeightForResult(resultCode: string | null): number {
+  switch (resultCode) {
+    case "BB":
+      return 0.69;
+    case "HBP":
+      return 0.72;
+    case "1B":
+      return 0.89;
+    case "2B":
+      return 1.27;
+    case "3B":
+      return 1.62;
+    case "HR":
+      return 2.1;
+    default:
+      return 0;
+  }
 }
 
 function toDateKey(date: Date): string {
@@ -505,6 +525,12 @@ export function computeHitterStats_pure(
   const slg = atBats > 0 ? totalBases / atBats : null;
   const ops = obp !== null ? obp + (slg ?? 0) : null;
   const iso = slg !== null && avg !== null ? slg - avg : null;
+  const wobaDenominator = atBats + walkCount + hbpCount;
+  const wobaNumerator = closedPas.reduce(
+    (sum, pa) => sum + wobaWeightForResult(pa.resultCode),
+    0
+  );
+  const woba = wobaDenominator > 0 ? wobaNumerator / wobaDenominator : null;
 
   // BABIP Calculation: (H - HR) / (AB - K - HR + SF)
   // Re-deriving in-play at bats. We don't currently track SF distinctively in charting, 
@@ -527,6 +553,7 @@ export function computeHitterStats_pure(
     obp,
     slg,
     ops,
+    woba,
     chasePct: pct(outOfZoneSwings, outOfZoneLocatedPitches.length),
     contactPct: pct(contacts, contacts + whiffs),
     whiffPct: pct(whiffs, swings),
