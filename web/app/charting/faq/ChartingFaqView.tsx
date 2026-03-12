@@ -114,14 +114,18 @@ const HITTER_STATS = [
   },
 ];
 
-const PLAYER_VISUAL_STATS = [
+const HITTER_VISUAL_STATS = [
   {
     stat: "AVG / wOBA / Swing% / Whiff%",
     definition: "These are the four metric-toggle options on the player visuals zone view. AVG and wOBA measure production inside the selected bucket, while Swing% and Whiff% measure decision and miss behavior.",
   },
   {
+    stat: "Pitcher Hand",
+    definition: "Filters the selected hitter sample to pitches seen against right-handed or left-handed pitchers.",
+  },
+  {
     stat: "Pitches",
-    definition: "Total charted pitches that remain after the current player, season, pitch type, count, event/result, and pitch-speed filters.",
+    definition: "Total charted pitches that remain after the current player plus any active pitcher-hand, season, pitch type, count, event/result, and pitch-speed filters.",
   },
   {
     stat: "PA / AB / H",
@@ -142,6 +146,33 @@ const PLAYER_VISUAL_STATS = [
   {
     stat: "wOBA",
     definition: "Weighted on-base average for the filtered player sample or selected zone bucket using the same Live AB weights as the leaderboard.",
+  },
+  {
+    stat: "Pitch Mix Panel",
+    definition: "A separate detail panel that shows pitch-type share for the active filtered sample or zone selection. It is not part of the summary table.",
+  },
+];
+
+const PITCHER_VISUAL_STATS = [
+  {
+    stat: "Strike% / Whiff% / Chase% / BAA",
+    definition: "These are the four metric-toggle options on the pitcher visuals zone view. Strike%, Whiff%, and Chase% measure command and miss behavior, while BAA tracks filtered damage on terminal at-bats.",
+  },
+  {
+    stat: "Pitches / TBF",
+    definition: "Pitches is the current filtered pitch sample. TBF is completed batters faced inside that same filtered pitcher scope.",
+  },
+  {
+    stat: "Zone%",
+    definition: "Shown in the pitcher summary table only. It measures how many located pitches landed inside the 3x3 zone grid.",
+  },
+  {
+    stat: "K% / BB%",
+    definition: "Strikeout and walk rate inside the filtered pitcher sample, using completed plate appearances only.",
+  },
+  {
+    stat: "Called Strikes / Balls / Whiffs / Fouls / Chases / In Play / Hits / Strikeouts / Walk-HBP",
+    definition: "These are the pitcher event/result filters. They swap the zone view, pitch mix panel, and one-line summary table to that exact slice of the charted pitch sample.",
   },
   {
     stat: "Pitch Mix Panel",
@@ -284,26 +315,56 @@ export default function ChartingFaqView() {
         tone="emerald"
         icon={ClipboardList}
         title="Player Visuals Metrics"
-        description="These are the filters and stat outputs used on the charting insights player visuals page, including the summary table below the zone view."
+        description="These are the filters and stat outputs used on the charting insights player visuals page, including the shared zone map, pitch mix panel, and one-line summary table."
       >
-        <DictionaryTableShell>
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-zinc-800/60 bg-zinc-900/85 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
-              <tr>
-                <th className="w-40 px-6 py-4">Stat</th>
-                <th className="px-6 py-4">Definition</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800/40 text-zinc-400">
-              {PLAYER_VISUAL_STATS.map(({ stat, definition }) => (
-                <tr key={stat} className="transition-smooth hover:bg-zinc-800/20">
-                  <td className="px-6 py-4 font-mono font-medium text-zinc-200">{stat}</td>
-                  <td className="px-6 py-4">{definition}</td>
+        <div className="space-y-6">
+          <DictionaryCard>
+            <h3 className="text-lg font-bold text-emerald-300">Shared Layout Rules</h3>
+            <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+              Both views use the same 9 rough buckets on the zone board: four in-zone quadrants,
+              the heart cell, and four chase corners. Pitches charted outside that visible schema
+              stay in filtered totals but are called out as omitted from the grid.
+            </p>
+          </DictionaryCard>
+
+          <DictionaryTableShell>
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-zinc-800/60 bg-zinc-900/85 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
+                <tr>
+                  <th className="w-40 px-6 py-4">Hitter View</th>
+                  <th className="px-6 py-4">Definition</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </DictionaryTableShell>
+              </thead>
+              <tbody className="divide-y divide-zinc-800/40 text-zinc-400">
+                {HITTER_VISUAL_STATS.map(({ stat, definition }) => (
+                  <tr key={stat} className="transition-smooth hover:bg-zinc-800/20">
+                    <td className="px-6 py-4 font-mono font-medium text-zinc-200">{stat}</td>
+                    <td className="px-6 py-4">{definition}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </DictionaryTableShell>
+
+          <DictionaryTableShell>
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-zinc-800/60 bg-zinc-900/85 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
+                <tr>
+                  <th className="w-40 px-6 py-4">Pitcher View</th>
+                  <th className="px-6 py-4">Definition</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-800/40 text-zinc-400">
+                {PITCHER_VISUAL_STATS.map(({ stat, definition }) => (
+                  <tr key={stat} className="transition-smooth hover:bg-zinc-800/20">
+                    <td className="px-6 py-4 font-mono font-medium text-zinc-200">{stat}</td>
+                    <td className="px-6 py-4">{definition}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </DictionaryTableShell>
+        </div>
       </DictionarySection>
     </DictionaryPageShell>
   );
