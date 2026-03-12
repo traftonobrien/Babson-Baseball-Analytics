@@ -62,7 +62,7 @@ const PITCHER_STATS = [
 const HITTER_STATS = [
   {
     stat: "Sessions",
-    definition: "Unique charted Live AB sessions that include that hitter.",
+    definition: "Unique charted Live AB sessions that include that hitter within the current leaderboard scope.",
   },
   {
     stat: "PAs",
@@ -71,6 +71,10 @@ const HITTER_STATS = [
   {
     stat: "AVG / OBP / SLG / OPS",
     definition: "Traditional slash-line stats built from charted plate-appearance outcomes.",
+  },
+  {
+    stat: "OPS+",
+    definition: "MLB-style OPS+ adapted to Live ABs: 100 * (OBP / lgOBP + SLG / lgSLG - 1). The baseline is the all-history Live AB pool and recomputes as new charted data is added. This version does not apply park adjustments.",
   },
   {
     stat: "wOBA",
@@ -83,10 +87,6 @@ const HITTER_STATS = [
   {
     stat: "Contact%",
     definition: "Any foul or ball in play divided by all swings.",
-  },
-  {
-    stat: "Whiff%",
-    definition: "Swinging strikes divided by all swings.",
   },
   {
     stat: "K% / BB%",
@@ -230,7 +230,7 @@ export default function ChartingFaqView() {
         tone="emerald"
         icon={BarChart3}
         title="Hitter Leaderboard Metrics"
-        description="The hitter tabs blend outcome stats with swing-decision and contact indicators."
+        description="The hitter tabs use a basic view for production columns, plus an advanced view for plate-discipline, contact-quality splits, and zone behavior."
       >
         <div className="space-y-6">
           <DictionaryTableShell>

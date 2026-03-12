@@ -8,6 +8,7 @@ import {
     aggregateHitterStats,
     aggregatePitcherStats,
 } from "@/lib/charting/analytics";
+import { loadLiveAbOpsPlusBaseline, withOpsPlus } from "@/lib/charting/opsPlus";
 import { PitcherStatGroupWrapper } from "./PitcherStatGroupWrapper";
 import { type PitcherLeaderboardRow } from "./PitcherLeaderboardTable";
 import { HitterStatGroupWrapper } from "./HitterStatGroupWrapper";
@@ -59,25 +60,31 @@ function getScopedGameCount(
 export default async function ChartingLeaderboardPage(props: {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+    const searchParams = await props.searchParams;
+    const tab = typeof searchParams.tab === "string" ? searchParams.tab : "pitchers";
+    const range = typeof searchParams.range === "string" ? searchParams.range : "all";
+    const session = typeof searchParams.session === "string" ? searchParams.session : "all";
+    const searchQuery = typeof searchParams.q === "string" ? searchParams.q : "";
+    const statGroupParam = searchParams.statGroup;
+    const statGroup: StatGroup =
+        typeof statGroupParam === "string" && statGroupParam === "advanced"
+            ? "advanced"
+            : "basic";
+
+    const validTabs = ["pitchers", "hitters"];
+    if (!validTabs.includes(tab)) {
+        redirect("/charting/leaderboard?tab=pitchers");
+    }
+
+    let pitcherRows: PitcherLeaderboardRow[] = [];
+    let hitterRows: HitterLeaderboardRow[] = [];
+    let games: Array<{ id: string; gameDate: string; opponent: string | null }> = [];
+    let scopeLabel = "All Sessions";
+    let scopeGameCount = 0;
+
     try {
-        const searchParams = await props.searchParams;
-        const tab = typeof searchParams.tab === "string" ? searchParams.tab : "pitchers";
-        const range = typeof searchParams.range === "string" ? searchParams.range : "all";
-        const session = typeof searchParams.session === "string" ? searchParams.session : "all";
-        const searchQuery = typeof searchParams.q === "string" ? searchParams.q : "";
-        const statGroupParam = searchParams.statGroup;
-        const statGroup: StatGroup =
-            typeof statGroupParam === "string" && statGroupParam === "advanced"
-                ? "advanced"
-                : "basic";
-
-        const validTabs = ["pitchers", "hitters"];
-        if (!validTabs.includes(tab)) {
-            redirect("/charting/leaderboard?tab=pitchers");
-        }
-
         // Fetch games for the session dropdown
-        const games = await db
+        games = await db
             .select({
                 id: chartingGames.id,
                 gameDate: chartingGames.gameDate,
@@ -86,22 +93,18 @@ export default async function ChartingLeaderboardPage(props: {
             .from(chartingGames)
             .orderBy(desc(chartingGames.gameDate));
 
-        const scopeLabel = buildScopeLabel(range, session, games);
-        const scopeGameCount = getScopedGameCount(range, session, games);
+        scopeLabel = buildScopeLabel(range, session, games);
+        scopeGameCount = getScopedGameCount(range, session, games);
 
         // Determine aggregate options
-        let options: AggregateOptions = {};
-        if (session !== "all" && session !== "") {
-            options.gameIds = [session];
-        } else if (range === "7d") {
-            options.from = subDays(new Date(), 7);
-        } else if (range === "30d") {
-            options.from = subDays(new Date(), 30);
-        }
-
-        // Pre-fetch unique players
-        let pitcherRows: PitcherLeaderboardRow[] = [];
-        let hitterRows: HitterLeaderboardRow[] = [];
+        const options: AggregateOptions =
+            session !== "all" && session !== ""
+                ? { gameIds: [session] }
+                : range === "7d"
+                    ? { from: subDays(new Date(), 7) }
+                    : range === "30d"
+                        ? { from: subDays(new Date(), 30) }
+                        : {};
 
         if (tab === "pitchers") {
             const segments = await db
@@ -130,6 +133,7 @@ export default async function ChartingLeaderboardPage(props: {
             });
             pitcherRows = (await Promise.all(pitcherPromises)).filter(Boolean) as PitcherLeaderboardRow[];
         } else {
+            const opsPlusBaseline = await loadLiveAbOpsPlusBaseline();
             const pas = await db
                 .select({ hitterName: chartingPlateAppearances.hitterName })
                 .from(chartingPlateAppearances);
@@ -138,45 +142,45 @@ export default async function ChartingLeaderboardPage(props: {
             const hitterPromises = uniqueHitters.map(async (name) => {
                 const stats = await aggregateHitterStats(name, options);
                 if (!stats) return null;
-                return {
+                return withOpsPlus({
                     ...stats,
                     hitterName: name,
-                };
+                }, opsPlusBaseline);
             });
             hitterRows = (await Promise.all(hitterPromises)).filter(Boolean) as HitterLeaderboardRow[];
         }
-
-        return (
-            <LeaderboardPageFrame maxWidth="max-w-7xl">
-                {tab === "pitchers" ? (
-                    <PitcherStatGroupWrapper
-                        pitchers={pitcherRows}
-                        searchQuery={searchQuery}
-                        initialStatGroup={statGroup}
-                        tab={tab}
-                        range={range}
-                        session={session}
-                        games={games}
-                        scopeLabel={scopeLabel}
-                        scopeGameCount={scopeGameCount}
-                    />
-                ) : (
-                    <HitterStatGroupWrapper
-                        hitters={hitterRows}
-                        searchQuery={searchQuery}
-                        initialStatGroup={statGroup}
-                        tab={tab}
-                        range={range}
-                        session={session}
-                        games={games}
-                        scopeLabel={scopeLabel}
-                        scopeGameCount={scopeGameCount}
-                    />
-                )}
-            </LeaderboardPageFrame>
-        );
     } catch (e) {
         console.error("Leaderboard Page Error:", e);
         return null;
     }
+
+    return (
+        <LeaderboardPageFrame maxWidth="max-w-7xl">
+            {tab === "pitchers" ? (
+                <PitcherStatGroupWrapper
+                    pitchers={pitcherRows}
+                    searchQuery={searchQuery}
+                    initialStatGroup={statGroup}
+                    tab={tab}
+                    range={range}
+                    session={session}
+                    games={games}
+                    scopeLabel={scopeLabel}
+                    scopeGameCount={scopeGameCount}
+                />
+            ) : (
+                <HitterStatGroupWrapper
+                    hitters={hitterRows}
+                    searchQuery={searchQuery}
+                    initialStatGroup={statGroup}
+                    tab={tab}
+                    range={range}
+                    session={session}
+                    games={games}
+                    scopeLabel={scopeLabel}
+                    scopeGameCount={scopeGameCount}
+                />
+            )}
+        </LeaderboardPageFrame>
+    );
 }
