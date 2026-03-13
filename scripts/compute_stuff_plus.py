@@ -297,11 +297,13 @@ def apply_pitch_type_merges(rows):
 
 
 def assign_zscore_group(rows):
-    """Splitter pools with ChangeUp."""
+    """Splitter pools with ChangeUp. Cutter pools with Slider for z-score stability."""
     for row in rows:
         pt = row["pitch_type"]
         if pt.lower() == "splitter":
             row["zscore_group"] = "ChangeUp"
+        elif pt.lower() == "cutter":
+            row["zscore_group"] = "Slider"
         else:
             row["zscore_group"] = pt
     return rows
@@ -471,7 +473,8 @@ def add_differentials(rows):
 
 RE_FB = re.compile(r"fastball|sinker|four", re.IGNORECASE)
 RE_CURVE = re.compile(r"curveball", re.IGNORECASE)
-RE_SLIDE = re.compile(r"slider|sweeper|cutter", re.IGNORECASE)
+RE_SLIDE = re.compile(r"slider|sweeper", re.IGNORECASE)
+RE_CUT = re.compile(r"cutter", re.IGNORECASE)
 RE_OS = re.compile(r"changeup|splitter", re.IGNORECASE)
 
 
@@ -481,6 +484,7 @@ def add_pitch_flags(rows):
         row["is_fb"] = 1 if RE_FB.search(pt) else 0
         row["is_curve"] = 1 if RE_CURVE.search(pt) else 0
         row["is_slide"] = 1 if RE_SLIDE.search(pt) else 0
+        row["is_cut"] = 1 if RE_CUT.search(pt) else 0
         row["is_os"] = 1 if RE_OS.search(pt) else 0
     return rows
 
@@ -564,23 +568,32 @@ def compute_stuff_plus(rows):
         )
 
         curve_score = (
-            # Reward depth of break + power velocity within curve group
-            0.25 * row["ivb_abs_z"] +           # absolute drop depth
-            0.20 * row["velo_z"] +              # reward power curves (within curve group)
-            0.15 * (-row["velo_diff_z"]) +      # velo separation still matters, but less dominant
+            # Velocity anchors score — a slow curve cannot dominate purely on break depth
+            0.30 * row["velo_z"] +              # power curve reward (within curve group)
+            0.15 * row["ivb_abs_z"] +           # drop depth (good but not the only thing)
+            0.20 * (-row["velo_diff_z"]) +      # velo separation from FB
             0.15 * row["spin_z"] +              # tight spin
-            0.15 * row["movement_z"] +          # overall break magnitude (sweep + depth)
+            0.10 * row["movement_z"] +          # overall break magnitude
             0.10 * row["movement_diff_z"]       # shape separation from FB
         )
 
         slide_score = (
-            # Reward hard velocity, sweep, and deception vs FB
-            0.30 * row["velo_z"] +              # hard slider/cutter within group
-            0.25 * row["hb_abs_z"] +            # lateral sweep (cutters: less, sweepers: more)
+            # Reward hard velocity and sweep — sliders/sweepers only (no cutters)
+            0.30 * row["velo_z"] +              # hard slider within group
+            0.25 * row["hb_abs_z"] +            # lateral sweep
             0.15 * row["movement_diff_z"] +     # must move differently than FB
             0.15 * row["movement_z"] +          # overall movement magnitude
             0.10 * row["spin_z"] +              # tight spin
-            0.05 * row["max_fb_velo_z"]         # arm strength halo (reduced)
+            0.05 * row["max_fb_velo_z"]         # arm strength halo
+        )
+
+        cut_score = (
+            # Cutter: reward proximity to FB velo (tunnel), lateral cut, tight spin
+            0.30 * row["velo_diff_z"] +         # close to FB velocity = deceptive (higher = closer to 0)
+            0.30 * row["hb_abs_z"] +            # lateral cut movement
+            0.20 * row["spin_z"] +              # tight spin
+            0.15 * row["movement_z"] +          # overall movement
+            0.05 * row["max_fb_velo_z"]         # arm strength halo
         )
 
         os_score = (
@@ -597,6 +610,7 @@ def compute_stuff_plus(rows):
             row["is_fb"] * fb_score +
             row["is_curve"] * curve_score +
             row["is_slide"] * slide_score +
+            row["is_cut"] * cut_score +
             row["is_os"] * os_score
         )
 
