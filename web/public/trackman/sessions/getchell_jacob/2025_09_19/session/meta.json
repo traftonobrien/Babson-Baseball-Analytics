@@ -1,0 +1,17 @@
+{
+  "player_name": "Jacob Getchell",
+  "player_slug": "getchell_jacob",
+  "team": "Babson College Beavers",
+  "handedness": "RHP",
+  "session_date": "2025-09-19",
+  "date_from": "2025-09-05",
+  "date_to": "2026-03-13",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Jacob Getchell 9:19.pdf",
+    "sha256": "713a226ab3296ab1a32059e826e7abe318ad59c29a4e6fb7430375f0bacfe571",
+    "imported_at": "2026-03-13T15:40:49Z"
+  }
+}

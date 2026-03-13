@@ -1,5 +1,31 @@
 [
   {
+    "playerName": "Jacob Getchell",
+    "playerSlug": "getchell_jacob",
+    "team": "Babson College Beavers",
+    "handedness": "RHP",
+    "date": "2025-09-19",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Curveball",
+      "Cutter",
+      "Fastball",
+      "Other"
+    ],
+    "weightedAvgVelo": 77.17,
+    "pitchTypesPath": "/trackman/sessions/getchell_jacob/2025_09_19/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/getchell_jacob/2025_09_19/session/meta.json",
+    "summaryPath": "/trackman/sessions/getchell_jacob/2025_09_19/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Jacob Getchell 9:19.pdf",
+      "sha256": "713a226ab3296ab1a32059e826e7abe318ad59c29a4e6fb7430375f0bacfe571",
+      "imported_at": "2026-03-13T15:40:49Z"
+    },
+    "updatedAt": "2026-03-13T15:40:49Z"
+  },
+  {
     "playerName": "TJ Flack",
     "playerSlug": "flack_tj",
     "team": "Babson College Beavers",
@@ -525,6 +551,32 @@
       "imported_at": "2026-02-15T19:18:06Z"
     },
     "updatedAt": "2026-02-15T19:18:06Z"
+  },
+  {
+    "playerName": "Jacob Getchell",
+    "playerSlug": "getchell_jacob",
+    "team": "Babson College Beavers",
+    "handedness": "RHP",
+    "date": "2026-02-05",
+    "sessionType": "\ue118 GO",
+    "pitchCount": null,
+    "pitchTypes": [
+      "Curveball",
+      "Cutter",
+      "Fastball",
+      "Other"
+    ],
+    "weightedAvgVelo": 76.21,
+    "pitchTypesPath": "/trackman/sessions/getchell_jacob/2026_02_05/go/pitch_types.json",
+    "metaPath": "/trackman/sessions/getchell_jacob/2026_02_05/go/meta.json",
+    "summaryPath": "/trackman/sessions/getchell_jacob/2026_02_05/go/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Jacob Getchell 2:5.pdf",
+      "sha256": "6b2090c7ac14f6da6c487ab2843f5988457e4d49450e78ccaaf94358e91398d5",
+      "imported_at": "2026-03-13T15:40:52Z"
+    },
+    "updatedAt": "2026-03-13T15:40:52Z"
   },
   {
     "playerName": "OKeefe, Quinn",

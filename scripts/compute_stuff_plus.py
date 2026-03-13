@@ -169,51 +169,56 @@ def load_all_rows(sessions_dir):
                 continue
             date_slug = date_dir.name
 
-            session_dir = date_dir / "session"
-            meta_path = session_dir / "meta.json"
-            pt_path = session_dir / "pitch_types.json"
+            # Support both {date}/session/ and {date}/{label}/ subfolder layouts
+            candidate_dirs = [d for d in date_dir.iterdir() if d.is_dir()] if date_dir.is_dir() else []
+            # Prefer "session" if present; otherwise use all subdirs
+            session_subdirs = [d for d in candidate_dirs if d.name == "session"] or candidate_dirs
 
-            if not meta_path.exists() or not pt_path.exists():
-                continue
+            for session_dir in session_subdirs:
+                meta_path = session_dir / "meta.json"
+                pt_path = session_dir / "pitch_types.json"
 
-            # Load meta
-            try:
-                with open(meta_path, encoding="utf-8") as f:
-                    meta = json.load(f)
-            except Exception as e:
-                print(f"[WARN] Failed to parse {meta_path}: {e}")
-                continue
+                if not meta_path.exists() or not pt_path.exists():
+                    continue
 
-            # Load pitch_types
-            try:
-                with open(pt_path, encoding="utf-8") as f:
-                    pitch_types = json.load(f)
-            except Exception as e:
-                print(f"[WARN] Failed to parse {pt_path}: {e}")
-                continue
+                # Load meta
+                try:
+                    with open(meta_path, encoding="utf-8") as f:
+                        meta = json.load(f)
+                except Exception as e:
+                    print(f"[WARN] Failed to parse {meta_path}: {e}")
+                    continue
 
-            player_name = meta.get("player_name", player_slug)
-            throws = extract_throws(meta.get("handedness", ""))
+                # Load pitch_types
+                try:
+                    with open(pt_path, encoding="utf-8") as f:
+                        pitch_types = json.load(f)
+                except Exception as e:
+                    print(f"[WARN] Failed to parse {pt_path}: {e}")
+                    continue
 
-            sessions_found += 1
+                player_name = meta.get("player_name", player_slug)
+                throws = extract_throws(meta.get("handedness", ""))
 
-            for pt in pitch_types:
-                row = {
-                    "player_slug": player_slug,
-                    "player_name": player_name,
-                    "throws": throws,
-                    "date": date_slug,
-                    "pitch_type": pt.get("pitch_type"),
-                    "avg_velo_mph": safe_float(pt.get("avg_velocity_mph")),
-                    "avg_ivb_in": safe_float(pt.get("avg_ivb_in")),
-                    "avg_hb_in": safe_float(pt.get("avg_hb_in")),
-                    "avg_spin_rpm": safe_float(pt.get("avg_spin_rpm")),
-                    "avg_ext_ft": safe_float(pt.get("avg_extension_ft")),
-                    "avg_rel_height_ft": safe_float(pt.get("avg_rel_height_ft")),
-                    "avg_rel_side_ft": safe_float(pt.get("avg_rel_side_ft")),
-                    "is_valid": pt.get("is_valid", True),
-                }
-                rows.append(row)
+                sessions_found += 1
+
+                for pt in pitch_types:
+                    row = {
+                        "player_slug": player_slug,
+                        "player_name": player_name,
+                        "throws": throws,
+                        "date": date_slug,
+                        "pitch_type": pt.get("pitch_type"),
+                        "avg_velo_mph": safe_float(pt.get("avg_velocity_mph")),
+                        "avg_ivb_in": safe_float(pt.get("avg_ivb_in")),
+                        "avg_hb_in": safe_float(pt.get("avg_hb_in")),
+                        "avg_spin_rpm": safe_float(pt.get("avg_spin_rpm")),
+                        "avg_ext_ft": safe_float(pt.get("avg_extension_ft")),
+                        "avg_rel_height_ft": safe_float(pt.get("avg_rel_height_ft")),
+                        "avg_rel_side_ft": safe_float(pt.get("avg_rel_side_ft")),
+                        "is_valid": pt.get("is_valid", True),
+                    }
+                    rows.append(row)
 
     print(f"[INFO] Sessions found: {sessions_found}")
     print(f"[INFO] Total rows (pre-filter): {len(rows)}")
@@ -588,11 +593,11 @@ def compute_stuff_plus(rows):
         )
 
         cut_score = (
-            # Cutter: reward proximity to FB velo (tunnel), lateral cut, tight spin
-            0.30 * row["velo_diff_z"] +         # close to FB velocity = deceptive (higher = closer to 0)
-            0.30 * row["hb_abs_z"] +            # lateral cut movement
-            0.20 * row["spin_z"] +              # tight spin
-            0.15 * row["movement_z"] +          # overall movement
+            # Cutter: hard globally + actual lateral cut; velo proximity alone doesn't make a good cutter
+            0.25 * row["global_velo_z"] +       # absolute hardness (global scale — not vs FB)
+            0.35 * row["hb_abs_z"] +            # lateral cut (within slide group for stability)
+            0.20 * row["spin_z"] +              # tight spin (within slide group)
+            0.15 * row["movement_z"] +          # overall movement (within slide group)
             0.05 * row["max_fb_velo_z"]         # arm strength halo
         )
 
