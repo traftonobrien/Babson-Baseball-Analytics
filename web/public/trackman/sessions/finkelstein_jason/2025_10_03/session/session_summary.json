@@ -1,0 +1,71 @@
+{
+  "total_pitches": null,
+  "pitch_types": [
+    "Fastball",
+    "Other",
+    "Slider"
+  ],
+  "pitch_mix_pct": null,
+  "weighted_avg_velocity_mph": 83.49,
+  "max_velocity_mph": 89.96,
+  "weighted_avg_spin_rpm": 2241.66,
+  "max_spin_rpm": 2539.87,
+  "weighted_avg_ivb_in": 6.15,
+  "weighted_avg_hb_in": 0.89,
+  "weighted_avg_extension_ft": 5.33,
+  "weighted_avg_rel_height_ft": 5.02,
+  "weighted_avg_rel_side_ft": 2.27,
+  "weighted_avg_spin_axis_2d": 157.0,
+  "weighted_avg_spin_axis_3d": null,
+  "weighted_avg_gyro": null,
+  "per_type": [
+    {
+      "pitch_type": "Fastball",
+      "count": null,
+      "avg_velocity_mph": 89.96,
+      "avg_spin_rpm": 2303.83,
+      "avg_ivb_in": 12.55,
+      "avg_hb_in": 16.61,
+      "avg_extension_ft": 5.73,
+      "avg_rel_height_ft": 4.82,
+      "avg_rel_side_ft": 3.1,
+      "avg_spin_axis_2d": 233.0,
+      "avg_spin_axis_3d": null,
+      "avg_gyro": null,
+      "max_velocity_mph": 89.96,
+      "max_spin_rpm": 2303.83
+    },
+    {
+      "pitch_type": "Slider",
+      "count": null,
+      "avg_velocity_mph": 83.78,
+      "avg_spin_rpm": 2539.87,
+      "avg_ivb_in": 0.7,
+      "avg_hb_in": -8.75,
+      "avg_extension_ft": 5.31,
+      "avg_rel_height_ft": 5.08,
+      "avg_rel_side_ft": 2.88,
+      "avg_spin_axis_2d": 104.0,
+      "avg_spin_axis_3d": null,
+      "avg_gyro": null,
+      "max_velocity_mph": 83.78,
+      "max_spin_rpm": 2539.87
+    },
+    {
+      "pitch_type": "Other",
+      "count": null,
+      "avg_velocity_mph": 76.74,
+      "avg_spin_rpm": 1881.28,
+      "avg_ivb_in": 5.2,
+      "avg_hb_in": -5.2,
+      "avg_extension_ft": 4.94,
+      "avg_rel_height_ft": 5.16,
+      "avg_rel_side_ft": 0.82,
+      "avg_spin_axis_2d": 134.0,
+      "avg_spin_axis_3d": null,
+      "avg_gyro": null,
+      "max_velocity_mph": 76.74,
+      "max_spin_rpm": 1881.28
+    }
+  ]
+}

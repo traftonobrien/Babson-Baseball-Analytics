@@ -1,5 +1,81 @@
 [
   {
+    "playerName": "TJ Flack",
+    "playerSlug": "flack_tj",
+    "team": "Babson College Beavers",
+    "handedness": "RHP",
+    "date": "2025-09-20",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 78.72,
+    "pitchTypesPath": "/trackman/sessions/flack_tj/2025_09_20/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/flack_tj/2025_09_20/session/meta.json",
+    "summaryPath": "/trackman/sessions/flack_tj/2025_09_20/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "TJ Flack 9:20.pdf",
+      "sha256": "4cc9f24b2f6c3dcb08ba90b23c8437c02aa4850b77c35a721c87c6fe2f577933",
+      "imported_at": "2026-03-13T15:31:43Z"
+    },
+    "updatedAt": "2026-03-13T15:31:43Z"
+  },
+  {
+    "playerName": "Jason Finkelstein",
+    "playerSlug": "finkelstein_jason",
+    "team": "Babson College Beavers",
+    "handedness": "RHP",
+    "date": "2025-10-03",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Fastball",
+      "Other",
+      "Slider"
+    ],
+    "weightedAvgVelo": 83.49,
+    "pitchTypesPath": "/trackman/sessions/finkelstein_jason/2025_10_03/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/finkelstein_jason/2025_10_03/session/meta.json",
+    "summaryPath": "/trackman/sessions/finkelstein_jason/2025_10_03/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Jason Finkelstein 10:03.pdf",
+      "sha256": "8bfa45a10f4bc9d45ce2aefba0e77d55f698caa6cd6f2ecaa3bca500074f9281",
+      "imported_at": "2026-03-13T15:31:46Z"
+    },
+    "updatedAt": "2026-03-13T15:31:46Z"
+  },
+  {
+    "playerName": "Jacob Getchell",
+    "playerSlug": "getchell_jacob",
+    "team": "Babson College Beavers",
+    "handedness": "RHP",
+    "date": "2025-10-03",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Curveball",
+      "Cutter",
+      "Fastball",
+      "Other"
+    ],
+    "weightedAvgVelo": 74.96,
+    "pitchTypesPath": "/trackman/sessions/getchell_jacob/2025_10_03/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/getchell_jacob/2025_10_03/session/meta.json",
+    "summaryPath": "/trackman/sessions/getchell_jacob/2025_10_03/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Jacob Getchell 10:3.pdf",
+      "sha256": "943a14afadace99c21ced40c3d36a629e82181824035b27c750799914b91d645",
+      "imported_at": "2026-03-13T15:31:38Z"
+    },
+    "updatedAt": "2026-03-13T15:31:38Z"
+  },
+  {
     "playerName": "Burk, Bobby",
     "playerSlug": "burk_bobby",
     "team": "Babson College",
