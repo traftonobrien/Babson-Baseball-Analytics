@@ -62,6 +62,7 @@ export interface AggregateOptions {
   from?: Date;
   to?: Date;
   gameIds?: string[];
+  sessionType?: "live_ab" | "game";
 }
 
 export interface AggregatedPitcherStats extends SegmentStats {
@@ -179,7 +180,7 @@ function intersectGameIds(
 async function resolveFilteredGameIds(
   options?: AggregateOptions
 ): Promise<string[] | null> {
-  if (!options?.from && !options?.to && !options?.gameIds) {
+  if (!options?.from && !options?.to && !options?.gameIds && !options?.sessionType) {
     return null;
   }
 
@@ -214,6 +215,15 @@ async function resolveFilteredGameIds(
       filteredGameIds,
       games.map((game) => game.id)
     );
+  }
+
+  if (options?.sessionType) {
+    const db = await getDb();
+    const typeGames = await db
+      .select({ id: chartingGames.id })
+      .from(chartingGames)
+      .where(eq(chartingGames.sessionType, options.sessionType));
+    filteredGameIds = intersectGameIds(filteredGameIds, typeGames.map((g) => g.id));
   }
 
   return filteredGameIds;

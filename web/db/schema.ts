@@ -1,4 +1,11 @@
-import { pgTable, text, real, integer, boolean, primaryKey } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  integer,
+  pgTable,
+  primaryKey,
+  real,
+  text,
+} from "drizzle-orm/pg-core";
 
 /**
  * Aggregated season averages per pitch (from stuff_plus_pitcher_arsenal.csv)
@@ -17,7 +24,7 @@ export const stuffPlusArsenal = pgTable(
     avgExtFt: real("avg_ext_ft"),
     nSessions: integer("n_sessions"),
   },
-  (t) => [primaryKey({ columns: [t.playerId, t.pitchType] })]
+  (t) => [primaryKey({ columns: [t.playerId, t.pitchType] })],
 );
 
 /**
@@ -39,26 +46,42 @@ export const stuffPlusOutings = pgTable(
     avgSpinRpm: real("avg_spin_rpm"),
     avgExtFt: real("avg_ext_ft"),
   },
-  (t) => [primaryKey({ columns: [t.sessionKey, t.pitchType] })]
+  (t) => [primaryKey({ columns: [t.sessionKey, t.pitchType] })],
 );
 
 // ---------------------------------------------------------------------------
-// Charting domain tables (Phase 1)
+// Charting domain tables
 // ---------------------------------------------------------------------------
 
 /**
- * One record per charted game. The `revision` column is used for optimistic
- * locking: PATCH requests must supply the current revision, which is
- * incremented on every successful update.
+ * One record per charted session/game.
+ *
+ * `sessionType`
+ * - live_ab: internal live A/B workflow
+ * - game: game workflow
+ *
+ * `babsonVenueSide`
+ * - home | away
  */
 export const chartingGames = pgTable("charting_games", {
   id: text("id").primaryKey(),
+  sessionType: text("session_type").notNull().default("live_ab"),
   opponent: text("opponent").notNull(),
   /** ISO date yyyy-mm-dd */
   gameDate: text("game_date").notNull(),
   /** draft | active | final */
   status: text("status").notNull().default("draft"),
+  babsonVenueSide: text("babson_side").notNull().default("home"),
   revision: integer("revision").notNull().default(1),
+
+  /** Free-text starters for game-mode setup */
+  babsonStartingPitcher: text("babson_starting_pitcher"),
+  opponentStartingPitcher: text("opponent_starting_pitcher"),
+
+  /** Optional labels for the two sides in game mode */
+  ourTeamLabel: text("our_team_label"),
+  opponentTeamLabel: text("opponent_team_label"),
+
   charter: text("charter"),
   weather: text("weather"),
   homeCatcher: text("home_catcher"),
@@ -73,15 +96,17 @@ export const chartingGames = pgTable("charting_games", {
 });
 
 /**
- * One row per Babson pitcher stint within a game. A game with two pitchers
- * has two rows with segmentOrder 0 and 1. Segments are the unit of per-pitcher
- * summary stats and export rows.
+ * One row per pitcher stint within a charted session.
+ *
+ * `teamSide`
+ * - our | opponent
  */
 export const chartingPitcherSegments = pgTable("charting_pitcher_segments", {
   id: text("id").primaryKey(),
   gameId: text("game_id").notNull(),
-  /** Canonical Babson player id, e.g. "DJames1" */
-  playerId: text("player_id").notNull(),
+  teamSide: text("team_side").notNull().default("our"),
+  /** Canonical player id when available; may be null for opponent pitchers */
+  playerId: text("player_id"),
   displayName: text("display_name").notNull(),
   /** 0-indexed order of appearance within the game */
   segmentOrder: integer("segment_order").notNull(),
@@ -95,6 +120,9 @@ export const chartingPitcherSegments = pgTable("charting_pitcher_segments", {
 /**
  * One row per plate appearance. Linked to the active pitcher segment at the
  * time the PA started. resultCode is null while the PA is in progress.
+ *
+ * `teamSide`
+ * - our | opponent
  */
 export const chartingPlateAppearances = pgTable("charting_plate_appearances", {
   id: text("id").primaryKey(),
@@ -102,6 +130,7 @@ export const chartingPlateAppearances = pgTable("charting_plate_appearances", {
   segmentId: text("segment_id").notNull(),
   paOrder: integer("pa_order").notNull(),
   inning: integer("inning").notNull(),
+  teamSide: text("team_side").notNull().default("opponent"),
   hitterName: text("hitter_name").notNull(),
   /** 1-9 lineup slot */
   lineupSlot: integer("lineup_slot").notNull(),
@@ -113,12 +142,17 @@ export const chartingPlateAppearances = pgTable("charting_plate_appearances", {
 });
 
 /**
- * Pre-game opponent batting lineup. One row per slot (1-9) per game.
- * The lineup is entered before first pitch and can be edited until charting starts.
+ * Pre-session lineup entries.
+ *
+ * `teamSide`
+ * - our | opponent
+ *
+ * One row per slot (1-9) per side per game.
  */
 export const chartingLineupEntries = pgTable("charting_lineup_entries", {
   id: text("id").primaryKey(),
   gameId: text("game_id").notNull(),
+  teamSide: text("team_side").notNull().default("opponent"),
   /** 1-9 */
   lineupSlot: integer("lineup_slot").notNull(),
   hitterName: text("hitter_name").notNull(),

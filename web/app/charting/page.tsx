@@ -26,9 +26,17 @@ import { EditableChartingGameNameInList } from "@/app/charting/_components/Edita
 export const revalidate = 0;
 
 type HubStatusFilter = "all" | "active" | "final" | "draft";
+type HubTypeFilter = "all" | "live_ab" | "game";
 
 function normalizeStatusFilter(value: string | string[] | undefined): HubStatusFilter {
     if (value === "active" || value === "final" || value === "draft") {
+        return value;
+    }
+    return "all";
+}
+
+function normalizeTypeFilter(value: string | string[] | undefined): HubTypeFilter {
+    if (value === "live_ab" || value === "game") {
         return value;
     }
     return "all";
@@ -39,6 +47,7 @@ function matchesQuery(
         opponent: string | null;
         gameDate: string;
         status: string;
+        sessionType: string | null;
     },
     query: string
 ): boolean {
@@ -52,6 +61,7 @@ function matchesQuery(
         game.gameDate,
         format(parseISO(game.gameDate), "MMMM d yyyy"),
         game.status,
+        game.sessionType === "game" ? "game" : "live ab",
     ]
         .join(" ")
         .toLowerCase();
@@ -69,12 +79,20 @@ function StatusBadge({ status }: { status: string }) {
     return <LeaderboardPill tone="orange">Draft</LeaderboardPill>;
 }
 
+function TypeBadge({ sessionType }: { sessionType: string | null }) {
+    if (sessionType === "game") {
+        return <LeaderboardPill tone="blue">Game</LeaderboardPill>;
+    }
+    return <LeaderboardPill tone="neutral">Live AB</LeaderboardPill>;
+}
+
 export default async function ChartingHubPage(props: {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
     const searchParams = await props.searchParams;
     const searchQuery = typeof searchParams.q === "string" ? searchParams.q : "";
     const statusFilter = normalizeStatusFilter(searchParams.status);
+    const typeFilter = normalizeTypeFilter(searchParams.type);
 
     const games = await db
         .select()
@@ -88,10 +106,11 @@ export default async function ChartingHubPage(props: {
 
     const filteredGames = games.filter((game) => {
         const matchesStatus = statusFilter === "all" ? true : game.status === statusFilter;
-        return matchesStatus && matchesQuery(game, searchQuery);
+        const matchesType = typeFilter === "all" ? true : game.sessionType === typeFilter;
+        return matchesStatus && matchesType && matchesQuery(game, searchQuery);
     });
 
-    const hasFilters = statusFilter !== "all" || searchQuery.trim().length > 0;
+    const hasFilters = statusFilter !== "all" || typeFilter !== "all" || searchQuery.trim().length > 0;
 
     return (
         <LeaderboardPageFrame maxWidth="max-w-6xl">
@@ -214,7 +233,7 @@ export default async function ChartingHubPage(props: {
             </div>
 
             <LeaderboardToolbar className="mt-6">
-                <form action="/charting" className="grid gap-4 xl:grid-cols-[minmax(12rem,14rem)_minmax(0,1fr)_auto] xl:items-end">
+                <form action="/charting" className="grid gap-4 xl:grid-cols-[minmax(12rem,14rem)_minmax(10rem,12rem)_minmax(0,1fr)_auto] xl:items-end">
                     <div className="space-y-2">
                         <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
                             Status
@@ -229,6 +248,23 @@ export default async function ChartingHubPage(props: {
                                 <option value="active">Active</option>
                                 <option value="final">Final</option>
                                 <option value="draft">Draft</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+                            Type
+                        </div>
+                        <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
+                            <select
+                                name="type"
+                                defaultValue={typeFilter}
+                                className="w-full rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2.5 text-sm font-semibold text-zinc-100 outline-none"
+                            >
+                                <option value="all">All types</option>
+                                <option value="live_ab">Live AB</option>
+                                <option value="game">Game</option>
                             </select>
                         </div>
                     </div>
@@ -325,6 +361,7 @@ export default async function ChartingHubPage(props: {
                                     <div className="relative z-20 min-w-0 flex-1 pr-4">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <StatusBadge status={game.status} />
+                                            <TypeBadge sessionType={game.sessionType} />
                                             <LeaderboardPill tone="neutral">
                                                 Rev {game.revision}
                                             </LeaderboardPill>

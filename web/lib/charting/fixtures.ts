@@ -4,6 +4,7 @@ import type {
   ChartingPitcherSegment,
   ChartingPlateAppearance,
   ChartingPitch,
+  ChartingLineupEntry,
 } from "./types";
 
 const GAME_ID = "fixture-game-001";
@@ -18,6 +19,8 @@ const game: ChartingGame = {
   opponent: "MIT",
   gameDate: "2026-03-01",
   status: "active",
+  sessionType: "game",
+  babsonVenueSide: "home",
   revision: 1,
   charter: "Coach T",
   weather: "Clear, 48F",
@@ -28,9 +31,37 @@ const game: ChartingGame = {
   tomorrowStarter: "CBurrows1",
   tomorrowOpponent: "WPI",
   notes: null,
+  babsonStartingPitcher: "D. James",
+  opponentStartingPitcher: "Smith",
+  ourTeamLabel: "Babson",
+  opponentTeamLabel: "MIT",
   createdAt: "2026-03-01T12:00:00.000Z",
   updatedAt: "2026-03-01T14:30:00.000Z",
 };
+
+const lineup: ChartingLineupEntry[] = [
+  {
+    id: "fixture-lineup-1",
+    gameId: GAME_ID,
+    teamSide: "opponent",
+    lineupSlot: 1,
+    hitterName: "Smith",
+  },
+  {
+    id: "fixture-lineup-2",
+    gameId: GAME_ID,
+    teamSide: "opponent",
+    lineupSlot: 2,
+    hitterName: "Jones",
+  },
+  {
+    id: "fixture-lineup-3",
+    gameId: GAME_ID,
+    teamSide: "opponent",
+    lineupSlot: 3,
+    hitterName: "Williams",
+  },
+];
 
 const segments: ChartingPitcherSegment[] = [
   {
@@ -38,6 +69,7 @@ const segments: ChartingPitcherSegment[] = [
     gameId: GAME_ID,
     playerId: "DJames1",
     displayName: "D. James",
+    teamSide: "our",
     segmentOrder: 0,
     enteredInning: 1,
     exitedInning: 5,
@@ -49,6 +81,7 @@ const segments: ChartingPitcherSegment[] = [
     gameId: GAME_ID,
     playerId: "CBurrows1",
     displayName: "C. Burrows",
+    teamSide: "our",
     segmentOrder: 1,
     enteredInning: 6,
     exitedInning: null,
@@ -66,7 +99,9 @@ const plateAppearances: ChartingPlateAppearance[] = [
     inning: 1,
     hitterName: "Smith",
     lineupSlot: 1,
+    teamSide: "opponent",
     resultCode: "K",
+    initialCount: "0-0",
     buntContext: false,
   },
   {
@@ -77,7 +112,9 @@ const plateAppearances: ChartingPlateAppearance[] = [
     inning: 1,
     hitterName: "Jones",
     lineupSlot: 2,
+    teamSide: "opponent",
     resultCode: "BB",
+    initialCount: "0-0",
     buntContext: false,
   },
   {
@@ -88,13 +125,14 @@ const plateAppearances: ChartingPlateAppearance[] = [
     inning: 6,
     hitterName: "Williams",
     lineupSlot: 3,
+    teamSide: "opponent",
     resultCode: null,
+    initialCount: "0-0",
     buntContext: false,
   },
 ];
 
 const pitches: ChartingPitch[] = [
-  // PA 1: strikeout in 3 pitches
   {
     id: "fixture-pitch-1",
     gameId: GAME_ID,
@@ -131,7 +169,6 @@ const pitches: ChartingPitch[] = [
     strikesBefore: 1,
     velocity: null,
   },
-  // PA 2: walk in 4 pitches
   {
     id: "fixture-pitch-4",
     gameId: GAME_ID,
@@ -180,7 +217,6 @@ const pitches: ChartingPitch[] = [
     strikesBefore: 0,
     velocity: null,
   },
-  // PA 3: in progress, no result yet
   {
     id: "fixture-pitch-8",
     gameId: GAME_ID,
@@ -198,7 +234,7 @@ const pitches: ChartingPitch[] = [
 export const fixtureGameSnapshot: ChartingGameSnapshot = {
   game,
   segments,
-  lineup: [],
+  lineup,
   plateAppearances,
   pitches,
 };

@@ -70,6 +70,9 @@ export default async function ChartingLeaderboardPage(props: {
             typeof statGroupParam === "string" && statGroupParam === "advanced"
                 ? "advanced"
                 : "basic";
+        const sessionTypeParam = typeof searchParams.sessionType === "string" ? searchParams.sessionType : "live_ab";
+        const sessionTypeFilter: "live_ab" | "game" | "all" =
+            sessionTypeParam === "game" ? "game" : sessionTypeParam === "all" ? "all" : "live_ab";
 
         const validTabs = ["pitchers", "hitters"];
         if (!validTabs.includes(tab)) {
@@ -77,14 +80,19 @@ export default async function ChartingLeaderboardPage(props: {
         }
 
         // Fetch games for the session dropdown
-        const games = await db
+        const allGames = await db
             .select({
                 id: chartingGames.id,
                 gameDate: chartingGames.gameDate,
                 opponent: chartingGames.opponent,
+                sessionType: chartingGames.sessionType,
             })
             .from(chartingGames)
             .orderBy(desc(chartingGames.gameDate));
+
+        const games = sessionTypeFilter === "all"
+            ? allGames
+            : allGames.filter((g) => g.sessionType === sessionTypeFilter);
 
         const scopeLabel = buildScopeLabel(range, session, games);
         const scopeGameCount = getScopedGameCount(range, session, games);
@@ -97,6 +105,9 @@ export default async function ChartingLeaderboardPage(props: {
             options.from = subDays(new Date(), 7);
         } else if (range === "30d") {
             options.from = subDays(new Date(), 30);
+        }
+        if (sessionTypeFilter !== "all") {
+            options.sessionType = sessionTypeFilter;
         }
 
         // Pre-fetch unique players
@@ -159,6 +170,7 @@ export default async function ChartingLeaderboardPage(props: {
                         games={games}
                         scopeLabel={scopeLabel}
                         scopeGameCount={scopeGameCount}
+                        sessionType={sessionTypeFilter}
                     />
                 ) : (
                     <HitterStatGroupWrapper
@@ -171,6 +183,7 @@ export default async function ChartingLeaderboardPage(props: {
                         games={games}
                         scopeLabel={scopeLabel}
                         scopeGameCount={scopeGameCount}
+                        sessionType={sessionTypeFilter}
                     />
                 )}
             </LeaderboardPageFrame>

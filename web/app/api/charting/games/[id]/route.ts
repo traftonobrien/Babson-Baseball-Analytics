@@ -127,6 +127,11 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
         "tomorrowStarter",
         "tomorrowOpponent",
         "notes",
+        "babsonVenueSide",
+        "babsonStartingPitcher",
+        "opponentStartingPitcher",
+        "ourTeamLabel",
+        "opponentTeamLabel",
       ] as const;
       for (const key of gameFields) {
         if (key in gamePayload) gamePatch[key] = gamePayload[key];
@@ -175,6 +180,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
             gameId: id,
             playerId: s.playerId,
             displayName: s.displayName,
+            teamSide: s.teamSide ?? "our",
             segmentOrder: s.segmentOrder,
             enteredInning: s.enteredInning ?? null,
             exitedInning: s.exitedInning ?? null,
@@ -193,6 +199,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
           lineupPayload.map((e) => ({
             id: e.id,
             gameId: id,
+            teamSide: e.teamSide ?? "opponent",
             lineupSlot: e.lineupSlot,
             hitterName: e.hitterName,
           }))
@@ -210,6 +217,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
           segmentId: pa.segmentId,
           paOrder: pa.paOrder,
           inning: pa.inning,
+          teamSide: pa.teamSide ?? "opponent",
           hitterName: pa.hitterName,
           lineupSlot: pa.lineupSlot,
           resultCode: pa.resultCode ?? null,
@@ -330,6 +338,11 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
       "tomorrowStarter",
       "tomorrowOpponent",
       "notes",
+      "babsonVenueSide",
+      "babsonStartingPitcher",
+      "opponentStartingPitcher",
+      "ourTeamLabel",
+      "opponentTeamLabel",
     ] as const;
     for (const key of allowed) {
       if (key in body) patch[key] = body[key];

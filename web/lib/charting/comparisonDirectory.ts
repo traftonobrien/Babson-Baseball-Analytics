@@ -16,11 +16,23 @@ import {
   legacyChartingPlateAppearances,
   mapLegacyPlateAppearanceRow,
 } from "./plateAppearanceStorage";
-import type { ChartingPitch } from "./types";
+import type { ChartingMatchupSide, ChartingPitch, ChartingPitcherSegment } from "./types";
 
 async function getDb() {
   const { db } = await import("@/db");
   return db;
+}
+
+function normalizeMatchupSide(value: string | null | undefined): ChartingMatchupSide {
+  return value === "our" ? "our" : "opponent";
+}
+
+function mapSegmentRows(rows: typeof chartingPitcherSegments.$inferSelect[]): ChartingPitcherSegment[] {
+  return rows.map((row) => ({
+    ...row,
+    playerId: row.playerId ?? null,
+    teamSide: normalizeMatchupSide(row.teamSide),
+  }));
 }
 
 function mapPitchRows(rows: typeof chartingPitches.$inferSelect[]): ChartingPitch[] {
@@ -66,10 +78,12 @@ export async function loadChartingPitcherComparisonDirectory(): Promise<
     .from(chartingGames)
     .orderBy(desc(chartingGames.gameDate));
 
-  const segments = await db
-    .select()
-    .from(chartingPitcherSegments)
-    .orderBy(desc(chartingPitcherSegments.gameId), desc(chartingPitcherSegments.segmentOrder));
+  const segments = mapSegmentRows(
+    await db
+      .select()
+      .from(chartingPitcherSegments)
+      .orderBy(desc(chartingPitcherSegments.gameId), desc(chartingPitcherSegments.segmentOrder))
+  );
 
   if (segments.length === 0) {
     return [];

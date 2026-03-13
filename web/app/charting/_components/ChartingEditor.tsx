@@ -535,7 +535,7 @@ export function ChartingEditor({
         locationCell: selectedPitchResult === "hit_by_pitch" ? null : selectedLocation,
         velocity: parseVelocity(pendingVelocity),
         pitcher: {
-          playerId: selectedPitcher.playerId,
+          playerId: selectedPitcher.playerId ?? "",
           name: selectedPitcher.name,
         },
         hitterName: hitterName.trim(),
@@ -695,6 +695,11 @@ export function ChartingEditor({
                 {snapshot.game.opponent}
               </h1>
               <StatusBadge status={snapshot.game.status} />
+              {snapshot.game.sessionType === "game" && (
+                <span className="inline-flex items-center rounded-full border border-sky-500/25 bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-sky-300">
+                  Game
+                </span>
+              )}
               {gameStateOverride && (
                 <span className="inline-flex items-center gap-1.5 flex-none rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-500">
                   <WandSparkles className="h-3 w-3" />
@@ -840,22 +845,26 @@ export function ChartingEditor({
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2">
-                      <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500 shrink-0">Start State</span>
-                      <div className="inline-flex flex-wrap items-center gap-1 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
-                        {COUNT_PRESET_OPTIONS.map((option) => (
-                          <button
-                            key={option.value}
-                            type="button"
-                            disabled={!canEditCountPreset}
-                            onClick={() => setCountPreset(option.value)}
-                            className={countPresetButtonClass(option.value === activeCountPreset, !canEditCountPreset)}
-                            aria-pressed={option.value === activeCountPreset}
-                            title={option.detail}
-                          >
-                            {option.label}
-                          </button>
-                        ))}
-                      </div>
+                      {snapshot.game.sessionType !== "game" && (
+                        <>
+                          <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500 shrink-0">Start State</span>
+                          <div className="inline-flex flex-wrap items-center gap-1 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
+                            {COUNT_PRESET_OPTIONS.map((option) => (
+                              <button
+                                key={option.value}
+                                type="button"
+                                disabled={!canEditCountPreset}
+                                onClick={() => setCountPreset(option.value)}
+                                className={countPresetButtonClass(option.value === activeCountPreset, !canEditCountPreset)}
+                                aria-pressed={option.value === activeCountPreset}
+                                title={option.detail}
+                              >
+                                {option.label}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
                       {effectiveBuntMode && (
@@ -2024,7 +2033,7 @@ function buildHistoryPitcherOptions(
     });
   }
   for (const segment of snapshot.segments) {
-    if (!options.has(segment.playerId)) {
+    if (segment.playerId && !options.has(segment.playerId)) {
       options.set(segment.playerId, {
         playerId: segment.playerId,
         name: segment.displayName,

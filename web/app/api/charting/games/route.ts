@@ -28,9 +28,24 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { opponent, gameDate } = body as {
+    const {
+      opponent,
+      gameDate,
+      sessionType,
+      babsonVenueSide,
+      babsonStartingPitcher,
+      opponentStartingPitcher,
+      ourTeamLabel,
+      opponentTeamLabel,
+    } = body as {
       opponent?: string;
       gameDate?: string;
+      sessionType?: string;
+      babsonVenueSide?: string;
+      babsonStartingPitcher?: string | null;
+      opponentStartingPitcher?: string | null;
+      ourTeamLabel?: string | null;
+      opponentTeamLabel?: string | null;
     };
 
     if (!opponent?.trim()) {
@@ -57,6 +72,12 @@ export async function POST(request: NextRequest) {
         gameDate: gameDate.trim(),
         status: "draft",
         revision: 1,
+        sessionType: sessionType === "game" ? "game" : "live_ab",
+        babsonVenueSide: babsonVenueSide === "away" ? "away" : "home",
+        babsonStartingPitcher: babsonStartingPitcher?.trim() || null,
+        opponentStartingPitcher: opponentStartingPitcher?.trim() || null,
+        ourTeamLabel: ourTeamLabel?.trim() || null,
+        opponentTeamLabel: opponentTeamLabel?.trim() || null,
         charter: body.charter ?? null,
         weather: body.weather ?? null,
         homeCatcher: body.homeCatcher ?? null,

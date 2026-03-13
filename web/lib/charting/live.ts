@@ -21,11 +21,51 @@ export const GAME_PITCH_RESULTS = [
 ] as const satisfies readonly PitchResult[];
 
 export const HIT_OPTIONS = ["1B", "2B", "3B", "HR"] as const;
-export const FLY_OUT_OPTIONS = ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9"] as const;
-export const LINE_OUT_OPTIONS = ["L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8", "L9"] as const;
-export const POP_OUT_OPTIONS = ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9"] as const;
+export const FLY_OUT_OPTIONS = [
+  "F1",
+  "F2",
+  "F3",
+  "F4",
+  "F5",
+  "F6",
+  "F7",
+  "F8",
+  "F9",
+] as const;
+export const LINE_OUT_OPTIONS = [
+  "L1",
+  "L2",
+  "L3",
+  "L4",
+  "L5",
+  "L6",
+  "L7",
+  "L8",
+  "L9",
+] as const;
+export const POP_OUT_OPTIONS = [
+  "P1",
+  "P2",
+  "P3",
+  "P4",
+  "P5",
+  "P6",
+  "P7",
+  "P8",
+  "P9",
+] as const;
 export const GROUND_OUT_OPTIONS = ["1-3", "2-3", "4-3", "5-3", "6-3"] as const;
-export const UNASSISTED_OUT_OPTIONS = ["1U", "2U", "3U", "4U", "5U", "6U", "7U", "8U", "9U"] as const;
+export const UNASSISTED_OUT_OPTIONS = [
+  "1U",
+  "2U",
+  "3U",
+  "4U",
+  "5U",
+  "6U",
+  "7U",
+  "8U",
+  "9U",
+] as const;
 export const DOUBLE_PLAY_OPTIONS = [
   "DP",
   "1-6-3 DP",
@@ -36,7 +76,17 @@ export const DOUBLE_PLAY_OPTIONS = [
   "5-4-3 DP",
   "6-4-3 DP",
 ] as const;
-export const ERROR_OPTIONS = ["E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9"] as const;
+export const ERROR_OPTIONS = [
+  "E1",
+  "E2",
+  "E3",
+  "E4",
+  "E5",
+  "E6",
+  "E7",
+  "E8",
+  "E9",
+] as const;
 export const FIELDERS_CHOICE_OPTIONS = [
   "FC",
   "FC 1-2",
@@ -67,7 +117,12 @@ export const PA_RESULT_OPTIONS = [
 ] as const;
 
 export type PAResultType = (typeof PA_RESULT_OPTIONS)[number];
-export type PAClosureState = "none" | "strikeout" | "walk" | "hit_by_pitch" | "in_play";
+export type PAClosureState =
+  | "none"
+  | "strikeout"
+  | "walk"
+  | "hit_by_pitch"
+  | "in_play";
 export type PAResultFamily = "strikeout" | "freePass" | "hit" | "out" | "misc";
 
 export interface PAPitchProgress {
@@ -108,7 +163,9 @@ export interface LiveStateOptions {
   nextPASeed?: NextPASeed | null;
 }
 
-export function initialCountFromSeed(seed?: NextPASeed | null): ChartingInitialCount {
+export function initialCountFromSeed(
+  seed?: NextPASeed | null,
+): ChartingInitialCount {
   if (seed?.buntMode) {
     return "Bunt";
   }
@@ -119,7 +176,7 @@ export function initialCountFromSeed(seed?: NextPASeed | null): ChartingInitialC
 }
 
 export function nextPASeedFromInitialCount(
-  initialCount?: ChartingInitialCount | null
+  initialCount?: ChartingInitialCount | null,
 ): NextPASeed {
   switch (initialCount) {
     case "2-1":
@@ -134,7 +191,7 @@ export function nextPASeedFromInitialCount(
 
 export function inferInitialCountFromPitches(
   pitches: ChartingPitch[],
-  buntContext = false
+  buntContext = false,
 ): ChartingInitialCount {
   if (buntContext) {
     return "Bunt";
@@ -149,10 +206,16 @@ export function inferInitialCountFromPitches(
 }
 
 export function resolvePlateAppearanceInitialCount(
-  plateAppearance: Pick<ChartingPlateAppearance, "initialCount" | "buntContext">,
-  pitches: ChartingPitch[]
+  plateAppearance: Pick<
+    ChartingPlateAppearance,
+    "initialCount" | "buntContext"
+  >,
+  pitches: ChartingPitch[],
 ): ChartingInitialCount {
-  return plateAppearance.initialCount ?? inferInitialCountFromPitches(pitches, plateAppearance.buntContext);
+  return (
+    plateAppearance.initialCount ??
+    inferInitialCountFromPitches(pitches, plateAppearance.buntContext)
+  );
 }
 
 export interface RecordPitchInput {
@@ -185,7 +248,9 @@ const POSITION_LABELS: Record<number, string> = {
   9: "RF",
 };
 
-export function availablePAResultsForClosure(state: PAClosureState): readonly PAResultType[] {
+export function availablePAResultsForClosure(
+  state: PAClosureState,
+): readonly PAResultType[] {
   switch (state) {
     case "strikeout":
       return ["K"];
@@ -210,7 +275,10 @@ export function availablePAResultsForClosure(state: PAClosureState): readonly PA
   }
 }
 
-export function guidanceTextForClosure(state: PAClosureState, openPAId: string | null): string {
+export function guidanceTextForClosure(
+  state: PAClosureState,
+  openPAId: string | null,
+): string {
   if (!openPAId) {
     return "Ready for the next hitter.";
   }
@@ -292,13 +360,17 @@ export function detailTextForPAResult(result: PAResultType): string {
       }
       if (isFieldersChoice(result)) {
         const scoring = result.replace("FC ", "");
-        return scoring === "FC" ? "Fielder's choice" : `Fielder's choice, ${scoring}`;
+        return scoring === "FC"
+          ? "Fielder's choice"
+          : `Fielder's choice, ${scoring}`;
       }
       return result;
   }
 }
 
-export function closeoutResultGroups(availableResults: readonly PAResultType[]): PAResultGroup[] {
+export function closeoutResultGroups(
+  availableResults: readonly PAResultType[],
+): PAResultGroup[] {
   const available = new Set(availableResults);
   const groups: PAResultGroup[] = [];
 
@@ -319,7 +391,7 @@ export function closeoutResultGroups(availableResults: readonly PAResultType[]):
 export function derivePAPitchProgress(
   pitches: ChartingPitch[],
   seedBalls?: number,
-  seedStrikes?: number
+  seedStrikes?: number,
 ): PAPitchProgress {
   const orderedPitches = sortByPitchOrder(pitches);
   const initialBalls = orderedPitches[0]?.ballsBefore ?? seedBalls ?? 0;
@@ -346,7 +418,7 @@ export function deriveChartingLiveState(
   plateAppearances: ChartingPlateAppearance[],
   pitches: ChartingPitch[],
   gameStateOverride?: GameStateOverride | null,
-  options?: LiveStateOptions
+  options?: LiveStateOptions,
 ): ChartingLiveState {
   const orderedSegments = [...segments].sort((lhs, rhs) => {
     if (lhs.segmentOrder === rhs.segmentOrder) {
@@ -392,12 +464,12 @@ export function deriveChartingLiveState(
     const paPitches = pitchesByPA.get(pa.id) ?? [];
     if (!pa.resultCode) {
       const initialSeed = nextPASeedFromInitialCount(
-        resolvePlateAppearanceInitialCount(pa, paPitches)
+        resolvePlateAppearanceInitialCount(pa, paPitches),
       );
       const progress = derivePAPitchProgress(
         paPitches,
         initialSeed.balls,
-        initialSeed.strikes
+        initialSeed.strikes,
       );
       state.balls = progress.balls;
       state.strikes = progress.strikes;
@@ -444,11 +516,11 @@ export function deriveChartingLiveState(
 
 export function createGameStateOverride(
   snapshot: ChartingGameSnapshot,
-  nextState: Pick<GameStateOverride, "inning" | "isTopInning" | "outs">
+  nextState: Pick<GameStateOverride, "inning" | "isTopInning" | "outs">,
 ): GameStateOverride {
   const anchorPAOrder = snapshot.plateAppearances.reduce(
     (max, pa) => Math.max(max, pa.paOrder),
-    -1
+    -1,
   );
 
   return {
@@ -463,14 +535,14 @@ export function recordPitchInSnapshot(
   snapshot: ChartingGameSnapshot,
   input: RecordPitchInput,
   gameStateOverride?: GameStateOverride | null,
-  options?: LiveStateOptions
+  options?: LiveStateOptions,
 ): ChartingGameSnapshot {
   const liveState = deriveChartingLiveState(
     snapshot.segments,
     snapshot.plateAppearances,
     snapshot.pitches,
     gameStateOverride,
-    options
+    options,
   );
 
   if (liveState.closureState !== "none") {
@@ -486,7 +558,7 @@ export function recordPitchInSnapshot(
     nextSnapshot.lineup,
     nextSnapshot.game.id,
     clamp(input.lineupSlot, 1, 9),
-    input.hitterName.trim()
+    input.hitterName.trim(),
   );
 
   let activeSegment = nextSnapshot.segments.at(-1) ?? null;
@@ -500,6 +572,7 @@ export function recordPitchInSnapshot(
       gameId: nextSnapshot.game.id,
       playerId: input.pitcher.playerId,
       displayName: input.pitcher.name,
+      teamSide: nextSnapshot.game.sessionType === "game" ? "our" : "our",
       segmentOrder: nextSegmentOrder(nextSnapshot.segments),
       enteredInning: liveState.inning,
       exitedInning: null,
@@ -509,11 +582,13 @@ export function recordPitchInSnapshot(
     nextSnapshot.segments.push(activeSegment);
   }
 
-  let openPA = nextSnapshot.plateAppearances.find((pa) => pa.id === liveState.openPAId) ?? null;
+  let openPA =
+    nextSnapshot.plateAppearances.find((pa) => pa.id === liveState.openPAId) ??
+    null;
   const shouldSeedBuntMode = !openPA && Boolean(options?.nextPASeed?.buntMode);
   const normalizedPitchResult = normalizePitchResultForBunt(
     input.pitchResult,
-    shouldSeedBuntMode || openPA?.buntContext === true
+    shouldSeedBuntMode || openPA?.buntContext === true,
   );
 
   if (!openPA) {
@@ -525,17 +600,25 @@ export function recordPitchInSnapshot(
       inning: liveState.inning,
       hitterName: input.hitterName.trim(),
       lineupSlot: clamp(input.lineupSlot, 1, 9),
+      teamSide:
+        nextSnapshot.game.sessionType === "game" ? "opponent" : "opponent",
       resultCode: null,
       initialCount: initialCountFromSeed(options?.nextPASeed),
       buntContext: shouldSeedBuntMode || normalizedPitchResult === "bunt_foul",
     };
     nextSnapshot.plateAppearances.push(openPA);
   } else {
-    const existingPitches = nextSnapshot.pitches.filter((pitch) => pitch.paId === openPA?.id);
+    const existingPitches = nextSnapshot.pitches.filter(
+      (pitch) => pitch.paId === openPA?.id,
+    );
     openPA.hitterName = input.hitterName.trim();
     openPA.lineupSlot = clamp(input.lineupSlot, 1, 9);
-    openPA.initialCount = resolvePlateAppearanceInitialCount(openPA, existingPitches);
-    openPA.buntContext = openPA.buntContext || normalizedPitchResult === "bunt_foul";
+    openPA.initialCount = resolvePlateAppearanceInitialCount(
+      openPA,
+      existingPitches,
+    );
+    openPA.buntContext =
+      openPA.buntContext || normalizedPitchResult === "bunt_foul";
   }
 
   nextSnapshot.pitches.push({
@@ -544,7 +627,8 @@ export function recordPitchInSnapshot(
     paId: openPA.id,
     pitchOrder: nextPitchOrder(nextSnapshot.pitches),
     pitchType: input.pitchType,
-    locationCell: normalizedPitchResult === "hit_by_pitch" ? null : input.locationCell,
+    locationCell:
+      normalizedPitchResult === "hit_by_pitch" ? null : input.locationCell,
     pitchResult: normalizedPitchResult,
     ballsBefore: liveState.balls,
     strikesBefore: liveState.strikes,
@@ -557,13 +641,13 @@ export function recordPitchInSnapshot(
 export function closeCurrentPlateAppearance(
   snapshot: ChartingGameSnapshot,
   result: PAResultType,
-  gameStateOverride?: GameStateOverride | null
+  gameStateOverride?: GameStateOverride | null,
 ): ChartingGameSnapshot {
   const liveState = deriveChartingLiveState(
     snapshot.segments,
     snapshot.plateAppearances,
     snapshot.pitches,
-    gameStateOverride
+    gameStateOverride,
   );
 
   if (!availablePAResultsForClosure(liveState.closureState).includes(result)) {
@@ -571,7 +655,9 @@ export function closeCurrentPlateAppearance(
   }
 
   const nextSnapshot = cloneSnapshot(snapshot);
-  const openPA = nextSnapshot.plateAppearances.find((pa) => pa.id === liveState.openPAId);
+  const openPA = nextSnapshot.plateAppearances.find(
+    (pa) => pa.id === liveState.openPAId,
+  );
   if (!openPA) {
     return snapshot;
   }
@@ -580,14 +666,18 @@ export function closeCurrentPlateAppearance(
   return nextSnapshot;
 }
 
-export function undoSnapshotAction(snapshot: ChartingGameSnapshot): ChartingGameSnapshot {
+export function undoSnapshotAction(
+  snapshot: ChartingGameSnapshot,
+): ChartingGameSnapshot {
   const nextSnapshot = cloneSnapshot(snapshot);
-  const lastPA = [...nextSnapshot.plateAppearances].sort((lhs, rhs) => {
-    if (lhs.paOrder === rhs.paOrder) {
-      return lhs.id.localeCompare(rhs.id);
-    }
-    return lhs.paOrder - rhs.paOrder;
-  }).at(-1);
+  const lastPA = [...nextSnapshot.plateAppearances]
+    .sort((lhs, rhs) => {
+      if (lhs.paOrder === rhs.paOrder) {
+        return lhs.id.localeCompare(rhs.id);
+      }
+      return lhs.paOrder - rhs.paOrder;
+    })
+    .at(-1);
 
   if (!lastPA) {
     return snapshot;
@@ -599,11 +689,13 @@ export function undoSnapshotAction(snapshot: ChartingGameSnapshot): ChartingGame
   }
 
   const pitchesForPA = sortByPitchOrder(
-    nextSnapshot.pitches.filter((pitch) => pitch.paId === lastPA.id)
+    nextSnapshot.pitches.filter((pitch) => pitch.paId === lastPA.id),
   );
   const lastPitch = pitchesForPA.at(-1);
   if (lastPitch) {
-    nextSnapshot.pitches = nextSnapshot.pitches.filter((pitch) => pitch.id !== lastPitch.id);
+    nextSnapshot.pitches = nextSnapshot.pitches.filter(
+      (pitch) => pitch.id !== lastPitch.id,
+    );
     if (pitchesForPA.length === 1) {
       removePlateAppearanceAndOrphanSegment(nextSnapshot, lastPA.id);
     }
@@ -618,7 +710,7 @@ export function syncHitterToSnapshot(
   snapshot: ChartingGameSnapshot,
   hitterName: string,
   lineupSlot: number,
-  gameStateOverride?: GameStateOverride | null
+  gameStateOverride?: GameStateOverride | null,
 ): ChartingGameSnapshot {
   const trimmed = hitterName.trim();
   if (!trimmed) return snapshot;
@@ -627,7 +719,7 @@ export function syncHitterToSnapshot(
     snapshot.segments,
     snapshot.plateAppearances,
     snapshot.pitches,
-    gameStateOverride
+    gameStateOverride,
   );
 
   const nextSnapshot = cloneSnapshot(snapshot);
@@ -635,10 +727,12 @@ export function syncHitterToSnapshot(
     nextSnapshot.lineup,
     nextSnapshot.game.id,
     clamp(lineupSlot, 1, 9),
-    trimmed
+    trimmed,
   );
 
-  const openPA = nextSnapshot.plateAppearances.find((pa) => pa.id === liveState.openPAId);
+  const openPA = nextSnapshot.plateAppearances.find(
+    (pa) => pa.id === liveState.openPAId,
+  );
   if (openPA) {
     openPA.hitterName = trimmed;
     openPA.lineupSlot = clamp(lineupSlot, 1, 9);
@@ -650,7 +744,7 @@ export function syncHitterToSnapshot(
 export function updatePitchVelocityInSnapshot(
   snapshot: ChartingGameSnapshot,
   pitchId: string,
-  velocity: number | null
+  velocity: number | null,
 ): ChartingGameSnapshot {
   const existingPitch = snapshot.pitches.find((pitch) => pitch.id === pitchId);
   if (!existingPitch) {
@@ -663,7 +757,9 @@ export function updatePitchVelocityInSnapshot(
   }
 
   const nextSnapshot = cloneSnapshot(snapshot);
-  const targetPitch = nextSnapshot.pitches.find((pitch) => pitch.id === pitchId);
+  const targetPitch = nextSnapshot.pitches.find(
+    (pitch) => pitch.id === pitchId,
+  );
   if (!targetPitch) {
     return snapshot;
   }
@@ -675,7 +771,7 @@ export function updatePitchVelocityInSnapshot(
 export function updatePAHitterNameInSnapshot(
   snapshot: ChartingGameSnapshot,
   paId: string,
-  newHitterName: string
+  newHitterName: string,
 ): ChartingGameSnapshot {
   const trimmed = newHitterName.trim();
   if (!trimmed) return snapshot;
@@ -694,7 +790,12 @@ export function updatePAHitterNameInSnapshot(
   if (!targetPA) return snapshot;
 
   targetPA.hitterName = trimmed;
-  upsertLineupEntry(nextSnapshot.lineup, nextSnapshot.game.id, targetPA.lineupSlot, trimmed);
+  upsertLineupEntry(
+    nextSnapshot.lineup,
+    nextSnapshot.game.id,
+    targetPA.lineupSlot,
+    trimmed,
+  );
 
   return nextSnapshot;
 }
@@ -712,7 +813,7 @@ export interface UpdatePlateAppearanceDetailsInput {
 
 export function updatePlateAppearanceDetailsInSnapshot(
   snapshot: ChartingGameSnapshot,
-  input: UpdatePlateAppearanceDetailsInput
+  input: UpdatePlateAppearanceDetailsInput,
 ): ChartingGameSnapshot {
   const trimmedHitter = input.hitterName.trim();
   const trimmedPitcherId = input.pitcher.playerId.trim();
@@ -721,15 +822,27 @@ export function updatePlateAppearanceDetailsInSnapshot(
     return snapshot;
   }
 
-  const existingPA = snapshot.plateAppearances.find((pa) => pa.id === input.paId);
+  const existingPA = snapshot.plateAppearances.find(
+    (pa) => pa.id === input.paId,
+  );
   if (!existingPA) {
     return snapshot;
   }
 
-  const existingSegment = snapshot.segments.find((segment) => segment.id === existingPA.segmentId) ?? null;
-  const currentPitches = sortByPitchOrder(snapshot.pitches.filter((pitch) => pitch.paId === existingPA.id));
-  const normalizedPitches = rebuildPitchesForInitialCount(currentPitches, input.initialCount);
-  const currentInitialCount = resolvePlateAppearanceInitialCount(existingPA, currentPitches);
+  const existingSegment =
+    snapshot.segments.find((segment) => segment.id === existingPA.segmentId) ??
+    null;
+  const currentPitches = sortByPitchOrder(
+    snapshot.pitches.filter((pitch) => pitch.paId === existingPA.id),
+  );
+  const normalizedPitches = rebuildPitchesForInitialCount(
+    currentPitches,
+    input.initialCount,
+  );
+  const currentInitialCount = resolvePlateAppearanceInitialCount(
+    existingPA,
+    currentPitches,
+  );
   const resultCode = input.resultCode ?? null;
 
   const pitchTrailChanged = normalizedPitches.some((pitch, index) => {
@@ -754,7 +867,9 @@ export function updatePlateAppearanceDetailsInSnapshot(
   }
 
   const nextSnapshot = cloneSnapshot(snapshot);
-  const targetPA = nextSnapshot.plateAppearances.find((pa) => pa.id === input.paId);
+  const targetPA = nextSnapshot.plateAppearances.find(
+    (pa) => pa.id === input.paId,
+  );
   if (!targetPA) {
     return snapshot;
   }
@@ -763,7 +878,7 @@ export function updatePlateAppearanceDetailsInSnapshot(
     nextSnapshot,
     targetPA,
     trimmedPitcherId,
-    trimmedPitcherName
+    trimmedPitcherName,
   );
 
   targetPA.segmentId = targetSegment.id;
@@ -776,12 +891,16 @@ export function updatePlateAppearanceDetailsInSnapshot(
     nextSnapshot.lineup,
     nextSnapshot.game.id,
     targetPA.lineupSlot,
-    trimmedHitter
+    trimmedHitter,
   );
 
-  const rebuiltPitchesById = new Map(normalizedPitches.map((pitch) => [pitch.id, pitch]));
+  const rebuiltPitchesById = new Map(
+    normalizedPitches.map((pitch) => [pitch.id, pitch]),
+  );
   nextSnapshot.pitches = nextSnapshot.pitches.map((pitch) =>
-    pitch.paId === targetPA.id ? rebuiltPitchesById.get(pitch.id) ?? pitch : pitch
+    pitch.paId === targetPA.id
+      ? (rebuiltPitchesById.get(pitch.id) ?? pitch)
+      : pitch,
   );
 
   reconcileSnapshotSegments(nextSnapshot);
@@ -791,7 +910,7 @@ export function updatePlateAppearanceDetailsInSnapshot(
 export function updateSnapshotRevision(
   snapshot: ChartingGameSnapshot,
   revision: number,
-  updatedAt?: string
+  updatedAt?: string,
 ): ChartingGameSnapshot {
   return {
     ...snapshot,
@@ -805,15 +924,18 @@ export function updateSnapshotRevision(
 
 export function lineupNameForSlot(
   lineup: ChartingLineupEntry[],
-  slot: number
+  slot: number,
 ): string | null {
   const entry = lineup.find((item) => item.lineupSlot === slot);
   return entry?.hitterName ?? null;
 }
 
 export function countPitcherPitches(
-  snapshot: Pick<ChartingGameSnapshot, "segments" | "plateAppearances" | "pitches">,
-  pitcherId: string
+  snapshot: Pick<
+    ChartingGameSnapshot,
+    "segments" | "plateAppearances" | "pitches"
+  >,
+  pitcherId: string,
 ): number {
   if (!pitcherId) {
     return 0;
@@ -832,9 +954,12 @@ export function countPitcherPitches(
 }
 
 export function countPitcherInningPitches(
-  snapshot: Pick<ChartingGameSnapshot, "segments" | "plateAppearances" | "pitches">,
+  snapshot: Pick<
+    ChartingGameSnapshot,
+    "segments" | "plateAppearances" | "pitches"
+  >,
   pitcherId: string,
-  inning: number
+  inning: number,
 ): number {
   if (!pitcherId) {
     return 0;
@@ -860,7 +985,7 @@ function addGroup(
   groups: PAResultGroup[],
   title: string,
   results: readonly PAResultType[],
-  available: Set<PAResultType>
+  available: Set<PAResultType>,
 ) {
   const visible = results.filter((result) => available.has(result));
   if (visible.length > 0) {
@@ -911,7 +1036,10 @@ function applyPitchResult(progress: PAPitchProgress, result: PitchResult) {
   }
 }
 
-function normalizePitchResultForBunt(result: PitchResult, buntMode: boolean): PitchResult {
+function normalizePitchResultForBunt(
+  result: PitchResult,
+  buntMode: boolean,
+): PitchResult {
   if (buntMode && result === "foul") {
     return "bunt_foul";
   }
@@ -941,18 +1069,22 @@ function sortByPitchOrder(pitches: ChartingPitch[]): ChartingPitch[] {
 }
 
 function nextPitchOrder(pitches: ChartingPitch[]): number {
-  return pitches.reduce((max, pitch) => Math.max(max, pitch.pitchOrder), -1) + 1;
+  return (
+    pitches.reduce((max, pitch) => Math.max(max, pitch.pitchOrder), -1) + 1
+  );
 }
 
 function nextPAOrder(plateAppearances: ChartingPlateAppearance[]): number {
-  return plateAppearances.reduce((max, pa) => Math.max(max, pa.paOrder), -1) + 1;
+  return (
+    plateAppearances.reduce((max, pa) => Math.max(max, pa.paOrder), -1) + 1
+  );
 }
 
 function upsertLineupEntry(
   lineup: ChartingLineupEntry[],
   gameId: string,
   lineupSlot: number,
-  hitterName: string
+  hitterName: string,
 ) {
   const existing = lineup.find((entry) => entry.lineupSlot === lineupSlot);
   if (existing) {
@@ -963,6 +1095,7 @@ function upsertLineupEntry(
   lineup.push({
     id: crypto.randomUUID(),
     gameId,
+    teamSide: "opponent",
     lineupSlot,
     hitterName,
   });
@@ -970,30 +1103,32 @@ function upsertLineupEntry(
 
 function removePlateAppearanceAndOrphanSegment(
   snapshot: ChartingGameSnapshot,
-  plateAppearanceId: string
+  plateAppearanceId: string,
 ) {
-  const plateAppearance = snapshot.plateAppearances.find((pa) => pa.id === plateAppearanceId);
+  const plateAppearance = snapshot.plateAppearances.find(
+    (pa) => pa.id === plateAppearanceId,
+  );
   if (!plateAppearance) {
     return;
   }
 
   snapshot.plateAppearances = snapshot.plateAppearances.filter(
-    (pa) => pa.id !== plateAppearanceId
+    (pa) => pa.id !== plateAppearanceId,
   );
 
   const hasRemainingSegmentUsage = snapshot.plateAppearances.some(
-    (pa) => pa.segmentId === plateAppearance.segmentId
+    (pa) => pa.segmentId === plateAppearance.segmentId,
   );
   if (!hasRemainingSegmentUsage) {
     snapshot.segments = snapshot.segments.filter(
-      (segment) => segment.id !== plateAppearance.segmentId
+      (segment) => segment.id !== plateAppearance.segmentId,
     );
   }
 }
 
 function rebuildPitchesForInitialCount(
   pitches: ChartingPitch[],
-  initialCount: ChartingInitialCount
+  initialCount: ChartingInitialCount,
 ): ChartingPitch[] {
   const seed = nextPASeedFromInitialCount(initialCount);
   const progress: PAPitchProgress = {
@@ -1004,7 +1139,10 @@ function rebuildPitchesForInitialCount(
   };
 
   return sortByPitchOrder(pitches).map((pitch) => {
-    const normalizedResult = normalizePitchResultForBunt(pitch.pitchResult, Boolean(seed.buntMode));
+    const normalizedResult = normalizePitchResultForBunt(
+      pitch.pitchResult,
+      Boolean(seed.buntMode),
+    );
     const rebuiltPitch: ChartingPitch = {
       ...pitch,
       pitchResult: normalizedResult,
@@ -1020,15 +1158,19 @@ function ensureSegmentForPlateAppearance(
   snapshot: ChartingGameSnapshot,
   plateAppearance: ChartingPlateAppearance,
   pitcherId: string,
-  pitcherName: string
+  pitcherName: string,
 ): ChartingPitcherSegment {
-  const currentSegment = snapshot.segments.find((segment) => segment.id === plateAppearance.segmentId) ?? null;
+  const currentSegment =
+    snapshot.segments.find(
+      (segment) => segment.id === plateAppearance.segmentId,
+    ) ?? null;
   if (currentSegment?.playerId === pitcherId) {
     currentSegment.displayName = pitcherName;
     return currentSegment;
   }
 
-  const existingSegment = snapshot.segments.find((segment) => segment.playerId === pitcherId) ?? null;
+  const existingSegment =
+    snapshot.segments.find((segment) => segment.playerId === pitcherId) ?? null;
   if (existingSegment) {
     existingSegment.displayName = pitcherName;
     return existingSegment;
@@ -1039,6 +1181,7 @@ function ensureSegmentForPlateAppearance(
     gameId: snapshot.game.id,
     playerId: pitcherId,
     displayName: pitcherName,
+    teamSide: "our",
     segmentOrder: nextSegmentOrder(snapshot.segments),
     enteredInning: plateAppearance.inning,
     exitedInning: null,
@@ -1070,8 +1213,13 @@ function reconcileSnapshotSegments(snapshot: ChartingGameSnapshot) {
       return leftFirstOrder - rightFirstOrder;
     })
     .map((segment, index, orderedSegments) => {
-      const pas = [...(paGroups.get(segment.id) ?? [])].sort((left, right) => left.paOrder - right.paOrder);
-      const lastInning = pas.reduce((max, pa) => Math.max(max, pa.inning), pas[0]?.inning ?? 1);
+      const pas = [...(paGroups.get(segment.id) ?? [])].sort(
+        (left, right) => left.paOrder - right.paOrder,
+      );
+      const lastInning = pas.reduce(
+        (max, pa) => Math.max(max, pa.inning),
+        pas[0]?.inning ?? 1,
+      );
       return {
         ...segment,
         segmentOrder: index,
@@ -1083,12 +1231,12 @@ function reconcileSnapshotSegments(snapshot: ChartingGameSnapshot) {
 
 function segmentIdsForPitcher(
   segments: ChartingPitcherSegment[],
-  pitcherId: string
+  pitcherId: string,
 ): Set<string> {
   return new Set(
     segments
       .filter((segment) => segment.playerId === pitcherId)
-      .map((segment) => segment.id)
+      .map((segment) => segment.id),
   );
 }
 
@@ -1096,44 +1244,62 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-function isFlyOut(result: PAResultType): result is (typeof FLY_OUT_OPTIONS)[number] {
+function isFlyOut(
+  result: PAResultType,
+): result is (typeof FLY_OUT_OPTIONS)[number] {
   return (FLY_OUT_OPTIONS as readonly string[]).includes(result);
 }
 
-function isLineOut(result: PAResultType): result is (typeof LINE_OUT_OPTIONS)[number] {
+function isLineOut(
+  result: PAResultType,
+): result is (typeof LINE_OUT_OPTIONS)[number] {
   return (LINE_OUT_OPTIONS as readonly string[]).includes(result);
 }
 
-function isPopOut(result: PAResultType): result is (typeof POP_OUT_OPTIONS)[number] {
+function isPopOut(
+  result: PAResultType,
+): result is (typeof POP_OUT_OPTIONS)[number] {
   return (POP_OUT_OPTIONS as readonly string[]).includes(result);
 }
 
-function isGroundOut(result: PAResultType): result is (typeof GROUND_OUT_OPTIONS)[number] {
-  return result.includes("-") && !result.startsWith("FC ") && !result.endsWith(" DP");
+function isGroundOut(
+  result: PAResultType,
+): result is (typeof GROUND_OUT_OPTIONS)[number] {
+  return (
+    result.includes("-") && !result.startsWith("FC ") && !result.endsWith(" DP")
+  );
 }
 
-function isUnassistedOut(result: PAResultType): result is (typeof UNASSISTED_OUT_OPTIONS)[number] {
+function isUnassistedOut(
+  result: PAResultType,
+): result is (typeof UNASSISTED_OUT_OPTIONS)[number] {
   return result.length === 2 && result.endsWith("U");
 }
 
-function isDoublePlay(result: PAResultType): result is (typeof DOUBLE_PLAY_OPTIONS)[number] {
+function isDoublePlay(
+  result: PAResultType,
+): result is (typeof DOUBLE_PLAY_OPTIONS)[number] {
   return result === "DP" || result.endsWith(" DP");
 }
 
-function isError(result: PAResultType): result is (typeof ERROR_OPTIONS)[number] {
+function isError(
+  result: PAResultType,
+): result is (typeof ERROR_OPTIONS)[number] {
   return result.length === 2 && result.startsWith("E");
 }
 
-function isFieldersChoice(result: PAResultType): result is (typeof FIELDERS_CHOICE_OPTIONS)[number] {
+function isFieldersChoice(
+  result: PAResultType,
+): result is (typeof FIELDERS_CHOICE_OPTIONS)[number] {
   return result === "FC" || result.startsWith("FC ");
 }
 
 function positionLabelFromTrailingDigit(result: string): string | null {
   const value = Number(result.at(-1));
-  return Number.isInteger(value) ? POSITION_LABELS[value] ?? null : null;
+  return Number.isInteger(value) ? (POSITION_LABELS[value] ?? null) : null;
 }
 
 function positionLabelFromLeadingDigit(result: string): string | null {
   const value = Number(result[0]);
-  return Number.isInteger(value) ? POSITION_LABELS[value] ?? null : null;
+  return Number.isInteger(value) ? (POSITION_LABELS[value] ?? null) : null;
 }

@@ -21,6 +21,8 @@ const baseSnapshot: ChartingGameSnapshot = {
     opponent: "MIT",
     gameDate: "2026-03-01",
     status: "active",
+    sessionType: "live_ab",
+    babsonVenueSide: "home",
     revision: 1,
     charter: null,
     weather: null,
@@ -31,6 +33,10 @@ const baseSnapshot: ChartingGameSnapshot = {
     tomorrowStarter: null,
     tomorrowOpponent: null,
     notes: null,
+    babsonStartingPitcher: null,
+    opponentStartingPitcher: null,
+    ourTeamLabel: null,
+    opponentTeamLabel: null,
     createdAt: "2026-03-01T12:00:00Z",
     updatedAt: "2026-03-01T12:00:00Z",
   },
@@ -111,9 +117,15 @@ describe("snapshot mutations", () => {
   it("counts totals and inning pitches for the selected pitcher", () => {
     expect(countPitcherPitches(fixtureGameSnapshot, "DJames1")).toBe(7);
     expect(countPitcherPitches(fixtureGameSnapshot, "CBurrows1")).toBe(1);
-    expect(countPitcherInningPitches(fixtureGameSnapshot, "DJames1", 1)).toBe(7);
-    expect(countPitcherInningPitches(fixtureGameSnapshot, "CBurrows1", 1)).toBe(0);
-    expect(countPitcherInningPitches(fixtureGameSnapshot, "CBurrows1", 6)).toBe(1);
+    expect(countPitcherInningPitches(fixtureGameSnapshot, "DJames1", 1)).toBe(
+      7,
+    );
+    expect(countPitcherInningPitches(fixtureGameSnapshot, "CBurrows1", 1)).toBe(
+      0,
+    );
+    expect(countPitcherInningPitches(fixtureGameSnapshot, "CBurrows1", 6)).toBe(
+      1,
+    );
   });
 
   it("records a first pitch by creating a segment and PA", () => {
@@ -131,10 +143,13 @@ describe("snapshot mutations", () => {
     });
 
     expect(snapshot.segments).toHaveLength(1);
+    expect(snapshot.segments[0]?.teamSide).toBe("our");
     expect(snapshot.plateAppearances).toHaveLength(1);
     expect(snapshot.plateAppearances[0]?.initialCount).toBe("0-0");
+    expect(snapshot.plateAppearances[0]?.teamSide).toBe("opponent");
     expect(snapshot.pitches).toHaveLength(1);
     expect(snapshot.lineup[0]?.hitterName).toBe("Wyatt Miller");
+    expect(snapshot.lineup[0]?.teamSide).toBe("opponent");
   });
 
   it("closes a walk and advances the next batter slot", () => {
@@ -179,7 +194,7 @@ describe("snapshot mutations", () => {
     const beforeClose = deriveChartingLiveState(
       snapshot.segments,
       snapshot.plateAppearances,
-      snapshot.pitches
+      snapshot.pitches,
     );
     expect(beforeClose.closureState).toBe("walk");
 
@@ -188,7 +203,7 @@ describe("snapshot mutations", () => {
     const afterClose = deriveChartingLiveState(
       snapshot.segments,
       snapshot.plateAppearances,
-      snapshot.pitches
+      snapshot.pitches,
     );
     expect(snapshot.plateAppearances[0]?.resultCode).toBe("BB");
     expect(afterClose.batterSlot).toBe(2);
@@ -239,7 +254,7 @@ describe("snapshot mutations", () => {
           balls: 2,
           strikes: 1,
         },
-      }
+      },
     );
 
     expect(snapshot.pitches[0]?.ballsBefore).toBe(2);
@@ -249,7 +264,7 @@ describe("snapshot mutations", () => {
     const liveState = deriveChartingLiveState(
       snapshot.segments,
       snapshot.plateAppearances,
-      snapshot.pitches
+      snapshot.pitches,
     );
     expect(liveState.balls).toBe(3);
     expect(liveState.strikes).toBe(1);
@@ -274,7 +289,7 @@ describe("snapshot mutations", () => {
           strikes: 0,
           buntMode: true,
         },
-      }
+      },
     );
 
     expect(snapshot.pitches[0]?.pitchResult).toBe("bunt_foul");
@@ -284,7 +299,7 @@ describe("snapshot mutations", () => {
     const liveState = deriveChartingLiveState(
       snapshot.segments,
       snapshot.plateAppearances,
-      snapshot.pitches
+      snapshot.pitches,
     );
     expect(liveState.strikes).toBe(1);
     expect(liveState.closureState).toBe("none");
@@ -333,7 +348,7 @@ describe("snapshot mutations", () => {
     const liveState = deriveChartingLiveState(
       updated.segments,
       updated.plateAppearances,
-      updated.pitches
+      updated.pitches,
     );
     expect(liveState.strikes).toBe(1);
 
@@ -397,10 +412,14 @@ describe("snapshot mutations", () => {
     expect(updated.segments[0]?.playerId).toBe("SVyse1");
     expect(updated.segments[0]?.displayName).toBe("S. Vyse");
     expect(updated.segments[0]?.segmentOrder).toBe(0);
-    expect(updated.plateAppearances[0]?.segmentId).toBe(updated.segments[0]?.id);
+    expect(updated.segments[0]?.teamSide).toBe("our");
+    expect(updated.plateAppearances[0]?.segmentId).toBe(
+      updated.segments[0]?.id,
+    );
     expect(updated.plateAppearances[0]?.hitterName).toBe("Edited Hitter");
     expect(updated.plateAppearances[0]?.initialCount).toBe("2-1");
     expect(updated.plateAppearances[0]?.resultCode).toBe("1B");
+    expect(updated.plateAppearances[0]?.teamSide).toBe("opponent");
     expect(updated.pitches[0]?.ballsBefore).toBe(2);
     expect(updated.pitches[0]?.strikesBefore).toBe(1);
     expect(updated.pitches[1]?.ballsBefore).toBe(2);
@@ -440,9 +459,27 @@ describe("snapshot mutations", () => {
     expect(updated.plateAppearances[0]?.initialCount).toBe("Bunt");
     expect(updated.plateAppearances[0]?.buntContext).toBe(true);
     expect(updated.plateAppearances[0]?.resultCode).toBe("1B");
+    expect(updated.plateAppearances[0]?.teamSide).toBe("opponent");
     expect(updated.pitches[0]?.pitchResult).toBe("bunt_foul");
     expect(updated.pitches[0]?.ballsBefore).toBe(0);
     expect(updated.pitches[0]?.strikesBefore).toBe(0);
     expect(updated.pitches[1]?.strikesBefore).toBe(1);
+  });
+
+  it("preserves live_ab session mode defaults for created records", () => {
+    const snapshot = recordPitchInSnapshot(baseSnapshot, {
+      pitchType: "Fastball",
+      pitchResult: "called_strike",
+      locationCell: 5,
+      velocity: 92,
+      pitcher: { playerId: "DJames1", name: "D. James" },
+      hitterName: "Session Hitter",
+      lineupSlot: 3,
+    });
+
+    expect(snapshot.game.sessionType).toBe("live_ab");
+    expect(snapshot.segments[0]?.teamSide).toBe("our");
+    expect(snapshot.plateAppearances[0]?.teamSide).toBe("opponent");
+    expect(snapshot.lineup[0]?.teamSide).toBe("opponent");
   });
 });

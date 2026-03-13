@@ -15,6 +15,7 @@ interface PitchProps {
     games: any;
     scopeLabel: string;
     scopeGameCount: number;
+    sessionType?: "live_ab" | "game" | "all";
 }
 
 export function PitcherStatGroupWrapper({
@@ -27,6 +28,7 @@ export function PitcherStatGroupWrapper({
     games,
     scopeLabel,
     scopeGameCount,
+    sessionType = "live_ab",
 }: PitchProps) {
     const [statGroup, setStatGroup] = useState<StatGroup>(initialStatGroup);
 
@@ -47,6 +49,7 @@ export function PitcherStatGroupWrapper({
                 rowCount={pitchers.length}
                 scopeLabel={scopeLabel}
                 scopeGameCount={scopeGameCount}
+                sessionType={sessionType}
             />
 
             <LeaderboardPanel className="mt-6 overflow-hidden">

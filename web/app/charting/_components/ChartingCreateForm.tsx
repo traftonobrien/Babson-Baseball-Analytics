@@ -19,6 +19,10 @@ export function ChartingCreateForm() {
   const [notes, setNotes] = useState("");
   const [pending, setPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [sessionType, setSessionType] = useState<"live_ab" | "game">("live_ab");
+  const [babsonVenueSide, setBabsonVenueSide] = useState<"home" | "away">("home");
+  const [babsonStartingPitcher, setBabsonStartingPitcher] = useState("");
+  const [opponentStartingPitcher, setOpponentStartingPitcher] = useState("");
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -34,6 +38,10 @@ export function ChartingCreateForm() {
         body: JSON.stringify({
           opponent,
           gameDate,
+          sessionType,
+          babsonVenueSide: sessionType === "game" ? babsonVenueSide : undefined,
+          babsonStartingPitcher: sessionType === "game" ? babsonStartingPitcher.trim() || null : undefined,
+          opponentStartingPitcher: sessionType === "game" ? opponentStartingPitcher.trim() || null : undefined,
           charter: charter.trim() || null,
           notes: notes.trim() || null,
         }),
@@ -76,6 +84,96 @@ export function ChartingCreateForm() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 px-6 py-6 lg:px-8">
+          <div className="space-y-2">
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+              Session Type
+            </span>
+            <div className="inline-flex rounded-2xl border border-zinc-800 bg-zinc-950/85 p-1">
+              <button
+                type="button"
+                onClick={() => setSessionType("live_ab")}
+                className={`rounded-xl px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${
+                  sessionType === "live_ab"
+                    ? "bg-zinc-800 text-zinc-100 shadow-sm"
+                    : "text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                Live AB
+              </button>
+              <button
+                type="button"
+                onClick={() => setSessionType("game")}
+                className={`rounded-xl px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${
+                  sessionType === "game"
+                    ? "bg-emerald-500/20 text-emerald-200 shadow-sm ring-1 ring-emerald-500/20"
+                    : "text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                Game
+              </button>
+            </div>
+          </div>
+
+          {sessionType === "game" && (
+            <div className="space-y-4 rounded-2xl border border-emerald-500/15 bg-emerald-500/5 px-4 py-4">
+              <div className="space-y-2">
+                <span className="block text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                  Venue Side
+                </span>
+                <div className="inline-flex rounded-2xl border border-zinc-800 bg-zinc-950/85 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setBabsonVenueSide("home")}
+                    className={`rounded-xl px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${
+                      babsonVenueSide === "home"
+                        ? "bg-zinc-800 text-zinc-100 shadow-sm"
+                        : "text-zinc-500 hover:text-zinc-300"
+                    }`}
+                  >
+                    Home
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBabsonVenueSide("away")}
+                    className={`rounded-xl px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${
+                      babsonVenueSide === "away"
+                        ? "bg-zinc-800 text-zinc-100 shadow-sm"
+                        : "text-zinc-500 hover:text-zinc-300"
+                    }`}
+                  >
+                    Away
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block space-y-2">
+                  <span className="block text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                    Our Starting Pitcher
+                  </span>
+                  <input
+                    value={babsonStartingPitcher}
+                    onChange={(e) => setBabsonStartingPitcher(e.target.value)}
+                    placeholder="Optional"
+                    className="h-10 w-full rounded-2xl border border-zinc-800 bg-zinc-950/85 px-4 text-sm font-medium text-zinc-100 placeholder:text-zinc-600 outline-none transition-colors hover:border-zinc-700 focus:border-emerald-400/35"
+                  />
+                </label>
+
+                <label className="block space-y-2">
+                  <span className="block text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                    Their Starting Pitcher
+                  </span>
+                  <input
+                    value={opponentStartingPitcher}
+                    onChange={(e) => setOpponentStartingPitcher(e.target.value)}
+                    placeholder="Optional"
+                    className="h-10 w-full rounded-2xl border border-zinc-800 bg-zinc-950/85 px-4 text-sm font-medium text-zinc-100 placeholder:text-zinc-600 outline-none transition-colors hover:border-zinc-700 focus:border-emerald-400/35"
+                  />
+                </label>
+              </div>
+            </div>
+          )}
+
           <label className="block space-y-2">
             <span className="block text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
               Opponent

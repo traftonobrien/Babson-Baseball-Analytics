@@ -30,6 +30,7 @@ export function LeaderboardClientState({
     rowCount,
     scopeLabel,
     scopeGameCount,
+    sessionType = "live_ab",
 }: {
     tab: string;
     range: string;
@@ -41,6 +42,7 @@ export function LeaderboardClientState({
     rowCount: number;
     scopeLabel: string;
     scopeGameCount: number;
+    sessionType?: "live_ab" | "game" | "all";
 }) {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -105,7 +107,8 @@ export function LeaderboardClientState({
         searchInput.trim().length > 0 ||
         range !== "all" ||
         session !== "all" ||
-        statGroup !== "basic";
+        statGroup !== "basic" ||
+        sessionType !== "live_ab";
 
     return (
         <>
@@ -162,7 +165,37 @@ export function LeaderboardClientState({
             </LeaderboardIntro>
 
             <LeaderboardToolbar>
-                <div className="grid gap-4 xl:grid-cols-[minmax(13rem,15rem)_minmax(13rem,15rem)_minmax(12rem,14rem)_minmax(14rem,18rem)_minmax(0,1fr)_auto] xl:items-end">
+                <div className="grid gap-4 xl:grid-cols-[minmax(11rem,13rem)_minmax(13rem,15rem)_minmax(13rem,15rem)_minmax(12rem,14rem)_minmax(14rem,18rem)_minmax(0,1fr)_auto] xl:items-end">
+                    <div className="space-y-2">
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+                            Session Type
+                        </div>
+                        <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
+                            <div className="grid grid-cols-2 gap-1">
+                                <button
+                                    type="button"
+                                    onClick={() => updateQuery({ sessionType: "live_ab", session: "all" })}
+                                    className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-smooth ${sessionType === "live_ab"
+                                        ? "border border-emerald-500/25 bg-emerald-500/10 text-emerald-300"
+                                        : "border border-transparent text-zinc-400 hover:text-zinc-100"
+                                        }`}
+                                >
+                                    Live AB
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => updateQuery({ sessionType: "game", session: "all" })}
+                                    className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-smooth ${sessionType === "game"
+                                        ? "border border-sky-500/25 bg-sky-500/10 text-sky-300"
+                                        : "border border-transparent text-zinc-400 hover:text-zinc-100"
+                                        }`}
+                                >
+                                    Game
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="space-y-2">
                         <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
                             Leaderboard View
@@ -297,6 +330,7 @@ export function LeaderboardClientState({
                                     params.delete("session");
                                     params.delete("q");
                                     params.delete("statGroup");
+                                    params.set("sessionType", "live_ab");
                                     pushParams(params);
                                 }}
                                 className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"

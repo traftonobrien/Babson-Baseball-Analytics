@@ -20,10 +20,23 @@ import {
   mapLegacyPlateAppearanceRow,
 } from "./plateAppearanceStorage";
 import type {
+  ChartingMatchupSide,
   ChartingPitch,
   ChartingPitcherSegment,
   ChartingPlateAppearance,
 } from "./types";
+
+function normalizeMatchupSide(value: string | null | undefined): ChartingMatchupSide {
+  return value === "our" ? "our" : "opponent";
+}
+
+function mapSegmentRow(row: typeof chartingPitcherSegments.$inferSelect): ChartingPitcherSegment {
+  return {
+    ...row,
+    playerId: row.playerId ?? null,
+    teamSide: normalizeMatchupSide(row.teamSide),
+  };
+}
 
 export interface ChartingProfileGame {
   id: string;
@@ -216,7 +229,7 @@ export function buildChartingPlayerProfile({
   const pitcher =
     pitcherSegments.length > 0
       ? {
-          playerId: playerId ?? pitcherSegments[0]!.playerId,
+          playerId: playerId ?? pitcherSegments[0]!.playerId ?? "",
           displayName: pitcherSegments[0]!.displayName,
           stats:
             pitcherPas.length > 0 && pitcherPitches.length > 0
@@ -310,7 +323,7 @@ export function buildChartingPlayerProfile({
             pitcherHandBySegmentId: new Map(
               segments.map((segment) => [
                 segment.id,
-                PITCHER_HAND_BY_PLAYER_ID.get(segment.playerId) ?? null,
+                (segment.playerId ? PITCHER_HAND_BY_PLAYER_ID.get(segment.playerId) : undefined) ?? null,
               ])
             ),
           }),
@@ -406,11 +419,11 @@ export async function loadChartingPlayerProfile(
       )
   ).map(mapLegacyPlateAppearanceRow);
 
-  const pitcherSegments = playerId
-    ? await db
+  const pitcherSegments: ChartingPitcherSegment[] = playerId
+    ? (await db
         .select()
         .from(chartingPitcherSegments)
-        .where(eq(chartingPitcherSegments.playerId, playerId))
+        .where(eq(chartingPitcherSegments.playerId, playerId))).map(mapSegmentRow)
     : [];
 
   const matchedHitterPas = allPas.filter((pa) =>
@@ -449,9 +462,9 @@ export async function loadChartingPlayerProfile(
   const relevantPas = allPas.filter(
     (pa) => relevantSegmentIds.has(pa.segmentId) || matchesHitterName(pa.hitterName, playerId, displayName, playerSlug)
   );
-  const relevantSegments =
+  const relevantSegments: ChartingPitcherSegment[] =
     relevantPas.length > 0
-      ? await db
+      ? (await db
           .select()
           .from(chartingPitcherSegments)
           .where(
@@ -459,7 +472,7 @@ export async function loadChartingPlayerProfile(
               chartingPitcherSegments.id,
               [...new Set(relevantPas.map((plateAppearance) => plateAppearance.segmentId))]
             )
-          )
+          )).map(mapSegmentRow)
       : [];
   const relevantPaIds = [...new Set(relevantPas.map((pa) => pa.id))];
   const pitches =
@@ -510,10 +523,10 @@ export async function loadChartingHitterInsightsDirectory(
     return [];
   }
 
-  const segments = await db
+  const segments: ChartingPitcherSegment[] = (await db
     .select()
     .from(chartingPitcherSegments)
-    .orderBy(desc(chartingPitcherSegments.gameId), desc(chartingPitcherSegments.segmentOrder));
+    .orderBy(desc(chartingPitcherSegments.gameId), desc(chartingPitcherSegments.segmentOrder))).map(mapSegmentRow);
 
   const paIds = [...new Set(plateAppearances.map((plateAppearance) => plateAppearance.id))];
   const pitches =
