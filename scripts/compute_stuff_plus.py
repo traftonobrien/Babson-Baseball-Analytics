@@ -483,14 +483,32 @@ RE_CUT = re.compile(r"cutter", re.IGNORECASE)
 RE_OS = re.compile(r"changeup|splitter", re.IGNORECASE)
 
 
+GYRO_MAG_THRESHOLD  = 5.0   # inches total movement — below this = gyro profile
+SWEEP_HB_THRESHOLD  = 12.0  # inches horizontal — above this = sweeper profile
+
+
 def add_pitch_flags(rows):
     for row in rows:
         pt = row["pitch_type"]
-        row["is_fb"] = 1 if RE_FB.search(pt) else 0
+        row["is_fb"]    = 1 if RE_FB.search(pt)    else 0
         row["is_curve"] = 1 if RE_CURVE.search(pt) else 0
         row["is_slide"] = 1 if RE_SLIDE.search(pt) else 0
-        row["is_cut"] = 1 if RE_CUT.search(pt) else 0
-        row["is_os"] = 1 if RE_OS.search(pt) else 0
+        row["is_cut"]   = 1 if RE_CUT.search(pt)   else 0
+        row["is_os"]    = 1 if RE_OS.search(pt)    else 0
+
+        # Slider sub-type: gyro / traditional / sweeper
+        if row["is_slide"]:
+            mag    = row.get("movement_mag", 0) or 0
+            hb_abs = abs(row.get("avg_hb_in") or 0)
+            if mag < GYRO_MAG_THRESHOLD:
+                row["slide_type"] = "gyro"
+            elif hb_abs > SWEEP_HB_THRESHOLD:
+                row["slide_type"] = "sweep"
+            else:
+                row["slide_type"] = "trad"
+        else:
+            row["slide_type"] = None
+
     return rows
 
 
@@ -582,15 +600,41 @@ def compute_stuff_plus(rows):
             0.10 * row["movement_diff_z"]       # shape separation from FB
         )
 
-        slide_score = (
-            # Both gyro (hard, no shape) and sweeper (shape + velo) styles rewarded
-            0.40 * row["velo_z"] +              # velocity is primary — gyros and sweepers both need it
-            0.25 * row["spin_z"] +              # spin rewards gyro profile; sweepers also benefit
-            0.15 * row["hb_abs_z"] +            # lateral sweep (sweeper bonus, not a gyro penalty)
-            0.10 * row["movement_z"] +          # overall movement magnitude
-            0.05 * row["movement_diff_z"] +     # shape separation from FB
-            0.05 * row["max_fb_velo_z"]         # arm strength halo
-        )
+        # --- Slider: three sub-type formulas ---
+        st = row.get("slide_type")
+        if st == "gyro":
+            slide_score = (
+                # Gyro slider: effectiveness comes entirely from velocity + spin.
+                # Near-zero movement is a feature (deception), not a penalty.
+                # Rewards: hard velocity within slide group, tight spin, FB tunnel proximity.
+                0.45 * row["velo_z"] +              # hard = everything for a gyro
+                0.25 * row["spin_z"] +              # spin axis creates late cut — key metric
+                0.20 * row["velo_diff_z"] +         # close to FB velocity = deceptive tunnel
+                0.10 * row["ext_z"]                 # extension adds perceived velo
+            )
+        elif st == "sweep":
+            slide_score = (
+                # Sweeper: horizontal break is the primary weapon.
+                # Velocity matters less — huge sweep can compensate for lower velo.
+                # Rewards: sweep magnitude, total movement, spin efficiency, then velo.
+                0.40 * row["hb_abs_z"] +            # sweep magnitude is the weapon
+                0.20 * row["movement_z"] +          # total break (sweep + any depth)
+                0.15 * row["spin_z"] +              # high spin efficiency (low gyro%)
+                0.15 * row["velo_z"] +              # still need some velocity
+                0.05 * row["movement_diff_z"] +     # distinct shape from FB
+                0.05 * row["max_fb_velo_z"]         # arm strength halo
+            )
+        else:
+            slide_score = (
+                # Traditional slider: balance of velocity, lateral break, and FB separation.
+                # Neither a pure velocity pitch nor a pure shape pitch.
+                0.30 * row["velo_z"] +              # velocity within slide group
+                0.25 * row["hb_abs_z"] +            # lateral break (4–12" range)
+                0.20 * row["spin_z"] +              # tight spin
+                0.15 * row["movement_diff_z"] +     # must look different from FB
+                0.05 * row["movement_z"] +          # overall shape magnitude
+                0.05 * row["max_fb_velo_z"]         # arm strength halo
+            )
 
         cut_score = (
             # Cutter: hard globally + actual lateral cut; velo proximity alone doesn't make a good cutter
