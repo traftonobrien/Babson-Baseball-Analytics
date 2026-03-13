@@ -47,25 +47,16 @@ export interface StuffPlusData {
 
 const JSON_PATH = path.join(process.cwd(), "public", "trackman", "stuff_plus.json");
 
-let cache: StuffPlusData | null = null;
-let loadError = false; // true if file is missing/unparseable
-
 export async function loadStuffPlusData(): Promise<StuffPlusData> {
-  if (cache) return cache;
-  if (loadError) return { computedAt: "", outings: [], arsenal: [] };
-
   try {
     const raw = await fs.readFile(JSON_PATH, "utf-8");
     const parsed = JSON.parse(raw) as StuffPlusData;
-    cache = {
+    return {
       computedAt: parsed.computedAt ?? "",
       outings: Array.isArray(parsed.outings) ? parsed.outings : [],
       arsenal: Array.isArray(parsed.arsenal) ? parsed.arsenal : [],
     };
-    return cache;
   } catch {
-    // File missing or unreadable — degrade gracefully
-    loadError = true;
     return { computedAt: "", outings: [], arsenal: [] };
   }
 }
