@@ -1,5 +1,5 @@
 {
-  "computedAt": "2026-03-13T15:03:05Z",
+  "computedAt": "2026-03-13T15:12:27Z",
   "outings": [
     {
       "playerSlug": "burk_bobby",
@@ -1504,20 +1504,6 @@
       "playerName": "Teator, Zander",
       "throws": "R",
       "date": "2026_02_10",
-      "pitchType": "ChangeUp",
-      "stuffPlus": 108.6,
-      "avgVeloMph": 84.77,
-      "avgIvbIn": -1.02,
-      "avgHbIn": 11.76,
-      "avgSpinRpm": 1324.7,
-      "avgExtFt": 5.26,
-      "maxFbVelo": 91.5
-    },
-    {
-      "playerSlug": "teator_zander",
-      "playerName": "Teator, Zander",
-      "throws": "R",
-      "date": "2026_02_10",
       "pitchType": "Fastball",
       "stuffPlus": 102.1,
       "avgVeloMph": 88.54,
@@ -1539,6 +1525,20 @@
       "avgHbIn": -7.1,
       "avgSpinRpm": 1866.2,
       "avgExtFt": 4.79,
+      "maxFbVelo": 91.5
+    },
+    {
+      "playerSlug": "teator_zander",
+      "playerName": "Teator, Zander",
+      "throws": "R",
+      "date": "2026_02_10",
+      "pitchType": "Splitter",
+      "stuffPlus": 108.6,
+      "avgVeloMph": 84.77,
+      "avgIvbIn": -1.02,
+      "avgHbIn": 11.76,
+      "avgSpinRpm": 1324.7,
+      "avgExtFt": 5.26,
       "maxFbVelo": 91.5
     },
     {
@@ -2327,18 +2327,6 @@
       "playerSlug": "teator_zander",
       "playerName": "Teator, Zander",
       "throws": "R",
-      "pitchType": "ChangeUp",
-      "meanStuffPlus": 108.6,
-      "sdStuffPlus": 0.0,
-      "avgVeloMph": 84.77,
-      "maxFbVelo": 91.5,
-      "avgExtFt": 5.26,
-      "nSessions": 1
-    },
-    {
-      "playerSlug": "teator_zander",
-      "playerName": "Teator, Zander",
-      "throws": "R",
       "pitchType": "Fastball",
       "meanStuffPlus": 100.3,
       "sdStuffPlus": 13.9,
@@ -2364,12 +2352,12 @@
       "playerName": "Teator, Zander",
       "throws": "R",
       "pitchType": "Splitter",
-      "meanStuffPlus": 105.2,
-      "sdStuffPlus": 0.0,
-      "avgVeloMph": 83.92,
+      "meanStuffPlus": 106.9,
+      "sdStuffPlus": 1.7,
+      "avgVeloMph": 84.34,
       "maxFbVelo": 91.5,
-      "avgExtFt": 4.35,
-      "nSessions": 1
+      "avgExtFt": 4.8,
+      "nSessions": 2
     },
     {
       "playerSlug": "valente_ben",

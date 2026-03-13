@@ -279,6 +279,22 @@ def attach_max_fb_velo(rows, max_velos_by_last):
 # Zscore group assignment
 # ---------------------------------------------------------------------------
 
+# Per-player pitch type merges: rename a pitch type to another before any
+# processing so they pool into a single arsenal entry.
+PITCH_TYPE_MERGES: dict[str, dict[str, str]] = {
+    "teator_zander": {"ChangeUp": "Splitter"},
+}
+
+
+def apply_pitch_type_merges(rows):
+    """Rename pitch types for specific players before any computation."""
+    for row in rows:
+        merges = PITCH_TYPE_MERGES.get(row["player_slug"], {})
+        if row["pitch_type"] in merges:
+            row["pitch_type"] = merges[row["pitch_type"]]
+    return rows
+
+
 def assign_zscore_group(rows):
     """Splitter pools with ChangeUp."""
     for row in rows:
@@ -751,6 +767,7 @@ def main():
     # Pipeline
     rows = add_base_features(rows)
     rows = attach_max_fb_velo(rows, max_velos)
+    rows = apply_pitch_type_merges(rows)
     rows = assign_zscore_group(rows)
     rows = attach_fb_baselines(rows)
     rows = add_velo_pct_features(rows)
