@@ -402,6 +402,31 @@
     "updatedAt": "2026-02-15T18:57:38Z"
   },
   {
+    "playerName": "Sean Noone",
+    "playerSlug": "noone_sean",
+    "team": "Babson College Beavers",
+    "handedness": "RHP",
+    "date": "2026-02-02",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Curveball",
+      "Fastball",
+      "Other"
+    ],
+    "weightedAvgVelo": 76.51,
+    "pitchTypesPath": "/trackman/sessions/noone_sean/2026_02_02/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/noone_sean/2026_02_02/session/meta.json",
+    "summaryPath": "/trackman/sessions/noone_sean/2026_02_02/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Sean Noone 2:2.pdf",
+      "sha256": "a8665a43ac6ce89eec6103cee84f90c671519ebe08e4488a46293adae0a2f17e",
+      "imported_at": "2026-03-13T15:44:56Z"
+    },
+    "updatedAt": "2026-03-13T15:44:56Z"
+  },
+  {
     "playerName": "OBrien, Trafton",
     "playerSlug": "obrien_trafton",
     "team": "Babson College",
@@ -577,6 +602,31 @@
       "imported_at": "2026-03-13T15:40:52Z"
     },
     "updatedAt": "2026-03-13T15:40:52Z"
+  },
+  {
+    "playerName": "Sean Noone",
+    "playerSlug": "noone_sean",
+    "team": null,
+    "handedness": null,
+    "date": "2026-02-05",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Curveball",
+      "Fastball",
+      "Other"
+    ],
+    "weightedAvgVelo": 75.74,
+    "pitchTypesPath": "/trackman/sessions/noone_sean/2026_02_05/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/noone_sean/2026_02_05/session/meta.json",
+    "summaryPath": "/trackman/sessions/noone_sean/2026_02_05/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Sean Noone 2:5.pdf",
+      "sha256": "63d82588f8a3039059660ee013941cb9cb1d705e37e0f7c92aaf4c34bbe14a47",
+      "imported_at": "2026-03-13T15:45:02Z"
+    },
+    "updatedAt": "2026-03-13T15:45:02Z"
   },
   {
     "playerName": "OKeefe, Quinn",
@@ -906,6 +956,32 @@
       "imported_at": "2026-02-15T19:18:05Z"
     },
     "updatedAt": "2026-02-15T19:18:05Z"
+  },
+  {
+    "playerName": "Sean Noone",
+    "playerSlug": "noone_sean",
+    "team": null,
+    "handedness": null,
+    "date": "2026-02-10",
+    "sessionType": null,
+    "pitchCount": null,
+    "pitchTypes": [
+      "Curveball",
+      "Fastball",
+      "Other",
+      "Sinker"
+    ],
+    "weightedAvgVelo": 77.03,
+    "pitchTypesPath": "/trackman/sessions/noone_sean/2026_02_10/session/pitch_types.json",
+    "metaPath": "/trackman/sessions/noone_sean/2026_02_10/session/meta.json",
+    "summaryPath": "/trackman/sessions/noone_sean/2026_02_10/session/session_summary.json",
+    "source": {
+      "type": "pdf_export",
+      "filename": "Sean Noone 2:10.pdf",
+      "sha256": "8a5b138406605a55d7558f52f134397e41a595758ddd12001cf4ee127ed93288",
+      "imported_at": "2026-03-13T15:45:03Z"
+    },
+    "updatedAt": "2026-03-13T15:45:03Z"
   },
   {
     "playerName": "OBrien, Trafton",

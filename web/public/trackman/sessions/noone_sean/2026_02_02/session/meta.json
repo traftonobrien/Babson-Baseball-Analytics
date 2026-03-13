@@ -1,0 +1,17 @@
+{
+  "player_name": "Sean Noone",
+  "player_slug": "noone_sean",
+  "team": "Babson College Beavers",
+  "handedness": "RHP",
+  "session_date": "2026-02-02",
+  "date_from": "2025-09-05",
+  "date_to": "2026-03-13",
+  "session_label": null,
+  "report_url": "https://teamportal.trackmanbaseball.com/reports/d937a064-a94e-4f44-b2a3-ad78ab4e0a66",
+  "source": {
+    "type": "pdf_export",
+    "filename": "Sean Noone 2:2.pdf",
+    "sha256": "a8665a43ac6ce89eec6103cee84f90c671519ebe08e4488a46293adae0a2f17e",
+    "imported_at": "2026-03-13T15:44:56Z"
+  }
+}
