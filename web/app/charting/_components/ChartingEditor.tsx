@@ -198,6 +198,10 @@ export function ChartingEditor({
     openPlateAppearance
       ? activeCountPreset === "bunt"
       : Boolean(selectedPresetSeed.buntMode);
+  const activeMatchupSlot =
+    snapshot.game.sessionType === "game"
+      ? openPlateAppearance?.lineupSlot ?? liveState.batterSlot
+      : openPlateAppearance?.lineupSlot ?? 1;
   const availablePitchResults: readonly PitchResult[] = effectiveBuntMode
     ? BUNT_MODE_PITCH_RESULTS
     : GAME_PITCH_RESULTS;
@@ -539,7 +543,7 @@ export function ChartingEditor({
           name: selectedPitcher.name,
         },
         hitterName: hitterName.trim(),
-        lineupSlot: 1, // Defaulting to 1 for Live ABs where lineup order doesn't matter
+        lineupSlot: activeMatchupSlot,
       },
       gameStateOverride,
       {
@@ -781,7 +785,7 @@ export function ChartingEditor({
                       const nextSnapshot = syncHitterToSnapshot(
                         snapshot,
                         hitterName.trim(),
-                        1,
+                        activeMatchupSlot,
                         gameStateOverride
                       );
                       if (nextSnapshot !== snapshot) {
