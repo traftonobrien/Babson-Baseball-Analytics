@@ -564,12 +564,12 @@ def compute_stuff_plus(rows):
     # --- Step 9: ShapeImpactScore ---
     for row in rows:
         fb_score = (
-            0.15 * row["fb_velo_pct_max_z"] +
-            0.45 * row["global_velo_z"] +
-            0.15 * row["ext_z"] +
-            0.15 * row["movement_z"] +
-            0.05 * row["spin_z"] +
-            0.05 * row["velo_pct_max_z"]
+            # Compare velo within the FB group — 80 mph is slow among FBs, not globally
+            0.50 * row["velo_z"] +              # velocity vs other fastballs (primary signal)
+            0.20 * row["movement_z"] +          # ride/run within FB group
+            0.15 * row["ext_z"] +               # extension
+            0.10 * row["fb_velo_pct_max_z"] +   # % of max (reduced — slow arms shouldn't win this)
+            0.05 * row["spin_z"]                # spin
         )
 
         curve_score = (
