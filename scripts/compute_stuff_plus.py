@@ -583,12 +583,12 @@ def compute_stuff_plus(rows):
         )
 
         slide_score = (
-            # Reward hard velocity and sweep — sliders/sweepers only (no cutters)
-            0.30 * row["velo_z"] +              # hard slider within group
-            0.25 * row["hb_abs_z"] +            # lateral sweep
-            0.15 * row["movement_diff_z"] +     # must move differently than FB
-            0.15 * row["movement_z"] +          # overall movement magnitude
-            0.10 * row["spin_z"] +              # tight spin
+            # Both gyro (hard, no shape) and sweeper (shape + velo) styles rewarded
+            0.40 * row["velo_z"] +              # velocity is primary — gyros and sweepers both need it
+            0.25 * row["spin_z"] +              # spin rewards gyro profile; sweepers also benefit
+            0.15 * row["hb_abs_z"] +            # lateral sweep (sweeper bonus, not a gyro penalty)
+            0.10 * row["movement_z"] +          # overall movement magnitude
+            0.05 * row["movement_diff_z"] +     # shape separation from FB
             0.05 * row["max_fb_velo_z"]         # arm strength halo
         )
 
