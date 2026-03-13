@@ -283,6 +283,7 @@ def attach_max_fb_velo(rows, max_velos_by_last):
 # processing so they pool into a single arsenal entry.
 PITCH_TYPE_MERGES: dict[str, dict[str, str]] = {
     "teator_zander": {"ChangeUp": "Splitter"},
+    "place_cal": {"Slider": "Curveball"},
 }
 
 
