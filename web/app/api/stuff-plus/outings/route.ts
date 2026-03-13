@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, asc, eq } from "drizzle-orm";
-import { db } from "@/db";
-import { stuffPlusOutings } from "@/db/schema";
+import { getOutings } from "@/lib/stuffPlusJson";
 
 export async function GET(request: NextRequest) {
   const playerId = request.nextUrl.searchParams.get("playerId");
@@ -11,31 +9,19 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const dateNorm = date?.trim()?.replace(/-/g, "_");
-    const conditions = dateNorm
-      ? and(eq(stuffPlusOutings.playerId, playerId.trim()), eq(stuffPlusOutings.date, dateNorm))
-      : eq(stuffPlusOutings.playerId, playerId.trim());
-
-    const rows = await db
-      .select({
-        date: stuffPlusOutings.date,
-        pitchType: stuffPlusOutings.pitchType,
-        stuffPlus: stuffPlusOutings.stuffPlus,
-      })
-      .from(stuffPlusOutings)
-      .where(conditions)
-      .orderBy(asc(stuffPlusOutings.date));
+    const pid = playerId.trim();
+    const rows = await getOutings(pid, date);
 
     const points = rows
       .filter((r) => r.stuffPlus != null && r.pitchType !== "Other")
       .map((r) => ({
         date: r.date,
         pitchType: r.pitchType,
-        stuffPlus: r.stuffPlus as number,
+        stuffPlus: r.stuffPlus,
       }));
 
     return NextResponse.json({
-      playerId: playerId.trim(),
+      playerId: pid,
       points,
     });
   } catch (err) {

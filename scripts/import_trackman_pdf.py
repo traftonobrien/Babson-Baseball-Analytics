@@ -533,6 +533,21 @@ def main() -> None:
         if len(pdf_paths) > 1:
             print(f"\nDone: {len(imported)} imported, {len(skipped)} skipped")
 
+        # Recompute Stuff+ if any new sessions were imported
+        if imported:
+            import subprocess
+            compute_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "compute_stuff_plus.py")
+            if os.path.exists(compute_script):
+                print("\nRecomputing Stuff+ scores...")
+                result = subprocess.run(
+                    [sys.executable, compute_script],
+                    cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                )
+                if result.returncode != 0:
+                    print("Warning: Stuff+ recompute failed (non-fatal)", file=sys.stderr)
+            else:
+                print(f"Warning: compute_stuff_plus.py not found at {compute_script}", file=sys.stderr)
+
     except (FileNotFoundError, ValueError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         raise SystemExit(1)

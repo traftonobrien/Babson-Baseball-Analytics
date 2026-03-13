@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { inArray } from "drizzle-orm";
 import path from "path";
 import { promises as fs } from "fs";
-import { db } from "@/db";
-import { stuffPlusArsenal } from "@/db/schema";
+import { loadStuffPlusData } from "@/lib/stuffPlusJson";
 
 interface IndexEntry {
   playerSlug?: string;
@@ -60,25 +58,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ pitches: [], team, note: "No teammates in index" });
     }
 
-    const rows = await db
-      .select({
-        playerId: stuffPlusArsenal.playerId,
-        pitchType: stuffPlusArsenal.pitchType,
-        meanStuffPlus: stuffPlusArsenal.meanStuffPlus,
-      })
-      .from(stuffPlusArsenal)
-      .where(inArray(stuffPlusArsenal.playerId, teammateSlugs));
+    // Load arsenal entries from JSON for all teammates
+    const { arsenal } = await loadStuffPlusData();
+    const rows = arsenal.filter((r) =>
+      teammateSlugs.some(
+        (s) => s === r.playerSlug || s.toLowerCase() === r.playerSlug?.toLowerCase()
+      )
+    );
 
-    const byPitchType = new Map<string, { playerId: string; meanStuffPlus: number }[]>();
+    const byPitchType = new Map<string, { playerSlug: string; meanStuffPlus: number }[]>();
     for (const r of rows) {
       if (r.meanStuffPlus == null) continue;
-      const key = r.pitchType;
-      if (!byPitchType.has(key)) byPitchType.set(key, []);
-      byPitchType.get(key)!.push({ playerId: r.playerId, meanStuffPlus: r.meanStuffPlus });
+      if (!byPitchType.has(r.pitchType)) byPitchType.set(r.pitchType, []);
+      byPitchType.get(r.pitchType)!.push({ playerSlug: r.playerSlug, meanStuffPlus: r.meanStuffPlus });
     }
 
     const playerPitches = rows.filter(
-      (r) => r.playerId === pid || r.playerId?.toLowerCase() === pidLower
+      (r) => r.playerSlug === pid || r.playerSlug?.toLowerCase() === pidLower
     );
     const pitches: { pitchType: string; meanStuffPlus: number; percentile: number | null }[] = [];
 
@@ -97,15 +93,15 @@ export async function GET(request: NextRequest) {
     const byPlayer = new Map<string, number[]>();
     for (const r of rows) {
       if (r.meanStuffPlus == null) continue;
-      if (!byPlayer.has(r.playerId)) byPlayer.set(r.playerId, []);
-      byPlayer.get(r.playerId)!.push(r.meanStuffPlus);
+      if (!byPlayer.has(r.playerSlug)) byPlayer.set(r.playerSlug, []);
+      byPlayer.get(r.playerSlug)!.push(r.meanStuffPlus);
     }
-    const playerTotals = Array.from(byPlayer.entries()).map(([pid, vals]) => ({
-      playerId: pid,
+    const playerTotals = Array.from(byPlayer.entries()).map(([slug, vals]) => ({
+      playerSlug: slug,
       total: vals.reduce((a, b) => a + b, 0) / vals.length,
     }));
     const playerTotal = playerTotals.find(
-      (x) => x.playerId === pid || x.playerId?.toLowerCase() === pidLower
+      (x) => x.playerSlug === pid || x.playerSlug?.toLowerCase() === pidLower
     )?.total;
     const totalPercentile =
       playerTotal != null

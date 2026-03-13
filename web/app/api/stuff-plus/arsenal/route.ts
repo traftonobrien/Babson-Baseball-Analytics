@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, eq, ne } from "drizzle-orm";
-import { db } from "@/db";
-import { stuffPlusArsenal } from "@/db/schema";
+import { getArsenal } from "@/lib/stuffPlusJson";
 
 export async function GET(request: NextRequest) {
   const playerId = request.nextUrl.searchParams.get("playerId");
@@ -10,23 +8,23 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const rows = await db
-      .select()
-      .from(stuffPlusArsenal)
-      .where(and(eq(stuffPlusArsenal.playerId, playerId.trim()), ne(stuffPlusArsenal.pitchType, "Other")));
+    const pid = playerId.trim();
+    const rows = await getArsenal(pid);
 
     const playerName = rows[0]?.playerName ?? null;
-    const pitches = rows.map((r) => ({
-      pitchType: r.pitchType,
-      meanStuffPlus: r.meanStuffPlus,
-      avgVeloMph: r.avgVeloMph,
-      maxFbVelo: r.maxFbVelo,
-      avgExtFt: r.avgExtFt,
-      nSessions: r.nSessions,
-    }));
+    const pitches = rows
+      .filter((r) => r.pitchType !== "Other")
+      .map((r) => ({
+        pitchType: r.pitchType,
+        meanStuffPlus: r.meanStuffPlus,
+        avgVeloMph: r.avgVeloMph,
+        maxFbVelo: r.maxFbVelo,
+        avgExtFt: r.avgExtFt,
+        nSessions: r.nSessions,
+      }));
 
     return NextResponse.json({
-      playerId: playerId.trim(),
+      playerId: pid,
       playerName,
       pitches,
     });

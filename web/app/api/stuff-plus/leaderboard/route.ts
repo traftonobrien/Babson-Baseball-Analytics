@@ -1,22 +1,27 @@
 import { NextResponse } from "next/server";
-import { and, asc, isNotNull, ne } from "drizzle-orm";
-import { db } from "@/db";
-import { stuffPlusArsenal } from "@/db/schema";
+import { getAllArsenal } from "@/lib/stuffPlusJson";
 
 export async function GET() {
   try {
-    const rows = await db
-      .select({
-        playerId: stuffPlusArsenal.playerId,
-        playerName: stuffPlusArsenal.playerName,
-        pitchType: stuffPlusArsenal.pitchType,
-        meanStuffPlus: stuffPlusArsenal.meanStuffPlus,
-        avgVeloMph: stuffPlusArsenal.avgVeloMph,
-        nSessions: stuffPlusArsenal.nSessions,
+    const all = await getAllArsenal();
+
+    const rows = all
+      .filter((r) => r.pitchType !== "Other" && r.meanStuffPlus != null)
+      .sort((a, b) => {
+        if (a.playerSlug < b.playerSlug) return -1;
+        if (a.playerSlug > b.playerSlug) return 1;
+        if (a.pitchType < b.pitchType) return -1;
+        if (a.pitchType > b.pitchType) return 1;
+        return 0;
       })
-      .from(stuffPlusArsenal)
-      .where(and(isNotNull(stuffPlusArsenal.meanStuffPlus), ne(stuffPlusArsenal.pitchType, "Other")))
-      .orderBy(asc(stuffPlusArsenal.playerId), asc(stuffPlusArsenal.pitchType));
+      .map((r) => ({
+        playerId: r.playerSlug,
+        playerName: r.playerName,
+        pitchType: r.pitchType,
+        meanStuffPlus: r.meanStuffPlus,
+        avgVeloMph: r.avgVeloMph,
+        nSessions: r.nSessions,
+      }));
 
     return NextResponse.json({ rows });
   } catch (err) {
