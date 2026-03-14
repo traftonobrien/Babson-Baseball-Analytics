@@ -323,8 +323,13 @@ export default function TrackmanSessionView({
         meanStuffPlus: sessionStuffPlus.get(p.pitchType) ?? p.meanStuffPlus,
       }));
     }
+    // Apply per-player pitch type display overrides (e.g. Slider -> Curveball for chou_colin)
+    result = result.map((p) => {
+      const displayType = getStuffPlusDisplayPitchType(playerId, p.pitchType);
+      return displayType !== p.pitchType ? { ...p, pitchType: displayType } : p;
+    });
     return result;
-  }, [pitchTypes, hand, sessionStuffPlus]);
+  }, [pitchTypes, hand, sessionStuffPlus, playerId]);
 
   // All pitch types
   const allTypes = useMemo(() => {

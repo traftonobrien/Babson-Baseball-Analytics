@@ -383,11 +383,15 @@ export default function TrackmanPlayerPage({
       stuffMap.set(displayType, p.meanStuffPlus);
       stuffMap.set(p.pitchType, p.meanStuffPlus);
     }
-    return merged.map((p) => ({
-      ...p,
-      meanStuffPlus: stuffMap.get(p.pitchType) ?? p.meanStuffPlus,
-    }));
-  }, [sessionData, normalizedHand, stuffPlusArsenal]);
+    return merged.map((p) => {
+      const displayType = getStuffPlusDisplayPitchType(slug, p.pitchType);
+      const renamed = displayType !== p.pitchType ? { ...p, pitchType: displayType } : p;
+      return {
+        ...renamed,
+        meanStuffPlus: stuffMap.get(displayType) ?? stuffMap.get(p.pitchType) ?? p.meanStuffPlus,
+      };
+    });
+  }, [sessionData, normalizedHand, stuffPlusArsenal, slug]);
 
   // Trends
   const fbVeloTrend = useMemo(() => computeFbVeloTrend(sessionData), [sessionData]);
