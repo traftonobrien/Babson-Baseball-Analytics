@@ -216,6 +216,7 @@ def load_all_rows(sessions_dir):
                         "avg_ext_ft": safe_float(pt.get("avg_extension_ft")),
                         "avg_rel_height_ft": safe_float(pt.get("avg_rel_height_ft")),
                         "avg_rel_side_ft": safe_float(pt.get("avg_rel_side_ft")),
+                        "avg_spin_axis_2d": safe_float(pt.get("avg_spin_axis_2d")),
                         "is_valid": pt.get("is_valid", True),
                     }
                     rows.append(row)
@@ -262,6 +263,16 @@ def add_base_features(rows):
         row["movement_mag"] = math.sqrt(ivb ** 2 + hb ** 2)
         row["ivb_abs"] = abs(ivb)
         row["hb_abs"] = abs(hb)
+
+        # Spin axis efficiency: cos((axis - 180°) * π/180)
+        # 180° = pure backspin (max IVB for 4-seam), deviating from 180° = sidespin/gyro.
+        # Ranges from 1.0 (pure backspin) to -1.0 (pure topspin), 0 at 90°/270°.
+        axis = row.get("avg_spin_axis_2d")
+        if axis is not None:
+            row["spin_axis_eff"] = math.cos((axis - 180.0) * math.pi / 180.0)
+        else:
+            row["spin_axis_eff"] = None
+
     return rows
 
 
@@ -630,6 +641,9 @@ def compute_stuff_plus(rows):
     rows = apply_group_robust_z(rows, "ivb_abs", "ivb_abs_z")
     rows = apply_group_robust_z(rows, "hb_abs", "hb_abs_z")
 
+    # Spin axis efficiency z-score (within-group; fill None → 0 = median)
+    rows = apply_group_robust_z(rows, "spin_axis_eff", "spin_axis_eff_z", fill_nan_with_zero=True)
+
     # --- Step 9: ShapeImpactScore ---
     for row in rows:
 
@@ -639,11 +653,13 @@ def compute_stuff_plus(rows):
             if ft == "ride":
                 fb_score = (
                     # High-ride 4-seam: pure backspin carry is the weapon.
-                    # IVB specifically rewarded, not just total movement.
-                    0.40 * row["velo_z"] +          # hard + ride = elite combo
-                    0.30 * row["ivb_z"] +           # pure vertical carry (signed, high = good)
-                    0.15 * row["spin_z"] +          # backspin efficiency
-                    0.15 * row["ext_z"]             # extension adds perceived velo
+                    # Release height + spin axis purity amplify perceived rise.
+                    0.35 * row["velo_z"] +              # hard + ride = elite combo
+                    0.25 * row["ivb_z"] +               # pure vertical carry
+                    0.10 * row["spin_z"] +              # backspin RPM
+                    0.10 * row["ext_z"] +               # extension adds perceived velo
+                    0.10 * row["rel_height_z"] +        # higher slot = more apparent rise angle
+                    0.10 * row["spin_axis_eff_z"]       # spin axis near 180° = pure backspin efficiency
                 )
             elif ft == "cut":
                 fb_score = (
@@ -667,9 +683,10 @@ def compute_stuff_plus(rows):
                     # Default 4-seam: balanced — velocity + movement + extension.
                     0.45 * row["velo_z"] +          # velocity vs other FBs
                     0.20 * row["movement_z"] +      # total ride/run
-                    0.15 * row["ext_z"] +           # extension
+                    0.10 * row["ext_z"] +           # extension
                     0.10 * row["spin_z"] +          # spin
-                    0.10 * row["fb_velo_pct_max_z"] # effort level
+                    0.10 * row["fb_velo_pct_max_z"] + # effort level
+                    0.05 * row["rel_height_z"]      # slot height contributes to perceived rise
                 )
         else:
             fb_score = 0.0
@@ -705,12 +722,13 @@ def compute_stuff_plus(rows):
             else:
                 curve_score = (
                     # Vertical/12-6 curve: pure drop depth is the weapon.
-                    # Velocity anchors score — a 62 mph curve can't top a 70 mph one on drop alone.
+                    # Higher release slot = steeper perceived drop angle from batter's POV.
                     0.30 * row["velo_z"] +          # power curve (within curve group)
                     0.25 * row["ivb_abs_z"] +       # drop depth — primary shape metric
-                    0.20 * (-row["velo_diff_z"]) +  # separation from FB
+                    0.15 * (-row["velo_diff_z"]) +  # separation from FB
                     0.15 * row["spin_z"] +          # tight spin
-                    0.10 * row["movement_z"]        # total break magnitude
+                    0.10 * row["movement_z"] +      # total break magnitude
+                    0.05 * row["rel_height_z"]      # higher slot = sharper perceived drop
                 )
         else:
             curve_score = 0.0
