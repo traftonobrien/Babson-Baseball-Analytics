@@ -7,7 +7,7 @@ import { and, eq, ne } from "drizzle-orm";
 import rosterData from "@/data/roster.json";
 import { db } from "@/db";
 import { stuffPlusArsenal } from "@/db/schema";
-import { fetchBattingLeaderboard, fetchPitchingLeaderboard } from "@/lib/d3db";
+import { fetchBattingLeaderboard, fetchPitchingLeaderboard } from "@/lib/collegeStats";
 import { getHand } from "@/lib/canonicalPlayers";
 import {
   buildCommandPlusBaselines,
@@ -35,7 +35,7 @@ import { loadChartingPlayerProfile } from "@/lib/charting/playerProfile";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-type D3Row = Record<string, unknown>;
+type LeaderboardRow = Record<string, unknown>;
 
 type TrackmanIndexEntry = {
   playerSlug?: string;
@@ -76,7 +76,7 @@ type MetricDefinition = {
   format: (value: number | null) => string;
   valueKeys?: string[];
   percentileKeys?: string[];
-  derive?: (row: D3Row) => number | null;
+  derive?: (row: LeaderboardRow) => number | null;
 };
 
 type PercentileMetric = {
@@ -88,7 +88,7 @@ type PercentileMetric = {
 
 type ProfileMode = "pitcher" | "hitter" | "two-way";
 
-const TARGET_YEAR = 2025;
+const TARGET_YEAR = 2026;
 
 
 const PITCHING_KEYS = {
@@ -138,7 +138,7 @@ function parseMetric(value: unknown): number | null {
   return null;
 }
 
-function getNumberByCandidates(row: D3Row, candidates: string[]): number | null {
+function getNumberByCandidates(row: LeaderboardRow, candidates: string[]): number | null {
   for (const candidate of candidates) {
     const normalizedCandidate = normalizeKey(candidate);
     for (const [key, value] of Object.entries(row)) {
@@ -151,19 +151,19 @@ function getNumberByCandidates(row: D3Row, candidates: string[]): number | null 
 }
 
 
-function extractRows(payload: unknown): D3Row[] {
+function extractRows(payload: unknown): LeaderboardRow[] {
   if (!payload) return [];
-  if (Array.isArray(payload)) return payload as D3Row[];
+  if (Array.isArray(payload)) return payload as LeaderboardRow[];
   if (typeof payload !== "object") return [];
   const record = payload as Record<string, unknown>;
   const directKeys = ["data", "rows", "players", "results", "leaderboard"];
   for (const key of directKeys) {
-    if (Array.isArray(record[key])) return record[key] as D3Row[];
+    if (Array.isArray(record[key])) return record[key] as LeaderboardRow[];
   }
   if (record.data && typeof record.data === "object") {
     const nested = record.data as Record<string, unknown>;
     for (const key of directKeys) {
-      if (Array.isArray(nested[key])) return nested[key] as D3Row[];
+      if (Array.isArray(nested[key])) return nested[key] as LeaderboardRow[];
     }
   }
   return [];
@@ -209,7 +209,7 @@ function normalizePercentile(raw: number | null): number | null {
   return Math.min(100, Math.max(0, normalized));
 }
 
-function getMetricValue(row: D3Row, metric: MetricDefinition): number | null {
+function getMetricValue(row: LeaderboardRow, metric: MetricDefinition): number | null {
   if (metric.derive) {
     const derived = metric.derive(row);
     if (derived != null) return derived;
@@ -218,7 +218,7 @@ function getMetricValue(row: D3Row, metric: MetricDefinition): number | null {
   return null;
 }
 
-function getPercentileValue(row: D3Row, metric: MetricDefinition): number | null {
+function getPercentileValue(row: LeaderboardRow, metric: MetricDefinition): number | null {
   if (metric.percentileKeys) {
     const direct = getNumberByCandidates(row, metric.percentileKeys);
     if (direct != null) return direct;
@@ -621,8 +621,10 @@ const loadSeasonCommandBaselines = cache(async (season: number) => {
   return buildCommandPlusBaselines(arrays.flat());
 });
 
-function getD3PlayerId(player: PlayerRegistryEntry): string | null {
-  return player.d3_player_id != null ? String(player.d3_player_id) : null;
+function getExternalPlayerIds(player: PlayerRegistryEntry): string[] {
+  return [player.ncaa_player_id, player.d3_player_id]
+    .filter((value): value is string => value != null && value !== "")
+    .map(String);
 }
 
 function normalizePlayerName(value: string): string {
@@ -637,14 +639,16 @@ function resolveProfileMode(player: PlayerRegistryEntry): ProfileMode {
 }
 
 function findLeaderboardRow(
-  leaderboardRows: D3Row[],
+  leaderboardRows: LeaderboardRow[],
   player: PlayerRegistryEntry,
-): D3Row | null {
-  const d3PlayerId = getD3PlayerId(player);
-  if (d3PlayerId) {
-    const byId = leaderboardRows.find((row) => String(row.player_id ?? "") === d3PlayerId);
-    if (byId) {
-      return byId;
+): LeaderboardRow | null {
+  const externalIds = getExternalPlayerIds(player);
+  if (externalIds.length > 0) {
+    for (const playerId of externalIds) {
+      const byId = leaderboardRows.find((row) => String(row.player_id ?? "") === playerId);
+      if (byId) {
+        return byId;
+      }
     }
   }
 
@@ -658,7 +662,7 @@ function findLeaderboardRow(
   );
 }
 
-function buildSeasonStats(metrics: MetricDefinition[], statsSource: D3Row): { label: string; value: string }[] {
+function buildSeasonStats(metrics: MetricDefinition[], statsSource: LeaderboardRow): { label: string; value: string }[] {
   return metrics.map((metric) => {
     const value = getMetricValue(statsSource, metric);
     return {
@@ -668,11 +672,11 @@ function buildSeasonStats(metrics: MetricDefinition[], statsSource: D3Row): { la
   });
 }
 
-function buildD3Percentiles(
+function buildSeasonPercentiles(
   metrics: MetricDefinition[],
-  leaderboardRows: D3Row[],
-  statsSource: D3Row,
-  percentileRow: D3Row,
+  leaderboardRows: LeaderboardRow[],
+  statsSource: LeaderboardRow,
+  percentileRow: LeaderboardRow,
 ): PercentileMetric[] {
   return metrics.map((metric) => {
     const playerValue = getMetricValue(statsSource, metric);
@@ -696,7 +700,7 @@ function buildD3Percentiles(
       const computed = computePercentile(values, playerValue, metric.higherBetter);
       percentile = computed;
       if (computed != null) {
-        note = "Computed (vs D3)";
+        note = "Computed (vs NCAA)";
       }
     }
 
@@ -728,7 +732,7 @@ export default async function PlayerProfilePage({
   const profileMode = resolveProfileMode(player);
   const overviewMode = profileMode === "hitter" ? "hitting" : "pitching";
 
-  let leaderboardRows: D3Row[] = [];
+  let leaderboardRows: LeaderboardRow[] = [];
   let fetchError: string | null = null;
 
   try {
@@ -751,8 +755,8 @@ export default async function PlayerProfilePage({
   const seasonStats = playerRow
     ? buildSeasonStats(snapshotMetrics, playerRow)
     : [];
-  const d3Percentiles = playerRow
-    ? buildD3Percentiles(
+  const seasonPercentiles = playerRow
+    ? buildSeasonPercentiles(
         percentileMetrics,
         leaderboardRows,
         playerRow,
@@ -762,7 +766,7 @@ export default async function PlayerProfilePage({
 
   const debugInfo = {
     foundRow: Boolean(playerRow),
-    playerId: getD3PlayerId(player) ?? "Unresolved",
+    playerId: getExternalPlayerIds(player)[0] ?? "Unresolved",
     leaderboardCount: leaderboardRows.length,
     sourceUsed: playerRow ? overviewMode : "none",
     error: fetchError,
@@ -979,7 +983,7 @@ export default async function PlayerProfilePage({
           seasonStats={seasonStats}
           seasonYear={TARGET_YEAR}
           seasonNote={seasonNote}
-          d3Percentiles={d3Percentiles}
+      seasonPercentiles={seasonPercentiles}
           trackmanSessions={trackmanSessions}
           commandOutings={commandOutings}
           playerSlug={player.slug}

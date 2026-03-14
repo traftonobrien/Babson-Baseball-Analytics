@@ -1,0 +1,119 @@
+# Sync NCAA-backed Division III leaderboards daily for 2026.
+# Runs at 11:00 AM UTC (7:00 AM ET during daylight saving time).
+name: Sync NCAA Leaderboards
+
+permissions:
+  contents: write
+
+on:
+  schedule:
+    - cron: "0 11 * * *"
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - stat_type: pitching
+            max_wait_seconds: 6
+          - stat_type: batting
+            max_wait_seconds: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.5.2"
+
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Install R dependencies
+        env:
+          R_REMOTES_NO_ERRORS_FROM_WARNINGS: "true"
+        run: |
+          Rscript -e 'options(repos = c(CRAN = "https://cloud.r-project.org")); install.packages(c("remotes","chromote","jsonlite","rvest","xml2","dplyr","stringr","tibble"), quiet = TRUE)'
+          Rscript -e 'remotes::install_github("robert-frey/collegebaseball", upgrade = "never", quiet = TRUE)'
+
+      - name: Sync NCAA ${{ matrix.stat_type }} leaderboard
+        env:
+          CHROMOTE_CHROME: ${{ steps.chrome.outputs.chrome-path }}
+        run: Rscript scripts/sync_collegebaseball_leaderboard.R --years 2026 --types ${{ matrix.stat_type }} --max-wait-seconds ${{ matrix.max_wait_seconds }}
+
+      - name: Upload generated cache
+        uses: actions/upload-artifact@v4
+        with:
+          name: college-stats-${{ matrix.stat_type }}
+          path: |
+            web/public/college-stats/${{ matrix.stat_type }}-2026.json
+          if-no-files-found: error
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: sync
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download pitching cache
+        uses: actions/download-artifact@v4
+        with:
+          name: college-stats-pitching
+          path: web/public/college-stats
+
+      - name: Download batting cache
+        uses: actions/download-artifact@v4
+        with:
+          name: college-stats-batting
+          path: web/public/college-stats
+
+      - name: Rebuild combined metadata
+        run: |
+          python3 - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          out_dir = Path("web/public/college-stats")
+          results = {}
+          for stat_type in ("pitching", "batting"):
+              path = out_dir / f"{stat_type}-2026.json"
+              rows = json.loads(path.read_text(encoding="utf-8"))
+              results[f"2026-{stat_type}"] = {
+                  "row_count": len(rows),
+                  "team_count": len({row.get("team_id") for row in rows}),
+                  "failure_count": 0,
+                  "failures": [],
+              }
+
+          meta = {
+              "synced_at": datetime.now(timezone.utc).isoformat(),
+              "source": "collegebaseball+chromote",
+              "division": 3,
+              "years": [2026],
+              "types": ["pitching", "batting"],
+              "results": results,
+          }
+
+          (out_dir / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
+          PY
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet web/public/college-stats/; then
+            echo "No changes to NCAA cache"
+          else
+            git add web/public/college-stats/
+            git commit -m "chore: sync NCAA leaderboards $(date -u +%Y-%m-%d)"
+            git push
+          fi

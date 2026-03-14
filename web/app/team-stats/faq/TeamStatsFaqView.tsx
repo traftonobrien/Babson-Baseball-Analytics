@@ -46,7 +46,7 @@ export default function TeamStatsFaqView() {
             </h3>
             <p className="mt-3 text-sm leading-relaxed text-emerald-100/70">
               A cumulative value metric estimating how many wins a pitcher adds
-              compared to a replacement-level D3 arm.
+              compared to a replacement-level Division III arm.
             </p>
           </DictionaryCard>
 

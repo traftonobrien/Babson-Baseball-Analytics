@@ -33,7 +33,7 @@ Start here to find any doc. For task-based lookup, see `docs/ROUTING.md`.
 - `docs/runbooks/publish_mechanics_session.md` — Publish mechanics session to the web app
 - `docs/runbooks/import_trackman_pdf.md` — Import TrackMan PDF reports
 - `docs/runbooks/export_trackman_avgs.md` — Export TrackMan outing averages to CSV
-- `docs/runbooks/sync_d3_leaderboard.md` — Sync D3 baseball leaderboard data
+- `docs/runbooks/sync_collegebaseball_leaderboard.md` — Sync NCAA Division III leaderboard data
 - `docs/runbooks/post_game_update.md` — Post-game stats update workflow
 - `docs/runbooks/migrate_outings.md` — Migrate outings between folder formats
 - `docs/runbooks/normalize_dateIds.md` — Fix legacy dateId formats

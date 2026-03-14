@@ -102,7 +102,7 @@ interface Props {
   seasonStats: SeasonStat[];
   seasonYear: number;
   seasonNote?: string;
-  d3Percentiles: PercentileMetric[];
+  seasonPercentiles: PercentileMetric[];
   trackmanSessions: TrackmanSession[];
   commandOutings: CommandOuting[];
   playerSlug: string;
@@ -394,7 +394,7 @@ export default function PlayerProfileTabs({
   seasonStats,
   seasonYear,
   seasonNote,
-  d3Percentiles,
+  seasonPercentiles,
   trackmanSessions,
   commandOutings,
   playerSlug,
@@ -727,7 +727,7 @@ export default function PlayerProfileTabs({
               </section>
             )}
 
-            {seasonStats.length === 0 && d3Percentiles.length === 0 ? (
+            {seasonStats.length === 0 && seasonPercentiles.length === 0 ? (
               <LeaderboardPanel className="p-5 text-sm text-zinc-500">
                 No {seasonYear} stats available.
               </LeaderboardPanel>
@@ -772,7 +772,7 @@ export default function PlayerProfileTabs({
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
                       <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
-                        D3 Percentile Rankings
+                        NCAA Percentile Rankings
                       </h2>
                       <p className="mt-1 text-sm text-zinc-500">
                         Versus Division III {percentileAudienceLabel} in {seasonYear}.
@@ -787,7 +787,7 @@ export default function PlayerProfileTabs({
 
                   <LeaderboardPanel className="overflow-hidden p-4 sm:p-5">
                     <div className="space-y-0">
-                      {d3Percentiles.map((m, i) => (
+                      {seasonPercentiles.map((m, i) => (
                         <SavantPercentileBar
                           key={m.label}
                           label={m.label}

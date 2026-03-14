@@ -10,6 +10,7 @@ type RawPitcherPlayer = {
   school?: string;
   role?: string;
   d3_player_id?: number | string | null;
+  ncaa_player_id?: number | string | null;
 };
 
 type RawChartingRosterPlayer = {
@@ -27,6 +28,7 @@ export interface PlayerRegistryEntry {
   team: string;
   role: string;
   d3_player_id: string | null;
+  ncaa_player_id: string | null;
   positions: string[];
   bats: string | null;
   throws: string | null;
@@ -49,6 +51,7 @@ function normalizePitcherEntry(entry: RawPitcherPlayer) {
     name,
     team,
     d3_player_id: entry.d3_player_id != null ? String(entry.d3_player_id) : null,
+    ncaa_player_id: entry.ncaa_player_id != null ? String(entry.ncaa_player_id) : null,
   };
 }
 
@@ -103,6 +106,7 @@ export const playerRegistry: PlayerRegistryEntry[] = (chartingRoster as RawChart
       team: pitcherEntry?.team ?? "Babson",
       role: buildRoleLabel(positions, isPitcher, isHitter),
       d3_player_id: pitcherEntry?.d3_player_id ?? null,
+      ncaa_player_id: pitcherEntry?.ncaa_player_id ?? null,
       positions,
       bats: player.bats ?? null,
       throws: player.throws ?? null,

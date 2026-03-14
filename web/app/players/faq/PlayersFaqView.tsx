@@ -48,7 +48,7 @@ export default function PlayersFaqView() {
           <DictionaryCard>
             <h3 className="text-lg font-bold text-sky-400">3. Statistics</h3>
             <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-              Pulls in real competition results, including traditional D3 box
+              Pulls in live NCAA competition results, including traditional box
               score totals and advanced season metrics.
             </p>
           </DictionaryCard>

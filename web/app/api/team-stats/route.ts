@@ -1,59 +1,178 @@
 import { NextResponse } from "next/server";
 import players from "@/data/players.json";
-import { fetchPitchingLeaderboard } from "@/lib/d3db";
+import { fetchBattingLeaderboard, fetchPitchingLeaderboard } from "@/lib/collegeStats";
 import {
   computeQualifiedAggregate,
   filterBabsonPitchers,
   type BabsonPitcherRow,
-  type D3PitcherRow,
-} from "@/lib/d3/babsonPitchers";
+  type PitchingLeaderboardRow,
+} from "@/lib/college-stats/babsonPitchers";
 
-function buildD3ToSlugMap(): Map<string, string> {
-  const map = new Map<string, string>();
-  for (const p of players as { slug?: string; d3_player_id?: string }[]) {
-    const id = p.d3_player_id;
-    if (id && p.slug) map.set(String(id), p.slug);
-  }
-  return map;
+type BattingLeaderboardRow = Record<string, unknown>;
+
+type BabsonHitterRow = {
+  playerId: string;
+  playerName: string;
+  pa: number;
+  ab: number;
+  h: number;
+  r: number;
+  hr: number;
+  rbi: number;
+  sb: number;
+  avg: number;
+  obp: number;
+  slg: number;
+  ops: number;
+  kPct: number;
+  bbPct: number;
+  wrcPlus: number;
+  war: number;
+};
+
+function normalizeName(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
-function extractRows(payload: unknown): D3PitcherRow[] {
+function buildPlayerLookups() {
+  const idMap = new Map<string, string>();
+  const nameMap = new Map<string, string>();
+
+  for (const p of players as {
+    slug?: string;
+    name?: string;
+    d3_player_id?: string;
+    ncaa_player_id?: string;
+  }[]) {
+    if (!p.slug) continue;
+    if (p.d3_player_id) idMap.set(String(p.d3_player_id), p.slug);
+    if ((p as { ncaa_player_id?: string }).ncaa_player_id) {
+      idMap.set(String((p as { ncaa_player_id?: string }).ncaa_player_id), p.slug);
+    }
+    if (p.name) nameMap.set(normalizeName(p.name), p.slug);
+  }
+
+  return { idMap, nameMap };
+}
+
+function extractRows<T>(payload: unknown): T[] {
   if (!payload) return [];
-  if (Array.isArray(payload)) return payload as D3PitcherRow[];
+  if (Array.isArray(payload)) return payload as T[];
   if (typeof payload !== "object") return [];
   const record = payload as Record<string, unknown>;
   const directKeys = ["data", "rows", "players", "results", "leaderboard"];
   for (const key of directKeys) {
-    if (Array.isArray(record[key])) return record[key] as D3PitcherRow[];
+    if (Array.isArray(record[key])) return record[key] as T[];
   }
   if (record.data && typeof record.data === "object") {
     const nested = record.data as Record<string, unknown>;
     for (const key of directKeys) {
-      if (Array.isArray(nested[key])) return nested[key] as D3PitcherRow[];
+      if (Array.isArray(nested[key])) return nested[key] as T[];
     }
   }
   return [];
 }
 
+function parseNumber(value: unknown): number {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+}
+
+function normalizeKey(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function getNumberByCandidates(row: Record<string, unknown>, candidates: string[]): number {
+  for (const candidate of candidates) {
+    const needle = normalizeKey(candidate);
+    for (const [key, value] of Object.entries(row)) {
+      if (normalizeKey(key) === needle) {
+        return parseNumber(value);
+      }
+    }
+  }
+  return 0;
+}
+
+function filterBabsonHitters(rows: BattingLeaderboardRow[]): BabsonHitterRow[] {
+  return rows
+    .filter((row) => normalizeName(String(row.team_name ?? "")) === "babson")
+    .map((row) => {
+      const playerId = String(row.player_id ?? "").trim();
+      const playerName = String(row.player_name ?? "").trim();
+      const pa = getNumberByCandidates(row, ["pa", "plate_appearances"]);
+      const ab = getNumberByCandidates(row, ["ab", "at_bats"]);
+      const h = getNumberByCandidates(row, ["h", "hits"]);
+      const r = getNumberByCandidates(row, ["r", "runs"]);
+      const hr = getNumberByCandidates(row, ["hr", "home_runs"]);
+      const rbi = getNumberByCandidates(row, ["rbi", "runs_batted_in"]);
+      const sb = getNumberByCandidates(row, ["sb", "stolen_bases"]);
+      const avg = getNumberByCandidates(row, ["avg", "ba", "batting_avg", "batting_average"]);
+      const obp = getNumberByCandidates(row, ["obp", "on_base_percentage", "onbase"]);
+      const slg = getNumberByCandidates(row, ["slg", "slugging", "slugging_pct"]);
+      const ops = getNumberByCandidates(row, ["ops", "on_base_plus_slugging"]) || (obp + slg);
+      const kPct = getNumberByCandidates(row, ["k_pct", "k_percent", "k_percentage", "so_pct"]);
+      const bbPct = getNumberByCandidates(row, ["bb_pct", "bb_percent", "bb_percentage", "bb_rate"]);
+      const wrcPlus = getNumberByCandidates(row, ["wrc_plus", "wrcplus"]);
+      const war = getNumberByCandidates(row, ["war", "bwar", "fwar", "off_war", "owar"]);
+
+      return {
+        playerId,
+        playerName,
+        pa,
+        ab,
+        h,
+        r,
+        hr,
+        rbi,
+        sb,
+        avg,
+        obp,
+        slg,
+        ops,
+        kPct,
+        bbPct,
+        wrcPlus,
+        war,
+      };
+    })
+    .filter((row) => row.playerId && row.playerName);
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const year = searchParams.get("year") ?? "2025";
-    const minIp = Math.max(1, parseInt(searchParams.get("minIp") ?? "15", 10) || 15);
+    const year = searchParams.get("year") ?? "2026";
+    const statType = searchParams.get("statType") === "batting" ? "batting" : "pitching";
+    const minIp = Math.max(1, parseInt(searchParams.get("minIp") ?? "1", 10) || 1);
+
+    const { idMap, nameMap } = buildPlayerLookups();
+    if (statType === "batting") {
+      const data = await fetchBattingLeaderboard(year, 3);
+      const rows = extractRows<BattingLeaderboardRow>(data);
+      const hitters = filterBabsonHitters(rows);
+      const enriched = hitters.map((hitter) => ({
+        ...hitter,
+        slug: idMap.get(hitter.playerId) ?? nameMap.get(normalizeName(hitter.playerName)) ?? undefined,
+      }));
+
+      return NextResponse.json({ year, statType, hitters: enriched });
+    }
 
     const data = await fetchPitchingLeaderboard(year, 3);
-    const rows = extractRows(data);
+    const rows = extractRows<PitchingLeaderboardRow>(data);
     const pitchers = filterBabsonPitchers(rows);
-    const d3ToSlug = buildD3ToSlugMap();
-
     const enriched: (BabsonPitcherRow & { slug?: string })[] = pitchers.map((p) => ({
       ...p,
-      slug: d3ToSlug.get(p.playerId) ?? undefined,
+      slug: idMap.get(p.playerId) ?? nameMap.get(normalizeName(p.playerName)) ?? undefined,
     }));
-
     const qualified = computeQualifiedAggregate(pitchers, minIp);
 
-    return NextResponse.json({ year, minIp, pitchers: enriched, qualified });
+    return NextResponse.json({ year, statType, minIp, pitchers: enriched, qualified });
   } catch (err) {
     console.error("[team-stats]", err);
     return NextResponse.json(

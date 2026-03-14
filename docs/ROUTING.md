@@ -25,7 +25,7 @@ Single lookup table: task → canonical doc. When in doubt, start here.
 | Plus model leaderboards | `docs/web/plus_leaderboards.md` | `web/app/pitching-plus/leaderboard/page.tsx` |
 | Import Trackman PDF | `docs/runbooks/import_trackman_pdf.md` | `scripts/import_trackman_pdf.py` |
 | Trackman session UI | `docs/web/trackman_session_ui.md` | `web/app/trackman/session/` |
-| Sync D3 leaderboard (daily) | `docs/runbooks/sync_d3_leaderboard.md` | `scripts/sync_d3_leaderboard.py` |
+| Sync NCAA leaderboard (daily) | `docs/runbooks/sync_collegebaseball_leaderboard.md` | `scripts/sync_collegebaseball_leaderboard.R` |
 | Team statistics leaderboard | `docs/web/leaderboards.md` | `web/app/team-stats/leaderboard/page.tsx` |
 | Mechanics (start here) | `docs/mechanics/README.md` | `src/mechanics/` |
 | Run a mechanics session (coach pack) | `docs/runbooks/mechanics_cv.md` | `scripts/mechanics_coach_pack.py` |

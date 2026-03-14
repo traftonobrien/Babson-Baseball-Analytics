@@ -50,7 +50,7 @@ export default function LeaderboardsFaqView() {
               <p className="mt-2 text-sm leading-relaxed text-zinc-400">
                 Measured in inches. This is the average straight-line miss from
                 the target across the full sample. Lower is better. Around
-                10.0&quot; is strong D3 command.
+                10.0&quot; is strong Division III command.
               </p>
             </DictionaryCard>
 

@@ -4,188 +4,215 @@
     "name": "Bobby Burk",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-e5ea3c3a7"
+    "d3_player_id": "d3d-e5ea3c3a7",
+    "ncaa_player_id": null
   },
   {
     "slug": "burrows_chase",
     "name": "Chase Burrows",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-60cf4e83a"
+    "d3_player_id": "d3d-60cf4e83a",
+    "ncaa_player_id": "9682078"
   },
   {
     "slug": "camardi_michael",
     "name": "Michael Camardi",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-510d679bb"
+    "d3_player_id": "d3d-510d679bb",
+    "ncaa_player_id": "11253821"
   },
   {
     "slug": "carrea_joe",
     "name": "Joe Carrea",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-4613c401d"
+    "d3_player_id": "d3d-4613c401d",
+    "ncaa_player_id": "11253809"
   },
   {
     "slug": "chou_colin",
     "name": "Colin Chou",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-2d82b2972"
+    "d3_player_id": "d3d-2d82b2972",
+    "ncaa_player_id": null
   },
   {
     "slug": "clark_james",
     "name": "James Clark",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-4acea9660"
+    "d3_player_id": "d3d-4acea9660",
+    "ncaa_player_id": "9678338"
   },
   {
     "slug": "doan_connor",
     "name": "Connor Doan",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-1d8ec14be"
+    "d3_player_id": "d3d-1d8ec14be",
+    "ncaa_player_id": "9693687"
   },
   {
     "slug": "finkelstein_jason",
     "name": "Jason Finkelstein",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-2db863fa4"
+    "d3_player_id": "d3d-2db863fa4",
+    "ncaa_player_id": "9692783"
   },
   {
     "slug": "flack_tj",
     "name": "TJ Flack",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": null
+    "d3_player_id": null,
+    "ncaa_player_id": null
   },
   {
     "slug": "getchell_jacob",
     "name": "Jacob Getchell",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": null
+    "d3_player_id": null,
+    "ncaa_player_id": null
   },
   {
     "slug": "grindle_cam",
     "name": "Cam Grindle",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": null
+    "d3_player_id": null,
+    "ncaa_player_id": null
   },
   {
     "slug": "james_dillon",
     "name": "Dillon James",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-7bab0e413"
+    "d3_player_id": "d3d-7bab0e413",
+    "ncaa_player_id": "9696861"
   },
   {
     "slug": "langan_shane",
     "name": "Shane Langan",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": null
+    "d3_player_id": null,
+    "ncaa_player_id": "11253833"
   },
   {
     "slug": "lapierre_anthony",
     "name": "Anthony LaPierre",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-be2db5afb"
+    "d3_player_id": "d3d-be2db5afb",
+    "ncaa_player_id": null
   },
   {
     "slug": "noone_sean",
     "name": "Sean Noone",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-2399e7bca"
+    "d3_player_id": "d3d-2399e7bca",
+    "ncaa_player_id": null
   },
   {
     "slug": "obrien_trafton",
     "name": "Trafton OBrien",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-c6a8ffcdf"
+    "d3_player_id": "d3d-c6a8ffcdf",
+    "ncaa_player_id": "9678482"
   },
   {
     "slug": "okeefe_quinn",
     "name": "Quinn OKeefe",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": null
+    "d3_player_id": null,
+    "ncaa_player_id": null
   },
   {
     "slug": "pearl_tristan",
     "name": "Tristan Pearl",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-bfd240fb1"
+    "d3_player_id": "d3d-bfd240fb1",
+    "ncaa_player_id": "9685328"
   },
   {
     "slug": "place_cal",
     "name": "Cal Place",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-5220aba33"
+    "d3_player_id": "d3d-5220aba33",
+    "ncaa_player_id": null
   },
   {
     "slug": "purpura_vinnie",
     "name": "Vinnie Purpura",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-228b43227"
+    "d3_player_id": "d3d-228b43227",
+    "ncaa_player_id": null
   },
   {
     "slug": "rhodes_pat",
     "name": "Pat Rhodes",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": null
+    "d3_player_id": null,
+    "ncaa_player_id": null
   },
   {
     "slug": "shapiro_brennan",
     "name": "Brennan Shapiro",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-9b1bd50b1"
+    "d3_player_id": "d3d-9b1bd50b1",
+    "ncaa_player_id": null
   },
   {
     "slug": "smith_cooper",
     "name": "Cooper Smith",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-02a81fb1f"
+    "d3_player_id": "d3d-02a81fb1f",
+    "ncaa_player_id": "11253810"
   },
   {
     "slug": "snyder_drew",
     "name": "Drew Snyder",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-2dfd11983"
+    "d3_player_id": "d3d-2dfd11983",
+    "ncaa_player_id": null
   },
   {
     "slug": "teator_zander",
     "name": "Zander Teator",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-74e3760f9"
+    "d3_player_id": "d3d-74e3760f9",
+    "ncaa_player_id": "9684885"
   },
   {
     "slug": "valente_ben",
     "name": "Ben Valente",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": "d3d-dc290b4a7"
+    "d3_player_id": "d3d-dc290b4a7",
+    "ncaa_player_id": "9682544"
   },
   {
     "slug": "vyse_graydon",
     "name": "Graydon Vyse",
     "team": "Babson",
     "role": "Pitcher",
-    "d3_player_id": null
+    "d3_player_id": null,
+    "ncaa_player_id": "11253841"
   }
 ]
