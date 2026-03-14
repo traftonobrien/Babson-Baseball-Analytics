@@ -207,8 +207,7 @@
     "slug": "vyse_graydon",
     "name": "Graydon Vyse",
     "positions": [
-      "R",
-      "R"
+      "P"
     ],
     "bats": "R",
     "throws": "R",
@@ -228,8 +227,7 @@
     "slug": "laforest_ian",
     "name": "Ian Laforest",
     "positions": [
-      "P",
-      "UTL"
+      "IF"
     ],
     "bats": "R",
     "throws": "R",
@@ -269,7 +267,6 @@
     "slug": "finkelstein_jason",
     "name": "Jason Finkelstein",
     "positions": [
-      "OF",
       "P"
     ],
     "bats": "R",
@@ -411,7 +408,8 @@
     "slug": "noone_sean",
     "name": "Sean Noone",
     "positions": [
-      "P"
+      "P",
+      "UTL"
     ],
     "bats": "L",
     "throws": "R",

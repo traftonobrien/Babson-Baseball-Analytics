@@ -22,4 +22,31 @@ describe("playerRegistry", () => {
     expect(player?.isTwoWay).toBe(true);
     expect(player?.role).toBe("Two-Way");
   });
+
+  it("respects explicit single-role roster assignments", () => {
+    const jason = getPlayerBySlug("finkelstein_jason");
+    const ian = getPlayerBySlug("laforest_ian");
+    const graydon = getPlayerBySlug("vyse_graydon");
+
+    expect(jason?.isPitcher).toBe(true);
+    expect(jason?.isHitter).toBe(false);
+    expect(jason?.isTwoWay).toBe(false);
+
+    expect(ian?.isPitcher).toBe(false);
+    expect(ian?.isHitter).toBe(true);
+    expect(ian?.isTwoWay).toBe(false);
+
+    expect(graydon?.isPitcher).toBe(true);
+    expect(graydon?.isHitter).toBe(false);
+    expect(graydon?.isTwoWay).toBe(false);
+  });
+
+  it("supports updated two-way assignments", () => {
+    const sean = getPlayerBySlug("noone_sean");
+
+    expect(sean?.isPitcher).toBe(true);
+    expect(sean?.isHitter).toBe(true);
+    expect(sean?.isTwoWay).toBe(true);
+    expect(sean?.role).toBe("Two-Way");
+  });
 });
