@@ -28,8 +28,8 @@ export const STUFF_PLUS_PITCH_OVERRIDES: Record<
   SLangan1: { Slider: "Sweeper" },
   valente_ben: { Slider: "Sweeper" },
   BValente1: { Slider: "Sweeper" },
-  burrows_chase: { Slider: "Sweeper", Cutter: "Sinker" },
-  CBurrows1: { Slider: "Sweeper", Cutter: "Sinker" },
+  burrows_chase: { Slider: "Sweeper" },
+  CBurrows1: { Slider: "Sweeper" },
 };
 
 /**

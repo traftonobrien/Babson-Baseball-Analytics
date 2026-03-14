@@ -84,7 +84,7 @@ const CATEGORY_TOOLTIPS: Record<string, string> = {
 };
 
 const STUFF_PLUS_PITCH_ORDER = [
-  "Fastball", "Sinker",
+  "Fastball", "Sinker", "Cutter",
   "Slider", "Curveball", "Sweeper",
   "Changeup", "Splitter",
 ];
