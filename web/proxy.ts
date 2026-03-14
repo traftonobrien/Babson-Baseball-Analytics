@@ -13,8 +13,6 @@ const PUBLIC_PREFIXES = [
   "/players",
   "/mechanics-login",
   "/api/mechanics-login",
-  "/charting-login",
-  "/api/charting-login",
   "/api/charting",
 ];
 
@@ -59,19 +57,6 @@ export function proxy(request: NextRequest) {
       }
       const gateUrl = request.nextUrl.clone();
       gateUrl.pathname = "/mechanics-login";
-      gateUrl.search = "";
-      return NextResponse.redirect(gateUrl);
-    }
-  }
-
-  if (pathname.startsWith("/charting")) {
-    const chartingToken = request.cookies.get("pt_charting")?.value;
-    if (chartingToken !== "authorized") {
-      if (pathname.startsWith("/api/")) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-      const gateUrl = request.nextUrl.clone();
-      gateUrl.pathname = "/charting-login";
       gateUrl.search = "";
       return NextResponse.redirect(gateUrl);
     }
