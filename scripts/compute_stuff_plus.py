@@ -302,13 +302,20 @@ def apply_pitch_type_merges(rows):
 
 
 def assign_zscore_group(rows):
-    """Splitter pools with ChangeUp. Cutter pools with Slider for z-score stability."""
+    """
+    Z-score group pooling for stability:
+      Splitter  → ChangeUp  (offspeed family)
+      Cutter    → Slider    (breaking ball family, avoids tiny cutter pool)
+      Sinker    → Fastball  (same velocity tier, different movement profile)
+    """
     for row in rows:
         pt = row["pitch_type"]
         if pt.lower() == "splitter":
             row["zscore_group"] = "ChangeUp"
         elif pt.lower() == "cutter":
             row["zscore_group"] = "Slider"
+        elif pt.lower() == "sinker":
+            row["zscore_group"] = "Fastball"
         else:
             row["zscore_group"] = pt
     return rows
@@ -476,27 +483,71 @@ def add_differentials(rows):
 # Pitch category flags (mutually exclusive)
 # ---------------------------------------------------------------------------
 
-RE_FB = re.compile(r"fastball|sinker|four", re.IGNORECASE)
-RE_CURVE = re.compile(r"curveball", re.IGNORECASE)
-RE_SLIDE = re.compile(r"slider|sweeper", re.IGNORECASE)
-RE_CUT = re.compile(r"cutter", re.IGNORECASE)
-RE_OS = re.compile(r"changeup|splitter", re.IGNORECASE)
+RE_FB     = re.compile(r"fastball|four",    re.IGNORECASE)   # sinker handled separately
+RE_SINKER = re.compile(r"sinker",           re.IGNORECASE)
+RE_CURVE  = re.compile(r"curveball",        re.IGNORECASE)
+RE_SLIDE  = re.compile(r"slider|sweeper",   re.IGNORECASE)
+RE_CUT    = re.compile(r"cutter",           re.IGNORECASE)
+RE_OS     = re.compile(r"changeup|splitter",re.IGNORECASE)
 
+# Slider sub-type thresholds
+GYRO_MAG_THRESHOLD = 5.0    # total movement inches — below = gyro
+SWEEP_HB_THRESHOLD = 12.0   # horizontal inches — above = sweeper
 
-GYRO_MAG_THRESHOLD  = 5.0   # inches total movement — below this = gyro profile
-SWEEP_HB_THRESHOLD  = 12.0  # inches horizontal — above this = sweeper profile
+# FB sub-type thresholds
+RIDE_IVB_THRESHOLD = 13.0   # IVB inches — above this (with low HB) = high-ride
+RIDE_HB_MAX        = 10.0   # hb_abs ceiling for ride classification
+CUT_FB_HB_THRESH   = 6.0    # glove-side HB inches — above = naturally cutting FB
+RUN_FB_HB_THRESH   = 8.0    # arm-side HB inches — above = running FB
+
+# Curve sub-type threshold
+SWEEP_CURVE_HB     = 8.0    # hb_abs inches — above = sweeping curve
 
 
 def add_pitch_flags(rows):
     for row in rows:
-        pt = row["pitch_type"]
-        row["is_fb"]    = 1 if RE_FB.search(pt)    else 0
-        row["is_curve"] = 1 if RE_CURVE.search(pt) else 0
-        row["is_slide"] = 1 if RE_SLIDE.search(pt) else 0
-        row["is_cut"]   = 1 if RE_CUT.search(pt)   else 0
-        row["is_os"]    = 1 if RE_OS.search(pt)    else 0
+        pt     = row["pitch_type"]
+        throws = row.get("throws", "R")
 
-        # Slider sub-type: gyro / traditional / sweeper
+        row["is_fb"]     = 1 if RE_FB.search(pt)     else 0
+        row["is_sinker"] = 1 if RE_SINKER.search(pt) else 0
+        row["is_curve"]  = 1 if RE_CURVE.search(pt)  else 0
+        row["is_slide"]  = 1 if RE_SLIDE.search(pt)  else 0
+        row["is_cut"]    = 1 if RE_CUT.search(pt)    else 0
+        row["is_os"]     = 1 if RE_OS.search(pt)     else 0
+
+        # --- FB sub-type: ride / run / cut / default ---
+        if row["is_fb"]:
+            ivb    = row.get("avg_ivb_in") or 0
+            hb     = row.get("avg_hb_in")  or 0
+            hb_abs = abs(hb)
+            # arm-side HB: positive = toward arm side for this pitcher
+            hb_arm = hb * (1 if throws == "R" else -1)
+            if ivb > RIDE_IVB_THRESHOLD and hb_abs < RIDE_HB_MAX:
+                row["fb_type"] = "ride"
+            elif hb_arm < -CUT_FB_HB_THRESH:
+                row["fb_type"] = "cut"
+            elif hb_arm > RUN_FB_HB_THRESH:
+                row["fb_type"] = "run"
+            else:
+                row["fb_type"] = "default"
+        else:
+            row["fb_type"] = None
+
+        # --- Curve sub-type: vertical / sweeping ---
+        if row["is_curve"]:
+            hb_abs = abs(row.get("avg_hb_in") or 0)
+            row["curve_type"] = "sweep" if hb_abs > SWEEP_CURVE_HB else "vert"
+        else:
+            row["curve_type"] = None
+
+        # --- OS sub-type: changeup / splitter ---
+        if row["is_os"]:
+            row["os_type"] = "splitter" if pt.lower() == "splitter" else "changeup"
+        else:
+            row["os_type"] = None
+
+        # --- Slider sub-type: gyro / trad / sweep ---
         if row["is_slide"]:
             mag    = row.get("movement_mag", 0) or 0
             hb_abs = abs(row.get("avg_hb_in") or 0)
@@ -581,87 +632,166 @@ def compute_stuff_plus(rows):
 
     # --- Step 9: ShapeImpactScore ---
     for row in rows:
-        fb_score = (
-            # Compare velo within the FB group — 80 mph is slow among FBs, not globally
-            0.50 * row["velo_z"] +              # velocity vs other fastballs (primary signal)
-            0.20 * row["movement_z"] +          # ride/run within FB group
-            0.15 * row["ext_z"] +               # extension
-            0.10 * row["fb_velo_pct_max_z"] +   # % of max (reduced — slow arms shouldn't win this)
-            0.05 * row["spin_z"]                # spin
-        )
 
-        curve_score = (
-            # Velocity anchors score — a slow curve cannot dominate purely on break depth
-            0.30 * row["velo_z"] +              # power curve reward (within curve group)
-            0.15 * row["ivb_abs_z"] +           # drop depth (good but not the only thing)
-            0.20 * (-row["velo_diff_z"]) +      # velo separation from FB
-            0.15 * row["spin_z"] +              # tight spin
-            0.10 * row["movement_z"] +          # overall break magnitude
-            0.10 * row["movement_diff_z"]       # shape separation from FB
-        )
+        # ── FASTBALL (4-seam / four-seamer) ──────────────────────────────────
+        if row["is_fb"]:
+            ft = row["fb_type"]
+            if ft == "ride":
+                fb_score = (
+                    # High-ride 4-seam: pure backspin carry is the weapon.
+                    # IVB specifically rewarded, not just total movement.
+                    0.40 * row["velo_z"] +          # hard + ride = elite combo
+                    0.30 * row["ivb_z"] +           # pure vertical carry (signed, high = good)
+                    0.15 * row["spin_z"] +          # backspin efficiency
+                    0.15 * row["ext_z"]             # extension adds perceived velo
+                )
+            elif ft == "cut":
+                fb_score = (
+                    # Naturally cutting FB: deception + velocity, glove-side cut.
+                    0.40 * row["velo_z"] +          # velocity primary
+                    0.25 * row["hb_abs_z"] +        # glove-side cut magnitude
+                    0.20 * row["spin_z"] +          # tight spin creates natural cut
+                    0.15 * row["ext_z"]             # extension
+                )
+            elif ft == "run":
+                fb_score = (
+                    # Running 4-seam: arm-side movement + velocity combo.
+                    0.35 * row["velo_z"] +          # velocity primary
+                    0.25 * row["hb_abs_z"] +        # arm-side run magnitude
+                    0.20 * row["movement_z"] +      # total movement magnitude
+                    0.15 * row["ivb_z"] +           # some ride still valued
+                    0.05 * row["max_fb_velo_z"]     # arm strength
+                )
+            else:
+                fb_score = (
+                    # Default 4-seam: balanced — velocity + movement + extension.
+                    0.45 * row["velo_z"] +          # velocity vs other FBs
+                    0.20 * row["movement_z"] +      # total ride/run
+                    0.15 * row["ext_z"] +           # extension
+                    0.10 * row["spin_z"] +          # spin
+                    0.10 * row["fb_velo_pct_max_z"] # effort level
+                )
+        else:
+            fb_score = 0.0
 
-        # --- Slider: three sub-type formulas ---
-        st = row.get("slide_type")
-        if st == "gyro":
-            slide_score = (
-                # Gyro slider: effectiveness comes entirely from velocity + spin.
-                # Near-zero movement is a feature (deception), not a penalty.
-                # Rewards: hard velocity within slide group, tight spin, FB tunnel proximity.
-                0.45 * row["velo_z"] +              # hard = everything for a gyro
-                0.25 * row["spin_z"] +              # spin axis creates late cut — key metric
-                0.20 * row["velo_diff_z"] +         # close to FB velocity = deceptive tunnel
-                0.10 * row["ext_z"]                 # extension adds perceived velo
+        # ── SINKER ────────────────────────────────────────────────────────────
+        if row["is_sinker"]:
+            sinker_score = (
+                # Sinker: arm-side run magnitude + velocity + sink (low IVB).
+                # Z-scores computed within FB+Sinker pool for stability.
+                0.30 * row["hb_abs_z"] +            # arm-side run is the primary weapon
+                0.30 * row["velo_z"] +              # harder sinker = harder to elevate
+                0.20 * row["movement_z"] +          # total movement (run + any sink)
+                0.15 * (-row["ivb_z"]) +            # reward low IVB (sink vs ride)
+                0.05 * row["max_fb_velo_z"]         # arm strength
             )
-        elif st == "sweep":
-            slide_score = (
-                # Sweeper: horizontal break is the primary weapon.
-                # Velocity matters less — huge sweep can compensate for lower velo.
-                # Rewards: sweep magnitude, total movement, spin efficiency, then velo.
-                0.40 * row["hb_abs_z"] +            # sweep magnitude is the weapon
-                0.20 * row["movement_z"] +          # total break (sweep + any depth)
-                0.15 * row["spin_z"] +              # high spin efficiency (low gyro%)
-                0.15 * row["velo_z"] +              # still need some velocity
-                0.05 * row["movement_diff_z"] +     # distinct shape from FB
+        else:
+            sinker_score = 0.0
+
+        # ── CURVEBALL ─────────────────────────────────────────────────────────
+        if row["is_curve"]:
+            ct = row["curve_type"]
+            if ct == "sweep":
+                curve_score = (
+                    # Sweeping curve: horizontal + vertical break combo.
+                    # Both dimensions must show up — neither alone is sufficient.
+                    0.25 * row["hb_abs_z"] +        # sweep magnitude
+                    0.20 * row["ivb_abs_z"] +       # depth component
+                    0.20 * row["movement_z"] +      # total break magnitude
+                    0.15 * row["velo_z"] +          # velocity within curve group
+                    0.10 * (-row["velo_diff_z"]) +  # separation from FB
+                    0.10 * row["spin_z"]            # spin efficiency
+                )
+            else:
+                curve_score = (
+                    # Vertical/12-6 curve: pure drop depth is the weapon.
+                    # Velocity anchors score — a 62 mph curve can't top a 70 mph one on drop alone.
+                    0.30 * row["velo_z"] +          # power curve (within curve group)
+                    0.25 * row["ivb_abs_z"] +       # drop depth — primary shape metric
+                    0.20 * (-row["velo_diff_z"]) +  # separation from FB
+                    0.15 * row["spin_z"] +          # tight spin
+                    0.10 * row["movement_z"]        # total break magnitude
+                )
+        else:
+            curve_score = 0.0
+
+        # ── SLIDER (3 sub-types) ──────────────────────────────────────────────
+        if row["is_slide"]:
+            st = row["slide_type"]
+            if st == "gyro":
+                slide_score = (
+                    # Gyro slider: near-zero movement is a feature, not a penalty.
+                    # Effectiveness = velocity + spin axis creating late cut.
+                    0.45 * row["velo_z"] +          # hard = everything for a gyro
+                    0.25 * row["spin_z"] +          # spin axis creates late cut
+                    0.20 * row["velo_diff_z"] +     # close to FB velo = deceptive tunnel
+                    0.10 * row["ext_z"]             # extension adds perceived velo
+                )
+            elif st == "sweep":
+                slide_score = (
+                    # Sweeper: horizontal break is the weapon. Velo secondary.
+                    0.40 * row["hb_abs_z"] +        # sweep magnitude
+                    0.20 * row["movement_z"] +      # total break (sweep + any depth)
+                    0.15 * row["spin_z"] +          # high spin efficiency (low gyro%)
+                    0.15 * row["velo_z"] +          # still need some velocity
+                    0.05 * row["movement_diff_z"] + # distinct from FB
+                    0.05 * row["max_fb_velo_z"]     # arm strength halo
+                )
+            else:
+                slide_score = (
+                    # Traditional slider: balance of velocity, lateral break, separation.
+                    0.30 * row["velo_z"] +          # velocity within slide group
+                    0.25 * row["hb_abs_z"] +        # lateral break (4–12")
+                    0.20 * row["spin_z"] +          # tight spin
+                    0.15 * row["movement_diff_z"] + # must look different from FB
+                    0.05 * row["movement_z"] +      # overall shape magnitude
+                    0.05 * row["max_fb_velo_z"]     # arm strength halo
+                )
+        else:
+            slide_score = 0.0
+
+        # ── CUTTER ────────────────────────────────────────────────────────────
+        if row["is_cut"]:
+            cut_score = (
+                # Cutter: absolute hardness + lateral cut + tight spin.
+                # Global velo (not within-group) so 79 mph isn't "hard" among FBs.
+                0.25 * row["global_velo_z"] +       # absolute hardness
+                0.35 * row["hb_abs_z"] +            # lateral cut (within slide pool)
+                0.20 * row["spin_z"] +              # tight spin
+                0.15 * row["movement_z"] +          # overall movement
                 0.05 * row["max_fb_velo_z"]         # arm strength halo
             )
         else:
-            slide_score = (
-                # Traditional slider: balance of velocity, lateral break, and FB separation.
-                # Neither a pure velocity pitch nor a pure shape pitch.
-                0.30 * row["velo_z"] +              # velocity within slide group
-                0.25 * row["hb_abs_z"] +            # lateral break (4–12" range)
-                0.20 * row["spin_z"] +              # tight spin
-                0.15 * row["movement_diff_z"] +     # must look different from FB
-                0.05 * row["movement_z"] +          # overall shape magnitude
-                0.05 * row["max_fb_velo_z"]         # arm strength halo
-            )
+            cut_score = 0.0
 
-        cut_score = (
-            # Cutter: hard globally + actual lateral cut; velo proximity alone doesn't make a good cutter
-            0.25 * row["global_velo_z"] +       # absolute hardness (global scale — not vs FB)
-            0.35 * row["hb_abs_z"] +            # lateral cut (within slide group for stability)
-            0.20 * row["spin_z"] +              # tight spin (within slide group)
-            0.15 * row["movement_z"] +          # overall movement (within slide group)
-            0.05 * row["max_fb_velo_z"]         # arm strength halo
-        )
+        # ── OFFSPEED (changeup / splitter) ───────────────────────────────────
+        if row["is_os"]:
+            ot = row["os_type"]
+            if ot == "splitter":
+                os_score = (
+                    # Splitter: hard + massive IVB drop vs own FB.
+                    # No spin penalty — splitters can have varying spin profiles.
+                    0.30 * row["velo_z"] +          # hard splitter is elite within OS group
+                    0.35 * (-row["ivb_diff_z"]) +   # massive IVB drop vs own FB (primary weapon)
+                    0.20 * (-row["velo_diff_z"]) +  # significant velocity differential
+                    0.10 * row["movement_diff_z"] + # shape separation from FB
+                    0.05 * row["max_fb_velo_z"]     # arm strength halo
+                )
+            else:
+                os_score = (
+                    # Changeup: velo separation + IVB drop + arm-side fade.
+                    # Lower spin = more late action on the pitch.
+                    0.20 * row["velo_z"] +          # harder CU is better (within OS group)
+                    0.25 * (-row["velo_diff_z"]) +  # velocity separation from FB
+                    0.25 * (-row["ivb_diff_z"]) +   # IVB drop vs own FB
+                    0.15 * row["hb_abs_z"] +        # arm-side fade
+                    0.10 * (-row["spin_z"]) +       # lower spin = more movement/action
+                    0.05 * row["max_fb_velo_z"]     # arm strength halo
+                )
+        else:
+            os_score = 0.0
 
-        os_score = (
-            # Reward hard-thrown offspeed + IVB drop RELATIVE TO OWN FB (not absolute)
-            0.25 * row["velo_z"] +              # reward hard changeups/splitters within group
-            0.20 * (-row["velo_diff_z"]) +      # velo separation (reduced — power offspeed is valid)
-            0.25 * (-row["ivb_diff_z"]) +       # IVB drop vs own fastball (rewards Teator +3 vs FB +16)
-            0.15 * row["movement_diff_z"] +     # shape separation from FB
-            0.10 * (-row["spin_z"]) +           # lower spin is typical offspeed profile
-            0.05 * row["max_fb_velo_z"]         # arm strength halo
-        )
-
-        sis = (
-            row["is_fb"] * fb_score +
-            row["is_curve"] * curve_score +
-            row["is_slide"] * slide_score +
-            row["is_cut"] * cut_score +
-            row["is_os"] * os_score
-        )
+        sis = fb_score + sinker_score + curve_score + slide_score + cut_score + os_score
 
         if math.isnan(sis) or math.isinf(sis):
             sis = 0.0
@@ -721,6 +851,12 @@ def compute_arsenal(rows):
 
         mean_sp = float(np.mean(opt_vals))
         sd_sp = float(np.std(stuff_vals)) if n > 1 else 0.0
+
+        # Regress toward 100 for small samples — 1 session = 40% regression, 2 = 20%
+        if n == 1:
+            mean_sp = 100.0 + (mean_sp - 100.0) * 0.60
+        elif n == 2:
+            mean_sp = 100.0 + (mean_sp - 100.0) * 0.80
 
         velos = [r["avg_velo_mph"] for r in grp_rows]
         max_fb_velos = [r["max_fb_velo"] for r in grp_rows if r.get("max_fb_velo") is not None]
