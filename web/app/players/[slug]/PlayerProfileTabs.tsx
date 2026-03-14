@@ -27,6 +27,7 @@ const ALL_TABS = ["Overview", "Trackman", "Command", "Mechanics", "Live AB"] as 
 const HITTER_TABS = ["Overview", "Live AB"] as const;
 type Tab = (typeof ALL_TABS)[number];
 type ProfileMode = "pitcher" | "hitter" | "two-way";
+type OverviewMode = "pitching" | "hitting";
 type HeroTone = "amber" | "orange" | "blue";
 type HubTone = "blue" | "orange" | "violet";
 
@@ -98,11 +99,15 @@ interface PitchingHeroState {
 
 interface Props {
   profileMode: ProfileMode;
-  percentileAudienceLabel: string;
-  seasonStats: SeasonStat[];
+  defaultOverviewMode: OverviewMode;
+  pitchingPercentileAudienceLabel: string;
+  hittingPercentileAudienceLabel: string;
+  pitchingSeasonStats: SeasonStat[];
+  hittingSeasonStats: SeasonStat[];
   seasonYear: number;
   seasonNote?: string;
-  seasonPercentiles: PercentileMetric[];
+  pitchingSeasonPercentiles: PercentileMetric[];
+  hittingSeasonPercentiles: PercentileMetric[];
   trackmanSessions: TrackmanSession[];
   commandOutings: CommandOuting[];
   playerSlug: string;
@@ -390,11 +395,15 @@ function ProfileHubLink({
 
 export default function PlayerProfileTabs({
   profileMode,
-  percentileAudienceLabel,
-  seasonStats,
+  defaultOverviewMode,
+  pitchingPercentileAudienceLabel,
+  hittingPercentileAudienceLabel,
+  pitchingSeasonStats,
+  hittingSeasonStats,
   seasonYear,
   seasonNote,
-  seasonPercentiles,
+  pitchingSeasonPercentiles,
+  hittingSeasonPercentiles,
   trackmanSessions,
   commandOutings,
   playerSlug,
@@ -409,8 +418,16 @@ export default function PlayerProfileTabs({
 }: Props) {
   const availableTabs = profileMode === "hitter" ? HITTER_TABS : ALL_TABS;
   const [activeTab, setActiveTab] = useState<Tab>(resolveInitialTab(initialTab, availableTabs));
+  const [activeOverviewMode, setActiveOverviewMode] = useState<OverviewMode>(defaultOverviewMode);
   const [commandSeasonFilter, setCommandSeasonFilter] = useState<string>("2026");
   const [expandedMetric, setExpandedMetric] = useState<"pitching" | "command" | "stuff" | null>(null);
+  const seasonStats = activeOverviewMode === "pitching" ? pitchingSeasonStats : hittingSeasonStats;
+  const seasonPercentiles =
+    activeOverviewMode === "pitching" ? pitchingSeasonPercentiles : hittingSeasonPercentiles;
+  const percentileAudienceLabel =
+    activeOverviewMode === "pitching"
+      ? pitchingPercentileAudienceLabel
+      : hittingPercentileAudienceLabel;
   const seasonStatMap = useMemo(
     () => new Map(seasonStats.map((stat) => [stat.label, stat.value])),
     [seasonStats],
@@ -578,7 +595,31 @@ export default function PlayerProfileTabs({
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
             className="mt-8 space-y-8"
           >
-            {profileMode === "hitter" ? (
+            {profileMode === "two-way" && (
+              <section className="space-y-3">
+                <div>
+                  <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
+                    Overview Mode
+                  </h2>
+                  <p className="mt-1 text-sm text-zinc-500">
+                    Switch this profile between pitching and hitting season views.
+                  </p>
+                </div>
+                <div className="flex justify-start">
+                  <Segment
+                    label="Overview"
+                    options={[
+                      { value: "pitching", display: "Pitching" },
+                      { value: "hitting", display: "Hitting" },
+                    ]}
+                    selected={activeOverviewMode}
+                    onChange={(value) => setActiveOverviewMode(value as OverviewMode)}
+                  />
+                </div>
+              </section>
+            )}
+
+            {profileMode === "hitter" || activeOverviewMode === "hitting" ? (
               <section className="space-y-5">
                 <div>
                   <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">

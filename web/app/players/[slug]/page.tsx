@@ -87,6 +87,14 @@ type PercentileMetric = {
 };
 
 type ProfileMode = "pitcher" | "hitter" | "two-way";
+type OverviewMode = "pitching" | "hitting";
+type OverviewStats = {
+  seasonStats: { label: string; value: string }[];
+  seasonPercentiles: PercentileMetric[];
+  percentileAudienceLabel: string;
+  statsUnavailable: boolean;
+  hasRow: boolean;
+};
 
 const TARGET_YEAR = 2026;
 
@@ -728,87 +736,97 @@ export default async function PlayerProfilePage({
   if (!player) {
     notFound();
   }
+  const resolvedPlayer = player;
 
-  const profileMode = resolveProfileMode(player);
-  const overviewMode = profileMode === "hitter" ? "hitting" : "pitching";
+  const profileMode = resolveProfileMode(resolvedPlayer);
+  const defaultOverviewMode: OverviewMode = profileMode === "hitter" ? "hitting" : "pitching";
 
-  let leaderboardRows: LeaderboardRow[] = [];
-  let fetchError: string | null = null;
+  async function loadOverviewStats(mode: OverviewMode): Promise<OverviewStats> {
+    let leaderboardRows: LeaderboardRow[] = [];
+    let fetchError: string | null = null;
 
-  try {
-    const data =
-      overviewMode === "pitching"
-        ? await fetchPitchingLeaderboard(String(TARGET_YEAR), 3)
-        : await fetchBattingLeaderboard(String(TARGET_YEAR), 3);
-    leaderboardRows = Array.isArray(data) ? data : extractRows(data);
-  } catch (err) {
-    fetchError = String(err);
-    console.error("[PlayerProfile] leaderboard fetch failed:", fetchError);
+    try {
+      const data =
+        mode === "pitching"
+          ? await fetchPitchingLeaderboard(String(TARGET_YEAR), 3)
+          : await fetchBattingLeaderboard(String(TARGET_YEAR), 3);
+      leaderboardRows = Array.isArray(data) ? data : extractRows(data);
+    } catch (err) {
+      fetchError = String(err);
+      console.error("[PlayerProfile] leaderboard fetch failed:", resolvedPlayer.name, mode, fetchError);
+    }
+
+    const playerRow = findLeaderboardRow(leaderboardRows, resolvedPlayer);
+    const snapshotMetrics =
+      mode === "pitching" ? PITCHING_SNAPSHOT_METRICS : BATTING_SNAPSHOT_METRICS;
+    const percentileMetrics =
+      mode === "pitching" ? PITCHING_PERCENTILE_METRICS : BATTING_PERCENTILE_METRICS;
+
+    const seasonStats = playerRow ? buildSeasonStats(snapshotMetrics, playerRow) : [];
+    const seasonPercentiles = playerRow
+      ? buildSeasonPercentiles(percentileMetrics, leaderboardRows, playerRow, playerRow)
+      : [];
+
+    const debugInfo = {
+      foundRow: Boolean(playerRow),
+      playerId: getExternalPlayerIds(resolvedPlayer)[0] ?? "Unresolved",
+      leaderboardCount: leaderboardRows.length,
+      sourceUsed: playerRow ? mode : "none",
+      error: fetchError,
+    };
+
+    console.log("[PlayerProfile]", resolvedPlayer.name, mode, debugInfo);
+
+    return {
+      seasonStats,
+      seasonPercentiles,
+      percentileAudienceLabel: mode === "pitching" ? "pitchers" : "hitters",
+      statsUnavailable: !playerRow && fetchError != null,
+      hasRow: Boolean(playerRow),
+    };
   }
 
-  const playerRow = findLeaderboardRow(leaderboardRows, player);
-  const snapshotMetrics =
-    overviewMode === "pitching" ? PITCHING_SNAPSHOT_METRICS : BATTING_SNAPSHOT_METRICS;
-  const percentileMetrics =
-    overviewMode === "pitching" ? PITCHING_PERCENTILE_METRICS : BATTING_PERCENTILE_METRICS;
+  const [pitchingOverview, hittingOverview] = await Promise.all([
+    loadOverviewStats("pitching"),
+    loadOverviewStats("hitting"),
+  ]);
 
-  const seasonStats = playerRow
-    ? buildSeasonStats(snapshotMetrics, playerRow)
-    : [];
-  const seasonPercentiles = playerRow
-    ? buildSeasonPercentiles(
-        percentileMetrics,
-        leaderboardRows,
-        playerRow,
-        playerRow,
-      )
-    : [];
+  const activeOverview =
+    defaultOverviewMode === "pitching" ? pitchingOverview : hittingOverview;
 
-  const debugInfo = {
-    foundRow: Boolean(playerRow),
-    playerId: getExternalPlayerIds(player)[0] ?? "Unresolved",
-    leaderboardCount: leaderboardRows.length,
-    sourceUsed: playerRow ? overviewMode : "none",
-    error: fetchError,
-  };
-
-  // Always log in server logs (visible in Vercel function logs)
-  console.log("[PlayerProfile]", player.name, debugInfo);
-
-  const statsUnavailable = !playerRow && fetchError != null;
-  const roleLabel = player.role;
+  const roleLabel = resolvedPlayer.role;
   const seasonNote = undefined;
   const roster = rosterData as Record<string, { height?: string; weight?: string; class?: string }>;
-  const rosterInfo = roster[player.slug];
+  const rosterInfo = roster[resolvedPlayer.slug];
   const throwHand =
-    getHand(player.slug) ??
-    (player.throws === "R" || player.throws === "L" ? player.throws : null);
+    getHand(resolvedPlayer.slug) ??
+    (resolvedPlayer.throws === "R" || resolvedPlayer.throws === "L" ? resolvedPlayer.throws : null);
   const handBadge =
-    player.bats && player.throws
-      ? `${player.bats}/${player.throws}`
+    resolvedPlayer.bats && resolvedPlayer.throws
+      ? `${resolvedPlayer.bats}/${resolvedPlayer.throws}`
       : throwHand
-        ? player.isPitcher && !player.isHitter
+        ? resolvedPlayer.isPitcher && !resolvedPlayer.isHitter
           ? throwHand === "R"
             ? "RHP"
             : "LHP"
           : `T ${throwHand}`
         : null;
-  const liveAbProfile = await loadChartingPlayerProfile(player.slug, {
+  const liveAbProfile = await loadChartingPlayerProfile(resolvedPlayer.slug, {
     batterHand:
-      player.bats === "R" || player.bats === "L" || player.bats === "S"
-        ? player.bats
+      resolvedPlayer.bats === "R" || resolvedPlayer.bats === "L" || resolvedPlayer.bats === "S"
+        ? resolvedPlayer.bats
         : null,
   });
 
   const mechanicsIndex = await readMechanicsIndex();
   const mechanicsEntry = getMechanicsForPlayer(mechanicsIndex, {
-    profileSlug: player.slug,
-    playerName: player.name,
+    profileSlug: resolvedPlayer.slug,
+    playerName: resolvedPlayer.name,
   });
 
   const trackmanIndex = await loadTrackmanIndex();
   const trackmanSessions = trackmanIndex
-    .filter((entry) => entry.playerSlug === player.slug && entry.date)
+    .filter((entry) => entry.playerSlug === resolvedPlayer.slug && entry.date)
     .map((entry) => {
       const date = entry.date ?? "";
       const dateSlug = date.replace(/-/g, "_");
@@ -827,7 +845,7 @@ export default async function PlayerProfilePage({
   // Command outings from dataIndex — match by normalized name
   const normName = (n: string) => n.toLowerCase().replace(/[^a-z]/g, "");
   const diPlayer = dataIndexPlayers.find(
-    (p) => normName(p.name) === normName(player.name),
+    (p) => normName(p.name) === normName(resolvedPlayer.name),
   );
   const commandOutings = (diPlayer?.outings ?? []).map((o) => {
     const dateId = o.id.split("/")[1] ?? "";
@@ -840,7 +858,7 @@ export default async function PlayerProfilePage({
     };
   });
   const stuffPlusCandidates = buildStuffPlusLookupCandidates([
-    player.slug,
+    resolvedPlayer.slug,
     diPlayer?.id ?? null,
   ]);
   const initialStuff = await loadStuffPlusProfileData(stuffPlusCandidates);
@@ -884,7 +902,7 @@ export default async function PlayerProfilePage({
     };
 
     const pitchingResult = computePitchingPlus(
-      initialStuff.lookupPlayerId ?? player.slug,
+      initialStuff.lookupPlayerId ?? resolvedPlayer.slug,
       commandResult,
       initialStuff.pitches,
     );
@@ -939,22 +957,22 @@ export default async function PlayerProfilePage({
               </div>
 
               <h1 className="mt-5 text-[34px] font-black tracking-tight text-white sm:text-[3rem] sm:leading-[1.02]">
-                {player.name}
+                {resolvedPlayer.name}
               </h1>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                <LeaderboardPill tone="neutral">{player.team}</LeaderboardPill>
+                <LeaderboardPill tone="neutral">{resolvedPlayer.team}</LeaderboardPill>
                 <LeaderboardPill tone="neutral">{roleLabel}</LeaderboardPill>
                 <LeaderboardPill tone="neutral">{TARGET_YEAR}</LeaderboardPill>
-                {player.positions.length > 0 && (
-                  <LeaderboardPill tone="neutral">{player.positions.join(" / ")}</LeaderboardPill>
+                {resolvedPlayer.positions.length > 0 && (
+                  <LeaderboardPill tone="neutral">{resolvedPlayer.positions.join(" / ")}</LeaderboardPill>
                 )}
-                {(rosterInfo?.height || rosterInfo?.weight || rosterInfo?.class || player.academicYear) && (
+                {(rosterInfo?.height || rosterInfo?.weight || rosterInfo?.class || resolvedPlayer.academicYear) && (
                   <LeaderboardPill tone="neutral">
                     {[
                       rosterInfo?.height,
                       rosterInfo?.weight && `${rosterInfo.weight} lbs`,
-                      rosterInfo?.class ?? player.academicYear,
+                      rosterInfo?.class ?? resolvedPlayer.academicYear,
                     ]
                       .filter(Boolean)
                       .join(" · ")}
@@ -965,28 +983,32 @@ export default async function PlayerProfilePage({
           </div>
         </header>
 
-        {statsUnavailable && (
+        {activeOverview.statsUnavailable && (
           <div className="mt-4 rounded-2xl border border-amber-800/40 bg-amber-950/30 px-4 py-3 text-sm text-amber-300">
-            2025 {overviewMode} stats temporarily unavailable. Check back soon.
+            {TARGET_YEAR} {defaultOverviewMode} stats temporarily unavailable. Check back soon.
           </div>
         )}
 
-        {!playerRow && !statsUnavailable && (
+        {!activeOverview.hasRow && !activeOverview.statsUnavailable && (
           <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-500">
-            No 2025 stats available
+            No {TARGET_YEAR} {defaultOverviewMode} stats available
           </div>
         )}
 
         <PlayerProfileTabs
           profileMode={profileMode}
-          percentileAudienceLabel={overviewMode === "pitching" ? "pitchers" : "hitters"}
-          seasonStats={seasonStats}
+          defaultOverviewMode={defaultOverviewMode}
+          pitchingSeasonStats={pitchingOverview.seasonStats}
+          hittingSeasonStats={hittingOverview.seasonStats}
           seasonYear={TARGET_YEAR}
           seasonNote={seasonNote}
-      seasonPercentiles={seasonPercentiles}
+          pitchingSeasonPercentiles={pitchingOverview.seasonPercentiles}
+          hittingSeasonPercentiles={hittingOverview.seasonPercentiles}
+          pitchingPercentileAudienceLabel={pitchingOverview.percentileAudienceLabel}
+          hittingPercentileAudienceLabel={hittingOverview.percentileAudienceLabel}
           trackmanSessions={trackmanSessions}
           commandOutings={commandOutings}
-          playerSlug={player.slug}
+          playerSlug={resolvedPlayer.slug}
           initialCommandHero={initialCommandHero}
           initialCommandResult={initialCommandResult}
           initialPitchingModel={initialPitchingModel}
