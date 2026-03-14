@@ -852,12 +852,6 @@ def compute_arsenal(rows):
         mean_sp = float(np.mean(opt_vals))
         sd_sp = float(np.std(stuff_vals)) if n > 1 else 0.0
 
-        # Regress toward 100 for small samples — 1 session = 40% regression, 2 = 20%
-        if n == 1:
-            mean_sp = 100.0 + (mean_sp - 100.0) * 0.60
-        elif n == 2:
-            mean_sp = 100.0 + (mean_sp - 100.0) * 0.80
-
         velos = [r["avg_velo_mph"] for r in grp_rows]
         max_fb_velos = [r["max_fb_velo"] for r in grp_rows if r.get("max_fb_velo") is not None]
         exts = [r["avg_ext_ft"] for r in grp_rows]
