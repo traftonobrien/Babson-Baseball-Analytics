@@ -10,6 +10,7 @@ import {
 } from "react";
 import {
   BookOpen,
+  CircleHelp,
   Layers3,
   Search,
   Sparkles,
@@ -227,6 +228,30 @@ function EmptyState({
   );
 }
 
+function HeaderTooltip({
+  label,
+  tooltip,
+}: {
+  label: string;
+  tooltip: string;
+}) {
+  return (
+    <div className="group relative inline-flex items-center gap-1.5">
+      <span>{label}</span>
+      <button
+        type="button"
+        aria-label={`${label} explanation`}
+        className="inline-flex h-4 w-4 items-center justify-center rounded-full text-zinc-500 transition-smooth hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+      >
+        <CircleHelp className="h-3.5 w-3.5" />
+      </button>
+      <div className="pointer-events-none absolute left-1/2 top-full z-30 mt-2 hidden w-72 -translate-x-1/2 rounded-2xl border border-zinc-700/80 bg-zinc-950/95 px-3 py-2 text-left text-[11px] normal-case tracking-normal text-zinc-300 shadow-2xl shadow-black/40 group-hover:block group-focus-within:block">
+        {tooltip}
+      </div>
+    </div>
+  );
+}
+
 function PlayerTable({
   rows,
   transitionKey,
@@ -237,15 +262,25 @@ function PlayerTable({
   getRowTransitionProps: (index: number) => RowTransitionProps;
 }) {
   return (
-    <div className="overflow-x-auto rounded-3xl border border-zinc-800/80 bg-zinc-950/65">
+    <div className="overflow-x-auto overflow-y-visible rounded-3xl border border-zinc-800/80 bg-zinc-950/65">
       <table className="min-w-full text-sm">
         <thead className="border-b border-zinc-800/80 bg-zinc-900/80">
           <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
             <th className="px-4 py-3">Rank</th>
             <th className="px-4 py-3">Pitcher</th>
-            <th className="px-4 py-3">Pitching+</th>
-            <th className="px-4 py-3">Command+</th>
-            <th className="px-4 py-3">Stuff+</th>
+            <th className="px-4 py-3 text-center">Pitching+</th>
+            <th className="px-4 py-3 text-center">
+              <HeaderTooltip
+                label="Command+"
+                tooltip="Command+ measures how precisely a pitcher locates the ball relative to the intended target. Better miss quality and more consistent execution drive the grade higher."
+              />
+            </th>
+            <th className="px-4 py-3 text-center">
+              <HeaderTooltip
+                label="W Stuff +"
+                tooltip="Weighted Stuff+ is the player-level Stuff+ blend inside Pitching+. Each qualifying pitch type contributes by usage, so the offerings a pitcher throws most heavily shape this number the most."
+              />
+            </th>
             <th className="px-4 py-3">Overlap</th>
             <th className="px-4 py-3">Tracked</th>
             <th className="px-4 py-3">Outings</th>
@@ -268,9 +303,9 @@ function PlayerTable({
                     {handBadge(row.throws)}
                   </Link>
                 </td>
-                <td className="px-4 py-3">{metricBadge(row.pitchingPlus)}</td>
-                <td className="px-4 py-3">{metricBadge(row.commandPlus)}</td>
-                <td className="px-4 py-3">{metricBadge(row.stuffPlus)}</td>
+                <td className="px-4 py-3 text-center">{metricBadge(row.pitchingPlus)}</td>
+                <td className="px-4 py-3 text-center">{metricBadge(row.commandPlus)}</td>
+                <td className="px-4 py-3 text-center">{metricBadge(row.stuffPlus)}</td>
                 <td className="px-4 py-3 text-zinc-300">
                   <div className="font-medium">{row.overlapPitchTypeCount} types</div>
                   <div className="text-xs text-zinc-500">{row.overlapPitchCount} pitches</div>
@@ -308,9 +343,14 @@ function PitchTypeTable({
             <th className="px-4 py-3">Rank</th>
             <th className="px-4 py-3">Pitcher</th>
             <th className="px-4 py-3">Pitch</th>
-            <th className="px-4 py-3">Pitching+</th>
-            <th className="px-4 py-3">Command+</th>
-            <th className="px-4 py-3">Stuff+</th>
+            <th className="px-4 py-3 text-center">Pitching+</th>
+            <th className="px-4 py-3 text-center">
+              <HeaderTooltip
+                label="Command+"
+                tooltip="Command+ measures how precisely that pitch type is located relative to the target. Stronger command grades come from tighter misses and more repeatable execution."
+              />
+            </th>
+            <th className="px-4 py-3 text-center">Stuff+</th>
             <th className="px-4 py-3">Usage</th>
             <th className="px-4 py-3">Pitches</th>
             <th className="px-4 py-3">Status</th>
@@ -338,9 +378,9 @@ function PitchTypeTable({
                     label={row.pitchLabel}
                   />
                 </td>
-                <td className="px-4 py-3">{metricBadge(row.pitchingPlus)}</td>
-                <td className="px-4 py-3">{metricBadge(row.commandPlus)}</td>
-                <td className="px-4 py-3">{metricBadge(row.stuffPlus)}</td>
+                <td className="px-4 py-3 text-center">{metricBadge(row.pitchingPlus)}</td>
+                <td className="px-4 py-3 text-center">{metricBadge(row.commandPlus)}</td>
+                <td className="px-4 py-3 text-center">{metricBadge(row.stuffPlus)}</td>
                 <td className="px-4 py-3 text-zinc-300">{fmtPct(row.usageShare)}</td>
                 <td className="px-4 py-3 text-zinc-300">{row.commandCount}</td>
                 <td className="px-4 py-3">
