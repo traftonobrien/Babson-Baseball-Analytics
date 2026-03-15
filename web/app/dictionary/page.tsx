@@ -59,8 +59,8 @@ const DICTIONARY_ITEMS = [
   },
   {
     href: "/charting/faq",
-    label: "Live ABs",
-    description: "Charted pitcher and hitter metrics from Live AB sessions.",
+    label: "Charting",
+    description: "Charted pitcher and hitter metrics from game sessions.",
     icon: ClipboardList,
     tone: "emerald" as const,
   },

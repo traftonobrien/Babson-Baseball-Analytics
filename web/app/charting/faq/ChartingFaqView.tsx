@@ -11,7 +11,7 @@ import {
 const PITCHER_STATS = [
   {
     stat: "Sessions",
-    definition: "Unique charted Live AB sessions that match the selected date range or single-session filter.",
+    definition: "Unique charted game sessions that match the selected date range or single-session filter.",
   },
   {
     stat: "Innings",
@@ -23,7 +23,7 @@ const PITCHER_STATS = [
   },
   {
     stat: "TBF",
-    definition: "Total batters faced. This replaces WHIP on the Live AB board because scrimmage innings are often non-standard.",
+    definition: "Total batters faced. This replaces WHIP on the charting leaderboard because game innings are often non-standard.",
   },
   {
     stat: "BAA",
@@ -62,7 +62,7 @@ const PITCHER_STATS = [
 const HITTER_STATS = [
   {
     stat: "Sessions",
-    definition: "Unique charted Live AB sessions that include that hitter.",
+    definition: "Unique charted game sessions that include that hitter.",
   },
   {
     stat: "PAs",
@@ -74,7 +74,7 @@ const HITTER_STATS = [
   },
   {
     stat: "wOBA",
-    definition: "Weighted on-base average using the Live AB outcome weights in this system: BB 0.69, HBP 0.72, 1B 0.89, 2B 1.27, 3B 1.62, HR 2.10.",
+    definition: "Weighted on-base average using these outcome weights: BB 0.69, HBP 0.72, 1B 0.89, 2B 1.27, 3B 1.62, HR 2.10.",
   },
   {
     stat: "Chase%",
@@ -145,7 +145,7 @@ const HITTER_VISUAL_STATS = [
   },
   {
     stat: "wOBA",
-    definition: "Weighted on-base average for the filtered player sample or selected zone bucket using the same Live AB weights as the leaderboard.",
+    definition: "Weighted on-base average for the filtered player sample or selected zone bucket using the same charting weights as the leaderboard.",
   },
   {
     stat: "Pitch Mix Panel",
@@ -185,12 +185,12 @@ export default function ChartingFaqView() {
     <DictionaryPageShell
       tone="emerald"
       icon={ClipboardList}
-      title="Live AB Guide"
-      description="This guide explains the charted pitcher and hitter metrics used across the Live AB leaderboard and player visuals."
+      title="Charting Guide"
+      description="This guide explains the charted pitcher and hitter metrics used across the charting leaderboard and player visuals."
       breadcrumbs={[
         { label: "Home", href: "/" },
         { label: "Metrics Dictionary", href: "/dictionary" },
-        { label: "Live ABs" },
+        { label: "Charting" },
       ]}
       maxWidth="max-w-5xl"
     >
@@ -198,7 +198,7 @@ export default function ChartingFaqView() {
         tone="emerald"
         icon={BookOpen}
         title="What This Guide Covers"
-        description="The Live AB leaderboard and player visuals are built from manually charted scrimmage plate appearances, pitch results, and pitch locations."
+        description="The charting leaderboard and player visuals are built from manually charted game plate appearances, pitch results, and pitch locations."
       >
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <DictionaryCard>
@@ -206,7 +206,7 @@ export default function ChartingFaqView() {
             <p className="mt-3 text-sm leading-relaxed text-zinc-400">
               Every row updates from the current session filter or date range. A
               single-session view shows only one charted outing. Wider scopes
-              aggregate every matching Live AB session.
+              aggregate every matching game session.
             </p>
           </DictionaryCard>
 
@@ -222,10 +222,10 @@ export default function ChartingFaqView() {
           <DictionaryCard className="border-emerald-900/30 bg-emerald-950/15">
             <h3 className="text-lg font-bold text-emerald-300">Why TBF, Not WHIP</h3>
             <p className="mt-3 text-sm leading-relaxed text-emerald-100/70">
-              Live AB innings often continue past three outs or stop early for
-              training reasons. Total batters faced is the cleaner workload
-              number for this environment, so the leaderboard uses TBF instead
-              of WHIP.
+              Game innings may not always follow standard out counts due to
+              pitching changes mid-inning. Total batters faced is the cleaner
+              workload number for this environment, so the leaderboard uses TBF
+              instead of WHIP.
             </p>
           </DictionaryCard>
         </div>
@@ -235,7 +235,7 @@ export default function ChartingFaqView() {
         tone="emerald"
         icon={Target}
         title="Pitcher Leaderboard Metrics"
-        description="These are the columns used to rank pitchers on the Live AB page."
+        description="These are the columns used to rank pitchers on the charting leaderboard."
       >
         <DictionaryTableShell>
           <table className="w-full text-left text-sm">

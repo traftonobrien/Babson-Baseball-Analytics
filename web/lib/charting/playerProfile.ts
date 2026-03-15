@@ -42,6 +42,7 @@ export interface ChartingProfileGame {
   id: string;
   gameDate: string;
   opponent: string | null;
+  sessionType: "live_ab" | "game";
 }
 
 export interface LiveAbPitcherSession {
@@ -61,11 +62,21 @@ export interface LiveAbHitterSession {
   stats: AggregatedHitterStats | null;
 }
 
+export interface PitcherRawPitchRecord {
+  pitchType: string;
+  locationCell: number | null;
+  pitchResult: string;
+  ballsBefore: number;
+  strikesBefore: number;
+  sessionType: "live_ab" | "game";
+}
+
 export interface LiveAbPitcherProfile {
   playerId: string;
   displayName: string;
   stats: AggregatedPitcherStats | null;
   sessions: LiveAbPitcherSession[];
+  pitchRecords: PitcherRawPitchRecord[];
 }
 
 export interface LiveAbHitterProfile {
@@ -211,6 +222,10 @@ export function buildChartingPlayerProfile({
   const displayName = getCanonicalName(playerSlug);
   const gameById = new Map(games.map((game) => [game.id, game]));
 
+  // Build lookup: segmentId → gameId → sessionType
+  const segmentIdToGameId = new Map(segments.map((segment) => [segment.id, segment.gameId]));
+  const gameIdToSessionType = new Map(games.map((game) => [game.id, game.sessionType]));
+
   const pitcherSegments = playerId
     ? segments.filter((segment) => segment.playerId === playerId)
     : [];
@@ -218,6 +233,15 @@ export function buildChartingPlayerProfile({
   const pitcherPas = plateAppearances.filter((pa) => pitcherSegmentIds.has(pa.segmentId));
   const pitcherPaIds = new Set(pitcherPas.map((pa) => pa.id));
   const pitcherPitches = pitches.filter((pitch) => pitcherPaIds.has(pitch.paId));
+
+  // Build lookup: paId → sessionType (via segmentId → gameId → sessionType)
+  const paIdToSessionType = new Map(
+    pitcherPas.map((pa) => {
+      const gameId = segmentIdToGameId.get(pa.segmentId);
+      const sessionType = gameId ? (gameIdToSessionType.get(gameId) ?? "live_ab") : "live_ab";
+      return [pa.id, sessionType] as const;
+    })
+  );
 
   const matchedHitterPas = plateAppearances.filter((pa) =>
     matchesHitterName(pa.hitterName, playerId, displayName, playerSlug)
@@ -270,6 +294,14 @@ export function buildChartingPlayerProfile({
               })
               .filter((session): session is LiveAbPitcherSession => session !== null)
           ),
+          pitchRecords: pitcherPitches.map((pitch) => ({
+            pitchType: pitch.pitchType,
+            locationCell: pitch.locationCell,
+            pitchResult: pitch.pitchResult,
+            ballsBefore: pitch.ballsBefore,
+            strikesBefore: pitch.strikesBefore,
+            sessionType: paIdToSessionType.get(pitch.paId) ?? "live_ab",
+          })),
         } satisfies LiveAbPitcherProfile
       : null;
 
@@ -448,15 +480,22 @@ export async function loadChartingPlayerProfile(
     });
   }
 
-  const games = await db
+  const rawGames = await db
     .select({
       id: chartingGames.id,
       gameDate: chartingGames.gameDate,
       opponent: chartingGames.opponent,
+      sessionType: chartingGames.sessionType,
     })
     .from(chartingGames)
     .where(inArray(chartingGames.id, relevantGameIds))
     .orderBy(desc(chartingGames.gameDate));
+  const games: ChartingProfileGame[] = rawGames.map((g) => ({
+    id: g.id,
+    gameDate: g.gameDate,
+    opponent: g.opponent,
+    sessionType: g.sessionType === "game" ? "game" : "live_ab",
+  }));
 
   const relevantSegmentIds = new Set(pitcherSegments.map((segment) => segment.id));
   const relevantPas = allPas.filter(
@@ -500,14 +539,21 @@ export async function loadChartingHitterInsightsDirectory(
   players: ChartingHitterInsightsDirectorySource[]
 ): Promise<ChartingHitterInsightsDirectoryEntry[]> {
   const db = await getDb();
-  const games = await db
+  const rawGamesForDir = await db
     .select({
       id: chartingGames.id,
       gameDate: chartingGames.gameDate,
       opponent: chartingGames.opponent,
+      sessionType: chartingGames.sessionType,
     })
     .from(chartingGames)
     .orderBy(desc(chartingGames.gameDate));
+  const games: ChartingProfileGame[] = rawGamesForDir.map((g) => ({
+    id: g.id,
+    gameDate: g.gameDate,
+    opponent: g.opponent,
+    sessionType: g.sessionType === "game" ? "game" : "live_ab",
+  }));
 
   const plateAppearances = (
     await db

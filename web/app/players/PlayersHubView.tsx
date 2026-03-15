@@ -308,7 +308,7 @@ export default function PlayersHubView({
             icon={Users}
             eyebrow="Roster Hub"
             title="Player Profiles"
-            description="Start with the full Babson roster. Every card opens one player page with role-aware stats, Live AB context, and system-specific development data when it exists."
+            description="Start with the full Babson roster. Every card opens one player page with role-aware stats, charting context, and system-specific development data when it exists."
             meta={
               <>
                 <LeaderboardPill tone="emerald">

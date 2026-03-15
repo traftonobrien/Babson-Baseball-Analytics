@@ -11,7 +11,7 @@ import type {
 } from "./types";
 
 function makeGame(id: string, gameDate: string, opponent: string): ChartingProfileGame {
-  return { id, gameDate, opponent };
+  return { id, gameDate, opponent, sessionType: "live_ab" };
 }
 
 function makeSegment(

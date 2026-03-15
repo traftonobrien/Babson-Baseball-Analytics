@@ -299,14 +299,14 @@ export default function HomeContent() {
                 </h1>
                 <p className="mt-2 max-w-2xl text-sm leading-7 text-zinc-400 sm:text-[15px]">
                   The team-wide portal for player profiles, season statistics,
-                  Live AB data, and the pitcher-specific tools staff uses every
+                  charting data, and the pitcher-specific tools staff uses every
                   day.
                 </p>
               </div>
             </div>
 
             <div className="mt-6 flex flex-wrap gap-2">
-              {["Player Profiles", "Season Statistics", "Live AB", "Pitcher Tools"].map(
+              {["Player Profiles", "Season Statistics", "Charting", "Pitcher Tools"].map(
                 (chip) => (
                   <span
                     key={chip}
@@ -335,8 +335,8 @@ export default function HomeContent() {
             icon={Users}
             eyebrow="Foundation"
             title="Player Profiles"
-            description="Open the full roster, then move into role-aware player pages with season context and Live AB data."
-            details={["Roster", "Profiles", "Live AB"]}
+            description="Open the full roster, then move into role-aware player pages with season context and charting data."
+            details={["Roster", "Profiles", "Charting"]}
             className="lg:col-span-4"
           />
           <HomeLinkCard
@@ -354,8 +354,8 @@ export default function HomeContent() {
             tone="emerald"
             icon={ClipboardList}
             eyebrow="Tracking"
-            title="Live AB Portal"
-            description="Open charted sessions, synced game logs, and the Live AB leaderboard for pitchers and hitters."
+            title="Charting Portal"
+            description="Open charted game sessions, synced game logs, and the charting leaderboard for pitchers and hitters."
             details={["Sessions", "Leaderboard", "Game Review"]}
             className="lg:col-span-4"
           />

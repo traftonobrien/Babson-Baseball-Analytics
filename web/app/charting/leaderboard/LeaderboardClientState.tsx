@@ -30,7 +30,7 @@ export function LeaderboardClientState({
     rowCount,
     scopeLabel,
     scopeGameCount,
-    sessionType = "live_ab",
+    sessionType = "game",
 }: {
     tab: string;
     range: string;
@@ -108,7 +108,7 @@ export function LeaderboardClientState({
         range !== "all" ||
         session !== "all" ||
         statGroup !== "basic" ||
-        sessionType !== "live_ab";
+        sessionType !== "game";
 
     return (
         <>
@@ -123,7 +123,7 @@ export function LeaderboardClientState({
                     tone="emerald"
                     icon={BarChart3}
                     eyebrow="Charting"
-                    title={<>Live AB Leaderboard</>}
+                    title={<>Charting Leaderboard</>}
                     meta={(
                         <>
                             <LeaderboardPill tone="emerald">
@@ -174,23 +174,23 @@ export function LeaderboardClientState({
                             <div className="grid grid-cols-2 gap-1">
                                 <button
                                     type="button"
-                                    onClick={() => updateQuery({ sessionType: "live_ab", session: "all" })}
-                                    className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-smooth ${sessionType === "live_ab"
-                                        ? "border border-emerald-500/25 bg-emerald-500/10 text-emerald-300"
-                                        : "border border-transparent text-zinc-400 hover:text-zinc-100"
-                                        }`}
-                                >
-                                    Live AB
-                                </button>
-                                <button
-                                    type="button"
                                     onClick={() => updateQuery({ sessionType: "game", session: "all" })}
                                     className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-smooth ${sessionType === "game"
                                         ? "border border-sky-500/25 bg-sky-500/10 text-sky-300"
                                         : "border border-transparent text-zinc-400 hover:text-zinc-100"
                                         }`}
                                 >
-                                    Game
+                                    Games
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => updateQuery({ sessionType: "all", session: "all" })}
+                                    className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-smooth ${sessionType === "all"
+                                        ? "border border-zinc-600/50 bg-zinc-800/50 text-zinc-200"
+                                        : "border border-transparent text-zinc-400 hover:text-zinc-100"
+                                        }`}
+                                >
+                                    All
                                 </button>
                             </div>
                         </div>
@@ -293,7 +293,7 @@ export function LeaderboardClientState({
                                 <option value="all">All Sessions</option>
                                 {games.map((game) => (
                                     <option key={game.id} value={game.id}>
-                                        {game.opponent || "Live AB"} — {format(parseISO(game.gameDate), "M/d/yy")}
+                                        {game.opponent || "Unnamed Game"} — {format(parseISO(game.gameDate), "M/d/yy")}
                                     </option>
                                 ))}
                             </select>
@@ -330,7 +330,7 @@ export function LeaderboardClientState({
                                     params.delete("session");
                                     params.delete("q");
                                     params.delete("statGroup");
-                                    params.set("sessionType", "live_ab");
+                                    params.set("sessionType", "game");
                                     pushParams(params);
                                 }}
                                 className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"

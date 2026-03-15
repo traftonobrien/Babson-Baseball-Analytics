@@ -19,7 +19,7 @@ export function ChartingCreateForm() {
   const [notes, setNotes] = useState("");
   const [pending, setPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [sessionType, setSessionType] = useState<"live_ab" | "game">("live_ab");
+  const [sessionType, setSessionType] = useState<"live_ab" | "game">("game");
   const [babsonVenueSide, setBabsonVenueSide] = useState<"home" | "away">("home");
   const [babsonStartingPitcher, setBabsonStartingPitcher] = useState("");
   const [opponentStartingPitcher, setOpponentStartingPitcher] = useState("");
@@ -84,35 +84,6 @@ export function ChartingCreateForm() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 px-6 py-6 lg:px-8">
-          <div className="space-y-2">
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-              Session Type
-            </span>
-            <div className="inline-flex rounded-2xl border border-zinc-800 bg-zinc-950/85 p-1">
-              <button
-                type="button"
-                onClick={() => setSessionType("live_ab")}
-                className={`rounded-xl px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${
-                  sessionType === "live_ab"
-                    ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                    : "text-zinc-500 hover:text-zinc-300"
-                }`}
-              >
-                Live AB
-              </button>
-              <button
-                type="button"
-                onClick={() => setSessionType("game")}
-                className={`rounded-xl px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${
-                  sessionType === "game"
-                    ? "bg-emerald-500/20 text-emerald-200 shadow-sm ring-1 ring-emerald-500/20"
-                    : "text-zinc-500 hover:text-zinc-300"
-                }`}
-              >
-                Game
-              </button>
-            </div>
-          </div>
 
           {sessionType === "game" && (
             <div className="space-y-4 rounded-2xl border border-emerald-500/15 bg-emerald-500/5 px-4 py-4">

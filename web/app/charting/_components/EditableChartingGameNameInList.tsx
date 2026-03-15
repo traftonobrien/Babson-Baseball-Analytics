@@ -20,16 +20,16 @@ export function EditableChartingGameNameInList({
   revision: initialRevision,
 }: EditableChartingGameNameInListProps) {
   const router = useRouter();
-  const [opponent, setOpponent] = useState(initialOpponent || "Live AB");
+  const [opponent, setOpponent] = useState(initialOpponent || "Unnamed Game");
   const [gameDate, setGameDate] = useState(initialGameDate);
   const [revision, setRevision] = useState(initialRevision);
   const [isEditing, setIsEditing] = useState(false);
-  const [inputOpponent, setInputOpponent] = useState(initialOpponent || "Live AB");
+  const [inputOpponent, setInputOpponent] = useState(initialOpponent || "Unnamed Game");
   const [inputDate, setInputDate] = useState(initialGameDate);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
-    const trimmedOpponent = inputOpponent.trim() || "Live AB";
+    const trimmedOpponent = inputOpponent.trim() || "Unnamed Game";
     if (trimmedOpponent === opponent && inputDate === gameDate) {
       setIsEditing(false);
       return;
@@ -54,7 +54,7 @@ export function EditableChartingGameNameInList({
       }
 
       const data = (await res.json()) as { game: { opponent: string | null; gameDate: string; revision: number } };
-      const resolvedOpponent = data.game.opponent || "Live AB";
+      const resolvedOpponent = data.game.opponent || "Unnamed Game";
       setOpponent(resolvedOpponent);
       setInputOpponent(resolvedOpponent);
       setGameDate(data.game.gameDate);
@@ -88,7 +88,7 @@ export function EditableChartingGameNameInList({
             type="text"
             value={inputOpponent}
             onChange={(e) => setInputOpponent(e.target.value)}
-            placeholder="Session Name (e.g. Live AB)"
+            placeholder="Session Name (e.g. MIT)"
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSave();
               if (e.key === "Escape") {

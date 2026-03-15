@@ -41,8 +41,8 @@ const LEADERBOARD_ITEMS = [
   },
   {
     href: "/charting/leaderboard",
-    label: "Live ABs",
-    description: "Pitcher and hitter rankings from charted Live AB sessions",
+    label: "Charting",
+    description: "Pitcher and hitter rankings from charted game sessions",
     icon: ClipboardList,
     color: "emerald",
   },

@@ -520,7 +520,7 @@ export default function HitterPerformanceInsights({
                 Hitter zone performance
               </h2>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-                Live AB pitch-by-pitch performance by zone, pitch type, and velocity band.
+                Charting pitch-by-pitch performance by zone, pitch type, and velocity band.
                 Click a zone or shortcut to narrow the detail panels instantly.
               </p>
             </div>
@@ -542,7 +542,7 @@ export default function HitterPerformanceInsights({
                 </span>
               ))
             ) : (
-              <span>All charted Live AB pitches are included.</span>
+              <span>All charted pitches are included.</span>
             )}
             <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-emerald-200">
               Active selection: {selectionTitle}
@@ -979,7 +979,7 @@ export default function HitterPerformanceInsights({
       <LeaderboardPanel className="p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3 text-[11px] text-zinc-500">
           <span>
-            Current Live AB feed powers zone, pitch type, velocity, and count insights across player pages.
+            Current charting feed powers zone, pitch type, velocity, and count insights across player pages.
           </span>
           <span>
             Pitcher hand, exact `plate_x`/`plate_z`, hard-hit, and xwOBA will light up automatically once those fields are charted.

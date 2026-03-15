@@ -612,30 +612,6 @@ function zoneSectionStyle({
   };
 }
 
-function SimpleBatterSilhouette() {
-  return (
-    <g opacity={0.14}>
-      <circle cx="88" cy="110" r="16" fill="#f4f4f5" />
-      <path
-        d="M82 126c-20 10-28 34-26 60l2 30-10 42c-3 13 5 24 18 24h22c10 0 18-9 17-19l-4-35 7-31 18 45c4 9 13 14 22 12l18-2c11-1 18-13 13-23l-20-40-8-54c-2-16-12-29-27-35l-20-7-22 33z"
-        fill="#f4f4f5"
-      />
-      <path
-        d="M108 122l50-56"
-        stroke="#f4f4f5"
-        strokeWidth="12"
-        strokeLinecap="round"
-      />
-      <path
-        d="M78 176l48 38"
-        stroke="#f4f4f5"
-        strokeWidth="10"
-        strokeLinecap="round"
-      />
-    </g>
-  );
-}
-
 function SimpleZoneOverlay() {
   const zx1 = toSvg(-config.zoneWidth);
   const zx2 = toSvg(config.zoneWidth);
@@ -1268,8 +1244,6 @@ function ZoneCanvas({
                 <feGaussianBlur stdDeviation="18" />
               </filter>
             </defs>
-
-            <SimpleBatterSilhouette />
 
             {buckets.map((bucket) => {
               const heat = bucketHeat(view, buckets, bucket, metricId);
@@ -2318,7 +2292,7 @@ export default function LiveAbInsightsExplorer({
                         Reference
                       </div>
                       <div className="mt-1 text-sm font-semibold text-zinc-100">
-                        Live AB FAQ & metrics
+                        Charting FAQ & metrics
                       </div>
                     </div>
                   </div>
@@ -2533,8 +2507,8 @@ export default function LiveAbInsightsExplorer({
                   </h2>
                   <p className="mt-2 max-w-3xl text-sm leading-7 text-zinc-400">
                     {isPitcher
-                      ? "Single-player charting visuals modeled after the Savant workflow, scoped to the filters currently applied across this pitcher’s Babson Live AB data."
-                      : "Single-player charting visuals modeled after the Savant workflow, scoped to the filters currently applied across this hitter’s Babson Live AB data."}
+                      ? "Single-player charting visuals modeled after the Savant workflow, scoped to the filters currently applied across this pitcher’s Babson charting data."
+                      : "Single-player charting visuals modeled after the Savant workflow, scoped to the filters currently applied across this hitter’s Babson charting data."}
                   </p>
                 </div>
 

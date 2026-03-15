@@ -27,7 +27,7 @@ function buildScopeLabel(
         if (!activeGame) {
             return "Single Session";
         }
-        return `${activeGame.opponent || "Live AB"} • ${format(parseISO(activeGame.gameDate), "M/d/yy")}`;
+        return `${activeGame.opponent || "Unnamed Game"} • ${format(parseISO(activeGame.gameDate), "M/d/yy")}`;
     }
 
     if (range === "7d") {
@@ -70,9 +70,9 @@ export default async function ChartingLeaderboardPage(props: {
             typeof statGroupParam === "string" && statGroupParam === "advanced"
                 ? "advanced"
                 : "basic";
-        const sessionTypeParam = typeof searchParams.sessionType === "string" ? searchParams.sessionType : "live_ab";
+        const sessionTypeParam = typeof searchParams.sessionType === "string" ? searchParams.sessionType : "game";
         const sessionTypeFilter: "live_ab" | "game" | "all" =
-            sessionTypeParam === "game" ? "game" : sessionTypeParam === "all" ? "all" : "live_ab";
+            sessionTypeParam === "live_ab" ? "live_ab" : sessionTypeParam === "all" ? "all" : "game";
 
         const validTabs = ["pitchers", "hitters"];
         if (!validTabs.includes(tab)) {

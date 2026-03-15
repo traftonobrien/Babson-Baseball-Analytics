@@ -52,7 +52,7 @@ const NAV_ITEMS: TubelightNavItem[] = [
     section: "tracking",
   },
   {
-    name: "Live AB",
+    name: "Charting",
     url: "/charting",
     icon: ClipboardList,
     match: (pathname) =>

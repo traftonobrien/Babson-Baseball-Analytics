@@ -28,7 +28,7 @@ export function HitterStatGroupWrapper({
     games,
     scopeLabel,
     scopeGameCount,
-    sessionType = "live_ab",
+    sessionType = "game",
 }: HitsProps) {
     const [statGroup, setStatGroup] = useState<StatGroup>(initialStatGroup);
 

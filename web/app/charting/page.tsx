@@ -36,10 +36,10 @@ function normalizeStatusFilter(value: string | string[] | undefined): HubStatusF
 }
 
 function normalizeTypeFilter(value: string | string[] | undefined): HubTypeFilter {
-    if (value === "live_ab" || value === "game") {
+    if (value === "live_ab" || value === "game" || value === "all") {
         return value;
     }
-    return "all";
+    return "game";
 }
 
 function matchesQuery(
@@ -57,11 +57,11 @@ function matchesQuery(
 
     const normalizedQuery = query.trim().toLowerCase();
     const searchTarget = [
-        game.opponent || "Live AB",
+        game.opponent || "Unnamed Game",
         game.gameDate,
         format(parseISO(game.gameDate), "MMMM d yyyy"),
         game.status,
-        game.sessionType === "game" ? "game" : "live ab",
+        game.sessionType === "game" ? "game" : "practice",
     ]
         .join(" ")
         .toLowerCase();
@@ -83,7 +83,7 @@ function TypeBadge({ sessionType }: { sessionType: string | null }) {
     if (sessionType === "game") {
         return <LeaderboardPill tone="blue">Game</LeaderboardPill>;
     }
-    return <LeaderboardPill tone="neutral">Live AB</LeaderboardPill>;
+    return <LeaderboardPill tone="neutral">Practice</LeaderboardPill>;
 }
 
 export default async function ChartingHubPage(props: {
@@ -262,9 +262,8 @@ export default async function ChartingHubPage(props: {
                                 defaultValue={typeFilter}
                                 className="w-full rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2.5 text-sm font-semibold text-zinc-100 outline-none"
                             >
+                                <option value="game">Games</option>
                                 <option value="all">All types</option>
-                                <option value="live_ab">Live AB</option>
-                                <option value="game">Game</option>
                             </select>
                         </div>
                     </div>
@@ -355,7 +354,7 @@ export default async function ChartingHubPage(props: {
                                     <Link
                                         href={`/charting/games/${game.id}`}
                                         className="absolute inset-0 z-10"
-                                        aria-label={`View data for game against ${game.opponent || "Live AB"}`}
+                                        aria-label={`View data for game against ${game.opponent || "Unnamed Game"}`}
                                     />
 
                                     <div className="relative z-20 min-w-0 flex-1 pr-4">

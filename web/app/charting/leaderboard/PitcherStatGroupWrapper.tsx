@@ -28,7 +28,7 @@ export function PitcherStatGroupWrapper({
     games,
     scopeLabel,
     scopeGameCount,
-    sessionType = "live_ab",
+    sessionType = "game",
 }: PitchProps) {
     const [statGroup, setStatGroup] = useState<StatGroup>(initialStatGroup);
 

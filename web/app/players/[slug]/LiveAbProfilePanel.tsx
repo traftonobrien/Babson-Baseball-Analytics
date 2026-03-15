@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BarChart3, ClipboardList } from "lucide-react";
 import {
@@ -7,7 +8,13 @@ import {
   LeaderboardPill,
   LeaderboardStatBlock,
 } from "@/app/components/leaderboards/LeaderboardChrome";
-import type { ChartingPlayerProfile } from "@/lib/charting/playerProfile";
+import { PitcherZoneHeatmap } from "./PitcherZoneHeatmap";
+import type { ChartingPlayerProfile, PitcherRawPitchRecord } from "@/lib/charting/playerProfile";
+
+interface SeasonStat {
+  label: string;
+  value: string;
+}
 
 function formatDateLabel(raw: string): string {
   const [year, month, day] = raw.split("-");
@@ -30,6 +37,166 @@ function formatNumber(value: number | null): string {
   return value !== null ? String(value) : "--";
 }
 
+// ---------------------------------------------------------------------------
+// Pitch type accent palette
+// ---------------------------------------------------------------------------
+
+type PitchAccent = {
+  text: string;
+  bar: string;
+  border: string;
+  bg: string;
+};
+
+function pitchAccent(pitchType: string): PitchAccent {
+  switch (pitchType) {
+    case "Fastball":
+      return {
+        text: "text-emerald-300",
+        bar: "bg-emerald-500",
+        border: "border-emerald-500/20",
+        bg: "bg-emerald-500/10",
+      };
+    case "Slider":
+      return {
+        text: "text-sky-300",
+        bar: "bg-sky-500",
+        border: "border-sky-500/20",
+        bg: "bg-sky-500/10",
+      };
+    case "Curveball":
+      return {
+        text: "text-violet-300",
+        bar: "bg-violet-500",
+        border: "border-violet-500/20",
+        bg: "bg-violet-500/10",
+      };
+    case "Changeup":
+      return {
+        text: "text-amber-300",
+        bar: "bg-amber-500",
+        border: "border-amber-500/20",
+        bg: "bg-amber-500/10",
+      };
+    case "Split/Cut":
+      return {
+        text: "text-orange-300",
+        bar: "bg-orange-500",
+        border: "border-orange-500/20",
+        bg: "bg-orange-500/10",
+      };
+    default:
+      return {
+        text: "text-zinc-300",
+        bar: "bg-zinc-500",
+        border: "border-zinc-500/20",
+        bg: "bg-zinc-500/10",
+      };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Filter types
+// ---------------------------------------------------------------------------
+
+type ResultFilter = "all" | "called_strike" | "ball" | "swinging_strike" | "foul" | "in_play";
+
+// ---------------------------------------------------------------------------
+// Helpers for per-pitch-type stats from raw records
+// ---------------------------------------------------------------------------
+
+function buildLocationCounts(
+  pitches: PitcherRawPitchRecord[],
+  pitchType?: string,
+  resultFilter: ResultFilter = "all"
+): Partial<Record<number, number>> {
+  const counts: Partial<Record<number, number>> = {};
+  for (const p of pitches) {
+    if (pitchType && p.pitchType !== pitchType) continue;
+    if (resultFilter !== "all" && p.pitchResult !== resultFilter) continue;
+    if (p.locationCell === null) continue;
+    counts[p.locationCell] = (counts[p.locationCell] ?? 0) + 1;
+  }
+  return counts;
+}
+
+type PitchTypeStats = {
+  pitchType: string;
+  count: number;
+  pct: number;
+  strikePct: number | null;
+  whiffPct: number | null;
+  zonePct: number | null;
+  locationCounts: Partial<Record<number, number>>;
+};
+
+const STRIKE_RESULTS = new Set([
+  "called_strike",
+  "swinging_strike",
+  "foul",
+  "bunt_foul",
+  "in_play",
+]);
+const SWING_RESULTS = new Set(["swinging_strike", "foul", "bunt_foul", "in_play"]);
+
+function computePitchTypeStats(
+  pitches: PitcherRawPitchRecord[],
+  pitchType: string,
+  resultFilter: ResultFilter = "all"
+): PitchTypeStats {
+  const subset = pitches.filter((p) => p.pitchType === pitchType);
+  const total = pitches.length;
+  const count = subset.length;
+  const pct = total > 0 ? (count / total) * 100 : 0;
+
+  const strikes = subset.filter((p) => STRIKE_RESULTS.has(p.pitchResult)).length;
+  const swings = subset.filter((p) => SWING_RESULTS.has(p.pitchResult)).length;
+  const whiffs = subset.filter((p) => p.pitchResult === "swinging_strike").length;
+  const located = subset.filter((p) => p.locationCell !== null);
+  const inZone = located.filter(
+    (p) => p.locationCell !== null && p.locationCell >= 1 && p.locationCell <= 9
+  ).length;
+
+  return {
+    pitchType,
+    count,
+    pct,
+    strikePct: count > 0 ? (strikes / count) * 100 : null,
+    whiffPct: swings > 0 ? (whiffs / swings) * 100 : null,
+    zonePct: located.length > 0 ? (inZone / located.length) * 100 : null,
+    locationCounts: buildLocationCounts(subset, undefined, resultFilter),
+  };
+}
+
+const PITCH_TYPE_ORDER = [
+  "Fastball",
+  "Slider",
+  "Curveball",
+  "Changeup",
+  "Split/Cut",
+  "Other",
+];
+
+function buildAllPitchTypeStats(pitches: PitcherRawPitchRecord[], resultFilter: ResultFilter = "all"): PitchTypeStats[] {
+  const seen = new Set<string>();
+  for (const p of pitches) seen.add(p.pitchType);
+
+  return [...seen]
+    .sort((a, b) => {
+      const ai = PITCH_TYPE_ORDER.indexOf(a);
+      const bi = PITCH_TYPE_ORDER.indexOf(b);
+      if (ai === -1 && bi === -1) return a.localeCompare(b);
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    })
+    .map((pt) => computePitchTypeStats(pitches, pt, resultFilter));
+}
+
+// ---------------------------------------------------------------------------
+// Sub-components
+// ---------------------------------------------------------------------------
+
 function SessionList({
   title,
   sessions,
@@ -45,7 +212,7 @@ function SessionList({
             {title}
           </h3>
           <p className="mt-1 text-sm text-zinc-500">
-            Recent charted Live AB sessions for this player.
+            Recent charted Charting sessions for this player.
           </p>
         </div>
         <LeaderboardPill tone="emerald">
@@ -56,7 +223,7 @@ function SessionList({
       <LeaderboardPanel className="overflow-hidden p-2 sm:p-3">
         {sessions.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-zinc-800 bg-zinc-950/60 px-4 py-8 text-center text-sm text-zinc-500">
-            No Live AB sessions yet.
+            No Charting sessions yet.
           </div>
         ) : (
           <ul className="space-y-2">
@@ -71,7 +238,7 @@ function SessionList({
                       {formatDateLabel(session.gameDate)}
                     </div>
                     <div className="mt-1 text-[11px] text-zinc-500">
-                      {session.opponent || "Live AB"}
+                      {session.opponent || "Charting"}
                     </div>
                   </div>
                   <ArrowRight className="h-4 w-4 text-zinc-600 opacity-70 transition-smooth group-hover:text-emerald-300 group-hover:opacity-100" />
@@ -85,21 +252,180 @@ function SessionList({
   );
 }
 
+function PitchMixBar({ stats }: { stats: PitchTypeStats[] }) {
+  if (stats.length === 0) return null;
+
+  return (
+    <div className="space-y-3">
+      {stats.map((item) => {
+        const accent = pitchAccent(item.pitchType);
+        return (
+          <div key={item.pitchType} className="flex items-center gap-3">
+            <div className={`w-20 shrink-0 text-xs font-semibold ${accent.text}`}>
+              {item.pitchType}
+            </div>
+            <div className="relative h-2.5 flex-1 overflow-hidden rounded-full bg-zinc-800/60">
+              <div
+                className={`absolute inset-y-0 left-0 rounded-full ${accent.bar} opacity-80`}
+                style={{ width: `${Math.min(100, item.pct)}%` }}
+              />
+            </div>
+            <div className="w-10 shrink-0 text-right text-xs font-bold text-zinc-300">
+              {item.pct.toFixed(0)}%
+            </div>
+            <div className="w-10 shrink-0 text-right text-[11px] text-zinc-500">
+              ({item.count})
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+const RESULT_FILTER_OPTIONS: { label: string; value: ResultFilter }[] = [
+  { label: "All", value: "all" },
+  { label: "Called Strikes", value: "called_strike" },
+  { label: "Balls", value: "ball" },
+  { label: "Whiffs", value: "swinging_strike" },
+  { label: "Fouls", value: "foul" },
+  { label: "In Play", value: "in_play" },
+];
+
+function PitchZoneMaps({
+  stats,
+  resultFilter,
+  onResultFilterChange,
+}: {
+  stats: PitchTypeStats[];
+  resultFilter: ResultFilter;
+  onResultFilterChange: (f: ResultFilter) => void;
+}) {
+  const eligible = stats.filter((s) => s.count >= 5);
+  if (eligible.length === 0) return null;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
+          Zone Maps by Pitch Type
+        </h3>
+        {/* Result filter buttons */}
+        <div className="flex flex-wrap gap-1.5">
+          {RESULT_FILTER_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onResultFilterChange(opt.value)}
+              className={
+                resultFilter === opt.value
+                  ? "rounded-xl px-3 py-1.5 text-xs font-semibold border border-emerald-500/25 bg-emerald-500/10 text-emerald-300"
+                  : "rounded-xl px-3 py-1.5 text-xs font-semibold border border-transparent text-zinc-400 hover:text-zinc-100"
+              }
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {eligible.map((item) => {
+          const accent = pitchAccent(item.pitchType);
+          return (
+            <div
+              key={item.pitchType}
+              className={`rounded-[1.7rem] border ${accent.border} bg-zinc-950/80 p-4 shadow-[0_18px_48px_rgba(0,0,0,0.22)]`}
+            >
+              {/* Header */}
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <div>
+                  <span
+                    className={`text-xs font-black uppercase tracking-[0.2em] ${accent.text}`}
+                  >
+                    {item.pitchType}
+                  </span>
+                  <span className="ml-2 text-[11px] text-zinc-500">
+                    {item.count} pitch{item.count === 1 ? "" : "es"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Heatmap */}
+              <PitcherZoneHeatmap counts={item.locationCounts} />
+
+              {/* Per-type outcome summary */}
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/40 px-2 py-2 text-center">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                    Strike%
+                  </div>
+                  <div className={`mt-0.5 text-sm font-bold ${accent.text}`}>
+                    {item.strikePct !== null ? `${item.strikePct.toFixed(1)}%` : "--"}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/40 px-2 py-2 text-center">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                    Whiff%
+                  </div>
+                  <div className={`mt-0.5 text-sm font-bold ${accent.text}`}>
+                    {item.whiffPct !== null ? `${item.whiffPct.toFixed(1)}%` : "--"}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/40 px-2 py-2 text-center">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                    Zone%
+                  </div>
+                  <div className={`mt-0.5 text-sm font-bold ${accent.text}`}>
+                    {item.zonePct !== null ? `${item.zonePct.toFixed(1)}%` : "--"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
+
 export default function LiveAbProfilePanel({
   profile,
+  seasonStats,
 }: {
   profile: ChartingPlayerProfile;
+  seasonStats?: SeasonStat[];
 }) {
   const pitcher = profile.pitcher;
   const hitter = profile.hitter;
 
+  // Session type toggle: "game" shows game sessions; "live" shows live_ab sessions
+  const [sessionFilter, setSessionFilter] = useState<"game" | "live">("game");
+  // Result filter for zone maps
+  const [resultFilter, setResultFilter] = useState<ResultFilter>("all");
+
   if (!pitcher && !hitter) {
     return (
       <LeaderboardPanel className="p-5 text-sm text-zinc-500">
-        No Live AB data has been charted for this player yet.
+        No charting data has been recorded for this player yet.
       </LeaderboardPanel>
     );
   }
+
+  // Filter pitch records by session type
+  const filteredRecords = pitcher
+    ? pitcher.pitchRecords.filter(r =>
+        sessionFilter === "game" ? r.sessionType === "game" : r.sessionType === "live_ab"
+      )
+    : [];
+
+  const pitchTypeStats =
+    filteredRecords.length > 0
+      ? buildAllPitchTypeStats(filteredRecords, resultFilter)
+      : [];
 
   return (
     <div className="space-y-8">
@@ -112,7 +438,7 @@ export default function LiveAbProfilePanel({
                   <ClipboardList className="h-4 w-4" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-zinc-100">Live AB Leaderboard</div>
+                  <div className="text-sm font-semibold text-zinc-100">Charting Leaderboard</div>
                   <p className="mt-1 text-[11px] leading-5 text-zinc-500">
                     Open the full charting leaderboard and cross-session rankings.
                   </p>
@@ -125,76 +451,162 @@ export default function LiveAbProfilePanel({
       </section>
 
       {pitcher ? (
-        <section className="space-y-5">
+        <section className="space-y-6">
+          {/* Section header with session type toggle */}
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
-                Pitching Live AB
+                Pitching Charting
               </h2>
               <p className="mt-1 text-sm text-zinc-500">
-                Charted workload and pitch-quality context from Live AB sessions.
+                Charted workload and pitch-quality context from Charting sessions.
               </p>
             </div>
-            <LeaderboardPill tone="emerald">
-              {pitcher.stats?.sessions ?? pitcher.sessions.length} Session
-              {(pitcher.stats?.sessions ?? pitcher.sessions.length) === 1 ? "" : "s"}
-            </LeaderboardPill>
+            <div className="flex items-center gap-2">
+              {/* Session type toggle */}
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => setSessionFilter("game")}
+                  className={
+                    sessionFilter === "game"
+                      ? "rounded-xl px-3 py-1.5 text-xs font-semibold border border-emerald-500/25 bg-emerald-500/10 text-emerald-300"
+                      : "rounded-xl px-3 py-1.5 text-xs font-semibold border border-transparent text-zinc-400 hover:text-zinc-100"
+                  }
+                >
+                  Game
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSessionFilter("live")}
+                  className={
+                    sessionFilter === "live"
+                      ? "rounded-xl px-3 py-1.5 text-xs font-semibold border border-emerald-500/25 bg-emerald-500/10 text-emerald-300"
+                      : "rounded-xl px-3 py-1.5 text-xs font-semibold border border-transparent text-zinc-400 hover:text-zinc-100"
+                  }
+                >
+                  Live
+                </button>
+              </div>
+              <LeaderboardPill tone="emerald">
+                {pitcher.stats?.sessions ?? pitcher.sessions.length} Session
+                {(pitcher.stats?.sessions ?? pitcher.sessions.length) === 1 ? "" : "s"}
+              </LeaderboardPill>
+            </div>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-4">
-            <LeaderboardStatBlock
-              label="Innings"
-              value={formatNumber(pitcher.stats?.innings ?? null)}
-              detail="charted inning span"
-              emphasisClassName="text-zinc-100"
-            />
-            <LeaderboardStatBlock
-              label="Pitches"
-              value={formatNumber(pitcher.stats?.totalPitches ?? null)}
-              detail="total charted pitches"
-              emphasisClassName="text-zinc-100"
-            />
-            <LeaderboardStatBlock
-              label="TBF"
-              value={formatNumber(pitcher.stats?.totalPAs ?? null)}
-              detail="total batters faced"
-              emphasisClassName="text-zinc-100"
-            />
-            <LeaderboardStatBlock
-              label="Strike%"
-              value={formatPct(pitcher.stats?.strikePct ?? null)}
-              detail="all charted pitches"
-              emphasisClassName="text-emerald-300"
-            />
-          </div>
+          {/* 8 stat blocks — different data depending on session tab */}
+          {sessionFilter === "game" && seasonStats && seasonStats.length > 0 ? (
+            <>
+              <div className="grid gap-3 sm:grid-cols-4">
+                {seasonStats.slice(0, 4).map((stat) => (
+                  <LeaderboardStatBlock
+                    key={stat.label}
+                    label={stat.label}
+                    value={stat.value}
+                    detail="2026 season"
+                    emphasisClassName="text-zinc-100"
+                  />
+                ))}
+              </div>
+              <div className="grid gap-3 sm:grid-cols-4">
+                {seasonStats.slice(4, 8).map((stat) => (
+                  <LeaderboardStatBlock
+                    key={stat.label}
+                    label={stat.label}
+                    value={stat.value}
+                    detail="2026 season"
+                    emphasisClassName="text-emerald-300"
+                  />
+                ))}
+              </div>
+            </>
+          ) : sessionFilter === "game" ? (
+            <div className="grid gap-3 sm:grid-cols-4">
+              <LeaderboardStatBlock
+                label="Sessions"
+                value={formatNumber(pitcher.stats?.sessions ?? pitcher.sessions.length)}
+                detail="charted game sessions"
+                emphasisClassName="text-zinc-100"
+              />
+            </div>
+          ) : (
+            <>
+              <div className="grid gap-3 sm:grid-cols-4">
+                <LeaderboardStatBlock
+                  label="Sessions"
+                  value={formatNumber(pitcher.stats?.sessions ?? pitcher.sessions.length)}
+                  detail="charted sessions"
+                  emphasisClassName="text-zinc-100"
+                />
+                <LeaderboardStatBlock
+                  label="Pitches"
+                  value={formatNumber(pitcher.stats?.totalPitches ?? null)}
+                  detail="total charted pitches"
+                  emphasisClassName="text-zinc-100"
+                />
+                <LeaderboardStatBlock
+                  label="TBF"
+                  value={formatNumber(pitcher.stats?.totalPAs ?? null)}
+                  detail="total batters faced"
+                  emphasisClassName="text-zinc-100"
+                />
+                <LeaderboardStatBlock
+                  label="Strike%"
+                  value={formatPct(pitcher.stats?.strikePct ?? null)}
+                  detail="all charted pitches"
+                  emphasisClassName="text-emerald-300"
+                />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-4">
+                <LeaderboardStatBlock
+                  label="Zone%"
+                  value={formatPct(pitcher.stats?.zonePct ?? null)}
+                  detail="located pitches in zone"
+                  emphasisClassName="text-zinc-100"
+                />
+                <LeaderboardStatBlock
+                  label="Whiff%"
+                  value={formatPct(pitcher.stats?.whiffPct ?? null)}
+                  detail="swinging strikes per swing"
+                  emphasisClassName="text-zinc-100"
+                />
+                <LeaderboardStatBlock
+                  label="K%"
+                  value={formatPct(pitcher.stats?.kPct ?? null)}
+                  detail="completed plate appearances"
+                  emphasisClassName="text-zinc-100"
+                />
+                <LeaderboardStatBlock
+                  label="BB%"
+                  value={formatPct(pitcher.stats?.bbPct ?? null)}
+                  detail="completed plate appearances"
+                  emphasisClassName="text-zinc-100"
+                />
+              </div>
+            </>
+          )}
 
-          <div className="grid gap-3 md:grid-cols-4">
-            <LeaderboardStatBlock
-              label="Zone%"
-              value={formatPct(pitcher.stats?.zonePct ?? null)}
-              detail="located pitches in zone"
-              emphasisClassName="text-zinc-100"
-            />
-            <LeaderboardStatBlock
-              label="Whiff%"
-              value={formatPct(pitcher.stats?.whiffPct ?? null)}
-              detail="swinging strikes per swing"
-              emphasisClassName="text-zinc-100"
-            />
-            <LeaderboardStatBlock
-              label="K%"
-              value={formatPct(pitcher.stats?.kPct ?? null)}
-              detail="completed plate appearances"
-              emphasisClassName="text-zinc-100"
-            />
-            <LeaderboardStatBlock
-              label="BB%"
-              value={formatPct(pitcher.stats?.bbPct ?? null)}
-              detail="completed plate appearances"
-              emphasisClassName="text-zinc-100"
-            />
-          </div>
+          {/* Pitch mix section */}
+          {pitchTypeStats.length > 0 ? (
+            <LeaderboardPanel className="p-5">
+              <h3 className="mb-4 text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
+                Pitch Mix
+              </h3>
+              <PitchMixBar stats={pitchTypeStats} />
+            </LeaderboardPanel>
+          ) : null}
 
+          {/* Zone maps per pitch type */}
+          {pitchTypeStats.filter((s) => s.count >= 5).length > 0 ? (
+            <PitchZoneMaps
+              stats={pitchTypeStats}
+              resultFilter={resultFilter}
+              onResultFilterChange={setResultFilter}
+            />
+          ) : null}
+
+          {/* Sessions list */}
           <SessionList title="Pitching Sessions" sessions={pitcher.sessions} />
         </section>
       ) : null}
@@ -204,10 +616,10 @@ export default function LiveAbProfilePanel({
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-zinc-500">
-                Hitting Live AB
+                Hitting Charting
               </h2>
               <p className="mt-1 text-sm text-zinc-500">
-                Charted approach and production from Live AB plate appearances.
+                Charted approach and production from Charting plate appearances.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -284,7 +696,7 @@ export default function LiveAbProfilePanel({
       {profile.availableRoles.length > 1 ? (
         <div className="flex items-center gap-2 text-xs text-zinc-500">
           <BarChart3 className="h-4 w-4" />
-          This player has both pitcher and hitter Live AB data in the charting system.
+          This player has both pitcher and hitter Charting data in the charting system.
         </div>
       ) : null}
     </div>

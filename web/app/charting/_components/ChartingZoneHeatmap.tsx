@@ -14,6 +14,26 @@ const CHARTING_LOCATION_CELL_IDS = new Set(
   CHARTING_LOCATION_CELLS.map((cell) => cell.id)
 );
 
+function lerp(a: number, b: number, t: number) {
+  return a + (b - a) * t;
+}
+
+function heatColor(intensity: number): string {
+  // 4 stops: blue → cyan → yellow → red
+  const stops = [
+    [30, 58, 138],    // 0.0 - blue
+    [6, 182, 212],    // 0.33 - cyan
+    [251, 191, 36],   // 0.66 - yellow
+    [239, 68, 68],    // 1.0 - red
+  ] as const;
+  const scaled = intensity * (stops.length - 1);
+  const i = Math.min(Math.floor(scaled), stops.length - 2);
+  const t = scaled - i;
+  const [r1, g1, b1] = stops[i]!;
+  const [r2, g2, b2] = stops[i + 1]!;
+  return `${Math.round(lerp(r1, r2, t))},${Math.round(lerp(g1, g2, t))},${Math.round(lerp(b1, b2, t))}`;
+}
+
 function cellStyle(
   count: number,
   maxCount: number,
@@ -34,14 +54,14 @@ function cellStyle(
   }
 
   const intensity = count / maxCount;
-  const alpha = 0.16 + intensity * 0.48;
-  const glow = 0.12 + intensity * 0.22;
-  const accent = tone === "core" ? "16, 185, 129" : "56, 189, 248";
+  const alpha = 0.15 + intensity * 0.65;
+  const glowAlpha = 0.4 + intensity * 0.5;
+  const rgb = heatColor(intensity);
 
   return {
-    borderColor: `rgba(${accent}, ${0.18 + intensity * 0.36})`,
-    background: `linear-gradient(180deg, rgba(${accent}, ${alpha}) 0%, rgba(9,9,11,0.94) 100%)`,
-    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 ${10 + intensity * 16}px rgba(${accent}, ${glow})`,
+    borderColor: `rgba(${rgb}, ${0.18 + intensity * 0.36})`,
+    backgroundColor: `rgba(${rgb}, ${alpha})`,
+    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 ${8 + intensity * 20}px rgba(${rgb}, ${glowAlpha})`,
   };
 }
 

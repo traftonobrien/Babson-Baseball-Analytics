@@ -23,8 +23,8 @@ import type { PitchingPlusResult } from "@/lib/pitchingPlus";
 import type { HubPlayerEntry } from "@/lib/mechanics/hub";
 import type { ChartingPlayerProfile } from "@/lib/charting/playerProfile";
 
-const ALL_TABS = ["Overview", "Trackman", "Command", "Mechanics", "Live AB"] as const;
-const HITTER_TABS = ["Overview", "Live AB"] as const;
+const ALL_TABS = ["Overview", "Charting", "Trackman", "Command", "Mechanics"] as const;
+const HITTER_TABS = ["Overview", "Charting"] as const;
 type Tab = (typeof ALL_TABS)[number];
 type ProfileMode = "pitcher" | "hitter" | "two-way";
 type OverviewMode = "pitching" | "hitting";
@@ -166,8 +166,8 @@ function resolveInitialTab(raw: string | undefined, tabs: readonly Tab[]): Tab {
         ? "Command"
         : lower === "mechanics"
           ? "Mechanics"
-          : lower === "live-ab" || lower === "liveab"
-            ? "Live AB"
+          : lower === "live-ab" || lower === "liveab" || lower === "charting"
+            ? "Charting"
             : "Overview";
 
   return tabs.includes(resolved) ? resolved : tabs[0] ?? "Overview";
@@ -1131,7 +1131,7 @@ export default function PlayerProfileTabs({
           </motion.div>
         )}
 
-        {activeTab === "Live AB" && (
+        {activeTab === "Charting" && (
           <motion.div
             key="LiveAB"
             initial={{ opacity: 0, y: 8 }}
@@ -1140,7 +1140,7 @@ export default function PlayerProfileTabs({
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
             className="mt-8 space-y-6"
           >
-            <LiveAbProfilePanel profile={liveAbProfile} />
+            <LiveAbProfilePanel profile={liveAbProfile} seasonStats={pitchingSeasonStats} />
           </motion.div>
         )}
       </AnimatePresence>
