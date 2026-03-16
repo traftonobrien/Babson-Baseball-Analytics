@@ -119,7 +119,7 @@ function HeaderTooltip({ label, tooltip }: { label: string; tooltip: string }) {
       >
         <CircleHelp className="h-3 w-3" />
       </button>
-      <div className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 hidden w-72 -translate-x-1/2 rounded-2xl border border-zinc-700/80 bg-zinc-950/95 px-3 py-2.5 text-left text-[11px] normal-case font-normal tracking-normal leading-relaxed text-zinc-300 shadow-2xl shadow-black/60 group-hover:block group-focus-within:block">
+      <div className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 hidden w-72 -translate-x-1/2 rounded-2xl border border-zinc-700/80 bg-zinc-950/95 px-3 py-2.5 text-left text-[11px] normal-case font-normal tracking-normal leading-relaxed text-zinc-300 shadow-2xl shadow-black/60 whitespace-normal group-hover:block group-focus-within:block">
         {tooltip}
       </div>
     </div>
