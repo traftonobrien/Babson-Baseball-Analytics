@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { BarChart3, Search, BookOpen } from "lucide-react";
+import { BarChart3, Search, BookOpen, CircleHelp } from "lucide-react";
 import {
   LeaderboardHero,
   LeaderboardIntro,
@@ -96,6 +96,7 @@ interface PitcherCol {
   key: PitcherSortKey;
   label: string;
   lowerBetter?: boolean;
+  tooltip?: string;
   fmt: (p: BabsonPitcherRow) => string;
 }
 
@@ -103,7 +104,26 @@ interface HitterCol {
   key: HitterSortKey;
   label: string;
   lowerBetter?: boolean;
+  tooltip?: string;
   fmt: (h: BabsonHitterRow) => string;
+}
+
+function HeaderTooltip({ label, tooltip }: { label: string; tooltip: string }) {
+  return (
+    <div className="group relative inline-flex items-center gap-1">
+      <span>{label}</span>
+      <button
+        type="button"
+        aria-label={`${label} explanation`}
+        className="inline-flex h-4 w-4 items-center justify-center rounded-full text-zinc-600 transition-smooth hover:text-zinc-300 focus-visible:outline-none"
+      >
+        <CircleHelp className="h-3 w-3" />
+      </button>
+      <div className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 hidden w-72 -translate-x-1/2 rounded-2xl border border-zinc-700/80 bg-zinc-950/95 px-3 py-2.5 text-left text-[11px] normal-case font-normal tracking-normal leading-relaxed text-zinc-300 shadow-2xl shadow-black/60 group-hover:block group-focus-within:block">
+        {tooltip}
+      </div>
+    </div>
+  );
 }
 
 const fmtInt = (v: number) => String(v);
@@ -134,18 +154,42 @@ const PITCHER_STANDARD: PitcherCol[] = [
 const PITCHER_ADVANCED: PitcherCol[] = [
   { key: "ip",          label: "IP",     fmt: p => fmtDec1(p.ip) },
   { key: "era",         label: "ERA",    lowerBetter: true, fmt: p => p.era.toFixed(2) },
-  { key: "fip",         label: "FIP",    lowerBetter: true, fmt: p => fmtDec2(p.fip) },
-  { key: "xfip",        label: "xFIP",   lowerBetter: true, fmt: p => fmtDec2(p.xfip) },
-  { key: "siera",       label: "SIERA",  lowerBetter: true, fmt: p => fmtDec2(p.siera) },
-  { key: "eraPlus",     label: "ERA+",   fmt: p => fmtPlus(p.eraPlus) },
+  {
+    key: "fip", label: "FIP", lowerBetter: true,
+    tooltip: "Fielding Independent Pitching — strips out defense and luck by focusing only on outcomes the pitcher controls: strikeouts, walks, hit batters, and home runs. Scaled to look like ERA. Lower is better.",
+    fmt: p => fmtDec2(p.fip),
+  },
+  {
+    key: "xfip", label: "xFIP", lowerBetter: true,
+    tooltip: "Expected FIP — same as FIP but replaces actual home runs allowed with an expected HR rate based on fly balls. Reduces noise from home run variance. Lower is better.",
+    fmt: p => fmtDec2(p.xfip),
+  },
+  {
+    key: "siera", label: "SIERA", lowerBetter: true,
+    tooltip: "Skill-Interactive ERA — the most context-neutral ERA estimator. Accounts for strikeout rate, walk rate, and ground ball tendency. Recognizes that high-strikeout pitchers get more value from ground balls. Lower is better. Note: computed from available counting stats; uses ground outs and fly outs as GB/FB proxy.",
+    fmt: p => fmtDec2(p.siera),
+  },
+  {
+    key: "eraPlus", label: "ERA+",
+    tooltip: "ERA+ adjusts ERA for park factors and league average, then inverts it so higher is better. 100 = exactly league average. 120 = 20% better than average. 80 = 20% worse.",
+    fmt: p => fmtPlus(p.eraPlus),
+  },
   { key: "k9",          label: "K/9",    fmt: p => fmtDec1(p.k9) },
   { key: "bb9",         label: "BB/9",   lowerBetter: true, fmt: p => fmtDec1(p.bb9) },
   { key: "h9",          label: "H/9",    lowerBetter: true, fmt: p => fmtDec1(p.h9) },
   { key: "hr9",         label: "HR/9",   lowerBetter: true, fmt: p => fmtDec1(p.hr9) },
   { key: "kPct",        label: "K%",     fmt: p => fmtPct1(p.kPct) },
   { key: "bbPct",       label: "BB%",    lowerBetter: true, fmt: p => fmtPct1(p.bbPct) },
-  { key: "kMinusBbPct", label: "K-BB%",  fmt: p => fmtPct1(p.kMinusBbPct) },
-  { key: "war",         label: "WAR",    fmt: p => fmtDec1(p.war) },
+  {
+    key: "kMinusBbPct", label: "K-BB%",
+    tooltip: "Strikeout rate minus walk rate. One of the strongest single-number predictors of future ERA. Removes luck and defense — if a pitcher misses bats and avoids walks, results tend to follow. Higher is better.",
+    fmt: p => fmtPct1(p.kMinusBbPct),
+  },
+  {
+    key: "war", label: "WAR",
+    tooltip: "Wins Above Replacement — estimates how many additional wins this pitcher contributed compared to a freely available replacement-level pitcher. Combines all contributions into one number. Higher is better.",
+    fmt: p => fmtDec1(p.war),
+  },
 ];
 
 const HITTER_STANDARD: HitterCol[] = [
@@ -169,15 +213,35 @@ const HITTER_STANDARD: HitterCol[] = [
 ];
 
 const HITTER_ADVANCED: HitterCol[] = [
-  { key: "pa",      label: "PA",    fmt: h => fmtInt(h.pa) },
-  { key: "avg",     label: "AVG",   fmt: h => fmtRate(h.avg) },
-  { key: "obp",     label: "OBP",   fmt: h => fmtRate(h.obp) },
-  { key: "slg",     label: "SLG",   fmt: h => fmtRate(h.slg) },
-  { key: "ops",     label: "OPS",   fmt: h => fmtRate(h.ops) },
-  { key: "bbPct",   label: "BB%",   fmt: h => fmtPct1(h.bbPct) },
-  { key: "kPct",    label: "K%",    lowerBetter: true, fmt: h => fmtPct1(h.kPct) },
-  { key: "wrcPlus", label: "wRC+",  fmt: h => h.wrcPlus > 0 ? h.wrcPlus.toFixed(0) : "—" },
-  { key: "war",     label: "WAR",   fmt: h => fmtDec1(h.war) },
+  { key: "pa",    label: "PA",  fmt: h => fmtInt(h.pa) },
+  { key: "avg",   label: "AVG", fmt: h => fmtRate(h.avg) },
+  {
+    key: "obp", label: "OBP",
+    tooltip: "On-Base Percentage — how often a hitter reaches base via hit, walk, or hit by pitch. A better indicator of offensive value than batting average because it captures walks.",
+    fmt: h => fmtRate(h.obp),
+  },
+  {
+    key: "slg", label: "SLG",
+    tooltip: "Slugging Percentage — total bases divided by at-bats. Weights extra-base hits by rewarding doubles, triples, and home runs more than singles. Measures raw power production.",
+    fmt: h => fmtRate(h.slg),
+  },
+  {
+    key: "ops", label: "OPS",
+    tooltip: "On-Base Plus Slugging — adds OBP and SLG into a single number. Correlates well with run production. League average is typically around .750. Above .900 is elite.",
+    fmt: h => fmtRate(h.ops),
+  },
+  { key: "bbPct", label: "BB%", fmt: h => fmtPct1(h.bbPct) },
+  { key: "kPct",  label: "K%",  lowerBetter: true, fmt: h => fmtPct1(h.kPct) },
+  {
+    key: "wrcPlus", label: "wRC+",
+    tooltip: "Weighted Runs Created Plus — measures total offensive value (hits, walks, extra bases, etc.) adjusted for park and league. 100 = league average. 130 = 30% above average. Context-neutral and the best single offensive stat.",
+    fmt: h => h.wrcPlus > 0 ? h.wrcPlus.toFixed(0) : "—",
+  },
+  {
+    key: "war", label: "WAR",
+    tooltip: "Wins Above Replacement — estimates how many wins this hitter contributed above a freely available replacement-level player. Combines batting, baserunning, and positional value. Higher is better.",
+    fmt: h => fmtDec1(h.war),
+  },
 ];
 
 function rankColor(i: number): string {
@@ -442,28 +506,32 @@ export default function TeamStatsPage() {
                   <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-12">#</th>
                   <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Player</th>
                   {statMode === "pitching"
-                    ? activePitcherCols.map(({ key, label }) => (
+                    ? activePitcherCols.map(({ key, label, tooltip }) => (
                         <th
                           key={key}
                           className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-sky-300 transition-smooth whitespace-nowrap"
                           onClick={() => handlePitcherSort(key)}
                         >
-                          {label}
-                          {pitcherSortKey === key ? (
-                            <span className="ml-1 text-sky-300">{pitcherSortDesc ? "▼" : "▲"}</span>
-                          ) : null}
+                          <span className="inline-flex items-center justify-end gap-0.5">
+                            {tooltip ? <HeaderTooltip label={label} tooltip={tooltip} /> : label}
+                            {pitcherSortKey === key ? (
+                              <span className="ml-1 text-sky-300">{pitcherSortDesc ? "▼" : "▲"}</span>
+                            ) : null}
+                          </span>
                         </th>
                       ))
-                    : activeHitterCols.map(({ key, label }) => (
+                    : activeHitterCols.map(({ key, label, tooltip }) => (
                         <th
                           key={key}
                           className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-sky-300 transition-smooth whitespace-nowrap"
                           onClick={() => handleHitterSort(key)}
                         >
-                          {label}
-                          {hitterSortKey === key ? (
-                            <span className="ml-1 text-sky-300">{hitterSortDesc ? "▼" : "▲"}</span>
-                          ) : null}
+                          <span className="inline-flex items-center justify-end gap-0.5">
+                            {tooltip ? <HeaderTooltip label={label} tooltip={tooltip} /> : label}
+                            {hitterSortKey === key ? (
+                              <span className="ml-1 text-sky-300">{hitterSortDesc ? "▼" : "▲"}</span>
+                            ) : null}
+                          </span>
                         </th>
                       ))}
                 </tr>
