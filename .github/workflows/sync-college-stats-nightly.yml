@@ -44,7 +44,7 @@ jobs:
           GITHUB_PAT: ""
         run: |
           Rscript -e 'options(repos = c(CRAN = "https://cloud.r-project.org")); install.packages(c("remotes","baseballr","chromote","jsonlite","rvest","xml2","dplyr","stringr","tibble"), quiet = TRUE)'
-          Rscript -e 'Sys.unsetenv(c("GITHUB_PAT","GITHUB_TOKEN")); remotes::install_github("robert-frey/collegebaseball", upgrade = "never", quiet = TRUE)'
+          Rscript -e 'remotes::install_url("https://github.com/robert-frey/collegebaseball/archive/refs/heads/main.zip", upgrade = "never", quiet = TRUE)'
 
       - name: Sync NCAA ${{ matrix.stat_type }} leaderboard
         env:
