@@ -40,6 +40,13 @@ interface BabsonPitcherRow {
   fo: number;
   ibb: number;
   pitches: number;
+  // computed advanced
+  babip: number;
+  lobPct: number;
+  gbPct: number;
+  fbPct: number;
+  hrFbPct: number;
+  soBb: number;
   // rate / advanced
   era: number;
   whip: number;
@@ -87,6 +94,11 @@ interface BabsonHitterRow {
   bbPct: number;
   wrcPlus: number;
   war: number;
+  sf: number;
+  iso: number;
+  babip: number;
+  bbk: number;
+  sbPct: number;
 }
 
 type PitcherSortKey = keyof Omit<BabsonPitcherRow, "playerId" | "playerName" | "slug">;
@@ -190,6 +202,36 @@ const PITCHER_ADVANCED: PitcherCol[] = [
     tooltip: "Wins Above Replacement — estimates how many additional wins this pitcher contributed compared to a freely available replacement-level pitcher. Combines all contributions into one number. Higher is better.",
     fmt: p => fmtDec1(p.war),
   },
+  {
+    key: "babip", label: "BABIP", lowerBetter: true,
+    tooltip: "Batting Average on Balls in Play — how often batted balls fall for hits. League average is ~.300. Pitchers have limited control; values far from .300 tend to regress. High BABIP + high ERA = bad luck. Low BABIP + low ERA may not sustain.",
+    fmt: p => p.babip > 0 ? p.babip.toFixed(3).replace(/^0/, "") : ".000",
+  },
+  {
+    key: "lobPct", label: "LOB%",
+    tooltip: "Left on Base Percentage — share of baserunners a pitcher strands. League average ~72%. High LOB% (>75%) often regresses down; low LOB% (<68%) may improve. Separates ERA from true run prevention skill.",
+    fmt: p => p.lobPct > 0 ? p.lobPct.toFixed(1) + "%" : "—",
+  },
+  {
+    key: "gbPct", label: "GB%",
+    tooltip: "Ground Ball Percentage — share of batted balls (via ground outs) that are grounders. Higher GB% suppresses HR and extra-base hits. 50%+ is a ground ball pitcher; pairs well with weak infield defense.",
+    fmt: p => p.gbPct > 0 ? p.gbPct.toFixed(1) + "%" : "—",
+  },
+  {
+    key: "fbPct", label: "FB%", lowerBetter: true,
+    tooltip: "Fly Ball Percentage — share of batted balls that are fly balls. High FB% pitchers are more home run vulnerable. Pairs with HR/FB% to assess HR risk.",
+    fmt: p => p.fbPct > 0 ? p.fbPct.toFixed(1) + "%" : "—",
+  },
+  {
+    key: "hrFbPct", label: "HR/FB%", lowerBetter: true,
+    tooltip: "Home Run to Fly Ball rate — what percent of fly balls leave the park. League average ~10-12%. Pitchers have limited control over this; extreme values tend to regress toward the mean.",
+    fmt: p => p.hrFbPct > 0 ? p.hrFbPct.toFixed(1) + "%" : "—",
+  },
+  {
+    key: "soBb", label: "SO/BB",
+    tooltip: "Strikeout-to-Walk ratio — one of the simplest indicators of pitcher dominance and control. Above 3.0 is solid; above 4.0 is elite. Measures ability to miss bats without losing the zone.",
+    fmt: p => p.soBb > 0 ? p.soBb.toFixed(2) : "—",
+  },
 ];
 
 const HITTER_STANDARD: HitterCol[] = [
@@ -241,6 +283,26 @@ const HITTER_ADVANCED: HitterCol[] = [
     key: "war", label: "WAR",
     tooltip: "Wins Above Replacement — estimates how many wins this hitter contributed above a freely available replacement-level player. Combines batting, baserunning, and positional value. Higher is better.",
     fmt: h => fmtDec1(h.war),
+  },
+  {
+    key: "iso", label: "ISO",
+    tooltip: "Isolated Power — Slugging minus Batting Average. Strips out singles to measure pure extra-base power. .150 is average, .200+ is above average, .250+ is elite.",
+    fmt: h => h.iso > 0 ? h.iso.toFixed(3).replace(/^0/, "") : ".000",
+  },
+  {
+    key: "babip", label: "BABIP",
+    tooltip: "Batting Average on Balls in Play — how often a hitter's batted balls fall for hits. League average ~.300. High BABIP hitters are often fast or hard-hitting; extreme values tend to regress toward the mean.",
+    fmt: h => h.babip > 0 ? h.babip.toFixed(3).replace(/^0/, "") : ".000",
+  },
+  {
+    key: "bbk", label: "BB/K",
+    tooltip: "Walk-to-Strikeout ratio — plate discipline in one number. Above 1.0 means more walks than strikeouts. Elite hitters are often above 0.5; below 0.3 signals poor plate discipline.",
+    fmt: h => h.bbk > 0 ? h.bbk.toFixed(2) : "—",
+  },
+  {
+    key: "sbPct", label: "SB%",
+    tooltip: "Stolen Base Success Rate — percentage of steal attempts that succeed. Below 70% is generally a net negative on run expectancy; above 80% adds real value.",
+    fmt: h => (h.sbPct > 0 || (h.sb ?? 0) + (h.cs ?? 0) > 0) ? h.sbPct.toFixed(1) + "%" : "—",
   },
 ];
 

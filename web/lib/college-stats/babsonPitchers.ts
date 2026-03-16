@@ -76,6 +76,12 @@ export interface BabsonPitcherRow {
   fo: number;
   ibb: number;
   pitches: number;
+  babip: number;
+  lobPct: number;
+  gbPct: number;
+  fbPct: number;
+  hrFbPct: number;
+  soBb: number;
 }
 
 export interface QualifiedAggregate {
@@ -181,6 +187,21 @@ export function filterBabsonPitchers(rows: PitchingLeaderboardRow[]): BabsonPitc
     const xfip = num(row.xfip);
     const siera = computeSiera(so, bb, bf, go, fo);
 
+    // BABIP = (H - HR) / (BF - BB - SO - HR - HB)
+    const babipDenom = bf - bb - so - hr - hb;
+    const babip = babipDenom > 0 ? (h - hr) / babipDenom : 0;
+
+    // LOB% = (H + BB + HB - R) / (H + BB + HB - 1.4 * HR)
+    const lobNum = h + bb + hb - r;
+    const lobDenom = h + bb + hb - 1.4 * hr;
+    const lobPct = lobDenom > 0 ? (lobNum / lobDenom) * 100 : 0;
+
+    const goFo = go + fo;
+    const gbPct = goFo > 0 ? (go / goFo) * 100 : 0;
+    const fbPct = goFo > 0 ? (fo / goFo) * 100 : 0;
+    const hrFbPct = fo > 0 ? (hr / fo) * 100 : 0;
+    const soBb = bb > 0 ? so / bb : 0;
+
     result.push({
       playerId,
       playerName,
@@ -216,6 +237,12 @@ export function filterBabsonPitchers(rows: PitchingLeaderboardRow[]): BabsonPitc
       l: num(row.l),
       sv: num(row.sv),
       eraPlus,
+      babip,
+      lobPct,
+      gbPct,
+      fbPct,
+      hrFbPct,
+      soBb,
     });
   }
 

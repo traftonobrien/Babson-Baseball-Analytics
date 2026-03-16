@@ -37,6 +37,11 @@ type BabsonHitterRow = {
   bbPct: number;
   wrcPlus: number;
   war: number;
+  sf: number;
+  iso: number;
+  babip: number;
+  bbk: number;
+  sbPct: number;
 };
 
 function normalizeName(value: string): string {
@@ -137,6 +142,14 @@ function filterBabsonHitters(rows: BattingLeaderboardRow[]): BabsonHitterRow[] {
       const bbPct = getNumberByCandidates(row, ["bb_pct", "bb_percent", "bb_percentage", "bb_rate"]);
       const wrcPlus = getNumberByCandidates(row, ["wrc_plus", "wrcplus"]);
       const war = getNumberByCandidates(row, ["war", "bwar", "fwar", "off_war", "owar"]);
+      const sf = getNumberByCandidates(row, ["sf", "sacrifice_flies"]);
+
+      // Derived
+      const iso = Math.max(0, slg - avg);
+      const babipDenom = ab - so - hr + sf;
+      const babip = babipDenom > 0 ? (h - hr) / babipDenom : 0;
+      const bbk = so > 0 ? bb / so : 0;
+      const sbPct = (sb + cs) > 0 ? (sb / (sb + cs)) * 100 : 0;
 
       return {
         playerId,
@@ -165,6 +178,11 @@ function filterBabsonHitters(rows: BattingLeaderboardRow[]): BabsonHitterRow[] {
         bbPct,
         wrcPlus,
         war,
+        sf,
+        iso,
+        babip,
+        bbk,
+        sbPct,
       };
     })
     .filter((row) => row.playerId && row.playerName);
