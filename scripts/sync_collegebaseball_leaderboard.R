@@ -26,7 +26,10 @@ parse_args <- function(args) {
     concurrency = 1L,
     batch_size = 24L,
     max_wait_seconds = 7,
-    dry_run = FALSE
+    dry_run = FALSE,
+    offset = 0L,
+    shard_out = NULL,
+    merge_shards = FALSE
   )
 
   i <- 1
@@ -84,6 +87,21 @@ parse_args <- function(args) {
     }
     if (arg == "--dry-run") {
       out$dry_run <- TRUE
+      i <- i + 1
+      next
+    }
+    if (arg == "--offset") {
+      out$offset <- as.integer(args[[i + 1]])
+      i <- i + 2
+      next
+    }
+    if (arg == "--shard-out") {
+      out$shard_out <- args[[i + 1]]
+      i <- i + 2
+      next
+    }
+    if (arg == "--merge-shards") {
+      out$merge_shards <- TRUE
       i <- i + 1
       next
     }
@@ -514,12 +532,15 @@ add_batting_derived_metrics <- function(df) {
     dplyr::select(-"rc")
 }
 
-fetch_type_for_year <- function(year, division, type, limit = NULL, team_name = NULL) {
+fetch_type_for_year <- function(year, division, type, limit = NULL, team_name = NULL, offset = 0L) {
   teams <- collegebaseball::ncaa_teams(years = year, divisions = division)
   teams <- dplyr::arrange(teams, .data$team_name)
   if (!is.null(team_name) && team_name != "") {
     pattern <- stringr::regex(team_name, ignore_case = TRUE)
     teams <- dplyr::filter(teams, stringr::str_detect(.data$team_name, pattern))
+  }
+  if (offset > 0L) {
+    teams <- utils::tail(teams, -offset)
   }
   if (!is.null(limit)) {
     teams <- utils::head(teams, limit)
@@ -568,7 +589,6 @@ fetch_type_for_year <- function(year, division, type, limit = NULL, team_name = 
   }
 
   combined <- dplyr::bind_rows(rows)
-  combined <- if (type == "pitching") add_pitching_derived_metrics(combined) else add_batting_derived_metrics(combined)
 
   list(rows = combined, failures = failures, team_count = nrow(teams))
 }
@@ -607,6 +627,48 @@ validate_result <- function(rows, failures, team_count, year, type, team_name = 
   invisible(TRUE)
 }
 
+# --- Merge-shards mode ---
+if (isTRUE(cfg$merge_shards)) {
+  results_meta <- list()
+  for (year in cfg$years) {
+    for (type in cfg$types) {
+      pattern <- file.path(out_dir, sprintf("%s-%s-shard-*.json", type, year))
+      shard_files <- sort(Sys.glob(pattern))
+      if (length(shard_files) == 0) stop(sprintf("No shard files found matching: %s", pattern))
+      message(sprintf("[merge] %s %s: reading %s shard(s)", year, type, length(shard_files)))
+      all_raw <- lapply(shard_files, function(f) {
+        jsonlite::fromJSON(readLines(f, encoding = "UTF-8"), simplifyDataFrame = TRUE)
+      })
+      combined <- dplyr::bind_rows(all_raw)
+      combined <- if (type == "pitching") add_pitching_derived_metrics(combined) else add_batting_derived_metrics(combined)
+      validate_result(combined, list(), length(unique(combined$team_id)), year, type)
+      out_path <- file.path(out_dir, sprintf("%s-%s.json", type, year))
+      writeLines(jsonlite::toJSON(combined, dataframe = "rows", auto_unbox = TRUE, na = "null", pretty = FALSE), out_path, useBytes = TRUE)
+      message(sprintf("[merge] Wrote %s (%s rows from %s shards)", out_path, nrow(combined), length(shard_files)))
+      file.remove(shard_files)
+      results_meta[[paste0(year, "-", type)]] <- list(
+        row_count = nrow(combined),
+        team_count = length(unique(combined$team_id)),
+        failure_count = 0L,
+        failures = list()
+      )
+    }
+  }
+  meta_out <- list(
+    synced_at = format(Sys.time(), tz = "UTC", usetz = TRUE),
+    source = "collegebaseball+chromote",
+    division = cfg$division,
+    years = cfg$years,
+    types = cfg$types,
+    results = results_meta
+  )
+  meta_path <- file.path(out_dir, "meta.json")
+  writeLines(jsonlite::toJSON(meta_out, auto_unbox = TRUE, pretty = TRUE, na = "null"), meta_path, useBytes = TRUE)
+  message(sprintf("Wrote %s", meta_path))
+  quit(save = "no", status = 0)
+}
+
+# --- Normal / shard-fetch mode ---
 meta <- list(
   synced_at = format(Sys.time(), tz = "UTC", usetz = TRUE),
   source = "collegebaseball+chromote",
@@ -618,8 +680,19 @@ meta <- list(
 
 for (year in cfg$years) {
   for (type in cfg$types) {
-    result <- fetch_type_for_year(year, cfg$division, type, cfg$limit, cfg$team_name)
+    result <- fetch_type_for_year(year, cfg$division, type, cfg$limit, cfg$team_name, cfg$offset)
     rows <- result$rows
+
+    # Shard mode: write raw rows, skip derived metrics and final validation
+    if (!is.null(cfg$shard_out)) {
+      if (nrow(rows) == 0) stop(sprintf("No rows produced for shard: %s %s offset=%s", year, type, cfg$offset))
+      writeLines(jsonlite::toJSON(rows, dataframe = "rows", auto_unbox = TRUE, na = "null", pretty = FALSE), cfg$shard_out, useBytes = TRUE)
+      message(sprintf("[shard] Wrote %s (%s rows)", cfg$shard_out, nrow(rows)))
+      next
+    }
+
+    # Normal mode: derive metrics, validate, write final
+    rows <- if (type == "pitching") add_pitching_derived_metrics(rows) else add_batting_derived_metrics(rows)
     failures <- result$failures
     validate_result(rows, failures, result$team_count, year, type, cfg$team_name, cfg$limit)
 
@@ -641,7 +714,7 @@ for (year in cfg$years) {
   }
 }
 
-if (!cfg$dry_run) {
+if (!cfg$dry_run && is.null(cfg$shard_out)) {
   meta_path <- file.path(out_dir, "meta.json")
   writeLines(jsonlite::toJSON(meta, auto_unbox = TRUE, pretty = TRUE, na = "null"), meta_path, useBytes = TRUE)
   message(sprintf("Wrote %s", meta_path))
