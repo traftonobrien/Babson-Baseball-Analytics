@@ -15,46 +15,70 @@ import LogoutButton from "@/app/components/LogoutButton";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
 
 type StatMode = "pitching" | "batting";
+type StatSection = "standard" | "advanced";
 
 interface BabsonPitcherRow {
   playerId: string;
   playerName: string;
   slug?: string;
-  ip: number;
-  h: number;
-  er: number;
-  bb: number;
-  so: number;
-  bf: number;
-  war: number;
-  era: number;
-  whip: number;
-  kPct: number;
-  bbPct: number;
-  kMinusBbPct: number;
-  fip: number;
-  k9: number;
-  bb9: number;
-  h9: number;
-  gs: number;
+  // counting
   app: number;
+  gs: number;
   w: number;
   l: number;
   sv: number;
+  ip: number;
+  h: number;
+  r: number;
+  er: number;
+  hr: number;
+  bb: number;
+  hb: number;
+  so: number;
+  bf: number;
+  go: number;
+  fo: number;
+  ibb: number;
+  pitches: number;
+  // rate / advanced
+  era: number;
+  whip: number;
+  fip: number;
+  xfip: number;
+  siera: number;
   eraPlus: number;
+  k9: number;
+  bb9: number;
+  h9: number;
+  hr9: number;
+  kPct: number;
+  bbPct: number;
+  kMinusBbPct: number;
+  war: number;
 }
 
 interface BabsonHitterRow {
   playerId: string;
   playerName: string;
   slug?: string;
+  // counting
+  gp: number;
+  gs: number;
   pa: number;
   ab: number;
   h: number;
-  r: number;
+  doubles: number;
+  triples: number;
+  tb: number;
   hr: number;
   rbi: number;
+  r: number;
   sb: number;
+  cs: number;
+  bb: number;
+  so: number;
+  hbp: number;
+  // rate / advanced
   avg: number;
   obp: number;
   slg: number;
@@ -65,41 +89,95 @@ interface BabsonHitterRow {
   war: number;
 }
 
-type SortKey = keyof Omit<BabsonPitcherRow, "playerId" | "playerName" | "slug">;
+type PitcherSortKey = keyof Omit<BabsonPitcherRow, "playerId" | "playerName" | "slug">;
 type HitterSortKey = keyof Omit<BabsonHitterRow, "playerId" | "playerName" | "slug">;
-const SORT_KEYS: { key: SortKey; label: string; lowerBetter?: boolean }[] = [
-  { key: "ip", label: "IP", lowerBetter: false },
-  { key: "era", label: "ERA", lowerBetter: true },
-  { key: "fip", label: "FIP", lowerBetter: true },
-  { key: "whip", label: "WHIP", lowerBetter: true },
-  { key: "k9", label: "K/9", lowerBetter: false },
-  { key: "bb9", label: "BB/9", lowerBetter: true },
-  { key: "h9", label: "H/9", lowerBetter: true },
-  { key: "kPct", label: "K%", lowerBetter: false },
-  { key: "bbPct", label: "BB%", lowerBetter: true },
-  { key: "kMinusBbPct", label: "K-BB%", lowerBetter: false },
-  { key: "eraPlus", label: "ERA+", lowerBetter: false },
-  { key: "gs", label: "GS", lowerBetter: false },
-  { key: "w", label: "W", lowerBetter: false },
-  { key: "l", label: "L", lowerBetter: true },
-  { key: "sv", label: "SV", lowerBetter: false },
-  { key: "war", label: "WAR", lowerBetter: false },
+
+interface PitcherCol {
+  key: PitcherSortKey;
+  label: string;
+  lowerBetter?: boolean;
+  fmt: (p: BabsonPitcherRow) => string;
+}
+
+interface HitterCol {
+  key: HitterSortKey;
+  label: string;
+  lowerBetter?: boolean;
+  fmt: (h: BabsonHitterRow) => string;
+}
+
+const fmtInt = (v: number) => String(v);
+const fmtDec1 = (v: number) => v.toFixed(1);
+const fmtDec2 = (v: number) => (v > 0 ? v.toFixed(2) : "—");
+const fmtPct1 = (v: number) => v.toFixed(1) + "%";
+const fmtRate = (v: number) => (v > 0 ? v.toFixed(3).replace(/^0/, "") : ".000");
+const fmtPlus = (v: number) => (v > 0 ? v.toFixed(0) : "—");
+
+const PITCHER_STANDARD: PitcherCol[] = [
+  { key: "app",  label: "APP",  fmt: p => fmtInt(p.app) },
+  { key: "gs",   label: "GS",   fmt: p => fmtInt(p.gs) },
+  { key: "w",    label: "W",    fmt: p => fmtInt(p.w) },
+  { key: "l",    label: "L",    lowerBetter: true, fmt: p => fmtInt(p.l) },
+  { key: "sv",   label: "SV",   fmt: p => fmtInt(p.sv) },
+  { key: "ip",   label: "IP",   fmt: p => fmtDec1(p.ip) },
+  { key: "h",    label: "H",    lowerBetter: true, fmt: p => fmtInt(p.h) },
+  { key: "r",    label: "R",    lowerBetter: true, fmt: p => fmtInt(p.r) },
+  { key: "er",   label: "ER",   lowerBetter: true, fmt: p => fmtInt(p.er) },
+  { key: "hr",   label: "HR",   lowerBetter: true, fmt: p => fmtInt(p.hr) },
+  { key: "bb",   label: "BB",   lowerBetter: true, fmt: p => fmtInt(p.bb) },
+  { key: "hb",   label: "HB",   lowerBetter: true, fmt: p => fmtInt(p.hb) },
+  { key: "so",   label: "SO",   fmt: p => fmtInt(p.so) },
+  { key: "era",  label: "ERA",  lowerBetter: true, fmt: p => p.era.toFixed(2) },
+  { key: "whip", label: "WHIP", lowerBetter: true, fmt: p => p.whip.toFixed(2) },
 ];
-const HITTER_SORT_KEYS: { key: HitterSortKey; label: string; lowerBetter?: boolean }[] = [
-  { key: "pa", label: "PA", lowerBetter: false },
-  { key: "avg", label: "AVG", lowerBetter: false },
-  { key: "obp", label: "OBP", lowerBetter: false },
-  { key: "slg", label: "SLG", lowerBetter: false },
-  { key: "ops", label: "OPS", lowerBetter: false },
-  { key: "hr", label: "HR", lowerBetter: false },
-  { key: "rbi", label: "RBI", lowerBetter: false },
-  { key: "r", label: "R", lowerBetter: false },
-  { key: "h", label: "H", lowerBetter: false },
-  { key: "sb", label: "SB", lowerBetter: false },
-  { key: "bbPct", label: "BB%", lowerBetter: false },
-  { key: "kPct", label: "K%", lowerBetter: true },
-  { key: "wrcPlus", label: "wRC+", lowerBetter: false },
-  { key: "war", label: "WAR", lowerBetter: false },
+
+const PITCHER_ADVANCED: PitcherCol[] = [
+  { key: "ip",          label: "IP",     fmt: p => fmtDec1(p.ip) },
+  { key: "era",         label: "ERA",    lowerBetter: true, fmt: p => p.era.toFixed(2) },
+  { key: "fip",         label: "FIP",    lowerBetter: true, fmt: p => fmtDec2(p.fip) },
+  { key: "xfip",        label: "xFIP",   lowerBetter: true, fmt: p => fmtDec2(p.xfip) },
+  { key: "siera",       label: "SIERA",  lowerBetter: true, fmt: p => fmtDec2(p.siera) },
+  { key: "eraPlus",     label: "ERA+",   fmt: p => fmtPlus(p.eraPlus) },
+  { key: "k9",          label: "K/9",    fmt: p => fmtDec1(p.k9) },
+  { key: "bb9",         label: "BB/9",   lowerBetter: true, fmt: p => fmtDec1(p.bb9) },
+  { key: "h9",          label: "H/9",    lowerBetter: true, fmt: p => fmtDec1(p.h9) },
+  { key: "hr9",         label: "HR/9",   lowerBetter: true, fmt: p => fmtDec1(p.hr9) },
+  { key: "kPct",        label: "K%",     fmt: p => fmtPct1(p.kPct) },
+  { key: "bbPct",       label: "BB%",    lowerBetter: true, fmt: p => fmtPct1(p.bbPct) },
+  { key: "kMinusBbPct", label: "K-BB%",  fmt: p => fmtPct1(p.kMinusBbPct) },
+  { key: "war",         label: "WAR",    fmt: p => fmtDec1(p.war) },
+];
+
+const HITTER_STANDARD: HitterCol[] = [
+  { key: "gp",      label: "GP",   fmt: h => fmtInt(h.gp) },
+  { key: "gs",      label: "GS",   fmt: h => fmtInt(h.gs) },
+  { key: "pa",      label: "PA",   fmt: h => fmtInt(h.pa) },
+  { key: "ab",      label: "AB",   fmt: h => fmtInt(h.ab) },
+  { key: "h",       label: "H",    fmt: h => fmtInt(h.h) },
+  { key: "doubles", label: "2B",   fmt: h => fmtInt(h.doubles) },
+  { key: "triples", label: "3B",   fmt: h => fmtInt(h.triples) },
+  { key: "hr",      label: "HR",   fmt: h => fmtInt(h.hr) },
+  { key: "rbi",     label: "RBI",  fmt: h => fmtInt(h.rbi) },
+  { key: "r",       label: "R",    fmt: h => fmtInt(h.r) },
+  { key: "sb",      label: "SB",   fmt: h => fmtInt(h.sb) },
+  { key: "bb",      label: "BB",   fmt: h => fmtInt(h.bb) },
+  { key: "so",      label: "SO",   lowerBetter: true, fmt: h => fmtInt(h.so) },
+  { key: "avg",     label: "AVG",  fmt: h => fmtRate(h.avg) },
+  { key: "obp",     label: "OBP",  fmt: h => fmtRate(h.obp) },
+  { key: "slg",     label: "SLG",  fmt: h => fmtRate(h.slg) },
+  { key: "ops",     label: "OPS",  fmt: h => fmtRate(h.ops) },
+];
+
+const HITTER_ADVANCED: HitterCol[] = [
+  { key: "pa",      label: "PA",    fmt: h => fmtInt(h.pa) },
+  { key: "avg",     label: "AVG",   fmt: h => fmtRate(h.avg) },
+  { key: "obp",     label: "OBP",   fmt: h => fmtRate(h.obp) },
+  { key: "slg",     label: "SLG",   fmt: h => fmtRate(h.slg) },
+  { key: "ops",     label: "OPS",   fmt: h => fmtRate(h.ops) },
+  { key: "bbPct",   label: "BB%",   fmt: h => fmtPct1(h.bbPct) },
+  { key: "kPct",    label: "K%",    lowerBetter: true, fmt: h => fmtPct1(h.kPct) },
+  { key: "wrcPlus", label: "wRC+",  fmt: h => h.wrcPlus > 0 ? h.wrcPlus.toFixed(0) : "—" },
+  { key: "war",     label: "WAR",   fmt: h => fmtDec1(h.war) },
 ];
 
 function rankColor(i: number): string {
@@ -115,19 +193,23 @@ const DEFAULT_MIN_PA = 1;
 
 export default function TeamStatsPage() {
   const [statMode, setStatMode] = useState<StatMode>("pitching");
+  const [statSection, setStatSection] = useState<StatSection>("standard");
   const [pitchers, setPitchers] = useState<BabsonPitcherRow[]>([]);
   const [hitters, setHitters] = useState<BabsonHitterRow[]>([]);
   const [seasonYear, setSeasonYear] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [sortKey, setSortKey] = useState<SortKey>("ip");
+  const [pitcherSortKey, setPitcherSortKey] = useState<PitcherSortKey>("ip");
   const [hitterSortKey, setHitterSortKey] = useState<HitterSortKey>("ops");
-  const [sortDesc, setSortDesc] = useState(true);
+  const [pitcherSortDesc, setPitcherSortDesc] = useState(true);
   const [hitterSortDesc, setHitterSortDesc] = useState(true);
   const [minIp, setMinIp] = useState(DEFAULT_MIN_IP);
   const [minPa, setMinPa] = useState(DEFAULT_MIN_PA);
   const { slug: selectedSlug } = useSelectedPlayer();
+
+  const activePitcherCols = statSection === "standard" ? PITCHER_STANDARD : PITCHER_ADVANCED;
+  const activeHitterCols = statSection === "standard" ? HITTER_STANDARD : HITTER_ADVANCED;
 
   useEffect(() => {
     setLoading(true);
@@ -159,42 +241,51 @@ export default function TeamStatsPage() {
   }, [hitters, search]);
 
   const sortedPitchers = useMemo(() => {
-    const config = SORT_KEYS.find((s) => s.key === sortKey);
-    const desc = config?.lowerBetter !== undefined ? !config.lowerBetter === sortDesc : sortDesc;
+    const col = activePitcherCols.find((c) => c.key === pitcherSortKey);
+    const desc = col?.lowerBetter !== undefined ? !col.lowerBetter === pitcherSortDesc : pitcherSortDesc;
     return [...filteredPitchers].sort((a, b) => {
-      const aQualified = a.ip >= minIp ? 1 : 0;
-      const bQualified = b.ip >= minIp ? 1 : 0;
-      if (aQualified !== bQualified) return bQualified - aQualified;
-      const av = a[sortKey] as number;
-      const bv = b[sortKey] as number;
-      const diff = av - bv;
-      return desc ? -diff : diff;
+      const aQ = a.ip >= minIp ? 1 : 0;
+      const bQ = b.ip >= minIp ? 1 : 0;
+      if (aQ !== bQ) return bQ - aQ;
+      const av = a[pitcherSortKey] as number;
+      const bv = b[pitcherSortKey] as number;
+      return desc ? bv - av : av - bv;
     });
-  }, [filteredPitchers, sortKey, sortDesc, minIp]);
+  }, [filteredPitchers, pitcherSortKey, pitcherSortDesc, minIp, activePitcherCols]);
 
   const sortedHitters = useMemo(() => {
-    const config = HITTER_SORT_KEYS.find((s) => s.key === hitterSortKey);
-    const desc = config?.lowerBetter !== undefined ? !config.lowerBetter === hitterSortDesc : hitterSortDesc;
+    const col = activeHitterCols.find((c) => c.key === hitterSortKey);
+    const desc = col?.lowerBetter !== undefined ? !col.lowerBetter === hitterSortDesc : hitterSortDesc;
     return [...filteredHitters].sort((a, b) => {
-      const aQualified = a.pa >= minPa ? 1 : 0;
-      const bQualified = b.pa >= minPa ? 1 : 0;
-      if (aQualified !== bQualified) return bQualified - aQualified;
+      const aQ = a.pa >= minPa ? 1 : 0;
+      const bQ = b.pa >= minPa ? 1 : 0;
+      if (aQ !== bQ) return bQ - aQ;
       const av = a[hitterSortKey] as number;
       const bv = b[hitterSortKey] as number;
-      const diff = av - bv;
-      return desc ? -diff : diff;
+      return desc ? bv - av : av - bv;
     });
-  }, [filteredHitters, hitterSortKey, hitterSortDesc, minPa]);
+  }, [filteredHitters, hitterSortKey, hitterSortDesc, minPa, activeHitterCols]);
 
-  const handleSort = useCallback((key: SortKey) => {
-    setSortKey(key);
-    setSortDesc((prev) => (sortKey === key ? !prev : (SORT_KEYS.find((s) => s.key === key)?.lowerBetter === false)));
-  }, [sortKey]);
+  const handlePitcherSort = useCallback((key: PitcherSortKey) => {
+    setPitcherSortKey(key);
+    setPitcherSortDesc((prev) => {
+      if (pitcherSortKey === key) return !prev;
+      const col = activePitcherCols.find((c) => c.key === key);
+      return col?.lowerBetter !== true;
+    });
+  }, [pitcherSortKey, activePitcherCols]);
 
   const handleHitterSort = useCallback((key: HitterSortKey) => {
     setHitterSortKey(key);
-    setHitterSortDesc((prev) => (hitterSortKey === key ? !prev : (HITTER_SORT_KEYS.find((s) => s.key === key)?.lowerBetter === false)));
-  }, [hitterSortKey]);
+    setHitterSortDesc((prev) => {
+      if (hitterSortKey === key) return !prev;
+      const col = activeHitterCols.find((c) => c.key === key);
+      return col?.lowerBetter !== true;
+    });
+  }, [hitterSortKey, activeHitterCols]);
+
+  const activeCols = statMode === "pitching" ? activePitcherCols : activeHitterCols;
+  const totalCols = activeCols.length + 2; // rank + player name
 
   return (
     <LeaderboardPageFrame maxWidth="max-w-7xl">
@@ -237,36 +328,49 @@ export default function TeamStatsPage() {
       </LeaderboardIntro>
 
       <LeaderboardToolbar>
-        <div className="grid gap-4 xl:grid-cols-[minmax(13rem,16rem)_minmax(12rem,14rem)_minmax(0,1fr)_auto] xl:items-end">
+        <div className="grid gap-4 xl:grid-cols-[minmax(13rem,16rem)_minmax(13rem,16rem)_minmax(12rem,14rem)_minmax(0,1fr)_auto] xl:items-end">
+
+          {/* Pitchers / Hitters */}
           <div className="space-y-2">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-              View
-            </div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">View</div>
             <div className="inline-flex rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
-              {(["pitching", "batting"] as const).map((mode) => {
-                const isActive = statMode === mode;
-                return (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => setStatMode(mode)}
-                    className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-smooth ${
-                      isActive
-                        ? "bg-sky-500/15 text-sky-200"
-                        : "text-zinc-400 hover:text-zinc-200"
-                    }`}
-                  >
-                    {mode === "pitching" ? "Pitchers" : "Hitters"}
-                  </button>
-                );
-              })}
+              {(["pitching", "batting"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setStatMode(mode)}
+                  className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-smooth ${
+                    statMode === mode ? "bg-sky-500/15 text-sky-200" : "text-zinc-400 hover:text-zinc-200"
+                  }`}
+                >
+                  {mode === "pitching" ? "Pitchers" : "Hitters"}
+                </button>
+              ))}
             </div>
           </div>
 
+          {/* Standard / Advanced */}
           <div className="space-y-2">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-              Qualification Floor
+            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Stats</div>
+            <div className="inline-flex rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
+              {(["standard", "advanced"] as const).map((sec) => (
+                <button
+                  key={sec}
+                  type="button"
+                  onClick={() => setStatSection(sec)}
+                  className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-smooth ${
+                    statSection === sec ? "bg-violet-500/15 text-violet-200" : "text-zinc-400 hover:text-zinc-200"
+                  }`}
+                >
+                  {sec === "standard" ? "Standard" : "Advanced"}
+                </button>
+              ))}
             </div>
+          </div>
+
+          {/* Qualification Floor */}
+          <div className="space-y-2">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Qualification Floor</div>
             <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
               {statMode === "pitching" ? (
                 <select
@@ -275,9 +379,7 @@ export default function TeamStatsPage() {
                   className="w-full rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2.5 text-sm font-semibold text-zinc-100 outline-none"
                 >
                   {[1, 5, 10, 15, 20, 25, 30].map((n) => (
-                    <option key={n} value={n}>
-                      {n} IP
-                    </option>
+                    <option key={n} value={n}>{n} IP</option>
                   ))}
                 </select>
               ) : (
@@ -287,19 +389,16 @@ export default function TeamStatsPage() {
                   className="w-full rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2.5 text-sm font-semibold text-zinc-100 outline-none"
                 >
                   {[1, 10, 20, 30, 40, 50].map((n) => (
-                    <option key={n} value={n}>
-                      {n} PA
-                    </option>
+                    <option key={n} value={n}>{n} PA</option>
                   ))}
                 </select>
               )}
             </div>
           </div>
 
+          {/* Search */}
           <div className="space-y-2">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-              Search
-            </div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Search</div>
             <label className="flex items-center gap-3 rounded-2xl border border-zinc-800/80 bg-zinc-950/80 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
               <Search className="h-4 w-4 shrink-0 text-zinc-500" />
               <input
@@ -340,32 +439,39 @@ export default function TeamStatsPage() {
             <table className="w-full text-sm">
               <thead className="sticky top-0 z-10 bg-zinc-900/95 backdrop-blur-sm">
                 <tr>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-12">
-                    #
-                  </th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Player
-                  </th>
-                  {(statMode === "pitching" ? SORT_KEYS : HITTER_SORT_KEYS).map(({ key, label }) => (
-                    <th
-                      key={key}
-                      className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-sky-300 transition-smooth whitespace-nowrap"
-                      onClick={() => statMode === "pitching" ? handleSort(key as SortKey) : handleHitterSort(key as HitterSortKey)}
-                    >
-                      {label}
-                      {(statMode === "pitching" ? sortKey === key : hitterSortKey === key) ? (
-                        <span className="ml-1 text-sky-300">
-                          {(statMode === "pitching" ? sortDesc : hitterSortDesc) ? "\u25BC" : "\u25B2"}
-                        </span>
-                      ) : null}
-                    </th>
-                  ))}
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-12">#</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Player</th>
+                  {statMode === "pitching"
+                    ? activePitcherCols.map(({ key, label }) => (
+                        <th
+                          key={key}
+                          className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-sky-300 transition-smooth whitespace-nowrap"
+                          onClick={() => handlePitcherSort(key)}
+                        >
+                          {label}
+                          {pitcherSortKey === key ? (
+                            <span className="ml-1 text-sky-300">{pitcherSortDesc ? "▼" : "▲"}</span>
+                          ) : null}
+                        </th>
+                      ))
+                    : activeHitterCols.map(({ key, label }) => (
+                        <th
+                          key={key}
+                          className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-sky-300 transition-smooth whitespace-nowrap"
+                          onClick={() => handleHitterSort(key)}
+                        >
+                          {label}
+                          {hitterSortKey === key ? (
+                            <span className="ml-1 text-sky-300">{hitterSortDesc ? "▼" : "▲"}</span>
+                          ) : null}
+                        </th>
+                      ))}
                 </tr>
               </thead>
               <tbody>
                 {(statMode === "pitching" ? sortedPitchers.length : sortedHitters.length) === 0 ? (
                   <tr>
-                    <td colSpan={18} className="px-4 py-12 text-center">
+                    <td colSpan={totalCols} className="px-4 py-12 text-center">
                       <div className="flex flex-col items-center gap-2">
                         <span className="text-zinc-500">
                           {statMode === "pitching" ? "No pitchers match your search." : "No hitters match your search."}
@@ -417,29 +523,17 @@ export default function TeamStatsPage() {
                               ) : null}
                             </div>
                           </td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{p.ip.toFixed(1)}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{p.era.toFixed(2)}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{p.fip > 0 ? p.fip.toFixed(2) : "—"}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{p.whip.toFixed(2)}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{p.k9.toFixed(1)}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{p.bb9.toFixed(1)}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{p.h9.toFixed(1)}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{p.kPct.toFixed(1)}%</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{p.bbPct.toFixed(1)}%</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{p.kMinusBbPct.toFixed(1)}%</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{p.eraPlus > 0 ? p.eraPlus.toFixed(0) : "—"}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{p.gs}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{p.w}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{p.l}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{p.sv}</td>
-                          <td className={`px-4 py-3 text-right font-mono font-medium ${!isQualified ? "text-zinc-500" : ""}`}>{p.war.toFixed(1)}</td>
+                          {activePitcherCols.map((col) => (
+                            <td key={col.key} className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>
+                              {col.fmt(p)}
+                            </td>
+                          ))}
                         </tr>
                       );
                     })
                   : sortedHitters.map((h, i) => {
                       const isQualified = h.pa >= minPa;
                       const isMe = h.slug === selectedSlug;
-                      const formatRate = (value: number) => value > 0 ? value.toFixed(3).replace(/^0/, "") : ".000";
                       return (
                         <tr
                           key={h.playerId}
@@ -470,20 +564,11 @@ export default function TeamStatsPage() {
                               ) : null}
                             </div>
                           </td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{h.pa}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{formatRate(h.avg)}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{formatRate(h.obp)}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{formatRate(h.slg)}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{formatRate(h.ops)}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{h.hr}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{h.rbi}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{h.r}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{h.h}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{h.sb}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{h.bbPct.toFixed(1)}%</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{h.kPct.toFixed(1)}%</td>
-                          <td className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>{h.wrcPlus > 0 ? h.wrcPlus.toFixed(0) : "—"}</td>
-                          <td className={`px-4 py-3 text-right font-mono font-medium ${!isQualified ? "text-zinc-500" : ""}`}>{h.war.toFixed(1)}</td>
+                          {activeHitterCols.map((col) => (
+                            <td key={col.key} className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>
+                              {col.fmt(h)}
+                            </td>
+                          ))}
                         </tr>
                       );
                     })}

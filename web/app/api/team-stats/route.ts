@@ -13,13 +13,22 @@ type BattingLeaderboardRow = Record<string, unknown>;
 type BabsonHitterRow = {
   playerId: string;
   playerName: string;
+  gp: number;
+  gs: number;
   pa: number;
   ab: number;
   h: number;
+  doubles: number;
+  triples: number;
+  tb: number;
   r: number;
   hr: number;
   rbi: number;
   sb: number;
+  cs: number;
+  bb: number;
+  so: number;
+  hbp: number;
   avg: number;
   obp: number;
   slg: number;
@@ -104,13 +113,22 @@ function filterBabsonHitters(rows: BattingLeaderboardRow[]): BabsonHitterRow[] {
     .map((row) => {
       const playerId = String(row.player_id ?? "").trim();
       const playerName = String(row.player_name ?? "").trim();
+      const gp = getNumberByCandidates(row, ["gp", "games_played", "g"]);
+      const gs = getNumberByCandidates(row, ["gs", "games_started"]);
       const pa = getNumberByCandidates(row, ["pa", "plate_appearances"]);
       const ab = getNumberByCandidates(row, ["ab", "at_bats"]);
       const h = getNumberByCandidates(row, ["h", "hits"]);
+      const doubles = getNumberByCandidates(row, ["doubles", "2b", "d"]);
+      const triples = getNumberByCandidates(row, ["triples", "3b", "t"]);
+      const tb = getNumberByCandidates(row, ["tb", "total_bases"]);
       const r = getNumberByCandidates(row, ["r", "runs"]);
       const hr = getNumberByCandidates(row, ["hr", "home_runs"]);
       const rbi = getNumberByCandidates(row, ["rbi", "runs_batted_in"]);
       const sb = getNumberByCandidates(row, ["sb", "stolen_bases"]);
+      const cs = getNumberByCandidates(row, ["cs", "caught_stealing"]);
+      const bb = getNumberByCandidates(row, ["bb", "walks", "base_on_balls"]);
+      const so = getNumberByCandidates(row, ["so", "k", "strikeouts"]);
+      const hbp = getNumberByCandidates(row, ["hbp", "hit_by_pitch", "hb"]);
       const avg = getNumberByCandidates(row, ["avg", "ba", "batting_avg", "batting_average"]);
       const obp = getNumberByCandidates(row, ["obp", "on_base_percentage", "onbase"]);
       const slg = getNumberByCandidates(row, ["slg", "slugging", "slugging_pct"]);
@@ -123,13 +141,22 @@ function filterBabsonHitters(rows: BattingLeaderboardRow[]): BabsonHitterRow[] {
       return {
         playerId,
         playerName,
+        gp,
+        gs,
         pa,
         ab,
         h,
+        doubles,
+        triples,
+        tb,
         r,
         hr,
         rbi,
         sb,
+        cs,
+        bb,
+        so,
+        hbp,
         avg,
         obp,
         slg,

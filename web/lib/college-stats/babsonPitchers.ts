@@ -10,6 +10,7 @@ export interface PitchingLeaderboardRow {
   ip?: number;
   ip_float?: number;
   h?: number;
+  r?: number;
   er?: number;
   bb?: number;
   so?: number;
@@ -21,6 +22,7 @@ export interface PitchingLeaderboardRow {
   bb_pct?: number;
   k_minus_bb_pct?: number | string;
   fip?: number;
+  xfip?: number;
   k9?: number;
   bb9?: number;
   h9?: number;
@@ -30,6 +32,12 @@ export interface PitchingLeaderboardRow {
   l?: number;
   sv?: number;
   era_plus?: number;
+  hr_a?: number;
+  hb?: number;
+  go?: number;
+  fo?: number;
+  ibb?: number;
+  pitches?: number;
   [key: string]: unknown;
 }
 
@@ -38,6 +46,7 @@ export interface BabsonPitcherRow {
   playerName: string;
   ip: number;
   h: number;
+  r: number;
   er: number;
   bb: number;
   so: number;
@@ -49,15 +58,24 @@ export interface BabsonPitcherRow {
   bbPct: number;
   kMinusBbPct: number;
   fip: number;
+  xfip: number;
+  siera: number;
   k9: number;
   bb9: number;
   h9: number;
+  hr9: number;
   gs: number;
   app: number;
   w: number;
   l: number;
   sv: number;
   eraPlus: number;
+  hr: number;
+  hb: number;
+  go: number;
+  fo: number;
+  ibb: number;
+  pitches: number;
 }
 
 export interface QualifiedAggregate {
@@ -79,6 +97,28 @@ export interface QualifiedAggregate {
 
 /** Default minimum IP to qualify for team aggregate (college standard). */
 export const DEFAULT_MIN_IP_QUALIFIED = 15;
+
+/**
+ * Compute SIERA (Skill-Interactive ERA) from available counting stats.
+ * Uses ground outs (go) and fly outs (fo) as a proxy for GB/FB rates.
+ * Formula: Zimmermann & Stephenson (FanGraphs).
+ */
+function computeSiera(so: number, bb: number, bf: number, go: number, fo: number): number {
+  if (bf <= 0) return 0;
+  const k = so / bf;
+  const w = bb / bf;
+  const g = (go - fo) / bf;
+  const siera =
+    6.145 -
+    16.986 * k +
+    11.434 * w -
+    1.858 * g +
+    7.653 * k * k -
+    6.664 * g * Math.abs(g) +
+    10.130 * k * g -
+    5.195 * w * g;
+  return Math.max(0, siera);
+}
 
 function num(v: unknown): number {
   if (v == null || v === "") return 0;
@@ -113,10 +153,17 @@ export function filterBabsonPitchers(rows: PitchingLeaderboardRow[]): BabsonPitc
     if (!playerId || !playerName) continue;
 
     const h = num(row.h);
+    const r = num(row.r);
     const er = num(row.er);
     const bb = num(row.bb);
     const so = num(row.so);
     const bf = num(row.bf);
+    const hr = num(row.hr_a);
+    const hb = num(row.hb);
+    const go = num(row.go);
+    const fo = num(row.fo);
+    const ibb = num(row.ibb);
+    const pitches = num(row.pitches);
     const war = num(row.war);
     const era = num(row.era) || (ip > 0 ? (er * 9) / ip : 0);
     const whip = num(row.whip) || (ip > 0 ? (h + bb) / ip : 0);
@@ -129,17 +176,27 @@ export function filterBabsonPitchers(rows: PitchingLeaderboardRow[]): BabsonPitc
     const k9 = num(row.k9) || (ip > 0 ? (so * 9) / ip : 0);
     const bb9 = num(row.bb9) || (ip > 0 ? (bb * 9) / ip : 0);
     const h9 = num(row.h9) || (ip > 0 ? (h * 9) / ip : 0);
+    const hr9 = ip > 0 ? (hr * 9) / ip : 0;
     const eraPlus = num(row.era_plus);
+    const xfip = num(row.xfip);
+    const siera = computeSiera(so, bb, bf, go, fo);
 
     result.push({
       playerId,
       playerName,
       ip,
       h,
+      r,
       er,
       bb,
       so,
       bf,
+      hr,
+      hb,
+      go,
+      fo,
+      ibb,
+      pitches,
       war,
       era,
       whip,
@@ -147,9 +204,12 @@ export function filterBabsonPitchers(rows: PitchingLeaderboardRow[]): BabsonPitc
       bbPct,
       kMinusBbPct,
       fip: num(row.fip),
+      xfip,
+      siera,
       k9,
       bb9,
       h9,
+      hr9,
       gs: num(row.gs),
       app: num(row.app),
       w: num(row.w),
