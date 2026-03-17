@@ -1,5 +1,5 @@
 {
-  "synced_at": "2026-03-16T12:49:07.724229+00:00",
+  "synced_at": "2026-03-17T02:07:33.367066+00:00",
   "source": "collegebaseball+chromote",
   "division": 3,
   "years": [
@@ -11,16 +11,16 @@
   ],
   "results": {
     "2026-pitching": {
-      "row_count": 1566,
-      "team_count": 105,
-      "failure_count": 0,
-      "failures": []
+      "row_count": 15,
+      "team_count": 1,
+      "freshly_synced": true,
+      "stale": false
     },
     "2026-batting": {
-      "row_count": 2581,
-      "team_count": 79,
-      "failure_count": 0,
-      "failures": []
+      "row_count": 32,
+      "team_count": 1,
+      "freshly_synced": true,
+      "stale": false
     }
   }
 }
