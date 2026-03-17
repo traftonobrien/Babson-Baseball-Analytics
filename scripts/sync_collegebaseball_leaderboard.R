@@ -1,12 +1,11 @@
 #!/usr/bin/env Rscript
-# NCAA Division III leaderboard sync -- HTTP-first pipeline.
-# Replaces the Chromote/browser-driven fetch with direct HTTP requests.
+# NCAA Division III leaderboard sync -- Chromote shared-session pipeline.
 
 suppressWarnings(suppressMessages({
   library(baseballr)
+  library(chromote)
   library(collegebaseball)
   library(dplyr)
-  library(httr)
   library(jsonlite)
   library(rvest)
   library(stringr)
@@ -79,6 +78,7 @@ parse_args <- function(args) {
 }
 
 cfg <- parse_args(commandArgs(trailingOnly = TRUE))
+on.exit(ncaa_close_session(), add = TRUE)
 
 # Resolve output directory
 default_out_dir <- file.path(dirname(.script_path), "..", "web", "public", "college-stats")

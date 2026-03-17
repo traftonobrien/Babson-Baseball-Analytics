@@ -59,19 +59,23 @@ jobs:
           r-version: "4.5.2"
 
       - name: Install system dependencies
-        run: sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+        run: |
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+          sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
 
       - name: Install R dependencies
         env:
           R_REMOTES_NO_ERRORS_FROM_WARNINGS: "true"
           GITHUB_PAT: ""
         run: |
-          Rscript -e 'options(repos = c(CRAN = "https://cloud.r-project.org")); install.packages(c("remotes","httr","baseballr","jsonlite","rvest","xml2","dplyr","stringr","tibble"), quiet = TRUE)'
+          Rscript -e 'options(repos = c(CRAN = "https://cloud.r-project.org")); install.packages(c("remotes","chromote","baseballr","jsonlite","rvest","xml2","dplyr","stringr","tibble"), quiet = TRUE)'
           git clone --depth 1 https://github.com/robert-frey/collegebaseball.git /tmp/collegebaseball
           Rscript -e 'remotes::install_local("/tmp/collegebaseball", dependencies = TRUE, quiet = FALSE)'
           Rscript -e 'library(collegebaseball); cat("collegebaseball OK\n")'
 
       - name: Sync NCAA pitching leaderboard
+        env:
+          CHROMOTE_CHROME_PATH: /usr/bin/chromium-browser
         run: |
           Rscript scripts/sync_collegebaseball_leaderboard.R \
             --years 2026 \
@@ -99,19 +103,23 @@ jobs:
           r-version: "4.5.2"
 
       - name: Install system dependencies
-        run: sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+        run: |
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+          sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
 
       - name: Install R dependencies
         env:
           R_REMOTES_NO_ERRORS_FROM_WARNINGS: "true"
           GITHUB_PAT: ""
         run: |
-          Rscript -e 'options(repos = c(CRAN = "https://cloud.r-project.org")); install.packages(c("remotes","httr","baseballr","jsonlite","rvest","xml2","dplyr","stringr","tibble"), quiet = TRUE)'
+          Rscript -e 'options(repos = c(CRAN = "https://cloud.r-project.org")); install.packages(c("remotes","chromote","baseballr","jsonlite","rvest","xml2","dplyr","stringr","tibble"), quiet = TRUE)'
           git clone --depth 1 https://github.com/robert-frey/collegebaseball.git /tmp/collegebaseball
           Rscript -e 'remotes::install_local("/tmp/collegebaseball", dependencies = TRUE, quiet = FALSE)'
           Rscript -e 'library(collegebaseball); cat("collegebaseball OK\n")'
 
       - name: Sync NCAA batting leaderboard
+        env:
+          CHROMOTE_CHROME_PATH: /usr/bin/chromium-browser
         run: |
           Rscript scripts/sync_collegebaseball_leaderboard.R \
             --years 2026 \
