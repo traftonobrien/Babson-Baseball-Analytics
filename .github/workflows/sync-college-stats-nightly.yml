@@ -66,9 +66,10 @@ jobs:
           R_REMOTES_NO_ERRORS_FROM_WARNINGS: "true"
           GITHUB_PAT: ""
         run: |
-          Rscript -e 'options(repos = c(CRAN = "https://cloud.r-project.org")); install.packages(c("httr","baseballr","jsonlite","rvest","xml2","dplyr","stringr","tibble"), quiet = TRUE)'
+          Rscript -e 'options(repos = c(CRAN = "https://cloud.r-project.org")); install.packages(c("remotes","httr","baseballr","jsonlite","rvest","xml2","dplyr","stringr","tibble"), quiet = TRUE)'
           git clone --depth 1 https://github.com/robert-frey/collegebaseball.git /tmp/collegebaseball
-          Rscript -e 'install.packages("/tmp/collegebaseball", repos = NULL, type = "source", quiet = TRUE)'
+          Rscript -e 'remotes::install_local("/tmp/collegebaseball", dependencies = TRUE, quiet = FALSE)'
+          Rscript -e 'library(collegebaseball); cat("collegebaseball OK\n")'
 
       - name: Sync NCAA pitching leaderboard
         run: |
@@ -105,9 +106,10 @@ jobs:
           R_REMOTES_NO_ERRORS_FROM_WARNINGS: "true"
           GITHUB_PAT: ""
         run: |
-          Rscript -e 'options(repos = c(CRAN = "https://cloud.r-project.org")); install.packages(c("httr","baseballr","jsonlite","rvest","xml2","dplyr","stringr","tibble"), quiet = TRUE)'
+          Rscript -e 'options(repos = c(CRAN = "https://cloud.r-project.org")); install.packages(c("remotes","httr","baseballr","jsonlite","rvest","xml2","dplyr","stringr","tibble"), quiet = TRUE)'
           git clone --depth 1 https://github.com/robert-frey/collegebaseball.git /tmp/collegebaseball
-          Rscript -e 'install.packages("/tmp/collegebaseball", repos = NULL, type = "source", quiet = TRUE)'
+          Rscript -e 'remotes::install_local("/tmp/collegebaseball", dependencies = TRUE, quiet = FALSE)'
+          Rscript -e 'library(collegebaseball); cat("collegebaseball OK\n")'
 
       - name: Sync NCAA batting leaderboard
         run: |
