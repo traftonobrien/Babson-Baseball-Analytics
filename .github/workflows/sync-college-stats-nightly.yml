@@ -60,8 +60,38 @@ jobs:
 
       - name: Install system dependencies
         run: |
+          sudo apt-get update
           sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
-          sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
+
+      - name: Resolve Chrome binary
+        id: chrome
+        run: |
+          set -euo pipefail
+
+          find_browser() {
+            for candidate in \
+              /usr/bin/google-chrome \
+              /usr/bin/google-chrome-stable \
+              /usr/bin/chromium-browser \
+              /usr/bin/chromium
+            do
+              if [ -x "$candidate" ]; then
+                echo "$candidate"
+                return 0
+              fi
+            done
+            return 1
+          }
+
+          BROWSER="$(find_browser || true)"
+          if [ -z "$BROWSER" ]; then
+            sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
+            BROWSER="$(find_browser)"
+          fi
+
+          echo "path=${BROWSER}" >> "$GITHUB_OUTPUT"
+          echo "Using browser: ${BROWSER}"
+          "${BROWSER}" --version
 
       - name: Install R dependencies
         env:
@@ -75,7 +105,7 @@ jobs:
 
       - name: Sync NCAA pitching leaderboard
         env:
-          CHROMOTE_CHROME_PATH: /usr/bin/chromium-browser
+          CHROMOTE_CHROME: ${{ steps.chrome.outputs.path }}
         run: |
           Rscript scripts/sync_collegebaseball_leaderboard.R \
             --years 2026 \
@@ -104,8 +134,38 @@ jobs:
 
       - name: Install system dependencies
         run: |
+          sudo apt-get update
           sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
-          sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
+
+      - name: Resolve Chrome binary
+        id: chrome
+        run: |
+          set -euo pipefail
+
+          find_browser() {
+            for candidate in \
+              /usr/bin/google-chrome \
+              /usr/bin/google-chrome-stable \
+              /usr/bin/chromium-browser \
+              /usr/bin/chromium
+            do
+              if [ -x "$candidate" ]; then
+                echo "$candidate"
+                return 0
+              fi
+            done
+            return 1
+          }
+
+          BROWSER="$(find_browser || true)"
+          if [ -z "$BROWSER" ]; then
+            sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
+            BROWSER="$(find_browser)"
+          fi
+
+          echo "path=${BROWSER}" >> "$GITHUB_OUTPUT"
+          echo "Using browser: ${BROWSER}"
+          "${BROWSER}" --version
 
       - name: Install R dependencies
         env:
@@ -119,7 +179,7 @@ jobs:
 
       - name: Sync NCAA batting leaderboard
         env:
-          CHROMOTE_CHROME_PATH: /usr/bin/chromium-browser
+          CHROMOTE_CHROME: ${{ steps.chrome.outputs.path }}
         run: |
           Rscript scripts/sync_collegebaseball_leaderboard.R \
             --years 2026 \
