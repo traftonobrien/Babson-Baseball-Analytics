@@ -86,6 +86,7 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ### Roadmap Evolution
 
 - Phase 12.1 inserted after Phase 12: Live AB player profile integration (URGENT)
+- Phase 12.2 inserted after Phase 12: NCAA leaderboard sync redesign (URGENT)
 
 ## Pending Todos
 

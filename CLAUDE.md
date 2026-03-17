@@ -1,3 +1,79 @@
+@/Users/traftonobrien/.claude/primer.md
+@.claude-memory.md
+
+## PROJECT CONTEXT
+Project: Pitch Tracker
+
+## PROJECT RULES
+- Read `tasks/lessons.md` at session start
+- Update `tasks/todo.md` as you work
+
+## MEMORY SYSTEM
+All persistent memory for this project flows through `./memory.sh`.
+- **Launch sessions** via `./memory.sh` — it injects primer + git context + lessons as system prompt
+- **Session log**: `.claude-memory.md` — auto-appended on every git commit via `.git/hooks/post-commit`
+- **Cross-session primer**: `~/.claude/primer.md` — rewrite at end of every session (active project, completed, exact next step, blockers; keep under 100 lines)
+- **Lessons**: `tasks/lessons.md` — append after every correction
+- **Todo**: `tasks/todo.md` — write plan here before implementing, mark complete as you go
+- Never store memory in ad-hoc notes or chat. If it matters, it goes in one of the above files.
+
+---
+
+## SESSION START
+1. Read tasks/lessons.md — apply all lessons before touching anything
+2. Read tasks/todo.md — understand current state
+3. If neither exists, create them before starting
+
+## WORKFLOW
+
+### 1. Plan First
+- Enter plan mode for any non-trivial task (3+ steps)
+- Write plan to tasks/todo.md before implementing
+- If something goes wrong, STOP and re-plan — never push through
+
+### 2. Subagent Strategy
+- Use subagents to keep main context clean
+- One task per subagent
+- Throw more compute at hard problems
+
+### 3. Self-Improvement Loop
+- After any correction: update tasks/lessons.md
+- Format: [date] | what went wrong | rule to prevent it
+- Review lessons at every session start
+
+### 4. Verification Standard
+- Never mark complete without proving it works
+- Run tests, check logs, diff behavior
+- Ask: "Would a staff engineer approve this?"
+
+### 5. Demand Elegance
+- For non-trivial changes: is there a more elegant solution?
+- If a fix feels hacky: rebuild it properly
+- Don't over-engineer things
+
+### 6. Autonomous Bug Fixing
+- When given a bug: just fix it
+- Go to logs, find root cause, resolve it
+- No hand-holding needed
+
+## CORE PRINCIPLES
+- Simplicity First — touch minimal code
+- No Laziness — root causes only, no temp fixes
+- Never Assume — verify paths, APIs, variables before using
+- Ask Once — one question upfront if unclear, never interrupt mid-task
+
+## TASK MANAGEMENT
+1. Plan → tasks/todo.md
+2. Verify → confirm before implementing
+3. Track → mark complete as you go
+4. Explain → high-level summary each step
+5. Learn → tasks/lessons.md after corrections
+
+## LEARNED
+(Claude fills this in over time)
+
+---
+
 ## Pitch Tracker — Constitution (Read First)
 
 Pitch Tracker measures command by comparing a catcher target (glove) to ball arrival in **image space** using a **center-field camera**. It produces per-pitch metrics and publishes review assets to a Next.js web app.

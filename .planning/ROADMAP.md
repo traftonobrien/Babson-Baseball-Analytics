@@ -252,6 +252,16 @@ Plans:
 - [x] 12-02: Build pitcher leaderboard table with sort and filter integration
 - [x] 12-03: Build hitter leaderboard table with sort and filter integration
 
+### Phase 12.2: NCAA leaderboard sync redesign (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 12
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 12.2 to break down)
+
 ### Phase 12.1: Live AB player profile integration (INSERTED)
 
 **Goal:** Integrate cross-session Live AB analytics into the existing player profile experience so coaches can evaluate charted pitcher and hitter performance from each player page.
