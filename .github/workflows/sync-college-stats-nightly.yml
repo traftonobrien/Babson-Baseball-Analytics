@@ -16,6 +16,16 @@ on:
         default: "incremental"
         type: choice
         options: [incremental, full]
+      team_name:
+        description: "Optional team name filter for smoke tests"
+        required: false
+        default: ""
+        type: string
+      limit:
+        description: "Optional team limit for smoke tests"
+        required: false
+        default: ""
+        type: string
 
 jobs:
   # ------------------------------------------------------------------
@@ -106,11 +116,22 @@ jobs:
       - name: Sync NCAA pitching leaderboard
         env:
           CHROMOTE_CHROME: ${{ steps.chrome.outputs.path }}
+          TEAM_NAME: ${{ github.event.inputs.team_name || '' }}
+          LIMIT: ${{ github.event.inputs.limit || '' }}
         run: |
+          extra_args=()
+          if [ -n "$TEAM_NAME" ]; then
+            extra_args+=(--team-name "$TEAM_NAME")
+          fi
+          if [ -n "$LIMIT" ]; then
+            extra_args+=(--limit "$LIMIT")
+          fi
+
           Rscript scripts/sync_collegebaseball_leaderboard.R \
             --years 2026 \
             --types pitching \
-            --sync-mode ${{ needs.determine-mode.outputs.sync_mode }}
+            --sync-mode ${{ needs.determine-mode.outputs.sync_mode }} \
+            "${extra_args[@]}"
 
       - name: Upload pitching stats
         uses: actions/upload-artifact@v4
@@ -180,11 +201,22 @@ jobs:
       - name: Sync NCAA batting leaderboard
         env:
           CHROMOTE_CHROME: ${{ steps.chrome.outputs.path }}
+          TEAM_NAME: ${{ github.event.inputs.team_name || '' }}
+          LIMIT: ${{ github.event.inputs.limit || '' }}
         run: |
+          extra_args=()
+          if [ -n "$TEAM_NAME" ]; then
+            extra_args+=(--team-name "$TEAM_NAME")
+          fi
+          if [ -n "$LIMIT" ]; then
+            extra_args+=(--limit "$LIMIT")
+          fi
+
           Rscript scripts/sync_collegebaseball_leaderboard.R \
             --years 2026 \
             --types batting \
-            --sync-mode ${{ needs.determine-mode.outputs.sync_mode }}
+            --sync-mode ${{ needs.determine-mode.outputs.sync_mode }} \
+            "${extra_args[@]}"
 
       - name: Upload batting stats
         uses: actions/upload-artifact@v4
@@ -225,12 +257,6 @@ jobs:
           path: web/public/college-stats
         continue-on-error: true
 
-      - name: Fail if both legs degraded
-        if: steps.dl-pitching.outcome == 'failure' && steps.dl-batting.outcome == 'failure'
-        run: |
-          echo "Both pitching and batting sync legs failed -- no data to publish"
-          exit 1
-
       - name: Write metadata
         env:
           PITCHING_OK: ${{ steps.dl-pitching.outcome == 'success' && 'true' || 'false' }}
@@ -267,7 +293,7 @@ jobs:
 
           meta = {
               "synced_at": datetime.now(timezone.utc).isoformat(),
-              "source":    "collegebaseball+http",
+              "source":    "collegebaseball+chromote",
               "division":  3,
               "years":     [2026],
               "types":     ["pitching", "batting"],
@@ -298,3 +324,9 @@ jobs:
             git commit -m "chore: sync NCAA leaderboards $(date -u +%Y-%m-%d)"
             git push
           fi
+
+      - name: Fail if both legs degraded
+        if: steps.dl-pitching.outcome == 'failure' && steps.dl-batting.outcome == 'failure'
+        run: |
+          echo "Both pitching and batting sync legs failed -- prior data retained and meta.json marked stale"
+          exit 1

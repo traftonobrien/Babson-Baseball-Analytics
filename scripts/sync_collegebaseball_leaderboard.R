@@ -328,7 +328,7 @@ fetch_type_for_year <- function(year, division, type, limit = NULL, team_name = 
 # Validation
 # ---------------------------------------------------------------------------
 
-validate_result <- function(rows, outcome_counts, team_count, year, type,
+validate_result <- function(rows, outcome_counts, failures, team_count, year, type,
                              team_name = NULL, limit = NULL) {
   if (nrow(rows) == 0) {
     stop(sprintf("No %s rows produced for %s", type, year))
@@ -353,11 +353,23 @@ validate_result <- function(rows, outcome_counts, team_count, year, type,
 
   if (!any(rows$team_name == "Babson")) {
     # Babson having empty_stats is acceptable; missing entirely is a hard failure
-    babson_failed <- any(vapply(list(), function(f) f$team_name == "Babson", logical(1)))
-    if (!babson_failed) {
+    babson_failures <- Filter(function(f) identical(f$team_name, "Babson"), failures)
+    babson_statuses <- unique(vapply(
+      babson_failures,
+      function(f) as.character(f$status %||% "unknown"),
+      character(1)
+    ))
+
+    if (length(babson_statuses) == 1L && identical(babson_statuses, "empty_stats")) {
+      message(sprintf("Warning: Babson has no %s stats for %s (empty_stats; may be early season)", type, year))
+    } else if (length(babson_statuses) > 0) {
+      stop(sprintf(
+        "Validation failed: Babson missing from %s %s output (%s)",
+        year, type, paste(babson_statuses, collapse = ", ")
+      ))
+    } else {
       stop(sprintf("Validation failed: Babson missing from %s %s output", year, type))
     }
-    message(sprintf("Warning: Babson has no %s stats for %s (empty_stats; may be early season)", type, year))
   }
 
   # Warn (don't fail) when many teams are empty -- early season norm
@@ -379,7 +391,7 @@ validate_result <- function(rows, outcome_counts, team_count, year, type,
 
 meta <- list(
   synced_at  = format(Sys.time(), tz = "UTC", usetz = TRUE),
-  source     = "collegebaseball+http",
+  source     = "collegebaseball+chromote",
   sync_mode  = cfg$sync_mode,
   division   = cfg$division,
   years      = cfg$years,
@@ -420,7 +432,7 @@ for (year in cfg$years) {
 
     # Validate (warns on degraded; stops on hard failures)
     valid <- tryCatch(
-      validate_result(rows, result$outcome_counts, result$team_count, year, type, cfg$team_name, cfg$limit),
+      validate_result(rows, result$outcome_counts, result$failures, result$team_count, year, type, cfg$team_name, cfg$limit),
       error = function(e) {
         message(sprintf("[VALIDATION FAILED] %s %s: %s", year, type, conditionMessage(e)))
         any_hard_failure <<- TRUE
