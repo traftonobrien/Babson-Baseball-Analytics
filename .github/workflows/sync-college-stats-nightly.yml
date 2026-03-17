@@ -5,6 +5,10 @@ name: Sync NCAA Leaderboards
 permissions:
   contents: write
 
+concurrency:
+  group: sync-ncaa-leaderboards-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   schedule:
     - cron: "0 11 * * *"   # daily -- mode determined by day-of-week logic below
@@ -35,9 +39,13 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       sync_mode: ${{ steps.mode.outputs.sync_mode }}
+      publish_enabled: ${{ steps.mode.outputs.publish_enabled }}
     steps:
       - name: Determine sync mode
         id: mode
+        env:
+          TEAM_NAME: ${{ github.event.inputs.team_name || '' }}
+          LIMIT: ${{ github.event.inputs.limit || '' }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             MODE="${{ github.event.inputs.sync_mode }}"
@@ -47,8 +55,17 @@ jobs:
           else
             MODE="incremental"
           fi
+
+          if [ -n "$TEAM_NAME" ] || [ -n "$LIMIT" ]; then
+            PUBLISH_ENABLED="false"
+          else
+            PUBLISH_ENABLED="true"
+          fi
+
           echo "sync_mode=${MODE}" >> "$GITHUB_OUTPUT"
+          echo "publish_enabled=${PUBLISH_ENABLED}" >> "$GITHUB_OUTPUT"
           echo "Sync mode: ${MODE}"
+          echo "Publish enabled: ${PUBLISH_ENABLED}"
 
   # ------------------------------------------------------------------
   # Sync jobs -- one per stat type, running in parallel.
@@ -232,8 +249,8 @@ jobs:
   # ------------------------------------------------------------------
   publish:
     runs-on: ubuntu-latest
-    needs: [sync-pitching, sync-batting]
-    if: always()
+    needs: [determine-mode, sync-pitching, sync-batting]
+    if: always() && needs.determine-mode.outputs.publish_enabled == 'true'
     steps:
       - uses: actions/checkout@v4
         with:
