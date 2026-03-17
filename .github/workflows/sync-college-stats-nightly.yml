@@ -1,5 +1,5 @@
-# Sync NCAA-backed Division III leaderboards daily for 2026.
-# Runs at 11:00 AM UTC (7:00 AM ET during daylight saving time).
+# Sync NCAA-backed Division III leaderboards.
+# Nightly incremental at 11:00 AM UTC (7 AM ET); full rebuild every Sunday.
 name: Sync NCAA Leaderboards
 
 permissions:
@@ -7,20 +7,47 @@ permissions:
 
 on:
   schedule:
-    - cron: "0 11 * * *"
-  workflow_dispatch: # Allow manual trigger
+    - cron: "0 11 * * *"   # daily -- mode determined by day-of-week logic below
+  workflow_dispatch:
+    inputs:
+      sync_mode:
+        description: "Sync mode"
+        required: false
+        default: "incremental"
+        type: choice
+        options: [incremental, full]
 
 jobs:
-  sync:
+  # ------------------------------------------------------------------
+  # Determine sync mode once so both stat-type jobs use the same value.
+  # ------------------------------------------------------------------
+  determine-mode:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - stat_type: pitching
-            max_wait_seconds: 6
-          - stat_type: batting
-            max_wait_seconds: 8
+    outputs:
+      sync_mode: ${{ steps.mode.outputs.sync_mode }}
+    steps:
+      - name: Determine sync mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            MODE="${{ github.event.inputs.sync_mode }}"
+          elif [ "$(date -u +%u)" = "7" ]; then
+            # Sunday UTC -> full rebuild for newly active team discovery
+            MODE="full"
+          else
+            MODE="incremental"
+          fi
+          echo "sync_mode=${MODE}" >> "$GITHUB_OUTPUT"
+          echo "Sync mode: ${MODE}"
+
+  # ------------------------------------------------------------------
+  # Sync jobs -- one per stat type, running in parallel.
+  # Each job either produces a valid JSON artifact or fails.
+  # The publish job runs regardless (if: always()) and handles degraded runs.
+  # ------------------------------------------------------------------
+  sync-pitching:
+    runs-on: ubuntu-latest
+    needs: determine-mode
     steps:
       - uses: actions/checkout@v4
         with:
@@ -34,86 +61,165 @@ jobs:
       - name: Install system dependencies
         run: sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
 
-      - name: Set up Chrome
-        id: chrome
-        uses: browser-actions/setup-chrome@v1
+      - name: Install R dependencies
+        env:
+          R_REMOTES_NO_ERRORS_FROM_WARNINGS: "true"
+          GITHUB_PAT: ""
+        run: |
+          Rscript -e 'options(repos = c(CRAN = "https://cloud.r-project.org")); install.packages(c("httr","baseballr","jsonlite","rvest","xml2","dplyr","stringr","tibble"), quiet = TRUE)'
+          git clone --depth 1 https://github.com/robert-frey/collegebaseball.git /tmp/collegebaseball
+          Rscript -e 'install.packages("/tmp/collegebaseball", repos = NULL, type = "source", quiet = TRUE)'
+
+      - name: Sync NCAA pitching leaderboard
+        run: |
+          Rscript scripts/sync_collegebaseball_leaderboard.R \
+            --years 2026 \
+            --types pitching \
+            --sync-mode ${{ needs.determine-mode.outputs.sync_mode }}
+
+      - name: Upload pitching stats
+        uses: actions/upload-artifact@v4
+        with:
+          name: college-stats-pitching
+          path: web/public/college-stats/pitching-2026.json
+          if-no-files-found: error
+
+  sync-batting:
+    runs-on: ubuntu-latest
+    needs: determine-mode
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.5.2"
+
+      - name: Install system dependencies
+        run: sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
 
       - name: Install R dependencies
         env:
           R_REMOTES_NO_ERRORS_FROM_WARNINGS: "true"
           GITHUB_PAT: ""
         run: |
-          Rscript -e 'options(repos = c(CRAN = "https://cloud.r-project.org")); install.packages(c("remotes","baseballr","chromote","jsonlite","rvest","xml2","dplyr","stringr","tibble"), quiet = TRUE)'
+          Rscript -e 'options(repos = c(CRAN = "https://cloud.r-project.org")); install.packages(c("httr","baseballr","jsonlite","rvest","xml2","dplyr","stringr","tibble"), quiet = TRUE)'
           git clone --depth 1 https://github.com/robert-frey/collegebaseball.git /tmp/collegebaseball
           Rscript -e 'install.packages("/tmp/collegebaseball", repos = NULL, type = "source", quiet = TRUE)'
 
-      - name: Sync NCAA ${{ matrix.stat_type }} leaderboard
-        env:
-          CHROMOTE_CHROME: ${{ steps.chrome.outputs.chrome-path }}
-        run: Rscript scripts/sync_collegebaseball_leaderboard.R --years 2026 --types ${{ matrix.stat_type }} --max-wait-seconds ${{ matrix.max_wait_seconds }}
+      - name: Sync NCAA batting leaderboard
+        run: |
+          Rscript scripts/sync_collegebaseball_leaderboard.R \
+            --years 2026 \
+            --types batting \
+            --sync-mode ${{ needs.determine-mode.outputs.sync_mode }}
 
-      - name: Upload generated cache
+      - name: Upload batting stats
         uses: actions/upload-artifact@v4
         with:
-          name: college-stats-${{ matrix.stat_type }}
-          path: |
-            web/public/college-stats/${{ matrix.stat_type }}-2026.json
+          name: college-stats-batting
+          path: web/public/college-stats/batting-2026.json
           if-no-files-found: error
 
+  # ------------------------------------------------------------------
+  # Publish -- always runs, handles degraded legs.
+  # Degraded policy: publish healthy leg, keep prior file for degraded leg,
+  # mark stale in meta.json. Hard-fail only if BOTH legs fail.
+  # ------------------------------------------------------------------
   publish:
     runs-on: ubuntu-latest
-    needs: sync
+    needs: [sync-pitching, sync-batting]
+    if: always()
     steps:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Download pitching cache
+      # Downloads overwrite the checked-out file when successful.
+      # On failure, the checked-out (prior) file is preserved unchanged.
+      - name: Download pitching stats
+        id: dl-pitching
         uses: actions/download-artifact@v4
         with:
           name: college-stats-pitching
           path: web/public/college-stats
+        continue-on-error: true
 
-      - name: Download batting cache
+      - name: Download batting stats
+        id: dl-batting
         uses: actions/download-artifact@v4
         with:
           name: college-stats-batting
           path: web/public/college-stats
+        continue-on-error: true
 
-      - name: Rebuild combined metadata
+      - name: Fail if both legs degraded
+        if: steps.dl-pitching.outcome == 'failure' && steps.dl-batting.outcome == 'failure'
+        run: |
+          echo "Both pitching and batting sync legs failed -- no data to publish"
+          exit 1
+
+      - name: Write metadata
+        env:
+          PITCHING_OK: ${{ steps.dl-pitching.outcome == 'success' && 'true' || 'false' }}
+          BATTING_OK:  ${{ steps.dl-batting.outcome  == 'success' && 'true' || 'false' }}
         run: |
           python3 - <<'PY'
-          import json
+          import json, os
           from datetime import datetime, timezone
           from pathlib import Path
 
-          out_dir = Path("web/public/college-stats")
+          out_dir     = Path("web/public/college-stats")
+          pitching_ok = os.environ.get("PITCHING_OK", "false") == "true"
+          batting_ok  = os.environ.get("BATTING_OK",  "false") == "true"
+
           results = {}
-          for stat_type in ("pitching", "batting"):
+          for stat_type, ok in [("pitching", pitching_ok), ("batting", batting_ok)]:
               path = out_dir / f"{stat_type}-2026.json"
-              rows = json.loads(path.read_text(encoding="utf-8"))
-              results[f"2026-{stat_type}"] = {
-                  "row_count": len(rows),
-                  "team_count": len({row.get("team_id") for row in rows}),
-                  "failure_count": 0,
-                  "failures": [],
-              }
+              if path.exists():
+                  try:
+                      rows = json.loads(path.read_text(encoding="utf-8"))
+                  except Exception:
+                      rows = []
+                  results[f"2026-{stat_type}"] = {
+                      "row_count":      len(rows),
+                      "team_count":     len({r.get("team_id") for r in rows}),
+                      "freshly_synced": ok,
+                      "stale":          not ok,
+                  }
+              else:
+                  results[f"2026-{stat_type}"] = {
+                      "row_count": 0, "team_count": 0,
+                      "freshly_synced": False, "stale": True,
+                  }
 
           meta = {
               "synced_at": datetime.now(timezone.utc).isoformat(),
-              "source": "collegebaseball+chromote",
-              "division": 3,
-              "years": [2026],
-              "types": ["pitching", "batting"],
-              "results": results,
+              "source":    "collegebaseball+http",
+              "division":  3,
+              "years":     [2026],
+              "types":     ["pitching", "batting"],
+              "results":   results,
           }
-
           (out_dir / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
+          print("Wrote meta.json")
           PY
+
+      - name: Warn about degraded legs
+        if: steps.dl-pitching.outcome == 'failure' || steps.dl-batting.outcome == 'failure'
+        run: |
+          if [ "${{ steps.dl-pitching.outcome }}" = "failure" ]; then
+            echo "::warning::Pitching sync failed -- prior pitching-2026.json retained"
+          fi
+          if [ "${{ steps.dl-batting.outcome }}" = "failure" ]; then
+            echo "::warning::Batting sync failed -- prior batting-2026.json retained"
+          fi
 
       - name: Commit and push if changed
         run: |
-          git config user.name "github-actions[bot]"
+          git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           if git diff --quiet web/public/college-stats/; then
             echo "No changes to NCAA cache"
