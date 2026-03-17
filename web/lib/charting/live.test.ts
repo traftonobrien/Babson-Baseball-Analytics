@@ -10,6 +10,7 @@ import {
   derivePAPitchProgress,
   recordPitchInSnapshot,
   undoSnapshotAction,
+  updatePlateAppearanceContextInSnapshot,
   updatePlateAppearanceDetailsInSnapshot,
 } from "./live";
 import { fixtureGameSnapshot } from "./fixtures";
@@ -210,6 +211,34 @@ describe("snapshot mutations", () => {
     expect(afterClose.openPAId).toBeNull();
   });
 
+  it("rolls from the top half to the bottom half after three outs", () => {
+    let snapshot = baseSnapshot;
+
+    for (let slot = 1; slot <= 3; slot += 1) {
+      snapshot = recordPitchInSnapshot(snapshot, {
+        pitchType: "Fastball",
+        pitchResult: "in_play",
+        locationCell: 5,
+        velocity: null,
+        pitcher: { playerId: "DJames1", name: "D. James" },
+        hitterName: `Hitter ${slot}`,
+        lineupSlot: slot,
+      });
+      snapshot = closeCurrentPlateAppearance(snapshot, "6-3");
+    }
+
+    const afterThirdOut = deriveChartingLiveState(
+      snapshot.segments,
+      snapshot.plateAppearances,
+      snapshot.pitches,
+    );
+
+    expect(afterThirdOut.inning).toBe(1);
+    expect(afterThirdOut.isTopInning).toBe(false);
+    expect(afterThirdOut.outs).toBe(0);
+    expect(afterThirdOut.batterSlot).toBe(4);
+  });
+
   it("supports a local inning/outs override for the next PA anchor", () => {
     const override = createGameStateOverride(baseSnapshot, {
       inning: 4,
@@ -268,6 +297,113 @@ describe("snapshot mutations", () => {
     );
     expect(liveState.balls).toBe(3);
     expect(liveState.strikes).toBe(1);
+  });
+
+  it("records bottom-half game context with Babson batting and seeded baserunners", () => {
+    const gameSnapshot: ChartingGameSnapshot = {
+      ...baseSnapshot,
+      game: {
+        ...baseSnapshot.game,
+        sessionType: "game",
+        ourTeamLabel: "Babson",
+        opponentTeamLabel: "MIT",
+      },
+    };
+    const override = createGameStateOverride(gameSnapshot, {
+      inning: 1,
+      isTopInning: false,
+      outs: 1,
+    });
+
+    const snapshot = recordPitchInSnapshot(
+      gameSnapshot,
+      {
+        pitchType: "Slider",
+        pitchResult: "called_strike",
+        locationCell: 3,
+        velocity: null,
+        pitcher: {
+          playerId: "manual:opponent:starter",
+          name: "MIT Starter",
+        },
+        hitterName: "Babson Lead-Off",
+        lineupSlot: 1,
+      },
+      override,
+      {
+        nextPASeed: {
+          balls: 0,
+          strikes: 0,
+          baserunners: {
+            runnerOnFirst: "Runner 1",
+            runnerOnSecond: null,
+            runnerOnThird: "Runner 3",
+          },
+        },
+      },
+    );
+
+    expect(snapshot.segments[0]?.teamSide).toBe("opponent");
+    expect(snapshot.segments[0]?.playerId).toBe("manual:opponent:starter");
+    expect(snapshot.plateAppearances[0]).toMatchObject({
+      inning: 1,
+      isTopInning: false,
+      teamSide: "our",
+      runnerOnFirst: "Runner 1",
+      runnerOnThird: "Runner 3",
+    });
+    expect(snapshot.lineup[0]?.teamSide).toBe("our");
+    expect(snapshot.lineup[0]?.hitterName).toBe("Babson Lead-Off");
+  });
+
+  it("reuses a legacy blank-id opponent segment when the same manual pitcher continues", () => {
+    const gameSnapshot: ChartingGameSnapshot = {
+      ...baseSnapshot,
+      game: {
+        ...baseSnapshot.game,
+        sessionType: "game",
+      },
+      segments: [
+        {
+          id: "legacy-seg-1",
+          gameId: "game-1",
+          playerId: "",
+          displayName: "MIT Starter",
+          teamSide: "opponent",
+          segmentOrder: 0,
+          enteredInning: 1,
+          exitedInning: null,
+          runsOverride: null,
+          earnedRunsOverride: null,
+        },
+      ],
+    };
+    const override = createGameStateOverride(gameSnapshot, {
+      inning: 1,
+      isTopInning: false,
+      outs: 0,
+    });
+
+    const snapshot = recordPitchInSnapshot(
+      gameSnapshot,
+      {
+        pitchType: "Fastball",
+        pitchResult: "called_strike",
+        locationCell: 5,
+        velocity: null,
+        pitcher: {
+          playerId: "manual:opponent:mit-starter",
+          name: "MIT Starter",
+        },
+        hitterName: "Babson Lead-Off",
+        lineupSlot: 1,
+      },
+      override,
+    );
+
+    expect(snapshot.segments).toHaveLength(1);
+    expect(snapshot.segments[0]?.id).toBe("legacy-seg-1");
+    expect(snapshot.segments[0]?.playerId).toBe("manual:opponent:mit-starter");
   });
 
   it("normalizes bunt-mode fouls and marks the plate appearance as a bunt rep", () => {
@@ -424,6 +560,33 @@ describe("snapshot mutations", () => {
     expect(updated.pitches[0]?.strikesBefore).toBe(1);
     expect(updated.pitches[1]?.ballsBefore).toBe(2);
     expect(updated.pitches[1]?.strikesBefore).toBe(2);
+  });
+
+  it("updates history inning-half context and realigns batting side", () => {
+    let snapshot = recordPitchInSnapshot(baseSnapshot, {
+      pitchType: "Fastball",
+      pitchResult: "in_play",
+      locationCell: 6,
+      velocity: null,
+      pitcher: { playerId: "DJames1", name: "D. James" },
+      hitterName: "Lead Off",
+      lineupSlot: 1,
+    });
+    snapshot = closeCurrentPlateAppearance(snapshot, "1B");
+
+    const paId = snapshot.plateAppearances[0]!.id;
+    const updated = updatePlateAppearanceContextInSnapshot(snapshot, {
+      paId,
+      inning: 2,
+      isTopInning: false,
+    });
+
+    expect(updated.plateAppearances[0]).toMatchObject({
+      inning: 2,
+      isTopInning: false,
+      teamSide: "our",
+    });
+    expect(updated.segments[0]?.teamSide).toBe("opponent");
   });
 
   it("rebuilds bunt history pitch trails when the starting count changes to bunt", () => {

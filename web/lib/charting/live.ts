@@ -1,8 +1,11 @@
 import { nextSegmentOrder } from "./domain";
 import type {
+  ChartingBaserunnerState,
+  ChartingGame,
   ChartingGameSnapshot,
   ChartingInitialCount,
   ChartingLineupEntry,
+  ChartingMatchupSide,
   ChartingPitch,
   ChartingPitcherSegment,
   ChartingPlateAppearance,
@@ -157,6 +160,7 @@ export interface NextPASeed {
   balls: number;
   strikes: number;
   buntMode?: boolean;
+  baserunners?: Partial<ChartingBaserunnerState> | null;
 }
 
 export interface LiveStateOptions {
@@ -234,6 +238,52 @@ export interface RecordPitchInput {
 export interface PAResultGroup {
   title: string;
   results: readonly PAResultType[];
+}
+
+export function emptyBaserunnerState(): ChartingBaserunnerState {
+  return {
+    runnerOnFirst: null,
+    runnerOnSecond: null,
+    runnerOnThird: null,
+  };
+}
+
+export function normalizeBaserunnerState(
+  state?: Partial<ChartingBaserunnerState> | null,
+): ChartingBaserunnerState {
+  return {
+    runnerOnFirst: state?.runnerOnFirst?.trim() || null,
+    runnerOnSecond: state?.runnerOnSecond?.trim() || null,
+    runnerOnThird: state?.runnerOnThird?.trim() || null,
+  };
+}
+
+export function baserunnerStateFromPlateAppearance(
+  plateAppearance?: Pick<
+    ChartingPlateAppearance,
+    "runnerOnFirst" | "runnerOnSecond" | "runnerOnThird"
+  > | null,
+): ChartingBaserunnerState {
+  return normalizeBaserunnerState(plateAppearance ?? undefined);
+}
+
+export function battingSideForMatchup(
+  game: Pick<ChartingGame, "babsonVenueSide">,
+  isTopInning: boolean,
+): ChartingMatchupSide {
+  const babsonBatting =
+    (game.babsonVenueSide === "away" && isTopInning) ||
+    (game.babsonVenueSide === "home" && !isTopInning);
+  return babsonBatting ? "our" : "opponent";
+}
+
+export function pitchingSideForMatchup(
+  game: Pick<ChartingGame, "babsonVenueSide">,
+  isTopInning: boolean,
+): ChartingMatchupSide {
+  return battingSideForMatchup(game, isTopInning) === "our"
+    ? "opponent"
+    : "our";
 }
 
 const POSITION_LABELS: Record<number, string> = {
@@ -459,7 +509,8 @@ export function deriveChartingLiveState(
     : orderedPAs;
 
   for (const pa of relevantPAs) {
-    state.inning = Math.max(state.inning, pa.inning);
+    state.inning = Math.max(1, pa.inning);
+    state.isTopInning = pa.isTopInning;
 
     const paPitches = pitchesByPA.get(pa.id) ?? [];
     if (!pa.resultCode) {
@@ -486,7 +537,12 @@ export function deriveChartingLiveState(
       state.outs += paResultOutsRecorded(pa.resultCode);
       while (state.outs >= 3) {
         state.outs -= 3;
-        state.inning += 1;
+        if (state.isTopInning) {
+          state.isTopInning = false;
+        } else {
+          state.isTopInning = true;
+          state.inning += 1;
+        }
       }
     }
 
@@ -503,7 +559,7 @@ export function deriveChartingLiveState(
     state.isBetweenInnings =
       paResultOutsRecorded(lastPA.resultCode) > 0 &&
       state.outs === 0 &&
-      state.inning > lastPA.inning;
+      (state.inning !== lastPA.inning || state.isTopInning !== lastPA.isTopInning);
   }
 
   if (!state.openPAId && options?.nextPASeed) {
@@ -554,15 +610,43 @@ export function recordPitchInSnapshot(
   }
 
   const nextSnapshot = cloneSnapshot(snapshot);
+  const battingSide = battingSideForMatchup(
+    nextSnapshot.game,
+    liveState.isTopInning,
+  );
+  const pitchingSide = pitchingSideForMatchup(
+    nextSnapshot.game,
+    liveState.isTopInning,
+  );
   upsertLineupEntry(
     nextSnapshot.lineup,
     nextSnapshot.game.id,
+    battingSide,
     clamp(input.lineupSlot, 1, 9),
     input.hitterName.trim(),
   );
 
   let activeSegment = nextSnapshot.segments.at(-1) ?? null;
-  if (!activeSegment || activeSegment.playerId !== input.pitcher.playerId) {
+  const activeSegmentMatches =
+    activeSegment !== null &&
+    pitcherSegmentMatches(
+      activeSegment,
+      input.pitcher.playerId,
+      input.pitcher.name,
+      pitchingSide,
+    );
+  if (activeSegmentMatches && activeSegment) {
+    syncSegmentPitcherIdentity(
+      activeSegment,
+      input.pitcher.playerId,
+      input.pitcher.name,
+    );
+  }
+  if (
+    !activeSegment ||
+    !activeSegmentMatches ||
+    activeSegment.teamSide !== pitchingSide
+  ) {
     if (liveState.openPAId) {
       return snapshot;
     }
@@ -572,7 +656,7 @@ export function recordPitchInSnapshot(
       gameId: nextSnapshot.game.id,
       playerId: input.pitcher.playerId,
       displayName: input.pitcher.name,
-      teamSide: nextSnapshot.game.sessionType === "game" ? "our" : "our",
+      teamSide: pitchingSide,
       segmentOrder: nextSegmentOrder(nextSnapshot.segments),
       enteredInning: liveState.inning,
       exitedInning: null,
@@ -598,13 +682,14 @@ export function recordPitchInSnapshot(
       segmentId: activeSegment.id,
       paOrder: nextPAOrder(nextSnapshot.plateAppearances),
       inning: liveState.inning,
+      isTopInning: liveState.isTopInning,
       hitterName: input.hitterName.trim(),
       lineupSlot: clamp(input.lineupSlot, 1, 9),
-      teamSide:
-        nextSnapshot.game.sessionType === "game" ? "opponent" : "opponent",
+      teamSide: battingSide,
       resultCode: null,
       initialCount: initialCountFromSeed(options?.nextPASeed),
       buntContext: shouldSeedBuntMode || normalizedPitchResult === "bunt_foul",
+      ...normalizeBaserunnerState(options?.nextPASeed?.baserunners),
     };
     nextSnapshot.plateAppearances.push(openPA);
   } else {
@@ -613,6 +698,8 @@ export function recordPitchInSnapshot(
     );
     openPA.hitterName = input.hitterName.trim();
     openPA.lineupSlot = clamp(input.lineupSlot, 1, 9);
+    openPA.isTopInning = liveState.isTopInning;
+    openPA.teamSide = battingSide;
     openPA.initialCount = resolvePlateAppearanceInitialCount(
       openPA,
       existingPitches,
@@ -726,6 +813,7 @@ export function syncHitterToSnapshot(
   upsertLineupEntry(
     nextSnapshot.lineup,
     nextSnapshot.game.id,
+    battingSideForMatchup(snapshot.game, liveState.isTopInning),
     clamp(lineupSlot, 1, 9),
     trimmed,
   );
@@ -793,6 +881,7 @@ export function updatePAHitterNameInSnapshot(
   upsertLineupEntry(
     nextSnapshot.lineup,
     nextSnapshot.game.id,
+    targetPA.teamSide,
     targetPA.lineupSlot,
     trimmed,
   );
@@ -809,6 +898,12 @@ export interface UpdatePlateAppearanceDetailsInput {
   hitterName: string;
   initialCount: ChartingInitialCount;
   resultCode: PAResultType | null;
+}
+
+export interface UpdatePlateAppearanceContextInput {
+  paId: string;
+  inning?: number;
+  isTopInning?: boolean;
 }
 
 export function updatePlateAppearanceDetailsInSnapshot(
@@ -890,6 +985,7 @@ export function updatePlateAppearanceDetailsInSnapshot(
   upsertLineupEntry(
     nextSnapshot.lineup,
     nextSnapshot.game.id,
+    targetPA.teamSide,
     targetPA.lineupSlot,
     trimmedHitter,
   );
@@ -901,6 +997,61 @@ export function updatePlateAppearanceDetailsInSnapshot(
     pitch.paId === targetPA.id
       ? (rebuiltPitchesById.get(pitch.id) ?? pitch)
       : pitch,
+  );
+
+  reconcileSnapshotSegments(nextSnapshot);
+  return nextSnapshot;
+}
+
+export function updatePlateAppearanceContextInSnapshot(
+  snapshot: ChartingGameSnapshot,
+  input: UpdatePlateAppearanceContextInput,
+): ChartingGameSnapshot {
+  const existingPA = snapshot.plateAppearances.find((pa) => pa.id === input.paId);
+  if (!existingPA) {
+    return snapshot;
+  }
+
+  const nextInning = input.inning ?? existingPA.inning;
+  const nextIsTopInning = input.isTopInning ?? existingPA.isTopInning;
+  if (
+    existingPA.inning === nextInning &&
+    existingPA.isTopInning === nextIsTopInning
+  ) {
+    return snapshot;
+  }
+
+  const nextSnapshot = cloneSnapshot(snapshot);
+  const targetPA = nextSnapshot.plateAppearances.find((pa) => pa.id === input.paId);
+  if (!targetPA) {
+    return snapshot;
+  }
+
+  targetPA.inning = nextInning;
+  targetPA.isTopInning = nextIsTopInning;
+  targetPA.teamSide = battingSideForMatchup(
+    nextSnapshot.game,
+    nextIsTopInning,
+  );
+
+  const currentSegment =
+    nextSnapshot.segments.find((segment) => segment.id === targetPA.segmentId) ?? null;
+  if (currentSegment) {
+    const targetSegment = ensureSegmentForPlateAppearance(
+      nextSnapshot,
+      targetPA,
+      currentSegment.playerId ?? "",
+      currentSegment.displayName,
+    );
+    targetPA.segmentId = targetSegment.id;
+  }
+
+  upsertLineupEntry(
+    nextSnapshot.lineup,
+    nextSnapshot.game.id,
+    targetPA.teamSide,
+    targetPA.lineupSlot,
+    targetPA.hitterName,
   );
 
   reconcileSnapshotSegments(nextSnapshot);
@@ -925,8 +1076,11 @@ export function updateSnapshotRevision(
 export function lineupNameForSlot(
   lineup: ChartingLineupEntry[],
   slot: number,
+  teamSide: ChartingMatchupSide,
 ): string | null {
-  const entry = lineup.find((item) => item.lineupSlot === slot);
+  const entry = lineup.find(
+    (item) => item.lineupSlot === slot && item.teamSide === teamSide,
+  );
   return entry?.hitterName ?? null;
 }
 
@@ -1083,10 +1237,13 @@ function nextPAOrder(plateAppearances: ChartingPlateAppearance[]): number {
 function upsertLineupEntry(
   lineup: ChartingLineupEntry[],
   gameId: string,
+  teamSide: ChartingMatchupSide,
   lineupSlot: number,
   hitterName: string,
 ) {
-  const existing = lineup.find((entry) => entry.lineupSlot === lineupSlot);
+  const existing = lineup.find(
+    (entry) => entry.lineupSlot === lineupSlot && entry.teamSide === teamSide,
+  );
   if (existing) {
     existing.hitterName = hitterName;
     return;
@@ -1095,7 +1252,7 @@ function upsertLineupEntry(
   lineup.push({
     id: crypto.randomUUID(),
     gameId,
-    teamSide: "opponent",
+    teamSide,
     lineupSlot,
     hitterName,
   });
@@ -1154,25 +1311,77 @@ function rebuildPitchesForInitialCount(
   });
 }
 
+function pitcherIdentityKey(
+  playerId: string | null | undefined,
+  displayName: string,
+): string {
+  const trimmedPlayerId = playerId?.trim() ?? "";
+  const normalizedName = displayName.trim().toLowerCase();
+
+  if (trimmedPlayerId && !trimmedPlayerId.startsWith("manual:")) {
+    return `player:${trimmedPlayerId}`;
+  }
+  if (normalizedName) {
+    return `name:${normalizedName}`;
+  }
+  if (trimmedPlayerId) {
+    return `player:${trimmedPlayerId}`;
+  }
+  return "";
+}
+
+function pitcherSegmentMatches(
+  segment: ChartingPitcherSegment,
+  pitcherId: string,
+  pitcherName: string,
+  pitcherSide: ChartingMatchupSide,
+): boolean {
+  return (
+    segment.teamSide === pitcherSide &&
+    pitcherIdentityKey(segment.playerId, segment.displayName) ===
+      pitcherIdentityKey(pitcherId, pitcherName)
+  );
+}
+
+function syncSegmentPitcherIdentity(
+  segment: ChartingPitcherSegment,
+  pitcherId: string,
+  pitcherName: string,
+) {
+  if (!segment.playerId?.trim() && pitcherId.trim()) {
+    segment.playerId = pitcherId;
+  }
+  segment.displayName = pitcherName;
+}
+
 function ensureSegmentForPlateAppearance(
   snapshot: ChartingGameSnapshot,
   plateAppearance: ChartingPlateAppearance,
   pitcherId: string,
   pitcherName: string,
 ): ChartingPitcherSegment {
+  const pitcherSide = pitchingSideForMatchup(
+    snapshot.game,
+    plateAppearance.isTopInning,
+  );
   const currentSegment =
     snapshot.segments.find(
       (segment) => segment.id === plateAppearance.segmentId,
     ) ?? null;
-  if (currentSegment?.playerId === pitcherId) {
-    currentSegment.displayName = pitcherName;
+  if (
+    currentSegment &&
+    pitcherSegmentMatches(currentSegment, pitcherId, pitcherName, pitcherSide)
+  ) {
+    syncSegmentPitcherIdentity(currentSegment, pitcherId, pitcherName);
     return currentSegment;
   }
 
   const existingSegment =
-    snapshot.segments.find((segment) => segment.playerId === pitcherId) ?? null;
+    snapshot.segments.find(
+      (segment) => pitcherSegmentMatches(segment, pitcherId, pitcherName, pitcherSide),
+    ) ?? null;
   if (existingSegment) {
-    existingSegment.displayName = pitcherName;
+    syncSegmentPitcherIdentity(existingSegment, pitcherId, pitcherName);
     return existingSegment;
   }
 
@@ -1181,7 +1390,7 @@ function ensureSegmentForPlateAppearance(
     gameId: snapshot.game.id,
     playerId: pitcherId,
     displayName: pitcherName,
-    teamSide: "our",
+    teamSide: pitcherSide,
     segmentOrder: nextSegmentOrder(snapshot.segments),
     enteredInning: plateAppearance.inning,
     exitedInning: null,

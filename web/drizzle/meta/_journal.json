@@ -36,6 +36,20 @@
       "when": 1773161100000,
       "tag": "0004_charting_pa_initial_count",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1773161400000,
+      "tag": "0005_game_mode_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1773259200000,
+      "tag": "0006_charting_pa_context",
+      "breakpoints": true
     }
   ]
 }

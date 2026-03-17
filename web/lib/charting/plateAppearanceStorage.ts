@@ -39,6 +39,16 @@ export function isMissingInitialCountColumnError(error: unknown) {
   return isMissingColumnError(error, "initial_count");
 }
 
+export function isMissingPlateAppearanceContextColumnError(error: unknown) {
+  return [
+    "initial_count",
+    "is_top_inning",
+    "runner_on_first",
+    "runner_on_second",
+    "runner_on_third",
+  ].some((columnName) => isMissingColumnError(error, columnName));
+}
+
 /**
  * Some environments may still be on an older schema that does not include
  * newer optional matchup-side fields. Treat those rows as valid legacy rows
@@ -46,7 +56,7 @@ export function isMissingInitialCountColumnError(error: unknown) {
  * operate safely.
  */
 export function isMissingBattingSideColumnError(error: unknown) {
-  return isMissingColumnError(error, "batting_side");
+  return isMissingColumnError(error, "team_side");
 }
 
 export function mapLegacyPlateAppearanceRow(
@@ -54,7 +64,11 @@ export function mapLegacyPlateAppearanceRow(
 ): ChartingPlateAppearance {
   return {
     ...plateAppearance,
+    isTopInning: true,
     teamSide: "opponent",
     initialCount: null,
+    runnerOnFirst: null,
+    runnerOnSecond: null,
+    runnerOnThird: null,
   };
 }

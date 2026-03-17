@@ -23,7 +23,7 @@ import {
   mapLegacyPitchRow,
 } from "./pitchStorage";
 import {
-  isMissingInitialCountColumnError,
+  isMissingPlateAppearanceContextColumnError,
   legacyChartingPlateAppearances,
   mapLegacyPlateAppearanceRow,
 } from "./plateAppearanceStorage";
@@ -78,9 +78,13 @@ function mapPlateAppearanceRow(
 ): ChartingPlateAppearance {
   return {
     ...row,
+    isTopInning: row.isTopInning ?? true,
     teamSide: normalizeMatchupSide(row.teamSide),
     initialCount:
       (row.initialCount as ChartingPlateAppearance["initialCount"]) ?? "0-0",
+    runnerOnFirst: row.runnerOnFirst ?? null,
+    runnerOnSecond: row.runnerOnSecond ?? null,
+    runnerOnThird: row.runnerOnThird ?? null,
   };
 }
 
@@ -160,7 +164,7 @@ async function loadChartingPlateAppearances(
         ) satisfies ChartingPlateAppearance,
     );
   } catch (error) {
-    if (!isMissingInitialCountColumnError(error)) {
+    if (!isMissingPlateAppearanceContextColumnError(error)) {
       throw error;
     }
 
@@ -170,13 +174,7 @@ async function loadChartingPlateAppearances(
       .where(eq(legacyChartingPlateAppearances.gameId, gameId))
       .orderBy(asc(legacyChartingPlateAppearances.paOrder));
 
-    return legacyRows.map((row) => {
-      const legacy = mapLegacyPlateAppearanceRow(row);
-      return {
-        ...legacy,
-        teamSide: "opponent" satisfies ChartingMatchupSide,
-      };
-    });
+    return legacyRows.map(mapLegacyPlateAppearanceRow);
   }
 }
 

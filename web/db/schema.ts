@@ -130,6 +130,7 @@ export const chartingPlateAppearances = pgTable("charting_plate_appearances", {
   segmentId: text("segment_id").notNull(),
   paOrder: integer("pa_order").notNull(),
   inning: integer("inning").notNull(),
+  isTopInning: boolean("is_top_inning").notNull().default(true),
   teamSide: text("team_side").notNull().default("opponent"),
   hitterName: text("hitter_name").notNull(),
   /** 1-9 lineup slot */
@@ -139,6 +140,9 @@ export const chartingPlateAppearances = pgTable("charting_plate_appearances", {
   /** "0-0" | "2-1" | "Bunt" */
   initialCount: text("initial_count").notNull().default("0-0"),
   buntContext: boolean("bunt_context").notNull().default(false),
+  runnerOnFirst: text("runner_on_first"),
+  runnerOnSecond: text("runner_on_second"),
+  runnerOnThird: text("runner_on_third"),
 });
 
 /**

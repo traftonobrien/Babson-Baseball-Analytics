@@ -5,6 +5,7 @@ import {
   type SegmentStats,
 } from "./analytics";
 import type {
+  ChartingMatchupSide,
   ChartingPitch,
   ChartingPitcherSegment,
   ChartingPlateAppearance,
@@ -33,6 +34,7 @@ export interface PitchMixEntry {
 export interface PitcherOverviewModel {
   pitcherKey: string;
   pitcherId: string | null;
+  teamSide: ChartingMatchupSide;
   displayName: string;
   segments: ChartingPitcherSegment[];
   pitches: ChartingPitch[];
@@ -44,6 +46,8 @@ export interface PitcherOverviewModel {
 }
 
 export interface HitterOverviewModel {
+  hitterKey: string;
+  teamSide: ChartingMatchupSide;
   hitterName: string;
   lineupSlot: number;
   plateAppearances: ChartingPlateAppearance[];
@@ -210,6 +214,7 @@ export function buildPitcherOverviewModels(
       return {
         pitcherKey,
         pitcherId: leadSegment?.playerId?.trim() || null,
+        teamSide: leadSegment?.teamSide ?? "our",
         displayName: leadSegment?.displayName ?? "Unknown Pitcher",
         segments: pitcherSegments,
         pitches: outingPitches,
@@ -226,18 +231,33 @@ export function buildPitcherOverviewModels(
 export function buildHitterOverviewModels(
   plateAppearances: ChartingPlateAppearance[],
   pitches: ChartingPitch[],
-  lineupEntries?: { hitterName: string; lineupSlot: number }[],
+  lineupEntries?: {
+    hitterName: string;
+    lineupSlot: number;
+    teamSide?: ChartingMatchupSide;
+  }[],
 ): HitterOverviewModel[] {
   const firstSeenOrder = new Map<string, number>();
   const plateAppearancesByHitter = new Map<string, ChartingPlateAppearance[]>();
   const lineupSlots = new Map<string, number>();
+  const hitterMeta = new Map<
+    string,
+    { hitterName: string; teamSide: ChartingMatchupSide }
+  >();
+
+  const hitterKeyFor = (hitterName: string, teamSide: ChartingMatchupSide) =>
+    `${teamSide}:${hitterName.trim().toLowerCase()}`;
 
   if (lineupEntries) {
     for (const entry of lineupEntries) {
-      if (entry.hitterName.trim()) {
-        lineupSlots.set(entry.hitterName, entry.lineupSlot);
-        firstSeenOrder.set(entry.hitterName, entry.lineupSlot);
-        plateAppearancesByHitter.set(entry.hitterName, []);
+      const hitterName = entry.hitterName.trim();
+      const teamSide = entry.teamSide ?? "opponent";
+      if (hitterName) {
+        const hitterKey = hitterKeyFor(hitterName, teamSide);
+        lineupSlots.set(hitterKey, entry.lineupSlot);
+        firstSeenOrder.set(hitterKey, entry.lineupSlot);
+        plateAppearancesByHitter.set(hitterKey, []);
+        hitterMeta.set(hitterKey, { hitterName, teamSide });
       }
     }
   }
@@ -245,28 +265,35 @@ export function buildHitterOverviewModels(
   for (const plateAppearance of [...plateAppearances].sort(
     (left, right) => left.paOrder - right.paOrder,
   )) {
-    if (!firstSeenOrder.has(plateAppearance.hitterName)) {
+    const hitterKey = hitterKeyFor(
+      plateAppearance.hitterName,
+      plateAppearance.teamSide,
+    );
+    if (!firstSeenOrder.has(hitterKey)) {
       firstSeenOrder.set(
-        plateAppearance.hitterName,
+        hitterKey,
         100 + plateAppearance.paOrder,
       );
     }
+    hitterMeta.set(hitterKey, {
+      hitterName: plateAppearance.hitterName,
+      teamSide: plateAppearance.teamSide,
+    });
 
-    const group =
-      plateAppearancesByHitter.get(plateAppearance.hitterName) ?? [];
+    const group = plateAppearancesByHitter.get(hitterKey) ?? [];
     group.push(plateAppearance);
-    plateAppearancesByHitter.set(plateAppearance.hitterName, group);
+    plateAppearancesByHitter.set(hitterKey, group);
   }
 
   const pitchesByPaId = buildPitchesByPaId(pitches);
 
   return [...plateAppearancesByHitter.entries()]
     .sort(
-      ([leftName], [rightName]) =>
-        (firstSeenOrder.get(leftName) ?? Number.MAX_SAFE_INTEGER) -
-        (firstSeenOrder.get(rightName) ?? Number.MAX_SAFE_INTEGER),
+      ([leftKey], [rightKey]) =>
+        (firstSeenOrder.get(leftKey) ?? Number.MAX_SAFE_INTEGER) -
+        (firstSeenOrder.get(rightKey) ?? Number.MAX_SAFE_INTEGER),
     )
-    .map(([hitterName, hitterPas]) => {
+    .map(([hitterKey, hitterPas]) => {
       const orderedPas = [...hitterPas].sort(
         (left, right) => left.paOrder - right.paOrder,
       );
@@ -275,11 +302,17 @@ export function buildHitterOverviewModels(
         pitchesByPaId,
       );
       const stats = computeHitterStats_pure(hitterPitches, orderedPas);
+      const meta = hitterMeta.get(hitterKey) ?? {
+        hitterName: orderedPas[0]?.hitterName ?? "Unknown Hitter",
+        teamSide: orderedPas[0]?.teamSide ?? "opponent",
+      };
 
       return {
-        hitterName,
+        hitterKey,
+        hitterName: meta.hitterName,
+        teamSide: meta.teamSide,
         lineupSlot:
-          orderedPas[0]?.lineupSlot ?? lineupSlots.get(hitterName) ?? 0,
+          orderedPas[0]?.lineupSlot ?? lineupSlots.get(hitterKey) ?? 0,
         plateAppearances: orderedPas,
         pitches: hitterPitches,
         stats,

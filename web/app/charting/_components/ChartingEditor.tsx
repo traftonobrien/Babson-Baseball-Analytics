@@ -28,8 +28,11 @@ import {
 } from "lucide-react";
 import {
   availablePAResultsForClosure,
+  baserunnerStateFromPlateAppearance,
+  battingSideForMatchup,
   DOUBLE_PLAY_OPTIONS,
   ERROR_OPTIONS,
+  emptyBaserunnerState,
   FIELDERS_CHOICE_OPTIONS,
   FLY_OUT_OPTIONS,
   GAME_PITCH_RESULTS,
@@ -46,9 +49,11 @@ import {
   isPAResultType,
   LINE_OUT_OPTIONS,
   lineupNameForSlot,
+  normalizeBaserunnerState,
   nextPASeedFromInitialCount,
   paResultOutsRecorded,
   PA_RESULT_OPTIONS,
+  pitchingSideForMatchup,
   POP_OUT_OPTIONS,
   recordPitchInSnapshot,
   resolvePlateAppearanceInitialCount,
@@ -56,6 +61,7 @@ import {
   undoSnapshotAction,
   UNASSISTED_OUT_OPTIONS,
   updatePlateAppearanceDetailsInSnapshot,
+  updatePlateAppearanceContextInSnapshot,
   updatePitchVelocityInSnapshot,
   updateSnapshotRevision,
   type GameStateOverride,
@@ -68,8 +74,10 @@ import {
   cornerLabelClass,
 } from "@/lib/charting/locationGrid";
 import type {
+  ChartingBaserunnerState,
   ChartingBootstrapPitcher,
   ChartingInitialCount,
+  ChartingMatchupSide,
   ChartingBootstrapRosterPlayer,
   ChartingGameSnapshot,
   PitchResult,
@@ -101,7 +109,9 @@ type HistoryEditDraft = {
   resultCode: PAResultType | "";
 };
 
-const INNING_OPTIONS = Array.from({ length: 20 }, (_, index) => index + 1);
+type LineupDrafts = Record<ChartingMatchupSide, Record<number, string>>;
+
+const INNING_OPTIONS = Array.from({ length: 12 }, (_, index) => index + 1);
 const OUT_OPTIONS = [0, 1, 2] as const;
 const BUNT_MODE_PITCH_RESULTS: readonly PitchResult[] = ["ball", "foul", "in_play"];
 const COUNT_PRESET_OPTIONS: {
@@ -137,17 +147,21 @@ export function ChartingEditor({
   rosterPlayers,
 }: ChartingEditorProps) {
   const initialMatchup = deriveMatchupSelection(initialSnapshot, null);
+  const initialPitcherSelection = derivePitcherSelection(
+    initialSnapshot,
+    pitchers,
+    null,
+  );
   const datalistId = useId();
   const historyPitcherDatalistId = useId();
 
   const [snapshot, setSnapshot] = useState(initialSnapshot);
   const [selectedPitcherId, setSelectedPitcherId] = useState(
-    findDefaultPitcherId(initialSnapshot, pitchers)
+    initialPitcherSelection.playerId,
   );
-  const [pitcherNameInput, setPitcherNameInput] = useState(() => {
-    const defaultId = findDefaultPitcherId(initialSnapshot, pitchers);
-    return pitchers.find((p) => p.playerId === defaultId)?.name ?? "";
-  });
+  const [pitcherNameInput, setPitcherNameInput] = useState(
+    initialPitcherSelection.name,
+  );
   const pitcherDatalistId = useId();
   const [isTopBarOpen, setIsTopBarOpen] = useState(true);
 
@@ -158,9 +172,16 @@ export function ChartingEditor({
   const [pendingVelocity, setPendingVelocity] = useState("");
   const [hitterName, setHitterName] = useState(initialMatchup.hitterName);
   const [showHistory, setShowHistory] = useState(false);
+  const [showLineupEditor, setShowLineupEditor] = useState(false);
+  const [lineupDrafts, setLineupDrafts] = useState<LineupDrafts>(() =>
+    buildLineupDrafts(initialSnapshot.lineup),
+  );
   const [expandedPAs, setExpandedPAs] = useState<Set<string>>(() => new Set());
   const [velocityDrafts, setVelocityDrafts] = useState<Record<string, string>>({});
   const [gameStateOverride, setGameStateOverride] = useState<GameStateOverride | null>(null);
+  const [baserunnerDraft, setBaserunnerDraft] = useState<ChartingBaserunnerState>(() =>
+    deriveBaserunnerDraft(initialSnapshot, null),
+  );
   const [historyEditDraft, setHistoryEditDraft] = useState<HistoryEditDraft | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -177,9 +198,10 @@ export function ChartingEditor({
   const saveEpochRef = useRef(0);
   const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
 
-  const selectedPresetSeed = nextPASeedFromInitialCount(
-    countPreset === "bunt" ? "Bunt" : countPreset
-  );
+  const selectedPresetSeed = {
+    ...nextPASeedFromInitialCount(countPreset === "bunt" ? "Bunt" : countPreset),
+    baserunners: normalizeBaserunnerState(baserunnerDraft),
+  };
   const liveState = deriveChartingLiveState(
     snapshot.segments,
     snapshot.plateAppearances,
@@ -194,6 +216,22 @@ export function ChartingEditor({
   const activeCountPreset = openPlateAppearance
     ? deriveEditorCountPresetFromPA(snapshot, openPlateAppearance.id)
     : countPreset;
+  const overrideBase = {
+    inning: gameStateOverride?.inning ?? liveState.inning,
+    isTopInning: gameStateOverride?.isTopInning ?? liveState.isTopInning,
+    outs: gameStateOverride?.outs ?? liveState.outs,
+  };
+  const activeBattingSide = battingSideForMatchup(
+    snapshot.game,
+    overrideBase.isTopInning,
+  );
+  const activePitchingSide = pitchingSideForMatchup(
+    snapshot.game,
+    overrideBase.isTopInning,
+  );
+  const ourTeamLabel = snapshot.game.ourTeamLabel?.trim() || "Babson";
+  const opponentTeamLabel =
+    snapshot.game.opponentTeamLabel?.trim() || snapshot.game.opponent;
   const effectiveBuntMode =
     openPlateAppearance
       ? activeCountPreset === "bunt"
@@ -227,20 +265,23 @@ export function ChartingEditor({
     }
   }, [availablePitchResults, selectedPitchResult]);
 
+  useEffect(() => {
+    if (openPlateAppearance) {
+      setBaserunnerDraft(baserunnerStateFromPlateAppearance(openPlateAppearance));
+    }
+  }, [openPlateAppearance]);
+
   useEffect(() => () => {
     if (pitchRecordedFlashRef.current) clearTimeout(pitchRecordedFlashRef.current);
   }, []);
 
-  const selectedPitcher =
-    pitchers.find((pitcher) => pitcher.playerId === selectedPitcherId) ??
-    (snapshot.segments.length > 0
-      ? {
-        playerId: snapshot.segments[snapshot.segments.length - 1].playerId,
-        name: snapshot.segments[snapshot.segments.length - 1].displayName,
-        throws: "R" as const,
-        arsenalPitchTypes: [...PITCH_TYPES],
-      }
-      : null);
+  const selectedPitcher = buildSelectedPitcherOption(
+    snapshot,
+    pitchers,
+    selectedPitcherId,
+    pitcherNameInput,
+    activePitchingSide,
+  );
   const historyPitcherOptions = buildHistoryPitcherOptions(snapshot, pitchers);
   const availablePitchTypes =
     selectedPitcher?.arsenalPitchTypes.length
@@ -260,7 +301,11 @@ export function ChartingEditor({
     !needsPAClosure &&
     Boolean(selectedPitcher) &&
     Boolean(hitterName.trim());
-  const hitterSuggestions = buildHitterSuggestions(snapshot, rosterPlayers);
+  const hitterSuggestions = buildHitterSuggestions(
+    snapshot,
+    rosterPlayers,
+    activeBattingSide,
+  );
   const recentPAGroups = buildRecentPAGroups(snapshot).reverse();
   const editingHistoryGroup = historyEditDraft
     ? recentPAGroups.find((group) => group.paId === historyEditDraft.paId) ?? null
@@ -275,12 +320,6 @@ export function ChartingEditor({
     liveState.closureState,
     liveState.openPAId
   );
-
-  const overrideBase = {
-    inning: gameStateOverride?.inning ?? liveState.inning,
-    isTopInning: gameStateOverride?.isTopInning ?? liveState.isTopInning,
-    outs: gameStateOverride?.outs ?? liveState.outs,
-  };
   const inningPitches = countPitcherInningPitches(
     snapshot,
     selectedPitcher?.playerId ?? "",
@@ -294,15 +333,93 @@ export function ChartingEditor({
     setPendingVelocity("");
   };
 
+  const handleOpenLineupEditor = () => {
+    setLineupDrafts(buildLineupDrafts(snapshot.lineup));
+    setShowLineupEditor(true);
+  };
+
+  const handleLineupDraftChange = (
+    side: ChartingMatchupSide,
+    slot: number,
+    value: string,
+  ) => {
+    setLineupDrafts((current) => ({
+      ...current,
+      [side]: {
+        ...current[side],
+        [slot]: value,
+      },
+    }));
+  };
+
+  const handleSaveLineups = () => {
+    const nextSnapshot: ChartingGameSnapshot = {
+      ...snapshot,
+      lineup: buildSnapshotLineup(snapshot, lineupDrafts),
+    };
+    applyOptimisticSnapshot(nextSnapshot, gameStateOverride, "Lineups updated");
+    setShowLineupEditor(false);
+  };
+
+  const handleBaserunnerDraftChange = (
+    field: keyof ChartingBaserunnerState,
+    value: string,
+  ) => {
+    setBaserunnerDraft((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  };
+
+  const commitBaserunnerDraft = (
+    nextDraft: Partial<ChartingBaserunnerState> | null | undefined,
+    successNote: string,
+  ) => {
+    const normalizedBaserunners = normalizeBaserunnerState(nextDraft);
+    if (!openPlateAppearance) {
+      setBaserunnerDraft(normalizedBaserunners);
+      return;
+    }
+
+    const currentBaserunners = baserunnerStateFromPlateAppearance(openPlateAppearance);
+    if (JSON.stringify(normalizedBaserunners) === JSON.stringify(currentBaserunners)) {
+      setBaserunnerDraft(normalizedBaserunners);
+      return;
+    }
+
+    const nextSnapshot: ChartingGameSnapshot = {
+      ...snapshot,
+      plateAppearances: snapshot.plateAppearances.map((plateAppearance) =>
+        plateAppearance.id === openPlateAppearance.id
+          ? {
+            ...plateAppearance,
+            ...normalizedBaserunners,
+          }
+          : plateAppearance,
+      ),
+    };
+
+    setBaserunnerDraft(normalizedBaserunners);
+    applyOptimisticSnapshot(nextSnapshot, gameStateOverride, successNote);
+  };
+
+  const handleBaserunnerDraftBlur = () => {
+    commitBaserunnerDraft(baserunnerDraft, "Base state updated");
+  };
+
   const syncMatchupInputs = (
     nextSnapshot: ChartingGameSnapshot,
     nextOverride: GameStateOverride | null
   ) => {
     const nextMatchup = deriveMatchupSelection(nextSnapshot, nextOverride);
     setHitterName(nextMatchup.hitterName);
-    const nextPitcherId = findDefaultPitcherId(nextSnapshot, pitchers);
-    setSelectedPitcherId(nextPitcherId);
-    setPitcherNameInput(pitchers.find((p) => p.playerId === nextPitcherId)?.name ?? "");
+    const nextPitcherSelection = derivePitcherSelection(
+      nextSnapshot,
+      pitchers,
+      nextOverride,
+    );
+    setSelectedPitcherId(nextPitcherSelection.playerId);
+    setPitcherNameInput(nextPitcherSelection.name);
   };
 
   const reloadLatestSnapshot = async () => {
@@ -427,10 +544,17 @@ export function ChartingEditor({
   const handlePitcherInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nextName = e.target.value;
     setPitcherNameInput(nextName);
-    const matched = pitchers.find((p) => p.name.toLowerCase() === nextName.toLowerCase());
-    if (matched && matched.playerId !== selectedPitcherId) {
-      setSelectedPitcherId(matched.playerId);
+    const matched =
+      activePitchingSide === "our"
+        ? pitchers.find((p) => p.name.toLowerCase() === nextName.toLowerCase())
+        : null;
+    if (matched) {
+      if (matched.playerId !== selectedPitcherId) {
+        setSelectedPitcherId(matched.playerId);
+      }
+      return;
     }
+    setSelectedPitcherId("");
   };
 
   const handlePitcherChange = (nextPitcherId: string) => {
@@ -655,15 +779,21 @@ export function ChartingEditor({
   };
 
   const handlePAInningChange = (paId: string, inning: number) => {
-    const pa = snapshot.plateAppearances.find((p) => p.id === paId);
-    if (!pa || pa.inning === inning) return;
-    const nextSnapshot: ChartingGameSnapshot = {
-      ...snapshot,
-      plateAppearances: snapshot.plateAppearances.map((p) =>
-        p.id === paId ? { ...p, inning } : p
-      ),
-    };
+    const nextSnapshot = updatePlateAppearanceContextInSnapshot(snapshot, {
+      paId,
+      inning,
+    });
+    if (nextSnapshot === snapshot) return;
     applyOptimisticSnapshot(nextSnapshot, gameStateOverride, "Inning updated");
+  };
+
+  const handlePAHalfChange = (paId: string, isTopInning: boolean) => {
+    const nextSnapshot = updatePlateAppearanceContextInSnapshot(snapshot, {
+      paId,
+      isTopInning,
+    });
+    if (nextSnapshot === snapshot) return;
+    applyOptimisticSnapshot(nextSnapshot, gameStateOverride, "Half inning updated");
   };
 
   const togglePAExpanded = (paId: string) => {
@@ -718,6 +848,15 @@ export function ChartingEditor({
         </div>
 
         <div className="flex items-center gap-4">
+          {snapshot.game.sessionType === "game" && (
+            <button
+              onClick={handleOpenLineupEditor}
+              className="flex items-center gap-2 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 py-1.5 text-xs font-bold text-[rgb(212,220,218)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)] hover:border-[rgba(var(--babson-grey-rgb),0.32)] transition-colors"
+            >
+              <Timer className="h-4 w-4" />
+              <span>Lineups</span>
+            </button>
+          )}
           <button
             onClick={() => setIsTopBarOpen(!isTopBarOpen)}
             className="flex items-center gap-2 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 py-1.5 text-xs font-bold text-[rgb(212,220,218)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)] hover:border-[rgba(var(--babson-grey-rgb),0.32)] transition-colors"
@@ -760,18 +899,27 @@ export function ChartingEditor({
 
               {/* Section 1: Current At-Bat */}
               <div className="flex flex-[1.5] min-w-0 flex-col rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-2 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
-                <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500 mb-1">Current At-Bat</div>
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Current At-Bat</div>
+                  <span className="rounded-full border border-[rgba(var(--babson-grey-rgb),0.18)] bg-zinc-950/60 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
+                    {activeBattingSide === "our" ? ourTeamLabel : opponentTeamLabel} batting
+                  </span>
+                </div>
                 <div className="flex items-center gap-1.5">
                   <input
                     list={pitcherDatalistId}
                     value={pitcherNameInput}
                     onChange={handlePitcherInputChange}
                     disabled={currentPitcherLocked}
-                    placeholder="Pitcher Name (e.g. Wilson)"
+                    placeholder={
+                      activePitchingSide === "our"
+                        ? "Babson pitcher"
+                        : "Opponent pitcher"
+                    }
                     className="h-7 flex-1 min-w-0 rounded-lg border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-bold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] focus:shadow-[0_0_0_1px_rgba(var(--babson-green-rgb),0.12)] placeholder:font-normal placeholder:text-zinc-600 disabled:opacity-50"
                   />
                   <datalist id={pitcherDatalistId}>
-                    {pitchers.map((pitcher) => (
+                    {activePitchingSide === "our" && pitchers.map((pitcher) => (
                       <option key={pitcher.playerId} value={pitcher.name} />
                     ))}
                   </datalist>
@@ -793,25 +941,31 @@ export function ChartingEditor({
                         queueSnapshotSave(nextSnapshot, "Hitter saved");
                       }
                     }}
-                    placeholder="Hitter Name (e.g. Smith)"
+                    placeholder={
+                      activeBattingSide === "our"
+                        ? "Babson hitter"
+                        : "Opponent hitter"
+                    }
                     className="h-7 flex-1 min-w-0 rounded-lg border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-bold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] focus:shadow-[0_0_0_1px_rgba(var(--babson-green-rgb),0.12)] placeholder:font-normal placeholder:text-zinc-600"
                   />
                   <datalist id={datalistId}>
-                    {rosterPlayers
-                      .filter((player) => player.isHitter)
-                      .map((player) => (
-                        <option key={player.playerId ?? player.slug} value={player.name} />
-                      ))}
+                    {hitterSuggestions.map((name) => (
+                      <option key={name} value={name} />
+                    ))}
                   </datalist>
                 </div>
               </div>
 
-              {/* Section 2: Game State - two pills with dropdowns */}
+              {/* Section 2: Game State */}
               <div className="flex w-fit shrink-0 flex-col justify-center rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-2 px-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
                 <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500 mb-1">Game State</div>
                 <div className="flex flex-nowrap items-center gap-2">
                   <select value={overrideBase.inning} onChange={(e) => handleOverrideChange("inning", Number(e.target.value))} className="h-7 min-w-[7.5rem] shrink-0 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] pl-3 pr-8 py-0 text-xs font-semibold text-[rgb(212,220,218)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
                     {INNING_OPTIONS.map((i) => <option key={i} value={i}>Inning {i}</option>)}
+                  </select>
+                  <select value={overrideBase.isTopInning ? "top" : "bottom"} onChange={(e) => handleOverrideChange("isTopInning", e.target.value === "top")} className="h-7 min-w-[6.75rem] shrink-0 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] pl-3 pr-8 py-0 text-xs font-semibold text-[rgb(212,220,218)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
+                    <option value="top">Top</option>
+                    <option value="bottom">Bottom</option>
                   </select>
                   <select value={overrideBase.outs} onChange={(e) => handleOverrideChange("outs", Number(e.target.value))} className="h-7 min-w-[6rem] shrink-0 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] pl-3 pr-8 py-0 text-xs font-semibold text-[rgb(212,220,218)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
                     {OUT_OPTIONS.map((o) => <option key={o} value={o}>{o} Outs</option>)}
@@ -822,7 +976,51 @@ export function ChartingEditor({
                 </div>
               </div>
 
-              {/* Section 3: Pitch Count & Live Count - single row */}
+              {/* Section 3: Base State */}
+              {snapshot.game.sessionType === "game" && (
+                <div className="flex min-w-[18rem] shrink-0 flex-col justify-center rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-2 px-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">On Base</div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        commitBaserunnerDraft(
+                          emptyBaserunnerState(),
+                          "Base state cleared",
+                        )
+                      }
+                      className="text-[10px] font-semibold text-zinc-500 transition-colors hover:text-zinc-300"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {([
+                      ["runnerOnFirst", "1B"],
+                      ["runnerOnSecond", "2B"],
+                      ["runnerOnThird", "3B"],
+                    ] as const).map(([field, label]) => (
+                      <label key={field} className="min-w-0">
+                        <span className="mb-1 block text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                          {label}
+                        </span>
+                        <input
+                          list={datalistId}
+                          value={baserunnerDraft[field] ?? ""}
+                          onChange={(event) =>
+                            handleBaserunnerDraftChange(field, event.target.value)
+                          }
+                          onBlur={handleBaserunnerDraftBlur}
+                          placeholder="Name"
+                          className="h-7 w-full min-w-0 rounded-lg border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-2 text-xs font-semibold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] placeholder:text-zinc-600"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Section 4: Pitch Count & Live Count - single row */}
               <div className="flex flex-[2] min-w-0 flex-col justify-center rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-2 px-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
@@ -1000,6 +1198,17 @@ export function ChartingEditor({
 
                               <div className="flex shrink-0 items-center gap-2">
                                 <select
+                                  value={group.isTopInning ? "top" : "bottom"}
+                                  onChange={(e) =>
+                                    handlePAHalfChange(group.paId, e.target.value === "top")
+                                  }
+                                  className="h-8 min-w-[4.9rem] rounded-md border border-zinc-700 bg-zinc-800 px-2 text-xs font-semibold text-zinc-200 outline-none focus:border-emerald-500/50"
+                                  aria-label={`Half inning for ${group.hitterName}`}
+                                >
+                                  <option value="top">Top</option>
+                                  <option value="bottom">Bottom</option>
+                                </select>
+                                <select
                                   value={group.inning}
                                   onChange={(e) => handlePAInningChange(group.paId, Number(e.target.value))}
                                   className="h-8 min-w-[3.2rem] rounded-md border border-zinc-700 bg-zinc-800 px-2 text-xs font-semibold text-zinc-200 outline-none focus:border-emerald-500/50"
@@ -1022,6 +1231,9 @@ export function ChartingEditor({
                                 <div className="min-w-0 flex-1">
                                   <div className="truncate text-lg font-medium leading-none text-zinc-200">
                                     {group.hitterName}
+                                  </div>
+                                  <div className="mt-1 truncate text-[11px] text-zinc-500">
+                                    {formatBaserunnerSummary(group.baserunners)}
                                   </div>
                                 </div>
                                 <div className="hidden min-w-0 items-center gap-2 lg:flex">
@@ -1217,6 +1429,114 @@ export function ChartingEditor({
       </div>
 
       <AnimatePresence>
+        {showLineupEditor && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-[105] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="lineup-editor-title"
+          >
+            <motion.form
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="w-full max-w-5xl rounded-2xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.94),rgba(9,9,11,0.98))] shadow-[0_24px_64px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]"
+              onSubmit={(event) => {
+                event.preventDefault();
+                handleSaveLineups();
+              }}
+            >
+              <div className="flex items-start justify-between gap-4 border-b border-[rgba(var(--babson-grey-rgb),0.18)] px-5 py-4">
+                <div>
+                  <h2 id="lineup-editor-title" className="text-lg font-bold text-zinc-100">
+                    Pregame Lineups
+                  </h2>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    Enter both lineups before first pitch. Opponent names are free text and save into the game snapshot.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowLineupEditor(false)}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[rgba(var(--babson-grey-rgb),0.08)] text-zinc-400 transition-colors hover:border-[rgba(var(--babson-grey-rgb),0.38)] hover:text-zinc-100"
+                  aria-label="Close lineup editor"
+                >
+                  <ChevronRight className="h-4 w-4 rotate-45" />
+                </button>
+              </div>
+
+              <div className="grid gap-5 px-5 py-5 lg:grid-cols-2">
+                {([
+                  ["our", ourTeamLabel, "Babson hitter"],
+                  ["opponent", opponentTeamLabel, "Opponent hitter"],
+                ] as const).map(([side, label, placeholder]) => (
+                  <div
+                    key={side}
+                    className="rounded-2xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-zinc-950/60 p-4"
+                  >
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                          {side === "our" ? "Our lineup" : "Opponent lineup"}
+                        </div>
+                        <div className="mt-1 text-sm font-bold text-zinc-100">{label}</div>
+                      </div>
+                      <span className="rounded-full border border-zinc-800 bg-zinc-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-400">
+                        1-9 order
+                      </span>
+                    </div>
+
+                    <div className="grid gap-2">
+                      {Array.from({ length: 9 }, (_, index) => index + 1).map((slot) => (
+                        <label key={`${side}-${slot}`} className="grid grid-cols-[3.25rem_minmax(0,1fr)] items-center gap-2">
+                          <span className="rounded-lg border border-zinc-800 bg-zinc-950/80 px-3 py-2 text-center text-xs font-bold text-zinc-300">
+                            {slot}
+                          </span>
+                          <input
+                            value={lineupDrafts[side][slot] ?? ""}
+                            onChange={(event) =>
+                              handleLineupDraftChange(side, slot, event.target.value)
+                            }
+                            placeholder={placeholder}
+                            className="h-10 w-full rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-4 text-sm font-semibold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] placeholder:text-zinc-600"
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between border-t border-[rgba(var(--babson-grey-rgb),0.18)] px-5 py-4">
+                <p className="text-xs text-zinc-500">
+                  Free-text names work for either side, so you can key the opponent order without a stored roster.
+                </p>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowLineupEditor(false)}
+                    className="h-11 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-zinc-950/70 px-5 text-sm font-semibold text-zinc-300 transition-colors hover:border-[rgba(var(--babson-grey-rgb),0.38)] hover:text-zinc-100"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="inline-flex h-11 items-center gap-2 rounded-xl bg-[var(--babson-green)] px-5 text-sm font-bold text-white shadow-[0_12px_26px_rgba(var(--babson-green-rgb),0.22)] transition-colors hover:bg-[#00573a]"
+                  >
+                    <Save className="h-4 w-4" />
+                    Save Lineups
+                  </button>
+                </div>
+              </div>
+            </motion.form>
+          </motion.div>
+        )}
+
         {historyEditDraft && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -1859,35 +2179,130 @@ function deriveMatchupSelection(
   );
   const openPlateAppearance =
     snapshot.plateAppearances.find((pa) => pa.id === liveState.openPAId) ?? null;
+  const battingSide = battingSideForMatchup(
+    snapshot.game,
+    gameStateOverride?.isTopInning ?? liveState.isTopInning,
+  );
   const slot = openPlateAppearance?.lineupSlot ?? liveState.batterSlot;
   const hitterName =
-    openPlateAppearance?.hitterName ?? lineupNameForSlot(snapshot.lineup, slot) ?? "";
+    openPlateAppearance?.hitterName ??
+    lineupNameForSlot(snapshot.lineup, slot, battingSide) ??
+    "";
 
   return { slot, hitterName };
 }
 
 function buildHitterSuggestions(
   snapshot: ChartingGameSnapshot,
-  rosterPlayers: ChartingBootstrapRosterPlayer[]
+  rosterPlayers: ChartingBootstrapRosterPlayer[],
+  teamSide: ChartingMatchupSide,
 ) {
+  const rosterSuggestions =
+    teamSide === "our"
+      ? rosterPlayers.filter((player) => player.isHitter).map((player) => player.name)
+      : [];
   return Array.from(
     new Set([
-      ...snapshot.lineup.map((entry) => entry.hitterName),
-      ...rosterPlayers
-        .filter((player) => player.isHitter)
-        .map((player) => player.name),
+      ...snapshot.lineup
+        .filter((entry) => entry.teamSide === teamSide)
+        .map((entry) => entry.hitterName),
+      ...snapshot.plateAppearances
+        .filter((plateAppearance) => plateAppearance.teamSide === teamSide)
+        .map((plateAppearance) => plateAppearance.hitterName),
+      ...rosterSuggestions,
     ])
   ).sort((left, right) => left.localeCompare(right));
+}
+
+function derivePitcherSelection(
+  snapshot: ChartingGameSnapshot,
+  pitchers: ChartingBootstrapPitcher[],
+  gameStateOverride: GameStateOverride | null,
+) {
+  const liveState = deriveChartingLiveState(
+    snapshot.segments,
+    snapshot.plateAppearances,
+    snapshot.pitches,
+    gameStateOverride,
+  );
+  const pitchingSide = pitchingSideForMatchup(
+    snapshot.game,
+    gameStateOverride?.isTopInning ?? liveState.isTopInning,
+  );
+  const matchingSegments = snapshot.segments.filter(
+    (segment) => segment.teamSide === pitchingSide,
+  );
+  const latestSegment = matchingSegments.at(-1) ?? null;
+
+  if (latestSegment?.playerId?.trim()) {
+    return {
+      playerId: latestSegment.playerId,
+      name: latestSegment.displayName,
+    };
+  }
+
+  if (pitchingSide === "our") {
+    const defaultPitcher =
+      pitchers.find((pitcher) => pitcher.playerId === latestSegment?.playerId) ??
+      pitchers[0] ??
+      null;
+    return {
+      playerId: defaultPitcher?.playerId ?? "",
+      name: defaultPitcher?.name ?? snapshot.game.babsonStartingPitcher ?? "",
+    };
+  }
+
+  return {
+    playerId: manualPitcherId(
+      latestSegment?.displayName || snapshot.game.opponentStartingPitcher || "",
+      pitchingSide,
+    ),
+    name: latestSegment?.displayName || snapshot.game.opponentStartingPitcher || "",
+  };
+}
+
+function buildSelectedPitcherOption(
+  snapshot: ChartingGameSnapshot,
+  pitchers: ChartingBootstrapPitcher[],
+  selectedPitcherId: string,
+  pitcherNameInput: string,
+  activePitchingSide: ChartingMatchupSide,
+) {
+  const rosterPitcher =
+    activePitchingSide === "our"
+      ? pitchers.find((pitcher) => pitcher.playerId === selectedPitcherId)
+      : null;
+  if (rosterPitcher) {
+    return rosterPitcher;
+  }
+
+  const manualName = pitcherNameInput.trim();
+  if (!manualName) {
+    return null;
+  }
+
+  const syntheticId =
+    selectedPitcherId.trim() ||
+    manualPitcherId(manualName, activePitchingSide);
+
+  return {
+    playerId: syntheticId,
+    name: manualName,
+    throws: "R" as const,
+    arsenalPitchTypes: [...PITCH_TYPES],
+  };
 }
 
 type RecentPAGroup = {
   paId: string;
   inning: number;
+  isTopInning: boolean;
   hitterName: string;
   pitcherId: string;
   pitcherName: string;
   initialCount: ChartingInitialCount;
   paResult: PAResultType | null;
+  baserunners: ChartingBaserunnerState;
   pitches: RecentPitchRow[];
 };
 
@@ -1940,11 +2355,13 @@ function buildRecentPAGroups(snapshot: ChartingGameSnapshot): RecentPAGroup[] {
       return {
         paId: pa.id,
         inning: pa.inning,
+        isTopInning: pa.isTopInning,
         hitterName: pa.hitterName,
         pitcherId: segment?.playerId ?? "",
         pitcherName: segment?.displayName ?? "Unknown Pitcher",
         initialCount: resolvePlateAppearanceInitialCount(pa, rawPitches),
         paResult: pa.resultCode && isPAResultType(pa.resultCode) ? pa.resultCode : null,
+        baserunners: baserunnerStateFromPlateAppearance(pa),
         pitches,
       };
     });
@@ -2014,17 +2431,6 @@ function deriveCountPresetForUndo(
   }
 }
 
-function findDefaultPitcherId(
-  snapshot: ChartingGameSnapshot,
-  pitchers: ChartingBootstrapPitcher[]
-) {
-  return (
-    snapshot.segments[snapshot.segments.length - 1]?.playerId ??
-    pitchers[0]?.playerId ??
-    ""
-  );
-}
-
 function buildHistoryPitcherOptions(
   snapshot: ChartingGameSnapshot,
   pitchers: ChartingBootstrapPitcher[]
@@ -2045,6 +2451,87 @@ function buildHistoryPitcherOptions(
     }
   }
   return [...options.values()].sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function buildLineupDrafts(lineup: ChartingGameSnapshot["lineup"]): LineupDrafts {
+  const drafts: LineupDrafts = {
+    our: {},
+    opponent: {},
+  };
+
+  for (const entry of lineup) {
+    drafts[entry.teamSide][entry.lineupSlot] = entry.hitterName;
+  }
+
+  return drafts;
+}
+
+function buildSnapshotLineup(
+  snapshot: ChartingGameSnapshot,
+  lineupDrafts: LineupDrafts,
+): ChartingGameSnapshot["lineup"] {
+  const existingBySideAndSlot = new Map(
+    snapshot.lineup.map((entry) => [`${entry.teamSide}:${entry.lineupSlot}`, entry]),
+  );
+  const nextLineup: ChartingGameSnapshot["lineup"] = [];
+
+  for (const side of ["our", "opponent"] as const) {
+    for (let slot = 1; slot <= 9; slot += 1) {
+      const hitterName = lineupDrafts[side][slot]?.trim() ?? "";
+      if (!hitterName) {
+        continue;
+      }
+
+      const key = `${side}:${slot}`;
+      const existing = existingBySideAndSlot.get(key);
+      nextLineup.push({
+        id: existing?.id ?? crypto.randomUUID(),
+        gameId: snapshot.game.id,
+        teamSide: side,
+        lineupSlot: slot,
+        hitterName,
+      });
+    }
+  }
+
+  return nextLineup;
+}
+
+function manualPitcherId(name: string, side: ChartingMatchupSide): string {
+  const trimmed = name.trim().toLowerCase();
+  if (!trimmed) {
+    return "";
+  }
+
+  const slug = trimmed.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return `manual:${side}:${slug || "pitcher"}`;
+}
+
+function formatBaserunnerSummary(baserunners: ChartingBaserunnerState): string {
+  const pieces = [
+    baserunners.runnerOnFirst ? `1B ${baserunners.runnerOnFirst}` : null,
+    baserunners.runnerOnSecond ? `2B ${baserunners.runnerOnSecond}` : null,
+    baserunners.runnerOnThird ? `3B ${baserunners.runnerOnThird}` : null,
+  ].filter(Boolean);
+
+  return pieces.length > 0 ? pieces.join(" • ") : "Bases empty";
+}
+
+function deriveBaserunnerDraft(
+  snapshot: ChartingGameSnapshot,
+  gameStateOverride: GameStateOverride | null,
+): ChartingBaserunnerState {
+  const liveState = deriveChartingLiveState(
+    snapshot.segments,
+    snapshot.plateAppearances,
+    snapshot.pitches,
+    gameStateOverride,
+  );
+  const openPlateAppearance =
+    snapshot.plateAppearances.find((pa) => pa.id === liveState.openPAId) ?? null;
+  return openPlateAppearance
+    ? baserunnerStateFromPlateAppearance(openPlateAppearance)
+    : emptyBaserunnerState();
 }
 
 function findHistoryPitcherOptionByName(

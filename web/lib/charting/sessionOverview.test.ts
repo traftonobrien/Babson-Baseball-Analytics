@@ -104,9 +104,14 @@ describe("buildPitcherOverviewModels", () => {
       segmentId: repeatSegment.id,
       paOrder: 8,
       inning: 8,
+      isTopInning: true,
       hitterName: "Wilson",
       lineupSlot: 8,
+      teamSide: "opponent",
       resultCode: "6-3",
+      runnerOnFirst: null,
+      runnerOnSecond: null,
+      runnerOnThird: null,
     };
     const repeatPitches: ChartingPitch[] = [
       {

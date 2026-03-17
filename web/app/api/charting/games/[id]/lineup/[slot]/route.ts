@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { chartingLineupEntries } from "@/db/schema";
+import { chartingGames, chartingLineupEntries } from "@/db/schema";
 import { isValidLineupSlot } from "@/lib/charting/domain";
 
 export const runtime = "nodejs";
@@ -26,15 +26,36 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     );
   }
 
-  try {
+ try {
     const body = await req.json();
     const hitterName: string = body.hitterName?.trim() ?? "";
+    if (
+      body.teamSide !== undefined &&
+      body.teamSide !== "our" &&
+      body.teamSide !== "opponent"
+    ) {
+      return NextResponse.json(
+        { error: "teamSide must be either 'our' or 'opponent'" },
+        { status: 400 }
+      );
+    }
+
+    const teamSide = body.teamSide === "our" ? "our" : "opponent";
 
     if (!hitterName) {
       return NextResponse.json(
         { error: "hitterName must not be empty" },
         { status: 400 }
       );
+    }
+
+    const [game] = await db
+      .select({ id: chartingGames.id })
+      .from(chartingGames)
+      .where(eq(chartingGames.id, id));
+
+    if (!game) {
+      return NextResponse.json({ error: "Game not found" }, { status: 404 });
     }
 
     // Upsert: update if exists, insert if not
@@ -44,6 +65,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
       .where(
         and(
           eq(chartingLineupEntries.gameId, id),
+          eq(chartingLineupEntries.teamSide, teamSide),
           eq(chartingLineupEntries.lineupSlot, slot)
         )
       );
@@ -60,7 +82,13 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     } else {
       const [inserted] = await db
         .insert(chartingLineupEntries)
-        .values({ id: crypto.randomUUID(), gameId: id, lineupSlot: slot, hitterName })
+        .values({
+          id: crypto.randomUUID(),
+          gameId: id,
+          teamSide,
+          lineupSlot: slot,
+          hitterName,
+        })
         .returning();
       entry = inserted;
     }

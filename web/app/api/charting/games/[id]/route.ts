@@ -10,7 +10,7 @@ import {
 } from "@/db/schema";
 import { isValidGameStatus } from "@/lib/charting/domain";
 import {
-  isMissingInitialCountColumnError,
+  isMissingPlateAppearanceContextColumnError,
   legacyChartingPlateAppearances,
 } from "@/lib/charting/plateAppearanceStorage";
 import {
@@ -217,23 +217,27 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
           segmentId: pa.segmentId,
           paOrder: pa.paOrder,
           inning: pa.inning,
+          isTopInning: pa.isTopInning ?? true,
           teamSide: pa.teamSide ?? "opponent",
           hitterName: pa.hitterName,
           lineupSlot: pa.lineupSlot,
           resultCode: pa.resultCode ?? null,
           initialCount: pa.initialCount ?? "0-0",
           buntContext: pa.buntContext ?? false,
+          runnerOnFirst: pa.runnerOnFirst ?? null,
+          runnerOnSecond: pa.runnerOnSecond ?? null,
+          runnerOnThird: pa.runnerOnThird ?? null,
         }));
 
         try {
           await db.insert(chartingPlateAppearances).values(plateAppearanceValues);
         } catch (error) {
-          if (!isMissingInitialCountColumnError(error)) {
+          if (!isMissingPlateAppearanceContextColumnError(error)) {
             throw error;
           }
 
           warnings.push(
-            "Initial count could not be persisted because the charting_plate_appearances table is missing the initial_count column. Run migration 0004_charting_pa_initial_count before relying on PA start state in CSV exports."
+            "Modern plate-appearance context could not be persisted because charting_plate_appearances is missing one or more context columns. Run migrations 0004_charting_pa_initial_count and 0006_charting_pa_context before relying on PA start state, inning half, and baserunner context in exports."
           );
 
           await db.insert(legacyChartingPlateAppearances).values(

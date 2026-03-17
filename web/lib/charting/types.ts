@@ -43,6 +43,12 @@ export type ChartingInitialCount = "0-0" | "2-1" | "Bunt";
 /** Open-ended string for PA result codes like "K", "BB", "HBP", "1B", "F8", "6-3". */
 export type PAResultCode = string;
 
+export interface ChartingBaserunnerState {
+  runnerOnFirst: string | null;
+  runnerOnSecond: string | null;
+  runnerOnThird: string | null;
+}
+
 export interface ChartingGame {
   id: string;
   opponent: string;
@@ -109,6 +115,7 @@ export interface ChartingPlateAppearance {
   segmentId: string;
   paOrder: number;
   inning: number;
+  isTopInning: boolean;
   hitterName: string;
 
   /** 1-9 */
@@ -120,6 +127,9 @@ export interface ChartingPlateAppearance {
   resultCode: PAResultCode | null;
   initialCount?: ChartingInitialCount | null;
   buntContext: boolean;
+  runnerOnFirst: string | null;
+  runnerOnSecond: string | null;
+  runnerOnThird: string | null;
 }
 
 export interface ChartingPitch {

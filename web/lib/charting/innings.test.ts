@@ -10,6 +10,7 @@ function makeSegment(
     gameId: "game-1",
     playerId: "Pitcher1",
     displayName: "Pitcher One",
+    teamSide: "our",
     segmentOrder: 0,
     enteredInning: 1,
     exitedInning: null,
@@ -26,10 +27,15 @@ function makePa(overrides: Partial<ChartingPlateAppearance> = {}): ChartingPlate
     segmentId: "segment-1",
     paOrder: 0,
     inning: 1,
+    isTopInning: true,
     hitterName: "Hitter One",
     lineupSlot: 1,
+    teamSide: "opponent",
     resultCode: "6-3",
     buntContext: false,
+    runnerOnFirst: null,
+    runnerOnSecond: null,
+    runnerOnThird: null,
     ...overrides,
   };
 }

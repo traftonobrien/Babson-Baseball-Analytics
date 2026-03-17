@@ -8,11 +8,16 @@ import { resolvePlateAppearanceInitialCount } from "./live";
  */
 export const CHARTING_EXPORT_COLUMNS = [
   "inning",
+  "inning_half",
+  "batting_side",
   "pitcher_id",
   "pitcher",
   "hitter_id",
   "hitter",
   "lineup_slot",
+  "runner_on_first",
+  "runner_on_second",
+  "runner_on_third",
   "pitch_number",
   "count",
   "pitch_type",
@@ -82,11 +87,16 @@ export function buildChartingExportRows(
 
     return {
       inning: pa?.inning ?? null,
+      inning_half: pa ? (pa.isTopInning ? "top" : "bottom") : null,
+      batting_side: pa?.teamSide ?? null,
       pitcher_id: segment?.playerId ?? "",
       pitcher: segment?.displayName ?? "",
       hitter_id: pa ? resolveHitterId(pa.hitterName) : "",
       hitter: pa?.hitterName ?? "",
       lineup_slot: pa?.lineupSlot ?? null,
+      runner_on_first: pa?.runnerOnFirst ?? null,
+      runner_on_second: pa?.runnerOnSecond ?? null,
+      runner_on_third: pa?.runnerOnThird ?? null,
       pitch_number: pitchNumberInPa,
       count: `${pitch.ballsBefore}-${pitch.strikesBefore}`,
       pitch_type: pitch.pitchType,

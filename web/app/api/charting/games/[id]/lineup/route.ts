@@ -8,16 +8,24 @@ export const runtime = "nodejs";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-/** GET /api/charting/games/[id]/lineup — return the opponent lineup. */
-export async function GET(_req: NextRequest, { params }: RouteContext) {
+/** GET /api/charting/games/[id]/lineup — return lineup entries, optionally scoped by side. */
+export async function GET(req: NextRequest, { params }: RouteContext) {
   const { id } = await params;
+  const sideParam = req.nextUrl.searchParams.get("teamSide");
 
   try {
     const lineup = await db
       .select()
       .from(chartingLineupEntries)
-      .where(eq(chartingLineupEntries.gameId, id))
-      .orderBy(asc(chartingLineupEntries.lineupSlot));
+      .where(
+        sideParam === "our" || sideParam === "opponent"
+          ? and(
+            eq(chartingLineupEntries.gameId, id),
+            eq(chartingLineupEntries.teamSide, sideParam),
+          )
+          : eq(chartingLineupEntries.gameId, id),
+      )
+      .orderBy(asc(chartingLineupEntries.teamSide), asc(chartingLineupEntries.lineupSlot));
 
     return NextResponse.json({ lineup });
   } catch (err) {
@@ -33,7 +41,7 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
  * PUT /api/charting/games/[id]/lineup
  * Idempotent full lineup replace. Accepts an array of up to 9 entries.
  *
- * Body: { entries: Array<{ lineupSlot: number; hitterName: string }> }
+ * Body: { teamSide?: "our" | "opponent", entries: Array<{ lineupSlot: number; hitterName: string }> }
  *
  * All existing entries for this game are deleted and replaced. lineupSlot
  * must be an integer 1-9.
@@ -52,6 +60,18 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
     }
 
     const body = await req.json();
+    if (
+      body.teamSide !== undefined &&
+      body.teamSide !== "our" &&
+      body.teamSide !== "opponent"
+    ) {
+      return NextResponse.json(
+        { error: "teamSide must be either 'our' or 'opponent'" },
+        { status: 400 }
+      );
+    }
+
+    const teamSide = body.teamSide === "our" ? "our" : "opponent";
     const entries: Array<{ lineupSlot: number; hitterName: string }> =
       body.entries ?? [];
 
@@ -95,7 +115,12 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
     // Delete existing and insert new entries in a transaction-like sequence
     await db
       .delete(chartingLineupEntries)
-      .where(eq(chartingLineupEntries.gameId, id));
+      .where(
+        and(
+          eq(chartingLineupEntries.gameId, id),
+          eq(chartingLineupEntries.teamSide, teamSide),
+        )
+      );
 
     let lineup: typeof chartingLineupEntries.$inferSelect[] = [];
     if (entries.length > 0) {
@@ -105,6 +130,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
           entries.map((e) => ({
             id: crypto.randomUUID(),
             gameId: id,
+            teamSide,
             lineupSlot: e.lineupSlot,
             hitterName: e.hitterName.trim(),
           }))

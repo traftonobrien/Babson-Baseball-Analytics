@@ -27,6 +27,7 @@ function makeSegment(
     gameId,
     playerId,
     displayName,
+    teamSide: "our",
     segmentOrder,
     enteredInning,
     exitedInning: enteredInning,
@@ -50,10 +51,15 @@ function makePa(
     segmentId,
     paOrder,
     inning,
+    isTopInning: true,
     hitterName,
     lineupSlot: 1,
+    teamSide: "opponent",
     resultCode,
     buntContext: false,
+    runnerOnFirst: null,
+    runnerOnSecond: null,
+    runnerOnThird: null,
   };
 }
 

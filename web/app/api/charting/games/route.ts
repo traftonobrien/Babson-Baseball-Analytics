@@ -76,8 +76,12 @@ export async function POST(request: NextRequest) {
         babsonVenueSide: babsonVenueSide === "away" ? "away" : "home",
         babsonStartingPitcher: babsonStartingPitcher?.trim() || null,
         opponentStartingPitcher: opponentStartingPitcher?.trim() || null,
-        ourTeamLabel: ourTeamLabel?.trim() || null,
-        opponentTeamLabel: opponentTeamLabel?.trim() || null,
+        ourTeamLabel:
+          sessionType === "game" ? (ourTeamLabel?.trim() || "Babson") : null,
+        opponentTeamLabel:
+          sessionType === "game"
+            ? (opponentTeamLabel?.trim() || opponent.trim())
+            : null,
         charter: body.charter ?? null,
         weather: body.weather ?? null,
         homeCatcher: body.homeCatcher ?? null,
