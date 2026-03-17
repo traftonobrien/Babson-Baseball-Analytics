@@ -895,91 +895,102 @@ export function ChartingEditor({
         {/* Top Bar: Distinct sections for At-Bat, Game State, Pitch Count */}
         {isTopBarOpen && (
           <section className="border-b border-[rgba(var(--babson-grey-rgb),0.18)] px-3 py-1.5 lg:px-4" style={{ backgroundImage: "linear-gradient(to bottom, rgba(var(--babson-grey-rgb), 0.04), transparent)" }}>
-            <div className="mx-auto flex max-w-7xl flex-nowrap items-stretch gap-3 overflow-x-auto">
+            <div className="mx-auto grid w-full max-w-[1680px] gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.35fr)_minmax(0,1.9fr)_minmax(0,1.25fr)]">
 
               {/* Section 1: Current At-Bat */}
-              <div className="flex flex-[1.5] min-w-0 flex-col rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-2 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
-                <div className="mb-1 flex items-center justify-between gap-2">
+              <div className="flex min-w-0 flex-col rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
+                <div className="mb-2 flex items-center justify-between gap-2">
                   <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Current At-Bat</div>
                   <span className="rounded-full border border-[rgba(var(--babson-grey-rgb),0.18)] bg-zinc-950/60 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
                     {activeBattingSide === "our" ? ourTeamLabel : opponentTeamLabel} batting
                   </span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <input
-                    list={pitcherDatalistId}
-                    value={pitcherNameInput}
-                    onChange={handlePitcherInputChange}
-                    disabled={currentPitcherLocked}
-                    placeholder={
-                      activePitchingSide === "our"
-                        ? "Babson pitcher"
-                        : "Opponent pitcher"
-                    }
-                    className="h-7 flex-1 min-w-0 rounded-lg border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-bold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] focus:shadow-[0_0_0_1px_rgba(var(--babson-green-rgb),0.12)] placeholder:font-normal placeholder:text-zinc-600 disabled:opacity-50"
-                  />
-                  <datalist id={pitcherDatalistId}>
-                    {activePitchingSide === "our" && pitchers.map((pitcher) => (
-                      <option key={pitcher.playerId} value={pitcher.name} />
-                    ))}
-                  </datalist>
-                  <span className="text-zinc-600 text-[10px] font-semibold italic shrink-0">vs</span>
-                  <input
-                    list={datalistId}
-                    value={hitterName}
-                    onChange={(event) => setHitterName(event.target.value)}
-                    onBlur={() => {
-                      if (!hitterName.trim()) return;
-                      const nextSnapshot = syncHitterToSnapshot(
-                        snapshot,
-                        hitterName.trim(),
-                        activeMatchupSlot,
-                        gameStateOverride
-                      );
-                      if (nextSnapshot !== snapshot) {
-                        startTransition(() => setSnapshot(nextSnapshot));
-                        queueSnapshotSave(nextSnapshot, "Hitter saved");
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <label className="min-w-0">
+                    <span className="mb-1 block text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                      {activePitchingSide === "our" ? ourTeamLabel : opponentTeamLabel} pitcher
+                    </span>
+                    <input
+                      list={pitcherDatalistId}
+                      value={pitcherNameInput}
+                      onChange={handlePitcherInputChange}
+                      disabled={currentPitcherLocked}
+                      placeholder={
+                        activePitchingSide === "our"
+                          ? "Babson pitcher"
+                          : "Opponent pitcher"
                       }
-                    }}
-                    placeholder={
-                      activeBattingSide === "our"
-                        ? "Babson hitter"
-                        : "Opponent hitter"
-                    }
-                    className="h-7 flex-1 min-w-0 rounded-lg border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-bold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] focus:shadow-[0_0_0_1px_rgba(var(--babson-green-rgb),0.12)] placeholder:font-normal placeholder:text-zinc-600"
-                  />
-                  <datalist id={datalistId}>
-                    {hitterSuggestions.map((name) => (
-                      <option key={name} value={name} />
-                    ))}
-                  </datalist>
+                      className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-bold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] focus:shadow-[0_0_0_1px_rgba(var(--babson-green-rgb),0.12)] placeholder:font-normal placeholder:text-zinc-600 disabled:opacity-50"
+                    />
+                    <datalist id={pitcherDatalistId}>
+                      {activePitchingSide === "our" && pitchers.map((pitcher) => (
+                        <option key={pitcher.playerId} value={pitcher.name} />
+                      ))}
+                    </datalist>
+                  </label>
+                  <label className="min-w-0">
+                    <span className="mb-1 block text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                      {activeBattingSide === "our" ? ourTeamLabel : opponentTeamLabel} hitter
+                    </span>
+                    <input
+                      list={datalistId}
+                      value={hitterName}
+                      onChange={(event) => setHitterName(event.target.value)}
+                      onBlur={() => {
+                        if (!hitterName.trim()) return;
+                        const nextSnapshot = syncHitterToSnapshot(
+                          snapshot,
+                          hitterName.trim(),
+                          activeMatchupSlot,
+                          gameStateOverride
+                        );
+                        if (nextSnapshot !== snapshot) {
+                          startTransition(() => setSnapshot(nextSnapshot));
+                          queueSnapshotSave(nextSnapshot, "Hitter saved");
+                        }
+                      }}
+                      placeholder={
+                        activeBattingSide === "our"
+                          ? "Babson hitter"
+                          : "Opponent hitter"
+                      }
+                      className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-bold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] focus:shadow-[0_0_0_1px_rgba(var(--babson-green-rgb),0.12)] placeholder:font-normal placeholder:text-zinc-600"
+                    />
+                    <datalist id={datalistId}>
+                      {hitterSuggestions.map((name) => (
+                        <option key={name} value={name} />
+                      ))}
+                    </datalist>
+                  </label>
                 </div>
               </div>
 
               {/* Section 2: Game State */}
-              <div className="flex w-fit shrink-0 flex-col justify-center rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-2 px-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
-                <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500 mb-1">Game State</div>
-                <div className="flex flex-nowrap items-center gap-2">
-                  <select value={overrideBase.inning} onChange={(e) => handleOverrideChange("inning", Number(e.target.value))} className="h-7 min-w-[7.5rem] shrink-0 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] pl-3 pr-8 py-0 text-xs font-semibold text-[rgb(212,220,218)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
-                    {INNING_OPTIONS.map((i) => <option key={i} value={i}>Inning {i}</option>)}
-                  </select>
-                  <select value={overrideBase.isTopInning ? "top" : "bottom"} onChange={(e) => handleOverrideChange("isTopInning", e.target.value === "top")} className="h-7 min-w-[6.75rem] shrink-0 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] pl-3 pr-8 py-0 text-xs font-semibold text-[rgb(212,220,218)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
-                    <option value="top">Top</option>
-                    <option value="bottom">Bottom</option>
-                  </select>
-                  <select value={overrideBase.outs} onChange={(e) => handleOverrideChange("outs", Number(e.target.value))} className="h-7 min-w-[6rem] shrink-0 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] pl-3 pr-8 py-0 text-xs font-semibold text-[rgb(212,220,218)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
-                    {OUT_OPTIONS.map((o) => <option key={o} value={o}>{o} Outs</option>)}
-                  </select>
+              <div className="flex min-w-0 flex-col rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Game State</div>
                   {gameStateOverride && (
                     <button onClick={handleResetOverride} className="text-[10px] font-semibold text-amber-500 hover:text-amber-400 shrink-0 whitespace-nowrap">Reset</button>
                   )}
+                </div>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <select value={overrideBase.inning} onChange={(e) => handleOverrideChange("inning", Number(e.target.value))} className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-semibold text-[rgb(212,220,218)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
+                    {INNING_OPTIONS.map((i) => <option key={i} value={i}>Inning {i}</option>)}
+                  </select>
+                  <select value={overrideBase.isTopInning ? "top" : "bottom"} onChange={(e) => handleOverrideChange("isTopInning", e.target.value === "top")} className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-semibold text-[rgb(212,220,218)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
+                    <option value="top">Top</option>
+                    <option value="bottom">Bottom</option>
+                  </select>
+                  <select value={overrideBase.outs} onChange={(e) => handleOverrideChange("outs", Number(e.target.value))} className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-semibold text-[rgb(212,220,218)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
+                    {OUT_OPTIONS.map((o) => <option key={o} value={o}>{o} Outs</option>)}
+                  </select>
                 </div>
               </div>
 
               {/* Section 3: Base State */}
               {snapshot.game.sessionType === "game" && (
-                <div className="flex min-w-[18rem] shrink-0 flex-col justify-center rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-2 px-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
-                  <div className="mb-1 flex items-center justify-between gap-2">
+                <div className="flex min-w-0 flex-col rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
+                  <div className="mb-2 flex items-center justify-between gap-2">
                     <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">On Base</div>
                     <button
                       type="button"
@@ -1012,7 +1023,7 @@ export function ChartingEditor({
                           }
                           onBlur={handleBaserunnerDraftBlur}
                           placeholder="Name"
-                          className="h-7 w-full min-w-0 rounded-lg border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-2 text-xs font-semibold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] placeholder:text-zinc-600"
+                          className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-semibold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] placeholder:text-zinc-600"
                         />
                       </label>
                     ))}
@@ -1021,14 +1032,16 @@ export function ChartingEditor({
               )}
 
               {/* Section 4: Pitch Count & Live Count - single row */}
-              <div className="flex flex-[2] min-w-0 flex-col justify-center rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-2 px-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
+              <div className="flex min-w-0 flex-col justify-center rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
                 <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500 shrink-0">Pitch Count</div>
-                    {needsPAClosure && (
-                      <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 font-bold tracking-widest text-amber-500 text-[10px] shrink-0">CLOSE PA</span>
-                    )}
-                    <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500 shrink-0">Pitch Count</div>
+                      {needsPAClosure && (
+                        <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 font-bold tracking-widest text-amber-500 text-[10px] shrink-0">CLOSE PA</span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5">
                       <span className="flex items-center gap-1.5 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-2 py-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
                         <span className="text-[9px] font-semibold uppercase tracking-wider text-[rgb(212,220,218)]">Total</span>
                         <span className="text-sm font-black text-white">{activePitcherPitchCount}</span>
@@ -1038,12 +1051,12 @@ export function ChartingEditor({
                         <span className="text-sm font-black text-white">{inningPitches}</span>
                       </span>
                     </div>
-                    <div className="flex flex-1 min-w-0 items-center justify-between gap-2 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
+                  </div>
+                  <div className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
                       <span className="text-[9px] font-semibold uppercase tracking-wider text-[rgb(212,220,218)] shrink-0">Live Count</span>
-                      <span className="text-2xl font-black tracking-[0.35em] text-[var(--babson-green)] leading-none tabular-nums shrink-0">
+                      <span className="text-[1.75rem] font-black tracking-[0.28em] text-[var(--babson-green)] leading-none tabular-nums shrink-0">
                         {liveState.balls}-{liveState.strikes}
                       </span>
-                    </div>
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2">
@@ -1086,7 +1099,7 @@ export function ChartingEditor({
         )}
 
         {/* Middle Content: Zone (Left) & Actions (Right) */}
-        <section className="mx-auto flex w-full max-w-7xl flex-1 gap-6 p-4 min-h-0 overflow-hidden">
+        <section className="mx-auto flex w-full max-w-[1680px] flex-1 gap-6 p-4 min-h-0 overflow-hidden">
 
           {/* Left: Zone */}
           <div className="flex flex-col items-center rounded-[2rem] border border-[rgba(var(--babson-grey-rgb),0.12)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-4 min-h-0 w-fit shrink-0 shadow-[0_24px_64px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
