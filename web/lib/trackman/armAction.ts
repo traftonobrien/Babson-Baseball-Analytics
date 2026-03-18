@@ -49,6 +49,8 @@ export interface ArmActionProfile {
   confidence: Confidence;
   /** Human-readable signals that drove the classification */
   signals: string[];
+  /** Extra context shown when the profile is still neutral or tentative */
+  guidance: string | null;
   recommendations: PitchRecommendation[];
 }
 
@@ -90,6 +92,7 @@ interface ActionResult {
   action: ArmAction;
   confidence: Confidence;
   signals: string[];
+  weightedScore: number;
 }
 
 function classifyArmAction(
@@ -206,7 +209,12 @@ function classifyArmAction(
   // Aggregate score
   // ----------------------------------------------------------------
   if (scoreWeights.length === 0) {
-    return { action: "Neutral", confidence: "Low", signals: ["Insufficient data for classification"] };
+    return {
+      action: "Neutral",
+      confidence: "Low",
+      signals: ["Insufficient data for classification"],
+      weightedScore: 0,
+    };
   }
 
   const totalWeight = scoreWeights.reduce((s, x) => s + x.weight, 0);
@@ -225,7 +233,7 @@ function classifyArmAction(
   else if (weightedScore < -0.2) action = "Supinator";
   else action = "Neutral";
 
-  return { action, confidence, signals };
+  return { action, confidence, signals, weightedScore };
 }
 
 // ---------------------------------------------------------------------------
@@ -285,6 +293,7 @@ function getPitchRecommendations(
   slot: ArmSlot | null,
   pitches: TrackmanPitchTypeSummary[],
   hand: "R" | "L",
+  weightedScore: number,
 ): PitchRecommendation[] {
   const existing = new Set(pitches.map((p) => p.pitchType));
   const recs: PitchRecommendation[] = [];
@@ -295,6 +304,17 @@ function getPitchRecommendations(
   const hasSweeper = existing.has("Sweeper") || existing.has("Slider / Sweeper");
   const hasCurveball = existing.has("Curveball") || existing.has("Knuckle Curve");
   const hasCutter = existing.has("Cutter");
+  const neutralLean =
+    action === "Neutral" && Math.abs(weightedScore) > 0.1
+      ? weightedScore > 0
+        ? "Pronator"
+        : "Supinator"
+      : null;
+  const effectiveAction = neutralLean ?? action;
+  const tentativeSuffix =
+    action === "Neutral" && neutralLean
+      ? " Tentative add based on limited data — classification may shift with more sessions."
+      : "";
 
   // Helper: only push if (a) pitcher doesn't already throw it and
   // (b) it wouldn't blend with an existing pitch's movement profile.
@@ -307,7 +327,7 @@ function getPitchRecommendations(
     if (alreadyHas) return;
     const blend = blendsWith(pitchType, hand, pitches);
     if (blend.blends) return; // shape already covered by existing arsenal
-    recs.push({ pitchType, priority, rationale });
+    recs.push({ pitchType, priority, rationale: `${rationale}${tentativeSuffix}` });
   }
 
   // Helper to find fastball HB for SSW context
@@ -315,7 +335,7 @@ function getPitchRecommendations(
   const fbHb = fb?.avgHb ?? null;
   const fbArmHb = fbHb != null ? armSideHb(fbHb, hand) : null;
 
-  if (action === "Pronator") {
+  if (effectiveAction === "Pronator") {
     // ----------------------------------------------------------------
     // Primary additions
     // ----------------------------------------------------------------
@@ -390,7 +410,7 @@ function getPitchRecommendations(
     );
   }
 
-  if (action === "Supinator") {
+  if (effectiveAction === "Supinator") {
     // ----------------------------------------------------------------
     // Primary additions
     // ----------------------------------------------------------------
@@ -448,16 +468,30 @@ function getPitchRecommendations(
     );
   }
 
-  if (action === "Neutral") {
-    recs.push({
-      pitchType: "—",
-      priority: "Secondary",
-      rationale:
-        "Import more TrackMan sessions with fastball data to classify arm action and receive pitch development recommendations.",
-    });
+  return recs;
+}
+
+function getNeutralGuidance(slot: ArmSlot | null, weightedScore: number): string | null {
+  const neutralLean =
+    Math.abs(weightedScore) > 0.1
+      ? weightedScore > 0
+        ? "Pronator"
+        : "Supinator"
+      : null;
+
+  if (neutralLean && slot) {
+    return `${slot} slot is already measurable, but the movement score only leans ${neutralLean}. Treat the adds below as tentative until more TrackMan sessions confirm the direction.`;
   }
 
-  return recs;
+  if (neutralLean) {
+    return `The movement profile only leans ${neutralLean}, so the adds below are tentative until more TrackMan sessions sharpen the classification.`;
+  }
+
+  if (slot) {
+    return `${slot} slot is already measurable, but the movement signals are still balanced between pronation and supination. Import more TrackMan sessions before making arm-action-specific pitch changes.`;
+  }
+
+  return "The movement signals are still balanced between pronation and supination. Import more TrackMan sessions before making arm-action-specific pitch changes.";
 }
 
 // ---------------------------------------------------------------------------
@@ -483,6 +517,7 @@ export function classifyArmProfile(
       label: "Insufficient Data",
       confidence: "Low",
       signals: ["No fastball movement data available. Import TrackMan sessions to classify arm action."],
+      guidance: null,
       recommendations: [],
     };
   }
@@ -496,7 +531,7 @@ export function classifyArmProfile(
   const armSlot = getArmSlot(fbForSlot?.avgRelHeight ?? null, fbForSlot?.avgRelSide ?? null);
 
   // Arm action from movement profile
-  const { action: armAction, confidence, signals } = classifyArmAction(pitches, hand);
+  const { action: armAction, confidence, signals, weightedScore } = classifyArmAction(pitches, hand);
 
   // Label
   const label =
@@ -509,7 +544,8 @@ export function classifyArmProfile(
         : armAction;
 
   // Recommendations
-  const recommendations = getPitchRecommendations(armAction, armSlot, pitches, hand);
+  const guidance = armAction === "Neutral" ? getNeutralGuidance(armSlot, weightedScore) : null;
+  const recommendations = getPitchRecommendations(armAction, armSlot, pitches, hand, weightedScore);
 
-  return { armSlot, armAction, label, confidence, signals, recommendations };
+  return { armSlot, armAction, label, confidence, signals, guidance, recommendations };
 }

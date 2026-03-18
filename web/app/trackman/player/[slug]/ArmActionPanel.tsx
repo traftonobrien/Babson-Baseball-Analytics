@@ -166,6 +166,15 @@ export default function ArmActionPanel({
         </div>
       )}
 
+      {profile.guidance && (
+        <div className="mb-5 rounded-2xl border border-zinc-800/70 bg-zinc-900/45 px-4 py-3">
+          <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-600 mb-1.5">
+            Development Note
+          </div>
+          <p className="text-[11px] text-zinc-400 leading-relaxed">{profile.guidance}</p>
+        </div>
+      )}
+
       {/* Pitch fit + recommendations */}
       {profile.recommendations.length > 0 && (
         <div>

@@ -204,6 +204,32 @@ describe("classifyArmProfile", () => {
   });
 
   describe("Edge cases", () => {
+    it("shows tentative pronator recommendations for a leaning Neutral profile", () => {
+      const pitches = [
+        makePitch({ pitchType: "Fastball", avgHb: 1.6, avgRelHeight: 5.8, avgRelSide: 1.2, avgSpinAxis2d: null }),
+        makePitch({ pitchType: "Changeup", avgHb: 4 }),
+        makePitch({ pitchType: "Slider", avgHb: -8 }),
+      ];
+      const profile = classifyArmProfile(pitches, "R");
+      expect(profile.armAction).toBe("Neutral");
+      expect(profile.armSlot).toBe("3/4");
+      expect(profile.guidance).toContain("3/4");
+      expect(profile.guidance).toContain("leans Pronator");
+      expect(profile.recommendations.some((r) => r.pitchType === "Sinker")).toBe(true);
+      expect(profile.recommendations.every((r) => r.pitchType !== "—")).toBe(true);
+      expect(profile.recommendations.every((r) => r.rationale.includes("limited data"))).toBe(true);
+    });
+
+    it("shows a slot-specific guidance note for a fully balanced Neutral profile", () => {
+      const pitches = [makePitch({ pitchType: "Fastball", avgHb: 0.1, avgRelHeight: 5.8, avgRelSide: 1.2, avgSpinAxis2d: null })];
+      const profile = classifyArmProfile(pitches, "R");
+      expect(profile.armAction).toBe("Neutral");
+      expect(profile.armSlot).toBe("3/4");
+      expect(profile.guidance).toContain("3/4");
+      expect(profile.guidance).toContain("balanced between pronation and supination");
+      expect(profile.recommendations).toHaveLength(0);
+    });
+
     it("returns Insufficient Data when no fastball HB data", () => {
       const pitches = [makePitch({ pitchType: "Fastball", avgHb: null })];
       const profile = classifyArmProfile(pitches, "R");
