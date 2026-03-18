@@ -23,6 +23,7 @@ import { getCanonicalName } from "@/lib/canonicalPlayers";
 import { handBadgeClassesCompact, parseHand } from "@/lib/handBadge";
 import MLBCompsPanel from "./MLBCompsPanel";
 import StuffPlusSummaryCard from "./StuffPlusSummaryCard";
+import ArmActionPanel from "./ArmActionPanel";
 
 interface IndexEntry {
   playerName: string;
@@ -637,6 +638,13 @@ export default function TrackmanPlayerPage({
                     <LeaderboardPanel className="p-5">
                       <PitchArsenalCards pitchTypes={aggregated} />
                     </LeaderboardPanel>
+
+                    {normalizedHand && (
+                      <ArmActionPanel
+                        aggregated={aggregated}
+                        hand={normalizedHand}
+                      />
+                    )}
 
                     {normalizedHand && (
                       <MLBCompsPanel

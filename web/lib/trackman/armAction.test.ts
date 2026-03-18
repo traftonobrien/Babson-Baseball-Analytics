@@ -1,0 +1,168 @@
+import { describe, it, expect } from "vitest";
+import { classifyArmProfile } from "./armAction";
+import type { TrackmanPitchTypeSummary } from "./metrics";
+
+function makePitch(overrides: Partial<TrackmanPitchTypeSummary>): TrackmanPitchTypeSummary {
+  return {
+    pitchType: "Fastball",
+    count: 20,
+    avgVelo: 91,
+    maxVelo: 93,
+    avgSpin: 2100,
+    maxSpin: null,
+    avgIvb: 14,
+    avgHb: 6,
+    avgExtension: 6.1,
+    avgRelHeight: 5.6,
+    avgRelSide: 1.2,
+    avgSpinAxis2d: 200,
+    avgSpinAxis3d: null,
+    avgGyro: null,
+    ...overrides,
+  };
+}
+
+describe("classifyArmProfile", () => {
+  describe("RHP Pronator", () => {
+    it("classifies strong arm-side run as Pronator", () => {
+      const pitches = [makePitch({ pitchType: "Fastball", avgHb: 8 })];
+      const profile = classifyArmProfile(pitches, "R");
+      expect(profile.armAction).toBe("Pronator");
+    });
+
+    it("classifies Fastball + Sinker + Changeup as High confidence Pronator", () => {
+      const pitches = [
+        makePitch({ pitchType: "Fastball", avgHb: 7, avgRelHeight: 5.7 }),
+        makePitch({ pitchType: "Sinker", avgHb: 9 }),
+        makePitch({ pitchType: "Changeup", avgHb: 5 }),
+      ];
+      const profile = classifyArmProfile(pitches, "R");
+      expect(profile.armAction).toBe("Pronator");
+      expect(profile.confidence).toBe("High");
+    });
+
+    it("returns arm slot from relHeight + relSide", () => {
+      // relHeight=5.9, relSide=1.2 → atan2(0.4, 1.2)=18.4°+40=58.4° → "3/4"
+      const pitches = [makePitch({ pitchType: "Fastball", avgHb: 6, avgRelHeight: 5.9, avgRelSide: 1.2 })];
+      const profile = classifyArmProfile(pitches, "R");
+      expect(profile.armSlot).toBe("3/4");
+    });
+
+    it("recommends Sinker when not already throwing it", () => {
+      const pitches = [makePitch({ pitchType: "Fastball", avgHb: 8 })];
+      const profile = classifyArmProfile(pitches, "R");
+      const sinkerRec = profile.recommendations.find((r) => r.pitchType === "Sinker");
+      expect(sinkerRec).toBeDefined();
+      expect(sinkerRec?.alreadyThrows).toBe(false);
+      expect(sinkerRec?.priority).toBe("Primary");
+    });
+
+    it("marks Sinker as current arsenal when already throwing it", () => {
+      const pitches = [
+        makePitch({ pitchType: "Fastball", avgHb: 7 }),
+        makePitch({ pitchType: "Sinker", avgHb: 9 }),
+      ];
+      const profile = classifyArmProfile(pitches, "R");
+      const sinkerRec = profile.recommendations.find((r) => r.pitchType === "Sinker");
+      expect(sinkerRec?.alreadyThrows).toBe(true);
+    });
+
+    it("includes arm slot in label", () => {
+      const pitches = [makePitch({ pitchType: "Fastball", avgHb: 8, avgRelHeight: 6.0, avgRelSide: 1.2 })];
+      const profile = classifyArmProfile(pitches, "R");
+      expect(profile.label).toContain("Pronator");
+      // slot derived from computeArmAngleDeg(6.0, 1.2)
+      expect(profile.armSlot).not.toBeNull();
+    });
+  });
+
+  describe("RHP Supinator", () => {
+    it("classifies glove-side cutting fastball as Supinator", () => {
+      const pitches = [
+        makePitch({ pitchType: "Fastball", avgHb: -3, avgSpinAxis2d: 155 }),
+        makePitch({ pitchType: "Slider", avgHb: -8 }),
+      ];
+      const profile = classifyArmProfile(pitches, "R");
+      expect(profile.armAction).toBe("Supinator");
+    });
+
+    it("recommends Sweeper to Supinator who already throws Slider", () => {
+      const pitches = [
+        makePitch({ pitchType: "Fastball", avgHb: -2 }),
+        makePitch({ pitchType: "Slider", avgHb: -9 }),
+      ];
+      const profile = classifyArmProfile(pitches, "R");
+      const sweeperRec = profile.recommendations.find((r) => r.pitchType === "Sweeper");
+      expect(sweeperRec).toBeDefined();
+      expect(sweeperRec?.alreadyThrows).toBe(false);
+    });
+
+    it("recommends Slider as Primary Add for Supinator without any breaking ball", () => {
+      const pitches = [
+        makePitch({ pitchType: "Fastball", avgHb: -4, avgSpinAxis2d: 150 }),
+      ];
+      const profile = classifyArmProfile(pitches, "R");
+      const sliderRec = profile.recommendations.find((r) => r.pitchType === "Slider");
+      expect(sliderRec?.priority).toBe("Primary");
+    });
+  });
+
+  describe("LHP mirroring", () => {
+    it("classifies LHP with negative HB fastball as Pronator (arm side for LHP)", () => {
+      // For LHP, negative HB = toward 3B = arm side
+      const pitches = [
+        makePitch({ pitchType: "Fastball", avgHb: -7 }),
+        makePitch({ pitchType: "Changeup", avgHb: -5 }),
+      ];
+      const profile = classifyArmProfile(pitches, "L");
+      expect(profile.armAction).toBe("Pronator");
+    });
+
+    it("classifies LHP with positive HB fastball as Supinator (glove side for LHP)", () => {
+      const pitches = [
+        makePitch({ pitchType: "Fastball", avgHb: 4 }),
+        makePitch({ pitchType: "Slider", avgHb: 9 }),
+      ];
+      const profile = classifyArmProfile(pitches, "L");
+      expect(profile.armAction).toBe("Supinator");
+    });
+  });
+
+  describe("Arm slot classification", () => {
+    // Slot derived from computeArmAngleDeg(relHeight, relSide):
+    //   angle = atan2(relHeight - 5.5, |relSide|) * (180/π) + 40°, clamped 0–90°
+    // relSide=1.2 used consistently throughout
+    const cases: [number, string][] = [
+      [7.0, "Over-the-top"],  // atan2(1.5, 1.2)=51.3°+40=91.3° → clamped 90° → Over-the-top
+      [6.2, "High 3/4"],      // atan2(0.7, 1.2)=30.3°+40=70.3° → High 3/4
+      [5.8, "3/4"],           // atan2(0.3, 1.2)=14.0°+40=54.0° → 3/4
+      [5.4, "Sidearm"],       // atan2(-0.1, 1.2)=-4.8°+40=35.2° → Sidearm
+      [4.0, "Submarine"],     // atan2(-1.5, 1.2)=-51.3°+40=-11.3° → clamped 0° → Submarine
+    ];
+    it.each(cases)("relHeight %f with relSide 1.2 → %s", (relHeight, expectedSlot) => {
+      const pitches = [makePitch({ pitchType: "Fastball", avgHb: 6, avgRelHeight: relHeight, avgRelSide: 1.2 })];
+      const profile = classifyArmProfile(pitches, "R");
+      expect(profile.armSlot).toBe(expectedSlot);
+    });
+
+    it("returns null arm slot when relHeight and relSide are both null", () => {
+      const pitches = [makePitch({ pitchType: "Fastball", avgHb: 6, avgRelHeight: null, avgRelSide: null })];
+      const profile = classifyArmProfile(pitches, "R");
+      expect(profile.armSlot).toBeNull();
+    });
+  });
+
+  describe("Edge cases", () => {
+    it("returns Insufficient Data when no fastball HB data", () => {
+      const pitches = [makePitch({ pitchType: "Fastball", avgHb: null })];
+      const profile = classifyArmProfile(pitches, "R");
+      expect(profile.armAction).toBeNull();
+      expect(profile.label).toBe("Insufficient Data");
+    });
+
+    it("returns Insufficient Data for empty pitch array", () => {
+      const profile = classifyArmProfile([], "R");
+      expect(profile.armAction).toBeNull();
+    });
+  });
+});
