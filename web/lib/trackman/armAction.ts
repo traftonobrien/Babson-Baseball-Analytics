@@ -316,86 +316,135 @@ function getPitchRecommendations(
   const fbArmHb = fbHb != null ? armSideHb(fbHb, hand) : null;
 
   if (action === "Pronator") {
-    // --- Primary additions ---
+    // ----------------------------------------------------------------
+    // Primary additions
+    // ----------------------------------------------------------------
+
+    // 1. Sinker — most natural pronator pitch; SSW is most pronounced on sinkers
     const sswNote =
       fbArmHb != null && fbArmHb > 2
-        ? ` Your fastball already shows ${fbArmHb.toFixed(1)}" of arm-side run — a 2-seam grip can amplify that into natural seam-shifted wake (SSW).`
+        ? ` Your fastball already shows ${fbArmHb.toFixed(1)}" of arm-side run — a 2-seam grip can channel that into seam-shifted wake (SSW) for extra late sink and run.`
         : "";
     suggest(
       "Sinker",
       hasSinker,
       "Primary",
-      `Your pronator arm action naturally produces arm-side run. A sinker/2-seam is your most natural pitch addition.${sswNote} Cue: "pronate through the palm" — your arm does the work.`,
+      `Pronation naturally produces arm-side sink and run — the sinker is the extension of what your arm already does.${sswNote} Cue: pressure on the inside seam, pronate through the palm at release. Generates ground-ball contact when executed correctly.`,
     );
+
+    // 2. Changeup — pronation IS the mechanical action; circle change is a natural fit
     suggest(
       "Changeup",
       hasChangeup,
       "Primary",
-      "Pronators throw changeups with exceptional arm-speed disguise because the pronation action at release is nearly identical to the fastball. Try a circle change or standard 3-finger grip. Cue: \"turn the doorknob\" through the pitch.",
+      "The circle changeup and 3-finger changeup both rely on pronation at release — the same wrist action your fastball uses. This means elite arm-speed disguise with minimal mechanical adjustment. Cue: grip loosely, pronate through the \"doorknob turn,\" let the circle flush forward at release. The pitch fades arm-side naturally.",
     );
 
-    // If throwing a slider (fights their pronation), prioritise adding a sinker for contrast
+    // 3. Gyro Slider — the pronator's natural breaking ball (the Pronator's Triangle)
+    //    Doesn't require supination; relies on gyroscopic spin for late downward action
+    suggest(
+      "Slider",
+      hasSlider || hasSweeper,
+      "Primary",
+      "Pronators naturally produce gyro spin — and gyro sliders don't require supination. Throw it like a fastball with your index finger slightly off-center, letting the ball spiral out. The result: a hard breaking ball with late, sharp downward action and minimal horizontal sweep. This completes the pronator's triangle: fastball → changeup → gyro slider. Cue: football spiral feel, stay through the ball.",
+    );
+
+    // If throwing a slider already, reinforce sinker for arm-side contrast
     if (hasSlider) {
       suggest(
         "Sinker",
         hasSinker,
         "Primary",
-        "You throw a slider, which fights your natural pronation. Pairing it with a sinker creates a powerful arm-side / glove-side contrast — the sinker is the pitch that aligns with your arm action.",
+        "You throw a slider — the glove-side shape is covered. A sinker adds the arm-side contrast that makes both pitches work harder: hitters chasing the slider must adjust to the sinker's opposite movement. This arm-side/glove-side pairing is the core of the pronator's arsenal.",
       );
     }
 
-    // --- Secondary additions ---
+    // ----------------------------------------------------------------
+    // Secondary additions
+    // ----------------------------------------------------------------
+
+    // Cutter — requires mild supination; works but fights pronation slightly
     suggest(
       "Cutter",
       hasCutter || hasSlider,
       "Secondary",
-      "A cutter is a secondary option for a pronator wanting a glove-side pitch. It requires mild supination at release — less demanding than a true slider. Cue: slight pressure off-center on the index finger.",
+      "A cutter is a secondary option for glove-side movement. It requires less supination than a true slider — more of a grip adjustment than a wrist change. Cue: firm grip with index/middle fingers slightly toward the outer third, no wrist snap. Tunnels well with your sinker and fastball.",
     );
+
+    // Curveball — spike/knuckle curve minimizes required supination; not suited for low slots
     if (slot !== "Sidearm" && slot !== "Low Sidearm" && slot !== "Submarine") {
       suggest(
         "Curveball",
         hasCurveball,
         "Secondary",
-        "A spike curve or knuckle curve requires minimal supination and complements a pronation-based fastball. The vertical break contrast is effective when paired with a sinking fastball.",
+        "A spike curve or knuckle curve requires less wrist supination than a traditional 12-6 curve and pairs well with a sinking fastball — the vertical depth contrast forces hitters to adjust their swing plane. Cue: spike middle finger on the seam, pull straight down. Effective at 3/4 and higher arm slots.",
       );
     }
+
+    // Splitter — pronating splitter bypasses changeup limitations; good at lower slots
+    suggest(
+      "Splitter",
+      hasChangeup,
+      "Secondary",
+      "A pronating splitter uses the split-finger grip to reduce spin and velocity while keeping a fastball-like arm action. The pronation at release adds late arm-side tumble. An effective alternative or complement to the changeup, particularly at sidearm slots where fading changeups are harder to command.",
+    );
   }
 
   if (action === "Supinator") {
-    // --- Primary additions ---
+    // ----------------------------------------------------------------
+    // Primary additions
+    // ----------------------------------------------------------------
+
+    // 1. Slider — core supinator pitch; natural supination drives the break
     suggest(
       "Slider",
       hasSlider || hasSweeper,
       "Primary",
-      "Your arm action is built for a slider. Try a gyro-slider grip (football spiral feel). Your natural supination drives the break — the pitch should feel like the arm is doing the work. Cue: \"karate chop\" or \"show the sky.\"",
+      "Your arm action is built for a slider. Natural supination means the break happens with no mechanical effort — the arm does the work. Try a gyro-slider grip (football spiral release) for a hard late-breaking version, or a traditional knuckle-slider for more tilt. Cue: \"karate chop\" at release, show the back of your hand to the sky.",
     );
+
+    // 2. Sweeper — supination maximizes horizontal break; target 10–15" of sweep
     suggest(
       "Sweeper",
       hasSweeper,
       "Primary",
       hasSlider
-        ? "Your slider is a natural stepping stone to a sweeper. Tilt your wrist more and move your grip toward the outer third of the ball. More horizontal break, less depth."
-        : "Your supination is well-suited to a sweeper. Maximize horizontal break by tilting spin axis toward 9 o'clock (LHP) / 3 o'clock (RHP) and reducing the gyro component.",
-    );
-    suggest(
-      "Curveball",
-      hasCurveball,
-      "Primary",
-      "A 11-5 or 10-4 curveball leverages your supination. Focus on a karate-chop wrist position and pulling down through the pitch. Pairs well with a sweeper for two distinct breaking-ball shapes.",
+        ? "Your slider is a natural stepping stone to a sweeper. Get further around the outer third of the ball and reduce the gyro component — the goal is more horizontal sweep (10–15\") with less depth. Lower arm slots amplify the horizontal movement even further."
+        : "Your supination keeps you on the side of the ball longer than a pronator, which is exactly what a sweeper needs. Maximize the side-spin by getting around the outer third of the ball. Cue: stay on the outside of the ball through release, aim for 10–15\" of horizontal break.",
     );
 
-    // --- Secondary additions ---
+    // 3. Curveball — supination is the mechanism for 12-6 or 11-5 shape
+    //    Not suited for sidearm/submarine (can't get over the ball)
+    if (slot !== "Sidearm" && slot !== "Low Sidearm" && slot !== "Submarine") {
+      suggest(
+        "Curveball",
+        hasCurveball,
+        "Primary",
+        slot === "Over-the-top"
+          ? "Over-the-top supinators are ideally positioned for a 12-6 curveball — the arm slot puts the hand directly over the ball, and supination drives straight downward snap. This pitch creates the most vertical movement contrast in baseball. Cue: pull straight down at release, knuckle to the ground."
+          : "An 11-5 or 10-4 curveball leverages your natural supination. The spin axis tilts toward the glove side, producing a sharp combination of depth and sweep. Pairs well with your sweeper/slider for two distinct breaking-ball shapes at different depths. Cue: pull down-and-across at release.",
+      );
+    }
+
+    // 4. Splitter — THE off-speed solution for supinators; bypass changeup pronation requirement
+    //    Kick change concept: split grip or spiked middle finger to generate sink without pronating
+    suggest(
+      "Splitter",
+      hasChangeup,
+      "Primary",
+      "Traditional changeups require pronation — which fights your arm action. A splitter bypasses this entirely: the split grip kills the spin naturally, producing velocity separation and late tumble with no wrist manipulation. Alternative: the \"kick change\" (spike middle finger on a seam) gives a saucer-like sinking action if the splitter grip feels uncomfortable. Both produce the arm-side depth that supinators struggle to get on a standard changeup.",
+    );
+
+    // ----------------------------------------------------------------
+    // Secondary additions
+    // ----------------------------------------------------------------
+
+    // Cutter — natural extension of slider; less supination, more velocity
     suggest(
       "Cutter",
       hasCutter,
       "Secondary",
-      "A cutter is a natural extension for supinators — essentially a slider with reduced break. Less supination than your slider, more velocity. Tunnels well with your four-seam.",
-    );
-    suggest(
-      "Splitter",
-      hasChangeup,
-      "Secondary",
-      "A traditional changeup requires pronation, which works against your arm action. A split-finger grip bypasses that — still produces velocity separation without fighting your wrist position.",
+      "A cutter is a natural extension for supinators — essentially a slider with reduced break and added velocity. Less wrist involvement than your slider, making it easier to command. Tunnels effectively with your four-seam because both appear identical out of the hand. Cue: firm the grip slightly and reduce the amount of \"cut\" on release.",
     );
   }
 
