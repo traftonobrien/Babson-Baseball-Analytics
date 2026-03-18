@@ -139,7 +139,7 @@ export default function ArmActionGuideModal({ onClose }: { onClose: () => void }
                 {
                   signal: "Slider or Sweeper",
                   weight: "1.5×",
-                  detail: "Both require forearm supination. Presence in arsenal is a reliable supinator signal.",
+                  detail: "Both require forearm supination. Presence in arsenal is a reliable supinator signal, so this signal is weighted 1.5× in the live scoring model.",
                   strong: false,
                 },
                 {
@@ -176,7 +176,27 @@ export default function ArmActionGuideModal({ onClose }: { onClose: () => void }
             </div>
             <div className="mt-3 rounded-xl border border-zinc-800/60 bg-zinc-900/40 px-3.5 py-3 text-[11px] text-zinc-500">
               <span className="text-zinc-400 font-medium">Scoring: </span>
-              The weighted average score is computed across all fired signals. Score &gt; +0.2 = Pronator, &lt; −0.2 = Supinator, in between = Neutral.
+              The weighted average score is computed across all fired signals. Fastball HB carries the heaviest weight (3×), Slider / Sweeper carries a 1.5× supinator weight, and score &gt; +0.2 = Pronator, &lt; −0.2 = Supinator, in between = Neutral.
+            </div>
+          </section>
+
+          {/* --- Blend detection --- */}
+          <section>
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500 mb-2">
+              Blend Detection
+            </h3>
+            <p className="mb-3">
+              Before surfacing a recommendation, the model checks whether that movement shape is already present in the arsenal. If an existing pitch already covers the suggested pitch&apos;s IVB/HB movement zone, the recommendation is suppressed so the panel only shows genuinely new shapes to explore.
+            </p>
+            <div className="space-y-2">
+              <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/40 px-3.5 py-3 text-[11px] text-zinc-400">
+                <span className="text-zinc-200 font-medium">How it works: </span>
+                Existing pitches are compared to the suggested pitch&apos;s MLB-average IVB/HB coordinates. If the Euclidean distance is 5.5 inches or less, that movement zone is treated as already covered and the suggestion is hidden.
+              </div>
+              <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/40 px-3.5 py-3 text-[11px] text-zinc-400">
+                <span className="text-zinc-200 font-medium">Example: </span>
+                A fastball at IVB = 13 and HB = 0 plots within 5.5 inches of the RHP Cutter MLB average at IVB = 8.08 and HB = 2.45, so a Cutter recommendation is suppressed as redundant.
+              </div>
             </div>
           </section>
 
@@ -217,16 +237,9 @@ export default function ArmActionGuideModal({ onClose }: { onClose: () => void }
               Pitch Recommendations
             </h3>
             <p className="mb-3">
-              Recommendations are generated from the pitcher&apos;s arm action type and their current arsenal. Three tiers:
+              Recommendations are generated from the pitcher&apos;s arm action type and their current arsenal. Two tiers remain:
             </p>
             <div className="space-y-2">
-              <div className="flex items-start gap-3 text-[11px]">
-                <span className="mt-0.5 shrink-0 text-emerald-500">✓</span>
-                <div>
-                  <span className="font-semibold text-zinc-200">Current Arsenal — Good Fit</span>
-                  <p className="text-zinc-500 mt-0.5">Pitch already in the arsenal that aligns well with the arm action. Shows coaching cues to maximize it.</p>
-                </div>
-              </div>
               <div className="flex items-start gap-3 text-[11px]">
                 <span className="mt-0.5 shrink-0 text-blue-400">+</span>
                 <div>
