@@ -51,6 +51,8 @@ function actionAccentClasses(action: ArmActionProfile["armAction"]): {
 }
 
 function RecommendationRow({ rec }: { rec: PitchRecommendation }) {
+  const displayLabel = rec.variantLabel ?? rec.pitchType;
+
   return (
     <div className="flex items-start gap-3 py-3 border-b border-zinc-800/50 last:border-0">
       <div className="mt-0.5 shrink-0">
@@ -62,7 +64,7 @@ function RecommendationRow({ rec }: { rec: PitchRecommendation }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <PitchTypeChip pitchType={rec.pitchType} label={rec.pitchType} size="xs" />
+          <PitchTypeChip pitchType={rec.pitchType} label={displayLabel} size="xs" />
           {rec.priority === "Primary" ? (
             <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-blue-400/80">
               Primary Add
@@ -184,10 +186,10 @@ export default function ArmActionPanel({
 
           <div className="space-y-0">
             {primaryRecs.map((r) => (
-              <RecommendationRow key={r.pitchType} rec={r} />
+              <RecommendationRow key={`${r.variantId ?? r.pitchType}-${r.priority}`} rec={r} />
             ))}
             {secondaryRecs.map((r) => (
-              <RecommendationRow key={r.pitchType} rec={r} />
+              <RecommendationRow key={`${r.variantId ?? r.pitchType}-${r.priority}`} rec={r} />
             ))}
           </div>
         </div>

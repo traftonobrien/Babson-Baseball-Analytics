@@ -17,6 +17,11 @@
 import { computeArmAngleDeg, classifyArmSlot as slotFromAngle } from "../release_viz/math";
 import { getMlbAvg, normalizePitchTypeName } from "../mlbPitchAverages";
 import type { TrackmanPitchTypeSummary } from "./metrics";
+import {
+  getRecommendationVariant,
+  type ArmActionPitchVariantRecord,
+  type CanonicalPitchType,
+} from "./armActionKnowledgeBase";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -39,6 +44,8 @@ export interface PitchRecommendation {
   pitchType: string;
   rationale: string;
   priority: "Primary" | "Secondary";
+  variantId?: string | null;
+  variantLabel?: string | null;
 }
 
 export interface ArmActionProfile {
@@ -319,15 +326,38 @@ function getPitchRecommendations(
   // Helper: only push if (a) pitcher doesn't already throw it and
   // (b) it wouldn't blend with an existing pitch's movement profile.
   function suggest(
-    pitchType: string,
+    pitchType: CanonicalPitchType,
     alreadyHas: boolean,
     priority: PitchRecommendation["priority"],
     rationale: string,
+    variantOverride?: ArmActionPitchVariantRecord | null,
   ) {
     if (alreadyHas) return;
+    const existingIndex = recs.findIndex((rec) => rec.pitchType === pitchType);
     const blend = blendsWith(pitchType, hand, pitches);
     if (blend.blends) return; // shape already covered by existing arsenal
-    recs.push({ pitchType, priority, rationale: `${rationale}${tentativeSuffix}` });
+    const variant =
+      variantOverride
+      ?? (effectiveAction === "Pronator" || effectiveAction === "Supinator"
+        ? getRecommendationVariant({ action: effectiveAction, pitchType, slot })
+        : null);
+    const nextRecommendation: PitchRecommendation = {
+      pitchType,
+      priority,
+      rationale: `${rationale}${tentativeSuffix}`,
+      variantId: variant?.variantId ?? null,
+      variantLabel: variant && variant.label !== pitchType ? variant.label : null,
+    };
+
+    if (existingIndex >= 0) {
+      recs[existingIndex] = {
+        ...nextRecommendation,
+        priority: recs[existingIndex].priority === "Primary" ? "Primary" : priority,
+      };
+      return;
+    }
+
+    recs.push(nextRecommendation);
   }
 
   // Helper to find fastball HB for SSW context
@@ -345,28 +375,34 @@ function getPitchRecommendations(
       fbArmHb != null && fbArmHb > 2
         ? ` Your fastball already shows ${fbArmHb.toFixed(1)}" of arm-side run — a 2-seam grip can channel that into seam-shifted wake (SSW) for extra late sink and run.`
         : "";
+    const pronatorSinkerVariant = getRecommendationVariant({ action: "Pronator", pitchType: "Sinker", slot });
     suggest(
       "Sinker",
       hasSinker,
       "Primary",
-      `Pronation naturally produces arm-side sink and run — the sinker is the extension of what your arm already does.${sswNote} Cue: pressure on the inside seam, pronate through the palm at release. Generates ground-ball contact when executed correctly.`,
+      `A two-seam runner is the cleanest arm-side fastball add for this profile.${sswNote} Cue: pressure on the inside seam, pronate through the palm at release. Generates ground-ball contact when executed correctly.`,
+      pronatorSinkerVariant,
     );
 
     // 2. Changeup — pronation IS the mechanical action; circle change is a natural fit
+    const pronatorChangeupVariant = getRecommendationVariant({ action: "Pronator", pitchType: "Changeup", slot });
     suggest(
       "Changeup",
       hasChangeup,
       "Primary",
-      "The circle changeup and 3-finger changeup both rely on pronation at release — the same wrist action your fastball uses. This means elite arm-speed disguise with minimal mechanical adjustment. Cue: grip loosely, pronate through the \"doorknob turn,\" let the circle flush forward at release. The pitch fades arm-side naturally.",
+      "A circle change is the most natural off-speed fit here because it leans on pronation at release — the same wrist action your fastball already uses. This means elite arm-speed disguise with minimal mechanical adjustment. Cue: grip loosely, pronate through the \"doorknob turn,\" let the circle flush forward at release. The pitch fades arm-side naturally.",
+      pronatorChangeupVariant,
     );
 
     // 3. Gyro Slider — the pronator's natural breaking ball (the Pronator's Triangle)
     //    Doesn't require supination; relies on gyroscopic spin for late downward action
+    const pronatorSliderVariant = getRecommendationVariant({ action: "Pronator", pitchType: "Slider", slot });
     suggest(
       "Slider",
       hasSlider || hasSweeper,
       "Primary",
-      "Pronators naturally produce gyro spin — and gyro sliders don't require supination. Throw it like a fastball with your index finger slightly off-center, letting the ball spiral out. The result: a hard breaking ball with late, sharp downward action and minimal horizontal sweep. This completes the pronator's triangle: fastball → changeup → gyro slider. Cue: football spiral feel, stay through the ball.",
+      "Pronators naturally produce gyro spin, so a gyro slider gives you a breaking ball without forcing a true supination move. Throw it like a fastball with your index finger slightly off-center, letting the ball spiral out. The result is a hard breaking ball with late, sharp downward action and minimal horizontal sweep. This completes the pronator's triangle: fastball → changeup → gyro slider. Cue: football spiral feel, stay through the ball.",
+      pronatorSliderVariant,
     );
 
     // If throwing a slider already, reinforce sinker for arm-side contrast
@@ -393,11 +429,13 @@ function getPitchRecommendations(
 
     // Curveball — spike/knuckle curve minimizes required supination; not suited for low slots
     if (slot !== "Sidearm" && slot !== "Low Sidearm" && slot !== "Submarine") {
+      const pronatorCurveballVariant = getRecommendationVariant({ action: "Pronator", pitchType: "Curveball", slot });
       suggest(
         "Curveball",
         hasCurveball,
         "Secondary",
-        "A spike curve or knuckle curve requires less wrist supination than a traditional 12-6 curve and pairs well with a sinking fastball — the vertical depth contrast forces hitters to adjust their swing plane. Cue: spike middle finger on the seam, pull straight down. Effective at 3/4 and higher arm slots.",
+        "A knuckle curve is the cleanest curveball branch for a pronator because it requires less wrist supination than a traditional 12-6 curve and pairs well with a sinking fastball. The vertical depth contrast forces hitters to adjust their swing plane. Cue: spike middle finger on the seam, pull straight down. Effective at 3/4 and higher arm slots.",
+        pronatorCurveballVariant,
       );
     }
 
@@ -411,6 +449,10 @@ function getPitchRecommendations(
   }
 
   if (effectiveAction === "Supinator") {
+    const supinatorSliderVariant = getRecommendationVariant({ action: "Supinator", pitchType: "Slider", slot });
+    const supinatorCurveballVariant = getRecommendationVariant({ action: "Supinator", pitchType: "Curveball", slot });
+    const supinatorCutterVariant = getRecommendationVariant({ action: "Supinator", pitchType: "Cutter", slot });
+
     // ----------------------------------------------------------------
     // Primary additions
     // ----------------------------------------------------------------
@@ -420,7 +462,10 @@ function getPitchRecommendations(
       "Slider",
       hasSlider || hasSweeper,
       "Primary",
-      "Your arm action is built for a slider. Natural supination means the break happens with no mechanical effort — the arm does the work. Try a gyro-slider grip (football spiral release) for a hard late-breaking version, or a traditional knuckle-slider for more tilt. Cue: \"karate chop\" at release, show the back of your hand to the sky.",
+      supinatorSliderVariant?.variantId === "slurve"
+        ? "A slurve fits the higher-slot supinator who can get slightly more over the ball. It lives between a tighter slider and a curveball, giving you more depth than a pure sweeper without forcing a full curveball grip change. Cue: stay through the front of the ball, then work slightly down-and-around to create late tilt."
+        : "Your arm action is built for a gyro slider. Natural supination means the break happens with little mechanical effort — the arm does the work. Try a football-spiral release for a hard late-breaking version that stays tighter than a sweeper. Cue: \"karate chop\" at release, show the back of your hand to the sky.",
+      supinatorSliderVariant,
     );
 
     // 2. Sweeper — supination maximizes horizontal break; target 10–15" of sweep
@@ -441,8 +486,9 @@ function getPitchRecommendations(
         hasCurveball,
         "Primary",
         slot === "Over-the-top"
-          ? "Over-the-top supinators are ideally positioned for a 12-6 curveball — the arm slot puts the hand directly over the ball, and supination drives straight downward snap. This pitch creates the most vertical movement contrast in baseball. Cue: pull straight down at release, knuckle to the ground."
-          : "An 11-5 or 10-4 curveball leverages your natural supination. The spin axis tilts toward the glove side, producing a sharp combination of depth and sweep. Pairs well with your sweeper/slider for two distinct breaking-ball shapes at different depths. Cue: pull down-and-across at release.",
+          ? "An over-the-top knuckle curve gives you the cleanest vertical breaking-ball branch. The arm slot puts the hand directly over the ball, and supination drives straight downward snap with less wrist stress than a traditional spike-free curve. Cue: pull straight down at release, knuckle to the ground."
+          : "A knuckle curve leverages your natural supination while keeping a distinct depth band below your slider or sweeper. The tilted spin axis produces a sharper combination of depth and sweep than a pure 12-6 shape. Cue: pull down-and-across at release.",
+        supinatorCurveballVariant,
       );
     }
 
@@ -464,7 +510,8 @@ function getPitchRecommendations(
       "Cutter",
       hasCutter,
       "Secondary",
-      "A cutter is a natural extension for supinators — essentially a slider with reduced break and added velocity. Less wrist involvement than your slider, making it easier to command. Tunnels effectively with your four-seam because both appear identical out of the hand. Cue: firm the grip slightly and reduce the amount of \"cut\" on release.",
+      "A cut fastball is a natural extension for supinators — essentially a slider with reduced break and added velocity. It needs less wrist involvement than your slider, making it easier to command. Tunnels effectively with your four-seam because both appear identical out of the hand. Cue: firm the grip slightly and reduce the amount of cut on release.",
+      supinatorCutterVariant,
     );
   }
 

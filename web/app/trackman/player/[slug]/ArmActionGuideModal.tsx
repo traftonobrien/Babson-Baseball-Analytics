@@ -37,7 +37,7 @@ export default function ArmActionGuideModal({ onClose }: { onClose: () => void }
           <div>
             <h2 className="text-sm font-semibold text-zinc-100">How Arm Action Profile Works</h2>
             <p className="text-[10px] text-zinc-500 mt-0.5">
-              Classification methodology · TrackMan movement-based
+              Classification methodology · TrackMan movement + arsenal fit
             </p>
           </div>
           <button
@@ -145,7 +145,7 @@ export default function ArmActionGuideModal({ onClose }: { onClose: () => void }
                 {
                   signal: "Changeup / Splitter",
                   weight: "1×",
-                  detail: "A standard changeup grip relies on pronation at release — consistent with pronator arm action.",
+                  detail: "A Changeup, Splitter, or blended Changeup / Splitter mix adds a mild pronation-leaning off-speed signal in the live model.",
                   strong: false,
                 },
                 {
@@ -176,7 +176,7 @@ export default function ArmActionGuideModal({ onClose }: { onClose: () => void }
             </div>
             <div className="mt-3 rounded-xl border border-zinc-800/60 bg-zinc-900/40 px-3.5 py-3 text-[11px] text-zinc-500">
               <span className="text-zinc-400 font-medium">Scoring: </span>
-              The weighted average score is computed across all fired signals. Fastball HB carries the heaviest weight (3×), Slider / Sweeper carries a 1.5× supinator weight, and score &gt; +0.2 = Pronator, &lt; −0.2 = Supinator, in between = Neutral.
+              The weighted average score is computed across all fired signals. Fastball HB carries the heaviest weight (3×), Slider / Sweeper carries a 1.5× supinator weight, and score &gt; +0.2 = Pronator, &lt; −0.2 = Supinator, in between = Neutral. If a Neutral score still leans beyond ±0.1, the panel can surface tentative adds in that direction while keeping the profile Neutral.
             </div>
           </section>
 
@@ -237,7 +237,7 @@ export default function ArmActionGuideModal({ onClose }: { onClose: () => void }
               Pitch Recommendations
             </h3>
             <p className="mb-3">
-              Recommendations are generated from the pitcher&apos;s arm action type and their current arsenal. Two tiers remain:
+              Recommendations are generated from the pitcher&apos;s arm action type, arm slot, current arsenal, and blend detection. Two tiers remain:
             </p>
             <div className="space-y-2">
               <div className="flex items-start gap-3 text-[11px]">
@@ -253,6 +253,16 @@ export default function ArmActionGuideModal({ onClose }: { onClose: () => void }
                   <span className="font-semibold text-zinc-200">Secondary Option</span>
                   <p className="text-zinc-500 mt-0.5">Viable addition but requires more deliberate technique — may work against the natural arm action and needs specific grip or wrist adjustments.</p>
                 </div>
+              </div>
+            </div>
+            <div className="mt-3 space-y-2">
+              <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/40 px-3.5 py-3 text-[11px] text-zinc-400">
+                <span className="text-zinc-200 font-medium">Variant-aware labels: </span>
+                The engine still suppresses and scores against the current canonical pitch families, but the panel can surface a more specific branch when the knowledge base supports it. Examples: <span className="text-zinc-200">Two-Seam Runner</span>, <span className="text-zinc-200">Circle Change</span>, <span className="text-zinc-200">Gyro Slider</span>, <span className="text-zinc-200">Slurve</span>, and <span className="text-zinc-200">Knuckle Curve</span>.
+              </div>
+              <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/40 px-3.5 py-3 text-[11px] text-zinc-400">
+                <span className="text-zinc-200 font-medium">Neutral behavior: </span>
+                Fully balanced Neutral profiles show development guidance only. If the score only leans slightly Pronator or Supinator, tentative adds can still appear with cautionary rationale so the player sees a likely direction without overclaiming the classification.
               </div>
             </div>
           </section>

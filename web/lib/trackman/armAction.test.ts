@@ -54,6 +54,7 @@ describe("classifyArmProfile", () => {
       const sinkerRec = profile.recommendations.find((r) => r.pitchType === "Sinker");
       expect(sinkerRec).toBeDefined();
       expect(sinkerRec?.priority).toBe("Primary");
+      expect(sinkerRec?.variantLabel).toBe("Two-Seam Runner");
     });
 
     it("recommends Slider as a Primary Add for Pronator without a breaking ball", () => {
@@ -94,6 +95,17 @@ describe("classifyArmProfile", () => {
       // slot derived from computeArmAngleDeg(6.0, 1.2)
       expect(profile.armSlot).not.toBeNull();
     });
+
+    it("does not duplicate Sinker when a Pronator already throws a Slider", () => {
+      const pitches = [
+        makePitch({ pitchType: "Fastball", avgHb: 8 }),
+        makePitch({ pitchType: "Slider", avgHb: -8 }),
+      ];
+      const profile = classifyArmProfile(pitches, "R");
+      const sinkerRecs = profile.recommendations.filter((r) => r.pitchType === "Sinker");
+      expect(sinkerRecs).toHaveLength(1);
+      expect(sinkerRecs[0]?.rationale).toContain("slider");
+    });
   });
 
   describe("RHP Supinator", () => {
@@ -123,6 +135,7 @@ describe("classifyArmProfile", () => {
       const profile = classifyArmProfile(pitches, "R");
       const sliderRec = profile.recommendations.find((r) => r.pitchType === "Slider");
       expect(sliderRec?.priority).toBe("Primary");
+      expect(sliderRec?.variantLabel).toBe("Gyro Slider");
     });
 
     it("recommends Splitter as a Primary Add for Supinator", () => {
@@ -155,6 +168,17 @@ describe("classifyArmProfile", () => {
       const curveballRec = profile.recommendations.find((r) => r.pitchType === "Curveball");
       expect(profile.armSlot).toBe("Over-the-top");
       expect(curveballRec).toBeDefined();
+      expect(curveballRec?.variantLabel).toBe("Knuckle Curve");
+    });
+
+    it("recommends Slurve as the slider branch for an upper-slot Supinator", () => {
+      const pitches = [
+        makePitch({ pitchType: "Fastball", avgHb: -4, avgRelHeight: 6.3, avgRelSide: 1.2, avgSpinAxis2d: 150 }),
+      ];
+      const profile = classifyArmProfile(pitches, "R");
+      const sliderRec = profile.recommendations.find((r) => r.pitchType === "Slider");
+      expect(profile.armSlot).toBe("High 3/4");
+      expect(sliderRec?.variantLabel).toBe("Slurve");
     });
   });
 
