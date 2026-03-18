@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
-import { Activity, CheckCircle2, Circle, PlusCircle } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Activity, CheckCircle2, Circle, HelpCircle, PlusCircle } from "lucide-react";
 import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { classifyArmProfile, type ArmActionProfile, type PitchRecommendation } from "@/lib/trackman/armAction";
 import type { TrackmanPitchTypeSummary } from "@/lib/trackman/metrics";
+import ArmActionGuideModal from "./ArmActionGuideModal";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -97,6 +98,8 @@ export default function ArmActionPanel({
   aggregated: TrackmanPitchTypeSummary[];
   hand: "R" | "L";
 }) {
+  const [guideOpen, setGuideOpen] = useState(false);
+
   const profile = useMemo(
     () => classifyArmProfile(aggregated, hand),
     [aggregated, hand],
@@ -128,14 +131,23 @@ export default function ArmActionPanel({
             Classified from TrackMan movement data · {hand}HP
           </p>
         </div>
-        <div className="shrink-0 text-right">
+        <div className="flex items-center gap-2 shrink-0">
           <span
-            className={`inline-block text-[9px] font-semibold uppercase tracking-[0.18em] ${confidenceColor(profile.confidence)}`}
+            className={`text-[9px] font-semibold uppercase tracking-[0.18em] ${confidenceColor(profile.confidence)}`}
           >
             {profile.confidence} confidence
           </span>
+          <button
+            onClick={() => setGuideOpen(true)}
+            title="How is this calculated?"
+            className="flex h-6 w-6 items-center justify-center rounded-full border border-zinc-700/60 bg-zinc-800/60 text-zinc-500 transition-colors hover:border-zinc-600 hover:text-zinc-300"
+          >
+            <HelpCircle className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
+
+      {guideOpen && <ArmActionGuideModal onClose={() => setGuideOpen(false)} />}
 
       {/* Classification badge */}
       <div
