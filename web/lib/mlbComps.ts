@@ -19,7 +19,10 @@ import { normalizePitchTypeName, type CanonPitch } from "@/lib/mlbPitchAverages"
 // ---------------------------------------------------------------------------
 
 export interface MLBPitch {
-  pitchType: string;   // Canonical name e.g. "Fastball"
+  pitchType: string;   // Canonical family e.g. "Fastball"
+  pitchFamily?: string;
+  pitchTypeCode?: string | null; // Raw Savant pitch_type code e.g. "SV"
+  pitchTypeName?: string | null; // Raw Savant pitch_type_name e.g. "Slurve"
   n: number | null;    // Pitch count in Savant sample
   avgVelo: number | null;
   avgIvb: number | null;
@@ -38,6 +41,10 @@ export interface MLBCompsData {
   updated: string;
   minPitches: number;
   pitchers: MLBPitcher[];
+}
+
+function canonicalPitchForMatch(pitch: MLBPitch): CanonPitch | null {
+  return normalizePitchTypeName(pitch.pitchFamily ?? pitch.pitchType);
 }
 
 // ---------------------------------------------------------------------------
@@ -109,26 +116,40 @@ export function findPitchComps(
   for (const pitcher of pitchers) {
     if (pitcher.hand !== hand) continue;
 
-    // Find the matching pitch type in this pitcher's arsenal
-    const match = pitcher.pitches.find(
-      (p) => normalizePitchTypeName(p.pitchType) === canon,
+    const candidates = pitcher.pitches.filter(
+      (p) => canonicalPitchForMatch(p) === canon,
     );
-    if (!match) continue;
+    if (candidates.length === 0) continue;
 
-    const ivbDiff =
-      input.ivb != null && match.avgIvb != null
-        ? input.ivb - match.avgIvb
-        : null;
-    const hbDiff =
-      input.hb != null && match.avgHb != null ? input.hb - match.avgHb : null;
+    let match: MLBPitch | null = null;
+    let ivbDiff: number | null = null;
+    let hbDiff: number | null = null;
+    let dist = Number.POSITIVE_INFINITY;
 
-    // Both IVB and HB required for a shape-based comp
-    if (ivbDiff === null || hbDiff === null) continue;
+    for (const candidate of candidates) {
+      const candidateIvbDiff =
+        input.ivb != null && candidate.avgIvb != null
+          ? input.ivb - candidate.avgIvb
+          : null;
+      const candidateHbDiff =
+        input.hb != null && candidate.avgHb != null ? input.hb - candidate.avgHb : null;
 
-    // Pure shape distance — velocity intentionally excluded
-    const dist = Math.sqrt(
-      WEIGHTS.ivb * ivbDiff ** 2 + WEIGHTS.hb * hbDiff ** 2,
-    );
+      // Both IVB and HB required for a shape-based comp
+      if (candidateIvbDiff === null || candidateHbDiff === null) continue;
+
+      const candidateDist = Math.sqrt(
+        WEIGHTS.ivb * candidateIvbDiff ** 2 + WEIGHTS.hb * candidateHbDiff ** 2,
+      );
+
+      if (candidateDist < dist) {
+        match = candidate;
+        ivbDiff = candidateIvbDiff;
+        hbDiff = candidateHbDiff;
+        dist = candidateDist;
+      }
+    }
+
+    if (!match || ivbDiff === null || hbDiff === null || !Number.isFinite(dist)) continue;
 
     results.push({
       pitcher: { id: pitcher.pitcherId, name: pitcher.name, hand: pitcher.hand },

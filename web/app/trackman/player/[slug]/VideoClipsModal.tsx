@@ -15,6 +15,8 @@ interface VideoClipsModalProps {
   pitcherId: string;
   pitcherName: string;
   pitchType: string;
+  pitchTypeCode?: string | null;
+  pitchLabel?: string | null;
   year?: number;
   onClose: () => void;
 }
@@ -23,6 +25,8 @@ export default function VideoClipsModal({
   pitcherId,
   pitcherName,
   pitchType,
+  pitchTypeCode,
+  pitchLabel,
   year = 2025,
   onClose,
 }: VideoClipsModalProps) {
@@ -38,6 +42,7 @@ export default function VideoClipsModal({
       pitchType,
       year: String(year),
     });
+    if (pitchTypeCode) params.set("pitchTypeCode", pitchTypeCode);
 
     fetch(`/api/savant-clips?${params}`)
       .then((r) => r.json())
@@ -51,7 +56,7 @@ export default function VideoClipsModal({
         setNoClip(true);
         setLoading(false);
       });
-  }, [pitcherId, pitchType, year]);
+  }, [pitcherId, pitchType, pitchTypeCode, year]);
 
   const handleEscape = useCallback(
     (e: KeyboardEvent) => {
@@ -87,7 +92,7 @@ export default function VideoClipsModal({
               {pitcherName}
             </h3>
             <p className="text-[10px] text-zinc-500 mt-0.5">
-              {pitchType} · {year}
+              {pitchLabel ?? pitchType} · {year}
             </p>
           </div>
           <button

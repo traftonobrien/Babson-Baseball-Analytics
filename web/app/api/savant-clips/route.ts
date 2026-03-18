@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 /**
  * GET /api/savant-clips?pitcherId=543037&pitchType=Curveball&year=2025
+ * GET /api/savant-clips?pitcherId=621244&pitchType=Slider&pitchTypeCode=SV&year=2025
  *
  * Returns a single pitch clip (swing-and-miss or called strike) with a
  * direct MP4 URL from sporty-clips.mlb.com.
@@ -27,10 +28,10 @@ const CANONICAL_TO_SAVANT: Record<string, string[]> = {
   Fastball: ["FF"],
   Sinker: ["SI"],
   Cutter: ["FC"],
-  Splitter: ["FS"],
+  Splitter: ["FS", "FO"],
   Changeup: ["CH"],
-  Curveball: ["CU", "KC"],
-  Slider: ["SL"],
+  Curveball: ["CU", "KC", "CS"],
+  Slider: ["SL", "SV"],
   Sweeper: ["ST"],
 };
 
@@ -248,6 +249,7 @@ export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
   const pitcherId = sp.get("pitcherId")?.trim();
   const pitchType = sp.get("pitchType")?.trim();
+  const pitchTypeCode = sp.get("pitchTypeCode")?.trim();
   const year = sp.get("year") ?? "2025";
 
   if (!pitcherId || !pitchType) {
@@ -257,15 +259,17 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const savantAbbrevs = CANONICAL_TO_SAVANT[pitchType];
-  if (!savantAbbrevs) {
+  const savantAbbrevs = pitchTypeCode
+    ? [pitchTypeCode]
+    : CANONICAL_TO_SAVANT[pitchType];
+  if (!savantAbbrevs || savantAbbrevs.length === 0) {
     return NextResponse.json(
-      { error: `Unknown pitch type: ${pitchType}` },
+      { error: pitchTypeCode ? `Unknown pitch type code: ${pitchTypeCode}` : `Unknown pitch type: ${pitchType}` },
       { status: 400 },
     );
   }
 
-  const cacheKey = `${pitcherId}-${pitchType}-${year}`;
+  const cacheKey = `${pitcherId}-${pitchType}-${pitchTypeCode ?? "canon"}-${year}`;
   const cached = cache.get(cacheKey);
   if (cached && cached.expires > Date.now()) {
     return NextResponse.json(cached.data);

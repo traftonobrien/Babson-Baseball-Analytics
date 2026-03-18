@@ -1,0 +1,457 @@
+{
+  "asOf": "2026-03-18",
+  "description": "Research-only arm-action pitch variant registry. This is not a production ruleset.",
+  "sourceDocs": [
+    "docs/mechanics/arm_action_research_round1.md",
+    "docs/mechanics/arm_action_statcast_adapter_spec.md",
+    "docs/mechanics/arm_action_pitch_variant_matrix.md"
+  ],
+  "records": [
+    {
+      "variantId": "two-seam-runner",
+      "canonicalFamily": "Sinker",
+      "publicLabels": ["Two-seam FB", "Sinker"],
+      "publicCodes": ["FT", "SI"],
+      "separability": "summary-collapsed",
+      "armActionFit": "Pronator",
+      "fitConfidence": "Medium",
+      "inference": true,
+      "movementAnchorFamily": "Sinker",
+      "status": "ready-now",
+      "armSlotNotes": [
+        "Prioritize lower-slot lateral-run contexts in future copy.",
+        "Do not split from Sinker movement anchors until public baselines are verified."
+      ],
+      "notes": "Official taxonomy separates Two-seam FB and Sinker, but public movement summaries may collapse them.",
+      "evidence": [
+        {
+          "claim": "Official MLB taxonomy currently exposes both Two-seam FB and Sinker as distinct pitch types.",
+          "source": "MLB Stats API pitchTypes",
+          "url": "https://statsapi.mlb.com/api/v1/pitchTypes",
+          "confidence": "High"
+        },
+        {
+          "claim": "Public summary surfaces may collapse two-seam and sinker into the combined SIFT bucket.",
+          "source": "pybaseball statcast_pitcher docs",
+          "url": "https://github.com/jldbc/pybaseball/blob/master/docs/statcast_pitcher.md",
+          "confidence": "High"
+        }
+      ]
+    },
+    {
+      "variantId": "riding-four-seam",
+      "canonicalFamily": "Fastball",
+      "publicLabels": ["Four-seam FB", "Fastball"],
+      "publicCodes": ["FF", "FA"],
+      "separability": "raw-separable",
+      "armActionFit": "Unknown",
+      "fitConfidence": "Low",
+      "inference": true,
+      "movementAnchorFamily": "Fastball",
+      "status": "research-only",
+      "armSlotNotes": [
+        "Useful for arsenal description, not current pitch-add logic."
+      ],
+      "notes": "Track as a fastball-shape descriptor rather than a recommendation target.",
+      "evidence": [
+        {
+          "claim": "Official MLB taxonomy exposes generic Fastball and Four-seam FB labels.",
+          "source": "MLB Stats API pitchTypes",
+          "url": "https://statsapi.mlb.com/api/v1/pitchTypes",
+          "confidence": "High"
+        }
+      ]
+    },
+    {
+      "variantId": "cut-fastball",
+      "canonicalFamily": "Cutter",
+      "publicLabels": ["Cutter"],
+      "publicCodes": ["FC"],
+      "separability": "raw-separable",
+      "armActionFit": "Supinator",
+      "fitConfidence": "Medium",
+      "inference": true,
+      "movementAnchorFamily": "Cutter",
+      "status": "ready-now",
+      "armSlotNotes": [
+        "Treat as a fastball-slider bridge, not a new movement family."
+      ],
+      "notes": "Matches the current classifier's weak supination signal from glove-side cutter movement.",
+      "evidence": [
+        {
+          "claim": "Official MLB taxonomy exposes Cutter as a distinct public pitch type.",
+          "source": "MLB Stats API pitchTypes",
+          "url": "https://statsapi.mlb.com/api/v1/pitchTypes",
+          "confidence": "High"
+        }
+      ]
+    },
+    {
+      "variantId": "circle-change",
+      "canonicalFamily": "Changeup",
+      "publicLabels": ["Changeup"],
+      "publicCodes": ["CH"],
+      "separability": "house-variant-only",
+      "armActionFit": "Pronator",
+      "fitConfidence": "Medium",
+      "inference": true,
+      "movementAnchorFamily": "Changeup",
+      "status": "ready-now",
+      "armSlotNotes": [
+        "Keep arm-slot notes copy-only until slot/variant evidence is stronger."
+      ],
+      "notes": "Public data exposes Changeup, but not circle-change as a distinct raw label.",
+      "evidence": [
+        {
+          "claim": "Official MLB taxonomy exposes Changeup as a distinct public pitch type.",
+          "source": "MLB Stats API pitchTypes",
+          "url": "https://statsapi.mlb.com/api/v1/pitchTypes",
+          "confidence": "High"
+        },
+        {
+          "claim": "In-game collegiate kinematics found breaking balls more supinated than fastballs and changeups at ball release.",
+          "source": "NCAA in-game kinematics study",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11653312/",
+          "confidence": "High"
+        }
+      ]
+    },
+    {
+      "variantId": "kick-change",
+      "canonicalFamily": "Changeup",
+      "publicLabels": ["Changeup", "Splitter"],
+      "publicCodes": ["CH", "FS"],
+      "separability": "house-variant-only",
+      "armActionFit": "Mixed",
+      "fitConfidence": "Low",
+      "inference": true,
+      "movementAnchorFamily": "Changeup",
+      "status": "research-only",
+      "armSlotNotes": [
+        "Do not overclaim slot fit until external evidence improves."
+      ],
+      "notes": "Keep as an internal research variant only; current external evidence is too thin for a stronger claim.",
+      "evidence": [
+        {
+          "claim": "Official MLB taxonomy exposes Changeup and Splitter, but not kick change as a distinct public pitch type.",
+          "source": "MLB Stats API pitchTypes",
+          "url": "https://statsapi.mlb.com/api/v1/pitchTypes",
+          "confidence": "High"
+        }
+      ]
+    },
+    {
+      "variantId": "splitter",
+      "canonicalFamily": "Splitter",
+      "publicLabels": ["Splitter"],
+      "publicCodes": ["FS"],
+      "separability": "raw-separable",
+      "armActionFit": "Mixed",
+      "fitConfidence": "Medium",
+      "inference": true,
+      "movementAnchorFamily": "Splitter",
+      "status": "ready-now",
+      "armSlotNotes": [
+        "Keep as a first-class offspeed family.",
+        "Do not subtype further until forkball and splitter baselines are separated."
+      ],
+      "notes": "Officially separable; fit should remain mixed until more variant-specific mechanics evidence is collected.",
+      "evidence": [
+        {
+          "claim": "Official MLB taxonomy exposes Splitter as a distinct public pitch type.",
+          "source": "MLB Stats API pitchTypes",
+          "url": "https://statsapi.mlb.com/api/v1/pitchTypes",
+          "confidence": "High"
+        },
+        {
+          "claim": "Breaking-ball kinematics differ from changeup kinematics, supporting a separate offspeed branch rather than flattening everything into breaking-ball logic.",
+          "source": "Fleisig pitch kinetics study",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/16260466/",
+          "confidence": "Medium"
+        }
+      ]
+    },
+    {
+      "variantId": "forkball",
+      "canonicalFamily": "Splitter",
+      "publicLabels": ["Forkball"],
+      "publicCodes": ["FO"],
+      "separability": "raw-separable",
+      "armActionFit": "Unknown",
+      "fitConfidence": "Low",
+      "inference": true,
+      "movementAnchorFamily": "Splitter",
+      "status": "research-only",
+      "armSlotNotes": [
+        "Future branch under the Splitter family once movement baselines exist."
+      ],
+      "notes": "Official public support exists, but there is not enough current evidence to recommend it in-engine.",
+      "evidence": [
+        {
+          "claim": "Official MLB taxonomy exposes Forkball as a distinct public pitch type.",
+          "source": "MLB Stats API pitchTypes",
+          "url": "https://statsapi.mlb.com/api/v1/pitchTypes",
+          "confidence": "High"
+        }
+      ]
+    },
+    {
+      "variantId": "gyro-slider",
+      "canonicalFamily": "Slider",
+      "publicLabels": ["Slider", "Gyroball"],
+      "publicCodes": ["SL", "GY"],
+      "separability": "house-variant-only",
+      "armActionFit": "Supinator",
+      "fitConfidence": "Medium",
+      "inference": true,
+      "movementAnchorFamily": "Slider",
+      "status": "ready-now",
+      "armSlotNotes": [
+        "Treat as a slider subtype, not as a standalone family.",
+        "Future copy can reference tighter movement and more gyro spin."
+      ],
+      "notes": "Use official gyro-spin framing, but keep the variant anchored to Slider movement.",
+      "evidence": [
+        {
+          "claim": "Official MLB taxonomy exposes Slider and Gyroball labels.",
+          "source": "MLB Stats API pitchTypes",
+          "url": "https://statsapi.mlb.com/api/v1/pitchTypes",
+          "confidence": "High"
+        },
+        {
+          "claim": "Baseball Savant defines gyro spin as football-like spin where less of the spin contributes to movement.",
+          "source": "Baseball Savant Active Spin",
+          "url": "https://baseballsavant.mlb.com/leaderboard/active-spin",
+          "confidence": "High"
+        },
+        {
+          "claim": "Breaking balls show greater forearm supination than fastballs and changeups at ball release.",
+          "source": "NCAA in-game kinematics study",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11653312/",
+          "confidence": "High"
+        }
+      ]
+    },
+    {
+      "variantId": "sweeper",
+      "canonicalFamily": "Sweeper",
+      "publicLabels": ["Sweeper"],
+      "publicCodes": ["ST"],
+      "separability": "raw-separable",
+      "armActionFit": "Supinator",
+      "fitConfidence": "High",
+      "inference": true,
+      "movementAnchorFamily": "Sweeper",
+      "status": "ready-now",
+      "armSlotNotes": [
+        "Future slot-aware copy should emphasize horizontal movement bands."
+      ],
+      "notes": "Already supported by the engine; keep as a first-class family and variant.",
+      "evidence": [
+        {
+          "claim": "Official MLB taxonomy exposes Sweeper as a distinct public pitch type.",
+          "source": "MLB Stats API pitchTypes",
+          "url": "https://statsapi.mlb.com/api/v1/pitchTypes",
+          "confidence": "High"
+        },
+        {
+          "claim": "Breaking-ball mechanics are more supinated than fastball/changeup mechanics.",
+          "source": "NCAA in-game kinematics study",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11653312/",
+          "confidence": "High"
+        }
+      ]
+    },
+    {
+      "variantId": "slurve",
+      "canonicalFamily": "Slider",
+      "publicLabels": ["Slurve"],
+      "publicCodes": ["SV"],
+      "separability": "raw-separable",
+      "armActionFit": "Supinator",
+      "fitConfidence": "Medium",
+      "inference": true,
+      "movementAnchorFamily": "Slider",
+      "status": "ready-now",
+      "armSlotNotes": [
+        "Treat as slider-curve bridge copy under current movement anchors."
+      ],
+      "notes": "Official public label exists; use as a named bridge variant before considering any new family work.",
+      "evidence": [
+        {
+          "claim": "Official MLB taxonomy exposes Slurve as a distinct public pitch type.",
+          "source": "MLB Stats API pitchTypes",
+          "url": "https://statsapi.mlb.com/api/v1/pitchTypes",
+          "confidence": "High"
+        },
+        {
+          "claim": "Breaking-ball mechanics are more supinated than fastball/changeup mechanics.",
+          "source": "NCAA in-game kinematics study",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11653312/",
+          "confidence": "High"
+        }
+      ]
+    },
+    {
+      "variantId": "knuckle-curve",
+      "canonicalFamily": "Curveball",
+      "publicLabels": ["Knuckle Curve"],
+      "publicCodes": ["KC"],
+      "separability": "summary-collapsed",
+      "armActionFit": "Supinator",
+      "fitConfidence": "High",
+      "inference": true,
+      "movementAnchorFamily": "Curveball",
+      "status": "ready-now",
+      "armSlotNotes": [
+        "Good candidate for slot-aware curveball copy.",
+        "Do not create a separate suppression target until KC vs CU baselines are verified."
+      ],
+      "notes": "Raw taxonomy separates KC, but some summary movement surfaces collapse it into CUKC.",
+      "evidence": [
+        {
+          "claim": "Official MLB taxonomy exposes Knuckle Curve as a distinct public pitch type.",
+          "source": "MLB Stats API pitchTypes",
+          "url": "https://statsapi.mlb.com/api/v1/pitchTypes",
+          "confidence": "High"
+        },
+        {
+          "claim": "Public summary movement surfaces may collapse Curveball and Knuckle Curve into CUKC.",
+          "source": "pybaseball statcast_pitcher docs",
+          "url": "https://github.com/jldbc/pybaseball/blob/master/docs/statcast_pitcher.md",
+          "confidence": "High"
+        },
+        {
+          "claim": "Curveball research consistently finds greater forearm supination than fastballs.",
+          "source": "Curveball systematic review",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4272688/",
+          "confidence": "High"
+        }
+      ]
+    },
+    {
+      "variantId": "slow-curve",
+      "canonicalFamily": "Curveball",
+      "publicLabels": ["Slow Curve"],
+      "publicCodes": ["CS"],
+      "separability": "raw-separable",
+      "armActionFit": "Supinator",
+      "fitConfidence": "High",
+      "inference": true,
+      "movementAnchorFamily": "Curveball",
+      "status": "research-only",
+      "armSlotNotes": [
+        "Potential future overlay target for steeper, slower curve movement bands."
+      ],
+      "notes": "Keep under the Curveball family until variant-specific baselines are available.",
+      "evidence": [
+        {
+          "claim": "Official MLB taxonomy exposes Slow Curve as a distinct public pitch type.",
+          "source": "MLB Stats API pitchTypes",
+          "url": "https://statsapi.mlb.com/api/v1/pitchTypes",
+          "confidence": "High"
+        },
+        {
+          "claim": "Curveball research consistently finds greater forearm supination than fastballs.",
+          "source": "Curveball systematic review",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4272688/",
+          "confidence": "High"
+        }
+      ]
+    },
+    {
+      "variantId": "screwball",
+      "canonicalFamily": null,
+      "publicLabels": ["Screwball"],
+      "publicCodes": ["SC"],
+      "separability": "raw-separable",
+      "armActionFit": "Unknown",
+      "fitConfidence": "Low",
+      "inference": true,
+      "movementAnchorFamily": null,
+      "status": "hold",
+      "armSlotNotes": [],
+      "notes": "Official public label exists, but it does not fit the current eight-family engine cleanly.",
+      "evidence": [
+        {
+          "claim": "Official MLB taxonomy exposes Screwball as a distinct public pitch type.",
+          "source": "MLB Stats API pitchTypes",
+          "url": "https://statsapi.mlb.com/api/v1/pitchTypes",
+          "confidence": "High"
+        }
+      ]
+    },
+    {
+      "variantId": "gyroball",
+      "canonicalFamily": null,
+      "publicLabels": ["Gyroball"],
+      "publicCodes": ["GY"],
+      "separability": "raw-separable",
+      "armActionFit": "Unknown",
+      "fitConfidence": "Low",
+      "inference": true,
+      "movementAnchorFamily": null,
+      "status": "hold",
+      "armSlotNotes": [],
+      "notes": "Better treated as a spin-property concept than a recommendation target.",
+      "evidence": [
+        {
+          "claim": "Official MLB taxonomy exposes Gyroball as a distinct public pitch type.",
+          "source": "MLB Stats API pitchTypes",
+          "url": "https://statsapi.mlb.com/api/v1/pitchTypes",
+          "confidence": "High"
+        },
+        {
+          "claim": "Baseball Savant defines gyro spin as football-like spin where less of the spin contributes to movement.",
+          "source": "Baseball Savant Active Spin",
+          "url": "https://baseballsavant.mlb.com/leaderboard/active-spin",
+          "confidence": "High"
+        }
+      ]
+    },
+    {
+      "variantId": "knuckleball",
+      "canonicalFamily": null,
+      "publicLabels": ["Knuckleball"],
+      "publicCodes": ["KN"],
+      "separability": "raw-separable",
+      "armActionFit": "Unknown",
+      "fitConfidence": "Low",
+      "inference": false,
+      "movementAnchorFamily": null,
+      "status": "hold",
+      "armSlotNotes": [],
+      "notes": "Too specialized for the current recommendation system.",
+      "evidence": [
+        {
+          "claim": "Official MLB taxonomy exposes Knuckleball as a distinct public pitch type.",
+          "source": "MLB Stats API pitchTypes",
+          "url": "https://statsapi.mlb.com/api/v1/pitchTypes",
+          "confidence": "High"
+        }
+      ]
+    },
+    {
+      "variantId": "eephus",
+      "canonicalFamily": null,
+      "publicLabels": ["Eephus Pitch"],
+      "publicCodes": ["EP"],
+      "separability": "raw-separable",
+      "armActionFit": "Unknown",
+      "fitConfidence": "Low",
+      "inference": false,
+      "movementAnchorFamily": null,
+      "status": "hold",
+      "armSlotNotes": [],
+      "notes": "Novelty pitch, not a recommendation target.",
+      "evidence": [
+        {
+          "claim": "Official MLB taxonomy exposes Eephus Pitch as a distinct public pitch type.",
+          "source": "MLB Stats API pitchTypes",
+          "url": "https://statsapi.mlb.com/api/v1/pitchTypes",
+          "confidence": "High"
+        }
+      ]
+    }
+  ]
+}

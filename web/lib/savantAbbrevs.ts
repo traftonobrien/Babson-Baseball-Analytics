@@ -10,10 +10,10 @@ export const CANONICAL_TO_SAVANT: Record<string, string[]> = {
   Fastball: ["FF"],
   Sinker: ["SI"],
   Cutter: ["FC"],
-  Splitter: ["FS"],
+  Splitter: ["FS", "FO"],
   Changeup: ["CH"],
-  Curveball: ["CU", "KC"],
-  Slider: ["SL"],
+  Curveball: ["CU", "KC", "CS"],
+  Slider: ["SL", "SV"],
   Sweeper: ["ST"],
 };
 

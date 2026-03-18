@@ -29,6 +29,13 @@ function fmt(v: number | null, decimals = 1): string {
   return v.toFixed(decimals);
 }
 
+function compPitchLabel(pitch: MLBCompResult["pitch"]): string {
+  if (pitch.pitchTypeName && pitch.pitchTypeName !== pitch.pitchType) {
+    return `${pitch.pitchTypeName} (${pitch.pitchType})`;
+  }
+  return pitch.pitchTypeName ?? pitch.pitchType;
+}
+
 function DeltaBadge({ value }: { value: number | null }) {
   if (value == null) return <span className="text-zinc-600 text-[10px]">—</span>;
   const isPos = value >= 0;
@@ -80,6 +87,7 @@ function PitchCompCard({
 }) {
   const rankColors = ["text-yellow-400", "text-zinc-300", "text-amber-600"];
   const rankColor = rankColors[rank] ?? "text-zinc-500";
+  const pitchLabel = compPitchLabel(result.pitch);
 
   return (
     <div className="flex items-center gap-3 py-2.5 border-b border-zinc-800/60 last:border-0">
@@ -91,6 +99,10 @@ function PitchCompCard({
           {result.pitcher.name}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
+          <span className="text-[10px] font-medium text-zinc-400">
+            {pitchLabel}
+          </span>
+          <span className="text-zinc-700">·</span>
           <span className="text-[10px] font-mono text-zinc-500">
             IVB {fmt(result.pitch.avgIvb)}&quot;
           </span>
@@ -108,7 +120,7 @@ function PitchCompCard({
         {onWatch && (
           <WatchClipButton
             onClick={onWatch}
-            title={`Watch ${result.pitcher.name}'s ${result.pitch.pitchType} strike clip`}
+            title={`Watch ${result.pitcher.name}'s ${pitchLabel} strike clip`}
           />
         )}
         <div className="text-right shrink-0 ml-8">
@@ -176,6 +188,8 @@ export default function MLBCompsPanel({
     pitcherId: string;
     pitcherName: string;
     pitchType: string;
+    pitchTypeCode?: string | null;
+    pitchLabel?: string | null;
   } | null>(null);
 
   useEffect(() => {
@@ -339,6 +353,8 @@ export default function MLBCompsPanel({
                             pitcherId: comp.pitcher.id,
                             pitcherName: comp.pitcher.name,
                             pitchType: comp.pitch.pitchType,
+                            pitchTypeCode: comp.pitch.pitchTypeCode ?? null,
+                            pitchLabel: compPitchLabel(comp.pitch),
                           })
                         }
                       />
@@ -378,6 +394,8 @@ export default function MLBCompsPanel({
           pitcherId={activeClip.pitcherId}
           pitcherName={activeClip.pitcherName}
           pitchType={activeClip.pitchType}
+          pitchTypeCode={activeClip.pitchTypeCode}
+          pitchLabel={activeClip.pitchLabel}
           year={mlbData?.year}
           onClose={() => setActiveClip(null)}
         />

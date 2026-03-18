@@ -13,6 +13,11 @@ Single entry point for all mechanics-related documentation.
 | **Understand the engine architecture** | [`docs/runbooks/mechanics_cv.md`](../runbooks/mechanics_cv.md) — learning ladder (Steps A–E) |
 | **Validate phase detection accuracy** | [`docs/runbooks/mechanics_cv.md`](../runbooks/mechanics_cv.md) — "Validation" section |
 | **Fix inaccurate phase timing** | See "Manual Phase Anchors" below |
+| **Review arm-action research inventory** | [`docs/mechanics/arm_action_research_round1.md`](arm_action_research_round1.md) — repo inventory, field mapping, and knowledge-base schema draft |
+| **Review Statcast adapter spec** | [`docs/mechanics/arm_action_statcast_adapter_spec.md`](arm_action_statcast_adapter_spec.md) — verified local contract, public field mapping, and unresolved semantics checks |
+| **Review pitch-variant research matrix** | [`docs/mechanics/arm_action_pitch_variant_matrix.md`](arm_action_pitch_variant_matrix.md) — public pitch taxonomy, separability rules, and variant-priority matrix |
+| **Use the machine-readable variant registry** | [`docs/mechanics/arm_action_variant_registry.json`](arm_action_variant_registry.json) — research-only JSON registry of candidate variants, fits, and evidence |
+| **Review registry validation results** | [`docs/mechanics/arm_action_variant_registry_validation_round1.md`](arm_action_variant_registry_validation_round1.md) — public-ingest vs local-label validation for Sweeper, Slurve, Forkball, and missing variants |
 | **See the overhaul plan (Phases 0–6)** | [`docs/mechanics/overhaul_plan.md`](overhaul_plan.md) |
 
 ---

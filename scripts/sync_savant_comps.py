@@ -36,17 +36,20 @@ DEFAULT_OUT = REPO_ROOT / "web" / "public" / "data" / "mlb_pitch_comps.json"
 
 SAVANT_BASE = "https://baseballsavant.mlb.com/leaderboard/pitch-movement"
 
-# Pitch type abbreviations to fetch from Savant → canonical display names
+# Pitch type abbreviations to fetch from Savant mapped onto the app's
+# current canonical family set. Raw public label/code are preserved separately
+# in the output so future tooling can distinguish variants like Slurve.
 PITCH_TYPE_MAP: dict[str, str] = {
     "FF": "Fastball",
     "SI": "Sinker",
     "FC": "Cutter",
     "FS": "Splitter",
+    "FO": "Splitter",   # Forkball → Splitter family
     "CH": "Changeup",
     "CU": "Curveball",
     "SL": "Slider",
+    "SV": "Slider",     # Slurve → Slider family
     "ST": "Sweeper",
-    "KC": "Curveball",  # Knuckle-curve → Curveball
 }
 
 # Savant stores pitcher_break_x as a positive MAGNITUDE for all pitches.
@@ -171,6 +174,8 @@ def parse_rows(csv_text: str, canonical_type: str, hand: str, abbrev: str) -> li
         )
         n_key = find_col(raw, "pitches_thrown", "n", "pitches", "pitch_count")
         velo_key = find_col(raw, "avg_speed", "avg_release_speed", "velocity")
+        raw_pitch_code_key = find_col(raw, "pitch_type")
+        raw_pitch_name_key = find_col(raw, "pitch_type_name", "pitch_name")
         ivb_key = find_col(
             raw,
             "pitcher_break_z_induced",
@@ -217,12 +222,18 @@ def parse_rows(csv_text: str, canonical_type: str, hand: str, abbrev: str) -> li
         if avg_hb is not None:
             signed_hb = savant_hb_to_trackman(avg_hb, hand, abbrev)
 
+        raw_pitch_code = (raw.get(raw_pitch_code_key, "") if raw_pitch_code_key else "").strip() or abbrev
+        raw_pitch_name = (raw.get(raw_pitch_name_key, "") if raw_pitch_name_key else "").strip() or canonical_type
+
         rows.append(
             {
                 "pitcherId": pitcher_id,
                 "name": name,
                 "hand": hand,
                 "pitchType": canonical_type,
+                "pitchFamily": canonical_type,
+                "pitchTypeCode": raw_pitch_code,
+                "pitchTypeName": raw_pitch_name,
                 "n": n,
                 "avgVelo": round(avg_velo, 1) if avg_velo is not None else None,
                 "avgIvb": round(avg_ivb, 2) if avg_ivb is not None else None,
@@ -251,6 +262,9 @@ def build_pitcher_list(flat_rows: list[dict]) -> list[dict]:
         pitcher_map[key]["pitches"].append(
             {
                 "pitchType": row["pitchType"],
+                "pitchFamily": row["pitchFamily"],
+                "pitchTypeCode": row["pitchTypeCode"],
+                "pitchTypeName": row["pitchTypeName"],
                 "n": row["n"],
                 "avgVelo": row["avgVelo"],
                 "avgIvb": row["avgIvb"],
@@ -320,11 +334,11 @@ def main() -> int:
         print("\n[error] No data fetched. Check network connectivity.", file=sys.stderr)
         return 1
 
-    # Deduplicate: if KC rows exist, they're already merged into Curveball canonical name
-    # Keep the row with higher n when same pitcher+hand+pitchType appears twice
+    # Deduplicate by raw public pitch code so multiple variants inside the same
+    # canonical family (e.g. Slider + Slurve) can coexist in the output.
     dedup: dict[tuple, dict] = {}
     for row in flat_rows:
-        key = (row["pitcherId"], row["hand"], row["pitchType"])
+        key = (row["pitcherId"], row["hand"], row["pitchTypeCode"])
         existing = dedup.get(key)
         if existing is None or (row["n"] or 0) > (existing["n"] or 0):
             dedup[key] = row
