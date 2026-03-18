@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Activity, CheckCircle2, Circle, HelpCircle, PlusCircle } from "lucide-react";
+import { Activity, HelpCircle, PlusCircle } from "lucide-react";
 import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { classifyArmProfile, type ArmActionProfile, type PitchRecommendation } from "@/lib/trackman/armAction";
 import type { TrackmanPitchTypeSummary } from "@/lib/trackman/metrics";
@@ -54,28 +54,20 @@ function RecommendationRow({ rec }: { rec: PitchRecommendation }) {
   return (
     <div className="flex items-start gap-3 py-3 border-b border-zinc-800/50 last:border-0">
       <div className="mt-0.5 shrink-0">
-        {rec.alreadyThrows ? (
-          <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-        ) : rec.priority === "Primary" ? (
+        {rec.priority === "Primary" ? (
           <PlusCircle className="h-4 w-4 text-blue-400" />
         ) : (
-          <Circle className="h-4 w-4 text-zinc-600" />
+          <span className="inline-block h-4 w-4 text-center text-[10px] leading-4 text-zinc-600">○</span>
         )}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <PitchTypeChip pitchType={rec.pitchType} label={rec.pitchType} size="xs" />
-          {rec.alreadyThrows && (
-            <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-emerald-500/80">
-              Current Arsenal
-            </span>
-          )}
-          {!rec.alreadyThrows && rec.priority === "Primary" && (
+          {rec.priority === "Primary" ? (
             <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-blue-400/80">
               Primary Add
             </span>
-          )}
-          {!rec.alreadyThrows && rec.priority === "Secondary" && (
+          ) : (
             <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
               Secondary Option
             </span>
@@ -109,9 +101,8 @@ export default function ArmActionPanel({
 
   if (aggregated.length === 0) return null;
 
-  const primaryRecs = profile.recommendations.filter((r) => !r.alreadyThrows && r.priority === "Primary");
-  const currentFit = profile.recommendations.filter((r) => r.alreadyThrows);
-  const secondaryRecs = profile.recommendations.filter((r) => !r.alreadyThrows && r.priority === "Secondary");
+  const primaryRecs = profile.recommendations.filter((r) => r.priority === "Primary");
+  const secondaryRecs = profile.recommendations.filter((r) => r.priority === "Secondary");
 
   return (
     <div
@@ -183,9 +174,6 @@ export default function ArmActionPanel({
           </div>
 
           <div className="space-y-0">
-            {currentFit.map((r) => (
-              <RecommendationRow key={r.pitchType} rec={r} />
-            ))}
             {primaryRecs.map((r) => (
               <RecommendationRow key={r.pitchType} rec={r} />
             ))}

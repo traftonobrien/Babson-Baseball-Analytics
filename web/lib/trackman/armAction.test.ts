@@ -53,18 +53,17 @@ describe("classifyArmProfile", () => {
       const profile = classifyArmProfile(pitches, "R");
       const sinkerRec = profile.recommendations.find((r) => r.pitchType === "Sinker");
       expect(sinkerRec).toBeDefined();
-      expect(sinkerRec?.alreadyThrows).toBe(false);
       expect(sinkerRec?.priority).toBe("Primary");
     });
 
-    it("marks Sinker as current arsenal when already throwing it", () => {
+    it("suppresses Sinker recommendation when already throwing it", () => {
       const pitches = [
         makePitch({ pitchType: "Fastball", avgHb: 7 }),
         makePitch({ pitchType: "Sinker", avgHb: 9 }),
       ];
       const profile = classifyArmProfile(pitches, "R");
       const sinkerRec = profile.recommendations.find((r) => r.pitchType === "Sinker");
-      expect(sinkerRec?.alreadyThrows).toBe(true);
+      expect(sinkerRec).toBeUndefined();
     });
 
     it("includes arm slot in label", () => {
@@ -94,7 +93,6 @@ describe("classifyArmProfile", () => {
       const profile = classifyArmProfile(pitches, "R");
       const sweeperRec = profile.recommendations.find((r) => r.pitchType === "Sweeper");
       expect(sweeperRec).toBeDefined();
-      expect(sweeperRec?.alreadyThrows).toBe(false);
     });
 
     it("recommends Slider as Primary Add for Supinator without any breaking ball", () => {

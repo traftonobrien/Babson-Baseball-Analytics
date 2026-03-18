@@ -15,6 +15,7 @@
  */
 
 import { computeArmAngleDeg, classifyArmSlot as slotFromAngle } from "../release_viz/math";
+import { getMlbAvg, normalizePitchTypeName } from "../mlbPitchAverages";
 import type { TrackmanPitchTypeSummary } from "./metrics";
 
 // ---------------------------------------------------------------------------
@@ -38,7 +39,6 @@ export interface PitchRecommendation {
   pitchType: string;
   rationale: string;
   priority: "Primary" | "Secondary";
-  alreadyThrows: boolean;
 }
 
 export interface ArmActionProfile {
@@ -229,6 +229,54 @@ function classifyArmAction(
 }
 
 // ---------------------------------------------------------------------------
+// Blend detection
+// ---------------------------------------------------------------------------
+
+/**
+ * How close (inches, Euclidean in IVB/HB space) an existing pitch's actual
+ * movement must be to a suggested pitch's MLB average before it's considered
+ * "already covered" and the suggestion is suppressed.
+ *
+ * ~5.5" catches genuine overlap (e.g. a fastball plotting at IVB=13, HB=0
+ * that lands within the Cutter zone at MLB avg IVB=8.08, HB=2.45).
+ */
+const BLEND_THRESHOLD_IN = 5.5;
+
+interface BlendResult {
+  blends: boolean;
+  /** The existing pitch type that occupies the suggested pitch's movement zone */
+  culprit?: string;
+}
+
+/**
+ * Returns true if any existing pitch plots within BLEND_THRESHOLD_IN of the
+ * suggested pitch's MLB-average movement profile.  When true the suggestion
+ * would be redundant — the shape is already represented in the arsenal.
+ */
+function blendsWith(
+  suggestedType: string,
+  hand: "R" | "L",
+  existingPitches: TrackmanPitchTypeSummary[],
+): BlendResult {
+  const canon = normalizePitchTypeName(suggestedType);
+  if (!canon) return { blends: false };
+
+  const mlbAvg = getMlbAvg(hand, canon);
+  if (!mlbAvg) return { blends: false };
+
+  for (const existing of existingPitches) {
+    if (existing.avgIvb == null || existing.avgHb == null) continue;
+    const dIvb = existing.avgIvb - mlbAvg.ivb;
+    const dHb = existing.avgHb - mlbAvg.hb;
+    const dist = Math.sqrt(dIvb * dIvb + dHb * dHb);
+    if (dist <= BLEND_THRESHOLD_IN) {
+      return { blends: true, culprit: existing.pitchType };
+    }
+  }
+  return { blends: false };
+}
+
+// ---------------------------------------------------------------------------
 // Pitch recommendations
 // ---------------------------------------------------------------------------
 
@@ -248,171 +296,115 @@ function getPitchRecommendations(
   const hasCurveball = existing.has("Curveball") || existing.has("Knuckle Curve");
   const hasCutter = existing.has("Cutter");
 
+  // Helper: only push if (a) pitcher doesn't already throw it and
+  // (b) it wouldn't blend with an existing pitch's movement profile.
+  function suggest(
+    pitchType: string,
+    alreadyHas: boolean,
+    priority: PitchRecommendation["priority"],
+    rationale: string,
+  ) {
+    if (alreadyHas) return;
+    const blend = blendsWith(pitchType, hand, pitches);
+    if (blend.blends) return; // shape already covered by existing arsenal
+    recs.push({ pitchType, priority, rationale });
+  }
+
   // Helper to find fastball HB for SSW context
   const fb = pitches.find((p) => p.pitchType === "Fastball" || p.pitchType === "Sinker");
   const fbHb = fb?.avgHb ?? null;
   const fbArmHb = fbHb != null ? armSideHb(fbHb, hand) : null;
 
   if (action === "Pronator") {
-    // --- Pitches that confirm / fit well ---
-    if (hasSinker) {
-      recs.push({
-        pitchType: "Sinker",
-        rationale:
-          "Natural fit — your arm action produces arm-side run. Focus on getting 2-seam grip pressure to maximize seam-shifted wake (SSW). Pairs as a primary pitch against same-side hitters.",
-        priority: "Primary",
-        alreadyThrows: true,
-      });
-    }
-    if (hasChangeup) {
-      recs.push({
-        pitchType: "Changeup",
-        rationale:
-          "Ideal for your arm action. Pronation through the changeup mirrors your fastball delivery — the circle change or CU grip will feel natural and the arm speed disguise is excellent.",
-        priority: "Primary",
-        alreadyThrows: true,
-      });
-    }
-
     // --- Primary additions ---
-    if (!hasSinker) {
-      const sswNote =
-        fbArmHb != null && fbArmHb > 2
-          ? ` Your fastball already shows ${fbArmHb.toFixed(1)}" of arm-side run — a 2-seam grip can amplify that into natural SSW.`
-          : "";
-      recs.push({
-        pitchType: "Sinker",
-        rationale:
-          `Your pronator arm action naturally produces arm-side run. A sinker/2-seam is your most natural pitch addition.${sswNote} Cue: "pronate through the palm" — your arm does the work.`,
-        priority: "Primary",
-        alreadyThrows: false,
-      });
-    }
-    if (!hasChangeup) {
-      recs.push({
-        pitchType: "Changeup",
-        rationale:
-          "Pronators throw changeups with exceptional arm-speed disguise because the pronation action at release is nearly identical to the fastball. Try a circle change or standard 3-finger grip. Cue: \"turn the doorknob\" through the pitch.",
-        priority: "Primary",
-        alreadyThrows: false,
-      });
+    const sswNote =
+      fbArmHb != null && fbArmHb > 2
+        ? ` Your fastball already shows ${fbArmHb.toFixed(1)}" of arm-side run — a 2-seam grip can amplify that into natural seam-shifted wake (SSW).`
+        : "";
+    suggest(
+      "Sinker",
+      hasSinker,
+      "Primary",
+      `Your pronator arm action naturally produces arm-side run. A sinker/2-seam is your most natural pitch addition.${sswNote} Cue: "pronate through the palm" — your arm does the work.`,
+    );
+    suggest(
+      "Changeup",
+      hasChangeup,
+      "Primary",
+      "Pronators throw changeups with exceptional arm-speed disguise because the pronation action at release is nearly identical to the fastball. Try a circle change or standard 3-finger grip. Cue: \"turn the doorknob\" through the pitch.",
+    );
+
+    // If throwing a slider (fights their pronation), prioritise adding a sinker for contrast
+    if (hasSlider) {
+      suggest(
+        "Sinker",
+        hasSinker,
+        "Primary",
+        "You throw a slider, which fights your natural pronation. Pairing it with a sinker creates a powerful arm-side / glove-side contrast — the sinker is the pitch that aligns with your arm action.",
+      );
     }
 
     // --- Secondary additions ---
-    if (!hasCutter && !hasSlider) {
-      recs.push({
-        pitchType: "Cutter",
-        rationale:
-          "A cutter is a secondary option for a pronator wanting a glove-side pitch. It requires mild supination at release — less demanding than a true slider. Cue: slight pressure off-center on the index finger.",
-        priority: "Secondary",
-        alreadyThrows: false,
-      });
-    }
-    if (hasSlider && !hasSinker) {
-      recs.push({
-        pitchType: "Sinker",
-        rationale:
-          "You throw a slider, which fights your natural pronation. Pairing it with a sinker creates a powerful arm-side / glove-side contrast and gives you a high-confidence pitch that works with your arm action.",
-        priority: "Primary",
-        alreadyThrows: false,
-      });
-    }
-    if (!hasCurveball && slot !== "Sidearm" && slot !== "Low Sidearm" && slot !== "Submarine") {
-      recs.push({
-        pitchType: "Curveball",
-        rationale:
-          "A spike curve or knuckle curve requires minimal supination and can complement your pronation-based fastball. The vertical break contrast is effective when paired with a sinking fastball.",
-        priority: "Secondary",
-        alreadyThrows: false,
-      });
+    suggest(
+      "Cutter",
+      hasCutter || hasSlider,
+      "Secondary",
+      "A cutter is a secondary option for a pronator wanting a glove-side pitch. It requires mild supination at release — less demanding than a true slider. Cue: slight pressure off-center on the index finger.",
+    );
+    if (slot !== "Sidearm" && slot !== "Low Sidearm" && slot !== "Submarine") {
+      suggest(
+        "Curveball",
+        hasCurveball,
+        "Secondary",
+        "A spike curve or knuckle curve requires minimal supination and complements a pronation-based fastball. The vertical break contrast is effective when paired with a sinking fastball.",
+      );
     }
   }
 
   if (action === "Supinator") {
-    // --- Pitches that confirm / fit well ---
-    if (hasSlider) {
-      recs.push({
-        pitchType: "Slider",
-        rationale:
-          "Natural fit for your arm action. Supination at release drives the horizontal break. Focus on spin axis tilt — more tilt toward 3 o'clock (RHP) gives more sweep, tilt toward 1 o'clock gives more depth.",
-        priority: "Primary",
-        alreadyThrows: true,
-      });
-    }
-    if (hasSweeper) {
-      recs.push({
-        pitchType: "Sweeper",
-        rationale:
-          "Your supination is well-suited to a sweeper. Maximize horizontal break by tilting spin axis toward 9 o'clock (LHP) or 3 o'clock (RHP) and reducing gyro component. This is your highest-ceiling breaking ball.",
-        priority: "Primary",
-        alreadyThrows: true,
-      });
-    }
-    if (hasCurveball) {
-      recs.push({
-        pitchType: "Curveball",
-        rationale:
-          "Your 11-5 or 10-4 curveball leverages your supination. Focus on 'karate chop' wrist position and pulling down through the pitch. Higher spin rate confirms more defined 12-6 shape.",
-        priority: "Primary",
-        alreadyThrows: true,
-      });
-    }
-
     // --- Primary additions ---
-    if (!hasSlider && !hasSweeper) {
-      recs.push({
-        pitchType: "Slider",
-        rationale:
-          "Your arm action is built for a slider. Try a gyro-slider grip (football spiral feel). Your natural supination drives the break — the pitch should feel like the arm is doing the work for you. Cue: \"karate chop\" or \"show the sky.\"",
-        priority: "Primary",
-        alreadyThrows: false,
-      });
-    }
-    if (!hasSweeper && hasSlider) {
-      recs.push({
-        pitchType: "Sweeper",
-        rationale:
-          "Your slider is a natural stepping stone to a sweeper. Increase the supination by tilting your wrist more and moving your grip toward the outer third of the ball. More horizontal break, less depth.",
-        priority: "Primary",
-        alreadyThrows: false,
-      });
-    }
-    if (!hasCutter) {
-      recs.push({
-        pitchType: "Cutter",
-        rationale:
-          "A cutter is a natural extension for supinators — it's essentially a slider with reduced break. Less supination than your slider, more velocity. Gives you a glove-side fastball variant that tunnels with your four-seam.",
-        priority: "Secondary",
-        alreadyThrows: false,
-      });
-    }
-    if (!hasChangeup) {
-      recs.push({
-        pitchType: "Splitter",
-        rationale:
-          "A traditional changeup is harder for supinators (requires pronation). A split-finger grip bypasses that requirement and still produces velocity separation. Consider as an off-speed option against opposite-hand hitters.",
-        priority: "Secondary",
-        alreadyThrows: false,
-      });
-    } else {
-      // Has changeup — affirm it
-      recs.push({
-        pitchType: "Changeup",
-        rationale:
-          "Your changeup requires deliberate pronation — the opposite of your natural arm action. If it's working, it's a real weapon because batters rarely expect good changeup command from a supinator. Monitor arm stress and grip consistency.",
-        priority: "Secondary",
-        alreadyThrows: true,
-      });
-    }
+    suggest(
+      "Slider",
+      hasSlider || hasSweeper,
+      "Primary",
+      "Your arm action is built for a slider. Try a gyro-slider grip (football spiral feel). Your natural supination drives the break — the pitch should feel like the arm is doing the work. Cue: \"karate chop\" or \"show the sky.\"",
+    );
+    suggest(
+      "Sweeper",
+      hasSweeper,
+      "Primary",
+      hasSlider
+        ? "Your slider is a natural stepping stone to a sweeper. Tilt your wrist more and move your grip toward the outer third of the ball. More horizontal break, less depth."
+        : "Your supination is well-suited to a sweeper. Maximize horizontal break by tilting spin axis toward 9 o'clock (LHP) / 3 o'clock (RHP) and reducing the gyro component.",
+    );
+    suggest(
+      "Curveball",
+      hasCurveball,
+      "Primary",
+      "A 11-5 or 10-4 curveball leverages your supination. Focus on a karate-chop wrist position and pulling down through the pitch. Pairs well with a sweeper for two distinct breaking-ball shapes.",
+    );
+
+    // --- Secondary additions ---
+    suggest(
+      "Cutter",
+      hasCutter,
+      "Secondary",
+      "A cutter is a natural extension for supinators — essentially a slider with reduced break. Less supination than your slider, more velocity. Tunnels well with your four-seam.",
+    );
+    suggest(
+      "Splitter",
+      hasChangeup,
+      "Secondary",
+      "A traditional changeup requires pronation, which works against your arm action. A split-finger grip bypasses that — still produces velocity separation without fighting your wrist position.",
+    );
   }
 
   if (action === "Neutral") {
     recs.push({
-      pitchType: "Fastball",
-      rationale:
-        "Insufficient data to classify arm action. More TrackMan sessions will improve classification accuracy. Focus on establishing your primary pitch shape first.",
+      pitchType: "—",
       priority: "Secondary",
-      alreadyThrows: existing.has("Fastball"),
+      rationale:
+        "Import more TrackMan sessions with fastball data to classify arm action and receive pitch development recommendations.",
     });
   }
 
