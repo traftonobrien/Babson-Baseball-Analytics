@@ -56,6 +56,27 @@ describe("classifyArmProfile", () => {
       expect(sinkerRec?.priority).toBe("Primary");
     });
 
+    it("recommends Slider as a Primary Add for Pronator without a breaking ball", () => {
+      const pitches = [
+        makePitch({ pitchType: "Fastball", avgHb: 8 }),
+        makePitch({ pitchType: "Changeup", avgHb: 4 }),
+      ];
+      const profile = classifyArmProfile(pitches, "R");
+      const sliderRec = profile.recommendations.find((r) => r.pitchType === "Slider");
+      expect(sliderRec).toBeDefined();
+      expect(sliderRec?.priority).toBe("Primary");
+    });
+
+    it("suppresses Slider when Pronator already throws a Sweeper", () => {
+      const pitches = [
+        makePitch({ pitchType: "Fastball", avgHb: 7 }),
+        makePitch({ pitchType: "Sweeper", avgHb: -12 }),
+      ];
+      const profile = classifyArmProfile(pitches, "R");
+      const sliderRec = profile.recommendations.find((r) => r.pitchType === "Slider");
+      expect(sliderRec).toBeUndefined();
+    });
+
     it("suppresses Sinker recommendation when already throwing it", () => {
       const pitches = [
         makePitch({ pitchType: "Fastball", avgHb: 7 }),
@@ -102,6 +123,38 @@ describe("classifyArmProfile", () => {
       const profile = classifyArmProfile(pitches, "R");
       const sliderRec = profile.recommendations.find((r) => r.pitchType === "Slider");
       expect(sliderRec?.priority).toBe("Primary");
+    });
+
+    it("recommends Splitter as a Primary Add for Supinator", () => {
+      const pitches = [
+        makePitch({ pitchType: "Fastball", avgHb: -3, avgSpinAxis2d: 155 }),
+        makePitch({ pitchType: "Slider", avgHb: -9 }),
+      ];
+      const profile = classifyArmProfile(pitches, "R");
+      const splitterRec = profile.recommendations.find((r) => r.pitchType === "Splitter");
+      expect(splitterRec).toBeDefined();
+      expect(splitterRec?.priority).toBe("Primary");
+    });
+
+    it("does not recommend Curveball to a sidearm Supinator", () => {
+      const pitches = [
+        makePitch({ pitchType: "Fastball", avgHb: -3, avgRelHeight: 5.4, avgRelSide: 1.2 }),
+        makePitch({ pitchType: "Slider", avgHb: -9 }),
+      ];
+      const profile = classifyArmProfile(pitches, "R");
+      const curveballRec = profile.recommendations.find((r) => r.pitchType === "Curveball");
+      expect(profile.armSlot).toBe("Sidearm");
+      expect(curveballRec).toBeUndefined();
+    });
+
+    it("recommends Curveball to an over-the-top Supinator", () => {
+      const pitches = [
+        makePitch({ pitchType: "Fastball", avgHb: -3, avgRelHeight: 7.0, avgRelSide: 1.2 }),
+      ];
+      const profile = classifyArmProfile(pitches, "R");
+      const curveballRec = profile.recommendations.find((r) => r.pitchType === "Curveball");
+      expect(profile.armSlot).toBe("Over-the-top");
+      expect(curveballRec).toBeDefined();
     });
   });
 
