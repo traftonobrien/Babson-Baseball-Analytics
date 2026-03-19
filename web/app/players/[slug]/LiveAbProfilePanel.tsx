@@ -212,6 +212,49 @@ function derivePitchingSynthesis(stats: PitchTypeStats[]): string[] {
   return takeaways;
 }
 
+function deriveHittingSynthesis(stats: {
+  totalPAs: number | null;
+  contactPct: number | null;
+  chasePct: number | null;
+  kPct: number | null;
+  bbPct: number | null;
+} | null): string[] {
+  if (!stats) return [];
+  const { totalPAs, contactPct, chasePct, kPct, bbPct } = stats;
+  if (!totalPAs || totalPAs < 15) return [];
+  const takeaways: string[] = [];
+
+  // Zone discipline (at most 1)
+  if (chasePct !== null) {
+    if (chasePct >= 35) {
+      takeaways.push(`Chasing pitches out of the zone often (${chasePct.toFixed(0)}% chase rate).`);
+    } else if (chasePct < 20) {
+      takeaways.push(`Disciplined approach — rarely chases outside the zone (${chasePct.toFixed(0)}% chase rate).`);
+    }
+  }
+
+  // Contact reliability (at most 1)
+  if (contactPct !== null) {
+    if (contactPct >= 80) {
+      takeaways.push(`Makes contact consistently (${contactPct.toFixed(0)}% contact rate).`);
+    } else if (contactPct < 65) {
+      takeaways.push(`Trouble making contact when swinging (${contactPct.toFixed(0)}% contact rate).`);
+    }
+  }
+
+  // Strikeout pressure (at most 1)
+  if (kPct !== null && kPct >= 28) {
+    takeaways.push(`High strikeout rate — ${kPct.toFixed(0)}% K% in this sample.`);
+  }
+
+  // Patience (only if under 3)
+  if (takeaways.length < 3 && bbPct !== null && bbPct >= 12) {
+    takeaways.push(`Draws walks at a solid rate (${bbPct.toFixed(0)}% BB%).`);
+  }
+
+  return takeaways.slice(0, 3);
+}
+
 const PITCH_TYPE_ORDER = [
   "Fastball",
   "Slider",
@@ -749,6 +792,23 @@ export default function LiveAbProfilePanel({
               emphasisClassName="text-zinc-100"
             />
           </div>
+
+          {/* Inline hitter synthesis takeaways */}
+          {(() => {
+            const takeaways = deriveHittingSynthesis(hitter.stats);
+            if (takeaways.length === 0) return null;
+            return (
+              <div className="rounded-[1.7rem] border border-zinc-800/50 bg-zinc-950/40 px-5 py-4">
+                <ul className="space-y-1.5">
+                  {takeaways.map((t) => (
+                    <li key={t} className="text-sm leading-relaxed text-zinc-400">
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })()}
 
           <SessionList title="Hitting Sessions" sessions={hitter.sessions} />
         </section>

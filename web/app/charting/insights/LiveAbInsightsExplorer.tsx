@@ -1846,6 +1846,95 @@ function EmptyState({
   );
 }
 
+// ---------------------------------------------------------------------------
+// Insights Explorer — inline synthesis helpers
+// ---------------------------------------------------------------------------
+
+const MIN_EXPLORER_SAMPLE = 15;
+
+function derivePitcherExplorerTakeaways(
+  summary: PitcherComparisonSummary,
+  pitchMix: ComparisonPitchMixItem[],
+): string[] {
+  if (summary.totalPitches < MIN_EXPLORER_SAMPLE) return [];
+  const takeaways: string[] = [];
+  const sorted = [...pitchMix].sort((a, b) => b.share - a.share);
+  const top = sorted[0];
+  const second = sorted[1];
+  const spreadCount = sorted.filter((p) => p.share >= 15).length;
+
+  // Usage (at most 1)
+  if (top) {
+    if (top.share >= 50) {
+      takeaways.push(`Leans on the ${top.label} (${top.share.toFixed(0)}% of pitches in this slice).`);
+    } else if (second && top.share + second.share >= 65) {
+      takeaways.push(`Works mostly off the ${top.label} and ${second.label} (${(top.share + second.share).toFixed(0)}% combined).`);
+    } else if (spreadCount >= 3) {
+      takeaways.push(`Spread mix across ${spreadCount} pitch types in this sample.`);
+    }
+  }
+
+  // Strike-throwing (at most 1)
+  if (summary.strikePct !== null) {
+    if (summary.strikePct >= 68) {
+      takeaways.push(`Strong attack zone — ${summary.strikePct.toFixed(0)}% strike rate in this sample.`);
+    } else if (summary.strikePct < 56) {
+      takeaways.push(`Elevated ball rate — ${summary.strikePct.toFixed(0)}% strikes in this sample.`);
+    }
+  }
+
+  // Bat-missing (at most 1)
+  if (summary.whiffPct !== null && summary.whiffPct >= 22) {
+    takeaways.push(`Generating misses — ${summary.whiffPct.toFixed(0)}% whiff rate on swings.`);
+  }
+
+  // Finish rate (only if under 3)
+  if (takeaways.length < 3 && summary.kPct !== null && summary.kPct >= 28) {
+    takeaways.push(`Strong strikeout rate — ${summary.kPct.toFixed(0)}% of PAs end in a K.`);
+  }
+
+  return takeaways.slice(0, 3);
+}
+
+function deriveHitterExplorerTakeaways(
+  summary: ChartingPlayerComparisonSummary,
+  pitchMix: ComparisonPitchMixItem[],
+): string[] {
+  if (summary.totalPitches < MIN_EXPLORER_SAMPLE) return [];
+  const takeaways: string[] = [];
+  const sorted = [...pitchMix].sort((a, b) => b.share - a.share);
+
+  // Swing decisions (at most 1)
+  if (summary.swingPct !== null) {
+    if (summary.swingPct >= 55) {
+      takeaways.push(`Aggressive swing decisions — swinging at ${summary.swingPct.toFixed(0)}% of pitches in this slice.`);
+    } else if (summary.swingPct < 35) {
+      takeaways.push(`Patient approach — swinging at only ${summary.swingPct.toFixed(0)}% of pitches in this slice.`);
+    }
+  }
+
+  // Contact (at most 1)
+  if (summary.whiffPct !== null && summary.whiffPct >= 30) {
+    takeaways.push(`Trouble making contact — ${summary.whiffPct.toFixed(0)}% whiff rate when swinging.`);
+  }
+
+  // Production (at most 1)
+  if (summary.woba !== null && (summary.plateAppearances ?? 0) >= 8) {
+    if (summary.woba >= 0.380) {
+      takeaways.push(`Strong production in this sample — ${summary.woba.toFixed(3)} wOBA.`);
+    } else if (summary.woba < 0.270) {
+      takeaways.push(`Limited production in this sample — ${summary.woba.toFixed(3)} wOBA.`);
+    }
+  }
+
+  // Mix exposure (only if under 3)
+  if (takeaways.length < 3 && sorted[0] && sorted[0].share >= 55) {
+    takeaways.push(`Mostly sees ${sorted[0].label} in this slice (${sorted[0].share.toFixed(0)}%).`);
+  }
+
+  return takeaways.slice(0, 3);
+}
+
 export default function LiveAbInsightsExplorer({
   entries,
   view,
@@ -2673,6 +2762,31 @@ export default function LiveAbInsightsExplorer({
                     </>
                   )}
                 </div>
+
+                {/* Inline synthesis takeaways */}
+                {(() => {
+                  const takeaways = isPitcher
+                    ? derivePitcherExplorerTakeaways(
+                        selectionSummary as PitcherComparisonSummary,
+                        selectionPitchMix,
+                      )
+                    : deriveHitterExplorerTakeaways(
+                        selectionSummary as ChartingPlayerComparisonSummary,
+                        selectionPitchMix,
+                      );
+                  if (takeaways.length === 0) return null;
+                  return (
+                    <div className="rounded-[1.7rem] border border-zinc-800/50 bg-zinc-950/40 px-5 py-4">
+                      <ul className="space-y-1.5">
+                        {takeaways.map((t) => (
+                          <li key={t} className="text-sm leading-relaxed text-zinc-400">
+                            {t}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })()}
 
                 <PitchMixPanel
                   title={

@@ -54,6 +54,80 @@ function DeltaBadge({ value }: { value: number | null }) {
 }
 
 // ---------------------------------------------------------------------------
+// Comp interpretation helpers
+// ---------------------------------------------------------------------------
+
+function describePerPitchComp(
+  input: CompInput,
+  topComp: MLBCompResult,
+): string[] {
+  const parts: string[] = [];
+
+  // IVB — vertical movement
+  if (topComp.deltas.ivb !== null) {
+    const d = topComp.deltas.ivb;
+    if (Math.abs(d) < 1.5) {
+      parts.push(`Similar vertical movement to ${topComp.pitcher.name}.`);
+    } else if (d > 0) {
+      parts.push(`More ride than ${topComp.pitcher.name} (+${d.toFixed(1)}″).`);
+    } else {
+      parts.push(`Less rise than ${topComp.pitcher.name} (${d.toFixed(1)}″).`);
+    }
+  }
+
+  // HB — only note if meaningfully different
+  if (topComp.deltas.hb !== null && Math.abs(topComp.deltas.hb) >= 1.5) {
+    const d = topComp.deltas.hb;
+    parts.push(
+      d > 0
+        ? `More horizontal break toward first (+${d.toFixed(1)}″ HB).`
+        : `More horizontal break toward third (${d.toFixed(1)}″ HB).`,
+    );
+  }
+
+  // Velo — compute locally (deltas.velo is always null by design)
+  if (input.velo != null && topComp.pitch.avgVelo != null) {
+    const diff = Math.round((input.velo - topComp.pitch.avgVelo) * 10) / 10;
+    if (Math.abs(diff) >= 1.5) {
+      parts.push(
+        diff > 0
+          ? `Throws harder than the comp (+${diff.toFixed(1)} mph).`
+          : `Softer than the comp (${diff.toFixed(1)} mph).`,
+      );
+    }
+  }
+
+  return parts;
+}
+
+function describeArsenalComp(
+  arsenalSize: number,
+  topComp: ArsenalCompResult,
+): string[] {
+  const parts: string[] = [];
+
+  const n = topComp.matchedPitches;
+  const pitchWord = n === 1 ? "pitch type" : "pitch types";
+  if (topComp.avgDistance < 1.5) {
+    parts.push(`Very close full-arsenal match across ${n} ${pitchWord}.`);
+  } else if (topComp.avgDistance < 3.0) {
+    parts.push(`Reasonable arsenal shape match across ${n} ${pitchWord}.`);
+  } else {
+    parts.push(`Loose shape match — ${n} ${pitchWord} overlapping.`);
+  }
+
+  // Closest individual pitch type
+  if (topComp.pitchBreakdown.length > 0) {
+    const closest = [...topComp.pitchBreakdown].sort((a, b) => a.distance - b.distance)[0];
+    if (closest.distance < 1.5) {
+      parts.push(`Closest individual match on the ${closest.pitchType}.`);
+    }
+  }
+
+  return parts;
+}
+
+// ---------------------------------------------------------------------------
 // Sub-components
 // ---------------------------------------------------------------------------
 
@@ -336,6 +410,21 @@ export default function MLBCompsPanel({
                       </div>
                     )}
 
+                    {/* Per-pitch comp interpretation */}
+                    {input && comps.length > 0 && (() => {
+                      const lines = describePerPitchComp(input, comps[0]);
+                      if (lines.length === 0) return null;
+                      return (
+                        <div className="mb-3 rounded-[1.1rem] border border-zinc-800/50 bg-zinc-950/40 px-4 py-3">
+                          <ul className="space-y-1">
+                            {lines.map((l) => (
+                              <li key={l} className="text-[12px] leading-relaxed text-zinc-400">{l}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      );
+                    })()}
+
                     {/* Legend */}
                     <div className="flex justify-end mb-1">
                       <span className="text-[9px] uppercase tracking-wider text-zinc-600">
@@ -376,6 +465,20 @@ export default function MLBCompsPanel({
               <p className="text-[11px] text-zinc-500 mb-3">
                 Closest full-arsenal matches across {arsenal.length} pitch{arsenal.length !== 1 ? "es" : ""}
               </p>
+              {/* Arsenal comp interpretation */}
+              {arsenalComps.length > 0 && (() => {
+                const lines = describeArsenalComp(arsenal.length, arsenalComps[0]);
+                if (lines.length === 0) return null;
+                return (
+                  <div className="mb-3 rounded-[1.1rem] border border-zinc-800/50 bg-zinc-950/40 px-4 py-3">
+                    <ul className="space-y-1">
+                      {lines.map((l) => (
+                        <li key={l} className="text-[12px] leading-relaxed text-zinc-400">{l}</li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })()}
               {arsenalComps.length === 0 ? (
                 <p className="text-zinc-500 text-sm">No matches found.</p>
               ) : (
