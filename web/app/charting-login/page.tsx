@@ -18,20 +18,25 @@ export default function ChartingLoginPage() {
     setError("");
     setLoading(true);
 
-    const response = await fetch("/api/charting-login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
+    try {
+      const response = await fetch("/api/charting-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
 
-    if (response.ok) {
-      window.location.assign("/charting");
-      return;
+      if (response.ok) {
+        window.location.assign("/charting");
+        return;
+      }
+
+      const data = await response.json().catch(() => null);
+      setError(data?.error || "Unable to sign in");
+    } catch {
+      setError("Unable to reach the server");
+    } finally {
+      setLoading(false);
     }
-
-    const data = await response.json();
-    setError(data.error || "Wrong password");
-    setLoading(false);
   }
 
   return (

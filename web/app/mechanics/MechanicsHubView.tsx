@@ -86,6 +86,7 @@ function PlayerCard({ player }: { player: HubPlayerEntry }) {
             alt={`${getCanonicalName(player.name ?? player.slug)} release`}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            unoptimized
             className="object-cover object-top"
             onError={() => setThumbError(true)}
           />

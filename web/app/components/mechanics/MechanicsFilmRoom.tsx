@@ -78,6 +78,7 @@ export function MechanicsFilmRoom({ notes, basePath }: MechanicsFilmRoomProps) {
             className="object-contain"
             sizes="(max-width: 1024px) 100vw, 896px"
             priority
+            unoptimized
           />
 
           <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between bg-gradient-to-t from-black/80 to-transparent px-4 py-3">
@@ -147,6 +148,7 @@ export function MechanicsFilmRoom({ notes, basePath }: MechanicsFilmRoomProps) {
               fill
               className="object-contain rounded-[1.25rem]"
               sizes="100vw"
+              unoptimized
             />
             <button
               onClick={() => setLightboxOpen(false)}

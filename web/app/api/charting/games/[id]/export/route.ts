@@ -4,6 +4,7 @@ import {
   buildChartingExportFilename,
 } from "@/lib/charting/export";
 import { loadChartingGameSnapshot } from "@/lib/charting/snapshot";
+import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -13,7 +14,12 @@ type RouteContext = { params: Promise<{ id: string }> };
  * GET /api/charting/games/[id]/export
  * Returns a normalized pitch-level CSV for the requested charted game.
  */
-export async function GET(_req: NextRequest, { params }: RouteContext) {
+export async function GET(req: NextRequest, { params }: RouteContext) {
+  const unauthorized = requireRequestGates(req, CHARTING_GATE_CHAIN);
+  if (unauthorized) {
+    return unauthorized;
+  }
+
   const { id } = await params;
 
   try {

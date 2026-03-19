@@ -19,6 +19,7 @@ import {
 } from "@/lib/charting/pitchStorage";
 import { loadChartingGameSnapshot } from "@/lib/charting/snapshot";
 import type { ChartingGameSnapshot } from "@/lib/charting/types";
+import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -28,7 +29,12 @@ type RouteContext = { params: Promise<{ id: string }> };
  * GET /api/charting/games/[id]
  * Returns a full ChartingGameSnapshot: game + segments + plateAppearances + pitches.
  */
-export async function GET(_req: NextRequest, { params }: RouteContext) {
+export async function GET(req: NextRequest, { params }: RouteContext) {
+  const unauthorized = requireRequestGates(req, CHARTING_GATE_CHAIN);
+  if (unauthorized) {
+    return unauthorized;
+  }
+
   const { id } = await params;
 
   try {
@@ -59,6 +65,11 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
  * all relational children for this game inside a single transaction.
  */
 export async function PATCH(req: NextRequest, { params }: RouteContext) {
+  const unauthorized = requireRequestGates(req, CHARTING_GATE_CHAIN);
+  if (unauthorized) {
+    return unauthorized;
+  }
+
   const { id } = await params;
 
   try {
@@ -394,7 +405,12 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
  * DELETE /api/charting/games/[id]
  * Permanently removes a charting game and all child rows.
  */
-export async function DELETE(_req: NextRequest, { params }: RouteContext) {
+export async function DELETE(req: NextRequest, { params }: RouteContext) {
+  const unauthorized = requireRequestGates(req, CHARTING_GATE_CHAIN);
+  if (unauthorized) {
+    return unauthorized;
+  }
+
   const { id } = await params;
 
   try {

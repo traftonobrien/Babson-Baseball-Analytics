@@ -90,6 +90,7 @@ function PhaseBlock({ title, imageSrc, metricKeys, notes, onMetricClick }: Phase
             fill
             className="object-contain"
             sizes="(max-width: 1024px) 100vw, 600px"
+            unoptimized
           />
         </div>
 

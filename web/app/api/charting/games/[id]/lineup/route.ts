@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { chartingGames, chartingLineupEntries } from "@/db/schema";
+import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
 import { isValidLineupSlot } from "@/lib/charting/domain";
 
 export const runtime = "nodejs";
@@ -10,6 +11,11 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 /** GET /api/charting/games/[id]/lineup — return lineup entries, optionally scoped by side. */
 export async function GET(req: NextRequest, { params }: RouteContext) {
+  const unauthorized = requireRequestGates(req, CHARTING_GATE_CHAIN);
+  if (unauthorized) {
+    return unauthorized;
+  }
+
   const { id } = await params;
   const sideParam = req.nextUrl.searchParams.get("teamSide");
 
@@ -47,6 +53,11 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
  * must be an integer 1-9.
  */
 export async function PUT(req: NextRequest, { params }: RouteContext) {
+  const unauthorized = requireRequestGates(req, CHARTING_GATE_CHAIN);
+  if (unauthorized) {
+    return unauthorized;
+  }
+
   const { id } = await params;
 
   try {

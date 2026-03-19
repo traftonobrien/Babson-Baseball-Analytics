@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Film } from "lucide-react";
 import {
@@ -13,25 +12,29 @@ export default function MechanicsLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault();
     setError("");
     setLoading(true);
 
-    const res = await fetch("/api/mechanics-login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
+    try {
+      const response = await fetch("/api/mechanics-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
 
-    if (res.ok) {
-      router.push("/mechanics");
-      router.refresh();
-    } else {
-      const data = await res.json();
-      setError(data.error || "Wrong password");
+      if (response.ok) {
+        window.location.assign("/mechanics");
+        return;
+      }
+
+      const data = await response.json().catch(() => null);
+      setError(data?.error || "Unable to sign in");
+    } catch {
+      setError("Unable to reach the server");
+    } finally {
       setLoading(false);
     }
   }

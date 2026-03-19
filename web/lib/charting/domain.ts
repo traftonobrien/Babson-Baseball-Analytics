@@ -1,3 +1,4 @@
+import { AUTH_GATES } from "@/lib/auth";
 import type {
   ChartingMatchupSide,
   ChartingPitcherSegment,
@@ -106,7 +107,7 @@ export function isValidMatchupSide(
 }
 
 /** Cookie name for the charting-specific session gate. */
-export const CHARTING_COOKIE = "pt_charting";
+export const CHARTING_COOKIE = AUTH_GATES.charting.cookieName;
 
 export const LINEUP_SLOT_MIN = 1;
 export const LINEUP_SLOT_MAX = 9;

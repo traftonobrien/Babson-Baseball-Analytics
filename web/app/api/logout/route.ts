@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
+import { clearAllGateCookies } from "@/lib/auth";
 
 export async function POST() {
   const response = NextResponse.json({ ok: true });
-  response.cookies.set("pt_auth", "", {
-    httpOnly: true,
-    path: "/",
-    maxAge: 0,
-  });
+  clearAllGateCookies(response);
   return response;
 }

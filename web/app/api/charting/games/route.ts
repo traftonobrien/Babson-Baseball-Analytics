@@ -2,11 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { desc } from "drizzle-orm";
 import { db } from "@/db";
 import { chartingGames } from "@/db/schema";
+import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
 /** GET /api/charting/games — list all charting games, newest first. */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const unauthorized = requireRequestGates(request, CHARTING_GATE_CHAIN);
+  if (unauthorized) {
+    return unauthorized;
+  }
+
   try {
     const rows = await db
       .select()
@@ -25,6 +31,11 @@ export async function GET() {
 
 /** POST /api/charting/games — create a new charting game record. */
 export async function POST(request: NextRequest) {
+  const unauthorized = requireRequestGates(request, CHARTING_GATE_CHAIN);
+  if (unauthorized) {
+    return unauthorized;
+  }
+
   try {
     const body = await request.json();
 

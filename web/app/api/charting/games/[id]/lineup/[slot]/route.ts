@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { chartingGames, chartingLineupEntries } from "@/db/schema";
+import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
 import { isValidLineupSlot } from "@/lib/charting/domain";
 
 export const runtime = "nodejs";
@@ -16,6 +17,11 @@ type RouteContext = { params: Promise<{ id: string; slot: string }> };
  * Body: { hitterName: string }
  */
 export async function PATCH(req: NextRequest, { params }: RouteContext) {
+  const unauthorized = requireRequestGates(req, CHARTING_GATE_CHAIN);
+  if (unauthorized) {
+    return unauthorized;
+  }
+
   const { id, slot: slotParam } = await params;
   const slot = parseInt(slotParam, 10);
 
@@ -26,7 +32,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     );
   }
 
- try {
+  try {
     const body = await req.json();
     const hitterName: string = body.hitterName?.trim() ?? "";
     if (

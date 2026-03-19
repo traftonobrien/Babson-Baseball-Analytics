@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { chartingGames, chartingPitcherSegments } from "@/db/schema";
+import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
 import { nextSegmentOrder } from "@/lib/charting/domain";
 import { CANONICAL_BY_PLAYER_ID } from "@/lib/canonicalPlayersData";
 
@@ -21,6 +22,11 @@ type RouteContext = { params: Promise<{ id: string }> };
  * }
  */
 export async function POST(req: NextRequest, { params }: RouteContext) {
+  const unauthorized = requireRequestGates(req, CHARTING_GATE_CHAIN);
+  if (unauthorized) {
+    return unauthorized;
+  }
+
   const { id } = await params;
 
   try {

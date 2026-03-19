@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import {
   LeaderboardPageFrame,
   LeaderboardPill,
@@ -12,25 +11,29 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault();
     setError("");
     setLoading(true);
 
-    const res = await fetch("/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
 
-    if (res.ok) {
-      router.push("/");
-      router.refresh();
-    } else {
-      const data = await res.json();
-      setError(data.error || "Wrong password");
+      if (response.ok) {
+        window.location.assign("/");
+        return;
+      }
+
+      const data = await response.json().catch(() => null);
+      setError(data?.error || "Unable to sign in");
+    } catch {
+      setError("Unable to reach the server");
+    } finally {
       setLoading(false);
     }
   }
@@ -74,7 +77,7 @@ export default function LoginPage() {
                 type="password"
                 placeholder="Enter site password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(event) => setPassword(event.target.value)}
                 className="mt-3 w-full rounded-2xl border border-zinc-800 bg-zinc-950/85 px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 outline-none transition-smooth focus:border-[rgba(var(--babson-green-rgb),0.45)] focus:shadow-[0_0_0_1px_rgba(var(--babson-green-rgb),0.12)]"
                 autoFocus
               />

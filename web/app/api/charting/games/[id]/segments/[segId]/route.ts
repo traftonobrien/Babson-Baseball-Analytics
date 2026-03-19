@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { chartingPitcherSegments } from "@/db/schema";
+import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -17,6 +18,11 @@ type RouteContext = { params: Promise<{ id: string; segId: string }> };
  * segmentOrder and playerId are intentionally not updatable after creation.
  */
 export async function PATCH(req: NextRequest, { params }: RouteContext) {
+  const unauthorized = requireRequestGates(req, CHARTING_GATE_CHAIN);
+  if (unauthorized) {
+    return unauthorized;
+  }
+
   const { id, segId } = await params;
 
   try {

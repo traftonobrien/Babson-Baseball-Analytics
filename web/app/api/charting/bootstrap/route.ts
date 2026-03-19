@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { desc } from "drizzle-orm";
 import { db } from "@/db";
 import { chartingGames } from "@/db/schema";
 import { buildBootstrapPitchers } from "@/lib/charting/bootstrapPitchers";
 import { buildBootstrapRosterPlayers } from "@/lib/charting/bootstrapRoster";
+import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -12,7 +13,12 @@ export const runtime = "nodejs";
  * Returns the canonical Babson pitcher roster and the 10 most recent charting
  * games. Intended as the first request an iPad client makes after login.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const unauthorized = requireRequestGates(request, CHARTING_GATE_CHAIN);
+  if (unauthorized) {
+    return unauthorized;
+  }
+
   try {
     const pitchers = await buildBootstrapPitchers();
     const rosterPlayers = buildBootstrapRosterPlayers();
