@@ -3,8 +3,8 @@
 import {
   createContext,
   useContext,
-  useEffect,
   useCallback,
+  useState,
   type ReactNode,
 } from "react";
 
@@ -23,24 +23,29 @@ const SelectedPlayerContext = createContext<SelectedPlayerContextValue>({
 });
 
 export function SelectedPlayerProvider({ children }: { children: ReactNode }) {
-  useEffect(() => {
+  const [slug, setSlug] = useState<string | null>(() => {
     try {
-      localStorage.removeItem(LS_KEY);
+      return localStorage.getItem(LS_KEY) ?? null;
     } catch {
-      /* SSR or localStorage unavailable */
+      return null;
     }
-  }, []);
+  });
 
-  const setSelectedPlayer = useCallback((_newSlug: string | null) => {
+  const setSelectedPlayer = useCallback((newSlug: string | null) => {
+    setSlug(newSlug);
     try {
-      localStorage.removeItem(LS_KEY);
+      if (newSlug) {
+        localStorage.setItem(LS_KEY, newSlug);
+      } else {
+        localStorage.removeItem(LS_KEY);
+      }
     } catch {
-      /* noop */
+      /* localStorage unavailable */
     }
   }, []);
 
   return (
-    <SelectedPlayerContext.Provider value={{ slug: null, name: null, setSelectedPlayer }}>
+    <SelectedPlayerContext.Provider value={{ slug, name: null, setSelectedPlayer }}>
       {children}
     </SelectedPlayerContext.Provider>
   );

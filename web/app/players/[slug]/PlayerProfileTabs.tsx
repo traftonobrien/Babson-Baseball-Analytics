@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Activity, Target, ArrowRight, ScanLine, ChevronDown, ChevronUp } from "lucide-react";
@@ -17,6 +17,7 @@ import CommandPlusModelCard from "@/app/components/CommandPlusModelCard";
 import PitchingPlusModelCard from "@/app/components/PitchingPlusModelCard";
 import StuffPlusModelCard from "@/app/components/StuffPlusModelCard";
 import { seasonFromDateId } from "@/lib/season";
+import { useSelectedPlayer } from "@/lib/selectedPlayer";
 import { computeTotalStuffPlus, plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
 import type { CommandPlusResult } from "@/lib/commandPlus";
 import type { PitchingPlusResult } from "@/lib/pitchingPlus";
@@ -416,6 +417,15 @@ export default function PlayerProfileTabs({
   mechanicsEntry,
   liveAbProfile,
 }: Props) {
+  const { setSelectedPlayer } = useSelectedPlayer();
+
+  // Persist this player as the "active" player whenever the profile is viewed.
+  // This lets other surfaces (Trackman, Command, Team Stats, Charting Insights)
+  // pre-filter or highlight this player without additional navigation.
+  useEffect(() => {
+    setSelectedPlayer(playerSlug);
+  }, [playerSlug, setSelectedPlayer]);
+
   const availableTabs = profileMode === "hitter" ? HITTER_TABS : ALL_TABS;
   const [activeTab, setActiveTab] = useState<Tab>(resolveInitialTab(initialTab, availableTabs));
   const [activeOverviewMode, setActiveOverviewMode] = useState<OverviewMode>(defaultOverviewMode);
