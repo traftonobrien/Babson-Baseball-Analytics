@@ -423,6 +423,11 @@ export function ChartingEditor({
   };
 
   const reloadLatestSnapshot = async () => {
+    // Capture draft intent before the reload — user's lineup and baserunner
+    // edits should survive a conflict whenever they remain applicable.
+    const savedLineupDrafts = lineupDrafts;
+    const savedBaserunnerDraft = baserunnerDraft;
+
     const response = await fetch(`/api/charting/games/${snapshot.game.id}`, {
       method: "GET",
       cache: "no-store",
@@ -433,15 +438,34 @@ export function ChartingEditor({
 
     const latest = (await response.json()) as ChartingGameSnapshot;
     revisionRef.current = latest.game.revision;
+
+    // If the reloaded snapshot has an open PA, the useEffect at line ~268
+    // will sync baserunnerDraft from that PA — don't overwrite it.
+    const reloadedLiveState = deriveChartingLiveState(
+      latest.segments,
+      latest.plateAppearances,
+      latest.pitches,
+      null,
+    );
+    const hasOpenPA = Boolean(reloadedLiveState.openPAId);
+
     startTransition(() => {
       setSnapshot(latest);
       setGameStateOverride(null);
       syncMatchupInputs(latest, null);
       clearPitchDraft();
+      // Preserve lineup drafts — user's lineup intent is still valid after a
+      // remote pitch-recording conflict (the remote side didn't change lineups).
+      setLineupDrafts(savedLineupDrafts);
+      // Preserve baserunner draft only when no open PA will reset it via the
+      // openPlateAppearance useEffect.
+      if (!hasOpenPA) {
+        setBaserunnerDraft(savedBaserunnerDraft);
+      }
       setSaveState("error");
       setStatusMessage(null);
       setErrorMessage(
-        "This game changed elsewhere. I reloaded the latest snapshot so you can continue from the current version."
+        "Game updated from another device — reloaded latest. Lineup edits were preserved."
       );
     });
   };
@@ -888,6 +912,24 @@ export function ChartingEditor({
           </select>
         </div>
       </header>
+
+      {/* Final-game status banner */}
+      {snapshot.game.status === "final" && (
+        <div className="flex items-center justify-between border-b border-sky-500/20 bg-sky-500/8 px-6 py-2 text-xs">
+          <div className="flex items-center gap-2 text-sky-300">
+            <CheckCircle2 className="h-3.5 w-3.5 flex-none" />
+            <span className="font-semibold uppercase tracking-wider">Game Finalized</span>
+            <span className="hidden text-sky-400/60 sm:inline">— viewing complete record</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => handleStatusChange("active")}
+            className="text-xs text-sky-400 underline underline-offset-2 transition-colors hover:text-sky-200"
+          >
+            Reopen for editing
+          </button>
+        </div>
+      )}
 
       {/* Main Workspace */}
       <div className="flex flex-1 flex-col relative min-h-0 overflow-hidden">

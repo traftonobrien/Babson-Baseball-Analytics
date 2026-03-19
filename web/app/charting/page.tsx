@@ -10,9 +10,9 @@ import {
     Search,
     Target,
 } from "lucide-react";
-import { desc } from "drizzle-orm";
+import { count, desc } from "drizzle-orm";
 import { db } from "@/db";
-import { chartingGames } from "@/db/schema";
+import { chartingGames, chartingPlateAppearances } from "@/db/schema";
 import {
     LeaderboardIntro,
     LeaderboardPageFrame,
@@ -98,6 +98,12 @@ export default async function ChartingHubPage(props: {
         .select()
         .from(chartingGames)
         .orderBy(desc(chartingGames.gameDate));
+
+    const paCounts = await db
+        .select({ gameId: chartingPlateAppearances.gameId, paCount: count() })
+        .from(chartingPlateAppearances)
+        .groupBy(chartingPlateAppearances.gameId);
+    const paCountByGame = new Map(paCounts.map((r) => [r.gameId, r.paCount]));
 
     const totalGames = games.length;
     const activeGames = games.filter((game) => game.status === "active").length;
@@ -361,9 +367,14 @@ export default async function ChartingHubPage(props: {
                                         <div className="flex flex-wrap items-center gap-2">
                                             <StatusBadge status={game.status} />
                                             <TypeBadge sessionType={game.sessionType} />
-                                            <LeaderboardPill tone="neutral">
-                                                Rev {game.revision}
-                                            </LeaderboardPill>
+                                            {(() => {
+                                                const pa = paCountByGame.get(game.id) ?? 0;
+                                                return pa > 0 ? (
+                                                    <LeaderboardPill tone="neutral">
+                                                        {pa} PA{pa !== 1 ? "s" : ""}
+                                                    </LeaderboardPill>
+                                                ) : null;
+                                            })()}
                                         </div>
 
                                         <div className="mt-3 flex flex-col gap-1">
