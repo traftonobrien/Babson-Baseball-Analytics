@@ -58,7 +58,6 @@ function DeltaBadge({ value }: { value: number | null }) {
 // ---------------------------------------------------------------------------
 
 function describePerPitchComp(
-  input: CompInput,
   topComp: MLBCompResult,
 ): string[] {
   const parts: string[] = [];
@@ -83,18 +82,6 @@ function describePerPitchComp(
         ? `More horizontal break toward first (+${d.toFixed(1)}″ HB).`
         : `More horizontal break toward third (${d.toFixed(1)}″ HB).`,
     );
-  }
-
-  // Velo — compute locally (deltas.velo is always null by design)
-  if (input.velo != null && topComp.pitch.avgVelo != null) {
-    const diff = Math.round((input.velo - topComp.pitch.avgVelo) * 10) / 10;
-    if (Math.abs(diff) >= 1.5) {
-      parts.push(
-        diff > 0
-          ? `Throws harder than the comp (+${diff.toFixed(1)} mph).`
-          : `Softer than the comp (${diff.toFixed(1)} mph).`,
-      );
-    }
   }
 
   return parts;
@@ -412,7 +399,7 @@ export default function MLBCompsPanel({
 
                     {/* Per-pitch comp interpretation */}
                     {input && comps.length > 0 && (() => {
-                      const lines = describePerPitchComp(input, comps[0]);
+                      const lines = describePerPitchComp(comps[0]);
                       if (lines.length === 0) return null;
                       return (
                         <div className="mb-3 rounded-[1.1rem] border border-zinc-800/50 bg-zinc-950/40 px-4 py-3">
