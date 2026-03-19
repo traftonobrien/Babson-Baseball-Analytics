@@ -155,6 +155,9 @@ export function ChartingEditor({
   const datalistId = useId();
   const historyPitcherDatalistId = useId();
 
+  // sessionStorage key scoped to game id — lets lineup drafts survive a hard refresh
+  const lineupDraftStorageKey = `charting-lineup-${initialSnapshot.game.id}`;
+
   const [snapshot, setSnapshot] = useState(initialSnapshot);
   const [selectedPitcherId, setSelectedPitcherId] = useState(
     initialPitcherSelection.playerId,
@@ -173,9 +176,20 @@ export function ChartingEditor({
   const [hitterName, setHitterName] = useState(initialMatchup.hitterName);
   const [showHistory, setShowHistory] = useState(false);
   const [showLineupEditor, setShowLineupEditor] = useState(false);
-  const [lineupDrafts, setLineupDrafts] = useState<LineupDrafts>(() =>
-    buildLineupDrafts(initialSnapshot.lineup),
-  );
+  const [lineupDrafts, setLineupDrafts] = useState<LineupDrafts>(() => {
+    try {
+      const stored = sessionStorage.getItem(lineupDraftStorageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored) as LineupDrafts;
+        if (parsed && typeof parsed === "object" && ("our" in parsed || "opponent" in parsed)) {
+          return parsed;
+        }
+      }
+    } catch {
+      // sessionStorage unavailable or corrupt — fall through to server lineup
+    }
+    return buildLineupDrafts(initialSnapshot.lineup);
+  });
   const [expandedPAs, setExpandedPAs] = useState<Set<string>>(() => new Set());
   const [velocityDrafts, setVelocityDrafts] = useState<Record<string, string>>({});
   const [gameStateOverride, setGameStateOverride] = useState<GameStateOverride | null>(null);
@@ -275,6 +289,16 @@ export function ChartingEditor({
     if (pitchRecordedFlashRef.current) clearTimeout(pitchRecordedFlashRef.current);
   }, []);
 
+  // Persist lineup drafts to sessionStorage so a hard refresh doesn't lose
+  // unsaved lineup changes mid-game.
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(lineupDraftStorageKey, JSON.stringify(lineupDrafts));
+    } catch {
+      // ignore quota or permission errors
+    }
+  }, [lineupDrafts, lineupDraftStorageKey]);
+
   const selectedPitcher = buildSelectedPitcherOption(
     snapshot,
     pitchers,
@@ -358,6 +382,8 @@ export function ChartingEditor({
       lineup: buildSnapshotLineup(snapshot, lineupDrafts),
     };
     applyOptimisticSnapshot(nextSnapshot, gameStateOverride, "Lineups updated");
+    // Clear the draft from sessionStorage now that it's been committed to the server
+    try { sessionStorage.removeItem(lineupDraftStorageKey); } catch { /* ignore */ }
     setShowLineupEditor(false);
   };
 
