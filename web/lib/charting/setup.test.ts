@@ -2,7 +2,6 @@ import { beforeAll, describe, it, expect } from "vitest";
 import {
   isValidLineupSlot,
   nextSegmentOrder,
-  CHARTING_COOKIE,
   LINEUP_SLOT_MIN,
   LINEUP_SLOT_MAX,
 } from "./domain";
@@ -91,17 +90,7 @@ describe("segment ordering", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Auth cookie constant (AUTH-01)
-// ---------------------------------------------------------------------------
-
-describe("charting cookie", () => {
-  it("is named pt_charting", () => {
-    expect(CHARTING_COOKIE).toBe("pt_charting");
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Bootstrap pitcher roster shape (AUTH-02)
+// Bootstrap pitcher roster shape (AUTH-01)
 // ---------------------------------------------------------------------------
 
 describe("bootstrap pitcher roster", () => {

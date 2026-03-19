@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export type AuthGateId = "site" | "charting" | "mechanics";
+export type AuthGateId = "site" | "mechanics";
 
 type AuthGateConfig = Readonly<{
   cookieName: string;
@@ -10,9 +10,13 @@ type AuthGateConfig = Readonly<{
   apiLoginPath: string;
 }>;
 
-export const AUTH_GATE_IDS = ["site", "charting", "mechanics"] as const;
+const LEGACY_CHARTING_COOKIE_NAME = "pt_charting";
+const LEGACY_CHARTING_LOGIN_PATH = "/charting-login";
+const LEGACY_CHARTING_API_LOGIN_PATH = "/api/charting-login";
+
+export const AUTH_GATE_IDS = ["site", "mechanics"] as const;
 export const SITE_GATE_CHAIN = ["site"] as const satisfies readonly AuthGateId[];
-export const CHARTING_GATE_CHAIN = ["site", "charting"] as const satisfies readonly AuthGateId[];
+export const CHARTING_GATE_CHAIN = SITE_GATE_CHAIN;
 export const MECHANICS_GATE_CHAIN = ["site", "mechanics"] as const satisfies readonly AuthGateId[];
 
 export const AUTH_GATES = {
@@ -22,13 +26,6 @@ export const AUTH_GATES = {
     passwordEnvName: "PT_PASSWORD",
     loginPath: "/login",
     apiLoginPath: "/api/login",
-  },
-  charting: {
-    cookieName: "pt_charting",
-    cookieValue: "authorized",
-    passwordEnvName: "CHARTING_PASSWORD",
-    loginPath: "/charting-login",
-    apiLoginPath: "/api/charting-login",
   },
   mechanics: {
     cookieName: "pt_mechanics",
@@ -44,8 +41,8 @@ const PUBLIC_PREFIXES = [
   AUTH_GATES.site.apiLoginPath,
   "/api/logout",
   "/players",
-  AUTH_GATES.charting.loginPath,
-  AUTH_GATES.charting.apiLoginPath,
+  LEGACY_CHARTING_LOGIN_PATH,
+  LEGACY_CHARTING_API_LOGIN_PATH,
   AUTH_GATES.mechanics.loginPath,
   AUTH_GATES.mechanics.apiLoginPath,
 ] as const;
@@ -112,7 +109,7 @@ export function getRequiredGatesForPath(pathname: string): readonly AuthGateId[]
     return [];
   }
   if (isChartingPath(pathname)) {
-    return CHARTING_GATE_CHAIN;
+    return SITE_GATE_CHAIN;
   }
   if (isMechanicsPath(pathname)) {
     return MECHANICS_GATE_CHAIN;
@@ -172,6 +169,10 @@ export function clearAllGateCookies(response: NextResponse): void {
       maxAge: 0,
     });
   }
+  response.cookies.set(LEGACY_CHARTING_COOKIE_NAME, "", {
+    ...gateCookieOptions(),
+    maxAge: 0,
+  });
 }
 
 export async function handlePasswordGateLogin(

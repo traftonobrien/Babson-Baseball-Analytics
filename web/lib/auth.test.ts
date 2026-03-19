@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   AUTH_GATES,
-  CHARTING_GATE_CHAIN,
   MECHANICS_GATE_CHAIN,
   SITE_GATE_CHAIN,
   buildAuthMisconfiguredMessage,
@@ -30,9 +29,9 @@ describe("auth helpers", () => {
 
   it("returns the correct gate chain for protected paths", () => {
     expect(getRequiredGatesForPath("/")).toEqual(SITE_GATE_CHAIN);
-    expect(getRequiredGatesForPath("/charting")).toEqual(CHARTING_GATE_CHAIN);
+    expect(getRequiredGatesForPath("/charting")).toEqual(SITE_GATE_CHAIN);
     expect(getRequiredGatesForPath("/api/charting/games")).toEqual(
-      CHARTING_GATE_CHAIN,
+      SITE_GATE_CHAIN,
     );
     expect(getRequiredGatesForPath("/mechanics/session/john/2026-03-01")).toEqual(
       MECHANICS_GATE_CHAIN,
@@ -43,7 +42,7 @@ describe("auth helpers", () => {
   it("checks cookie values against the configured gate", () => {
     const cookies = new Map<string, string>([
       [AUTH_GATES.site.cookieName, AUTH_GATES.site.cookieValue],
-      [AUTH_GATES.charting.cookieName, AUTH_GATES.charting.cookieValue],
+      [AUTH_GATES.mechanics.cookieName, AUTH_GATES.mechanics.cookieValue],
     ]);
     const requestLike = {
       cookies: {
@@ -55,16 +54,15 @@ describe("auth helpers", () => {
     };
 
     expect(hasGateCookie(requestLike, "site")).toBe(true);
-    expect(hasGateCookie(requestLike, "charting")).toBe(true);
-    expect(hasGateCookie(requestLike, "mechanics")).toBe(false);
+    expect(hasGateCookie(requestLike, "mechanics")).toBe(true);
   });
 
   it("builds clear misconfiguration messages", () => {
     expect(buildAuthMisconfiguredMessage("site")).toBe(
       "Server auth misconfigured: missing PT_PASSWORD",
     );
-    expect(buildAuthMisconfiguredMessage("charting")).toBe(
-      "Server auth misconfigured: missing CHARTING_PASSWORD",
+    expect(buildAuthMisconfiguredMessage("mechanics")).toBe(
+      "Server auth misconfigured: missing MECHANICS_PASSWORD",
     );
   });
 });
