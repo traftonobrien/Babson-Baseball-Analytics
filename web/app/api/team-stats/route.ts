@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import players from "@/data/players.json";
-import { fetchBattingLeaderboard, fetchPitchingLeaderboard } from "@/lib/collegeStats";
+import { fetchBattingLeaderboard, fetchNcaaStatsMeta, fetchPitchingLeaderboard } from "@/lib/collegeStats";
 import {
   computeQualifiedAggregate,
   filterBabsonPitchers,
@@ -196,6 +196,7 @@ export async function GET(request: Request) {
     const minIp = Math.max(1, parseInt(searchParams.get("minIp") ?? "1", 10) || 1);
 
     const { idMap, nameMap } = buildPlayerLookups();
+    const meta = await fetchNcaaStatsMeta();
     if (statType === "batting") {
       const data = await fetchBattingLeaderboard(year, 3);
       const rows = extractRows<BattingLeaderboardRow>(data);
@@ -205,7 +206,7 @@ export async function GET(request: Request) {
         slug: idMap.get(hitter.playerId) ?? nameMap.get(normalizeName(hitter.playerName)) ?? undefined,
       }));
 
-      return NextResponse.json({ year, statType, hitters: enriched });
+      return NextResponse.json({ year, statType, hitters: enriched, meta });
     }
 
     const data = await fetchPitchingLeaderboard(year, 3);
@@ -217,7 +218,7 @@ export async function GET(request: Request) {
     }));
     const qualified = computeQualifiedAggregate(pitchers, minIp);
 
-    return NextResponse.json({ year, statType, minIp, pitchers: enriched, qualified });
+    return NextResponse.json({ year, statType, minIp, pitchers: enriched, qualified, meta });
   } catch (err) {
     console.error("[team-stats]", err);
     return NextResponse.json(

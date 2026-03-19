@@ -1,6 +1,31 @@
 import { readFile } from "fs/promises";
 import path from "path";
 
+export interface NcaaSyncMeta {
+  synced_at: string;
+  source: string;
+  division: number;
+  years: number[];
+  types: string[];
+  results: Record<string, {
+    row_count: number;
+    team_count: number;
+    freshly_synced: boolean;
+    stale: boolean;
+  }>;
+}
+
+export async function fetchNcaaStatsMeta(): Promise<NcaaSyncMeta | null> {
+  const cwd = process.cwd();
+  const metaPath = path.join(cwd, "public", "college-stats", "meta.json");
+  try {
+    const raw = await readFile(metaPath, "utf-8");
+    return JSON.parse(raw) as NcaaSyncMeta;
+  } catch {
+    return null;
+  }
+}
+
 async function readCachedLeaderboard(
   endpoint: "pitching" | "batting",
   year: string,

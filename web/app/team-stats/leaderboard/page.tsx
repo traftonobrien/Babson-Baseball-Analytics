@@ -332,6 +332,8 @@ export default function TeamStatsPage() {
   const [hitterSortDesc, setHitterSortDesc] = useState(true);
   const [minIp, setMinIp] = useState(DEFAULT_MIN_IP);
   const [minPa, setMinPa] = useState(DEFAULT_MIN_PA);
+  const [syncedAt, setSyncedAt] = useState<string | null>(null);
+  const [isStale, setIsStale] = useState(false);
   const { slug: selectedSlug } = useSelectedPlayer();
 
   const activePitcherCols = statSection === "standard" ? PITCHER_STANDARD : PITCHER_ADVANCED;
@@ -349,6 +351,12 @@ export default function TeamStatsPage() {
         setPitchers(data.pitchers ?? []);
         setHitters(data.hitters ?? []);
         setSeasonYear(typeof data.year === "string" ? data.year : null);
+        if (data.meta?.synced_at) {
+          setSyncedAt(data.meta.synced_at as string);
+          const results = data.meta.results as Record<string, { stale: boolean }> | undefined;
+          const anyStale = results ? Object.values(results).some((r) => r.stale) : false;
+          setIsStale(anyStale);
+        }
       })
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false));
@@ -436,6 +444,13 @@ export default function TeamStatsPage() {
               <LeaderboardPill tone="neutral">
                 {statMode === "pitching" ? `${minIp}+ IP qualifies` : `${minPa}+ PA qualifies`}
               </LeaderboardPill>
+              {syncedAt && (
+                <LeaderboardPill tone={isStale ? "amber" : "neutral"}>
+                  {isStale ? "Stale — " : "Synced "}
+                  {new Date(syncedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                </LeaderboardPill>
+              )}
+              <LeaderboardPill tone="neutral">NCAA D3</LeaderboardPill>
             </>
           )}
           side={(
