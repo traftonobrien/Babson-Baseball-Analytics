@@ -7,7 +7,7 @@ import { and, eq, ne } from "drizzle-orm";
 import rosterData from "@/data/roster.json";
 import { db } from "@/db";
 import { stuffPlusArsenal } from "@/db/schema";
-import { fetchBattingLeaderboard, fetchPitchingLeaderboard } from "@/lib/collegeStats";
+import { fetchBattingLeaderboard, fetchNcaaStatsMeta, fetchPitchingLeaderboard } from "@/lib/collegeStats";
 import { getHand } from "@/lib/canonicalPlayers";
 import {
   buildCommandPlusBaselines,
@@ -796,6 +796,21 @@ export default async function PlayerProfilePage({
 
   const roleLabel = resolvedPlayer.role;
   const seasonNote = undefined;
+  const ncaaMeta = await fetchNcaaStatsMeta();
+  const ncaaProvenance: { label: string; tone: "amber" | "neutral" } | undefined = ncaaMeta
+    ? (() => {
+        const anyStale = Object.values(ncaaMeta.results).some((r) => r.stale);
+        const date = new Date(ncaaMeta.synced_at).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+        return {
+          label: anyStale ? `Stale — ${date}` : `Synced ${date}`,
+          tone: (anyStale ? "amber" : "neutral") as "amber" | "neutral",
+        };
+      })()
+    : undefined;
   const roster = rosterData as Record<string, { height?: string; weight?: string; class?: string }>;
   const rosterInfo = roster[resolvedPlayer.slug];
   const throwHand =
@@ -1002,6 +1017,7 @@ export default async function PlayerProfilePage({
           hittingSeasonStats={hittingOverview.seasonStats}
           seasonYear={TARGET_YEAR}
           seasonNote={seasonNote}
+          ncaaProvenance={ncaaProvenance}
           pitchingSeasonPercentiles={pitchingOverview.seasonPercentiles}
           hittingSeasonPercentiles={hittingOverview.seasonPercentiles}
           pitchingPercentileAudienceLabel={pitchingOverview.percentileAudienceLabel}

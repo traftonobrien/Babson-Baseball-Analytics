@@ -168,6 +168,50 @@ function computePitchTypeStats(
   };
 }
 
+// ---------------------------------------------------------------------------
+// Pitcher-side inline synthesis
+// ---------------------------------------------------------------------------
+
+const MIN_PITCH_SAMPLE = 10;
+
+function derivePitchingSynthesis(stats: PitchTypeStats[]): string[] {
+  if (stats.length === 0) return [];
+  const takeaways: string[] = [];
+  const sorted = [...stats].sort((a, b) => b.pct - a.pct);
+  const top = sorted[0];
+  const second = sorted[1];
+
+  // Usage takeaway (at most 1)
+  const spreadCount = stats.filter((s) => s.pct >= 15).length;
+  if (top.pct >= 50) {
+    takeaways.push(`Leans heavily on the ${top.pitchType} (${top.pct.toFixed(0)}% usage).`);
+  } else if (second && top.pct + second.pct >= 65) {
+    takeaways.push(`Works mostly off the ${top.pitchType} and ${second.pitchType} (${(top.pct + second.pct).toFixed(0)}% combined).`);
+  } else if (spreadCount >= 3) {
+    takeaways.push(`Shows a spread mix across ${spreadCount} pitch types.`);
+  }
+
+  // Bat-missing takeaway (at most 1)
+  const withWhiff = stats.filter(
+    (s) => s.count >= MIN_PITCH_SAMPLE && s.whiffPct !== null && s.whiffPct >= 20
+  );
+  if (withWhiff.length > 0) {
+    const best = withWhiff.reduce((a, b) => (b.whiffPct! > a.whiffPct! ? b : a));
+    takeaways.push(`${best.pitchType} is the best bat-missing pitch (${best.whiffPct!.toFixed(0)}% whiff rate).`);
+  }
+
+  // Strike/command takeaway (at most 1)
+  const withStrike = stats.filter(
+    (s) => s.count >= MIN_PITCH_SAMPLE && s.strikePct !== null && s.strikePct >= 60
+  );
+  if (withStrike.length > 0) {
+    const best = withStrike.reduce((a, b) => (b.strikePct! > a.strikePct! ? b : a));
+    takeaways.push(`${best.pitchType} is the most reliable strike-getter (${best.strikePct!.toFixed(0)}% strike rate).`);
+  }
+
+  return takeaways;
+}
+
 const PITCH_TYPE_ORDER = [
   "Fastball",
   "Slider",
@@ -596,6 +640,23 @@ export default function LiveAbProfilePanel({
               <PitchMixBar stats={pitchTypeStats} />
             </LeaderboardPanel>
           ) : null}
+
+          {/* Inline pitcher synthesis takeaways */}
+          {(() => {
+            const takeaways = derivePitchingSynthesis(pitchTypeStats);
+            if (takeaways.length === 0) return null;
+            return (
+              <div className="rounded-[1.7rem] border border-zinc-800/50 bg-zinc-950/40 px-5 py-4">
+                <ul className="space-y-1.5">
+                  {takeaways.map((t) => (
+                    <li key={t} className="text-sm leading-relaxed text-zinc-400">
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })()}
 
           {/* Zone maps per pitch type */}
           {pitchTypeStats.filter((s) => s.count >= 5).length > 0 ? (

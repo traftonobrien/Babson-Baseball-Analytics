@@ -4,6 +4,7 @@ import { Target } from "lucide-react";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useEffect, useState } from "react";
 import { getPlayer } from "@/lib/dataIndex";
+import { getSlugForPlayerId } from "@/lib/canonicalPlayers";
 import { pitchColor } from "@/lib/pitchColors";
 import {
   buildReport,
@@ -37,7 +38,7 @@ function ReportInner() {
   const searchParams = useSearchParams();
   const outingId = searchParams.get("outingId");
   const scope = searchParams.get("scope") === "overall" ? "overall" : "outing";
-  const profileSlug = searchParams.get("slug");
+  const profileSlug = searchParams.get("slug") ?? getSlugForPlayerId(playerId);
   const from = searchParams.get("from");
 
   const player = getPlayer(playerId);
@@ -194,6 +195,14 @@ function ReportInner() {
               >
                 Compare
               </a>
+              {profileSlug && !profileHref ? (
+                <a
+                  href={`/players/${profileSlug}?tab=Command`}
+                  className="inline-flex items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
+                >
+                  View Full Profile
+                </a>
+              ) : null}
               <button
                 type="button"
                 onClick={handlePrint}

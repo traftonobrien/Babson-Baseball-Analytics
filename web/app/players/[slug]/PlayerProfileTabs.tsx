@@ -107,6 +107,7 @@ interface Props {
   hittingSeasonStats: SeasonStat[];
   seasonYear: number;
   seasonNote?: string;
+  ncaaProvenance?: { label: string; tone: "amber" | "neutral" };
   pitchingSeasonPercentiles: PercentileMetric[];
   hittingSeasonPercentiles: PercentileMetric[];
   trackmanSessions: TrackmanSession[];
@@ -403,6 +404,7 @@ export default function PlayerProfileTabs({
   hittingSeasonStats,
   seasonYear,
   seasonNote,
+  ncaaProvenance,
   pitchingSeasonPercentiles,
   hittingSeasonPercentiles,
   trackmanSessions,
@@ -795,6 +797,12 @@ export default function PlayerProfileTabs({
                       </p>
                     </div>
                     {seasonNote ? <LeaderboardPill tone="neutral">{seasonNote}</LeaderboardPill> : null}
+                    {ncaaProvenance ? (
+                      <>
+                        <LeaderboardPill tone={ncaaProvenance.tone}>{ncaaProvenance.label}</LeaderboardPill>
+                        <LeaderboardPill tone="neutral">NCAA D3</LeaderboardPill>
+                      </>
+                    ) : null}
                   </div>
 
                   <LeaderboardPanel className="p-5 sm:p-6">

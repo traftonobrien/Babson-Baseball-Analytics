@@ -5,6 +5,7 @@ import { Target } from "lucide-react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useMemo, useEffect, useState, useCallback } from "react";
 import { getPlayer } from "@/lib/dataIndex";
+import { getSlugForPlayerId } from "@/lib/canonicalPlayers";
 import {
   buildReport,
   isOutlier,
@@ -41,7 +42,7 @@ function CompareInner() {
   const { playerId } = useParams<{ playerId: string }>();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const profileSlug = searchParams.get("slug");
+  const profileSlug = searchParams.get("slug") ?? getSlugForPlayerId(playerId);
 
   const player = getPlayer(playerId);
 
