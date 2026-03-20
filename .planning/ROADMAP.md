@@ -25,6 +25,17 @@ This roadmap takes the project from a brownfield repo with no live charting doma
 - [ ] **Phase 12.1: Live AB Player Profile Integration** - Bring charted pitcher and hitter analytics into the main player profile tabs as a new Live AB surface
 - [ ] **Phase 13: Integrated At-A-Glance Dashboard** - Redesign the game session overview into a dense, vertical-scrolling-free compact layout.
 
+---
+## Milestone v3.0: Market-Ready Platform
+
+- [ ] **Phase 14: Completion** - Finish Phase 12.1-03 mixed-role polish and merge the charting UAT branch
+- [ ] **Phase 15: Ops Foundations** - Fix middleware deployment, add error boundaries, verify env vars, add structured logging
+- [ ] **Phase 16: Code Decomposition** - Break ChartingEditor and LiveAbInsightsExplorer into modules under 500 lines each
+- [ ] **Phase 17: Multi-Tenancy Part 1** - Replace Babson hardcoding with configurable team identity and add team_id to DB schema
+- [ ] **Phase 18: Multi-Tenancy Part 2** - Build admin settings surface, team-scoped player identity, and team-aware auth
+- [ ] **Phase 19: UX Polish** - Mobile-responsive layout, skeleton loading states, touch targets, and keyboard accessibility
+- [ ] **Phase 20: Demo and Marketing** - Public demo mode with seeded data and a landing page for unauthenticated visitors
+
 ## Phase Details
 
 ### Phase 1: Charting Domain Foundation
@@ -315,3 +326,129 @@ Current status:
 | 12. Live AB Leaderboard | 3/3 | Complete | 2026-03-09 |
 | 12.1. Live AB Player Profile Integration | 2/3 | In progress | - |
 | 13. Integrated At-A-Glance Dashboard | 0/3 | Not started | - |
+
+---
+
+## Milestone v3.0 Phase Details
+
+### Phase 14: Completion
+**Goal**: Close all in-flight work before the v3.0 platform push begins — finish the mixed-role Live AB polish and merge the charting UAT branch to main.
+**Depends on**: Phase 13
+**Requirements**: DONE-01, DONE-02
+**Success Criteria** (what must be TRUE):
+  1. Phase 12.1-03 is complete — mixed-role Live AB player profiles (pitcher-only, hitter-only, and two-way players) all render correctly with no blank or broken states.
+  2. The codex/game-charting-structure branch passes manual browser UAT across all scenarios: new game creation, pitch recording, PA close, lineup entry, baserunner entry, history edit, and export.
+  3. The charting UAT branch is merged to main with a clean build and no regressions.
+**Plans**: TBD
+
+Plans:
+- [ ] 14-01: Complete Phase 12.1-03 mixed-role polish and final validation
+- [ ] 14-02: Execute charting UAT browser test script and document results
+- [ ] 14-03: Merge codex/game-charting-structure to main after UAT passes
+
+### Phase 15: Ops Foundations
+**Goal**: Make the deployed platform reliable and diagnosable — authentication gates protect page routes, uncaught errors show recovery UI, environment variables are confirmed, and server errors are captured with context.
+**Depends on**: Phase 14
+**Requirements**: OPS-01, OPS-02, OPS-03, OPS-04
+**Success Criteria** (what must be TRUE):
+  1. Navigating directly to any protected page route without a valid session redirects to login — the middleware is actually running on Vercel.
+  2. When a major page surface throws an uncaught render error, the user sees a recoverable error UI instead of a blank screen.
+  3. All three required environment variables (PT_PASSWORD, MECHANICS_PASSWORD, DATABASE_URL) are confirmed present and correct on the live Vercel deployment.
+  4. Server-side errors are logged with enough context (route, user action, stack) to diagnose failures without local reproduction.
+**Plans**: TBD
+
+Plans:
+- [ ] 15-01: Move proxy.ts auth logic into middleware.ts and verify deployment
+- [ ] 15-02: Add React error boundaries to all major page surfaces
+- [ ] 15-03: Audit and confirm Vercel environment variables; document verification steps
+- [ ] 15-04: Implement structured server-side error logging
+
+### Phase 16: Code Decomposition
+**Goal**: Break the two mega-files down into focused modules so the codebase is safely navigable and no single file in web/ exceeds 1000 lines.
+**Depends on**: Phase 15
+**Requirements**: CODE-01, CODE-02, CODE-03
+**Success Criteria** (what must be TRUE):
+  1. ChartingEditor.tsx no longer exists as a single file — its logic, hooks, and sub-components are split into modules each under 500 lines, and all charting tests still pass.
+  2. LiveAbInsightsExplorer.tsx no longer exists as a single file — pitcher panels, hitter panels, filter logic, and synthesis helpers are in separate modules each under 500 lines.
+  3. No file in web/ exceeds 1000 lines after both decomposition passes complete.
+**Plans**: TBD
+
+Plans:
+- [ ] 16-01: Decompose ChartingEditor.tsx into extracted hooks, sub-components, and logic modules
+- [ ] 16-02: Decompose LiveAbInsightsExplorer.tsx into pitcher/hitter panels, filter logic, and synthesis helpers
+- [ ] 16-03: Audit all remaining files in web/ for the 1000-line ceiling and decompose any that exceed it
+
+### Phase 17: Multi-Tenancy Part 1
+**Goal**: Remove all Babson-specific hardcoding from the product UI and add team_id to the DB schema so the platform is structurally multi-tenant even before the admin surface exists.
+**Depends on**: Phase 16
+**Requirements**: TEAM-01, TEAM-02
+**Success Criteria** (what must be TRUE):
+  1. No page in the portal displays the literal string "Babson" as a hardcoded team name — all references read from a configurable team name source.
+  2. The DB schema includes a team_id column on charting games and related records; existing Babson records are migrated to a default team_id without data loss.
+  3. A new deployment can be configured with a different team name without code changes.
+**Plans**: TBD
+
+Plans:
+- [ ] 17-01: Audit all hardcoded "Babson" strings in web/ and replace with a configurable team name constant or env variable
+- [ ] 17-02: Add team_id to DB schema (charting_games and related tables) and run migration for existing records
+
+### Phase 18: Multi-Tenancy Part 2
+**Goal**: Give each team a self-serve admin settings surface, team-scoped player identity to prevent cross-team data leakage, and a login flow that authenticates each team against only their own data.
+**Depends on**: Phase 17
+**Requirements**: TEAM-03, TEAM-04, TEAM-05
+**Success Criteria** (what must be TRUE):
+  1. An admin user can navigate to a settings surface and update their team name, logo, and colors — changes are reflected across the portal without a code deploy.
+  2. Player rosters, slugs, and playerIds are scoped to team_id — a player from Team A cannot appear in Team B's charting sessions or profile views.
+  3. Logging in with Team A's credentials cannot access Team B's data — the auth flow is team-aware.
+**Plans**: TBD
+
+Plans:
+- [ ] 18-01: Build admin settings route and team profile configuration surface
+- [ ] 18-02: Scope player identity (roster, slugs, playerIds) to team_id throughout data access layer
+- [ ] 18-03: Update auth flow to be team-aware — credentials authenticate against team-scoped records only
+
+### Phase 19: UX Polish
+**Goal**: Make the portal usable on mobile screens, eliminate blank-content flashes with skeleton loading states, ensure interactive elements meet touch target standards, and make modals and panels keyboard-navigable.
+**Depends on**: Phase 18
+**Requirements**: UX-01, UX-02, UX-03, UX-04
+**Success Criteria** (what must be TRUE):
+  1. Core pages (player list, charting hub, leaderboards, player profile) are fully usable on a 320px-wide screen — no horizontal overflow, no clipped content.
+  2. Any page that fetches data shows skeleton placeholder content during loading instead of a blank area or content flash.
+  3. Every button, filter, and dropdown has a minimum 44px touch target — verified on a mobile viewport.
+  4. All modal and panel surfaces can be opened, navigated, and closed using keyboard alone (Tab, Escape, Enter).
+**Plans**: TBD
+
+Plans:
+- [ ] 19-01: Responsive pass on player list, charting hub, leaderboards, and player profile pages
+- [ ] 19-02: Add skeleton loading states to all data-fetching surfaces
+- [ ] 19-03: Audit and fix touch target sizes on all interactive elements
+- [ ] 19-04: Add keyboard navigation and focus management to modals and panels
+
+### Phase 20: Demo and Marketing
+**Goal**: Enable sales and marketing use by providing a public, read-only demo seeded with realistic data and a landing page that explains the product to unauthenticated visitors.
+**Depends on**: Phase 19
+**Requirements**: DEMO-01, DEMO-02, DEMO-03
+**Success Criteria** (what must be TRUE):
+  1. An unauthenticated visitor can access a read-only demo portal without entering credentials — the demo shows realistic seeded data across charting, analytics, and player profiles.
+  2. A demo visitor cannot modify any data — all write operations are blocked in demo mode, and seeded data is not affected by visitor sessions.
+  3. The root URL (/) shows a landing/marketing page for unauthenticated visitors explaining the product, its features, and linking to the demo.
+**Plans**: TBD
+
+Plans:
+- [ ] 20-01: Implement demo mode flag and read-only enforcement across all write paths
+- [ ] 20-02: Seed demo dataset with realistic charting games, analytics, and player data; add auto-reset guard
+- [ ] 20-03: Build landing page at / for unauthenticated visitors with product overview and demo link
+
+---
+
+## Milestone v3.0 Progress
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 14. Completion | 0/3 | Not started | - |
+| 15. Ops Foundations | 0/4 | Not started | - |
+| 16. Code Decomposition | 0/3 | Not started | - |
+| 17. Multi-Tenancy Part 1 | 0/2 | Not started | - |
+| 18. Multi-Tenancy Part 2 | 0/3 | Not started | - |
+| 19. UX Polish | 0/4 | Not started | - |
+| 20. Demo and Marketing | 0/3 | Not started | - |
