@@ -89,5 +89,30 @@ The current paper workflow is represented by [Charting Example.pdf](/Users/traft
 
 | Milestone v2.0: Live AB Analytics | Staff want cross-session pitcher and hitter insight from charted live ABs | Analytics foundation → session enhancements → leaderboard → player profile integration |
 
+## Current Milestone: v3.0 Market-Ready Platform
+
+**Goal:** Bring every aspect of the platform to production quality for commercialization as a D3 baseball analytics SaaS — multi-tenancy, code health, UX polish, ops reliability, and demo capability.
+
+**Target features:**
+- Multi-tenancy: parameterize team identity, remove all Babson hardcoding, team_id in DB schema, self-serve onboarding flow
+- Code decomposition: break down ChartingEditor.tsx (2913 lines) and LiveAbInsightsExplorer.tsx (2863 lines)
+- Ops reliability: fix middleware deployment (proxy.ts not running), error boundaries, Vercel env verification, observability
+- UX/mobile: responsive pass, loading states, accessibility improvements
+- Feature completion: charting UAT merge (codex/game-charting-structure), finish Phase 12.1-03
+- Demo/marketing: public-facing demo mode with seeded data, player onboarding flow, export/sharing improvements
+
+### Active (v3.0)
+
+- [ ] Multi-tenancy: team_id in DB, parameterized team identity, no hardcoded "Babson" in product UI
+- [ ] Team onboarding: a new team can self-configure and start using the platform
+- [ ] Middleware fix: proxy.ts deployed as actual Next.js middleware protecting all routes
+- [ ] File decomposition: ChartingEditor.tsx and LiveAbInsightsExplorer.tsx broken into <500 line modules
+- [ ] UX pass: mobile-responsive layout, skeleton loading states, accessible interactive elements
+- [ ] Demo mode: seeded read-only demo accessible without credentials for sales/marketing use
+- [ ] Charting UAT: codex/game-charting-structure browser-tested and merged
+- [ ] Phase 12.1-03: mixed-role polish and final validation complete
+- [ ] Error boundaries on all major page surfaces
+- [ ] Observability: structured error logging, basic uptime signal
+
 ---
-*Last updated: 2026-03-10 after Phase 12.1 plans 01 and 02 execution*
+*Last updated: 2026-03-20 after starting milestone v3.0 Market-Ready Platform*
