@@ -1,4 +1,6 @@
+import { timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { checkLoginRateLimit } from "@/lib/rateLimit";
 
 export type AuthGateId = "site" | "mechanics";
 
@@ -70,9 +72,9 @@ function gateCookieOptions() {
   return {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
+    sameSite: "strict" as const,
     path: "/",
-    maxAge: 604800, // 7 days
+    maxAge: 7200, // 2 hours
   };
 }
 
@@ -175,10 +177,30 @@ export function clearAllGateCookies(response: NextResponse): void {
   });
 }
 
+function getRequestIp(request: NextRequest): string {
+  return (
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    request.headers.get("x-real-ip") ??
+    "unknown"
+  );
+}
+
 export async function handlePasswordGateLogin(
   request: NextRequest,
   gateId: AuthGateId,
 ): Promise<NextResponse> {
+  const ip = getRequestIp(request);
+  const { allowed } = await checkLoginRateLimit(ip, gateId);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many attempts — try again in 15 minutes" },
+      {
+        status: 429,
+        headers: { "Retry-After": "900" },
+      },
+    );
+  }
+
   const configuredPassword = getConfiguredPassword(gateId);
   if (!configuredPassword) {
     return NextResponse.json(
@@ -205,7 +227,10 @@ export async function handlePasswordGateLogin(
     );
   }
 
-  if (password !== configuredPassword) {
+  const a = Buffer.from(password);
+  const b = Buffer.from(configuredPassword);
+  const match = a.length === b.length && timingSafeEqual(a, b);
+  if (!match) {
     return NextResponse.json({ error: "Wrong password" }, { status: 401 });
   }
 

@@ -246,6 +246,14 @@ export function ChartingEditor({
   const ourTeamLabel = snapshot.game.ourTeamLabel?.trim() || "Babson";
   const opponentTeamLabel =
     snapshot.game.opponentTeamLabel?.trim() || snapshot.game.opponent;
+  const topBattingTeam =
+    battingSideForMatchup(snapshot.game, true) === "our"
+      ? ourTeamLabel
+      : (opponentTeamLabel ?? "Opp");
+  const botBattingTeam =
+    battingSideForMatchup(snapshot.game, false) === "our"
+      ? ourTeamLabel
+      : (opponentTeamLabel ?? "Opp");
   const effectiveBuntMode =
     openPlateAppearance
       ? activeCountPreset === "bunt"
@@ -828,6 +836,20 @@ export function ChartingEditor({
     });
   };
 
+  const handleVenueSideChange = (newSide: "home" | "away") => {
+    if (newSide === snapshot.game.babsonVenueSide) return;
+    const updatedGame = { ...snapshot.game, babsonVenueSide: newSide };
+    const nextSnapshot: ChartingGameSnapshot = {
+      ...snapshot,
+      game: updatedGame,
+      plateAppearances: snapshot.plateAppearances.map((pa) => ({
+        ...pa,
+        teamSide: battingSideForMatchup(updatedGame, pa.isTopInning),
+      })),
+    };
+    applyOptimisticSnapshot(nextSnapshot, gameStateOverride, `Babson set as ${newSide}`);
+  };
+
   const handlePAInningChange = (paId: string, inning: number) => {
     const nextSnapshot = updatePlateAppearanceContextInSnapshot(snapshot, {
       paId,
@@ -1036,7 +1058,27 @@ export function ChartingEditor({
               {/* Section 2: Game State */}
               <div className="flex min-w-0 flex-col rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Game State</div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Game State</div>
+                    {snapshot.game.sessionType === "game" && (
+                      <div className="flex items-center rounded-md border border-[rgba(var(--babson-grey-rgb),0.22)] bg-zinc-950/60 p-0.5">
+                        <button
+                          type="button"
+                          onClick={() => handleVenueSideChange("home")}
+                          className={`rounded px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] transition-colors ${snapshot.game.babsonVenueSide === "home" ? "bg-zinc-700 text-zinc-100" : "text-zinc-500 hover:text-zinc-300"}`}
+                        >
+                          Home
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleVenueSideChange("away")}
+                          className={`rounded px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] transition-colors ${snapshot.game.babsonVenueSide === "away" ? "bg-zinc-700 text-zinc-100" : "text-zinc-500 hover:text-zinc-300"}`}
+                        >
+                          Away
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   {gameStateOverride && (
                     <button onClick={handleResetOverride} className="text-[10px] font-semibold text-amber-500 hover:text-amber-400 shrink-0 whitespace-nowrap">Reset</button>
                   )}
@@ -1046,8 +1088,8 @@ export function ChartingEditor({
                     {INNING_OPTIONS.map((i) => <option key={i} value={i}>Inning {i}</option>)}
                   </select>
                   <select value={overrideBase.isTopInning ? "top" : "bottom"} onChange={(e) => handleOverrideChange("isTopInning", e.target.value === "top")} className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-semibold text-[rgb(212,220,218)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
-                    <option value="top">Top</option>
-                    <option value="bottom">Bottom</option>
+                    <option value="top">Top — {topBattingTeam} bat</option>
+                    <option value="bottom">Bot — {botBattingTeam} bat</option>
                   </select>
                   <select value={overrideBase.outs} onChange={(e) => handleOverrideChange("outs", Number(e.target.value))} className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-semibold text-[rgb(212,220,218)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
                     {OUT_OPTIONS.map((o) => <option key={o} value={o}>{o} Outs</option>)}

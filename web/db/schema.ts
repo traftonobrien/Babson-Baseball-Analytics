@@ -5,7 +5,23 @@ import {
   primaryKey,
   real,
   text,
+  timestamp,
 } from "drizzle-orm/pg-core";
+
+/**
+ * Sliding-window rate limit counters for password-gate login endpoints.
+ * One row per (ip, gateId) pair; reset when the window expires.
+ */
+export const loginRateLimits = pgTable(
+  "login_rate_limits",
+  {
+    ip: text("ip").notNull(),
+    gateId: text("gate_id").notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.ip, t.gateId] })],
+);
 
 /**
  * Aggregated season averages per pitch (from stuff_plus_pitcher_arsenal.csv)

@@ -4,6 +4,38 @@ import { db } from "@/db";
 import { chartingGames } from "@/db/schema";
 import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
 
+const FIELD_LIMITS: Record<string, number> = {
+  opponent: 100,
+  babsonStartingPitcher: 100,
+  opponentStartingPitcher: 100,
+  ourTeamLabel: 100,
+  opponentTeamLabel: 100,
+  charter: 100,
+  weather: 200,
+  homeCatcher: 100,
+  awayCatcher: 100,
+  babsonRecord: 20,
+  standing: 100,
+  tomorrowStarter: 100,
+  tomorrowOpponent: 100,
+  notes: 1000,
+};
+
+function validateFieldLengths(
+  body: Record<string, unknown>
+): NextResponse | null {
+  for (const [field, max] of Object.entries(FIELD_LIMITS)) {
+    const val = body[field];
+    if (typeof val === "string" && val.length > max) {
+      return NextResponse.json(
+        { error: `${field} must be ${max} characters or fewer` },
+        { status: 400 }
+      );
+    }
+  }
+  return null;
+}
+
 export const runtime = "nodejs";
 
 /** GET /api/charting/games — list all charting games, newest first. */
@@ -71,6 +103,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const lengthError = validateFieldLengths(body as Record<string, unknown>);
+    if (lengthError) return lengthError;
 
     const now = new Date().toISOString();
     const id = crypto.randomUUID();
