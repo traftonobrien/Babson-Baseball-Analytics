@@ -1,136 +1,121 @@
-# Requirements: Babson Pitching Charting App
+# Requirements: Pitch Tracker Market-Ready Platform
 
-**Defined:** 2026-03-06
-**Core Value:** One coach can chart an entire Babson outing on one iPad and trust that the result survives offline use, syncs cleanly, and exports well enough to replace the current paper workflow.
+**Defined:** 2026-03-20
+**Milestone:** v3.0
+**Core Value:** Any D3 baseball program can deploy the platform, chart games on an iPad, and review pitcher and hitter analytics in a portal — with zero Babson-specific configuration required.
 
-## v1 Requirements
+---
 
-### Internal Access
+## v3.0 Requirements
 
-- [x] **AUTH-01**: Staff user can authenticate into the charting workflow with internal credentials
-- [x] **AUTH-02**: iPad app can load canonical Babson pitchers and previously charted games for the operator
+### Completion — Finish In-Flight Work
 
-### Game Setup
+- [ ] **DONE-01**: Phase 12.1-03 is complete — mixed-role Live AB player profile polish and final validation pass
+- [ ] **DONE-02**: Charting UAT passes — codex/game-charting-structure branch is manually browser-tested and merged to main
 
-- [x] **GAME-01**: User can create a game record with opponent, date, and basic chart metadata
-- [x] **GAME-02**: User can manually enter and edit the opponent hitter lineup before first pitch
-- [x] **GAME-03**: User can select the current Babson pitcher and switch pitchers during the game without creating a new game
-- [x] **GAME-04**: User can capture optional chart-header fields such as charter, weather, catchers, record, standing, tomorrow starter, next-day starter, and tomorrow opponent
+### Ops — Reliability and Observability
 
-### Live Charting
+- [ ] **OPS-01**: Next.js middleware is actually running — proxy.ts logic is deployed as middleware.ts protecting all page routes
+- [ ] **OPS-02**: Error boundaries exist on all major page surfaces — uncaught render errors show a recoverable UI instead of a blank screen
+- [ ] **OPS-03**: Vercel environment variables (PT_PASSWORD, MECHANICS_PASSWORD, DATABASE_URL) are confirmed correct on the live deployment
+- [ ] **OPS-04**: Structured error logging is in place — server errors are captured with enough context to diagnose production failures
 
-- [x] **CHRT-01**: User can record pitch type using the six charting families `Fastball`, `Curveball`, `Slider`, `Changeup`, `Split/Cut`, and `Other`
-- [x] **CHRT-02**: User can record pitch location using the catcher-view 14-cell Trackman grid, plus the separate `PO` location cell used by the live charting workflow
-- [x] **CHRT-03**: User can record pitch result as `ball`, `called_strike`, `swinging_strike`, `foul`, `bunt_foul`, `in_play`, or `hit_by_pitch`
-- [x] **CHRT-04**: User can retain the count going into each pitch, including bunt context when relevant
-- [x] **CHRT-05**: User can close a plate appearance with a controlled chart result code such as `K`, `BB`, `HBP`, `1B`, `F8`, or `6-3`
-- [x] **CHRT-06**: User can undo or edit earlier pitches and plate appearances without corrupting the game state
+### Code Health — Decompose Mega-Files
 
-### Charting Engine Hardening
+- [ ] **CODE-01**: ChartingEditor.tsx is broken into modules under 500 lines each — logic, hooks, and sub-components extracted
+- [ ] **CODE-02**: LiveAbInsightsExplorer.tsx is broken into modules under 500 lines each — pitcher/hitter panels, filter logic, and synthesis helpers extracted
+- [ ] **CODE-03**: No single file in web/ exceeds 1000 lines after decomposition passes
 
-- [x] **ENG-01**: App can deterministically reconstruct inning, outs, count, lineup slot, active pitcher segment, and open plate appearance from persisted chart events after relaunch, undo, or sync refresh
-- [x] **ENG-02**: Plate-appearance result handling is driven by a controlled ruleset for out counts and state transitions rather than ad hoc string comparisons
-- [x] **ENG-03**: Live charting UI prevents impossible or contradictory scoring actions and keeps the scorer oriented on the next required input
-- [x] **ENG-04**: Automated scenario tests cover pitch count progression, inning rollover, undo/reopen flows, pitcher changes, and finalize/recovery behavior
+### Multi-Tenancy — Team Parameterization
 
-### Charting UX Baseline
+- [ ] **TEAM-01**: All hardcoded "Babson" strings in the product UI are replaced with a configurable team name from environment or DB config
+- [ ] **TEAM-02**: The DB schema includes a team_id concept — charting games and related records are scoped to a team
+- [ ] **TEAM-03**: A new team can configure their team name, logo, and colors through an admin settings surface
+- [ ] **TEAM-04**: Player identity (roster, slugs, playerIds) is team-scoped — no cross-team data leakage
+- [ ] **TEAM-05**: The login/auth flow is team-aware — a team's credentials authenticate only their data
 
-- The zone selector owns the elastic top canvas in landscape mode and should remain the primary spatial work surface.
-- Count, pitch type, pitch result, and plate-appearance closeout belong in the persistent bottom operator dock.
-- Matchup and pitch history are supporting surfaces and should stay compact or move into rail/drawer patterns as the charting page grows.
+### UX — Polish and Mobile
 
-### Offline & Sync
+- [ ] **UX-01**: Core pages (player list, charting hub, leaderboards, player profile) are usable on mobile screens (320-768px)
+- [ ] **UX-02**: Data-loading states show skeleton placeholders instead of blank content flashes
+- [ ] **UX-03**: Interactive elements (buttons, filters, dropdowns) meet minimum 44px touch target sizes
+- [ ] **UX-04**: Tab navigation and keyboard accessibility work on all modal and panel surfaces
 
-- [x] **SYNC-01**: App persists the full game locally after every scoring action and restores it after relaunch
-- [x] **SYNC-02**: App queues unsynced changes while offline and syncs them automatically when connectivity returns
-- [x] **SYNC-03**: Server accepts revisioned game snapshots and safely rejects stale updates
-- [x] **SYNC-04**: User can finalize a game and lock it from accidental live edits
+### Demo — Marketing and Sales Enablement
 
-### Portal & Reporting
+- [ ] **DEMO-01**: A public demo mode exists — a read-only version of the portal is accessible without credentials, seeded with realistic sample data
+- [ ] **DEMO-02**: The demo is stable — it cannot be modified by visitors and resets automatically if seeded data is altered
+- [ ] **DEMO-03**: A landing/marketing page exists at the root for unauthenticated visitors, explaining the product and linking to the demo
 
-- [x] **PORT-01**: Portal lists synced charting games with date, opponent, status, and pitchers used
-- [x] **PORT-02**: Portal shows chart header metadata, lineup, pitcher segments, plate appearances, and pitch log for a synced game
-- [x] **PORT-03**: Portal computes strike %, zone %, first-pitch strike %, count splits, and pitch-type usage from synced data
-- [x] **PORT-04**: Portal shows per-pitcher outing summaries within a charted game
+---
 
-### Export
+## v4.0 Requirements (Deferred)
 
-- [x] **EXPT-01**: User can export a structured CSV representation of a charted game
-- [x] **EXPT-02**: User can export a PDF approximating the current paper chart layout
-- [x] **EXPT-03**: User can manually override pitcher `R` and `ER` totals before final export
+### Advanced Multi-Tenancy
 
-### Operations
+- **TEAM-ADV-01**: Per-user accounts within a team (role-based access — admin vs scorer vs read-only)
+- **TEAM-ADV-02**: Self-serve team sign-up flow with email verification
+- **TEAM-ADV-03**: Billing integration (Stripe) for SaaS subscription management
 
-- [ ] **OPS-01**: Internal staff can install and run the beta via TestFlight during the pilot
-- [ ] **OPS-02**: System surfaces sync failures and recoverable charting errors clearly enough for internal pilot use after the charting engine is hardened
+### Feature Expansion
 
-## v2 Requirements
+- **FEAT-01**: Opponent lineup import from Sidearm/D3 boxscore (replace manual hitter entry)
+- **FEAT-02**: Baserunner carry-forward engine (automatic baserunner state between PAs)
+- **FEAT-03**: iPad app distribution via App Store (public listing, not TestFlight-only)
+- **FEAT-04**: Video sync — link charted pitches to video clips from a center-field camera
 
-### Setup & Collaboration
+### Phase 9 (TestFlight)
 
-- **GAME-05**: User can import lineup data instead of entering hitters manually
-- **COLLAB-01**: Multiple staff users can view or edit the same game safely
-- **AUTH-03**: Role-based charting access is managed per user rather than by shared password
+- **OPS-ADV-01**: TestFlight internal pilot packaging and distribution
+- **OPS-ADV-02**: Pilot diagnostics, error surfacing, and retry guidance
+- **OPS-ADV-03**: Operator runbook and scoring quick reference
 
-### Expanded Scoring
+---
 
-- **CHRT-07**: User can track baserunner advancement and inherited runners
-- **CHRT-08**: User can track substitutions and broader defensive scoring state
-- **EXPT-04**: Export matches the current paper sheet nearly exactly
-
-### Portal Expansion
-
-- **PORT-05**: Charted games appear directly in player profile tabs and other portal hubs
-
-## Out of Scope
+## Out of Scope (v3.0)
 
 | Feature | Reason |
 |---------|--------|
-| Full baserunner engine | Too much complexity for the first shipping version |
-| Full offensive/defensive scorebook replacement | Not required to replace the current pitching chart workflow |
-| Multi-editor real-time collaboration | One-scorer pilot is the fastest way to validate the workflow |
-| Command/execution grading | v1 only needs location capture and downstream reporting |
-| Web-only/PWA implementation | Native iPad + TestFlight is the requested delivery model |
+| Role-based auth (admin/scorer/viewer) | Password-gate model sufficient for single-team internal use; multi-user auth is v4.0 |
+| App Store distribution | TestFlight-only for current user base; App Store review overhead not worth it yet |
+| Billing/subscriptions | No paying customers yet; add after first 2-3 paid teams sign on |
+| Baserunner engine | Already in existing out-of-scope; adds scoring complexity |
+| Real-time multi-scorer collaboration | Single scorer per game is the established constraint |
+| Full player story hero block | Explicitly excluded in product-audit-followup.md |
+
+---
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GAME-01 | Phase 1 | Complete |
-| SYNC-03 | Phase 1 | Complete |
-| AUTH-01 | Phase 2 | Complete |
-| AUTH-02 | Phase 2 | Complete |
-| GAME-02 | Phase 2 | Complete |
-| GAME-03 | Phase 2 | Complete |
-| GAME-04 | Phase 2 | Complete |
-| SYNC-01 | Phase 3 | Complete |
-| CHRT-01 | Phase 4 | Complete |
-| CHRT-02 | Phase 4 | Complete |
-| CHRT-03 | Phase 4 | Complete |
-| CHRT-04 | Phase 4 | Complete |
-| CHRT-05 | Phase 4 | Complete |
-| CHRT-06 | Phase 4 | Complete |
-| ENG-01 | Phase 8 | Complete |
-| ENG-02 | Phase 8 | Complete |
-| ENG-03 | Phase 8 | Complete |
-| ENG-04 | Phase 8 | Complete |
-| SYNC-02 | Phase 5 | Complete |
-| SYNC-04 | Phase 5 | Complete |
-| EXPT-03 | Phase 5 | Complete |
-| PORT-01 | Phase 6 | Complete |
-| PORT-02 | Phase 6 | Complete |
-| PORT-03 | Phase 6 | Complete |
-| PORT-04 | Phase 6 | Complete |
-| EXPT-01 | Phase 7 | Complete |
-| EXPT-02 | Phase 7 | Complete |
-| OPS-01 | Phase 9 | Pending |
-| OPS-02 | Phase 9 | Pending |
+| DONE-01 | Phase 14 | Pending |
+| DONE-02 | Phase 14 | Pending |
+| OPS-01 | Phase 15 | Pending |
+| OPS-02 | Phase 15 | Pending |
+| OPS-03 | Phase 15 | Pending |
+| OPS-04 | Phase 15 | Pending |
+| CODE-01 | Phase 16 | Pending |
+| CODE-02 | Phase 16 | Pending |
+| CODE-03 | Phase 16 | Pending |
+| TEAM-01 | Phase 17 | Pending |
+| TEAM-02 | Phase 17 | Pending |
+| TEAM-03 | Phase 18 | Pending |
+| TEAM-04 | Phase 18 | Pending |
+| TEAM-05 | Phase 18 | Pending |
+| UX-01 | Phase 19 | Pending |
+| UX-02 | Phase 19 | Pending |
+| UX-03 | Phase 19 | Pending |
+| UX-04 | Phase 19 | Pending |
+| DEMO-01 | Phase 20 | Pending |
+| DEMO-02 | Phase 20 | Pending |
+| DEMO-03 | Phase 20 | Pending |
 
 **Coverage:**
-- v1 requirements: 29 total
-- Mapped to phases: 29
+- v3.0 requirements: 21 total
+- Mapped to phases: 21
 - Unmapped: 0 ✓
 
 ---
-*Requirements defined: 2026-03-06*
-*Last updated: 2026-03-06 after Phase 8 charting-engine hardening completion and verification*
+*Requirements defined: 2026-03-20*
+*Last updated: 2026-03-20 after initial definition*
