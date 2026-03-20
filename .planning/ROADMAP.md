@@ -339,12 +339,12 @@ Current status:
   1. Phase 12.1-03 is complete — mixed-role Live AB player profiles (pitcher-only, hitter-only, and two-way players) all render correctly with no blank or broken states.
   2. The codex/game-charting-structure branch passes manual browser UAT across all scenarios: new game creation, pitch recording, PA close, lineup entry, baserunner entry, history edit, and export.
   3. The charting UAT branch is merged to main with a clean build and no regressions.
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 14-01: Complete Phase 12.1-03 mixed-role polish and final validation
 - [ ] 14-02: Execute charting UAT browser test script and document results
-- [ ] 14-03: Merge codex/game-charting-structure to main after UAT passes
+- [ ] 14-03: Phase 14 closeout — update ROADMAP, STATE, and write 14-SUMMARY
 
 ### Phase 15: Ops Foundations
 **Goal**: Make the deployed platform reliable and diagnosable — authentication gates protect page routes, uncaught errors show recovery UI, environment variables are confirmed, and server errors are captured with context.
@@ -355,7 +355,7 @@ Plans:
   2. When a major page surface throws an uncaught render error, the user sees a recoverable error UI instead of a blank screen.
   3. All three required environment variables (PT_PASSWORD, MECHANICS_PASSWORD, DATABASE_URL) are confirmed present and correct on the live Vercel deployment.
   4. Server-side errors are logged with enough context (route, user action, stack) to diagnose failures without local reproduction.
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 15-01: Move proxy.ts auth logic into middleware.ts and verify deployment
@@ -371,7 +371,7 @@ Plans:
   1. ChartingEditor.tsx no longer exists as a single file — its logic, hooks, and sub-components are split into modules each under 500 lines, and all charting tests still pass.
   2. LiveAbInsightsExplorer.tsx no longer exists as a single file — pitcher panels, hitter panels, filter logic, and synthesis helpers are in separate modules each under 500 lines.
   3. No file in web/ exceeds 1000 lines after both decomposition passes complete.
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 16-01: Decompose ChartingEditor.tsx into extracted hooks, sub-components, and logic modules
@@ -386,7 +386,7 @@ Plans:
   1. No page in the portal displays the literal string "Babson" as a hardcoded team name — all references read from a configurable team name source.
   2. The DB schema includes a team_id column on charting games and related records; existing Babson records are migrated to a default team_id without data loss.
   3. A new deployment can be configured with a different team name without code changes.
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 17-01: Audit all hardcoded "Babson" strings in web/ and replace with a configurable team name constant or env variable
@@ -400,7 +400,7 @@ Plans:
   1. An admin user can navigate to a settings surface and update their team name, logo, and colors — changes are reflected across the portal without a code deploy.
   2. Player rosters, slugs, and playerIds are scoped to team_id — a player from Team A cannot appear in Team B's charting sessions or profile views.
   3. Logging in with Team A's credentials cannot access Team B's data — the auth flow is team-aware.
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 18-01: Build admin settings route and team profile configuration surface
@@ -416,7 +416,7 @@ Plans:
   2. Any page that fetches data shows skeleton placeholder content during loading instead of a blank area or content flash.
   3. Every button, filter, and dropdown has a minimum 44px touch target — verified on a mobile viewport.
   4. All modal and panel surfaces can be opened, navigated, and closed using keyboard alone (Tab, Escape, Enter).
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 19-01: Responsive pass on player list, charting hub, leaderboards, and player profile pages
@@ -432,7 +432,7 @@ Plans:
   1. An unauthenticated visitor can access a read-only demo portal without entering credentials — the demo shows realistic seeded data across charting, analytics, and player profiles.
   2. A demo visitor cannot modify any data — all write operations are blocked in demo mode, and seeded data is not affected by visitor sessions.
   3. The root URL (/) shows a landing/marketing page for unauthenticated visitors explaining the product, its features, and linking to the demo.
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 20-01: Implement demo mode flag and read-only enforcement across all write paths
