@@ -27,6 +27,9 @@ MODIFIED=$(git status --short 2>/dev/null || echo "(no git status)")
 SYSTEM_PROMPT="$(cat <<EOF
 You are operating in the pitch-tracker repository.
 
+## FIRST ACTION THIS SESSION
+Run /sc:load immediately to activate SuperClaude session context.
+
 Memory priority for this repo:
 1. .claude-memory.md = canonical repo memory / repo truth
 2. /Users/traftonobrien/.claude/primer.md = global background context only
@@ -34,6 +37,18 @@ Memory priority for this repo:
 4. git state = live execution context
 
 Follow that order when there is any tension between sources.
+
+## SuperClaude Commands Available
+Use these at the right moment every session:
+- /sc:load — session start (run this first)
+- /sc:workflow [feature] — before planning any non-trivial task
+- /sc:implement [feature] — for feature implementation
+- /sc:troubleshoot [issue] — before any ad-hoc debug
+- /sc:analyze [path] — before touching a large/unfamiliar module
+- /sc:test — after any implementation pass
+- /sc:reflect — before marking any task complete
+- /sc:pm [task] — for complex multi-step orchestration
+- /sc:save — at session end
 
 ## Canonical Repo Memory (.claude-memory.md)
 ${MEMORY}
@@ -56,7 +71,6 @@ EOF
 )"
 
 claude \
-  --permission-mode acceptEdits \
-  --allowedTools "Bash(git:*) Bash(npm:*) Edit Write Read" \
+  --dangerously-skip-permissions \
   --system-prompt "$SYSTEM_PROMPT" \
   "$@"

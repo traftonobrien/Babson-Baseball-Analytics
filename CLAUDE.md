@@ -20,30 +20,60 @@ All persistent memory for this project flows through `./memory.sh`.
 ---
 
 ## SESSION START
-1. Read tasks/lessons.md — apply all lessons before touching anything
-2. Read tasks/todo.md — understand current state
-3. If neither exists, create them before starting
+1. `/sc:load` — loads project context, lessons, git state automatically
+2. Read tasks/todo.md — understand current state and active work
+3. If lessons.md or todo.md don't exist, create them before starting
+
+## SUPERCLAUDE COMMANDS
+SuperClaude enhances each stage of the workflow. Use these commands at the right moment.
+
+### Session Start
+- `/sc:load` — intelligent context load (project state, lessons, git, todos)
+- `/sc:recommend` — if unsure what to work on next, get a prioritized suggestion
+
+### Planning (use before implementing)
+- `/sc:workflow [feature description]` — generates structured implementation plan (use this instead of writing todo.md plans manually for non-trivial features)
+- `/sc:design [component]` — architecture design for new systems or major changes
+- `/sc:spec-panel [spec]` — multi-expert review before committing to a major spec
+- `/sc:estimate [task]` — effort estimate before scoping a large task
+
+### Research & Analysis
+- `/sc:research [topic]` — deep web research for unknowns (new libraries, NCAA scraping, APIs)
+- `/sc:analyze [file or module]` — comprehensive quality/security/performance review before touching a large module
+- `/sc:index-repo` — 94% token reduction codebase map; use when entering an unfamiliar part of the repo
+
+### Implementation
+- `/sc:implement [feature]` — intelligent feature implementation with persona routing (frontend/backend/data)
+- `/sc:pm [task]` — orchestrate complex multi-step work with delegation (replaces manual subagent strategy)
+
+### Quality & Verification
+- `/sc:test` — run tests with coverage analysis after any implementation pass
+- `/sc:reflect` — validate completed work against original requirements before marking done
+- `/sc:improve [file]` — systematic quality pass after implementation is functional
+
+### Bug Fixing
+- `/sc:troubleshoot [issue]` — systematic diagnosis with scientific method (use this for any bug before going ad-hoc)
 
 ## WORKFLOW
 
 ### 1. Plan First
-- Enter plan mode for any non-trivial task (3+ steps)
-- Write plan to tasks/todo.md before implementing
+- For non-trivial tasks (3+ steps): run `/sc:workflow` to generate the plan, write output to tasks/todo.md
+- For architecture decisions: run `/sc:design` before writing any code
 - If something goes wrong, STOP and re-plan — never push through
 
-### 2. Subagent Strategy
-- Use subagents to keep main context clean
-- One task per subagent
-- Throw more compute at hard problems
+### 2. Implementation
+- Use `/sc:implement` for feature work — it routes to the right persona (senior-frontend, senior-backend, etc.)
+- Use `/sc:pm` for complex orchestration across multiple files/systems
+- Use subagents for parallel independent tasks to keep main context clean
 
 ### 3. Self-Improvement Loop
 - After any correction: update tasks/lessons.md
 - Format: [date] | what went wrong | rule to prevent it
-- Review lessons at every session start
+- `/sc:load` reads these lessons automatically at session start
 
 ### 4. Verification Standard
-- Never mark complete without proving it works
-- Run tests, check logs, diff behavior
+- Run `/sc:test` after implementation
+- Run `/sc:reflect` before marking complete
 - Ask: "Would a staff engineer approve this?"
 
 ### 5. Demand Elegance
@@ -52,7 +82,7 @@ All persistent memory for this project flows through `./memory.sh`.
 - Don't over-engineer things
 
 ### 6. Autonomous Bug Fixing
-- When given a bug: just fix it
+- When given a bug: run `/sc:troubleshoot` first
 - Go to logs, find root cause, resolve it
 - No hand-holding needed
 
