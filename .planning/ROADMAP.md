@@ -22,13 +22,13 @@ This roadmap takes the project from a brownfield repo with no live charting doma
 - [x] **Phase 10: Analytics Foundation** - Build shared stat engine for pitcher and hitter metrics from charting pitch/PA data
 - [x] **Phase 11: Session Overview Enhancements** - Enrich /charting/games/[id] with per-pitcher and per-hitter breakdown sections
 - [x] **Phase 12: Live AB Leaderboard** - New /charting/leaderboard with Pitchers + Hitters tabs, filters, and sortable columns
-- [ ] **Phase 12.1: Live AB Player Profile Integration** - Bring charted pitcher and hitter analytics into the main player profile tabs as a new Live AB surface
+- [x] **Phase 12.1: Live AB Player Profile Integration** - Bring charted pitcher and hitter analytics into the main player profile tabs as a new Live AB surface
 - [ ] **Phase 13: Integrated At-A-Glance Dashboard** - Redesign the game session overview into a dense, vertical-scrolling-free compact layout.
 
 ---
 ## Milestone v3.0: Market-Ready Platform
 
-- [ ] **Phase 14: Completion** - Finish Phase 12.1-03 mixed-role polish and merge the charting UAT branch
+- [x] **Phase 14: Completion** - Finish Phase 12.1-03 mixed-role polish and merge the charting UAT branch
 - [ ] **Phase 15: Ops Foundations** - Fix middleware deployment, add error boundaries, verify env vars, add structured logging
 - [ ] **Phase 16: Code Decomposition** - Break ChartingEditor and LiveAbInsightsExplorer into modules under 500 lines each
 - [ ] **Phase 17: Multi-Tenancy Part 1** - Replace Babson hardcoding with configurable team identity and add team_id to DB schema
@@ -288,7 +288,7 @@ Plans:
 Plans:
 - [x] 12.1-01: Build role-aware Live AB profile aggregation and hitter identity resolution helpers
 - [x] 12.1-02: Integrate the Live AB tab into `/players/[slug]` with pitcher and hitter profile overviews
-- [ ] 12.1-03: Polish mixed-role states, session links, and final validation coverage
+- [x] 12.1-03: Polish mixed-role states, session links, and final validation coverage
 
 Current status:
 - `/players/[slug]` now exposes a Live AB tab backed by shared charting profile data, including pitcher/hitter overview cards and recent session links.
@@ -324,7 +324,7 @@ Current status:
 | 10. Analytics Foundation | 4/4 | Complete | 2026-03-10 |
 | 11. Session Overview Enhancements | 3/3 | Complete | 2026-03-10 |
 | 12. Live AB Leaderboard | 3/3 | Complete | 2026-03-09 |
-| 12.1. Live AB Player Profile Integration | 2/3 | In progress | - |
+| 12.1. Live AB Player Profile Integration | 3/3 | Complete | 2026-03-21 |
 | 13. Integrated At-A-Glance Dashboard | 0/3 | Not started | - |
 
 ---
@@ -342,9 +342,9 @@ Current status:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 14-01: Complete Phase 12.1-03 mixed-role polish and final validation
-- [ ] 14-02: Execute charting UAT browser test script and document results
-- [ ] 14-03: Phase 14 closeout — update ROADMAP, STATE, and write 14-SUMMARY
+- [x] 14-01: Complete Phase 12.1-03 mixed-role polish and final validation
+- [x] 14-02: Execute charting UAT browser test script and document results
+- [x] 14-03: Phase 14 closeout — update ROADMAP, STATE, and write 14-SUMMARY
 
 ### Phase 15: Ops Foundations
 **Goal**: Make the deployed platform reliable and diagnosable — authentication gates protect page routes, uncaught errors show recovery UI, environment variables are confirmed, and server errors are captured with context.
@@ -445,7 +445,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 14. Completion | 0/3 | Not started | - |
+| 14. Completion | 3/3 | Complete | 2026-03-21 |
 | 15. Ops Foundations | 0/4 | Not started | - |
 | 16. Code Decomposition | 0/3 | Not started | - |
 | 17. Multi-Tenancy Part 1 | 0/2 | Not started | - |
