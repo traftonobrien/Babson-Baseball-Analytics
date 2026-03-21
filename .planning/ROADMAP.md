@@ -355,7 +355,7 @@ Plans:
   2. When a major page surface throws an uncaught render error, the user sees a recoverable error UI instead of a blank screen.
   3. All three required environment variables (PT_PASSWORD, MECHANICS_PASSWORD, DATABASE_URL) are confirmed present and correct on the live Vercel deployment.
   4. Server-side errors are logged with enough context (route, user action, stack) to diagnose failures without local reproduction.
-**Plans**: 3 plans
+**Plans**: 4 plans
 
 Plans:
 - [ ] 15-01: Move proxy.ts auth logic into middleware.ts and verify deployment
