@@ -24,7 +24,6 @@ import CompareKpiRow from "@/app/components/CompareKpiRow";
 import ComparePitchTypeTable from "@/app/components/ComparePitchTypeTable";
 import CompareLaneTable from "@/app/components/CompareLaneTable";
 import StrikeZoneScatter from "@/app/components/StrikeZoneScatter";
-import LogoutButton from "@/app/components/LogoutButton";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import {
   LeaderboardHero,
@@ -228,7 +227,6 @@ function CompareInner() {
             >
               {backLabel}
             </Link>
-            <LogoutButton className="rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 hover:border-zinc-700 hover:text-zinc-100" />
           </div>
         }
       />

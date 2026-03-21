@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { chartingPitcherSegments } from "@/db/schema";
 import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
+import { logApiError } from "@/lib/server/logger";
 
 export const runtime = "nodejs";
 
@@ -69,7 +70,14 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
 
     return NextResponse.json({ segment: updated });
   } catch (err) {
-    console.error(`charting/games/${id}/segments/${segId} PATCH:`, err);
+    logApiError({
+      route: `/api/charting/games/${id}/segments/${segId}`,
+      method: "PATCH",
+      status: 500,
+      action: "update segment",
+      error: err,
+      context: { gameId: id, segmentId: segId },
+    });
     return NextResponse.json(
       { error: "Failed to update segment" },
       { status: 500 }

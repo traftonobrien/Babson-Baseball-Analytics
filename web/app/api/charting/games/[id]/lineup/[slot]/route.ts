@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { chartingGames, chartingLineupEntries } from "@/db/schema";
 import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
 import { isValidLineupSlot } from "@/lib/charting/domain";
+import { logApiError } from "@/lib/server/logger";
 
 export const runtime = "nodejs";
 
@@ -101,7 +102,14 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
 
     return NextResponse.json({ entry });
   } catch (err) {
-    console.error(`charting/games/${id}/lineup/${slot} PATCH:`, err);
+    logApiError({
+      route: `/api/charting/games/${id}/lineup/${slot}`,
+      method: "PATCH",
+      status: 500,
+      action: "update lineup slot",
+      error: err,
+      context: { gameId: id, slot },
+    });
     return NextResponse.json(
       { error: "Failed to update lineup slot" },
       { status: 500 }

@@ -29,7 +29,7 @@ This roadmap takes the project from a brownfield repo with no live charting doma
 ## Milestone v3.0: Market-Ready Platform
 
 - [x] **Phase 14: Completion** - Finish Phase 12.1-03 mixed-role polish and merge the charting UAT branch
-- [ ] **Phase 15: Ops Foundations** - Fix middleware deployment, add error boundaries, verify env vars, add structured logging
+- [x] **Phase 15: Ops Foundations** - Fix middleware deployment, add error boundaries, verify env vars, add structured logging
 - [ ] **Phase 16: Code Decomposition** - Break ChartingEditor and LiveAbInsightsExplorer into modules under 500 lines each
 - [ ] **Phase 17: Multi-Tenancy Part 1** - Replace Babson hardcoding with configurable team identity and add team_id to DB schema
 - [ ] **Phase 18: Multi-Tenancy Part 2** - Build admin settings surface, team-scoped player identity, and team-aware auth
@@ -358,10 +358,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 15-01: Move proxy.ts auth logic into middleware.ts and verify deployment
-- [ ] 15-02: Add React error boundaries to all major page surfaces
-- [ ] 15-03: Audit and confirm Vercel environment variables; document verification steps
-- [ ] 15-04: Implement structured server-side error logging
+- [x] 15-01: Move proxy.ts auth logic into middleware.ts and verify deployment
+- [x] 15-02: Add React error boundaries to all major page surfaces
+- [x] 15-03: Audit and confirm Vercel environment variables; document verification steps
+- [x] 15-04: Implement structured server-side error logging
 
 ### Phase 16: Code Decomposition
 **Goal**: Break the two mega-files down into focused modules so the codebase is safely navigable and no single file in web/ exceeds 1000 lines.
@@ -374,8 +374,8 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 16-01: Decompose ChartingEditor.tsx into extracted hooks, sub-components, and logic modules
-- [ ] 16-02: Decompose LiveAbInsightsExplorer.tsx into pitcher/hitter panels, filter logic, and synthesis helpers
+- [x] 16-01: Decompose ChartingEditor.tsx into extracted hooks, sub-components, and logic modules
+- [x] 16-02: Decompose LiveAbInsightsExplorer.tsx into pitcher/hitter panels, filter logic, and synthesis helpers
 - [ ] 16-03: Audit all remaining files in web/ for the 1000-line ceiling and decompose any that exceed it
 
 ### Phase 17: Multi-Tenancy Part 1
@@ -446,8 +446,8 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 14. Completion | 3/3 | Complete | 2026-03-21 |
-| 15. Ops Foundations | 1/4 | In Progress|  |
-| 16. Code Decomposition | 0/3 | Not started | - |
+| 15. Ops Foundations | 4/4 | Complete | 2026-03-21 |
+| 16. Code Decomposition | 2/3 | In progress | - |
 | 17. Multi-Tenancy Part 1 | 0/2 | Not started | - |
 | 18. Multi-Tenancy Part 2 | 0/3 | Not started | - |
 | 19. UX Polish | 0/4 | Not started | - |

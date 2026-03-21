@@ -5,6 +5,7 @@ import {
   buildChartingExportFilename,
 } from "@/lib/charting/export";
 import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
+import { logApiError } from "@/lib/server/logger";
 
 export const runtime = "nodejs";
 
@@ -39,7 +40,14 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
       },
     });
   } catch (err) {
-    console.error(`charting/games/${id}/csv GET:`, err);
+    logApiError({
+      route: `/api/charting/games/${id}/csv`,
+      method: "GET",
+      status: 500,
+      action: "export csv",
+      error: err,
+      context: { gameId: id },
+    });
     return NextResponse.json(
       { error: "Failed to generate CSV" },
       { status: 500 },

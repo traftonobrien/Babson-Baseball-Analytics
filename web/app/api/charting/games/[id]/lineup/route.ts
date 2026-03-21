@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { chartingGames, chartingLineupEntries } from "@/db/schema";
 import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
 import { isValidLineupSlot } from "@/lib/charting/domain";
+import { logApiError } from "@/lib/server/logger";
 
 export const runtime = "nodejs";
 
@@ -35,7 +36,14 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
 
     return NextResponse.json({ lineup });
   } catch (err) {
-    console.error(`charting/games/${id}/lineup GET:`, err);
+    logApiError({
+      route: `/api/charting/games/${id}/lineup`,
+      method: "GET",
+      status: 500,
+      action: "get lineup",
+      error: err,
+      context: { gameId: id },
+    });
     return NextResponse.json(
       { error: "Failed to fetch lineup" },
       { status: 500 }
@@ -152,7 +160,14 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
 
     return NextResponse.json({ lineup });
   } catch (err) {
-    console.error(`charting/games/${id}/lineup PUT:`, err);
+    logApiError({
+      route: `/api/charting/games/${id}/lineup`,
+      method: "PUT",
+      status: 500,
+      action: "update lineup",
+      error: err,
+      context: { gameId: id },
+    });
     return NextResponse.json(
       { error: "Failed to update lineup" },
       { status: 500 }

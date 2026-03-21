@@ -5,6 +5,7 @@ import { chartingGames } from "@/db/schema";
 import { buildBootstrapPitchers } from "@/lib/charting/bootstrapPitchers";
 import { buildBootstrapRosterPlayers } from "@/lib/charting/bootstrapRoster";
 import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
+import { logApiError } from "@/lib/server/logger";
 
 export const runtime = "nodejs";
 
@@ -31,7 +32,13 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ pitchers, rosterPlayers, recentGames });
   } catch (err) {
-    console.error("charting/bootstrap GET:", err);
+    logApiError({
+      route: "/api/charting/bootstrap",
+      method: "GET",
+      status: 500,
+      action: "load bootstrap data",
+      error: err,
+    });
     return NextResponse.json(
       { error: "Failed to load bootstrap data" },
       { status: 500 }

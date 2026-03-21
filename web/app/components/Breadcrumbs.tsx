@@ -18,7 +18,7 @@ export default function Breadcrumbs({ items, className }: Props) {
   if (items.length === 0) return null;
 
   return (
-    <nav className={cn("mb-4 flex items-center gap-1.5 text-sm text-zinc-500", className)}>
+    <nav className={cn("hidden md:flex mb-4 items-center gap-1.5 text-sm text-zinc-500", className)}>
       {items.map((item, i) => (
         <span key={i} className="flex items-center gap-1.5">
           {i > 0 && <ChevronRight className="w-3.5 h-3.5 text-zinc-600" />}

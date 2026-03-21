@@ -36,7 +36,7 @@ import type { PitchGroup } from "@/lib/leaderboards/pitchGroups";
 import { handBadgeClassesCompact } from "@/lib/handBadge";
 import { savantColorAt } from "@/lib/savantColors";
 import { plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
-import LogoutButton from "@/app/components/LogoutButton";
+
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -453,7 +453,6 @@ export default function LeaderboardsPage() {
           { label: "Leaderboards", href: "/leaderboards-hub" },
           { label: "Command" },
         ]}
-        actions={<LogoutButton />}
       >
         <LeaderboardHero
           tone="orange"

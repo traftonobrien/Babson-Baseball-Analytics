@@ -52,6 +52,7 @@ import {
 import { loadChartingGameSnapshot } from "@/lib/charting/snapshot";
 import type { ChartingGameSnapshot } from "@/lib/charting/types";
 import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
+import { logApiError } from "@/lib/server/logger";
 
 export const runtime = "nodejs";
 
@@ -76,7 +77,14 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
     }
     return NextResponse.json(snapshot);
   } catch (err) {
-    console.error(`charting/games/${id} GET:`, err);
+    logApiError({
+      route: `/api/charting/games/${id}`,
+      method: "GET",
+      status: 500,
+      action: "fetch game",
+      error: err,
+      context: { gameId: id },
+    });
     return NextResponse.json(
       { error: "Failed to fetch charting game" },
       { status: 500 }
@@ -461,7 +469,14 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
 
     return NextResponse.json({ game: updated[0] });
   } catch (err) {
-    console.error(`charting/games/${id} PATCH:`, err);
+    logApiError({
+      route: `/api/charting/games/${id}`,
+      method: "PATCH",
+      status: 500,
+      action: "update game",
+      error: err,
+      context: { gameId: id },
+    });
     return NextResponse.json(
       { error: "Failed to update charting game" },
       { status: 500 }
@@ -513,7 +528,14 @@ export async function DELETE(req: NextRequest, { params }: RouteContext) {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error(`charting/games/${id} DELETE:`, err);
+    logApiError({
+      route: `/api/charting/games/${id}`,
+      method: "DELETE",
+      status: 500,
+      action: "delete game",
+      error: err,
+      context: { gameId: id },
+    });
     return NextResponse.json(
       { error: "Failed to delete charting game" },
       { status: 500 }

@@ -3,6 +3,7 @@ import { desc } from "drizzle-orm";
 import { db } from "@/db";
 import { chartingGames } from "@/db/schema";
 import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
+import { logApiError } from "@/lib/server/logger";
 
 const FIELD_LIMITS: Record<string, number> = {
   opponent: 100,
@@ -53,7 +54,13 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ games: rows });
   } catch (err) {
-    console.error("charting/games GET:", err);
+    logApiError({
+      route: "/api/charting/games",
+      method: "GET",
+      status: 500,
+      action: "list games",
+      error: err,
+    });
     return NextResponse.json(
       { error: "Failed to fetch charting games" },
       { status: 500 }
@@ -144,7 +151,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ game }, { status: 201 });
   } catch (err) {
-    console.error("charting/games POST:", err);
+    logApiError({
+      route: "/api/charting/games",
+      method: "POST",
+      status: 500,
+      action: "create game",
+      error: err,
+    });
     return NextResponse.json(
       { error: "Failed to create charting game" },
       { status: 500 }

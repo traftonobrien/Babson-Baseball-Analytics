@@ -10,20 +10,20 @@
 
 ### Completion — Finish In-Flight Work
 
-- [ ] **DONE-01**: Phase 12.1-03 is complete — mixed-role Live AB player profile polish and final validation pass
-- [ ] **DONE-02**: Charting UAT passes — codex/game-charting-structure branch is manually browser-tested and merged to main
+- [x] **DONE-01**: Phase 12.1-03 is complete — mixed-role Live AB player profile polish and final validation pass
+- [x] **DONE-02**: Charting UAT passes — codex/game-charting-structure branch is manually browser-tested and merged to main
 
 ### Ops — Reliability and Observability
 
 - [x] **OPS-01**: Next.js middleware is actually running — proxy.ts logic is deployed as middleware.ts protecting all page routes
-- [ ] **OPS-02**: Error boundaries exist on all major page surfaces — uncaught render errors show a recoverable UI instead of a blank screen
-- [ ] **OPS-03**: Vercel environment variables (PT_PASSWORD, MECHANICS_PASSWORD, DATABASE_URL) are confirmed correct on the live deployment
-- [ ] **OPS-04**: Structured error logging is in place — server errors are captured with enough context to diagnose production failures
+- [x] **OPS-02**: Error boundaries exist on all major page surfaces — uncaught render errors show a recoverable UI instead of a blank screen
+- [x] **OPS-03**: Vercel environment variables (PT_PASSWORD, MECHANICS_PASSWORD, DATABASE_URL) are confirmed correct on the live deployment
+- [x] **OPS-04**: Structured error logging is in place — server errors are captured with enough context to diagnose production failures
 
 ### Code Health — Decompose Mega-Files
 
-- [ ] **CODE-01**: ChartingEditor.tsx is broken into modules under 500 lines each — logic, hooks, and sub-components extracted
-- [ ] **CODE-02**: LiveAbInsightsExplorer.tsx is broken into modules under 500 lines each — pitcher/hitter panels, filter logic, and synthesis helpers extracted
+- [x] **CODE-01**: ChartingEditor.tsx is broken into modules under 500 lines each — logic, hooks, and sub-components extracted
+- [x] **CODE-02**: LiveAbInsightsExplorer.tsx is broken into modules under 500 lines each — pitcher/hitter panels, filter logic, and synthesis helpers extracted
 - [ ] **CODE-03**: No single file in web/ exceeds 1000 lines after decomposition passes
 
 ### Multi-Tenancy — Team Parameterization
@@ -89,14 +89,14 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DONE-01 | Phase 14 | Pending |
-| DONE-02 | Phase 14 | Pending |
+| DONE-01 | Phase 14 | Complete |
+| DONE-02 | Phase 14 | Complete |
 | OPS-01 | Phase 15 | Complete |
-| OPS-02 | Phase 15 | Pending |
-| OPS-03 | Phase 15 | Pending |
-| OPS-04 | Phase 15 | Pending |
-| CODE-01 | Phase 16 | Pending |
-| CODE-02 | Phase 16 | Pending |
+| OPS-02 | Phase 15 | Complete |
+| OPS-03 | Phase 15 | Complete |
+| OPS-04 | Phase 15 | Complete |
+| CODE-01 | Phase 16 | Complete |
+| CODE-02 | Phase 16 | Complete |
 | CODE-03 | Phase 16 | Pending |
 | TEAM-01 | Phase 17 | Pending |
 | TEAM-02 | Phase 17 | Pending |
@@ -118,4 +118,4 @@
 
 ---
 *Requirements defined: 2026-03-20*
-*Last updated: 2026-03-20 — traceability confirmed after roadmap creation*
+*Last updated: 2026-03-21 — Phase 16-01 and 16-02 complete locally; CODE-01/02 traceability reconciled*

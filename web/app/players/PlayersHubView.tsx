@@ -361,7 +361,7 @@ export default function PlayersHubView({
 
         <LeaderboardToolbar>
           <div className="grid gap-4">
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               {([
                 {
                   value: "pitchers",

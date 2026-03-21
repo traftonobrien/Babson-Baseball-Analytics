@@ -11,7 +11,6 @@ import {
   LeaderboardPill,
   LeaderboardToolbar,
 } from "@/app/components/leaderboards/LeaderboardChrome";
-import LogoutButton from "@/app/components/LogoutButton";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
 
 type StatMode = "pitching" | "batting";
@@ -429,7 +428,6 @@ export default function TeamStatsPage() {
           { label: "Leaderboards", href: "/leaderboards-hub" },
           { label: "Statistics" },
         ]}
-        actions={<LogoutButton />}
       >
         <LeaderboardHero
           tone="sky"

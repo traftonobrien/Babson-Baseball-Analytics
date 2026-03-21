@@ -17,7 +17,6 @@ import LaneReport from "../../components/LaneReport";
 import PitchTypeSummaryCards from "../../components/PitchTypeSummaryCards";
 import CommandPlusSection from "../../components/CommandPlusSection";
 import MissHeatmap from "../../components/MissHeatmap";
-import LogoutButton from "../../components/LogoutButton";
 import OutingSelect from "./OutingSelect";
 import GameStatsSection from "@/lib/stats/GameStatsSection";
 import { seasonFromDateId } from "@/lib/season";
@@ -381,7 +380,6 @@ export default function PlayerDashboard({
                 <LeaderboardPill tone="orange">
                   {laneFiltered.length} / {pitches.length} pitches
                 </LeaderboardPill>
-                <LogoutButton className="rounded-full border border-zinc-800 bg-zinc-950/75 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400 hover:border-zinc-700 hover:text-zinc-200" />
               </div>
             </div>
 

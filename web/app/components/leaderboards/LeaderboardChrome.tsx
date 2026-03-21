@@ -296,7 +296,7 @@ export function LeaderboardToolbar({
   return (
     <div
       className={joinClasses(
-        "relative mt-5 overflow-hidden rounded-[1.5rem] border p-4",
+        "relative mt-5 overflow-visible rounded-[1.5rem] border p-4",
         className,
       )}
       style={BRAND_PANEL_STYLE}

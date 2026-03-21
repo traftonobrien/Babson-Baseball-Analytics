@@ -5,6 +5,7 @@ import {
 } from "@/lib/charting/pdf";
 import { loadChartingGameSnapshot } from "@/lib/charting/snapshot";
 import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
+import { logApiError } from "@/lib/server/logger";
 
 export const runtime = "nodejs";
 
@@ -40,7 +41,14 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
       },
     });
   } catch (err) {
-    console.error(`charting/games/${id}/export-pdf GET:`, err);
+    logApiError({
+      route: `/api/charting/games/${id}/export-pdf`,
+      method: "GET",
+      status: 500,
+      action: "export game pdf",
+      error: err,
+      context: { gameId: id },
+    });
     return NextResponse.json(
       { error: "Failed to export charting game PDF" },
       { status: 500 }

@@ -5,6 +5,7 @@ import { chartingGames, chartingPitcherSegments } from "@/db/schema";
 import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
 import { nextSegmentOrder } from "@/lib/charting/domain";
 import { CANONICAL_BY_PLAYER_ID } from "@/lib/canonicalPlayersData";
+import { logApiError } from "@/lib/server/logger";
 
 export const runtime = "nodejs";
 
@@ -86,7 +87,14 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
 
     return NextResponse.json({ segment }, { status: 201 });
   } catch (err) {
-    console.error(`charting/games/${id}/segments POST:`, err);
+    logApiError({
+      route: `/api/charting/games/${id}/segments`,
+      method: "POST",
+      status: 500,
+      action: "create segment",
+      error: err,
+      context: { gameId: id },
+    });
     return NextResponse.json(
       { error: "Failed to add pitcher segment" },
       { status: 500 }

@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
-import { Trophy, Search, BookOpen } from "lucide-react";
+import { Trophy, Search, BookOpen, ChevronDown, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Button,
   leaderboardFilterButtonBaseClassName,
   leaderboardFilterButtonBlueActiveClassName,
   leaderboardFilterButtonBlueInactiveClassName,
+  leaderboardFilterButtonGhostInactiveClassName,
 } from "@/components/ui/neon-button";
 import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
@@ -94,7 +96,100 @@ function fmt(v: number, cat: string): string {
   return v.toFixed(1);
 }
 
+interface DropdownFilterProps<T extends string> {
+  label: string;
+  options: { value: T; display: string; chip?: string }[];
+  selected: T;
+  onChange: (v: T) => void;
+}
 
+function DropdownFilter<T extends string>({ label, options, selected, onChange }: DropdownFilterProps<T>) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find((opt) => opt.value === selected) ?? options[0];
+
+  return (
+    <div className="space-y-2 relative w-full" ref={containerRef}>
+      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+        {label}
+      </div>
+      <Button
+        type="button"
+        variant="default"
+        neon
+        tone="blue"
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between min-w-[14rem] w-full px-3.5 py-2 font-medium"
+      >
+        <span className="flex items-center gap-2">
+          {selectedOption?.chip && (
+            <span
+              className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
+              style={{ backgroundColor: pitchColor(selectedOption.chip) }}
+            />
+          )}
+          {selectedOption?.display}
+        </span>
+        <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </Button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="absolute z-50 top-full left-0 min-w-full mt-2 rounded-2xl border border-zinc-800/90 bg-zinc-900/95 backdrop-blur-xl p-1.5 shadow-2xl"
+          >
+            <div className="flex flex-col gap-0.5 max-h-[300px] overflow-y-auto overflow-x-hidden p-0.5 custom-scrollbar">
+              {options.map((opt) => (
+                <Button
+                  key={opt.value}
+                  type="button"
+                  variant={selected === opt.value ? "default" : "ghost"}
+                  neon
+                  tone="blue"
+                  onClick={() => {
+                    onChange(opt.value);
+                    setOpen(false);
+                  }}
+                  className={`flex items-center justify-between w-full px-3.5 py-2 font-medium rounded-xl ${
+                    selected === opt.value
+                      ? leaderboardFilterButtonBlueActiveClassName
+                      : "text-zinc-300 hover:text-white"
+                  }`}
+                >
+                  <span className="flex items-center gap-2 truncate whitespace-nowrap">
+                    {opt.chip && (
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"
+                        style={{ backgroundColor: pitchColor(opt.chip) }}
+                      />
+                    )}
+                    {opt.display}
+                  </span>
+                  {selected === opt.value && <Check className="w-4 h-4 ml-6 shrink-0 text-blue-400" />}
+                </Button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 function rankColor(i: number): string {
   const glow = "[text-shadow:0_0_8px_currentColor]";
   if (i === 0) return `text-amber-400 ${glow}`; // gold
@@ -340,7 +435,18 @@ export default function TrackmanLeaderboardsPage() {
         <>
           <LeaderboardToolbar>
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1.75fr)_minmax(18rem,22rem)] xl:items-end">
-              <div className="space-y-2">
+              <div className="xl:hidden">
+                <DropdownFilter<string>
+                  label="Metric"
+                  options={categories.map((cat) => ({
+                    value: cat,
+                    display: CATEGORY_LABELS[cat] ?? cat,
+                  }))}
+                  selected={activeCategory}
+                  onChange={(cat) => runWithTransition(() => setActiveCategory(cat))}
+                />
+              </div>
+              <div className="hidden xl:block space-y-2">
                 <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
                   Metric
                 </div>
@@ -391,92 +497,123 @@ export default function TrackmanLeaderboardsPage() {
           <div
             className={contentTransitionClassName}
           >
-            {/* Category pitch type filter (for non-Stuff+ categories) */}
             {categoryPitchOptions.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {categoryPitchOptions.map((opt) => (
-                  <Button
-                    key={opt.value}
-                    type="button"
-                    size="sm"
-                    variant="default"
-                    neon
-                    tone="blue"
-                    onClick={() => runWithTransition(() => setCategoryPitchFilter(opt.value))}
-                    className={`${leaderboardFilterButtonBaseClassName} flex items-center gap-1 ${
-                      categoryPitchFilter === opt.value
-                        ? leaderboardFilterButtonBlueActiveClassName
-                        : leaderboardFilterButtonBlueInactiveClassName
-                    }`}
-                  >
-                    {opt.value !== "all" && (
-                      <span
-                        className="w-2 h-2 rounded-full shrink-0"
-                        style={{ backgroundColor: pitchColor(opt.label) }}
-                      />
-                    )}
-                    {opt.label}
-                  </Button>
-                ))}
+              <div className="mt-4">
+                <div className="xl:hidden">
+                  <DropdownFilter<string>
+                    label="Pitch Filter"
+                    options={categoryPitchOptions.map((opt) => ({
+                      value: opt.value,
+                      display: opt.label,
+                      chip: opt.value !== "all" ? opt.label : undefined,
+                    }))}
+                    selected={categoryPitchFilter}
+                    onChange={(val) => runWithTransition(() => setCategoryPitchFilter(val))}
+                  />
+                </div>
+                <div className="hidden xl:flex mt-3 flex-wrap gap-1.5">
+                  {categoryPitchOptions.map((opt) => (
+                    <Button
+                      key={opt.value}
+                      type="button"
+                      size="sm"
+                      variant="default"
+                      neon
+                      tone="blue"
+                      onClick={() => runWithTransition(() => setCategoryPitchFilter(opt.value))}
+                      className={`${leaderboardFilterButtonBaseClassName} flex items-center gap-1 ${
+                        categoryPitchFilter === opt.value
+                          ? leaderboardFilterButtonBlueActiveClassName
+                          : leaderboardFilterButtonBlueInactiveClassName
+                      }`}
+                    >
+                      {opt.value !== "all" && (
+                        <span
+                          className="w-2 h-2 rounded-full shrink-0 shadow-sm"
+                          style={{ backgroundColor: pitchColor(opt.label) }}
+                        />
+                      )}
+                      {opt.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
             )}
 
             {/* Stuff+ section */}
             {activeCategory && activeCategory === "stuff_plus" ? (
               <>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="default"
-                    neon
-                    tone="blue"
-                    onClick={() => runWithTransition(() => setStuffPlusPitchFilter("total"))}
-                    className={`${leaderboardFilterButtonBaseClassName} ${
-                      stuffPlusPitchFilter === "total"
-                        ? leaderboardFilterButtonBlueActiveClassName
-                        : leaderboardFilterButtonBlueInactiveClassName
-                    }`}
-                  >
-                    Total Grade
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="default"
-                    neon
-                    tone="blue"
-                    onClick={() => runWithTransition(() => setStuffPlusPitchFilter("all"))}
-                    className={`${leaderboardFilterButtonBaseClassName} ${
-                      stuffPlusPitchFilter === "all"
-                        ? leaderboardFilterButtonBlueActiveClassName
-                        : leaderboardFilterButtonBlueInactiveClassName
-                    }`}
-                  >
-                    Top Pitch
-                  </Button>
-                  {stuffPlusPitchTypes.map((pt) => (
+                <div className="mt-4">
+                  <div className="xl:hidden">
+                    <DropdownFilter<string>
+                      label="Pitch Filter"
+                      options={[
+                        { value: "total", display: "Total Grade" },
+                        { value: "all", display: "Top Pitch" },
+                        ...stuffPlusPitchTypes.map((pt) => ({
+                          value: pt,
+                          display: pt,
+                          chip: pt,
+                        })),
+                      ]}
+                      selected={stuffPlusPitchFilter}
+                      onChange={(val) => runWithTransition(() => setStuffPlusPitchFilter(val))}
+                    />
+                  </div>
+                  <div className="hidden xl:flex mt-3 flex-wrap gap-1.5">
                     <Button
-                      key={pt}
                       type="button"
                       size="sm"
                       variant="default"
                       neon
                       tone="blue"
-                      onClick={() => runWithTransition(() => setStuffPlusPitchFilter(pt))}
-                      className={`${leaderboardFilterButtonBaseClassName} flex items-center gap-1 ${
-                        stuffPlusPitchFilter === pt
+                      onClick={() => runWithTransition(() => setStuffPlusPitchFilter("total"))}
+                      className={`${leaderboardFilterButtonBaseClassName} ${
+                        stuffPlusPitchFilter === "total"
                           ? leaderboardFilterButtonBlueActiveClassName
                           : leaderboardFilterButtonBlueInactiveClassName
                       }`}
                     >
-                      <span
-                        className="w-2 h-2 rounded-full shrink-0"
-                        style={{ backgroundColor: pitchColor(pt) }}
-                      />
-                      {pt}
+                      Total Grade
                     </Button>
-                  ))}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="default"
+                      neon
+                      tone="blue"
+                      onClick={() => runWithTransition(() => setStuffPlusPitchFilter("all"))}
+                      className={`${leaderboardFilterButtonBaseClassName} ${
+                        stuffPlusPitchFilter === "all"
+                          ? leaderboardFilterButtonBlueActiveClassName
+                          : leaderboardFilterButtonBlueInactiveClassName
+                      }`}
+                    >
+                      Top Pitch
+                    </Button>
+                    {stuffPlusPitchTypes.map((pt) => (
+                      <Button
+                        key={pt}
+                        type="button"
+                        size="sm"
+                        variant="default"
+                        neon
+                        tone="blue"
+                        onClick={() => runWithTransition(() => setStuffPlusPitchFilter(pt))}
+                        className={`${leaderboardFilterButtonBaseClassName} flex items-center gap-1 ${
+                          stuffPlusPitchFilter === pt
+                            ? leaderboardFilterButtonBlueActiveClassName
+                            : leaderboardFilterButtonBlueInactiveClassName
+                        }`}
+                      >
+                        <span
+                          className="w-2 h-2 rounded-full shrink-0 shadow-sm"
+                          style={{ backgroundColor: pitchColor(pt) }}
+                        />
+                        {pt}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
                 <LeaderboardPanel className="mt-4 overflow-hidden">
                   <div className="max-h-[70vh] overflow-auto">
