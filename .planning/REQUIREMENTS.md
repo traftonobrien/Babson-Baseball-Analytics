@@ -15,7 +15,7 @@
 
 ### Ops — Reliability and Observability
 
-- [ ] **OPS-01**: Next.js middleware is actually running — proxy.ts logic is deployed as middleware.ts protecting all page routes
+- [x] **OPS-01**: Next.js middleware is actually running — proxy.ts logic is deployed as middleware.ts protecting all page routes
 - [ ] **OPS-02**: Error boundaries exist on all major page surfaces — uncaught render errors show a recoverable UI instead of a blank screen
 - [ ] **OPS-03**: Vercel environment variables (PT_PASSWORD, MECHANICS_PASSWORD, DATABASE_URL) are confirmed correct on the live deployment
 - [ ] **OPS-04**: Structured error logging is in place — server errors are captured with enough context to diagnose production failures
@@ -91,7 +91,7 @@
 |-------------|-------|--------|
 | DONE-01 | Phase 14 | Pending |
 | DONE-02 | Phase 14 | Pending |
-| OPS-01 | Phase 15 | Pending |
+| OPS-01 | Phase 15 | Complete |
 | OPS-02 | Phase 15 | Pending |
 | OPS-03 | Phase 15 | Pending |
 | OPS-04 | Phase 15 | Pending |
