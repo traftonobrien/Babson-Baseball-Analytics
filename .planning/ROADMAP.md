@@ -32,6 +32,7 @@ This roadmap takes the project from a brownfield repo with no live charting doma
 - [x] **Phase 15: Ops Foundations** - Fix middleware deployment, add error boundaries, verify env vars, add structured logging
 - [x] **Phase 16: Code Decomposition** - Break ChartingEditor and LiveAbInsightsExplorer into modules under 500 lines each
 - [ ] **Phase 17: Multi-Tenancy Part 1** - Replace Babson hardcoding with configurable team identity and add team_id to DB schema
+- [ ] **Phase 17.5: Supabase Migration** - Migrate database and auth from Neon/custom to Supabase (RLS, Auth, Storage)
 - [ ] **Phase 18: Multi-Tenancy Part 2** - Build admin settings surface, team-scoped player identity, and team-aware auth
 - [ ] **Phase 19: UX Polish** - Mobile-responsive layout, skeleton loading states, touch targets, and keyboard accessibility
 - [ ] **Phase 20: Demo and Marketing** - Public demo mode with seeded data and a landing page for unauthenticated visitors
@@ -450,6 +451,23 @@ Plans:
 | 15. Ops Foundations | 4/4 | Complete | 2026-03-21 |
 | 16. Code Decomposition | 3/3 | Complete | 2026-03-21 |
 | 17. Multi-Tenancy Part 1 | 0/3 | Not started | - |
+| 17.5. Supabase Migration | 0/TBD | Not started | - |
 | 18. Multi-Tenancy Part 2 | 0/3 | Not started | - |
 | 19. UX Polish | 0/4 | Not started | - |
 | 20. Demo and Marketing | 0/3 | Not started | - |
+
+### Phase 17.5: Supabase Migration (INSERTED)
+
+**Goal:** Migrate the platform from Neon + custom password auth to Supabase — swap the database driver, enable Row Level Security with team_id policies, migrate to Supabase Auth, and move static team file storage to Supabase Storage. This makes Phase 18 (admin surface + team-aware auth) dramatically simpler to build.
+**Depends on:** Phase 17 (team_id columns must exist before RLS policies are written)
+**Requirements**: TEAM-02 (team_id scoping), OPS-01 (auth reliability)
+**Success Criteria** (what must be TRUE):
+  1. The app reads and writes all charting data through the Supabase Postgres client — no neon-http dependency remains in production code.
+  2. Row Level Security policies on all charting tables enforce team_id scoping automatically — no application-layer WHERE team_id filtering required.
+  3. Login flow uses Supabase Auth — existing PT_PASSWORD/MECHANICS_PASSWORD approach is replaced with email-based team credentials.
+  4. The `web/public/data/` static publish workflow is replaced with Supabase Storage — outing publish writes to a bucket, the web app reads from it.
+  5. `npm run build` passes and all existing tests pass against the new driver.
+**Plans**: TBD — run /gsd:plan-phase 17.5 to break down
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 17.5 to break down)
