@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { BarChart3, BookOpen, CircleHelp, Search, ChevronDown, ChevronUp } from "lucide-react";
+import { BarChart3, BookOpen, CircleHelp, Search, ChevronDown, ChevronUp, Trophy } from "lucide-react";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
+import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
 
 const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
@@ -121,7 +122,7 @@ function HeaderTooltip({ label, tooltip }: { label: string; tooltip: string }) {
       <button
         type="button"
         aria-label={`${label} explanation`}
-        className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[#94A3B8] transition-colors hover:text-[#6366F1] focus-visible:outline-none"
+        className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[#94A3B8] transition-colors hover:text-[var(--brand-primary-subtle-text)] focus-visible:outline-none"
       >
         <CircleHelp className="h-3 w-3" />
       </button>
@@ -230,7 +231,6 @@ const PITCHER_ADVANCED: PitcherCol[] = [
 
 const HITTER_STANDARD: HitterCol[] = [
   { key: "gp",      label: "GP",   fmt: h => fmtInt(h.gp) },
-  { key: "gs",      label: "GS",   fmt: h => fmtInt(h.gs) },
   { key: "pa",      label: "PA",   fmt: h => fmtInt(h.pa) },
   { key: "ab",      label: "AB",   fmt: h => fmtInt(h.ab) },
   { key: "h",       label: "H",    fmt: h => fmtInt(h.h) },
@@ -301,9 +301,9 @@ const HITTER_ADVANCED: HitterCol[] = [
 ];
 
 function rankColor(i: number): string {
-  if (i === 0) return "text-[#6366F1]";
+  if (i === 0) return "text-[var(--brand-primary-subtle-text)]";
   if (i === 1) return "text-[#64748B]";
-  if (i === 2) return "text-[#7C3AED]";
+  if (i === 2) return "text-[var(--brand-primary-spotlight)]";
   return "text-[#94A3B8]";
 }
 
@@ -419,57 +419,63 @@ export default function TeamStatsPage() {
 
   return (
     <main className={`min-h-screen bg-[#F8FAFC] text-[#0F172A] ${plusJakarta.className}`}>
-      <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-8 sm:py-8">
-        <header className="relative overflow-hidden rounded-[2rem] border border-[#F1F5F9] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.05)]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_18%,rgba(99,102,241,0.05),transparent_24%),radial-gradient(circle_at_82%_20%,rgba(16,185,129,0.05),transparent_22%)]" />
-          <div className="relative flex flex-col gap-5 p-5 sm:p-7">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="min-w-0">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+      <div className="mx-auto max-w-[1440px] px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
+        <header className="rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+          <div className="flex flex-col gap-6 p-5 sm:p-7">
+            <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
+              <div className="min-w-0 flex-1">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#E0E7FF] bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6366F1]">
+                  <BarChart3 className="h-3.5 w-3.5" aria-hidden />
                   Statistics
                 </div>
-                <h1 className="mt-2 text-[1.85rem] font-extrabold tracking-tight text-[#0F172A] sm:text-[2.5rem]">
+                <h1 className="mt-4 text-3xl font-black tracking-tight text-[#0F172A] sm:text-[2.85rem] sm:leading-[1.02]">
                   Statistics Leaderboard
                 </h1>
-                <p className="mt-2 max-w-2xl text-sm leading-7 text-[#64748B]">
-                  Explore season production with live sorting, filters, and the full advanced metrics set.
-                </p>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Link
+
+              <div className="grid w-full grid-cols-2 gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
+                <HubActionCard
                   href="/leaderboards-hub"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#F8FAFC] px-4 py-2 text-[12px] font-semibold text-[#475569] ring-1 ring-[#E2E8F0] transition-colors hover:bg-white hover:text-[#0F172A]"
-                >
-                  <BarChart3 className="h-4 w-4 text-[#6366F1]" />
-                  Leaderboards
-                </Link>
-                <Link
+                  icon={Trophy}
+                  sectionTitle="Leaderboards"
+                  buttonLabel="All boards"
+                />
+                <HubActionCard
                   href="/team-stats/faq"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#6366F1] px-4 py-2 text-[12px] font-semibold text-white shadow-[0_12px_28px_rgba(99,102,241,0.18)] transition-colors hover:bg-[#4F46E5]"
-                >
-                  <BookOpen className="h-4 w-4" />
-                  Metrics Dictionary
-                </Link>
+                  icon={BookOpen}
+                  sectionTitle="Dictionary"
+                  buttonLabel="Metrics FAQ"
+                />
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-[#EEF2FF] px-4 py-2 text-[12px] font-semibold text-[#6366F1]">
-                {seasonYear ? `${seasonYear} season` : "Season stats"}
-              </span>
-              <span className="rounded-full bg-[#F8FAFC] px-4 py-2 text-[12px] font-semibold text-[#64748B] ring-1 ring-[#E2E8F0]">
-                {isPitchingView ? `${minIp}+ IP qualifies` : `${minPa}+ PA qualifies`}
-              </span>
-              {syncedAt ? (
-                <span
-                  className={`rounded-full px-4 py-2 text-[12px] font-semibold ${isStale ? "bg-amber-50 text-amber-700 ring-1 ring-amber-100" : "bg-[#F8FAFC] text-[#64748B] ring-1 ring-[#E2E8F0]"}`}
-                >
-                  {isStale ? "Stale" : "Synced"} {new Date(syncedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                </span>
-              ) : null}
-              <span className="rounded-full bg-[#F8FAFC] px-4 py-2 text-[12px] font-semibold text-[#64748B] ring-1 ring-[#E2E8F0]">
-                NCAA D3
-              </span>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <HubStatCard
+                label="Pitchers"
+                value={loading ? "—" : String(pitchers.length)}
+                detail={
+                  seasonYear
+                    ? `${seasonYear} season · ${minIp}+ IP to qualify (pitching view).`
+                    : "Pitching rows from the synced NCAA feed."
+                }
+                tone="indigo"
+              />
+              <HubStatCard
+                label="Hitters"
+                value={loading ? "—" : String(hitters.length)}
+                detail={`${minPa}+ PA to qualify (hitting view). NCAA D3.`}
+                tone="emerald"
+              />
+              <HubStatCard
+                label="Sync status"
+                value={syncedAt ? (isStale ? "Stale" : "Current") : "—"}
+                detail={
+                  syncedAt
+                    ? `${new Date(syncedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} · ${isStale ? "refresh recommended" : "cache is fresh"}`
+                    : "Load the table to pull sync metadata."
+                }
+                tone="sky"
+              />
             </div>
           </div>
         </header>
@@ -485,7 +491,7 @@ export default function TeamStatsPage() {
                     type="button"
                     onClick={() => setStatMode(mode)}
                     className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                      statMode === mode ? "bg-white text-[#6366F1] shadow-sm" : "text-[#64748B] hover:text-[#0F172A]"
+                      statMode === mode ? "bg-white text-[var(--brand-primary-subtle-text)] shadow-sm" : "text-[#64748B] hover:text-[#0F172A]"
                     }`}
                   >
                     {mode === "pitching" ? "Pitchers" : "Hitters"}
@@ -614,11 +620,11 @@ export default function TeamStatsPage() {
                         <th
                           key={key}
                           onClick={() => (isPitchingView ? handlePitcherSort(key as PitcherSortKey) : handleHitterSort(key as HitterSortKey))}
-                          className="cursor-pointer border-b border-[#F1F5F9] bg-white px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8] transition-colors hover:text-[#6366F1] whitespace-nowrap"
+                          className="cursor-pointer border-b border-[#F1F5F9] bg-white px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8] transition-colors hover:text-[var(--brand-primary-subtle-text)] whitespace-nowrap"
                         >
                           <span className="inline-flex items-center justify-end gap-1">
                             {tooltip ? <HeaderTooltip label={label} tooltip={tooltip} /> : label}
-                            {SortIcon ? <SortIcon className="h-3.5 w-3.5 text-[#6366F1]" /> : null}
+                            {SortIcon ? <SortIcon className="h-3.5 w-3.5 text-[var(--brand-primary-subtle-text)]" /> : null}
                           </span>
                         </th>
                       );
@@ -635,7 +641,7 @@ export default function TeamStatsPage() {
                             <button
                               type="button"
                               onClick={() => setSearch("")}
-                              className="font-semibold text-[#6366F1] transition-colors hover:text-[#4F46E5]"
+                              className="font-semibold text-[var(--brand-primary-subtle-text)] transition-colors hover:text-[var(--brand-primary)]"
                             >
                               Clear filters
                             </button>
@@ -663,7 +669,7 @@ export default function TeamStatsPage() {
                                   {p.slug ? (
                                     <Link
                                       href={`/players/${p.slug}`}
-                                      className={`transition-colors underline decoration-[#CBD5E1] underline-offset-2 hover:decoration-[#6366F1] ${isQualified ? "text-[#0F172A] hover:text-[#6366F1]" : "text-[#64748B] hover:text-[#0F172A]"}`}
+                                      className={`transition-colors underline decoration-[#CBD5E1] underline-offset-2 hover:decoration-[var(--brand-primary-border)] ${isQualified ? "text-[#0F172A] hover:text-[var(--brand-primary-subtle-text)]" : "text-[#64748B] hover:text-[#0F172A]"}`}
                                     >
                                       {p.playerName}
                                       {isMe ? <span className="ml-1.5 rounded-full bg-[#D1FAE5] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[#10B981] no-underline">You</span> : null}
@@ -704,7 +710,7 @@ export default function TeamStatsPage() {
                                   {h.slug ? (
                                     <Link
                                       href={`/players/${h.slug}`}
-                                      className={`transition-colors underline decoration-[#CBD5E1] underline-offset-2 hover:decoration-[#6366F1] ${isQualified ? "text-[#0F172A] hover:text-[#6366F1]" : "text-[#64748B] hover:text-[#0F172A]"}`}
+                                      className={`transition-colors underline decoration-[#CBD5E1] underline-offset-2 hover:decoration-[var(--brand-primary-border)] ${isQualified ? "text-[#0F172A] hover:text-[var(--brand-primary-subtle-text)]" : "text-[#64748B] hover:text-[#0F172A]"}`}
                                     >
                                       {h.playerName}
                                       {isMe ? <span className="ml-1.5 rounded-full bg-[#D1FAE5] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[#10B981] no-underline">You</span> : null}

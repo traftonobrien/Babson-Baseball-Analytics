@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import type { ComponentType } from "react";
-import { ArrowRight, Activity, BarChart3, ClipboardList, Sparkles, Target, Trophy } from "lucide-react";
+import { ArrowRight, Activity, BarChart3, BookOpen, ClipboardList, Sparkles, Target, Trophy } from "lucide-react";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
 
 const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
@@ -130,36 +131,59 @@ function BoardCard({
 export default function LeaderboardsHubPage() {
   const featuredBoard = LEADERBOARD_ITEMS[0];
   const secondaryBoards = LEADERBOARD_ITEMS.slice(1);
+  const boardCount = LEADERBOARD_ITEMS.length;
 
   return (
     <main className="min-h-screen bg-[#F8FAFC] text-[#0F172A]">
-      <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-8 sm:py-8">
-        <header className="relative overflow-hidden rounded-[2rem] border border-[#F1F5F9] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.05)]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(99,102,241,0.05),transparent_24%),radial-gradient(circle_at_82%_22%,rgba(16,185,129,0.05),transparent_22%)]" />
-          <div className="relative flex flex-col gap-5 px-5 py-5 sm:px-7 sm:py-6">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
-                  Pro SaaS
+      <div className="mx-auto max-w-[1440px] px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
+        <header className="rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+          <div className="flex flex-col gap-6 p-5 sm:p-7">
+            <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
+              <div className="min-w-0 flex-1">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#E0E7FF] bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6366F1]">
+                  <Trophy className="h-3.5 w-3.5" aria-hidden />
+                  Leaderboards
                 </div>
-                <h1 className={`${plusJakarta.className} mt-2 text-[1.85rem] font-extrabold tracking-tight sm:text-[2.5rem]`}>
+                <h1 className={`${plusJakarta.className} mt-4 text-3xl font-black tracking-tight text-[#0F172A] sm:text-[2.85rem] sm:leading-[1.02]`}>
                   Metric Leaderboards
                 </h1>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F8FAFC] ring-1 ring-[#E2E8F0]">
-                <Trophy className="h-5 w-5 text-[#6366F1]" />
+
+              <div className="grid w-full grid-cols-2 gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
+                <HubActionCard
+                  href="/dictionary"
+                  icon={BookOpen}
+                  sectionTitle="Dictionary"
+                  buttonLabel="Metrics glossary"
+                />
+                <HubActionCard
+                  href="/pitching-plus"
+                  icon={Sparkles}
+                  sectionTitle="Plus models"
+                  buttonLabel="Methodology guide"
+                />
               </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-[#EEF2FF] px-4 py-2 text-[12px] font-semibold text-[#6366F1]">
-                Team
-              </span>
-              <span className="rounded-full bg-[#F8FAFC] px-4 py-2 text-[12px] font-semibold text-[#64748B] ring-1 ring-[#E2E8F0]">
-                Conference
-              </span>
-              <span className="rounded-full bg-[#F8FAFC] px-4 py-2 text-[12px] font-semibold text-[#64748B] ring-1 ring-[#E2E8F0]">
-                National
-              </span>
+
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <HubStatCard
+                label="Surfaces"
+                value={String(boardCount)}
+                detail="Pitching+, Command, Trackman, team stats, and charting boards."
+                tone="indigo"
+              />
+              <HubStatCard
+                label="Featured entry"
+                value={featuredBoard?.label ?? "—"}
+                detail={featuredBoard?.description ?? "Open any card below to jump in."}
+                tone="emerald"
+              />
+              <HubStatCard
+                label="Scope"
+                value="D3"
+                detail="Team-first views with NCAA Division III context where noted."
+                tone="sky"
+              />
             </div>
           </div>
         </header>

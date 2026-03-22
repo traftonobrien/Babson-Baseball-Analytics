@@ -567,9 +567,6 @@ export default function PlayerProfileTabs({
                       <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500">
                         Season Stats
                       </h2>
-                      <p className="mt-1 text-sm text-slate-500">
-                        {seasonYear} production at a glance.
-                      </p>
                     </div>
                     {seasonNote ? <LeaderboardPill tone="neutral" variant="light">{seasonNote}</LeaderboardPill> : null}
                     {ncaaProvenance ? (
@@ -580,20 +577,20 @@ export default function PlayerProfileTabs({
                     ) : null}
                   </div>
 
-                  <LeaderboardPanel className="p-5 sm:p-6" variant="light">
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-9">
+                  <LeaderboardPanel className="p-4 sm:p-6" variant="light">
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                       {seasonStats.map((stat, i) => (
                         <div
                           key={stat.label}
-                          className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 text-center opacity-0"
+                          className="min-w-0 rounded-2xl border border-slate-200/80 bg-slate-50/80 px-2 py-3 text-center opacity-0 sm:px-3 sm:py-3.5"
                           style={{
                             animation: `savantFadeIn 0.4s ease-out ${i * 50}ms forwards`,
                           }}
                         >
-                          <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                          <div className="text-[10px] font-bold uppercase leading-snug tracking-wide text-slate-400 sm:tracking-[0.16em]">
                             {stat.label}
                           </div>
-                          <div className="mt-2 font-mono text-[24px] font-black tabular-nums leading-none text-slate-900">
+                          <div className="mt-2 font-mono text-xl font-black tabular-nums leading-none tracking-tight text-slate-900 sm:text-2xl">
                             {stat.value}
                           </div>
                         </div>

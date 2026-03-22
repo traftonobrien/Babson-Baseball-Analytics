@@ -4,6 +4,8 @@ import { pitchDisplayName } from "@/lib/pitchNames";
 import { cn } from "@/lib/utils";
 
 type PitchTypeChipSize = "sm" | "xs";
+/** soft = light surface (default); solid = dark glass on zinc panels */
+type PitchTypeChipVariant = "solid" | "soft";
 
 function hexToRgbChannels(value: string): string {
   const normalized = value.trim();
@@ -22,9 +24,17 @@ function hexToRgbChannels(value: string): string {
   return `${red}, ${green}, ${blue}`;
 }
 
-function pitchTypeChipStyle(pitchType: string): CSSProperties {
+function pitchTypeChipStyle(pitchType: string, variant: PitchTypeChipVariant): CSSProperties {
   const color = pitchColor(pitchType);
   const rgb = hexToRgbChannels(color);
+
+  if (variant === "soft") {
+    return {
+      borderColor: `rgba(${rgb}, 0.28)`,
+      backgroundColor: `rgba(${rgb}, 0.1)`,
+      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.75)",
+    };
+  }
 
   return {
     borderColor: `rgba(${rgb}, 0.42)`,
@@ -47,11 +57,13 @@ export function PitchTypeChip({
   pitchType,
   label,
   size = "sm",
+  variant = "soft",
   className,
 }: {
   pitchType: string;
   label?: string;
   size?: PitchTypeChipSize;
+  variant?: PitchTypeChipVariant;
   className?: string;
 }) {
   const color = pitchColor(pitchType);
@@ -60,17 +72,18 @@ export function PitchTypeChip({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border text-white",
+        "inline-flex items-center rounded-full border",
+        variant === "solid" ? "text-white" : "text-[#0f172a]",
         chipSizeClasses[size],
         className,
       )}
-      style={pitchTypeChipStyle(pitchType)}
+      style={pitchTypeChipStyle(pitchType, variant)}
     >
       <span
         className={cn("rounded-full shrink-0", dotSizeClasses[size])}
         style={{
           backgroundColor: color,
-          boxShadow: `0 0 10px ${color}`,
+          boxShadow: variant === "soft" ? `0 0 0 1px rgba(255,255,255,0.6) inset` : `0 0 10px ${color}`,
         }}
       />
       {displayLabel}

@@ -31,7 +31,7 @@ export default function PitchTypeFilter({
               }`}
               aria-pressed={active}
             >
-              <PitchTypeChip pitchType={type} label={type} size="xs" />
+              <PitchTypeChip pitchType={type} label={type} size="xs" variant="solid" />
             </button>
           );
         })}

@@ -157,6 +157,7 @@ export default function CommandPlusSection({ pitches, outingId }: Props) {
                                     pitchType={pb.type}
                                     label={pitchDisplayName(pb.type)}
                                     size="xs"
+                                    variant="solid"
                                     className={pb.qualified ? "" : "opacity-65"}
                                 />
                                 {pb.score === null ? (

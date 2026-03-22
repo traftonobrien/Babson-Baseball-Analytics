@@ -362,7 +362,7 @@ export default function MLBCompsPanel({
                         }`}
                         aria-pressed={isActive}
                       >
-                        <PitchTypeChip pitchType={pt} label={pt} size="xs" />
+                        <PitchTypeChip pitchType={pt} label={pt} size="xs" variant="solid" />
                       </button>
                     );
                   })}
@@ -383,6 +383,7 @@ export default function MLBCompsPanel({
                             pitchType={currentPitch}
                             label={`Your ${currentPitch}`}
                             size="xs"
+                            variant="solid"
                           />
                         </div>
                         <span className="text-[11px] font-mono text-zinc-400">

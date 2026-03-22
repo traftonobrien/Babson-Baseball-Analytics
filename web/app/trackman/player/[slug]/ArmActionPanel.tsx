@@ -64,7 +64,7 @@ function RecommendationRow({ rec }: { rec: PitchRecommendation }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <PitchTypeChip pitchType={rec.pitchType} label={displayLabel} size="xs" />
+          <PitchTypeChip pitchType={rec.pitchType} label={displayLabel} size="xs" variant="solid" />
           {rec.priority === "Primary" ? (
             <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-blue-400/80">
               Primary Add

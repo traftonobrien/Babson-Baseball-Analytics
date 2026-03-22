@@ -57,7 +57,7 @@ export default function PitchTypeSummaryCards({ pitches }: Props) {
             className="overflow-hidden rounded-[1.5rem] border border-zinc-800/80 bg-zinc-950/72 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
           >
             <div className="flex items-center justify-between gap-2">
-              <PitchTypeChip pitchType={g.type} label={pitchDisplayName(g.type)} size="xs" />
+              <PitchTypeChip pitchType={g.type} label={pitchDisplayName(g.type)} size="xs" variant="solid" />
               <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
                 {g.pitches.length} pitch{g.pitches.length !== 1 && "es"}
               </span>

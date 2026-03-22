@@ -12,8 +12,6 @@ import {
   ClipboardList,
   Film,
   Target,
-  TrendingDown,
-  TrendingUp,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -75,9 +73,6 @@ type ChartingGamesResponse = {
 type PulseMetricProps = {
   title: string;
   value: string;
-  trend: string;
-  trendDirection: "up" | "down";
-  positive: boolean;
   detail: string;
   series: number[];
   loading?: boolean;
@@ -89,11 +84,6 @@ type QuickLaunchItem = {
   href: string;
   icon: LucideIcon;
 };
-
-function formatSignedValue(value: number, digits: number): string {
-  const rounded = value.toFixed(digits);
-  return value > 0 ? `+${rounded}` : rounded;
-}
 
 function formatRate(value: number): string {
   return value > 0 ? value.toFixed(3).replace(/^0/, "") : ".000";
@@ -176,9 +166,6 @@ function gameMeta(game: ChartingGame): string {
 function PulseMetric({
   title,
   value,
-  trend,
-  trendDirection,
-  positive,
   detail,
   series,
   loading = false,
@@ -204,8 +191,6 @@ function PulseMetric({
     );
   }
 
-  const TrendIcon = trendDirection === "down" ? TrendingDown : TrendingUp;
-
   return (
     <article className="group relative overflow-hidden rounded-[26px] border border-[#E7EDF5] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#DCE5EF] hover:shadow-[0_22px_56px_rgba(15,23,42,0.07)]">
       <div
@@ -216,23 +201,13 @@ function PulseMetric({
         }}
       />
       <div className="relative z-10">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">
-              {title}
-            </p>
-            <h3 className={`${plusJakarta.className} mt-2 text-[2rem] font-extrabold tracking-tight text-[#0F172A]`}>
-              {value}
-            </h3>
-          </div>
-          <div
-            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${
-              positive ? "bg-[#D1FAE5] text-[#10B981]" : "bg-[#FCE7F3] text-[#EC4899]"
-            }`}
-          >
-            <TrendIcon className="h-3.5 w-3.5" />
-            <span>{trend}</span>
-          </div>
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">
+            {title}
+          </p>
+          <h3 className={`${plusJakarta.className} mt-2 text-[2rem] font-extrabold tracking-tight text-[#0F172A]`}>
+            {value}
+          </h3>
         </div>
 
         <p className="mt-3 text-[13px] text-[#64748B]">{detail}</p>
@@ -403,34 +378,22 @@ export default function HomeContent() {
   const runDifferential = totalRunsScored - totalRunsAllowed;
   const runDifferentialLabel = runDifferential > 0 ? `+${runDifferential}` : `${runDifferential}`;
 
-  const eraBenchmark = 4.0;
-  const opsBenchmark = 0.8;
-
   const pulseMetrics = [
     {
       title: "Team ERA",
       value: teamERA,
-      trend: formatSignedValue(Number(teamERA) - eraBenchmark, 2),
-      trendDirection: Number(teamERA) <= eraBenchmark ? "down" : "up",
-      positive: Number(teamERA) <= eraBenchmark,
       detail: `${pitchers.length} pitcher${pitchers.length === 1 ? "" : "s"} logged · ${totalIP.toFixed(1)} IP tracked`,
       series: [58, 36, 66, 46, 28, 42, 18],
     },
     {
       title: "Team OPS",
       value: teamOPS,
-      trend: formatSignedValue(Number(teamOPS) - opsBenchmark, 3).replace(/^(-?)0\./, "$1."),
-      trendDirection: Number(teamOPS) >= opsBenchmark ? "up" : "down",
-      positive: Number(teamOPS) >= opsBenchmark,
       detail: `${hitters.length} hitter${hitters.length === 1 ? "" : "s"} with NCAA stats · ${totalAB} AB`,
       series: [22, 36, 30, 52, 48, 66, 74],
     },
     {
       title: "Run Differential",
       value: runDifferentialLabel,
-      trend: runDifferential > 0 ? `+${runDifferential}` : `${runDifferential}`,
-      trendDirection: runDifferential >= 0 ? "up" : "down",
-      positive: runDifferential >= 0,
       detail: `${totalRunsScored} scored · ${totalRunsAllowed} allowed`,
       series: [18, 24, 22, 38, 50, 68, 82],
     },
@@ -500,7 +463,14 @@ export default function HomeContent() {
 
           <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-7">
             <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-[30px] border border-[var(--brand-primary-border)] bg-white shadow-[0_18px_40px_rgba(15,23,42,0.04)]">
-              <Image src="/babson-logo.svg" alt={`${TEAM_NAME} logo`} width={66} height={66} priority />
+              <Image
+              src="/babson-logo.svg"
+              alt={`${TEAM_NAME} logo`}
+              width={66}
+              height={66}
+              priority
+              className="h-auto w-auto max-h-full max-w-full"
+            />
             </div>
 
             <div className="min-w-0 flex-1">
@@ -520,9 +490,6 @@ export default function HomeContent() {
                 key={metric.title}
                 title={metric.title}
                 value={metric.value}
-                trend={metric.trend}
-                trendDirection={metric.trendDirection}
-                positive={metric.positive}
                 detail={metric.detail}
                 series={metric.series}
                 loading={statsLoading}

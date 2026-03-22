@@ -20,3 +20,5 @@
 - [ ] Decision: add sacrifice-fly tracking or defer to next charting follow-up
 
 ## Done
+- [x] 2026-03-22 — Hub header parity: `team-stats/leaderboard` + `PlayersHubView` use shared `HubHeader` (indigo eyebrow, `HubActionCard` ×2, `HubStatCard` ×3, `rounded-[28px]`, `max-w-[1440px]`); `npm --prefix web run build` OK
+- [x] 2026-03-22 — Clear build/devtools noise: split `web/lib/auth` into Edge-safe `auth-gates` + Node `auth-login`; fix Next `Image` aspect-ratio warning on Babson logos (`PlayersHubView`, `HomeContent`, `Sidebar`)

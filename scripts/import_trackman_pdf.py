@@ -30,7 +30,7 @@ from trackman_pdf.extract import extract_pdf
 from trackman_pdf.meta import PdfMeta, parse_meta, slugify
 from trackman_pdf.table import find_table, extract_table_from_pdf
 from trackman_pdf.rows import parse_rows, parse_rows_from_cells
-from trackman.summary import build_session_summary
+from trackman.summary import build_session_summary, fastball_avg_from_session_summary
 from lib.canonical_players import get_canonical_name
 
 def load_json(path: str) -> Any:
@@ -171,6 +171,7 @@ def _update_index(
         "pitchCount": summary.get("total_pitches"),
         "pitchTypes": summary.get("pitch_types"),
         "weightedAvgVelo": summary.get("weighted_avg_velocity_mph"),
+        "avgFastballVelo": fastball_avg_from_session_summary(summary),
         "pitchTypesPath": f"/{rel_dir}/pitch_types.json",
         "metaPath": f"/{rel_dir}/meta.json",
         "summaryPath": f"/{rel_dir}/session_summary.json",

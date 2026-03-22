@@ -292,6 +292,7 @@ export default function PitchingPlusSection({
                     pitchType={row.commandPitchType}
                     label={row.commandPitchType}
                     size="xs"
+                    variant="solid"
                     className={row.included ? "" : "opacity-65"}
                   />
                   {row.pitchingPlus === null ? (

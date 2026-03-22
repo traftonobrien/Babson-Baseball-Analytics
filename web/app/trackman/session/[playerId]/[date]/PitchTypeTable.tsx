@@ -54,6 +54,7 @@ export default function PitchTypeTable({
                     pitchType={row.pitchType}
                     label={pitchDisplayName(row.pitchType)}
                     size="xs"
+                    variant="solid"
                     className="align-middle"
                   />
                 </td>

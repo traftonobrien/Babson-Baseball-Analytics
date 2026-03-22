@@ -202,13 +202,6 @@ export const PITCHING_SNAPSHOT_METRICS: MetricDefinition[] = [
     valueKeys: PITCHING_KEYS.fip,
   },
   {
-    id: "xfip",
-    label: "xFIP",
-    higherBetter: false,
-    format: (value) => formatNumber(value, 2),
-    valueKeys: PITCHING_KEYS.xfip,
-  },
-  {
     id: "whip",
     label: "WHIP",
     higherBetter: false,
@@ -284,14 +277,6 @@ export const PITCHING_PERCENTILE_METRICS: MetricDefinition[] = [
     format: (value) => formatNumber(value, 2),
     valueKeys: PITCHING_KEYS.fip,
     percentileKeys: ["fip_percentile", "fip_pct", "fip_percent"],
-  },
-  {
-    id: "xfip",
-    label: "xFIP",
-    higherBetter: false,
-    format: (value) => formatNumber(value, 2),
-    valueKeys: PITCHING_KEYS.xfip,
-    percentileKeys: ["xfip_percentile", "xfip_pct", "xfip_percent"],
   },
   {
     id: "k_pct",

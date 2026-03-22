@@ -3,7 +3,7 @@ import {
   buildGateFailureResponse,
   getRequiredGatesForPath,
   hasGateCookie,
-} from "@/lib/auth";
+} from "@/lib/auth-gates";
 
 export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

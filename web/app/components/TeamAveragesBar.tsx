@@ -73,6 +73,7 @@ export default function TeamAveragesBar({
                 pitchType={pitchType}
                 label={pitchDisplayName(pitchType)}
                 size="xs"
+                variant="solid"
                 className="shrink-0"
               />
               <div className="flex items-baseline gap-3 text-right">

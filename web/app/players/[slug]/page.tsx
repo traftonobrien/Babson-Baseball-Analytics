@@ -478,7 +478,6 @@ export default async function PlayerProfilePage({
     { label: "Positions", value: resolvedPlayer.positions.join(" / ") || "Unlisted" },
     { label: "Handedness", value: handBadge ?? "Unknown" },
     { label: "Class year", value: classYear },
-    { label: "Size", value: sizeLine || "Unlisted" },
   ];
 
   return (
@@ -496,32 +495,23 @@ export default async function PlayerProfilePage({
       />
       <div className="relative mx-auto flex min-h-screen w-full max-w-[1820px] flex-col">
         <header className="sticky top-0 z-20 border-b border-[#F1F5F9] bg-white/90 backdrop-blur">
-          <div className="flex flex-col gap-4 px-5 py-4 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-            <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-col gap-4 px-5 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6 lg:px-8">
+            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
               <Link
                 href="/players"
-                className="inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-white px-3 py-1.5 text-[12px] font-semibold text-[#475569] transition-colors hover:border-[#CBD5E1] hover:text-[#0F172A]"
+                className="inline-flex h-9 shrink-0 items-center gap-2 self-start rounded-full border border-[#E2E8F0] bg-white px-3 text-[12px] font-semibold leading-none text-[#475569] transition-colors hover:border-[#CBD5E1] hover:text-[#0F172A] sm:self-center"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="h-4 w-4 shrink-0" />
                 Back to roster
               </Link>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">
-                  Player Profile
-                </p>
-                <div className="mt-1 flex flex-wrap items-center gap-3">
-                  <h1 className={`${plusJakarta.className} text-[24px] font-extrabold tracking-tight sm:text-[30px]`}>
-                    {resolvedPlayer.name}
-                  </h1>
-                  <span className="hidden h-1 w-1 rounded-full bg-[#CBD5E1] sm:block" />
-                  <span className="text-sm font-medium text-[#64748B]">
-                    {resolvedPlayer.team} · {TARGET_YEAR}
-                  </span>
-                </div>
-              </div>
+              <h1
+                className={`${plusJakarta.className} m-0 min-w-0 flex-1 self-center text-[22px] font-extrabold leading-tight tracking-tight text-[#0F172A] sm:text-[28px] lg:text-[30px]`}
+              >
+                {resolvedPlayer.name}
+              </h1>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
               <Link
                 href="/players"
                 className="inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-white px-4 py-2 text-[13px] font-semibold text-[#475569] transition-colors hover:border-[#CBD5E1] hover:text-[#0F172A]"
@@ -574,6 +564,11 @@ export default async function PlayerProfilePage({
                       {handBadge ? (
                         <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90">
                           {handBadge}
+                        </span>
+                      ) : null}
+                      {sizeLine ? (
+                        <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold tracking-wide text-white/90">
+                          {sizeLine}
                         </span>
                       ) : null}
                     </div>

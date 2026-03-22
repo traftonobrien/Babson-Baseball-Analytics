@@ -77,6 +77,32 @@ def _collapse_pitch_types(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return collapsed
 
 
+# Trackman pitch-type labels that count as fastball family for velocity reporting.
+FASTBALL_PITCH_TYPES = frozenset(
+    {
+        "Fastball",
+        "Sinker",
+        "Four-Seam Fastball",
+        "Two-Seam Fastball",
+    }
+)
+
+
+def fastball_weighted_avg_velocity_mph(per_type: List[Dict[str, Any]]) -> Optional[float]:
+    """Pitch-count-weighted avg velocity across fastball-family rows only."""
+    rows = [r for r in per_type if r.get("pitch_type") in FASTBALL_PITCH_TYPES]
+    if not rows:
+        return None
+    counts = [r.get("count") for r in rows if r.get("count") is not None]
+    total_fb = sum(counts) if counts else None
+    return _weighted_avg(rows, "avg_velocity_mph", total_fb)
+
+
+def fastball_avg_from_session_summary(summary: Dict[str, Any]) -> Optional[float]:
+    per_type = summary.get("per_type") or []
+    return fastball_weighted_avg_velocity_mph(per_type)
+
+
 def build_session_summary(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Build a session summary from pitch-type summary rows."""
     valid_rows = [r for r in rows if r.get("is_valid") is not False]

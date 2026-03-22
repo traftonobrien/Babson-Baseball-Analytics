@@ -658,6 +658,7 @@ export default function TrackmanLeaderboardsPage() {
                                 pitchType={getStuffPlusDisplayPitchType(r.playerId, r.pitchType)}
                                 label={getStuffPlusDisplayPitchType(r.playerId, r.pitchType)}
                                 size="xs"
+                                variant="solid"
                               />
                             </td>
                           )}
@@ -766,6 +767,7 @@ export default function TrackmanLeaderboardsPage() {
                                   pitchType={pitchLabel}
                                   label={pitchLabel}
                                   size="xs"
+                                  variant="solid"
                                 />
                               ) : (
                                 <span className="text-zinc-500">—</span>
@@ -809,6 +811,7 @@ export default function TrackmanLeaderboardsPage() {
                           pitchType={pm.pitch_type}
                           label={pm.pitch_type}
                           size="xs"
+                          variant="solid"
                         />
                       </div>
                       <div className="text-[10px] text-zinc-600">{pm.count}</div>

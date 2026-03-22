@@ -10,6 +10,7 @@ import {
   ChevronRight,
   LineChart,
   Target,
+  Trophy,
 } from "lucide-react";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { players, type Outing } from "@/lib/dataIndex";
@@ -18,6 +19,7 @@ import { useSelectedPlayer } from "@/lib/selectedPlayer";
 import { getCanonicalPlayerId } from "@/lib/canonicalPlayers";
 import { getTeamAccentColor, getTeamBrandEntry, hexToRgba } from "@/lib/teamBranding";
 import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
+import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
 
 const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
@@ -27,13 +29,6 @@ type SeriesOption = {
   label: string;
   accent: string;
 };
-
-const METRIC_BARS = {
-  players: [0.24, 0.34, 0.26, 0.38, 0.46, 0.41, 0.52],
-  outings: [0.18, 0.24, 0.3, 0.35, 0.42, 0.48, 0.56],
-  pitches: [0.2, 0.28, 0.33, 0.39, 0.45, 0.5, 0.62],
-  latest: [0.14, 0.22, 0.28, 0.31, 0.37, 0.43, 0.55],
-} as const;
 
 function parsePitchCount(label: string): number {
   const match = label.match(/\((\d+)\s+pitches?\)/);
@@ -171,70 +166,6 @@ function SectionHeader({
         </div>
         {meta ? <div className="flex flex-wrap gap-2">{meta}</div> : null}
       </div>
-    </div>
-  );
-}
-
-function MetricTile({
-  label,
-  value,
-  detail,
-  spark,
-  accent,
-}: {
-  label: string;
-  value: string;
-  detail: string;
-  spark: readonly number[];
-  accent: "brand" | "emerald" | "sky" | "amber";
-}) {
-  const accentStyles = {
-    brand: {
-      chip: "bg-[#EEF2FF] text-[#6366F1]",
-      bar: "#A5B4FC",
-    },
-    emerald: {
-      chip: "bg-[#ECFDF5] text-[#10B981]",
-      bar: "#6EE7B7",
-    },
-    sky: {
-      chip: "bg-[#EFF6FF] text-[#0EA5E9]",
-      bar: "#7DD3FC",
-    },
-    amber: {
-      chip: "bg-[#FFF7ED] text-[#EA580C]",
-      bar: "#FDBA74",
-    },
-  }[accent];
-
-  return (
-    <div className="rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4 shadow-[0_12px_28px_rgba(15,23,42,0.03)]">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#94A3B8]">
-            {label}
-          </div>
-          <div className={`${plusJakarta.className} mt-2 text-[1.9rem] font-black tracking-tight text-[#0F172A]`}>
-            {value}
-          </div>
-        </div>
-        <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${accentStyles.chip}`}>
-          Live
-        </span>
-      </div>
-      <div className="mt-4 flex h-10 items-end gap-1.5">
-        {spark.map((height, index) => (
-          <span
-            key={`${label}-${index}`}
-            className="flex-1 rounded-full"
-            style={{
-              height: `${Math.max(16, Math.round(height * 100))}%`,
-              backgroundColor: accentStyles.bar,
-            }}
-          />
-        ))}
-      </div>
-      <p className="mt-3 text-sm leading-6 text-[#64748B]">{detail}</p>
     </div>
   );
 }
@@ -684,77 +615,57 @@ export default function CommandPage() {
   return (
     <main className={`min-h-screen bg-[#F8FAFC] text-[#0F172A] ${plusJakarta.className}`}>
       <div className="mx-auto flex max-w-[1440px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
-        <section className="overflow-hidden rounded-[2rem] border border-[#E2E8F0] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
-          <div className="relative overflow-hidden px-5 py-5 sm:px-7 sm:py-6">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(99,102,241,0.08),transparent_26%),radial-gradient(circle_at_82%_24%,rgba(16,185,129,0.05),transparent_22%)]" />
-            <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.78fr)]">
-              <div className="min-w-0">
+        <header className="rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+          <div className="flex flex-col gap-6 p-5 sm:p-7">
+            <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
+              <div className="min-w-0 flex-1">
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#E0E7FF] bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6366F1]">
-                  <Target className="h-3.5 w-3.5" />
-                  Command Tracking
+                  <Target className="h-3.5 w-3.5" aria-hidden />
+                  Command metrics
                 </div>
-                <h1 className={`${plusJakarta.className} mt-4 text-[2rem] font-black tracking-tight text-[#0F172A] sm:text-[2.6rem] sm:leading-[1.02]`}>
+                <h1 className="mt-4 text-3xl font-black tracking-tight text-[#0F172A] sm:text-[2.85rem] sm:leading-[1.02]">
                   Command Hub
                 </h1>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-[#64748B] sm:text-[14px]">
-                  Move between recent outings and each pitcher’s running command history without losing your current filters.
-                </p>
-
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <LightPill tone="brand">{seasonLabel}</LightPill>
-                  <LightPill>{stats.mostRecentDate ? `Latest ${formatDate(stats.mostRecentDate)}` : "No recent outing"}</LightPill>
-                  <LightPill tone="success">{stats.totalPlayers} pitchers in view</LightPill>
-                </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                <QuickActionCard
-                  href="/command/leaderboard"
-                  icon={LineChart}
-                  title="Command Leaderboard"
-                  detail="Open the ranked board for on-target rate, miss shape, and consistency."
-                />
-                <QuickActionCard
+              <div className="grid w-full grid-cols-2 gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
+                <HubActionCard
                   href="/command/faq"
                   icon={BookOpen}
-                  title="Metrics Dictionary"
-                  detail="Keep the command definitions close while you work through outings."
+                  sectionTitle="Dictionary"
+                  buttonLabel="Metrics glossary"
+                />
+                <HubActionCard
+                  href="/command/leaderboard"
+                  icon={Trophy}
+                  sectionTitle="Leaderboards"
+                  buttonLabel="Open rankings"
                 />
               </div>
             </div>
-          </div>
 
-          <div className="grid gap-4 border-t border-[#EEF2F7] px-5 py-5 sm:px-7 md:grid-cols-2 xl:grid-cols-4">
-            <MetricTile
-              label="Pitchers in View"
-              value={String(stats.totalPlayers)}
-              detail="Pitchers with at least one outing in the current filter window."
-              spark={METRIC_BARS.players}
-              accent="brand"
-            />
-            <MetricTile
-              label="Command Outings"
-              value={String(stats.totalOutings)}
-              detail="Filtered outing rows available in the workspace."
-              spark={METRIC_BARS.outings}
-              accent="emerald"
-            />
-            <MetricTile
-              label="Pitches Logged"
-              value={String(stats.totalPitches)}
-              detail="Pitch counts pulled from the current season and opponent filters."
-              spark={METRIC_BARS.pitches}
-              accent="sky"
-            />
-            <MetricTile
-              label="Latest Outing"
-              value={stats.mostRecentDate ? formatCompactDate(stats.mostRecentDate) : "—"}
-              detail="Most recent day represented in the current command snapshot."
-              spark={METRIC_BARS.latest}
-              accent="amber"
-            />
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <HubStatCard
+                label="Pitchers in view"
+                value={String(stats.totalPlayers)}
+                detail="Pitchers with at least one outing in the current filter window."
+                tone="indigo"
+              />
+              <HubStatCard
+                label="Command outings"
+                value={String(stats.totalOutings)}
+                detail="Filtered outing rows available in the workspace."
+                tone="emerald"
+              />
+              <HubStatCard
+                label="Pitches logged"
+                value={String(stats.totalPitches)}
+                detail="Pitch counts pulled from the current season and opponent filters."
+                tone="sky"
+              />
+            </div>
           </div>
-        </section>
+        </header>
 
         <section className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.78fr)]">
           <div className="overflow-hidden rounded-[28px] border border-[#E2E8F0] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">

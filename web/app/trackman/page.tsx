@@ -22,6 +22,8 @@ interface Session {
   pitchCount: number | null;
   pitchTypes?: string[];
   weightedAvgVelo: number | null;
+  /** Pitch-count-weighted FB/SI family avg from session summary; may be null if no FB row. */
+  avgFastballVelo: number | null;
   handedness?: string;
   team?: string;
 }
@@ -49,6 +51,10 @@ function normalizeSession(raw: Record<string, unknown>): Session {
     pitchCount: (raw.pitchCount as number) ?? (raw.totalPitches as number) ?? null,
     pitchTypes: Array.isArray(raw.pitchTypes) ? raw.pitchTypes : undefined,
     weightedAvgVelo: (raw.weightedAvgVelo as number) ?? null,
+    avgFastballVelo:
+      raw.avgFastballVelo != null && typeof raw.avgFastballVelo === "number"
+        ? raw.avgFastballVelo
+        : null,
     handedness: (raw.handedness as string) ?? undefined,
     team: (raw.team as string) ?? undefined,
   };
@@ -105,7 +111,7 @@ function groupByPlayer(sessions: Session[]): Player[] {
       team: latest.team,
       sessionCount: playerSessions.length,
       latestDate: latest.date,
-      latestAvgVelo: latest.weightedAvgVelo,
+      latestAvgVelo: latest.avgFastballVelo ?? latest.weightedAvgVelo,
       pitchTypes: Array.from(typeSet).sort(),
     });
   }
@@ -123,13 +129,12 @@ function StatCard({
   label: string;
   value: string;
   detail: string;
-  tone: "indigo" | "emerald" | "sky" | "violet";
+  tone: "indigo" | "emerald" | "sky";
 }) {
   const toneStyles = {
     indigo: "from-[#EEF2FF] to-white text-[#4F46E5] border-[#E0E7FF]",
     emerald: "from-[#ECFDF5] to-white text-[#10B981] border-[#D1FAE5]",
     sky: "from-[#EFF6FF] to-white text-[#0EA5E9] border-[#DBEAFE]",
-    violet: "from-[#FAF5FF] to-white text-[#8B5CF6] border-[#E9D5FF]",
   }[tone];
 
   return (
@@ -148,32 +153,28 @@ function StatCard({
 function ActionCard({
   href,
   icon: Icon,
-  title,
-  detail,
+  sectionTitle,
+  buttonLabel,
 }: {
   href: string;
   icon: typeof BookOpen;
-  title: string;
-  detail: string;
+  sectionTitle: string;
+  buttonLabel: string;
 }) {
   return (
-    <Link
-      href={href}
-      className="group rounded-[24px] border border-[#E5E7EB] bg-white p-4 shadow-[0_16px_36px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#CBD5E1]"
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
-            Quick Action
-          </div>
-          <div className="mt-2 text-base font-bold text-[#0F172A]">{title}</div>
-          <div className="mt-1 text-sm leading-6 text-[#64748B]">{detail}</div>
-        </div>
-        <div className="rounded-2xl border border-[#E0E7FF] bg-[#EEF2FF] p-3 text-[#4F46E5] transition-colors group-hover:bg-[#E0E7FF]">
-          <Icon className="h-4 w-4" />
-        </div>
+    <div className="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">{sectionTitle}</div>
+      <div className="mt-3">
+        <Link
+          href={href}
+          className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(var(--brand-primary-rgb),0.22)] transition-smooth hover:bg-[var(--brand-primary-hover)]"
+        >
+          <Icon className="h-4 w-4 shrink-0" aria-hidden />
+          {buttonLabel}
+          <ChevronRight className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
+        </Link>
       </div>
-    </Link>
+    </div>
   );
 }
 
@@ -185,7 +186,6 @@ function PlayerCard({
   isMe: boolean;
 }) {
   const hand = parseHand(player.handedness);
-  const pitchTypes = player.pitchTypes.slice(0, 3);
 
   return (
     <Link
@@ -219,42 +219,19 @@ function PlayerCard({
               ) : null}
             </div>
             <p className="mt-1 text-sm text-[#64748B]">
-              {player.team ?? "Trackman"} • {player.sessionCount} session{player.sessionCount !== 1 ? "s" : ""}
+              {player.sessionCount} session{player.sessionCount !== 1 ? "s" : ""}
             </p>
           </div>
 
           <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-[#94A3B8] transition-colors group-hover:text-[#4F46E5]" />
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#94A3B8]">
-              Latest Session
-            </div>
-            <div className="mt-1 text-sm font-semibold text-[#0F172A]">{formatDate(player.latestDate)}</div>
+        <div className="mt-5">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#94A3B8]">
+            Latest Session
           </div>
-          <div className="text-left sm:text-right">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#94A3B8]">
-              Avg Velo
-            </div>
-            <div className="mt-1 text-sm font-bold text-[#0F172A]">
-              {player.latestAvgVelo != null ? `${player.latestAvgVelo.toFixed(1)} mph` : "—"}
-            </div>
-          </div>
+          <div className="mt-1 text-sm font-semibold text-[#0F172A]">{formatDate(player.latestDate)}</div>
         </div>
-
-        {pitchTypes.length > 0 ? (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {pitchTypes.map((pitchType) => (
-              <span
-                key={pitchType}
-                className="rounded-full border border-[#E5E7EB] bg-[#F8FAFC] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#64748B]"
-              >
-                {pitchType}
-              </span>
-            ))}
-          </div>
-        ) : null}
       </div>
     </Link>
   );
@@ -333,51 +310,47 @@ export default function TrackmanPlayersPage() {
 
   const totalSessions = sessions.length;
   const totalPlayers = players.length;
-  const trackedVelos = players
+  const trackedFbVelos = players
     .map((player) => player.latestAvgVelo)
     .filter((value): value is number => value != null);
-  const avgVelocity =
-    trackedVelos.length > 0
-      ? trackedVelos.reduce((sum, value) => sum + value, 0) / trackedVelos.length
+  const avgFastballVelocity =
+    trackedFbVelos.length > 0
+      ? trackedFbVelos.reduce((sum, value) => sum + value, 0) / trackedFbVelos.length
       : null;
-  const uniquePitchTypes = new Set(players.flatMap((player) => player.pitchTypes)).size;
 
   return (
     <div className="min-h-full bg-[#F8FAFC] text-[#0F172A]">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
         <header className="rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
           <div className="flex flex-col gap-6 p-5 sm:p-7">
-            <div className="flex flex-wrap items-start justify-between gap-5">
-              <div className="min-w-0">
+            <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
+              <div className="min-w-0 flex-1">
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#E0E7FF] bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6366F1]">
                   <Radio className="h-3.5 w-3.5" />
-                  Trackman Hub
+                  Player roster
                 </div>
                 <h1 className="mt-4 text-3xl font-black tracking-tight text-[#0F172A] sm:text-[2.85rem] sm:leading-[1.02]">
-                  Trackman Player Roster
+                  Trackman Hub
                 </h1>
-                <p className="mt-2 max-w-2xl text-sm leading-7 text-[#64748B] sm:text-[14px]">
-                  Browse player sessions, compare hands, and jump into an individual Trackman profile without losing context.
-                </p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[31rem]">
+              <div className="grid w-full grid-cols-2 gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
                 <ActionCard
                   href="/trackman/faq"
                   icon={BookOpen}
-                  title="Metrics Dictionary"
-                  detail="Review the Trackman terms, filters, and conventions used across the hub."
+                  sectionTitle="Dictionary"
+                  buttonLabel="Metrics glossary"
                 />
                 <ActionCard
                   href="/trackman/leaderboard"
                   icon={Trophy}
-                  title="Leaderboards"
-                  detail="Open the ranking view for velocity, movement, and profile comparisons."
+                  sectionTitle="Leaderboards"
+                  buttonLabel="Open rankings"
                 />
               </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               <StatCard
                 label="Players Tracked"
                 value={String(totalPlayers)}
@@ -391,16 +364,10 @@ export default function TrackmanPlayersPage() {
                 tone="emerald"
               />
               <StatCard
-                label="Avg Velo"
-                value={avgVelocity != null ? `${avgVelocity.toFixed(1)} mph` : "—"}
-                detail="Latest average velocity across players with data."
+                label="Avg fastball velo"
+                value={avgFastballVelocity != null ? `${avgFastballVelocity.toFixed(1)} mph` : "—"}
+                detail="Latest-session Fastball/Sinker velocity averaged across players; uses overall pitch mix when no fastball row exists."
                 tone="sky"
-              />
-              <StatCard
-                label="Pitch Types"
-                value={String(uniquePitchTypes)}
-                detail="Unique pitch shapes seen in the current dataset."
-                tone="violet"
               />
             </div>
           </div>
@@ -412,7 +379,7 @@ export default function TrackmanPlayersPage() {
               <div className="h-4 w-40 rounded-full bg-[#E2E8F0]" />
               <div className="h-12 rounded-[20px] bg-[#F1F5F9]" />
               <div className="grid gap-4 md:grid-cols-2">
-                {[0, 1, 2, 3].map((index) => (
+                {[0, 1, 2].map((index) => (
                   <div key={index} className="h-36 rounded-[24px] bg-[#F8FAFC]" />
                 ))}
               </div>
@@ -432,39 +399,8 @@ export default function TrackmanPlayersPage() {
         ) : (
           <>
             <section className="rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
-              <div className="border-b border-[#EEF2F7] p-5 sm:p-6">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                  <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
-                      Filters
-                    </div>
-                    <h2 className="mt-2 text-lg font-bold text-[#0F172A]">Search Trackman players</h2>
-                    <p className="mt-1 text-sm text-[#64748B]">
-                      Filter by name, handedness, or sort order.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-[#E5E7EB] bg-[#F8FAFC] px-3 py-1.5 text-xs font-semibold text-[#64748B]">
-                      {filtered.length} shown
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-4 p-5 sm:p-6 lg:grid-cols-[minmax(15rem,1fr)_auto] lg:items-end">
-                <label className="flex items-center gap-3 rounded-2xl border border-[#E5E7EB] bg-[#F8FAFC] px-4 py-3 transition-colors focus-within:border-[#C7D2FE] focus-within:bg-white">
-                  <Search className="h-4 w-4 shrink-0 text-[#94A3B8]" />
-                  <input
-                    type="text"
-                    placeholder="Search players..."
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    className="w-full bg-transparent text-sm text-[#0F172A] outline-none placeholder:text-[#94A3B8]"
-                  />
-                </label>
-
-                <div className="grid gap-4 xl:grid-cols-2">
+              <div className="grid gap-4 p-5 sm:p-6 lg:grid-cols-[auto_minmax(15rem,1fr)] lg:items-end">
+                <div className="grid gap-4 sm:grid-cols-2 lg:w-max lg:max-w-full">
                   <FilterGroup
                     label="Sort"
                     items={[
@@ -486,6 +422,17 @@ export default function TrackmanPlayersPage() {
                     onChange={setHandFilter}
                   />
                 </div>
+
+                <label className="flex min-w-0 items-center gap-3 rounded-2xl border border-[#E5E7EB] bg-[#F8FAFC] px-4 py-3 transition-colors focus-within:border-[#C7D2FE] focus-within:bg-white">
+                  <Search className="h-4 w-4 shrink-0 text-[#94A3B8]" />
+                  <input
+                    type="text"
+                    placeholder="Search players..."
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    className="w-full min-w-0 bg-transparent text-sm text-[#0F172A] outline-none placeholder:text-[#94A3B8]"
+                  />
+                </label>
               </div>
             </section>
 

@@ -234,7 +234,7 @@ export default function LaneReport({ pitches, throwsHand, activeLane, onSelectLa
               className="overflow-hidden rounded-[1.5rem] border border-zinc-800/80 bg-zinc-950/62 p-4"
             >
               <div className="flex items-center gap-2 mb-3">
-                <PitchTypeChip pitchType={g.type} label={pitchDisplayName(g.type)} size="xs" />
+                <PitchTypeChip pitchType={g.type} label={pitchDisplayName(g.type)} size="xs" variant="solid" />
                 <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
                   By Lane
                 </span>

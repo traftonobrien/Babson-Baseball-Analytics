@@ -11,6 +11,7 @@ import {
   BarChart3,
   BookOpen,
   ClipboardList,
+  Eye,
   Film,
   Upload,
   Sparkles,
@@ -82,9 +83,15 @@ const NAV_ITEMS: NavItem[] = [
       pathname === "/charting" ||
       pathname === "/charting/leaderboard" ||
       pathname === "/charting/faq" ||
-      pathname.startsWith("/charting/insights") ||
       pathname.startsWith("/charting/games/") ||
       pathname === "/charting/new",
+    section: "tracking",
+  },
+  {
+    name: "Player Insights",
+    url: "/charting/insights",
+    icon: Eye,
+    match: (pathname) => pathname === "/charting/insights" || pathname.startsWith("/charting/insights/"),
     section: "tracking",
   },
   {
@@ -217,7 +224,14 @@ export default function Sidebar() {
       <div className={`sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-[#F1F5F9] bg-white px-4 py-4 xl:hidden ${plusJakarta.className}`}>
         <Link href="/" className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--brand-primary)]">
-            <Image src="/babson-logo.svg" alt={`${TEAM_NAME} logo`} width={20} height={20} className="filter brightness-0 invert" priority />
+            <Image
+              src="/babson-logo.svg"
+              alt={`${TEAM_NAME} logo`}
+              width={20}
+              height={20}
+              className="h-auto w-auto max-h-full max-w-full filter brightness-0 invert"
+              priority
+            />
           </div>
           <div>
             <span className="block text-lg font-bold tracking-tight text-[#0F172A]">{TEAM_NAME}</span>
@@ -238,7 +252,7 @@ export default function Sidebar() {
                 alt={`${TEAM_NAME} logo`}
                 width={20}
                 height={20}
-                className="filter brightness-0 invert"
+                className="h-auto w-auto max-h-full max-w-full filter brightness-0 invert"
                 priority
               />
             </div>

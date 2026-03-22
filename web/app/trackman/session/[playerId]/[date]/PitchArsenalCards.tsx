@@ -64,6 +64,7 @@ export default function PitchArsenalCards({
                     pitchType={row.pitchType}
                     label={row.pitchType}
                     size="sm"
+                    variant="solid"
                   />
                   {row.count != null ? (
                     <span className="rounded-full border border-zinc-800 bg-zinc-950/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
