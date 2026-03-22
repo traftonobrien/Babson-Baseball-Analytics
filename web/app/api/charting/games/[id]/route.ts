@@ -279,107 +279,74 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
         velocity: p.velocity ?? null,
       }));
 
-      // db.transaction() is not supported by drizzle-orm/neon-http.
-      // db.batch() sends all queries atomically via Neon's HTTP batch API.
-      const happyPathBatch = [
-        db.delete(chartingPitcherSegments).where(eq(chartingPitcherSegments.gameId, id)),
-        ...(segmentsPayload.length > 0
-          ? [db.insert(chartingPitcherSegments).values(segmentValues)]
-          : []),
-        db.delete(chartingLineupEntries).where(eq(chartingLineupEntries.gameId, id)),
-        ...(lineupPayload.length > 0
-          ? [db.insert(chartingLineupEntries).values(lineupValues)]
-          : []),
-        db.delete(chartingPlateAppearances).where(eq(chartingPlateAppearances.gameId, id)),
-        ...(pasPayload.length > 0
-          ? [db.insert(chartingPlateAppearances).values(plateAppearanceValues)]
-          : []),
-        db.delete(chartingPitches).where(eq(chartingPitches.gameId, id)),
-        ...(pitchesPayload.length > 0
-          ? [db.insert(chartingPitches).values(pitchValues)]
-          : []),
-      ] as const;
-
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await db.batch(happyPathBatch as [any, ...any[]]);
+        await db.transaction(async (tx) => {
+          await tx.delete(chartingPitcherSegments).where(eq(chartingPitcherSegments.gameId, id));
+          if (segmentsPayload.length > 0) await tx.insert(chartingPitcherSegments).values(segmentValues);
+          await tx.delete(chartingLineupEntries).where(eq(chartingLineupEntries.gameId, id));
+          if (lineupPayload.length > 0) await tx.insert(chartingLineupEntries).values(lineupValues);
+          await tx.delete(chartingPlateAppearances).where(eq(chartingPlateAppearances.gameId, id));
+          if (pasPayload.length > 0) await tx.insert(chartingPlateAppearances).values(plateAppearanceValues);
+          await tx.delete(chartingPitches).where(eq(chartingPitches.gameId, id));
+          if (pitchesPayload.length > 0) await tx.insert(chartingPitches).values(pitchValues);
+        });
       } catch (error) {
         if (isMissingPlateAppearanceContextColumnError(error)) {
           warnings.push(
             "Modern plate-appearance context could not be persisted because charting_plate_appearances is missing one or more context columns. Run migrations 0004_charting_pa_initial_count and 0006_charting_pa_context before relying on PA start state, inning half, and baserunner context in exports."
           );
-          const legacyPaBatch = [
-            db.delete(chartingPitcherSegments).where(eq(chartingPitcherSegments.gameId, id)),
-            ...(segmentsPayload.length > 0
-              ? [db.insert(chartingPitcherSegments).values(segmentValues)]
-              : []),
-            db.delete(chartingLineupEntries).where(eq(chartingLineupEntries.gameId, id)),
-            ...(lineupPayload.length > 0
-              ? [db.insert(chartingLineupEntries).values(lineupValues)]
-              : []),
-            db.delete(chartingPlateAppearances).where(eq(chartingPlateAppearances.gameId, id)),
-            ...(pasPayload.length > 0
-              ? [
-                  db.insert(legacyChartingPlateAppearances).values(
-                    plateAppearanceValues.map((pa) => ({
-                      id: pa.id,
-                      gameId: pa.gameId,
-                      segmentId: pa.segmentId,
-                      paOrder: pa.paOrder,
-                      inning: pa.inning,
-                      hitterName: pa.hitterName,
-                      lineupSlot: pa.lineupSlot,
-                      resultCode: pa.resultCode,
-                      buntContext: pa.buntContext,
-                    }))
-                  ),
-                ]
-              : []),
-            db.delete(chartingPitches).where(eq(chartingPitches.gameId, id)),
-            ...(pitchesPayload.length > 0
-              ? [db.insert(chartingPitches).values(pitchValues)]
-              : []),
-          ] as const;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await db.batch(legacyPaBatch as [any, ...any[]]);
+          await db.transaction(async (tx) => {
+            await tx.delete(chartingPitcherSegments).where(eq(chartingPitcherSegments.gameId, id));
+            if (segmentsPayload.length > 0) await tx.insert(chartingPitcherSegments).values(segmentValues);
+            await tx.delete(chartingLineupEntries).where(eq(chartingLineupEntries.gameId, id));
+            if (lineupPayload.length > 0) await tx.insert(chartingLineupEntries).values(lineupValues);
+            await tx.delete(chartingPlateAppearances).where(eq(chartingPlateAppearances.gameId, id));
+            if (pasPayload.length > 0) {
+              await tx.insert(legacyChartingPlateAppearances).values(
+                plateAppearanceValues.map((pa) => ({
+                  id: pa.id,
+                  gameId: pa.gameId,
+                  segmentId: pa.segmentId,
+                  paOrder: pa.paOrder,
+                  inning: pa.inning,
+                  hitterName: pa.hitterName,
+                  lineupSlot: pa.lineupSlot,
+                  resultCode: pa.resultCode,
+                  buntContext: pa.buntContext,
+                }))
+              );
+            }
+            await tx.delete(chartingPitches).where(eq(chartingPitches.gameId, id));
+            if (pitchesPayload.length > 0) await tx.insert(chartingPitches).values(pitchValues);
+          });
         } else if (isMissingVelocityColumnError(error)) {
           warnings.push(
             "Velocity could not be persisted because the charting_pitches table is missing the velocity column. Run migration 0003_charting_pitch_velocity before exporting CSV velo."
           );
-          const legacyPitchBatch = [
-            db.delete(chartingPitcherSegments).where(eq(chartingPitcherSegments.gameId, id)),
-            ...(segmentsPayload.length > 0
-              ? [db.insert(chartingPitcherSegments).values(segmentValues)]
-              : []),
-            db.delete(chartingLineupEntries).where(eq(chartingLineupEntries.gameId, id)),
-            ...(lineupPayload.length > 0
-              ? [db.insert(chartingLineupEntries).values(lineupValues)]
-              : []),
-            db.delete(chartingPlateAppearances).where(eq(chartingPlateAppearances.gameId, id)),
-            ...(pasPayload.length > 0
-              ? [db.insert(chartingPlateAppearances).values(plateAppearanceValues)]
-              : []),
-            db.delete(chartingPitches).where(eq(chartingPitches.gameId, id)),
-            ...(pitchesPayload.length > 0
-              ? [
-                  db.insert(legacyChartingPitches).values(
-                    pitchValues.map((p) => ({
-                      id: p.id,
-                      gameId: p.gameId,
-                      paId: p.paId,
-                      pitchOrder: p.pitchOrder,
-                      pitchType: p.pitchType,
-                      locationCell: p.locationCell,
-                      pitchResult: p.pitchResult,
-                      ballsBefore: p.ballsBefore,
-                      strikesBefore: p.strikesBefore,
-                    }))
-                  ),
-                ]
-              : []),
-          ] as const;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await db.batch(legacyPitchBatch as [any, ...any[]]);
+          await db.transaction(async (tx) => {
+            await tx.delete(chartingPitcherSegments).where(eq(chartingPitcherSegments.gameId, id));
+            if (segmentsPayload.length > 0) await tx.insert(chartingPitcherSegments).values(segmentValues);
+            await tx.delete(chartingLineupEntries).where(eq(chartingLineupEntries.gameId, id));
+            if (lineupPayload.length > 0) await tx.insert(chartingLineupEntries).values(lineupValues);
+            await tx.delete(chartingPlateAppearances).where(eq(chartingPlateAppearances.gameId, id));
+            if (pasPayload.length > 0) await tx.insert(chartingPlateAppearances).values(plateAppearanceValues);
+            await tx.delete(chartingPitches).where(eq(chartingPitches.gameId, id));
+            if (pitchesPayload.length > 0) {
+              await tx.insert(legacyChartingPitches).values(
+                pitchValues.map((p) => ({
+                  id: p.id,
+                  gameId: p.gameId,
+                  paId: p.paId,
+                  pitchOrder: p.pitchOrder,
+                  pitchType: p.pitchType,
+                  locationCell: p.locationCell,
+                  pitchResult: p.pitchResult,
+                  ballsBefore: p.ballsBefore,
+                  strikesBefore: p.strikesBefore,
+                }))
+              );
+            }
+          });
         } else {
           throw error;
         }
