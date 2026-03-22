@@ -450,7 +450,7 @@ Plans:
 | 14. Completion | 3/3 | Complete | 2026-03-21 |
 | 15. Ops Foundations | 4/4 | Complete | 2026-03-21 |
 | 16. Code Decomposition | 3/3 | Complete | 2026-03-21 |
-| 17. Multi-Tenancy Part 1 | 3/3 | Complete | 2026-03-22 |
+| 17. Multi-Tenancy Part 1 | 3/3 | Complete    | 2026-03-22 |
 | 17.5. Supabase Migration | 0/TBD | Not started | - |
 | 18. Multi-Tenancy Part 2 | 0/3 | Not started | - |
 | 19. UX Polish | 0/4 | Not started | - |
