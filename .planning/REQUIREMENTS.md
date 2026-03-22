@@ -29,7 +29,7 @@
 ### Multi-Tenancy — Team Parameterization
 
 - [x] **TEAM-01**: All hardcoded "Babson" strings in the product UI are replaced with a configurable team name from environment or DB config
-- [ ] **TEAM-02**: The DB schema includes a team_id concept — charting games and related records are scoped to a team
+- [x] **TEAM-02**: The DB schema includes a team_id concept — charting games and related records are scoped to a team
 - [ ] **TEAM-03**: A new team can configure their team name, logo, and colors through an admin settings surface
 - [ ] **TEAM-04**: Player identity (roster, slugs, playerIds) is team-scoped — no cross-team data leakage
 - [ ] **TEAM-05**: The login/auth flow is team-aware — a team's credentials authenticate only their data
@@ -99,7 +99,7 @@
 | CODE-02 | Phase 16 | Complete |
 | CODE-03 | Phase 16 | Pending |
 | TEAM-01 | Phase 17 | Complete |
-| TEAM-02 | Phase 17 | Pending |
+| TEAM-02 | Phase 17 | Complete |
 | TEAM-03 | Phase 18 | Pending |
 | TEAM-04 | Phase 18 | Pending |
 | TEAM-05 | Phase 18 | Pending |
