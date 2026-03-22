@@ -33,6 +33,5 @@ When `excludeOutliers` is true:
 
 Outliers are visually distinguished:
 
-- **PitchTable:** Outliers are greyed out (50% opacity, grayscale)
 - **PitchTable:** Outliers show an "OUTLIER" badge with threshold value
 - **StrikeZoneScatter:** Outliers may be filtered or visually distinct
