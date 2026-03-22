@@ -389,8 +389,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 17-01: Audit all hardcoded "Babson" strings in web/ and replace with a configurable team name constant or env variable
-- [ ] 17-02: Add team_id to DB schema (charting_games and related tables) and run migration for existing records
+- [ ] 17-01-PLAN.md — Audit all hardcoded "Babson" strings in web/ and replace with TEAM_NAME from teamConfig.ts
+- [ ] 17-02-PLAN.md — Add team_id to DB schema (charting_games and related tables) and run migration for existing records
+- [ ] 17-03-PLAN.md — Verification pass: grep audit, DB column confirmed, build clean, Vercel env var set
 
 ### Phase 18: Multi-Tenancy Part 2
 **Goal**: Give each team a self-serve admin settings surface, team-scoped player identity to prevent cross-team data leakage, and a login flow that authenticates each team against only their own data.
@@ -448,7 +449,7 @@ Plans:
 | 14. Completion | 3/3 | Complete | 2026-03-21 |
 | 15. Ops Foundations | 4/4 | Complete | 2026-03-21 |
 | 16. Code Decomposition | 2/3 | In progress | - |
-| 17. Multi-Tenancy Part 1 | 0/2 | Not started | - |
+| 17. Multi-Tenancy Part 1 | 0/3 | Not started | - |
 | 18. Multi-Tenancy Part 2 | 0/3 | Not started | - |
 | 19. UX Polish | 0/4 | Not started | - |
 | 20. Demo and Marketing | 0/3 | Not started | - |
