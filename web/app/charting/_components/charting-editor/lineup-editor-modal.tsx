@@ -4,6 +4,7 @@ import { ChevronRight, Save } from "lucide-react";
 import type { ChartingMatchupSide } from "@/lib/charting/types";
 
 import type { LineupDrafts } from "./types";
+import { TEAM_NAME } from "@/lib/teamConfig";
 
 interface ChartingEditorLineupModalProps {
   ourTeamLabel: string;
@@ -70,7 +71,7 @@ export const ChartingEditorLineupModal = ({
 
         <div className="grid gap-5 px-5 py-5 lg:grid-cols-2">
           {([
-            ["our", ourTeamLabel, "Babson hitter"],
+            ["our", ourTeamLabel, `${TEAM_NAME} hitter`],
             ["opponent", opponentTeamLabel, "Opponent hitter"],
           ] as const).map(([side, label, placeholder]) => (
             <div

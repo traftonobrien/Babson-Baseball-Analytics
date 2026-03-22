@@ -81,6 +81,7 @@ import type {
   SaveState,
 } from "./charting-editor/types";
 import { ChartingEditorWorkspace } from "./charting-editor/workspace";
+import { TEAM_NAME } from "@/lib/teamConfig";
 interface ChartingEditorProps {
   initialSnapshot: ChartingGameSnapshot;
   pitchers: ChartingBootstrapPitcher[];
@@ -172,7 +173,7 @@ export function ChartingEditor({
   };
   const activeBattingSide = battingSideForMatchup(snapshot.game, overrideBase.isTopInning);
   const activePitchingSide = pitchingSideForMatchup(snapshot.game, overrideBase.isTopInning);
-  const ourTeamLabel = snapshot.game.ourTeamLabel?.trim() || "Babson";
+  const ourTeamLabel = snapshot.game.ourTeamLabel?.trim() || TEAM_NAME;
   const opponentTeamLabel =
     snapshot.game.opponentTeamLabel?.trim() || snapshot.game.opponent;
   const topBattingTeam =
@@ -750,7 +751,7 @@ export function ChartingEditor({
         teamSide: battingSideForMatchup(updatedGame, plateAppearance.isTopInning),
       })),
     };
-    applyOptimisticSnapshot(nextSnapshot, gameStateOverride, `Babson set as ${newSide}`);
+    applyOptimisticSnapshot(nextSnapshot, gameStateOverride, `${TEAM_NAME} set as ${newSide}`);
   };
   const handlePAInningChange = (paId: string, inning: number) => {
     const nextSnapshot = updatePlateAppearanceContextInSnapshot(snapshot, {

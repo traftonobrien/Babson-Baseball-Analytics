@@ -6,6 +6,7 @@ import {
   LeaderboardPageFrame,
   LeaderboardPill,
 } from "@/app/components/leaderboards/LeaderboardChrome";
+import { TEAM_NAME } from "@/lib/teamConfig";
 
 export default function LoginPage() {
   const [password, setPassword] = useState("");
@@ -56,7 +57,7 @@ export default function LoginPage() {
               Secure Access
             </div>
             <h1 className="mt-4 text-3xl font-black tracking-tight text-zinc-50 sm:text-4xl">
-              Babson Baseball Pitching Portal
+              {TEAM_NAME} Baseball Pitching Portal
             </h1>
             <p className="mt-3 max-w-lg text-sm leading-7 text-zinc-400">
               Enter the site password to open the full player, leaderboard, and reporting stack.

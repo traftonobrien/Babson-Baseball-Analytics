@@ -1,5 +1,6 @@
 import pitcherPlayers from "@/data/players.json";
 import chartingRoster from "@/data/chartingRoster.json";
+import { TEAM_NAME } from "@/lib/teamConfig";
 
 type RawPitcherPlayer = {
   player_slug?: string;
@@ -41,7 +42,7 @@ export interface PlayerRegistryEntry {
 function normalizePitcherEntry(entry: RawPitcherPlayer) {
   const slug = entry.slug ?? entry.player_slug ?? "";
   const name = entry.name ?? entry.full_name ?? "";
-  const team = entry.team ?? entry.school ?? "Babson";
+  const team = entry.team ?? entry.school ?? TEAM_NAME;
   if (!slug || !name) {
     return null;
   }
@@ -103,7 +104,7 @@ export const playerRegistry: PlayerRegistryEntry[] = (chartingRoster as RawChart
     return {
       slug: player.slug,
       name: player.name,
-      team: pitcherEntry?.team ?? "Babson",
+      team: pitcherEntry?.team ?? TEAM_NAME,
       role: buildRoleLabel(positions, isPitcher, isHitter),
       d3_player_id: pitcherEntry?.d3_player_id ?? null,
       ncaa_player_id: pitcherEntry?.ncaa_player_id ?? null,

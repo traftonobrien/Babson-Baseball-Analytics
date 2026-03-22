@@ -11,6 +11,7 @@ import type {
 import { COUNT_PRESET_OPTIONS, INNING_OPTIONS, OUT_OPTIONS } from "./constants";
 import type { LiveABCountPreset } from "./types";
 import { countPresetButtonClass } from "./ui";
+import { TEAM_NAME } from "@/lib/teamConfig";
 
 interface ChartingEditorTopBarProps {
   sessionType: ChartingGameSnapshot["game"]["sessionType"];
@@ -134,7 +135,7 @@ export const ChartingEditorTopBar = ({
                 onChange={onPitcherInputChange}
                 disabled={currentPitcherLocked}
                 placeholder={
-                  activePitchingSide === "our" ? "Babson pitcher" : "Opponent pitcher"
+                  activePitchingSide === "our" ? `${TEAM_NAME} pitcher` : "Opponent pitcher"
                 }
                 className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-bold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] focus:shadow-[0_0_0_1px_rgba(var(--babson-green-rgb),0.12)] placeholder:font-normal placeholder:text-zinc-600 disabled:opacity-50"
               />
@@ -155,7 +156,7 @@ export const ChartingEditorTopBar = ({
                 value={hitterName}
                 onChange={(event) => onHitterChange(event.target.value)}
                 onBlur={onHitterBlur}
-                placeholder={activeBattingSide === "our" ? "Babson hitter" : "Opponent hitter"}
+                placeholder={activeBattingSide === "our" ? `${TEAM_NAME} hitter` : "Opponent hitter"}
                 className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-bold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] focus:shadow-[0_0_0_1px_rgba(var(--babson-green-rgb),0.12)] placeholder:font-normal placeholder:text-zinc-600"
               />
               <datalist id={datalistId}>

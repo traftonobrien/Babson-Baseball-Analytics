@@ -18,6 +18,7 @@ import { handBadgeClasses } from "@/lib/handBadge";
 import type { PlayerRegistryEntry } from "@/lib/playerRegistry";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
 import { cn } from "@/lib/utils";
+import { TEAM_NAME } from "@/lib/teamConfig";
 
 export interface RosterEntry {
   height?: string;
@@ -162,7 +163,7 @@ function PlayerCard({
                 {canonicalName}
               </h2>
               <p className="mt-1 text-sm text-zinc-500">
-                {player.team || "Babson Baseball"}
+                {player.team || `${TEAM_NAME} Baseball`}
               </p>
             </div>
 
@@ -308,7 +309,7 @@ export default function PlayersHubView({
             icon={Users}
             eyebrow="Roster Hub"
             title="Player Profiles"
-            description="Start with the full Babson roster. Every card opens one player page with role-aware stats, charting context, and system-specific development data when it exists."
+            description={`Start with the full ${TEAM_NAME} roster. Every card opens one player page with role-aware stats, charting context, and system-specific development data when it exists.`}
             meta={
               <>
                 <LeaderboardPill tone="emerald">
