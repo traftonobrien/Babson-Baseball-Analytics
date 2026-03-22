@@ -79,6 +79,7 @@ import {
   readPitcherExplorerQuery,
   type ComparisonView,
 } from "./explorerState";
+import { TEAM_NAME } from "@/lib/teamConfig";
 
 const SEARCH_RESULT_LIMIT = 8;
 
@@ -744,8 +745,8 @@ export default function LiveAbInsightsExplorer({
                   </h2>
                   <p className="mt-2 max-w-3xl text-sm leading-7 text-zinc-400">
                     {isPitcher
-                      ? "Single-player charting visuals modeled after the Savant workflow, scoped to the filters currently applied across this pitcher’s Babson charting data."
-                      : "Single-player charting visuals modeled after the Savant workflow, scoped to the filters currently applied across this hitter’s Babson charting data."}
+                      ? `Single-player charting visuals modeled after the Savant workflow, scoped to the filters currently applied across this pitcher’s ${TEAM_NAME} charting data.`
+                      : `Single-player charting visuals modeled after the Savant workflow, scoped to the filters currently applied across this hitter’s ${TEAM_NAME} charting data.`}
                   </p>
                 </div>
 

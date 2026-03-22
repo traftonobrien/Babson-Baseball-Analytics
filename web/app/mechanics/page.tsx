@@ -3,9 +3,10 @@ import path from "path";
 import type { Metadata } from "next";
 import MechanicsHubView from "./MechanicsHubView";
 import type { MechanicsIndex } from "@/lib/mechanics/hub";
+import { TEAM_NAME } from "@/lib/teamConfig";
 
 export const metadata: Metadata = {
-  title: "Mechanics Hub — Babson Baseball",
+  title: `Mechanics Hub — ${TEAM_NAME} Baseball`,
 };
 
 export default async function MechanicsHubPage() {

@@ -8,6 +8,7 @@ import {
 import { clipPathForLocationCell } from "@/lib/charting/locationGrid";
 
 import type { ComparisonView } from "../explorerState";
+import { TEAM_NAME } from "@/lib/teamConfig";
 import {
   countNounForView,
   isPitcherView,
@@ -42,8 +43,8 @@ export function EmptyState({
           </h2>
           <p className="mt-3 max-w-xl text-sm leading-7 text-zinc-400">
             {isPitcher
-              ? "This page mirrors the Savant workflow with the Babson pitcher data we actually capture: player search, season and pitch filters, pitch-speed scope, command/result slices, rough zone buckets, and a one-line season table below."
-              : "This page mirrors the Savant workflow with the Babson data we actually capture: player search, pitcher hand, season and pitch filters, pitch-speed scope, rough zone buckets, and a one-line season table below."}
+              ? `This page mirrors the Savant workflow with the ${TEAM_NAME} pitcher data we actually capture: player search, season and pitch filters, pitch-speed scope, command/result slices, rough zone buckets, and a one-line season table below.`
+              : `This page mirrors the Savant workflow with the ${TEAM_NAME} data we actually capture: player search, pitcher hand, season and pitch filters, pitch-speed scope, rough zone buckets, and a one-line season table below.`}
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
             <LeaderboardPill tone="sky">

@@ -27,6 +27,7 @@ import { computeCommandPlus } from "@/lib/commandPlus";
 import { globalCommandPlusBaselines, loadAllOutingData } from "@/lib/leaderboards/load";
 import { seasonFromDateId } from "@/lib/season";
 import type { SeasonFilter } from "@/lib/leaderboards/types";
+import { TEAM_NAME } from "@/lib/teamConfig";
 
 /* ================================================================== */
 /*  Inner component                                                    */
@@ -349,7 +350,7 @@ function ReportInner() {
 
       {/* ---- Footer ---- */}
       <footer className="pt-1.5 border-t border-zinc-700 print:border-zinc-400 text-[8px] text-zinc-500 print:text-zinc-500 flex justify-between">
-        <span>Babson Baseball Pitching Portal &mdash; Printable Command Report</span>
+        <span>{TEAM_NAME} Baseball Pitching Portal &mdash; Printable Command Report</span>
         <span>{generatedDate}</span>
       </footer>
           </div>

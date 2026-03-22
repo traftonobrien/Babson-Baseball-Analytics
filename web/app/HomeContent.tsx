@@ -21,6 +21,7 @@ import LogoutButton from "./components/LogoutButton";
 import { LeaderboardPageFrame } from "@/app/components/leaderboards/LeaderboardChrome";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { cn } from "@/lib/utils";
+import { TEAM_NAME } from "@/lib/teamConfig";
 
 type HomeTone =
   | "emerald"
@@ -279,14 +280,14 @@ export default function HomeContent() {
               className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em]"
               style={BABSON_BADGE_STYLE}
             >
-              Babson Baseball
+              {TEAM_NAME} Baseball
             </div>
 
             <div className="mt-5 flex items-center gap-4">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-800/80 bg-zinc-900/80 p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                 <Image
                   src="/babson-logo.svg"
-                  alt="Babson Baseball"
+                  alt={`${TEAM_NAME} Baseball`}
                   width={32}
                   height={32}
                   className="h-8 w-8 shrink-0"
@@ -295,7 +296,7 @@ export default function HomeContent() {
               </div>
               <div>
                 <h1 className="text-3xl font-black tracking-tight text-zinc-50 sm:text-[2.65rem] sm:leading-[1.02]">
-                  Babson Baseball Data Insights Portal
+                  {TEAM_NAME} Baseball Data Insights Portal
                 </h1>
                 <p className="mt-2 max-w-2xl text-sm leading-7 text-zinc-400 sm:text-[15px]">
                   The team-wide portal for player profiles, season statistics,
@@ -457,7 +458,7 @@ export default function HomeContent() {
             height={14}
             className="h-3.5 w-3.5 shrink-0 opacity-85"
           />
-          Home of the Babson Beavers
+          Home of the {TEAM_NAME} Beavers
         </div>
       </motion.div>
     </LeaderboardPageFrame>

@@ -6,9 +6,10 @@ import DebugInit from "./components/DebugInit";
 import Header from "./components/Header";
 import PageTransition from "./components/PageTransition";
 import Providers from "./components/Providers";
+import { TEAM_NAME } from "@/lib/teamConfig";
 
 export const metadata: Metadata = {
-  title: "Babson Baseball Pitching Portal",
+  title: `${TEAM_NAME} Baseball Pitching Portal`,
   description: "Pitch tracking film room",
 };
 
