@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Live AB Analytics
 status: executing
-stopped_at: Completed 17-02-PLAN.md — team_id added to all charting tables
-last_updated: "2026-03-22T18:53:43.036Z"
-last_activity: 2026-03-22 — Phase 17-01 complete; team name parameterized via NEXT_PUBLIC_TEAM_NAME
+stopped_at: Completed 17-03-PLAN.md — Phase 17 Multi-Tenancy Part 1 complete
+last_updated: "2026-03-22T19:30:00.000Z"
+last_activity: 2026-03-22 — Phase 17 complete; NEXT_PUBLIC_TEAM_NAME confirmed in Vercel, live deployment verified
 progress:
   total_phases: 23
-  completed_phases: 15
+  completed_phases: 16
   total_plans: 41
-  completed_plans: 37
-  percent: 88
+  completed_plans: 38
+  percent: 90
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** One coach can chart an entire outing on one iPad and trust that the result survives offline use, syncs cleanly, and exports well enough to replace the current paper workflow — now extensible to any D3 team.
-**Current focus:** Milestone v3.0 — Phase 17: Multi-Tenancy Part 1 (`17-01` and `17-02` complete, `17-03` next)
+**Current focus:** Milestone v3.0 — Phase 17 complete; next: Phase 17.5 (Supabase Migration) or Phase 18 (Multi-Tenancy Part 2)
 
 ## Current Position
 
-**Phase:** 17 of 20 (Multi-Tenancy Part 1)
-**Plan:** 17-03 of 3
-**Status:** Ready to execute
-**Last Activity:** 2026-03-22 — Phase 17-02 complete; team_id added to all five charting tables in schema + live Neon DB
+**Phase:** 17 of 20 (Multi-Tenancy Part 1) — COMPLETE
+**Plan:** 17-03 of 3 — COMPLETE
+**Status:** Phase 17 complete; Phase 17.5 or Phase 18 is next
+**Last Activity:** 2026-03-22 — Phase 17 complete; NEXT_PUBLIC_TEAM_NAME confirmed in Vercel; live deployment at babsonanalytics.com verified
 
 Progress: [█████████░] 90% (v3.0)
 
@@ -79,6 +79,7 @@ Progress: [█████████░] 90% (v3.0)
 - 17-02: team_id is plain text (no FK to teams table) — Phase 18 adds teams table and constraint
 - 17-02: Migration uses ADD COLUMN nullable + back-fill + SET NOT NULL pattern to avoid table rewrite lock
 - 17-02: DEFAULT 'babson' on both column and Drizzle schema — new inserts auto-scoped without application code changes in Phase 17
+- 17-03: NEXT_PUBLIC_TEAM_NAME=Babson set in Vercel for Production, Preview, and Development — live deployment confirmed correct at babsonanalytics.com
 
 ### Known Gaps
 
@@ -91,6 +92,7 @@ Progress: [█████████░] 90% (v3.0)
 - CODE-03 REMAINS: some `web/` files still exceed the 1000-line ceiling and must be handled in `16-03`
 - TEAM-01 RESOLVED: All rendered "Babson" literals replaced with TEAM_NAME from teamConfig.ts (17-01)
 - TEAM-02 RESOLVED: team_id column added to all five charting tables; back-filled to 'babson'; NOT NULL + DEFAULT 'babson' (17-02)
+- TEAM-VERCEL RESOLVED: NEXT_PUBLIC_TEAM_NAME=Babson confirmed in Vercel; live deployment verified (17-03)
 - No demo mode (Phase 20)
 
 ### Blockers
@@ -100,5 +102,5 @@ None.
 ## Session Continuity
 
 **Last Date:** 2026-03-22T18:53:43.033Z
-**Stopped At:** Completed 17-02-PLAN.md — team_id added to all charting tables
+**Stopped At:** Completed 17-03-PLAN.md — Phase 17 Multi-Tenancy Part 1 complete
 **Resume File:** None

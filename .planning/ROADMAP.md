@@ -31,7 +31,7 @@ This roadmap takes the project from a brownfield repo with no live charting doma
 - [x] **Phase 14: Completion** - Finish Phase 12.1-03 mixed-role polish and merge the charting UAT branch
 - [x] **Phase 15: Ops Foundations** - Fix middleware deployment, add error boundaries, verify env vars, add structured logging
 - [x] **Phase 16: Code Decomposition** - Break ChartingEditor and LiveAbInsightsExplorer into modules under 500 lines each
-- [ ] **Phase 17: Multi-Tenancy Part 1** - Replace Babson hardcoding with configurable team identity and add team_id to DB schema
+- [x] **Phase 17: Multi-Tenancy Part 1** - Replace Babson hardcoding with configurable team identity and add team_id to DB schema
 - [ ] **Phase 17.5: Supabase Migration** - Migrate database and auth from Neon/custom to Supabase (RLS, Auth, Storage)
 - [ ] **Phase 18: Multi-Tenancy Part 2** - Build admin settings surface, team-scoped player identity, and team-aware auth
 - [ ] **Phase 19: UX Polish** - Mobile-responsive layout, skeleton loading states, touch targets, and keyboard accessibility
@@ -390,9 +390,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 17-01-PLAN.md — Audit all hardcoded "Babson" strings in web/ and replace with TEAM_NAME from teamConfig.ts
-- [ ] 17-02-PLAN.md — Add team_id to DB schema (charting_games and related tables) and run migration for existing records
-- [ ] 17-03-PLAN.md — Verification pass: grep audit, DB column confirmed, build clean, Vercel env var set
+- [x] 17-01-PLAN.md — Audit all hardcoded "Babson" strings in web/ and replace with TEAM_NAME from teamConfig.ts
+- [x] 17-02-PLAN.md — Add team_id to DB schema (charting_games and related tables) and run migration for existing records
+- [x] 17-03-PLAN.md — Verification pass: grep audit, DB column confirmed, build clean, Vercel env var set
 
 ### Phase 18: Multi-Tenancy Part 2
 **Goal**: Give each team a self-serve admin settings surface, team-scoped player identity to prevent cross-team data leakage, and a login flow that authenticates each team against only their own data.
@@ -450,7 +450,7 @@ Plans:
 | 14. Completion | 3/3 | Complete | 2026-03-21 |
 | 15. Ops Foundations | 4/4 | Complete | 2026-03-21 |
 | 16. Code Decomposition | 3/3 | Complete | 2026-03-21 |
-| 17. Multi-Tenancy Part 1 | 2/3 | In Progress|  |
+| 17. Multi-Tenancy Part 1 | 3/3 | Complete | 2026-03-22 |
 | 17.5. Supabase Migration | 0/TBD | Not started | - |
 | 18. Multi-Tenancy Part 2 | 0/3 | Not started | - |
 | 19. UX Polish | 0/4 | Not started | - |
