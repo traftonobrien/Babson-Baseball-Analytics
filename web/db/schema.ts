@@ -81,6 +81,7 @@ export const stuffPlusOutings = pgTable(
  */
 export const chartingGames = pgTable("charting_games", {
   id: text("id").primaryKey(),
+  teamId: text("team_id").notNull().default("babson"),
   sessionType: text("session_type").notNull().default("live_ab"),
   opponent: text("opponent").notNull(),
   /** ISO date yyyy-mm-dd */
@@ -119,6 +120,7 @@ export const chartingGames = pgTable("charting_games", {
  */
 export const chartingPitcherSegments = pgTable("charting_pitcher_segments", {
   id: text("id").primaryKey(),
+  teamId: text("team_id").notNull().default("babson"),
   gameId: text("game_id").notNull(),
   teamSide: text("team_side").notNull().default("our"),
   /** Canonical player id when available; may be null for opponent pitchers */
@@ -142,6 +144,7 @@ export const chartingPitcherSegments = pgTable("charting_pitcher_segments", {
  */
 export const chartingPlateAppearances = pgTable("charting_plate_appearances", {
   id: text("id").primaryKey(),
+  teamId: text("team_id").notNull().default("babson"),
   gameId: text("game_id").notNull(),
   segmentId: text("segment_id").notNull(),
   paOrder: integer("pa_order").notNull(),
@@ -171,6 +174,7 @@ export const chartingPlateAppearances = pgTable("charting_plate_appearances", {
  */
 export const chartingLineupEntries = pgTable("charting_lineup_entries", {
   id: text("id").primaryKey(),
+  teamId: text("team_id").notNull().default("babson"),
   gameId: text("game_id").notNull(),
   teamSide: text("team_side").notNull().default("opponent"),
   /** 1-9 */
@@ -185,6 +189,7 @@ export const chartingLineupEntries = pgTable("charting_lineup_entries", {
  */
 export const chartingPitches = pgTable("charting_pitches", {
   id: text("id").primaryKey(),
+  teamId: text("team_id").notNull().default("babson"),
   gameId: text("game_id").notNull(),
   paId: text("pa_id").notNull(),
   pitchOrder: integer("pitch_order").notNull(),
