@@ -27,13 +27,11 @@ import { seasonFromDateId } from "@/lib/season";
 import { buildStuffPlusLookupCandidates } from "@/lib/stuffPlusLookup";
 import {
   ArrowLeft,
-  ChevronDown,
   Download,
   ScanLine,
 } from "lucide-react";
 import PlayerProfileTabs from "./PlayerProfileTabs";
 import { loadChartingPlayerProfile } from "@/lib/charting/playerProfile";
-import { computeTotalStuffPlus } from "@/lib/stuffPlusUtils";
 import {
   type PercentileMetric,
   PITCHING_SNAPSHOT_METRICS,
@@ -215,136 +213,6 @@ function StatRow({
   );
 }
 
-type GradeToneKey = "pitching" | "command" | "stuff";
-
-const GRADE_TILE_STYLES: Record<
-  GradeToneKey,
-  {
-    border: string;
-    canvas: string;
-    accent: string;
-    label: string;
-    icon: string;
-    scoreWrap: string;
-    scoreText: string;
-  }
-> = {
-  pitching: {
-    border: "border-[#F8D06B]",
-    canvas:
-      "bg-[radial-gradient(circle_at_top_left,rgba(254,240,138,0.22),transparent_36%),linear-gradient(135deg,rgba(255,249,235,0.92),rgba(255,255,255,0.98)_60%,rgba(254,240,138,0.12))]",
-    accent: "bg-[#FFB300]",
-    label: "text-[#B45309]",
-    icon: "text-[#64748B]",
-    scoreWrap:
-      "border-[#FDBA74] bg-[linear-gradient(180deg,#FFB45E_0%,#FFA24B_100%)] shadow-[0_22px_42px_rgba(251,146,60,0.24)]",
-    scoreText: "text-white",
-  },
-  command: {
-    border: "border-[#FDBA74]",
-    canvas:
-      "bg-[radial-gradient(circle_at_top_left,rgba(254,215,170,0.22),transparent_34%),linear-gradient(135deg,rgba(255,247,237,0.95),rgba(255,255,255,0.98)_62%,rgba(255,237,213,0.18))]",
-    accent: "bg-[#F97316]",
-    label: "text-[#C2410C]",
-    icon: "text-[#64748B]",
-    scoreWrap:
-      "border-[#FB7185] bg-[linear-gradient(180deg,#FB7185_0%,#FB7185_12%,#FB7185_100%)] shadow-[0_22px_42px_rgba(244,114,182,0.22)]",
-    scoreText: "text-white",
-  },
-  stuff: {
-    border: "border-[#BFDBFE]",
-    canvas:
-      "bg-[radial-gradient(circle_at_top_left,rgba(191,219,254,0.28),transparent_34%),linear-gradient(135deg,rgba(239,246,255,0.96),rgba(255,255,255,0.99)_62%,rgba(219,234,254,0.18))]",
-    accent: "bg-[#60A5FA]",
-    label: "text-[#1D4ED8]",
-    icon: "text-[#64748B]",
-    scoreWrap:
-      "border-[#94A3B8] bg-[linear-gradient(180deg,#64748B_0%,#76859A_100%)] shadow-[0_22px_42px_rgba(100,116,139,0.20)]",
-    scoreText: "text-white",
-  },
-};
-
-function PlusGradeTile({
-  label,
-  value,
-  note,
-  tone,
-  compact = false,
-  className = "",
-}: {
-  label: string;
-  value: string;
-  note: string;
-  tone: GradeToneKey;
-  compact?: boolean;
-  className?: string;
-}) {
-  const toneStyle = GRADE_TILE_STYLES[tone];
-
-  return (
-    <div
-      className={`relative overflow-hidden rounded-[34px] border ${toneStyle.border} ${toneStyle.canvas} p-6 shadow-[0_26px_56px_rgba(15,23,42,0.05)] sm:p-8 ${className}`}
-    >
-      <div className={`absolute left-0 top-8 w-1.5 rounded-r-full ${toneStyle.accent} ${compact ? "h-24" : "h-32"}`} />
-      <div className={`relative ${compact ? "space-y-10" : "flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between lg:gap-12"}`}>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-4">
-            <p className={`${plusJakarta.className} text-[13px] font-extrabold uppercase tracking-[0.28em] ${toneStyle.label}`}>
-              {label}
-            </p>
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/70 bg-white/75 shadow-[0_12px_24px_rgba(148,163,184,0.14)] backdrop-blur">
-              <ChevronDown className={`h-5 w-5 ${toneStyle.icon}`} />
-            </span>
-          </div>
-          <p className="mt-6 max-w-2xl text-[17px] leading-8 text-[#64748B]">{note}</p>
-        </div>
-        <div
-          className={`flex h-[120px] w-[160px] shrink-0 items-center justify-center rounded-[30px] border ${toneStyle.scoreWrap} sm:h-[150px] sm:w-[200px]`}
-        >
-          <span className={`${plusJakarta.className} text-[56px] font-extrabold tracking-tight drop-shadow-[0_2px_4px_rgba(15,23,42,0.16)] sm:text-[74px] ${toneStyle.scoreText}`}>
-            {value}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PercentileStrip({
-  label,
-  value,
-  percentile,
-  note,
-}: {
-  label: string;
-  value: string;
-  percentile: number | null;
-  note: string;
-}) {
-  const safePercentile = percentile == null ? 0 : Math.max(6, Math.min(100, percentile));
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#64748B]">
-          {label}
-        </span>
-        <span className="text-sm font-bold text-[#0F172A]">{value}</span>
-      </div>
-      <div className="h-2 overflow-hidden rounded-full bg-[#E2E8F0]">
-        <div
-          className="h-full rounded-full bg-[linear-gradient(90deg,#6366F1,#A5B4FC)]"
-          style={{ width: `${safePercentile}%` }}
-        />
-      </div>
-      <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]">
-        <span>{note}</span>
-        <span>{percentile == null ? "--" : `${Math.round(percentile)}th percentile`}</span>
-      </div>
-    </div>
-  );
-}
-
 function CoverageStat({
   label,
   value,
@@ -358,25 +226,6 @@ function CoverageStat({
         {value}
       </div>
       <p className="mt-1 text-[12px] leading-5 text-[#64748B]">{label}</p>
-    </div>
-  );
-}
-
-function SeasonStatCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex min-h-[152px] flex-col justify-between rounded-[28px] border border-[#E2E8F0] bg-white p-6 shadow-[0_16px_34px_rgba(15,23,42,0.03)]">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">
-        {label}
-      </p>
-      <div className={`${plusJakarta.className} mt-6 text-[2.45rem] font-extrabold tracking-tight text-[#0F172A] sm:text-[2.7rem]`}>
-        {value}
-      </div>
     </div>
   );
 }
@@ -658,51 +507,14 @@ export default async function PlayerProfilePage({
     { label: "Handedness", value: handBadge ?? "Unknown" },
     { label: "Academic year", value: rosterLine || resolvedPlayer.academicYear || "Unknown" },
   ];
-  const stuffOverall = initialStuff.pitches.length > 0 ? computeTotalStuffPlus(initialStuff.pitches) : null;
-  const trackedShapeCount = initialStuff.pitches.filter(
-    (pitch) => pitch.pitchType && pitch.pitchType !== "Other",
-  ).length;
-  const trackedShapeSessions = initialStuff.pitches.reduce(
-    (max, pitch) => Math.max(max, pitch.nSessions ?? 0),
-    0,
-  );
   const chartingSessionCount =
     (liveAbProfile.pitcher?.sessions.length ?? 0) + (liveAbProfile.hitter?.sessions.length ?? 0);
-  const summaryNarrative =
-    profileMode === "hitter"
-      ? `${resolvedPlayer.name} is surfaced with ${activeOverview.seasonStats.length} season metrics, ${chartingSessionCount} charted sessions, and ${trackmanSessions.length} Trackman sessions for fast scouting context.`
-      : initialPitchingModel.ready && initialPitchingModel.overall != null
-        ? `${resolvedPlayer.name} carries a live Pitching+ grade of ${initialPitchingModel.overall.toFixed(1)} with ${trackmanSessions.length} Trackman sessions and ${commandOutings.length} command outings connected to this profile.`
-        : `${resolvedPlayer.name} has ${trackmanSessions.length} Trackman sessions, ${commandOutings.length} command outings, and ${chartingSessionCount} charted sessions attached here for a single scouting readout.`;
-  const contextChips = [
-    resolvedPlayer.team,
-    roleLabel,
-    handBadge,
-    profileMode.replace("-", " "),
-    ncaaProvenance?.label ?? null,
-  ].filter((chip): chip is string => Boolean(chip));
   const coverageStats = [
     { label: "Trackman sessions", value: String(trackmanSessions.length) },
     { label: "Command outings", value: String(commandOutings.length) },
     { label: "Mechanics sessions", value: String(mechanicsEntry?.sessions?.length ?? 0) },
     { label: "Charting sessions", value: String(chartingSessionCount) },
   ];
-  const pitchingCardValue =
-    initialPitchingModel.ready && initialPitchingModel.overall != null
-      ? Math.round(initialPitchingModel.overall).toString()
-      : "NR";
-  const pitchingCardNote =
-    initialPitchingModel.ready && initialPitchingModel.result
-      ? `${initialPitchingModel.result.overlapPitchTypeCount} pitch type${initialPitchingModel.result.overlapPitchTypeCount === 1 ? "" : "s"} | ${initialPitchingModel.result.overlapPitchCount} live pitch${initialPitchingModel.result.overlapPitchCount === 1 ? "" : "es"} in ${latestCommandSeason ?? TARGET_YEAR}`
-      : initialPitchingModel.note;
-  const commandCardNote =
-    initialCommandHero?.season != null
-      ? `${initialCommandHero.outingCount} outing${initialCommandHero.outingCount === 1 ? "" : "s"} | ${initialCommandHero.pitchCount} pitch${initialCommandHero.pitchCount === 1 ? "" : "es"} in ${initialCommandHero.season}`
-      : "No live command sample yet";
-  const stuffCardNote =
-    trackedShapeCount > 0
-      ? `${trackedShapeCount} pitch type${trackedShapeCount === 1 ? "" : "s"} across ${trackedShapeSessions} session${trackedShapeSessions === 1 ? "" : "s"}`
-      : "No tracked arsenal grade yet";
 
   return (
     <div className={`${manrope.className} min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_36%,#f8fafc_100%)] text-[#0F172A]`}>
@@ -875,121 +687,6 @@ export default async function PlayerProfilePage({
                 </div>
               </section>
 
-              <section className="overflow-hidden rounded-[32px] border border-[#E2E8F0] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.06)]">
-                <div className="p-6 sm:p-7">
-                  <div className="flex flex-wrap gap-2">
-                    {contextChips.map((chip) => (
-                      <span
-                        key={chip}
-                        className="rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#475569]"
-                      >
-                        {chip}
-                      </span>
-                    ))}
-                  </div>
-
-                  <p className="mt-4 max-w-4xl text-sm leading-7 text-[#475569]">{summaryNarrative}</p>
-
-                  {profileMode === "pitcher" || profileMode === "two-way" ? (
-                    <div className="mt-7 grid gap-5 xl:grid-cols-2">
-                      <PlusGradeTile
-                        label="Pitching+"
-                        value={pitchingCardValue}
-                        note={pitchingCardNote}
-                        tone="pitching"
-                        className="xl:col-span-2"
-                      />
-                      <PlusGradeTile
-                        label="Command+"
-                        value={
-                          initialCommandHero?.score != null
-                            ? Math.round(initialCommandHero.score).toString()
-                            : "NR"
-                        }
-                        note={commandCardNote}
-                        tone="command"
-                        compact
-                      />
-                      <PlusGradeTile
-                        label="Stuff+"
-                        value={stuffOverall != null ? stuffOverall.toFixed(1) : "NR"}
-                        note={stuffCardNote}
-                        tone="stuff"
-                        compact
-                      />
-                    </div>
-                  ) : null}
-
-                  <div className="mt-8 rounded-[30px] border border-[#EEF2FF] bg-[#FAFBFF] p-6 sm:p-7">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">
-                          Season stats
-                        </p>
-                        <h3 className={`${plusJakarta.className} mt-1 text-[22px] font-extrabold tracking-tight text-[#0F172A]`}>
-                          {TARGET_YEAR} overview
-                        </h3>
-                      </div>
-                      <span className="rounded-full bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#64748B]">
-                        {defaultOverviewMode}
-                      </span>
-                    </div>
-
-                    <div className="mt-6">
-                      {overviewStats.length > 0 ? (
-                        <div className="grid gap-5 sm:grid-cols-2 2xl:grid-cols-4">
-                          {overviewStats.map((stat) => (
-                            <SeasonStatCard key={stat.label} label={stat.label} value={stat.value} />
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="rounded-[24px] border border-dashed border-[#CBD5E1] bg-white p-5 text-sm text-[#64748B]">
-                          {activeOverview.statsUnavailable
-                            ? `${TARGET_YEAR} ${defaultOverviewMode} stats are temporarily unavailable.`
-                            : `No ${TARGET_YEAR} ${defaultOverviewMode} stats available yet.`}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="mt-6 rounded-[30px] border border-[#EEF2FF] bg-white p-6 sm:p-7">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">
-                          Percentile readout
-                        </p>
-                        <h3 className={`${plusJakarta.className} mt-1 text-[22px] font-extrabold tracking-tight text-[#0F172A]`}>
-                          {activeOverview.percentileAudienceLabel}
-                        </h3>
-                      </div>
-                      <span className="rounded-full bg-[#F8FAFC] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#64748B]">
-                        NCAA
-                      </span>
-                    </div>
-
-                    <div className="mt-6">
-                      {overviewPercentiles.length > 0 ? (
-                        <div className="grid gap-6 xl:grid-cols-2">
-                          {overviewPercentiles.map((metric) => (
-                            <PercentileStrip
-                              key={metric.label}
-                              label={metric.label}
-                              value={metric.value}
-                              percentile={metric.percentile}
-                              note={metric.note ?? activeOverview.percentileAudienceLabel}
-                            />
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="rounded-[24px] border border-dashed border-[#CBD5E1] bg-[#FAFBFF] p-5 text-sm text-[#64748B]">
-                          Percentile data will appear once the leaderboard row resolves.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                </div>
-              </section>
             </div>
           </div>
         </main>
