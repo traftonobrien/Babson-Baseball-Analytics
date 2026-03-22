@@ -2,19 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Market-Ready Platform
-current_phase: 16
-current_phase_name: Code Decomposition
-current_plan: 16-03
 status: ready_to_execute
-stopped_at: "16-01 and 16-02 completed locally and validated — resume with 16-03"
-last_updated: "2026-03-21T20:58:00Z"
-last_activity: 2026-03-21
+stopped_at: Completed 17-01-PLAN.md — team name parameterization done
+last_updated: "2026-03-22T18:49:56.131Z"
+last_activity: 2026-03-22 — Phase 17-01 complete; team name parameterization done
 progress:
-  total_phases: 7
-  completed_phases: 2
-  total_plans: 22
-  completed_plans: 9
-  percent: 41
+  total_phases: 23
+  completed_phases: 15
+  total_plans: 41
+  completed_plans: 36
+  percent: 88
 ---
 
 # Project State
@@ -24,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** One coach can chart an entire outing on one iPad and trust that the result survives offline use, syncs cleanly, and exports well enough to replace the current paper workflow — now extensible to any D3 team.
-**Current focus:** Milestone v3.0 — Phase 16: Code Decomposition (`16-01` and `16-02` complete locally, `16-03` next)
+**Current focus:** Milestone v3.0 — Phase 17: Multi-Tenancy Part 1 (`17-01` complete, `17-02` next)
 
 ## Current Position
 
-**Phase:** 16 of 20 (Code Decomposition)
-**Plan:** 16-03 of 3
+**Phase:** 17 of 20 (Multi-Tenancy Part 1)
+**Plan:** 17-02 of 3
 **Status:** Ready to execute
-**Last Activity:** 2026-03-21 — Phase 16-01 and 16-02 completed locally and validated
+**Last Activity:** 2026-03-22 — Phase 17-01 complete; team name parameterized via NEXT_PUBLIC_TEAM_NAME
 
-Progress: [████░░░░░░] 41% (v3.0)
+Progress: [█████████░] 88% (v3.0)
 
 ## Performance Metrics
 
@@ -73,6 +70,13 @@ Progress: [████░░░░░░] 41% (v3.0)
 - 16-01: `ChartingEditor.tsx` was kept as the thin orchestration shell while workflow panels/modals/helpers moved into `web/app/charting/_components/charting-editor/`
 - 16-02: `LiveAbInsightsExplorer.tsx` was kept as the thin route-local composition shell while controls, zone canvas, summary table, empty state, and helper modules moved into `web/app/charting/insights/_components/` and `_lib/`
 
+### Key Decisions — Phase 17
+
+- 17-01: NEXT_PUBLIC_TEAM_NAME is the single env var — inlined at build for client, runtime for server; default "Babson" keeps existing deployments unchanged
+- 17-01: teamConfig.ts is the single import source for TEAM_NAME across all call sites — no direct process.env reads in components
+- 17-01: ChartingCreateForm.tsx variable names (babsonVenueSide, babsonStartingPitcher) left untouched — internal state identifiers, not rendered strings
+- 17-01: api/ routes, pdf.ts, test fixtures, college-stats type names (BabsonPitcherRow etc.) left untouched — not rendered UI strings
+
 ### Known Gaps
 
 - OPS-01 RESOLVED: middleware.ts now runs at Vercel edge (was proxy.ts dead code)
@@ -82,8 +86,8 @@ Progress: [████░░░░░░] 41% (v3.0)
 - CODE-01 RESOLVED locally: `ChartingEditor.tsx` reduced to 941 lines; extracted modules are each under 500 lines
 - CODE-02 RESOLVED locally: `LiveAbInsightsExplorer.tsx` reduced to 993 lines; extracted modules are each under 500 lines
 - CODE-03 REMAINS: some `web/` files still exceed the 1000-line ceiling and must be handled in `16-03`
-- 40+ hardcoded "Babson" references in product UI (Phase 17)
-- No team_id in DB schema (Phase 17)
+- TEAM-01 RESOLVED: All rendered "Babson" literals replaced with TEAM_NAME from teamConfig.ts (17-01)
+- No team_id in DB schema (Phase 17-02)
 - No demo mode (Phase 20)
 
 ### Blockers
@@ -92,6 +96,6 @@ None.
 
 ## Session Continuity
 
-**Last Date:** 2026-03-21T20:58:00Z
-**Stopped At:** 16-01 and 16-02 completed locally and validated — resume with 16-03
+**Last Date:** 2026-03-22T18:49:56.128Z
+**Stopped At:** Completed 17-01-PLAN.md — team name parameterization done
 **Resume File:** None
