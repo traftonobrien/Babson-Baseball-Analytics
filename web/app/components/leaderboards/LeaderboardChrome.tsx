@@ -26,38 +26,38 @@ type SurfaceVariant = "dark" | "light";
 
 const BRAND_FRAME_STYLE: CSSProperties = {
   backgroundImage:
-    "radial-gradient(circle at top left, rgba(var(--babson-green-rgb), 0.18), transparent 24%), radial-gradient(circle at top right, rgba(var(--babson-grey-rgb), 0.14), transparent 26%), linear-gradient(180deg, #09090b 0%, #111827 56%, #09090b 100%)",
+    "radial-gradient(circle at top left, rgba(var(--brand-primary-rgb), 0.18), transparent 24%), radial-gradient(circle at top right, rgba(148, 163, 184, 0.14), transparent 26%), linear-gradient(180deg, #09090b 0%, #111827 56%, #09090b 100%)",
 };
 
 const BRAND_PILL_STYLE: CSSProperties = {
-  borderColor: "rgba(var(--babson-grey-rgb), 0.3)",
+  borderColor: "rgba(var(--brand-primary-rgb), 0.22)",
   background:
-    "linear-gradient(135deg, rgba(var(--babson-green-rgb), 0.22), rgba(var(--babson-grey-rgb), 0.12) 58%, rgba(9, 9, 11, 0.92) 100%)",
+    "linear-gradient(135deg, rgba(var(--brand-primary-rgb), 0.22), rgba(148, 163, 184, 0.12) 58%, rgba(9, 9, 11, 0.92) 100%)",
   boxShadow:
-    "inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 1px rgba(var(--babson-green-rgb), 0.08), 0 0 18px rgba(var(--babson-green-rgb), 0.1)",
+    "inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 1px rgba(var(--brand-primary-rgb), 0.08), 0 0 18px rgba(var(--brand-primary-rgb), 0.1)",
   color: "rgb(233 240 236)",
 };
 
 const NEUTRAL_PILL_STYLE: CSSProperties = {
-  borderColor: "rgba(var(--babson-grey-rgb), 0.22)",
+  borderColor: "rgba(148, 163, 184, 0.22)",
   background:
-    "linear-gradient(135deg, rgba(var(--babson-green-rgb), 0.1), rgba(var(--babson-grey-rgb), 0.08) 58%, rgba(9, 9, 11, 0.92) 100%)",
+    "linear-gradient(135deg, rgba(var(--brand-primary-rgb), 0.1), rgba(148, 163, 184, 0.08) 58%, rgba(9, 9, 11, 0.92) 100%)",
   boxShadow:
-    "inset 0 1px 0 rgba(255,255,255,0.05), 0 0 0 1px rgba(var(--babson-green-rgb), 0.05)",
+    "inset 0 1px 0 rgba(255,255,255,0.05), 0 0 0 1px rgba(var(--brand-primary-rgb), 0.05)",
   color: "rgb(212 220 218)",
 };
 
 const BRAND_PANEL_STYLE: CSSProperties = {
-  borderColor: "rgba(var(--babson-grey-rgb), 0.18)",
+  borderColor: "rgba(148, 163, 184, 0.18)",
   background:
     "linear-gradient(180deg, rgba(12, 18, 17, 0.82), rgba(9, 9, 11, 0.92))",
   boxShadow:
-    "0 24px 64px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.03), 0 0 0 1px rgba(var(--babson-green-rgb), 0.04)",
+    "0 24px 64px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.03), 0 0 0 1px rgba(var(--brand-primary-rgb), 0.04)",
 };
 
 const BRAND_RULE_STYLE: CSSProperties = {
   backgroundImage:
-    "linear-gradient(to right, transparent, rgba(var(--babson-grey-rgb), 0.28), transparent)",
+    "linear-gradient(to right, transparent, rgba(148, 163, 184, 0.28), transparent)",
 };
 
 const HERO_TONES: Record<LeaderboardTone, {
@@ -128,7 +128,8 @@ const PILL_TONES: Record<Exclude<PillTone, "brand" | "neutral">, string> = {
 };
 
 const LIGHT_PILL_TONES: Record<PillTone, string> = {
-  brand: "border-indigo-200 bg-indigo-50 text-indigo-700",
+  brand:
+    "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)]",
   neutral: "border-slate-200 bg-slate-100/90 text-slate-600",
   amber: "border-amber-200 bg-amber-50 text-amber-700",
   orange: "border-orange-200 bg-orange-50 text-orange-700",

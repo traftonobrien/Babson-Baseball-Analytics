@@ -23,13 +23,6 @@ function lerpRgb(a: RGB, b: RGB, t: number): RGB {
   ];
 }
 
-/** Luminance-based contrast: dark text on light badges, white on dark. */
-function textColor(rgb: RGB): string {
-  const [r, g, b] = rgb;
-  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return lum > 0.55 ? "#18181b" : "#ffffff";
-}
-
 /** Lighten an RGB color for the glow effect. */
 function lighten([r, g, b]: RGB, amount = 0.3): RGB {
   return [
@@ -64,7 +57,7 @@ function sampleTrack(p: number): { bg: string; glow: string; text: string } {
   return {
     bg: rgbToHex(rgb),
     glow: rgbToHex(lighten(rgb)),
-    text: textColor(rgb),
+    text: "#ffffff",
   };
 }
 
@@ -158,7 +151,7 @@ export default function SavantPercentileBar({
               boxShadow: "0 0 0 3px #f8fafc",
             }}
           >
-            <span className="text-[13px] font-black text-slate-500">--</span>
+            <span className="text-[13px] font-black text-white">--</span>
           </div>
         )}
       </div>

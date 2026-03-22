@@ -342,7 +342,7 @@ export default function PlayerProfileTabs({
   }, [mechanicsEntry]);
 
   return (
-    <div className="mt-8">
+    <div className="space-y-5">
       <div className="overflow-x-auto rounded-[1.5rem] border border-slate-200/80 bg-white/95 p-2 shadow-[0_18px_44px_rgba(15,23,42,0.06)] scrollbar-hide">
         <div
           className="grid min-w-[22rem] gap-2 sm:min-w-[28rem] md:min-w-full"
@@ -355,7 +355,7 @@ export default function PlayerProfileTabs({
               onClick={() => setActiveTab(tab)}
               className={`w-full rounded-[1.1rem] px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] transition-smooth sm:px-4 sm:py-3 sm:text-[11px] ${
                 activeTab === tab
-                  ? "border border-indigo-200 bg-indigo-50 text-indigo-700 shadow-[0_10px_24px_rgba(79,70,229,0.08)]"
+                  ? "border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)] shadow-[0_10px_24px_rgba(var(--brand-primary-rgb),0.08)]"
                   : "border border-transparent text-slate-500 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900"
               }`}
             >
@@ -373,7 +373,7 @@ export default function PlayerProfileTabs({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="mt-8 space-y-8"
+            className="space-y-8"
           >
             {profileMode === "two-way" && (
               <section className="space-y-3">
@@ -565,7 +565,7 @@ export default function PlayerProfileTabs({
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
                       <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500">
-                        Season Snapshot
+                        Season Stats
                       </h2>
                       <p className="mt-1 text-sm text-slate-500">
                         {seasonYear} production at a glance.
@@ -645,7 +645,7 @@ export default function PlayerProfileTabs({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="mt-8 space-y-6"
+            className="space-y-6"
           >
             <section className="space-y-5">
               <ProfileHubLink
@@ -747,7 +747,7 @@ export default function PlayerProfileTabs({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="mt-8 space-y-6"
+            className="space-y-6"
           >
             <section className="space-y-7">
               <ProfileHubLink
@@ -865,7 +865,7 @@ export default function PlayerProfileTabs({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="mt-8 space-y-6"
+            className="space-y-6"
           >
             <section className="space-y-4">
               <ProfileHubLink
@@ -941,7 +941,7 @@ export default function PlayerProfileTabs({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="mt-8 space-y-6"
+            className="space-y-6"
           >
             <LiveAbProfilePanel profile={liveAbProfile} seasonStats={pitchingSeasonStats} />
           </motion.div>

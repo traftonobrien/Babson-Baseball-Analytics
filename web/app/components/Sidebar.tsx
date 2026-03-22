@@ -193,14 +193,14 @@ export default function Sidebar() {
               href={item.url}
               className={
                 isActive
-                  ? "flex items-center gap-3 rounded-full bg-[#EEF2FF] px-3 py-2.5 text-[13px] font-bold text-[#6366F1] transition-colors"
+                  ? "flex items-center gap-3 rounded-full bg-[var(--brand-primary-soft)] px-3 py-2.5 text-[13px] font-bold text-[var(--brand-primary-subtle-text)] transition-colors"
                   : "group flex items-center gap-3 rounded-full px-3 py-2.5 text-[13px] font-semibold text-[#64748B] transition-colors hover:bg-[#F8FAFC] hover:text-[#0F172A]"
               }
             >
               <Icon
                 className={
                   isActive
-                    ? "w-5 h-5 text-[#6366F1]"
+                    ? "h-5 w-5 text-[var(--brand-primary-subtle-text)]"
                   : "w-5 h-5 text-[#94A3B8] group-hover:text-[#64748B] transition-colors"
                 }
               />
@@ -216,7 +216,7 @@ export default function Sidebar() {
     <>
       <div className={`sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-[#F1F5F9] bg-white px-4 py-4 xl:hidden ${plusJakarta.className}`}>
         <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#0F172A]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--brand-primary)]">
             <Image src="/babson-logo.svg" alt={`${TEAM_NAME} logo`} width={20} height={20} className="filter brightness-0 invert" priority />
           </div>
           <div>
@@ -232,7 +232,7 @@ export default function Sidebar() {
       <aside className={`hidden h-screen w-[240px] shrink-0 border-r border-[#F1F5F9] bg-white xl:sticky xl:top-0 xl:flex xl:flex-col ${plusJakarta.className}`}>
         <div className="px-6 pb-4 pt-6">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0F172A]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand-primary)]">
               <Image
                 src="/babson-logo.svg"
                 alt={`${TEAM_NAME} logo`}
@@ -254,7 +254,7 @@ export default function Sidebar() {
         <div className="border-t border-[#F1F5F9] p-4">
           <Link
             href="/charting/new"
-            className="flex items-center justify-center gap-2 rounded-full bg-[#6366F1] px-4 py-2.5 text-[13px] font-bold text-white shadow-[0_12px_28px_rgba(99,102,241,0.18)] transition-all duration-300 hover:bg-[#4F46E5]"
+            className="flex items-center justify-center gap-2 rounded-full bg-[var(--brand-primary)] px-4 py-2.5 text-[13px] font-bold text-white shadow-[0_12px_28px_rgba(var(--brand-primary-rgb),0.18)] transition-all duration-300 hover:bg-[var(--brand-primary-hover)]"
           >
             <Upload className="h-4 w-4" />
             Start Session
@@ -299,7 +299,7 @@ export default function Sidebar() {
                 <Link
                   href="/charting/new"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 rounded-full bg-[#6366F1] px-4 py-2.5 text-[13px] font-bold text-white shadow-[0_12px_28px_rgba(99,102,241,0.18)] transition-all duration-300 hover:bg-[#4F46E5]"
+                  className="flex items-center justify-center gap-2 rounded-full bg-[var(--brand-primary)] px-4 py-2.5 text-[13px] font-bold text-white shadow-[0_12px_28px_rgba(var(--brand-primary-rgb),0.18)] transition-all duration-300 hover:bg-[var(--brand-primary-hover)]"
                 >
                   <Upload className="h-4 w-4" />
                   Start Session

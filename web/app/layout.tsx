@@ -1,5 +1,6 @@
 import { Analytics } from "@vercel/analytics/react";
 
+import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { Manrope, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
@@ -7,7 +8,7 @@ import DebugInit from "./components/DebugInit";
 import Sidebar from "./components/Sidebar";
 import PageTransition from "./components/PageTransition";
 import Providers from "./components/Providers";
-import { TEAM_NAME } from "@/lib/teamConfig";
+import { getTeamConfig, TEAM_NAME } from "@/lib/teamConfig";
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -24,6 +25,21 @@ export const metadata: Metadata = {
   description: "Pitch tracking film room",
 };
 
+const teamConfig = getTeamConfig();
+const teamThemeStyle = {
+  "--brand-primary": teamConfig.brand.primary,
+  "--brand-primary-hover": teamConfig.brand.primaryHover,
+  "--brand-primary-rgb": teamConfig.brand.primaryRgb,
+  "--brand-primary-soft": teamConfig.brand.soft,
+  "--brand-primary-soft-strong": teamConfig.brand.softStrong,
+  "--brand-primary-surface": teamConfig.brand.surface,
+  "--brand-primary-border": teamConfig.brand.border,
+  "--brand-primary-subtle-text": teamConfig.brand.subtleText,
+  "--brand-primary-spotlight": teamConfig.brand.spotlight,
+  "--brand-primary-deep": teamConfig.brand.deep,
+  "--brand-primary-deep-alt": teamConfig.brand.deepAlt,
+} as CSSProperties & Record<string, string>;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,7 +47,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${plusJakarta.variable} ${manrope.variable}`}>
-      <body className="min-h-screen bg-[#F8FAFC] text-[#0F172A] antialiased">
+      <body
+        className="min-h-screen bg-[#F8FAFC] text-[#0F172A] antialiased"
+        style={teamThemeStyle}
+      >
         <Providers>
           <DebugInit />
           <div className="flex min-h-screen w-full flex-col bg-[#F8FAFC] xl:flex-row xl:items-start">

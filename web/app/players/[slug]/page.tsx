@@ -205,27 +205,10 @@ function StatRow({
         {label}
       </span>
       <span
-        className={`text-[15px] font-bold tracking-tight ${accent ? "text-[#4F46E5]" : "text-[#0F172A]"}`}
+        className={`text-[15px] font-bold tracking-tight ${accent ? "text-[var(--brand-primary-subtle-text)]" : "text-[#0F172A]"}`}
       >
         {value}
       </span>
-    </div>
-  );
-}
-
-function CoverageStat({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-[20px] border border-[#E2E8F0] bg-white p-4 shadow-[0_14px_30px_rgba(15,23,42,0.03)]">
-      <div className={`${plusJakarta.className} text-[24px] font-extrabold tracking-tight text-[#0F172A]`}>
-        {value}
-      </div>
-      <p className="mt-1 text-[12px] leading-5 text-[#64748B]">{label}</p>
     </div>
   );
 }
@@ -330,9 +313,6 @@ export default async function PlayerProfilePage({
     loadOverviewStats("pitching"),
     loadOverviewStats("hitting"),
   ]);
-
-  const activeOverview =
-    defaultOverviewMode === "pitching" ? pitchingOverview : hittingOverview;
 
   const roleLabel = resolvedPlayer.role;
   const seasonNote = undefined;
@@ -485,16 +465,8 @@ export default async function PlayerProfilePage({
   }
 
   const profileInitials = getInitials(resolvedPlayer.name);
-  const overviewStats = activeOverview.seasonStats.slice(0, 4);
-  const overviewPercentiles = activeOverview.seasonPercentiles.slice(0, 4);
-  const availableRolesLabel =
-    liveAbProfile.availableRoles.length > 0
-      ? liveAbProfile.availableRoles
-          .map((role) => role.charAt(0).toUpperCase() + role.slice(1))
-          .join(" / ")
-      : "No charting roles";
-  const rosterLine = [
-    rosterInfo?.class ?? resolvedPlayer.academicYear,
+  const classYear = rosterInfo?.class ?? resolvedPlayer.academicYear ?? "Unknown";
+  const sizeLine = [
     rosterInfo?.height,
     rosterInfo?.weight ? `${rosterInfo.weight} lbs` : null,
   ]
@@ -505,21 +477,23 @@ export default async function PlayerProfilePage({
     { label: "Role", value: roleLabel },
     { label: "Positions", value: resolvedPlayer.positions.join(" / ") || "Unlisted" },
     { label: "Handedness", value: handBadge ?? "Unknown" },
-    { label: "Academic year", value: rosterLine || resolvedPlayer.academicYear || "Unknown" },
-  ];
-  const chartingSessionCount =
-    (liveAbProfile.pitcher?.sessions.length ?? 0) + (liveAbProfile.hitter?.sessions.length ?? 0);
-  const coverageStats = [
-    { label: "Trackman sessions", value: String(trackmanSessions.length) },
-    { label: "Command outings", value: String(commandOutings.length) },
-    { label: "Mechanics sessions", value: String(mechanicsEntry?.sessions?.length ?? 0) },
-    { label: "Charting sessions", value: String(chartingSessionCount) },
+    { label: "Class year", value: classYear },
+    { label: "Size", value: sizeLine || "Unlisted" },
   ];
 
   return (
     <div className={`${manrope.className} min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_36%,#f8fafc_100%)] text-[#0F172A]`}>
-      <div className="absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.10),transparent_58%)]" />
-      <div className="absolute left-1/2 top-24 h-64 w-64 -translate-x-1/2 rounded-full bg-[rgba(165,180,252,0.18)] blur-3xl" />
+      <div
+        className="absolute inset-x-0 top-0 h-72"
+        style={{
+          background:
+            "radial-gradient(circle at top, rgba(var(--brand-primary-rgb), 0.1), transparent 58%)",
+        }}
+      />
+      <div
+        className="absolute left-1/2 top-24 h-64 w-64 -translate-x-1/2 rounded-full blur-3xl"
+        style={{ backgroundColor: "rgba(var(--brand-primary-rgb), 0.18)" }}
+      />
       <div className="relative mx-auto flex min-h-screen w-full max-w-[1820px] flex-col">
         <header className="sticky top-0 z-20 border-b border-[#F1F5F9] bg-white/90 backdrop-blur">
           <div className="flex flex-col gap-4 px-5 py-4 lg:flex-row lg:items-center lg:justify-between lg:px-8">
@@ -555,7 +529,7 @@ export default async function PlayerProfilePage({
                 <ScanLine className="h-4 w-4" />
                 Roster index
               </Link>
-              <button className="inline-flex items-center gap-2 rounded-full bg-[#4F46E5] px-4 py-2 text-[13px] font-semibold text-white shadow-[0_12px_30px_rgba(79,70,229,0.22)] transition-colors hover:bg-[#4338CA]">
+              <button className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-primary)] px-4 py-2 text-[13px] font-semibold text-white shadow-[0_12px_30px_rgba(var(--brand-primary-rgb),0.22)] transition-colors hover:bg-[var(--brand-primary-hover)]">
                 <Download className="h-4 w-4" />
                 Export PDF
               </button>
@@ -567,29 +541,28 @@ export default async function PlayerProfilePage({
           <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)] 2xl:grid-cols-[280px_minmax(0,1fr)]">
             <aside className="order-2 space-y-6 self-start xl:order-1 xl:sticky xl:top-[104px]">
               <section className="overflow-hidden rounded-[32px] border border-[#E2E8F0] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.06)]">
-                <div className="bg-[radial-gradient(circle_at_top_left,rgba(165,180,252,0.95),transparent_34%),linear-gradient(135deg,#1E1B4B_0%,#4338CA_58%,#818CF8_100%)] px-6 pb-8 pt-6 text-white">
-                  <div className="flex items-start justify-between gap-4">
+                <div
+                  className="px-6 pb-8 pt-6 text-white"
+                  style={{
+                    background:
+                      "radial-gradient(circle at top left, rgba(var(--brand-primary-rgb), 0.38), transparent 34%), linear-gradient(135deg, var(--brand-primary-deep) 0%, var(--brand-primary-deep-alt) 58%, var(--brand-primary) 100%)",
+                  }}
+                >
+                  <div className="flex flex-col items-start gap-5">
+                    <div className="flex h-24 w-24 items-center justify-center rounded-full border border-white/20 bg-white/10 text-[2rem] font-extrabold tracking-tight shadow-[0_24px_40px_rgba(15,23,42,0.20)] backdrop-blur">
+                      {profileInitials}
+                    </div>
+
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">
-                        Player dossier
-                      </p>
-                      <h2 className={`${plusJakarta.className} mt-3 text-[30px] font-extrabold tracking-tight`}>
+                      <h2 className={`${plusJakarta.className} text-[30px] font-extrabold tracking-tight`}>
                         {resolvedPlayer.name}
                       </h2>
                       <p className="mt-2 text-sm font-medium text-white/80">
                         {resolvedPlayer.team} • {roleLabel}
                       </p>
                     </div>
-                    <span className="rounded-full bg-white/12 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-white/90 backdrop-blur">
-                      {profileMode.replace("-", " ")}
-                    </span>
-                  </div>
 
-                  <div className="mt-8 flex items-end justify-between gap-4">
-                    <div className="flex h-24 w-24 items-center justify-center rounded-full border border-white/20 bg-white/10 text-[2rem] font-extrabold tracking-tight shadow-[0_24px_40px_rgba(15,23,42,0.20)] backdrop-blur">
-                      {profileInitials}
-                    </div>
-                    <div className="flex flex-wrap justify-end gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {resolvedPlayer.positions.slice(0, 3).map((position) => (
                         <span
                           key={position}
@@ -608,41 +581,10 @@ export default async function PlayerProfilePage({
                 </div>
 
                 <div className="space-y-6 px-6 py-6">
-                  <div className="grid gap-2 rounded-[24px] border border-[#EEF2FF] bg-[#FAFBFF] p-2">
+                  <div className="grid gap-2 rounded-[24px] border border-[var(--brand-primary-border)] bg-[var(--brand-primary-surface)] p-2">
                     {profileDetails.map((detail) => (
                       <StatRow key={detail.label} label={detail.label} value={detail.value} />
                     ))}
-                  </div>
-
-                  <div className="rounded-[24px] border border-[#EEF2FF] bg-[#FAFBFF] p-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">
-                          Coverage
-                        </p>
-                        <p className="mt-1 text-[13px] leading-6 text-[#475569]">
-                          {availableRolesLabel}
-                          {liveAbProfile.defaultRole ? ` • default ${liveAbProfile.defaultRole}` : ""}
-                        </p>
-                      </div>
-                      {ncaaProvenance ? (
-                        <span
-                          className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] ${
-                            ncaaProvenance.tone === "amber"
-                              ? "bg-[#FEF3C7] text-[#B45309]"
-                              : "bg-[#EEF2FF] text-[#4F46E5]"
-                          }`}
-                        >
-                          {ncaaProvenance.label}
-                        </span>
-                      ) : null}
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-2 gap-3">
-                      {coverageStats.map((stat) => (
-                        <CoverageStat key={stat.label} label={stat.label} value={stat.value} />
-                      ))}
-                    </div>
                   </div>
                 </div>
               </section>
@@ -650,16 +592,7 @@ export default async function PlayerProfilePage({
 
             <div className="order-1 min-w-0 space-y-8 xl:order-2">
               <section className="overflow-hidden rounded-[32px] border border-[#E2E8F0] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.06)]">
-                <div className="border-b border-[#F1F5F9] px-6 py-5 sm:px-7">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
-                    Deep dive modules
-                  </p>
-                  <p className="mt-2 max-w-3xl text-sm leading-7 text-[#475569]">
-                    Use the overview, charting, Trackman, command, and mechanics tabs as one continuous player workspace instead of separate dashboard fragments.
-                  </p>
-                </div>
-
-                <div className="px-6 pb-7 sm:px-7">
+                <div className="px-6 pb-6 pt-3 sm:px-7 sm:pb-7 sm:pt-4">
                   <PlayerProfileTabs
                     profileMode={profileMode}
                     defaultOverviewMode={defaultOverviewMode}

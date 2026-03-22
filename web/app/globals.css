@@ -7,9 +7,19 @@
   --surface-muted: #f8fafc;
   --border-subtle: #e7edf5;
   --text-muted: #64748b;
-  --brand-primary: #6366f1;
-  --babson-green: #006644;
-  --babson-green-rgb: 0, 102, 68;
+  --brand-primary: #125e40;
+  --brand-primary-hover: #0f5036;
+  --brand-primary-rgb: 18, 94, 64;
+  --brand-primary-soft: #e7f3ee;
+  --brand-primary-soft-strong: #d7e9e0;
+  --brand-primary-surface: #f3f9f6;
+  --brand-primary-border: #bdd6ca;
+  --brand-primary-subtle-text: #0a5a3d;
+  --brand-primary-spotlight: #7eb39c;
+  --brand-primary-deep: #073a2a;
+  --brand-primary-deep-alt: #00563a;
+  --babson-green: #125e40;
+  --babson-green-rgb: 18, 94, 64;
   --babson-grey: #a3aaae;
   --babson-grey-rgb: 163, 170, 174;
 }
@@ -22,6 +32,7 @@
   --color-border-subtle: var(--border-subtle);
   --color-text-muted: var(--text-muted);
   --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-soft: var(--brand-primary-soft);
   --color-babson-green: var(--babson-green);
   --color-babson-grey: var(--babson-grey);
   --font-sans: var(--font-body);
@@ -57,7 +68,7 @@ h6,
 }
 
 ::selection {
-  background: rgba(99, 102, 241, 0.16);
+  background: rgba(var(--brand-primary-rgb), 0.16);
 }
 
 .app-shell-surface {

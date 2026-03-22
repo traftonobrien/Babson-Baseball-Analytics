@@ -149,7 +149,7 @@ function FilterChip({
       className={cn(
         "rounded-full border px-4 py-2 text-[12px] font-semibold transition-all duration-300",
         active
-          ? "border-[#C7D2FE] bg-[#EEF2FF] text-[#4F46E5] shadow-[0_10px_24px_rgba(79,70,229,0.12)]"
+          ? "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)] shadow-[0_10px_24px_rgba(var(--brand-primary-rgb),0.12)]"
           : "border-[#E2E8F0] bg-white text-[#64748B] hover:border-[#CBD5E1] hover:text-[#0F172A]",
       )}
     >
@@ -180,7 +180,7 @@ function PlayerRow({
       href={`/players/${player.slug}`}
       className={cn(
         "group block border-t border-[#F1F5F9] transition-colors hover:bg-[#F8FAFC]",
-        pinned ? "bg-[#EEF2FF]/45" : "bg-white",
+        pinned ? "bg-[var(--brand-primary-surface)]" : "bg-white",
       )}
     >
       <div className="grid gap-4 px-5 py-4 lg:grid-cols-[minmax(0,1.7fr)_7.5rem_7.5rem_7rem_minmax(0,1.1fr)] lg:items-center">
@@ -189,7 +189,7 @@ function PlayerRow({
             className={cn(
               "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-[12px] font-bold",
               pinned
-                ? "border-[#C7D2FE] bg-[#EEF2FF] text-[#4F46E5]"
+                ? "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)]"
                 : "border-[#E2E8F0] bg-[#F8FAFC] text-[#64748B]",
             )}
           >
@@ -198,12 +198,12 @@ function PlayerRow({
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span
-                className={`${display.className} truncate text-[15px] font-bold text-[#0F172A] transition-colors group-hover:text-[#4F46E5]`}
+                className={`${display.className} truncate text-[15px] font-bold text-[#0F172A] transition-colors group-hover:text-[var(--brand-primary-subtle-text)]`}
               >
                 {displayName}
               </span>
               {pinned ? (
-                <span className="rounded-full border border-[#C7D2FE] bg-[#EEF2FF] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#4F46E5]">
+                <span className="rounded-full border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--brand-primary-subtle-text)]">
                   Pinned
                 </span>
               ) : null}
@@ -262,7 +262,7 @@ function PlayerRow({
               Player details
             </div>
           </div>
-          <ChevronRight className="h-5 w-5 text-[#CBD5E1] transition-colors group-hover:text-[#4F46E5]" />
+          <ChevronRight className="h-5 w-5 text-[#CBD5E1] transition-colors group-hover:text-[var(--brand-primary-subtle-text)]" />
         </div>
       </div>
     </Link>
@@ -373,7 +373,7 @@ export default function PlayersHubView({
         <section className="rounded-[28px] border border-[#F1F5F9] bg-white px-5 py-5 shadow-[0_18px_48px_rgba(15,23,42,0.04)]">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#E0E7FF] bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#4F46E5]">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--brand-primary-subtle-text)]">
                 <Users className="h-3.5 w-3.5" />
                 Roster Hub
               </div>
@@ -411,7 +411,7 @@ export default function PlayersHubView({
             <div className="rounded-[24px] border border-[#F1F5F9] bg-white px-5 py-5 shadow-[0_18px_48px_rgba(15,23,42,0.04)]">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#4F46E5]">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-primary-soft)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-primary-subtle-text)]">
                     <Filter className="h-3.5 w-3.5" />
                     View
                   </span>
@@ -435,7 +435,7 @@ export default function PlayersHubView({
                     placeholder="Search players by name or position..."
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
-                    className="w-full rounded-full border border-[#E2E8F0] bg-[#F8FAFC] py-2.5 pl-11 pr-4 text-[13px] text-[#0F172A] placeholder:text-[#94A3B8] outline-none transition-colors focus:border-[#C7D2FE] focus:bg-white focus:shadow-[0_0_0_4px_rgba(129,140,248,0.10)]"
+                    className="w-full rounded-full border border-[#E2E8F0] bg-[#F8FAFC] py-2.5 pl-11 pr-4 text-[13px] text-[#0F172A] placeholder:text-[#94A3B8] outline-none transition-colors focus:border-[var(--brand-primary-border)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(var(--brand-primary-rgb),0.10)]"
                   />
                 </div>
               </div>
@@ -457,7 +457,7 @@ export default function PlayersHubView({
                       className={cn(
                         "rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors",
                         handFilter === option.value
-                          ? "border-[#C7D2FE] bg-[#EEF2FF] text-[#4F46E5]"
+                          ? "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)]"
                           : "border-[#E2E8F0] bg-white text-[#64748B] hover:border-[#CBD5E1] hover:text-[#0F172A]",
                       )}
                     >
@@ -508,14 +508,14 @@ export default function PlayersHubView({
             </div>
 
             {featuredPlayer ? (
-              <div className="rounded-[24px] border border-[#C7D2FE] bg-[#EEF2FF] px-5 py-5 shadow-[0_18px_48px_rgba(15,23,42,0.04)]">
+              <div className="rounded-[24px] border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] px-5 py-5 shadow-[0_18px_48px_rgba(15,23,42,0.04)]">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex min-w-0 items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#C7D2FE] bg-white text-[13px] font-bold text-[#4F46E5]">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--brand-primary-border)] bg-white text-[13px] font-bold text-[var(--brand-primary-subtle-text)]">
                       {getLastNameInitial(featuredPlayer.name)}
                     </div>
                     <div className="min-w-0">
-                      <div className="inline-flex items-center gap-2 rounded-full border border-[#C7D2FE] bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#4F46E5]">
+                      <div className="inline-flex items-center gap-2 rounded-full border border-[var(--brand-primary-border)] bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--brand-primary-subtle-text)]">
                         <Sparkles className="h-3.5 w-3.5" />
                         Pinned Profile
                       </div>
@@ -530,7 +530,7 @@ export default function PlayersHubView({
 
                   <Link
                     href={`/players/${featuredPlayer.slug}`}
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-[#4F46E5] px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-[#4338CA]"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--brand-primary)] px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-[var(--brand-primary-hover)]"
                   >
                     Open Profile
                     <ChevronRight className="h-4 w-4" />
@@ -569,7 +569,7 @@ export default function PlayersHubView({
                         <a
                           key={letter}
                           href={`#players-group-${letter}`}
-                          className="flex h-8 min-w-8 items-center justify-center rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#64748B] transition-colors hover:border-[#C7D2FE] hover:bg-[#EEF2FF] hover:text-[#4F46E5]"
+                          className="flex h-8 min-w-8 items-center justify-center rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#64748B] transition-colors hover:border-[var(--brand-primary-border)] hover:bg-[var(--brand-primary-soft)] hover:text-[var(--brand-primary-subtle-text)]"
                         >
                           {letter}
                         </a>
