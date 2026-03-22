@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.0
-milestone_name: Market-Ready Platform
-status: ready_to_execute
-stopped_at: Completed 17-01-PLAN.md — team name parameterization done
-last_updated: "2026-03-22T18:49:56.131Z"
-last_activity: 2026-03-22 — Phase 17-01 complete; team name parameterization done
+milestone: v2.0
+milestone_name: Live AB Analytics
+status: executing
+stopped_at: Completed 17-02-PLAN.md — team_id added to all charting tables
+last_updated: "2026-03-22T18:53:43.036Z"
+last_activity: 2026-03-22 — Phase 17-01 complete; team name parameterized via NEXT_PUBLIC_TEAM_NAME
 progress:
   total_phases: 23
   completed_phases: 15
   total_plans: 41
-  completed_plans: 36
+  completed_plans: 37
   percent: 88
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** One coach can chart an entire outing on one iPad and trust that the result survives offline use, syncs cleanly, and exports well enough to replace the current paper workflow — now extensible to any D3 team.
-**Current focus:** Milestone v3.0 — Phase 17: Multi-Tenancy Part 1 (`17-01` complete, `17-02` next)
+**Current focus:** Milestone v3.0 — Phase 17: Multi-Tenancy Part 1 (`17-01` and `17-02` complete, `17-03` next)
 
 ## Current Position
 
 **Phase:** 17 of 20 (Multi-Tenancy Part 1)
-**Plan:** 17-02 of 3
+**Plan:** 17-03 of 3
 **Status:** Ready to execute
-**Last Activity:** 2026-03-22 — Phase 17-01 complete; team name parameterized via NEXT_PUBLIC_TEAM_NAME
+**Last Activity:** 2026-03-22 — Phase 17-02 complete; team_id added to all five charting tables in schema + live Neon DB
 
-Progress: [█████████░] 88% (v3.0)
+Progress: [█████████░] 90% (v3.0)
 
 ## Performance Metrics
 
@@ -76,6 +76,9 @@ Progress: [█████████░] 88% (v3.0)
 - 17-01: teamConfig.ts is the single import source for TEAM_NAME across all call sites — no direct process.env reads in components
 - 17-01: ChartingCreateForm.tsx variable names (babsonVenueSide, babsonStartingPitcher) left untouched — internal state identifiers, not rendered strings
 - 17-01: api/ routes, pdf.ts, test fixtures, college-stats type names (BabsonPitcherRow etc.) left untouched — not rendered UI strings
+- 17-02: team_id is plain text (no FK to teams table) — Phase 18 adds teams table and constraint
+- 17-02: Migration uses ADD COLUMN nullable + back-fill + SET NOT NULL pattern to avoid table rewrite lock
+- 17-02: DEFAULT 'babson' on both column and Drizzle schema — new inserts auto-scoped without application code changes in Phase 17
 
 ### Known Gaps
 
@@ -87,7 +90,7 @@ Progress: [█████████░] 88% (v3.0)
 - CODE-02 RESOLVED locally: `LiveAbInsightsExplorer.tsx` reduced to 993 lines; extracted modules are each under 500 lines
 - CODE-03 REMAINS: some `web/` files still exceed the 1000-line ceiling and must be handled in `16-03`
 - TEAM-01 RESOLVED: All rendered "Babson" literals replaced with TEAM_NAME from teamConfig.ts (17-01)
-- No team_id in DB schema (Phase 17-02)
+- TEAM-02 RESOLVED: team_id column added to all five charting tables; back-filled to 'babson'; NOT NULL + DEFAULT 'babson' (17-02)
 - No demo mode (Phase 20)
 
 ### Blockers
@@ -96,6 +99,6 @@ None.
 
 ## Session Continuity
 
-**Last Date:** 2026-03-22T18:49:56.128Z
-**Stopped At:** Completed 17-01-PLAN.md — team name parameterization done
+**Last Date:** 2026-03-22T18:53:43.033Z
+**Stopped At:** Completed 17-02-PLAN.md — team_id added to all charting tables
 **Resume File:** None
