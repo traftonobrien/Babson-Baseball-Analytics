@@ -30,7 +30,7 @@ This roadmap takes the project from a brownfield repo with no live charting doma
 
 - [x] **Phase 14: Completion** - Finish Phase 12.1-03 mixed-role polish and merge the charting UAT branch
 - [x] **Phase 15: Ops Foundations** - Fix middleware deployment, add error boundaries, verify env vars, add structured logging
-- [ ] **Phase 16: Code Decomposition** - Break ChartingEditor and LiveAbInsightsExplorer into modules under 500 lines each
+- [x] **Phase 16: Code Decomposition** - Break ChartingEditor and LiveAbInsightsExplorer into modules under 500 lines each
 - [ ] **Phase 17: Multi-Tenancy Part 1** - Replace Babson hardcoding with configurable team identity and add team_id to DB schema
 - [ ] **Phase 18: Multi-Tenancy Part 2** - Build admin settings surface, team-scoped player identity, and team-aware auth
 - [ ] **Phase 19: UX Polish** - Mobile-responsive layout, skeleton loading states, touch targets, and keyboard accessibility
@@ -448,7 +448,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 14. Completion | 3/3 | Complete | 2026-03-21 |
 | 15. Ops Foundations | 4/4 | Complete | 2026-03-21 |
-| 16. Code Decomposition | 2/3 | In progress | - |
+| 16. Code Decomposition | 3/3 | Complete | 2026-03-21 |
 | 17. Multi-Tenancy Part 1 | 0/3 | Not started | - |
 | 18. Multi-Tenancy Part 2 | 0/3 | Not started | - |
 | 19. UX Polish | 0/4 | Not started | - |
