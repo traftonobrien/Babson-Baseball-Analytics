@@ -1,14 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Trophy, Target, Activity, BarChart3, ArrowRight, Sparkles, ClipboardList } from "lucide-react";
-import {
-  LeaderboardHero,
-  LeaderboardIntro,
-  LeaderboardPageFrame,
-  LeaderboardPill,
-} from "../components/leaderboards/LeaderboardChrome";
-import { GlowingEffect } from "@/components/ui/glowing-effect";
+import type { ComponentType } from "react";
+import { ArrowRight, Activity, BarChart3, ClipboardList, Sparkles, Target, Trophy } from "lucide-react";
+import { Plus_Jakarta_Sans } from "next/font/google";
+
+const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
 const LEADERBOARD_ITEMS = [
   {
@@ -16,140 +13,180 @@ const LEADERBOARD_ITEMS = [
     label: "Pitching+",
     description: "Pitching+, Command+, Stuff+, and pitch-mix rankings",
     icon: Sparkles,
-    color: "amber",
+    accent: "amber",
   },
   {
     href: "/command/leaderboard",
     label: "Command",
-    description: "On-target %, avg miss, consistency by outing",
+    description: "On-target %, average miss, and consistency by outing",
     icon: Target,
-    color: "orange",
+    accent: "orange",
   },
   {
     href: "/trackman/leaderboard",
     label: "Trackman",
-    description: "Stuff+, velocity, spin, extension by session",
+    description: "Stuff+, velocity, spin, and extension by session",
     icon: Activity,
-    color: "blue",
+    accent: "blue",
   },
   {
     href: "/team-stats/leaderboard",
     label: "Statistics",
     description: "ERA, FIP, WHIP, K%, and season production",
     icon: BarChart3,
-    color: "sky",
+    accent: "sky",
   },
   {
     href: "/charting/leaderboard",
     label: "Charting",
     description: "Pitcher and hitter rankings from charted game sessions",
     icon: ClipboardList,
-    color: "emerald",
+    accent: "emerald",
   },
-];
+] as const;
 
-const COLOR_CLASSES: Record<string, string> = {
-  amber: "border-amber-500/30 hover:border-amber-500/60 text-amber-400",
-  orange: "border-orange-500/30 hover:border-orange-500/60 text-orange-400",
-  blue: "border-blue-500/30 hover:border-blue-500/60 text-blue-400",
-  sky: "border-sky-500/30 hover:border-sky-500/60 text-sky-400",
-  emerald: "border-emerald-500/30 hover:border-emerald-500/60 text-emerald-400",
+const ACCENT_STYLES: Record<string, { ring: string; chip: string; icon: string; wash: string }> = {
+  amber: {
+    ring: "border-amber-100 hover:border-amber-200",
+    chip: "bg-amber-50 text-amber-600",
+    icon: "text-amber-500",
+    wash: "from-amber-50 to-transparent",
+  },
+  orange: {
+    ring: "border-orange-100 hover:border-orange-200",
+    chip: "bg-orange-50 text-orange-600",
+    icon: "text-orange-500",
+    wash: "from-orange-50 to-transparent",
+  },
+  blue: {
+    ring: "border-blue-100 hover:border-blue-200",
+    chip: "bg-blue-50 text-blue-600",
+    icon: "text-blue-500",
+    wash: "from-blue-50 to-transparent",
+  },
+  sky: {
+    ring: "border-sky-100 hover:border-sky-200",
+    chip: "bg-sky-50 text-sky-600",
+    icon: "text-sky-500",
+    wash: "from-sky-50 to-transparent",
+  },
+  emerald: {
+    ring: "border-emerald-100 hover:border-emerald-200",
+    chip: "bg-emerald-50 text-emerald-600",
+    icon: "text-emerald-500",
+    wash: "from-emerald-50 to-transparent",
+  },
 };
 
-export default function LeaderboardsHubPage() {
-  const featuredBoard = LEADERBOARD_ITEMS[0]!;
-  const secondaryBoards = LEADERBOARD_ITEMS.slice(1);
-  const FeaturedIcon = featuredBoard.icon;
+function BoardCard({
+  href,
+  label,
+  description,
+  icon: Icon,
+  accent,
+  featured = false,
+}: {
+  href: string;
+  label: string;
+  description: string;
+  icon: ComponentType<{ className?: string }>;
+  accent: keyof typeof ACCENT_STYLES;
+  featured?: boolean;
+}) {
+  const styles = ACCENT_STYLES[accent];
 
   return (
-    <LeaderboardPageFrame maxWidth="max-w-6xl">
-      <LeaderboardIntro breadcrumbs={[{ label: "Home", href: "/" }, { label: "Leaderboards" }]}>
-        <LeaderboardHero
-          tone="amber"
-          icon={Trophy}
-          eyebrow="All Rankings"
-          title={<>Leaderboards</>}
-          meta={(
-            <>
-              <LeaderboardPill tone="amber">{LEADERBOARD_ITEMS.length} boards</LeaderboardPill>
-              <LeaderboardPill tone="neutral">All rankings</LeaderboardPill>
-            </>
-          )}
-        />
-      </LeaderboardIntro>
+    <Link
+      href={href}
+      className={`group relative block overflow-hidden rounded-[1.75rem] border bg-white p-5 shadow-[0_18px_40px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_rgba(15,23,42,0.08)] ${styles.ring} ${featured ? "sm:col-span-2" : ""}`}
+    >
+      <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${styles.wash} opacity-60`} />
+      <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+      <div className="relative flex items-start gap-4">
+        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#F1F5F9] bg-[#F8FAFC] ${styles.icon}`}>
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <h2 className={`${plusJakarta.className} text-[17px] font-bold tracking-tight text-[#0F172A]`}>
+              {label}
+            </h2>
+            {featured ? (
+              <span className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${styles.chip}`}>
+                Featured
+              </span>
+            ) : null}
+          </div>
+          <p className="mt-2 max-w-xl text-sm leading-7 text-[#64748B]">
+            {description}
+          </p>
+        </div>
+        <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-[#94A3B8] transition-transform group-hover:translate-x-0.5 group-hover:text-[#6366F1]" />
+      </div>
+    </Link>
+  );
+}
 
-      <div className="mt-6 space-y-4">
-        <Link
-          href={featuredBoard.href}
-          className={`group relative block overflow-hidden rounded-[2rem] border bg-zinc-950/70 p-6 transition-smooth hover:-translate-y-0.5 hover:shadow-[0_20px_48px_rgba(0,0,0,0.28)] ${COLOR_CLASSES[featuredBoard.color]}`}
-        >
-          <GlowingEffect
-            glow
-            disabled={false}
-            proximity={72}
-            inactiveZone={0.12}
-            spread={36}
-            movementDuration={0.9}
-            borderWidth={2}
-            className="opacity-95"
-          />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.06),transparent_24%),linear-gradient(90deg,rgba(24,24,27,0.52),rgba(9,9,11,0.88))]" />
-          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-3xl">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-amber-300/80">
-                Featured Leaderboard
-              </div>
-              <div className="mt-4 flex items-start gap-4">
-                <FeaturedIcon className="mt-1 h-7 w-7 shrink-0" />
-                <div>
-                  <h2 className="text-2xl font-semibold tracking-tight text-zinc-100 sm:text-[2rem]">
-                    {featuredBoard.label}
-                  </h2>
-                  <p className="mt-2 max-w-2xl text-sm text-zinc-400 sm:text-base">
-                    {featuredBoard.description}
-                  </p>
+export default function LeaderboardsHubPage() {
+  const featuredBoard = LEADERBOARD_ITEMS[0];
+  const secondaryBoards = LEADERBOARD_ITEMS.slice(1);
+
+  return (
+    <main className="min-h-screen bg-[#F8FAFC] text-[#0F172A]">
+      <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-8 sm:py-8">
+        <header className="relative overflow-hidden rounded-[2rem] border border-[#F1F5F9] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.05)]">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(99,102,241,0.05),transparent_24%),radial-gradient(circle_at_82%_22%,rgba(16,185,129,0.05),transparent_22%)]" />
+          <div className="relative flex flex-col gap-5 px-5 py-5 sm:px-7 sm:py-6">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+                  Pro SaaS
                 </div>
+                <h1 className={`${plusJakarta.className} mt-2 text-[1.85rem] font-extrabold tracking-tight sm:text-[2.5rem]`}>
+                  Metric Leaderboards
+                </h1>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F8FAFC] ring-1 ring-[#E2E8F0]">
+                <Trophy className="h-5 w-5 text-[#6366F1]" />
               </div>
             </div>
-            <div className="flex items-center gap-3 self-start rounded-2xl border border-amber-400/15 bg-zinc-950/60 px-4 py-3 text-sm font-semibold text-zinc-100">
-              Open leaderboard
-              <ArrowRight className="h-4 w-4 opacity-80 transition-transform group-hover:translate-x-0.5" />
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-full bg-[#EEF2FF] px-4 py-2 text-[12px] font-semibold text-[#6366F1]">
+                Team
+              </span>
+              <span className="rounded-full bg-[#F8FAFC] px-4 py-2 text-[12px] font-semibold text-[#64748B] ring-1 ring-[#E2E8F0]">
+                Conference
+              </span>
+              <span className="rounded-full bg-[#F8FAFC] px-4 py-2 text-[12px] font-semibold text-[#64748B] ring-1 ring-[#E2E8F0]">
+                National
+              </span>
             </div>
           </div>
-        </Link>
+        </header>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {secondaryBoards.map(({ href, label, description, icon: Icon, color }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`group relative flex items-start gap-4 overflow-hidden rounded-[1.75rem] border bg-zinc-950/70 p-5 transition-smooth hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(0,0,0,0.25)] ${COLOR_CLASSES[color]}`}
-            >
-              <GlowingEffect
-                glow
-                disabled={false}
-                proximity={64}
-                inactiveZone={0.18}
-                spread={28}
-                movementDuration={0.85}
-                borderWidth={2}
-                className="opacity-90"
-              />
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.04),transparent_24%),linear-gradient(180deg,rgba(24,24,27,0.45),rgba(9,9,11,0.82))]" />
-              <Icon className="w-6 h-6 shrink-0 mt-0.5" />
-              <div className="relative flex-1 min-w-0">
-                <h2 className="font-semibold text-zinc-100 group-hover:text-inherit">
-                  {label}
-                </h2>
-                <p className="text-sm text-zinc-500 mt-0.5">
-                  {description}
-                </p>
-              </div>
-              <ArrowRight className="relative w-4 h-4 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
-            </Link>
+        <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
+          {featuredBoard ? (
+            <BoardCard
+              href={featuredBoard.href}
+              label={featuredBoard.label}
+              description={featuredBoard.description}
+              icon={featuredBoard.icon}
+              accent={featuredBoard.accent}
+              featured
+            />
+          ) : null}
+          {secondaryBoards.map((item) => (
+            <BoardCard
+              key={item.href}
+              href={item.href}
+              label={item.label}
+              description={item.description}
+              icon={item.icon}
+              accent={item.accent}
+            />
           ))}
-        </div>
+        </section>
       </div>
-    </LeaderboardPageFrame>
+    </main>
   );
 }

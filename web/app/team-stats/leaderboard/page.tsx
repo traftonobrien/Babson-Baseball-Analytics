@@ -2,16 +2,11 @@
 
 import Link from "next/link";
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { BarChart3, Search, BookOpen, CircleHelp } from "lucide-react";
-import {
-  LeaderboardHero,
-  LeaderboardIntro,
-  LeaderboardPageFrame,
-  LeaderboardPanel,
-  LeaderboardPill,
-  LeaderboardToolbar,
-} from "@/app/components/leaderboards/LeaderboardChrome";
+import { BarChart3, BookOpen, CircleHelp, Search, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
+
+const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
 type StatMode = "pitching" | "batting";
 type StatSection = "standard" | "advanced";
@@ -126,11 +121,11 @@ function HeaderTooltip({ label, tooltip }: { label: string; tooltip: string }) {
       <button
         type="button"
         aria-label={`${label} explanation`}
-        className="inline-flex h-4 w-4 items-center justify-center rounded-full text-zinc-600 transition-smooth hover:text-zinc-300 focus-visible:outline-none"
+        className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[#94A3B8] transition-colors hover:text-[#6366F1] focus-visible:outline-none"
       >
         <CircleHelp className="h-3 w-3" />
       </button>
-      <div className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 hidden w-72 -translate-x-1/2 rounded-2xl border border-zinc-700/80 bg-zinc-950/95 px-3 py-2.5 text-left text-[11px] normal-case font-normal tracking-normal leading-relaxed text-zinc-300 shadow-2xl shadow-black/60 whitespace-normal group-hover:block group-focus-within:block">
+      <div className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 hidden w-72 -translate-x-1/2 rounded-2xl border border-[#E2E8F0] bg-white px-3 py-2.5 text-left text-[11px] normal-case font-normal tracking-normal leading-relaxed text-[#475569] shadow-[0_20px_50px_rgba(15,23,42,0.12)] whitespace-normal group-hover:block group-focus-within:block">
         {tooltip}
       </div>
     </div>
@@ -306,11 +301,10 @@ const HITTER_ADVANCED: HitterCol[] = [
 ];
 
 function rankColor(i: number): string {
-  const glow = "[text-shadow:0_0_8px_currentColor]";
-  if (i === 0) return `text-amber-400 ${glow}`;
-  if (i === 1) return `text-zinc-400 ${glow}`;
-  if (i === 2) return `text-amber-600 ${glow}`;
-  return "text-zinc-500";
+  if (i === 0) return "text-[#6366F1]";
+  if (i === 1) return "text-[#64748B]";
+  if (i === 2) return "text-[#7C3AED]";
+  return "text-[#94A3B8]";
 }
 
 const DEFAULT_MIN_IP = 1;
@@ -420,306 +414,326 @@ export default function TeamStatsPage() {
   const activeCols = statMode === "pitching" ? activePitcherCols : activeHitterCols;
   const totalCols = activeCols.length + 2; // rank + player name
 
+  const isPitchingView = statMode === "pitching";
+  const rowCount = isPitchingView ? sortedPitchers.length : sortedHitters.length;
+
   return (
-    <LeaderboardPageFrame maxWidth="max-w-7xl">
-      <LeaderboardIntro
-        breadcrumbs={[
-          { label: "Home", href: "/" },
-          { label: "Leaderboards", href: "/leaderboards-hub" },
-          { label: "Statistics" },
-        ]}
-      >
-        <LeaderboardHero
-          tone="sky"
-          icon={BarChart3}
-          eyebrow="Statistics"
-          title={<>Statistics Leaderboard</>}
-          meta={(
-            <>
-              <LeaderboardPill tone="sky">
+    <main className={`min-h-screen bg-[#F8FAFC] text-[#0F172A] ${plusJakarta.className}`}>
+      <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-8 sm:py-8">
+        <header className="relative overflow-hidden rounded-[2rem] border border-[#F1F5F9] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.05)]">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_18%,rgba(99,102,241,0.05),transparent_24%),radial-gradient(circle_at_82%_20%,rgba(16,185,129,0.05),transparent_22%)]" />
+          <div className="relative flex flex-col gap-5 p-5 sm:p-7">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+                  Statistics
+                </div>
+                <h1 className="mt-2 text-[1.85rem] font-extrabold tracking-tight text-[#0F172A] sm:text-[2.5rem]">
+                  Statistics Leaderboard
+                </h1>
+                <p className="mt-2 max-w-2xl text-sm leading-7 text-[#64748B]">
+                  Explore season production with live sorting, filters, and the full advanced metrics set.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  href="/leaderboards-hub"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#F8FAFC] px-4 py-2 text-[12px] font-semibold text-[#475569] ring-1 ring-[#E2E8F0] transition-colors hover:bg-white hover:text-[#0F172A]"
+                >
+                  <BarChart3 className="h-4 w-4 text-[#6366F1]" />
+                  Leaderboards
+                </Link>
+                <Link
+                  href="/team-stats/faq"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#6366F1] px-4 py-2 text-[12px] font-semibold text-white shadow-[0_12px_28px_rgba(99,102,241,0.18)] transition-colors hover:bg-[#4F46E5]"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  Metrics Dictionary
+                </Link>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-full bg-[#EEF2FF] px-4 py-2 text-[12px] font-semibold text-[#6366F1]">
                 {seasonYear ? `${seasonYear} season` : "Season stats"}
-              </LeaderboardPill>
-              <LeaderboardPill tone="neutral">
-                {statMode === "pitching" ? `${minIp}+ IP qualifies` : `${minPa}+ PA qualifies`}
-              </LeaderboardPill>
-              {syncedAt && (
-                <LeaderboardPill tone={isStale ? "amber" : "neutral"}>
-                  {isStale ? "Stale — " : "Synced "}
-                  {new Date(syncedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                </LeaderboardPill>
-              )}
-              <LeaderboardPill tone="neutral">NCAA D3</LeaderboardPill>
-            </>
-          )}
-          side={(
-            <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Guide</div>
-              <Link
-                href="/team-stats/faq"
-                className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-sky-500/25 bg-sky-500/10 px-4 py-3.5 text-sm font-semibold text-sky-300 transition-smooth hover:border-sky-400/40 hover:text-sky-200"
-              >
-                <BookOpen className="h-4 w-4" />
-                Metrics Dictionary
-              </Link>
+              </span>
+              <span className="rounded-full bg-[#F8FAFC] px-4 py-2 text-[12px] font-semibold text-[#64748B] ring-1 ring-[#E2E8F0]">
+                {isPitchingView ? `${minIp}+ IP qualifies` : `${minPa}+ PA qualifies`}
+              </span>
+              {syncedAt ? (
+                <span
+                  className={`rounded-full px-4 py-2 text-[12px] font-semibold ${isStale ? "bg-amber-50 text-amber-700 ring-1 ring-amber-100" : "bg-[#F8FAFC] text-[#64748B] ring-1 ring-[#E2E8F0]"}`}
+                >
+                  {isStale ? "Stale" : "Synced"} {new Date(syncedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                </span>
+              ) : null}
+              <span className="rounded-full bg-[#F8FAFC] px-4 py-2 text-[12px] font-semibold text-[#64748B] ring-1 ring-[#E2E8F0]">
+                NCAA D3
+              </span>
             </div>
-          )}
-        />
-      </LeaderboardIntro>
+          </div>
+        </header>
 
-      <LeaderboardToolbar>
-        <div className="grid gap-4 xl:grid-cols-[minmax(13rem,16rem)_minmax(13rem,16rem)_minmax(12rem,14rem)_minmax(0,1fr)_auto] xl:items-end">
+        <section className="mt-6 rounded-[1.75rem] border border-[#F1F5F9] bg-white p-4 shadow-[0_18px_48px_rgba(15,23,42,0.04)] sm:p-5">
+          <div className="grid gap-4 xl:grid-cols-[minmax(13rem,16rem)_minmax(13rem,16rem)_minmax(12rem,14rem)_minmax(0,1fr)_auto] xl:items-end">
+            <div className="space-y-2">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8]">View</div>
+              <div className="inline-flex rounded-full border border-[#F1F5F9] bg-[#F8FAFC] p-1">
+                {(["pitching", "batting"] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setStatMode(mode)}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                      statMode === mode ? "bg-white text-[#6366F1] shadow-sm" : "text-[#64748B] hover:text-[#0F172A]"
+                    }`}
+                  >
+                    {mode === "pitching" ? "Pitchers" : "Hitters"}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-          {/* Pitchers / Hitters */}
-          <div className="space-y-2">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">View</div>
-            <div className="inline-flex rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
-              {(["pitching", "batting"] as const).map((mode) => (
+            <div className="space-y-2">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8]">Stats</div>
+              <div className="inline-flex rounded-full border border-[#F1F5F9] bg-[#F8FAFC] p-1">
+                {(["standard", "advanced"] as const).map((sec) => (
+                  <button
+                    key={sec}
+                    type="button"
+                    onClick={() => setStatSection(sec)}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                      statSection === sec ? "bg-white text-[#0F172A] shadow-sm" : "text-[#64748B] hover:text-[#0F172A]"
+                    }`}
+                  >
+                    {sec === "standard" ? "Standard" : "Advanced"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8]">Qualification Floor</div>
+              <div className="rounded-2xl border border-[#F1F5F9] bg-[#F8FAFC] p-1.5">
+                {isPitchingView ? (
+                  <select
+                    value={minIp}
+                    onChange={(e) => setMinIp(Number(e.target.value))}
+                    className="w-full rounded-xl border border-[#E2E8F0] bg-white px-3 py-2.5 text-sm font-semibold text-[#0F172A] outline-none"
+                  >
+                    {[1, 5, 10, 15, 20, 25, 30].map((n) => (
+                      <option key={n} value={n}>{n} IP</option>
+                    ))}
+                  </select>
+                ) : (
+                  <select
+                    value={minPa}
+                    onChange={(e) => setMinPa(Number(e.target.value))}
+                    className="w-full rounded-xl border border-[#E2E8F0] bg-white px-3 py-2.5 text-sm font-semibold text-[#0F172A] outline-none"
+                  >
+                    {[1, 10, 20, 30, 40, 50].map((n) => (
+                      <option key={n} value={n}>{n} PA</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8]">Search</div>
+              <label className="flex items-center gap-3 rounded-2xl border border-[#F1F5F9] bg-[#F8FAFC] px-4 py-3">
+                <Search className="h-4 w-4 shrink-0 text-[#94A3B8]" />
+                <input
+                  type="text"
+                  placeholder={isPitchingView ? "Search pitcher..." : "Search hitter..."}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full bg-transparent text-sm text-[#0F172A] outline-none placeholder:text-[#94A3B8]"
+                />
+              </label>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 xl:justify-end">
+              {search.trim() ? (
                 <button
-                  key={mode}
                   type="button"
-                  onClick={() => setStatMode(mode)}
-                  className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-smooth ${
-                    statMode === mode ? "bg-sky-500/15 text-sky-200" : "text-zinc-400 hover:text-zinc-200"
-                  }`}
+                  onClick={() => setSearch("")}
+                  className="rounded-full border border-[#E2E8F0] bg-white px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#64748B] transition-colors hover:border-[#CBD5E1] hover:text-[#0F172A]"
                 >
-                  {mode === "pitching" ? "Pitchers" : "Hitters"}
+                  Clear
                 </button>
-              ))}
+              ) : null}
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-6 overflow-hidden rounded-[1.75rem] border border-[#F1F5F9] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.04)]">
+          <div className="flex flex-col gap-3 border-b border-[#F1F5F9] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-bold tracking-tight text-[#0F172A]">
+                {isPitchingView ? "Pitchers" : "Hitters"}
+              </h2>
+              <p className="mt-1 text-sm text-[#64748B]">
+                {rowCount} rows shown with live sorting and qualification filtering.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
+              <span className="rounded-full bg-[#F8FAFC] px-3 py-1 ring-1 ring-[#E2E8F0]">
+                {isPitchingView ? `${minIp}+ IP` : `${minPa}+ PA`}
+              </span>
+              <span className="rounded-full bg-[#F8FAFC] px-3 py-1 ring-1 ring-[#E2E8F0]">
+                {statSection === "standard" ? "Standard set" : "Advanced set"}
+              </span>
             </div>
           </div>
 
-          {/* Standard / Advanced */}
-          <div className="space-y-2">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Stats</div>
-            <div className="inline-flex rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
-              {(["standard", "advanced"] as const).map((sec) => (
-                <button
-                  key={sec}
-                  type="button"
-                  onClick={() => setStatSection(sec)}
-                  className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-smooth ${
-                    statSection === sec ? "bg-violet-500/15 text-violet-200" : "text-zinc-400 hover:text-zinc-200"
-                  }`}
-                >
-                  {sec === "standard" ? "Standard" : "Advanced"}
-                </button>
-              ))}
+          {loading ? (
+            <div className="p-10 text-center text-sm text-[#64748B]">Loading statistics...</div>
+          ) : error ? (
+            <div className="px-5 py-4 text-sm text-rose-700">
+              {error}
             </div>
-          </div>
-
-          {/* Qualification Floor */}
-          <div className="space-y-2">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Qualification Floor</div>
-            <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
-              {statMode === "pitching" ? (
-                <select
-                  value={minIp}
-                  onChange={(e) => setMinIp(Number(e.target.value))}
-                  className="w-full rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2.5 text-sm font-semibold text-zinc-100 outline-none"
-                >
-                  {[1, 5, 10, 15, 20, 25, 30].map((n) => (
-                    <option key={n} value={n}>{n} IP</option>
-                  ))}
-                </select>
-              ) : (
-                <select
-                  value={minPa}
-                  onChange={(e) => setMinPa(Number(e.target.value))}
-                  className="w-full rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2.5 text-sm font-semibold text-zinc-100 outline-none"
-                >
-                  {[1, 10, 20, 30, 40, 50].map((n) => (
-                    <option key={n} value={n}>{n} PA</option>
-                  ))}
-                </select>
-              )}
-            </div>
-          </div>
-
-          {/* Search */}
-          <div className="space-y-2">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Search</div>
-            <label className="flex items-center gap-3 rounded-2xl border border-zinc-800/80 bg-zinc-950/80 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-              <Search className="h-4 w-4 shrink-0 text-zinc-500" />
-              <input
-                type="text"
-                placeholder={statMode === "pitching" ? "Search pitcher..." : "Search hitter..."}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-transparent text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
-              />
-            </label>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 xl:justify-end">
-            {search.trim() ? (
-              <button
-                type="button"
-                onClick={() => setSearch("")}
-                className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
-              >
-                Clear
-              </button>
-            ) : null}
-          </div>
-        </div>
-      </LeaderboardToolbar>
-
-      {loading ? (
-        <LeaderboardPanel className="mt-6 p-10 text-center text-zinc-500">
-          Loading statistics...
-        </LeaderboardPanel>
-      ) : error ? (
-        <div className="mt-6 rounded-3xl border border-rose-500/30 bg-rose-500/10 px-4 py-4 text-rose-200">
-          {error}
-        </div>
-      ) : (
-        <LeaderboardPanel className="mt-6 overflow-hidden">
-          <div className="max-h-[70vh] overflow-auto">
-            <table className="w-full text-sm">
-              <thead className="sticky top-0 z-10 bg-zinc-900/95 backdrop-blur-sm">
-                <tr>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-12">#</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Player</th>
-                  {statMode === "pitching"
-                    ? activePitcherCols.map(({ key, label, tooltip }) => (
-                        <th
-                          key={key}
-                          className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-sky-300 transition-smooth whitespace-nowrap"
-                          onClick={() => handlePitcherSort(key)}
-                        >
-                          <span className="inline-flex items-center justify-end gap-0.5">
-                            {tooltip ? <HeaderTooltip label={label} tooltip={tooltip} /> : label}
-                            {pitcherSortKey === key ? (
-                              <span className="ml-1 text-sky-300">{pitcherSortDesc ? "▼" : "▲"}</span>
-                            ) : null}
-                          </span>
-                        </th>
-                      ))
-                    : activeHitterCols.map(({ key, label, tooltip }) => (
-                        <th
-                          key={key}
-                          className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-sky-300 transition-smooth whitespace-nowrap"
-                          onClick={() => handleHitterSort(key)}
-                        >
-                          <span className="inline-flex items-center justify-end gap-0.5">
-                            {tooltip ? <HeaderTooltip label={label} tooltip={tooltip} /> : label}
-                            {hitterSortKey === key ? (
-                              <span className="ml-1 text-sky-300">{hitterSortDesc ? "▼" : "▲"}</span>
-                            ) : null}
-                          </span>
-                        </th>
-                      ))}
-                </tr>
-              </thead>
-              <tbody>
-                {(statMode === "pitching" ? sortedPitchers.length : sortedHitters.length) === 0 ? (
+          ) : (
+            <div className="overflow-auto">
+              <table className="min-w-[1200px] w-full border-separate border-spacing-0 text-[13px]">
+                <thead className="sticky top-0 z-10 bg-white">
                   <tr>
-                    <td colSpan={totalCols} className="px-4 py-12 text-center">
-                      <div className="flex flex-col items-center gap-2">
-                        <span className="text-zinc-500">
-                          {statMode === "pitching" ? "No pitchers match your search." : "No hitters match your search."}
-                        </span>
-                        {search.trim() ? (
-                          <button
-                            type="button"
-                            onClick={() => setSearch("")}
-                            className="text-sm font-medium text-sky-300 hover:text-sky-200 transition-smooth"
-                          >
-                            Clear filters
-                          </button>
-                        ) : null}
-                      </div>
-                    </td>
-                  </tr>
-                ) : null}
-                {statMode === "pitching"
-                  ? sortedPitchers.map((p, i) => {
-                      const isQualified = p.ip >= minIp;
-                      const isMe = p.slug === selectedSlug;
+                    <th className="border-b border-[#F1F5F9] bg-white px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8] w-14">
+                      #
+                    </th>
+                    <th className="border-b border-[#F1F5F9] bg-white px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8]">
+                      Player
+                    </th>
+                    {activeCols.map(({ key, label, tooltip }) => {
+                      const isActiveSort = (isPitchingView ? pitcherSortKey : hitterSortKey) === key;
+                      const isDesc = isPitchingView ? pitcherSortDesc : hitterSortDesc;
+                      const sortIndicator = isActiveSort ? (isDesc ? ChevronDown : ChevronUp) : null;
+                      const SortIcon = sortIndicator;
+
                       return (
-                        <tr
-                          key={p.playerId}
-                          className={`border-b border-zinc-800/50 transition-smooth ${isMe ? "bg-emerald-500/5" : ""} ${isQualified ? "hover:bg-sky-500/5" : "opacity-60 hover:opacity-75"}`}
+                        <th
+                          key={key}
+                          onClick={() => (isPitchingView ? handlePitcherSort(key as PitcherSortKey) : handleHitterSort(key as HitterSortKey))}
+                          className="cursor-pointer border-b border-[#F1F5F9] bg-white px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8] transition-colors hover:text-[#6366F1] whitespace-nowrap"
                         >
-                          <td className={`px-4 py-3 font-mono text-xs font-semibold ${isQualified ? rankColor(i) : "text-zinc-500"}`}>
-                            {i + 1}
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              <span className={isQualified ? "font-medium" : "font-medium text-zinc-400"}>
-                                {p.slug ? (
-                                  <Link
-                                    href={`/players/${p.slug}`}
-                                    className={`transition-smooth underline decoration-sky-500/30 underline-offset-2 hover:decoration-sky-400 ${isQualified ? "text-sky-300 hover:text-sky-200" : "text-zinc-400 hover:text-zinc-300"}`}
-                                  >
-                                    {p.playerName}
-                                    {isMe ? <span className="ml-1.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-400 no-underline">You</span> : null}
-                                  </Link>
-                                ) : (
-                                  p.playerName
-                                )}
-                              </span>
-                              {!isQualified ? (
-                                <span className="rounded-full border border-zinc-700 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-400">
-                                  Unqualified
-                                </span>
-                              ) : null}
-                            </div>
-                          </td>
-                          {activePitcherCols.map((col) => (
-                            <td key={col.key} className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>
-                              {col.fmt(p)}
-                            </td>
-                          ))}
-                        </tr>
-                      );
-                    })
-                  : sortedHitters.map((h, i) => {
-                      const isQualified = h.pa >= minPa;
-                      const isMe = h.slug === selectedSlug;
-                      return (
-                        <tr
-                          key={h.playerId}
-                          className={`border-b border-zinc-800/50 transition-smooth ${isMe ? "bg-emerald-500/5" : ""} ${isQualified ? "hover:bg-sky-500/5" : "opacity-60 hover:opacity-75"}`}
-                        >
-                          <td className={`px-4 py-3 font-mono text-xs font-semibold ${isQualified ? rankColor(i) : "text-zinc-500"}`}>
-                            {i + 1}
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              <span className={isQualified ? "font-medium" : "font-medium text-zinc-400"}>
-                                {h.slug ? (
-                                  <Link
-                                    href={`/players/${h.slug}`}
-                                    className={`transition-smooth underline decoration-sky-500/30 underline-offset-2 hover:decoration-sky-400 ${isQualified ? "text-sky-300 hover:text-sky-200" : "text-zinc-400 hover:text-zinc-300"}`}
-                                  >
-                                    {h.playerName}
-                                    {isMe ? <span className="ml-1.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-400 no-underline">You</span> : null}
-                                  </Link>
-                                ) : (
-                                  h.playerName
-                                )}
-                              </span>
-                              {!isQualified ? (
-                                <span className="rounded-full border border-zinc-700 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-400">
-                                  Unqualified
-                                </span>
-                              ) : null}
-                            </div>
-                          </td>
-                          {activeHitterCols.map((col) => (
-                            <td key={col.key} className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-zinc-500" : ""}`}>
-                              {col.fmt(h)}
-                            </td>
-                          ))}
-                        </tr>
+                          <span className="inline-flex items-center justify-end gap-1">
+                            {tooltip ? <HeaderTooltip label={label} tooltip={tooltip} /> : label}
+                            {SortIcon ? <SortIcon className="h-3.5 w-3.5 text-[#6366F1]" /> : null}
+                          </span>
+                        </th>
                       );
                     })}
-              </tbody>
-            </table>
-          </div>
-        </LeaderboardPanel>
-      )}
-    </LeaderboardPageFrame>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(isPitchingView ? sortedPitchers.length : sortedHitters.length) === 0 ? (
+                    <tr>
+                      <td colSpan={totalCols} className="px-4 py-14 text-center text-sm text-[#64748B]">
+                        <div className="flex flex-col items-center gap-2">
+                          <span>{isPitchingView ? "No pitchers match your search." : "No hitters match your search."}</span>
+                          {search.trim() ? (
+                            <button
+                              type="button"
+                              onClick={() => setSearch("")}
+                              className="font-semibold text-[#6366F1] transition-colors hover:text-[#4F46E5]"
+                            >
+                              Clear filters
+                            </button>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  ) : null}
+
+                  {isPitchingView
+                    ? sortedPitchers.map((p, i) => {
+                        const isQualified = p.ip >= minIp;
+                        const isMe = p.slug === selectedSlug;
+                        return (
+                          <tr
+                            key={p.playerId}
+                            className={`border-b border-[#F8FAFC] transition-colors ${isMe ? "bg-[#ECFDF5]" : ""} ${isQualified ? "hover:bg-[#F8FAFC]" : "opacity-60 hover:opacity-80"}`}
+                          >
+                            <td className={`px-4 py-3 font-mono text-xs font-semibold ${isQualified ? rankColor(i) : "text-[#94A3B8]"}`}>
+                              {i + 1}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <span className={isQualified ? "font-semibold text-[#0F172A]" : "font-semibold text-[#64748B]"}>
+                                  {p.slug ? (
+                                    <Link
+                                      href={`/players/${p.slug}`}
+                                      className={`transition-colors underline decoration-[#CBD5E1] underline-offset-2 hover:decoration-[#6366F1] ${isQualified ? "text-[#0F172A] hover:text-[#6366F1]" : "text-[#64748B] hover:text-[#0F172A]"}`}
+                                    >
+                                      {p.playerName}
+                                      {isMe ? <span className="ml-1.5 rounded-full bg-[#D1FAE5] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[#10B981] no-underline">You</span> : null}
+                                    </Link>
+                                  ) : (
+                                    p.playerName
+                                  )}
+                                </span>
+                                {!isQualified ? (
+                                  <span className="rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-[#94A3B8]">
+                                    Unqualified
+                                  </span>
+                                ) : null}
+                              </div>
+                            </td>
+                            {activePitcherCols.map((col) => (
+                              <td key={col.key} className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-[#94A3B8]" : "text-[#0F172A]"}`}>
+                                {col.fmt(p)}
+                              </td>
+                            ))}
+                          </tr>
+                        );
+                      })
+                    : sortedHitters.map((h, i) => {
+                        const isQualified = h.pa >= minPa;
+                        const isMe = h.slug === selectedSlug;
+                        return (
+                          <tr
+                            key={h.playerId}
+                            className={`border-b border-[#F8FAFC] transition-colors ${isMe ? "bg-[#ECFDF5]" : ""} ${isQualified ? "hover:bg-[#F8FAFC]" : "opacity-60 hover:opacity-80"}`}
+                          >
+                            <td className={`px-4 py-3 font-mono text-xs font-semibold ${isQualified ? rankColor(i) : "text-[#94A3B8]"}`}>
+                              {i + 1}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <span className={isQualified ? "font-semibold text-[#0F172A]" : "font-semibold text-[#64748B]"}>
+                                  {h.slug ? (
+                                    <Link
+                                      href={`/players/${h.slug}`}
+                                      className={`transition-colors underline decoration-[#CBD5E1] underline-offset-2 hover:decoration-[#6366F1] ${isQualified ? "text-[#0F172A] hover:text-[#6366F1]" : "text-[#64748B] hover:text-[#0F172A]"}`}
+                                    >
+                                      {h.playerName}
+                                      {isMe ? <span className="ml-1.5 rounded-full bg-[#D1FAE5] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[#10B981] no-underline">You</span> : null}
+                                    </Link>
+                                  ) : (
+                                    h.playerName
+                                  )}
+                                </span>
+                                {!isQualified ? (
+                                  <span className="rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-[#94A3B8]">
+                                    Unqualified
+                                  </span>
+                                ) : null}
+                              </div>
+                            </td>
+                            {activeHitterCols.map((col) => (
+                              <td key={col.key} className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-[#94A3B8]" : "text-[#0F172A]"}`}>
+                                {col.fmt(h)}
+                              </td>
+                            ))}
+                          </tr>
+                        );
+                      })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
   );
 }

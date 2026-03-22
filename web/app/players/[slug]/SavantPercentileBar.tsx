@@ -101,7 +101,7 @@ export default function SavantPercentileBar({
       }}
     >
       {/* Metric */}
-      <div className="w-[56px] shrink-0 text-right text-[11px] font-black uppercase tracking-[0.08em] text-zinc-500">
+      <div className="w-[56px] shrink-0 text-right text-[11px] font-black uppercase tracking-[0.08em] text-slate-500">
         {label}
       </div>
 
@@ -131,14 +131,14 @@ export default function SavantPercentileBar({
         {/* Badge */}
         {n != null && style ? (
           <div
-            className="absolute top-1/2 z-10 flex items-center justify-center rounded-full ring-2 ring-black/40"
+            className="absolute top-1/2 z-10 flex items-center justify-center rounded-full ring-2 ring-white"
             style={{
               left: `${p}%`,
               transform: "translate(-50%, -50%)",
               width: 38,
               height: 38,
               backgroundColor: style.bg,
-              boxShadow: `0 0 12px ${style.glow}90, 0 0 0 3px #09090b, 0 4px 12px rgba(0,0,0,0.5)`,
+              boxShadow: `0 0 12px ${style.glow}90, 0 0 0 3px #f8fafc, 0 10px 24px rgba(15,23,42,0.12)`,
             }}
           >
             <span
@@ -150,24 +150,23 @@ export default function SavantPercentileBar({
           </div>
         ) : (
           <div
-            className="absolute right-0 top-1/2 z-10 flex items-center justify-center rounded-full bg-zinc-900"
+            className="absolute right-0 top-1/2 z-10 flex items-center justify-center rounded-full bg-slate-100"
             style={{
               transform: "translateY(-50%)",
               width: 38,
               height: 38,
-              boxShadow: "0 0 0 3px #09090b",
+              boxShadow: "0 0 0 3px #f8fafc",
             }}
           >
-            <span className="text-[13px] font-black text-zinc-700">--</span>
+            <span className="text-[13px] font-black text-slate-500">--</span>
           </div>
         )}
       </div>
 
       {/* Value */}
-      <div className="w-[60px] shrink-0 text-right font-mono text-[13px] font-black tabular-nums leading-none text-white">
+      <div className="w-[60px] shrink-0 text-right font-mono text-[13px] font-black tabular-nums leading-none text-slate-900">
         {value}
       </div>
     </div>
   );
 }
-

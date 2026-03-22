@@ -1,466 +1,611 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import type { CSSProperties } from "react";
+import { useEffect, useState } from "react";
+import { format, parseISO } from "date-fns";
+import { Manrope, Plus_Jakarta_Sans } from "next/font/google";
 import {
-  Activity,
-  ArrowUpRight,
-  BarChart3,
-  BookOpen,
-  ClipboardList,
-  Film,
-  LayoutGrid,
-  Sparkles,
-  Target,
-  Users,
-  type LucideIcon,
+  ChevronDown,
+  ChevronRight,
+  LineChart,
+  TrendingDown,
+  TrendingUp,
+  Upload,
 } from "lucide-react";
 import LogoutButton from "./components/LogoutButton";
-import { LeaderboardPageFrame } from "@/app/components/leaderboards/LeaderboardChrome";
-import { GlowingEffect } from "@/components/ui/glowing-effect";
-import { cn } from "@/lib/utils";
 import { TEAM_NAME } from "@/lib/teamConfig";
 
-type HomeTone =
-  | "emerald"
-  | "blue"
-  | "orange"
-  | "sky"
-  | "violet"
-  | "amber"
-  | "zinc";
+const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
+const manrope = Manrope({ subsets: ["latin"] });
 
-const HOME_TONE_STYLES: Record<
-  HomeTone,
-  {
-    border: string;
-    badge: string;
-    glow: string;
-    wash: string;
-    icon: string;
-  }
-> = {
-  emerald: {
-    border: "border-emerald-500/25 hover:border-emerald-400/45",
-    badge: "border-emerald-500/25 bg-emerald-500/10 text-emerald-200",
-    glow: "hover:shadow-[0_28px_68px_rgba(16,185,129,0.12)]",
-    wash: "from-emerald-500/14 via-transparent to-transparent",
-    icon: "text-emerald-300",
-  },
-  blue: {
-    border: "border-blue-500/25 hover:border-blue-400/45",
-    badge: "border-blue-500/25 bg-blue-500/10 text-blue-200",
-    glow: "hover:shadow-[0_28px_68px_rgba(59,130,246,0.12)]",
-    wash: "from-blue-500/14 via-transparent to-transparent",
-    icon: "text-blue-300",
-  },
-  orange: {
-    border: "border-orange-500/25 hover:border-orange-400/45",
-    badge: "border-orange-500/25 bg-orange-500/10 text-orange-200",
-    glow: "hover:shadow-[0_28px_68px_rgba(249,115,22,0.12)]",
-    wash: "from-orange-500/14 via-transparent to-transparent",
-    icon: "text-orange-300",
-  },
-  sky: {
-    border: "border-sky-500/25 hover:border-sky-400/45",
-    badge: "border-sky-500/25 bg-sky-500/10 text-sky-200",
-    glow: "hover:shadow-[0_28px_68px_rgba(14,165,233,0.12)]",
-    wash: "from-sky-500/14 via-transparent to-transparent",
-    icon: "text-sky-300",
-  },
-  violet: {
-    border: "border-violet-500/25 hover:border-violet-400/45",
-    badge: "border-violet-500/25 bg-violet-500/10 text-violet-200",
-    glow: "hover:shadow-[0_28px_68px_rgba(139,92,246,0.12)]",
-    wash: "from-violet-500/14 via-transparent to-transparent",
-    icon: "text-violet-300",
-  },
-  amber: {
-    border: "border-amber-500/25 hover:border-amber-400/45",
-    badge: "border-amber-500/25 bg-amber-500/10 text-amber-200",
-    glow: "hover:shadow-[0_28px_68px_rgba(245,158,11,0.12)]",
-    wash: "from-amber-500/14 via-transparent to-transparent",
-    icon: "text-amber-300",
-  },
-  zinc: {
-    border: "border-zinc-700/80 hover:border-zinc-500/80",
-    badge: "border-zinc-700/80 bg-zinc-900/80 text-zinc-200",
-    glow: "hover:shadow-[0_28px_68px_rgba(0,0,0,0.24)]",
-    wash: "from-zinc-500/10 via-transparent to-transparent",
-    icon: "text-zinc-300",
-  },
+type PitcherRow = {
+  playerId: string;
+  playerName: string;
+  slug?: string;
+  ip: number;
+  r: number;
+  er: number;
+  so: number;
+  kMinusBbPct: number;
 };
 
-const BABSON_BADGE_STYLE: CSSProperties = {
-  borderColor: "rgba(var(--babson-grey-rgb), 0.24)",
-  background:
-    "linear-gradient(135deg, rgba(var(--babson-green-rgb), 0.16), rgba(var(--babson-grey-rgb), 0.08) 58%, rgba(9, 9, 11, 0.92) 100%)",
-  boxShadow:
-    "inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 1px rgba(var(--babson-green-rgb), 0.05)",
-  color: "rgb(214 226 220)",
+type HitterRow = {
+  playerId: string;
+  playerName: string;
+  slug?: string;
+  pa: number;
+  ab: number;
+  h: number;
+  bb: number;
+  hbp: number;
+  sf: number;
+  tb: number;
+  r: number;
+  ops: number;
 };
 
-function HomeIconBadge({
-  tone,
-  icon: Icon,
-  size = "lg",
-}: {
-  tone: HomeTone;
-  icon: LucideIcon;
-  size?: "lg" | "sm";
-}) {
-  const toneStyles = HOME_TONE_STYLES[tone];
+type TeamStatsPitchingResponse = {
+  year?: string;
+  pitchers?: PitcherRow[];
+};
 
-  return (
-    <div
-      className={cn(
-        "relative flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border bg-zinc-950/85",
-        toneStyles.badge,
-        size === "lg" ? "h-12 w-12" : "h-10 w-10",
-      )}
-    >
-      <span className="absolute inset-x-2 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-      <Icon className={cn(size === "lg" ? "h-5 w-5" : "h-4 w-4", toneStyles.icon)} />
-    </div>
-  );
-}
+type TeamStatsBattingResponse = {
+  year?: string;
+  hitters?: HitterRow[];
+};
 
-function SectionMarker({
-  label,
-  note,
-}: {
-  label: string;
-  note?: string;
-}) {
-  return (
-    <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.26em] text-zinc-500">
-        {label}
-      </div>
-      {note ? <div className="text-xs text-zinc-600">{note}</div> : null}
-    </div>
-  );
-}
+type ChartingGame = {
+  id: string;
+  opponent: string | null;
+  gameDate: string;
+  status: "active" | "draft" | "final" | string;
+  sessionType: "game" | "live_ab" | null;
+  babsonVenueSide: "home" | "away" | null;
+  updatedAt?: string;
+};
 
-function HomeLinkCard({
-  href,
-  tone,
-  icon,
-  title,
-  description,
-  eyebrow,
-  badge,
-  className,
-  details,
-}: {
-  href: string;
-  tone: HomeTone;
-  icon: LucideIcon;
+type ChartingGamesResponse = {
+  games?: ChartingGame[];
+};
+
+type MetricCardProps = {
   title: string;
-  description: string;
-  eyebrow?: string;
-  badge?: string;
-  className?: string;
-  details?: string[];
-}) {
-  const toneStyles = HOME_TONE_STYLES[tone];
+  value: string;
+  trend: string;
+  trendDirection: "up" | "down";
+  positive: boolean;
+  series: number[];
+  loading?: boolean;
+};
 
-  return (
-    <Link href={href} className={cn("block", className)}>
-      <div
-        className={cn(
-          "group relative h-full overflow-hidden rounded-[2rem] border bg-zinc-950/78 p-5 shadow-[0_28px_72px_rgba(0,0,0,0.28)] transition-smooth hover:-translate-y-0.5",
-          toneStyles.border,
-          toneStyles.glow,
-        )}
-      >
-        <GlowingEffect
-          blur={0}
-          spread={28}
-          glow
-          disabled={false}
-          proximity={72}
-          inactiveZone={0.18}
-          movementDuration={0.9}
-          borderWidth={2}
-          className="opacity-90"
-        />
-        <div
-          className={cn(
-            "pointer-events-none absolute inset-0 bg-gradient-to-br opacity-100",
-            toneStyles.wash,
-          )}
-        />
-        <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        <div className="relative flex h-full flex-col">
-          <div className="flex items-start justify-between gap-4">
-            <HomeIconBadge tone={tone} icon={icon} />
-            {badge ? (
-              <span className="rounded-full border border-zinc-700/80 bg-zinc-900/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
-                {badge}
-              </span>
-            ) : (
-              <ArrowUpRight className="h-4 w-4 shrink-0 text-zinc-500 transition-smooth group-hover:text-zinc-200" />
-            )}
+type PerformerCard = {
+  key: string;
+  name: string;
+  href: string | null;
+  statLabel: string;
+  accent: "emerald" | "sky";
+};
+
+function formatSignedValue(value: number, digits: number): string {
+  const rounded = value.toFixed(digits);
+  return value > 0 ? `+${rounded}` : rounded;
+}
+
+function formatRate(value: number): string {
+  return value > 0 ? value.toFixed(3).replace(/^0/, "") : ".000";
+}
+
+function formatDateLabel(value: string | undefined): string {
+  if (!value) return "Unknown date";
+
+  try {
+    return format(parseISO(value), "MMM d, yyyy");
+  } catch {
+    return value;
+  }
+}
+
+function formatUpdatedLabel(value: string | undefined): string {
+  if (!value) return "Awaiting updates";
+
+  try {
+    return `Updated ${format(parseISO(value), "MMM d")}`;
+  } catch {
+    return "Awaiting updates";
+  }
+}
+
+function getInitials(value: string): string {
+  const parts = value
+    .split(/\s+/)
+    .map((part) => part.replace(/[^A-Za-z0-9]/g, ""))
+    .filter(Boolean);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }
+
+  return value.slice(0, 2).toUpperCase();
+}
+
+function statusPillClasses(status: string): string {
+  if (status === "final") {
+    return "bg-[#E0F2FE] text-[#0EA5E9]";
+  }
+  if (status === "active") {
+    return "bg-[#D1FAE5] text-[#10B981]";
+  }
+  return "bg-[#FEF3C7] text-[#D97706]";
+}
+
+function statusLabel(status: string): string {
+  if (status === "final") return "Final";
+  if (status === "active") return "Active";
+  return "Draft";
+}
+
+function gameTitle(game: ChartingGame): string {
+  const opponent = game.opponent?.trim() || "Unnamed Opponent";
+  return game.babsonVenueSide === "away" ? `@ ${opponent}` : `vs. ${opponent}`;
+}
+
+function gameMeta(game: ChartingGame): string {
+  const venueLabel = game.babsonVenueSide === "away" ? "Away" : "Home";
+  const sessionLabel = game.sessionType === "live_ab" ? "Live AB" : "Game";
+  return `${formatDateLabel(game.gameDate)} • ${venueLabel} • ${sessionLabel}`;
+}
+
+function MacroMetric({
+  title,
+  value,
+  trend,
+  trendDirection,
+  positive,
+  series,
+  loading = false,
+}: MetricCardProps) {
+  if (loading) {
+    return (
+      <div className="relative h-[138px] overflow-hidden rounded-[22px] border border-[#F1F5F9] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.04)]">
+        <div className="animate-pulse space-y-3">
+          <div className="h-3 w-20 rounded-full bg-[#E2E8F0]" />
+          <div className="h-8 w-28 rounded-xl bg-[#F1F5F9]" />
+          <div className="mt-6 flex items-end gap-1">
+            {[32, 24, 38, 28, 20, 26, 16].map((height) => (
+              <div
+                key={height}
+                className="w-full rounded-t-sm bg-[#E2E8F0]"
+                style={{ height }}
+              />
+            ))}
           </div>
-
-          {eyebrow ? (
-            <div className="mt-5 text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-              {eyebrow}
-            </div>
-          ) : null}
-
-          <h2 className="mt-3 text-xl font-black tracking-tight text-zinc-100">
-            {title}
-          </h2>
-          <p className="mt-2 text-sm leading-7 text-zinc-400">{description}</p>
-
-          {details?.length ? (
-            <div className="mt-5 flex flex-wrap gap-2">
-              {details.map((detail) => (
-                <span
-                  key={detail}
-                  className="rounded-full border border-zinc-800 bg-zinc-900/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400"
-                >
-                  {detail}
-                </span>
-              ))}
-            </div>
-          ) : null}
         </div>
       </div>
-    </Link>
+    );
+  }
+
+  const TrendIcon = trendDirection === "down" ? TrendingDown : TrendingUp;
+
+  return (
+    <article className="group relative h-[138px] overflow-hidden rounded-[22px] border border-[#F1F5F9] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#E2E8F0] hover:shadow-[0_24px_60px_rgba(15,23,42,0.07)]">
+      <div className="relative z-10 flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">
+            {title}
+          </p>
+          <h3 className={`${plusJakarta.className} mt-2 text-[2rem] font-extrabold tracking-tight text-[#0F172A]`}>
+            {value}
+          </h3>
+        </div>
+        <div
+          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${positive ? "bg-[#D1FAE5] text-[#10B981]" : "bg-[#FCE7F3] text-[#EC4899]"}`}
+        >
+          <TrendIcon className="h-3.5 w-3.5" />
+          <span>{trend}</span>
+        </div>
+      </div>
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 px-5 pb-4 opacity-45 transition-opacity duration-300 group-hover:opacity-65">
+        <div className="flex h-full items-end gap-1">
+          {series.map((height, index) => (
+            <div
+              key={`${title}-${index}`}
+              className="w-full rounded-t-sm bg-[#7DD3FC]"
+              style={{ height: `${height}%` }}
+            />
+          ))}
+        </div>
+      </div>
+    </article>
   );
 }
 
 export default function HomeContent() {
+  const [pitchers, setPitchers] = useState<PitcherRow[]>([]);
+  const [hitters, setHitters] = useState<HitterRow[]>([]);
+  const [games, setGames] = useState<ChartingGame[]>([]);
+  const [seasonYear, setSeasonYear] = useState<string | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [gamesLoading, setGamesLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDashboard() {
+      const [pitchingResult, battingResult, gamesResult] = await Promise.allSettled([
+        fetch("/api/team-stats?statType=pitching").then(async (response) => {
+          if (!response.ok) {
+            throw new Error("Failed to load pitching stats");
+          }
+
+          return (await response.json()) as TeamStatsPitchingResponse;
+        }),
+        fetch("/api/team-stats?statType=batting").then(async (response) => {
+          if (!response.ok) {
+            throw new Error("Failed to load batting stats");
+          }
+
+          return (await response.json()) as TeamStatsBattingResponse;
+        }),
+        fetch("/api/charting/games").then(async (response) => {
+          if (!response.ok) {
+            throw new Error("Failed to load recent games");
+          }
+
+          return (await response.json()) as ChartingGamesResponse;
+        }),
+      ]);
+
+      if (cancelled) {
+        return;
+      }
+
+      if (pitchingResult.status === "fulfilled") {
+        setPitchers(pitchingResult.value.pitchers ?? []);
+        if (pitchingResult.value.year) {
+          setSeasonYear(pitchingResult.value.year);
+        }
+      }
+
+      if (battingResult.status === "fulfilled") {
+        setHitters(battingResult.value.hitters ?? []);
+        if (pitchingResult.status !== "fulfilled" && battingResult.value.year) {
+          setSeasonYear(battingResult.value.year);
+        }
+      }
+
+      if (gamesResult.status === "fulfilled") {
+        setGames(gamesResult.value.games ?? []);
+      }
+
+      setStatsLoading(false);
+      setGamesLoading(false);
+    }
+
+    void loadDashboard();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const totalER = pitchers.reduce((sum, pitcher) => sum + (pitcher.er || 0), 0);
+  const totalIP = pitchers.reduce((sum, pitcher) => sum + (pitcher.ip || 0), 0);
+  const totalRunsAllowed = pitchers.reduce((sum, pitcher) => sum + (pitcher.r || 0), 0);
+
+  const totalAB = hitters.reduce((sum, hitter) => sum + (hitter.ab || 0), 0);
+  const totalHits = hitters.reduce((sum, hitter) => sum + (hitter.h || 0), 0);
+  const totalWalks = hitters.reduce((sum, hitter) => sum + (hitter.bb || 0), 0);
+  const totalHitByPitch = hitters.reduce((sum, hitter) => sum + (hitter.hbp || 0), 0);
+  const totalSacrificeFlies = hitters.reduce((sum, hitter) => sum + (hitter.sf || 0), 0);
+  const totalBases = hitters.reduce((sum, hitter) => sum + (hitter.tb || 0), 0);
+  const totalRunsScored = hitters.reduce((sum, hitter) => sum + (hitter.r || 0), 0);
+
+  const teamERA = totalIP > 0 ? ((totalER * 9) / totalIP).toFixed(2) : "0.00";
+  const onBasePercentage =
+    totalAB + totalWalks + totalHitByPitch + totalSacrificeFlies > 0
+      ? (totalHits + totalWalks + totalHitByPitch) /
+        (totalAB + totalWalks + totalHitByPitch + totalSacrificeFlies)
+      : 0;
+  const sluggingPercentage = totalAB > 0 ? totalBases / totalAB : 0;
+  const teamOPS = formatRate(onBasePercentage + sluggingPercentage);
+
+  const runDifferential = totalRunsScored - totalRunsAllowed;
+  const runDifferentialLabel = runDifferential > 0 ? `+${runDifferential}` : `${runDifferential}`;
+
+  const eraBenchmark = 4.0;
+  const opsBenchmark = 0.8;
+
+  const metricCards = [
+    {
+      title: "Team ERA",
+      value: teamERA,
+      trend: formatSignedValue(Number(teamERA) - eraBenchmark, 2),
+      trendDirection: Number(teamERA) <= eraBenchmark ? "down" : "up",
+      positive: Number(teamERA) <= eraBenchmark,
+      series: [58, 36, 66, 46, 28, 42, 18],
+    },
+    {
+      title: "Team OPS",
+      value: teamOPS,
+      trend: formatSignedValue(Number(teamOPS) - opsBenchmark, 3).replace(/^(-?)0\./, "$1."),
+      trendDirection: Number(teamOPS) >= opsBenchmark ? "up" : "down",
+      positive: Number(teamOPS) >= opsBenchmark,
+      series: [22, 36, 30, 52, 48, 66, 74],
+    },
+    {
+      title: "Run Differential",
+      value: runDifferentialLabel,
+      trend: runDifferential > 0 ? `+${runDifferential}` : `${runDifferential}`,
+      trendDirection: runDifferential >= 0 ? "up" : "down",
+      positive: runDifferential >= 0,
+      series: [18, 24, 22, 38, 50, 68, 82],
+    },
+  ] satisfies MetricCardProps[];
+
+  const topHitters = [...hitters]
+    .filter((hitter) => hitter.pa > 0)
+    .sort((left, right) => (right.ops || 0) - (left.ops || 0))
+    .slice(0, 2)
+    .map<PerformerCard>((hitter) => ({
+      key: `hitter-${hitter.playerId}`,
+      name: hitter.playerName,
+      href: hitter.slug ? `/players/${hitter.slug}` : null,
+      statLabel: `OPS ${formatRate(hitter.ops)}`,
+      accent: "emerald",
+    }));
+
+  const topPitcher = [...pitchers]
+    .filter((pitcher) => pitcher.ip > 0)
+    .sort(
+      (left, right) =>
+        (right.kMinusBbPct || 0) - (left.kMinusBbPct || 0) || (right.so || 0) - (left.so || 0),
+    )
+    .slice(0, 1)
+    .map<PerformerCard>((pitcher) => ({
+      key: `pitcher-${pitcher.playerId}`,
+      name: pitcher.playerName,
+      href: pitcher.slug ? `/players/${pitcher.slug}` : null,
+      statLabel:
+        pitcher.kMinusBbPct > 0
+          ? `K-BB% ${pitcher.kMinusBbPct.toFixed(1)}%`
+          : `${pitcher.so} SO`,
+      accent: "sky",
+    }));
+
+  const topPerformers = [...topHitters, ...topPitcher].slice(0, 3);
+  const recentGames = games.filter((game) => game.sessionType === "game").slice(0, 3);
+
   return (
-    <LeaderboardPageFrame maxWidth="max-w-6xl">
-      <motion.div
-        className="flex justify-end"
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25 }}
-      >
-        <div
-          className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em]"
-          style={BABSON_BADGE_STYLE}
-        >
-          Session
-          <LogoutButton className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-200 hover:text-zinc-50" />
-        </div>
-      </motion.div>
+    <div className={`min-h-full bg-[#F8FAFC] text-[#0F172A] ${manrope.className}`}>
+      <header className="border-b border-[#F1F5F9] bg-white/90 backdrop-blur">
+        <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-8">
+          <div className="flex min-w-0 items-center gap-4">
+            <h1 className={`${plusJakarta.className} text-[1.85rem] font-extrabold tracking-tight text-[#0F172A]`}>
+              Dashboard Overview
+            </h1>
+            <div className="hidden h-5 w-px bg-[#E2E8F0] md:block" />
+            <div className="hidden items-center gap-3 md:flex">
+              <span
+                className={`${plusJakarta.className} rounded-full bg-[#EEF2FF] px-3 py-1 text-[12px] font-bold text-[#6366F1]`}
+              >
+                Varsity
+              </span>
+              <span
+                className={`${plusJakarta.className} text-[12px] font-semibold text-[#94A3B8]`}
+              >
+                {seasonYear ? `${seasonYear} season` : "NCAA sync"}
+              </span>
+            </div>
+          </div>
 
-      <motion.div
-        className="mt-4"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <div className="relative overflow-hidden rounded-[2.35rem] border border-emerald-500/20 bg-zinc-950/82 p-6 shadow-[0_36px_90px_rgba(0,0,0,0.34)] sm:p-8">
-          <GlowingEffect
-            spread={34}
-            glow
-            disabled={false}
-            proximity={96}
-            inactiveZone={0.24}
-            movementDuration={1.1}
-            borderWidth={2}
-            className="opacity-80"
-          />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_18%,rgba(16,185,129,0.18),transparent_28%),radial-gradient(circle_at_78%_24%,rgba(59,130,246,0.12),transparent_26%),linear-gradient(135deg,rgba(24,24,27,0.92),rgba(3,7,18,0.98))]" />
-          <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-          <div className="pointer-events-none absolute right-8 top-10 h-24 w-24 rounded-full border border-emerald-500/15" />
-          <div className="pointer-events-none absolute right-14 top-16 h-10 w-10 rounded-full border border-sky-400/15" />
-
-          <div className="relative">
-            <div
-              className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em]"
-              style={BABSON_BADGE_STYLE}
+          <div className="flex items-center gap-3">
+            <Link
+              href="/charting/new"
+              className={`${plusJakarta.className} hidden items-center gap-2 rounded-full bg-[#6366F1] px-4 py-2 text-[12px] font-bold text-white shadow-[0_12px_28px_rgba(99,102,241,0.18)] transition-all duration-300 hover:bg-[#4F46E5] sm:inline-flex`}
             >
-              {TEAM_NAME} Baseball
+              <Upload className="h-4 w-4" />
+              New Session
+            </Link>
+            <div className="hidden items-center gap-2 rounded-full border border-[#F1F5F9] bg-[#F8FAFC] px-4 py-2 sm:flex">
+              <LineChart className="h-4 w-4 text-[#94A3B8]" />
+              <span className={`${plusJakarta.className} text-[12px] font-semibold text-[#475569]`}>
+                {seasonYear ? `${seasonYear} season` : "Season view"}
+              </span>
+              <ChevronDown className="h-4 w-4 text-[#94A3B8]" />
             </div>
-
-            <div className="mt-5 flex items-center gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-800/80 bg-zinc-900/80 p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                <Image
-                  src="/babson-logo.svg"
-                  alt={`${TEAM_NAME} Baseball`}
-                  width={32}
-                  height={32}
-                  className="h-8 w-8 shrink-0"
-                  priority
-                />
-              </div>
-              <div>
-                <h1 className="text-3xl font-black tracking-tight text-zinc-50 sm:text-[2.65rem] sm:leading-[1.02]">
-                  {TEAM_NAME} Baseball Data Insights Portal
-                </h1>
-                <p className="mt-2 max-w-2xl text-sm leading-7 text-zinc-400 sm:text-[15px]">
-                  The team-wide portal for player profiles, season statistics,
-                  charting data, and the pitcher-specific tools staff uses every
-                  day.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-2">
-              {["Player Profiles", "Season Statistics", "Charting", "Pitcher Tools"].map(
-                (chip) => (
-                  <span
-                    key={chip}
-                    className="rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-300"
-                  >
-                    {chip}
-                  </span>
-                ),
-              )}
+            <div className="rounded-full border border-[#F1F5F9] bg-white px-4 py-2 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+              <LogoutButton className={`${plusJakarta.className} text-[12px] font-semibold uppercase tracking-[0.14em] text-[#64748B] hover:text-[#0F172A]`} />
             </div>
           </div>
         </div>
-      </motion.div>
+      </header>
 
-      <motion.div
-        className="mt-6"
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.05 }}
-      >
-        <SectionMarker label="Start Here" />
-        <div className="mt-3 grid gap-4 lg:grid-cols-12">
-          <HomeLinkCard
-            href="/players"
-            tone="emerald"
-            icon={Users}
-            eyebrow="Foundation"
-            title="Player Profiles"
-            description="Open the full roster, then move into role-aware player pages with season context and charting data."
-            details={["Roster", "Profiles", "Charting"]}
-            className="lg:col-span-4"
-          />
-          <HomeLinkCard
-            href="/team-stats/leaderboard"
-            tone="sky"
-            icon={BarChart3}
-            eyebrow="Production"
-            title="Season Statistics"
-            description="Season production for the whole team in one leaderboard and dictionary flow."
-            details={["Team Stats", "Rankings", "Definitions"]}
-            className="lg:col-span-4"
-          />
-          <HomeLinkCard
-            href="/charting"
-            tone="emerald"
-            icon={ClipboardList}
-            eyebrow="Tracking"
-            title="Charting Portal"
-            description="Open charted game sessions, synced game logs, and the charting leaderboard for pitchers and hitters."
-            details={["Sessions", "Leaderboard", "Game Review"]}
-            className="lg:col-span-4"
-          />
-        </div>
-      </motion.div>
+      <main className="mx-auto max-w-[1200px] px-4 py-6 sm:px-8 sm:py-8">
+        <section className="grid gap-5 md:grid-cols-3">
+          {metricCards.map((card) => (
+            <MacroMetric
+              key={card.title}
+              title={card.title}
+              value={card.value}
+              trend={card.trend}
+              trendDirection={card.trendDirection}
+              positive={card.positive}
+              series={card.series}
+              loading={statsLoading}
+            />
+          ))}
+        </section>
 
-      <motion.div
-        className="mt-6"
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.09 }}
-      >
-        <SectionMarker label="Pitcher Tools" />
-        <div className="mt-3 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          <HomeLinkCard
-            href="/trackman"
-            tone="blue"
-            icon={Activity}
-            eyebrow="Movement"
-            title="Trackman Hub"
-            description="Live session data for velocity, movement, shape, and arsenal trends."
-            details={["Velocity", "Movement", "Shapes"]}
-          />
-          <HomeLinkCard
-            href="/command"
-            tone="orange"
-            icon={Target}
-            eyebrow="Execution"
-            title="Command Hub"
-            description="Track strike quality, miss distance, and how consistently a pitcher repeats feel."
-            details={["Strikes", "Misses", "Outings"]}
-          />
-          <HomeLinkCard
-            href="/pitching-plus/leaderboard"
-            tone="amber"
-            icon={Sparkles}
-            eyebrow="Blend"
-            title="Pitching+ Hub"
-            description="See how live stuff and command blend into one leaderboard view."
-            details={["Pitching+", "Command+", "Stuff+"]}
-          />
-          <HomeLinkCard
-            href="/mechanics"
-            tone="violet"
-            icon={Film}
-            eyebrow="Video"
-            title="Mechanics Hub"
-            description="Phase-by-phase delivery review with session-level breakdowns."
-            details={["Video", "Phases", "Sessions"]}
-            badge="Beta"
-          />
-        </div>
-      </motion.div>
+        <section className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1.65fr)_minmax(300px,0.95fr)]">
+          <div>
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <div>
+                <h2 className={`${plusJakarta.className} text-xl font-extrabold tracking-tight text-[#0F172A]`}>
+                  Recent Games
+                </h2>
+                <p className="mt-1 text-sm text-[#64748B]">
+                  Latest charting sessions available for {TEAM_NAME}.
+                </p>
+              </div>
+              <Link
+                href="/charting"
+                className={`${plusJakarta.className} text-[13px] font-semibold text-[#6366F1] transition-colors hover:text-[#4F46E5]`}
+              >
+                View All
+              </Link>
+            </div>
 
-      <motion.div
-        className="mt-6"
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.12 }}
-      >
-        <SectionMarker label="Reference" />
-        <div className="mt-3 grid gap-4 md:grid-cols-2">
-          <HomeLinkCard
-            href="/leaderboards-hub"
-            tone="blue"
-            icon={LayoutGrid}
-            eyebrow="Map"
-            title="Leaderboards"
-            description="Open the full set of rankings, then go straight to the board you need."
-            details={["Command", "Trackman", "Pitching+", "Statistics"]}
-          />
-          <HomeLinkCard
-            href="/dictionary"
-            tone="zinc"
-            icon={BookOpen}
-            eyebrow="Reference"
-            title="Metrics Dictionary"
-            description="Definitions, grading context, and guide pages for every major part of the site."
-            details={["Definitions", "Guides", "Context"]}
-          />
-        </div>
-      </motion.div>
+            <div className="overflow-hidden rounded-[24px] border border-[#F1F5F9] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.04)]">
+              {gamesLoading ? (
+                <div className="space-y-4 p-5">
+                  {[0, 1, 2].map((index) => (
+                    <div
+                      key={index}
+                      className="flex animate-pulse items-center justify-between gap-4 rounded-[18px] border border-[#F8FAFC] bg-[#FCFDFE] p-4"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="h-11 w-11 rounded-full bg-[#E2E8F0]" />
+                        <div className="space-y-2">
+                          <div className="h-4 w-36 rounded-full bg-[#E2E8F0]" />
+                          <div className="h-3 w-28 rounded-full bg-[#F1F5F9]" />
+                        </div>
+                      </div>
+                      <div className="h-7 w-16 rounded-full bg-[#F1F5F9]" />
+                    </div>
+                  ))}
+                </div>
+              ) : recentGames.length > 0 ? (
+                recentGames.map((game, index) => (
+                  <Link
+                    href={`/charting/games/${game.id}`}
+                    key={game.id}
+                    className={`group flex flex-col gap-4 px-5 py-4 transition-colors hover:bg-[#F8FAFC] sm:flex-row sm:items-center sm:justify-between ${index < recentGames.length - 1 ? "border-b border-[#F1F5F9]" : ""}`}
+                  >
+                    <div className="flex min-w-0 items-center gap-4">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#F8FAFC] text-[13px] font-bold text-[#64748B] ring-1 ring-[#F1F5F9]">
+                        {getInitials(game.opponent ?? "Game")}
+                      </div>
+                      <div className="min-w-0">
+                        <p
+                          className={`${plusJakarta.className} truncate text-[15px] font-bold text-[#0F172A] transition-colors group-hover:text-[#6366F1]`}
+                        >
+                          {gameTitle(game)}
+                        </p>
+                        <p className="mt-1 text-[13px] text-[#64748B]">{gameMeta(game)}</p>
+                      </div>
+                    </div>
 
-      <motion.div
-        className="mt-6 flex items-center justify-center"
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.15 }}
-      >
-        <div
-          className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em]"
-          style={BABSON_BADGE_STYLE}
-        >
-          <Image
-            src="/babson-logo.svg"
-            alt=""
-            aria-hidden="true"
-            width={14}
-            height={14}
-            className="h-3.5 w-3.5 shrink-0 opacity-85"
-          />
-          Home of the {TEAM_NAME} Beavers
-        </div>
-      </motion.div>
-    </LeaderboardPageFrame>
+                    <div className="flex items-center gap-4">
+                      <div className="text-left sm:text-right">
+                        <p className={`${plusJakarta.className} text-[14px] font-semibold text-[#0F172A]`}>
+                          {game.sessionType === "live_ab" ? "Live AB Session" : "Game Log"}
+                        </p>
+                        <p className="text-[12px] text-[#94A3B8]">{formatUpdatedLabel(game.updatedAt)}</p>
+                      </div>
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] ${statusPillClasses(game.status)}`}
+                      >
+                        {statusLabel(game.status)}
+                      </span>
+                      <ChevronRight className="h-5 w-5 text-[#94A3B8] transition-colors group-hover:text-[#6366F1]" />
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="p-8 text-center">
+                  <p className={`${plusJakarta.className} text-[15px] font-semibold text-[#0F172A]`}>
+                    No recent charting games yet.
+                  </p>
+                  <p className="mt-2 text-sm text-[#64748B]">
+                    Start a new session to populate the game log.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <div>
+                <h2 className={`${plusJakarta.className} text-xl font-extrabold tracking-tight text-[#0F172A]`}>
+                  Top Performers
+                </h2>
+                <p className="mt-1 text-sm text-[#64748B]">
+                  Live standouts from the current NCAA sync.
+                </p>
+              </div>
+              <span className={`${plusJakarta.className} text-[11px] font-bold uppercase tracking-[0.18em] text-[#94A3B8]`}>
+                {seasonYear ? `${seasonYear} season` : "Season"}
+              </span>
+            </div>
+
+            <div className="overflow-hidden rounded-[24px] border border-[#F1F5F9] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.04)]">
+              {statsLoading ? (
+                <div className="space-y-4 p-5">
+                  {[0, 1, 2].map((index) => (
+                    <div key={index} className="flex animate-pulse items-center gap-4">
+                      <div className="h-11 w-11 rounded-full bg-[#E2E8F0]" />
+                      <div className="space-y-2">
+                        <div className="h-4 w-28 rounded-full bg-[#E2E8F0]" />
+                        <div className="h-3 w-20 rounded-full bg-[#F1F5F9]" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : topPerformers.length > 0 ? (
+                topPerformers.map((performer, index) => {
+                  const content = (
+                    <div
+                      className={`group flex items-center gap-4 px-5 py-4 transition-colors hover:bg-[#F8FAFC] ${index < topPerformers.length - 1 ? "border-b border-[#F1F5F9]" : ""}`}
+                    >
+                      <div
+                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border ${performer.accent === "emerald" ? "border-[#D1FAE5] bg-[#ECFDF5] text-[#10B981]" : "border-[#DBEAFE] bg-[#EFF6FF] text-[#0EA5E9]"}`}
+                      >
+                        <span className={`${plusJakarta.className} text-[12px] font-bold`}>
+                          {getInitials(performer.name)}
+                        </span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className={`${plusJakarta.className} truncate text-[15px] font-bold text-[#0F172A] transition-colors group-hover:text-[#6366F1]`}
+                        >
+                          {performer.name}
+                        </p>
+                        <p className="mt-1 text-[13px] text-[#64748B]">{performer.statLabel}</p>
+                      </div>
+                      <div
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${performer.accent === "emerald" ? "text-[#10B981]" : "text-[#0EA5E9]"}`}
+                      >
+                        <TrendingUp className="h-4 w-4" />
+                      </div>
+                    </div>
+                  );
+
+                  if (performer.href) {
+                    return (
+                      <Link href={performer.href} key={performer.key}>
+                        {content}
+                      </Link>
+                    );
+                  }
+
+                  return <div key={performer.key}>{content}</div>;
+                })
+              ) : (
+                <div className="p-8 text-center">
+                  <p className={`${plusJakarta.className} text-[15px] font-semibold text-[#0F172A]`}>
+                    No season leaders available.
+                  </p>
+                  <p className="mt-2 text-sm text-[#64748B]">
+                    Sync team stats to populate the leaderboard.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
   );
 }

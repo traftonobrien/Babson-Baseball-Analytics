@@ -1,23 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { BookOpen, Radio, Search, Trophy } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  Button,
-  leaderboardFilterButtonBaseClassName,
-  leaderboardFilterButtonBlueActiveClassName,
-  leaderboardFilterButtonBlueInactiveClassName,
-} from "@/components/ui/neon-button";
-import { GlowingEffect } from "@/components/ui/glowing-effect";
-import {
-  LeaderboardHero,
-  LeaderboardIntro,
-  LeaderboardPageFrame,
-  LeaderboardPanel,
-  LeaderboardPill,
-  LeaderboardToolbar,
-} from "../components/leaderboards/LeaderboardChrome";
+  BookOpen,
+  ChevronRight,
+  Layers3,
+  Radio,
+  Search,
+  Trophy,
+} from "lucide-react";
 import { getCanonicalName } from "@/lib/canonicalPlayers";
 import { handBadgeClassesCompact, parseHand } from "@/lib/handBadge";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
@@ -65,10 +57,11 @@ function normalizeSession(raw: Record<string, unknown>): Session {
 function formatDate(raw: string): string {
   const parts = raw.replace(/_/g, "-").split("-");
   if (parts.length === 3) {
-    const [y, m, d] = parts;
-    const shortYear = y.length === 4 ? y.slice(2) : y;
-    return `${parseInt(m)}/${parseInt(d)}/${shortYear}`;
+    const [year, month, day] = parts;
+    const shortYear = year.length === 4 ? year.slice(2) : year;
+    return `${parseInt(month, 10)}/${parseInt(day, 10)}/${shortYear}`;
   }
+
   return raw;
 }
 
@@ -82,9 +75,12 @@ function getSortableLastName(name: string): string {
 
 function groupByPlayer(sessions: Session[]): Player[] {
   const map = new Map<string, Session[]>();
+
   for (const session of sessions) {
     const key = session.playerSlug;
-    if (!map.has(key)) map.set(key, []);
+    if (!map.has(key)) {
+      map.set(key, []);
+    }
     map.get(key)!.push(session);
   }
 
@@ -95,9 +91,9 @@ function groupByPlayer(sessions: Session[]): Player[] {
 
     const typeSet = new Set<string>();
     for (const session of playerSessions) {
-      if (session.pitchTypes) {
-        for (const pitchType of session.pitchTypes) {
-          if (pitchType !== "Other") typeSet.add(pitchType);
+      for (const pitchType of session.pitchTypes ?? []) {
+        if (pitchType !== "Other") {
+          typeSet.add(pitchType);
         }
       }
     }
@@ -116,6 +112,152 @@ function groupByPlayer(sessions: Session[]): Player[] {
 
   players.sort((a, b) => b.latestDate.localeCompare(a.latestDate));
   return players;
+}
+
+function StatCard({
+  label,
+  value,
+  detail,
+  tone,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  tone: "indigo" | "emerald" | "sky" | "violet";
+}) {
+  const toneStyles = {
+    indigo: "from-[#EEF2FF] to-white text-[#4F46E5] border-[#E0E7FF]",
+    emerald: "from-[#ECFDF5] to-white text-[#10B981] border-[#D1FAE5]",
+    sky: "from-[#EFF6FF] to-white text-[#0EA5E9] border-[#DBEAFE]",
+    violet: "from-[#FAF5FF] to-white text-[#8B5CF6] border-[#E9D5FF]",
+  }[tone];
+
+  return (
+    <div className={`rounded-[24px] border bg-gradient-to-br p-4 shadow-[0_16px_36px_rgba(15,23,42,0.04)] ${toneStyles}`}>
+      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">
+        {label}
+      </div>
+      <div className="mt-3 text-[2rem] font-black tracking-tight text-[#0F172A]">
+        {value}
+      </div>
+      <div className="mt-1 text-sm text-[#64748B]">{detail}</div>
+    </div>
+  );
+}
+
+function ActionCard({
+  href,
+  icon: Icon,
+  title,
+  detail,
+}: {
+  href: string;
+  icon: typeof BookOpen;
+  title: string;
+  detail: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group rounded-[24px] border border-[#E5E7EB] bg-white p-4 shadow-[0_16px_36px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#CBD5E1]"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
+            Quick Action
+          </div>
+          <div className="mt-2 text-base font-bold text-[#0F172A]">{title}</div>
+          <div className="mt-1 text-sm leading-6 text-[#64748B]">{detail}</div>
+        </div>
+        <div className="rounded-2xl border border-[#E0E7FF] bg-[#EEF2FF] p-3 text-[#4F46E5] transition-colors group-hover:bg-[#E0E7FF]">
+          <Icon className="h-4 w-4" />
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function PlayerCard({
+  player,
+  isMe,
+}: {
+  player: Player;
+  isMe: boolean;
+}) {
+  const hand = parseHand(player.handedness);
+  const pitchTypes = player.pitchTypes.slice(0, 3);
+
+  return (
+    <Link
+      href={`/trackman/player/${player.slug}`}
+      className={`group relative block overflow-hidden rounded-[24px] border bg-white p-5 shadow-[0_16px_36px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#CBD5E1] hover:shadow-[0_20px_44px_rgba(15,23,42,0.08)] ${
+        isMe ? "border-[#C7D2FE] bg-[linear-gradient(135deg,rgba(238,242,255,0.9),white)]" : "border-[#E5E7EB]"
+      }`}
+    >
+      <div
+        className={`absolute left-0 top-5 bottom-5 w-[3px] rounded-full transition-colors ${
+          isMe ? "bg-[#4F46E5]" : "bg-[#4F46E5]/0 group-hover:bg-[#4F46E5]/60"
+        }`}
+      />
+
+      <div className="pl-3">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="truncate text-[15px] font-bold text-[#0F172A] transition-colors group-hover:text-[#4F46E5]">
+                {getCanonicalName(player.name)}
+              </h3>
+              {isMe ? (
+                <span className="rounded-full border border-[#C7D2FE] bg-[#EEF2FF] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#4F46E5]">
+                  You
+                </span>
+              ) : null}
+              {hand ? (
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] ${handBadgeClassesCompact(hand)}`}>
+                  {hand === "L" ? "LHP" : "RHP"}
+                </span>
+              ) : null}
+            </div>
+            <p className="mt-1 text-sm text-[#64748B]">
+              {player.team ?? "Trackman"} • {player.sessionCount} session{player.sessionCount !== 1 ? "s" : ""}
+            </p>
+          </div>
+
+          <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-[#94A3B8] transition-colors group-hover:text-[#4F46E5]" />
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#94A3B8]">
+              Latest Session
+            </div>
+            <div className="mt-1 text-sm font-semibold text-[#0F172A]">{formatDate(player.latestDate)}</div>
+          </div>
+          <div className="text-left sm:text-right">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#94A3B8]">
+              Avg Velo
+            </div>
+            <div className="mt-1 text-sm font-bold text-[#0F172A]">
+              {player.latestAvgVelo != null ? `${player.latestAvgVelo.toFixed(1)} mph` : "—"}
+            </div>
+          </div>
+        </div>
+
+        {pitchTypes.length > 0 ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {pitchTypes.map((pitchType) => (
+              <span
+                key={pitchType}
+                className="rounded-full border border-[#E5E7EB] bg-[#F8FAFC] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#64748B]"
+              >
+                {pitchType}
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </Link>
+  );
 }
 
 export default function TrackmanPlayersPage() {
@@ -143,7 +285,9 @@ export default function TrackmanPlayersPage() {
       const seen = new Map<string, Session>();
       for (const session of all) {
         const key = `${session.playerSlug}-${session.date}`;
-        if (!seen.has(key)) seen.set(key, session);
+        if (!seen.has(key)) {
+          seen.set(key, session);
+        }
       }
 
       setSessions(Array.from(seen.values()));
@@ -155,6 +299,7 @@ export default function TrackmanPlayersPage() {
 
   const filtered = useMemo(() => {
     let result = players;
+
     if (search.trim()) {
       const query = search.toLowerCase();
       result = result.filter(
@@ -170,14 +315,10 @@ export default function TrackmanPlayersPage() {
 
     return [...result].sort((a, b) => {
       if (sortMode === "alpha") {
-        const lastNameCompare = getSortableLastName(a.name).localeCompare(
-          getSortableLastName(b.name),
-        );
+        const lastNameCompare = getSortableLastName(a.name).localeCompare(getSortableLastName(b.name));
         if (lastNameCompare !== 0) return lastNameCompare;
 
-        const nameCompare = getCanonicalName(a.name).localeCompare(
-          getCanonicalName(b.name),
-        );
+        const nameCompare = getCanonicalName(a.name).localeCompare(getCanonicalName(b.name));
         if (nameCompare !== 0) return nameCompare;
 
         return a.slug.localeCompare(b.slug);
@@ -191,284 +332,221 @@ export default function TrackmanPlayersPage() {
   }, [handFilter, players, search, sortMode]);
 
   const totalSessions = sessions.length;
+  const totalPlayers = players.length;
+  const trackedVelos = players
+    .map((player) => player.latestAvgVelo)
+    .filter((value): value is number => value != null);
+  const avgVelocity =
+    trackedVelos.length > 0
+      ? trackedVelos.reduce((sum, value) => sum + value, 0) / trackedVelos.length
+      : null;
+  const uniquePitchTypes = new Set(players.flatMap((player) => player.pitchTypes)).size;
 
   return (
-    <LeaderboardPageFrame maxWidth="max-w-6xl">
-      <div className="flex flex-col gap-6">
-        <LeaderboardIntro breadcrumbs={[{ label: "Home", href: "/" }, { label: "Trackman" }]}>
-          <LeaderboardHero
-            tone="blue"
-            icon={Radio}
-            eyebrow="Trackman Hub"
-            title="Trackman Hub"
-            description="Browse Trackman player profiles for movement, velocity, and session history."
-            meta={
-              <>
-                <LeaderboardPill tone="blue">
-                  {players.length} Player{players.length !== 1 ? "s" : ""}
-                </LeaderboardPill>
-                <LeaderboardPill tone="neutral">
-                  {totalSessions} Session{totalSessions !== 1 ? "s" : ""}
-                </LeaderboardPill>
-              </>
-            }
-            side={
-              <>
-                <Link href="/trackman/faq" className="block">
-                  <div className="relative overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-smooth hover:border-blue-500/25">
-                    <GlowingEffect
-                      glow
-                      disabled={false}
-                      proximity={56}
-                      inactiveZone={0.22}
-                      spread={24}
-                      movementDuration={0.8}
-                      borderWidth={2}
-                      className="opacity-80"
-                    />
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-blue-500/20 bg-blue-500/10 text-blue-300">
-                        <BookOpen className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                          Guide
-                        </div>
-                        <div className="mt-1 text-sm font-semibold text-zinc-100">
-                          Metrics Dictionary
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-                <Link href="/trackman/leaderboard" className="block">
-                  <div className="relative overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-smooth hover:border-blue-500/25">
-                    <GlowingEffect
-                      glow
-                      disabled={false}
-                      proximity={56}
-                      inactiveZone={0.22}
-                      spread={24}
-                      movementDuration={0.8}
-                      borderWidth={2}
-                      className="opacity-80"
-                    />
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-blue-500/20 bg-blue-500/10 text-blue-300">
-                        <Trophy className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                          Rankings
-                        </div>
-                        <div className="mt-1 text-sm font-semibold text-zinc-100">
-                          Leaderboards
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </>
-            }
-          />
-        </LeaderboardIntro>
+    <div className="min-h-full bg-[#F8FAFC] text-[#0F172A]">
+      <div className="mx-auto flex max-w-[1440px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
+        <header className="rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+          <div className="flex flex-col gap-6 p-5 sm:p-7">
+            <div className="flex flex-wrap items-start justify-between gap-5">
+              <div className="min-w-0">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#E0E7FF] bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6366F1]">
+                  <Radio className="h-3.5 w-3.5" />
+                  Trackman Hub
+                </div>
+                <h1 className="mt-4 text-3xl font-black tracking-tight text-[#0F172A] sm:text-[2.85rem] sm:leading-[1.02]">
+                  Trackman Player Roster
+                </h1>
+                <p className="mt-2 max-w-2xl text-sm leading-7 text-[#64748B] sm:text-[14px]">
+                  Browse player sessions, compare hands, and jump into an individual Trackman profile without losing context.
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[31rem]">
+                <ActionCard
+                  href="/trackman/faq"
+                  icon={BookOpen}
+                  title="Metrics Dictionary"
+                  detail="Review the Trackman terms, filters, and conventions used across the hub."
+                />
+                <ActionCard
+                  href="/trackman/leaderboard"
+                  icon={Trophy}
+                  title="Leaderboards"
+                  detail="Open the ranking view for velocity, movement, and profile comparisons."
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <StatCard
+                label="Players Tracked"
+                value={String(totalPlayers)}
+                detail="Unique players in the imported sessions."
+                tone="indigo"
+              />
+              <StatCard
+                label="Sessions"
+                value={String(totalSessions)}
+                detail="All deduplicated session records."
+                tone="emerald"
+              />
+              <StatCard
+                label="Avg Velo"
+                value={avgVelocity != null ? `${avgVelocity.toFixed(1)} mph` : "—"}
+                detail="Latest average velocity across players with data."
+                tone="sky"
+              />
+              <StatCard
+                label="Pitch Types"
+                value={String(uniquePitchTypes)}
+                detail="Unique pitch shapes seen in the current dataset."
+                tone="violet"
+              />
+            </div>
+          </div>
+        </header>
 
         {loading ? (
-          <LeaderboardPanel className="p-6">
-            <div className="text-sm text-zinc-500">Loading...</div>
-          </LeaderboardPanel>
-        ) : players.length === 0 ? (
-          <LeaderboardPanel className="p-6">
-            <div className="rounded-[1.5rem] border border-zinc-800 bg-zinc-950/60 p-8 text-center">
-              <Radio className="mx-auto mb-3 h-8 w-8 text-zinc-600" />
-              <p className="text-sm text-zinc-400">No Trackman sessions imported yet.</p>
-              <p className="mt-2 text-xs text-zinc-600">
-                Run{" "}
-                <code className="rounded bg-zinc-800 px-1 py-0.5">
-                  scripts/import_trackman_pdf.py
-                </code>{" "}
-                to import a PDF export.
-              </p>
+          <div className="rounded-[28px] border border-[#E5E7EB] bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+            <div className="animate-pulse space-y-4">
+              <div className="h-4 w-40 rounded-full bg-[#E2E8F0]" />
+              <div className="h-12 rounded-[20px] bg-[#F1F5F9]" />
+              <div className="grid gap-4 md:grid-cols-2">
+                {[0, 1, 2, 3].map((index) => (
+                  <div key={index} className="h-36 rounded-[24px] bg-[#F8FAFC]" />
+                ))}
+              </div>
             </div>
-          </LeaderboardPanel>
+          </div>
+        ) : players.length === 0 ? (
+          <div className="rounded-[28px] border border-[#E5E7EB] bg-white px-6 py-20 text-center shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+            <Radio className="mx-auto mb-4 h-14 w-14 text-[#CBD5E1]" />
+            <h2 className="text-xl font-bold text-[#0F172A]">No Trackman sessions imported yet</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-7 text-[#64748B]">
+              Run the import script to populate the roster, then return here to review velocity, pitch mix, and session history.
+            </p>
+            <p className="mt-4 text-xs font-medium uppercase tracking-[0.18em] text-[#94A3B8]">
+              scripts/import_trackman_pdf.py
+            </p>
+          </div>
         ) : (
           <>
-            <LeaderboardToolbar>
-              <div className="grid gap-4">
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+            <section className="rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+              <div className="border-b border-[#EEF2F7] p-5 sm:p-6">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                  <div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+                      Filters
+                    </div>
+                    <h2 className="mt-2 text-lg font-bold text-[#0F172A]">Search Trackman players</h2>
+                    <p className="mt-1 text-sm text-[#64748B]">
+                      Filter by name, handedness, or sort order.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full border border-[#E5E7EB] bg-[#F8FAFC] px-3 py-1.5 text-xs font-semibold text-[#64748B]">
+                      {filtered.length} shown
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-4 p-5 sm:p-6 lg:grid-cols-[minmax(15rem,1fr)_auto] lg:items-end">
+                <label className="flex items-center gap-3 rounded-2xl border border-[#E5E7EB] bg-[#F8FAFC] px-4 py-3 transition-colors focus-within:border-[#C7D2FE] focus-within:bg-white">
+                  <Search className="h-4 w-4 shrink-0 text-[#94A3B8]" />
                   <input
                     type="text"
                     placeholder="Search players..."
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
-                    className="w-full rounded-2xl border border-zinc-800 bg-zinc-950/80 py-3 pl-11 pr-4 text-sm text-zinc-100 placeholder-zinc-600 outline-none transition-smooth focus:border-zinc-600"
+                    className="w-full bg-transparent text-sm text-[#0F172A] outline-none placeholder:text-[#94A3B8]"
+                  />
+                </label>
+
+                <div className="grid gap-4 xl:grid-cols-2">
+                  <FilterGroup
+                    label="Sort"
+                    items={[
+                      { label: "Most Recent", value: "recent" },
+                      { label: "A-Z", value: "alpha" },
+                    ]}
+                    selected={sortMode}
+                    onChange={setSortMode}
+                  />
+
+                  <FilterGroup
+                    label="Hand"
+                    items={[
+                      { label: "All", value: "all" },
+                      { label: "RHP", value: "R" },
+                      { label: "LHP", value: "L" },
+                    ]}
+                    selected={handFilter}
+                    onChange={setHandFilter}
                   />
                 </div>
-
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:gap-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                        Sort
-                      </span>
-                      <div className="flex flex-wrap items-center gap-1 rounded-2xl border border-zinc-800/80 bg-zinc-950/60 p-1">
-                        <Button
-                          type="button"
-                          variant="default"
-                          tone="blue"
-                          onClick={() => setSortMode("recent")}
-                          className={`${leaderboardFilterButtonBaseClassName} ${
-                            sortMode === "recent"
-                              ? leaderboardFilterButtonBlueActiveClassName
-                              : leaderboardFilterButtonBlueInactiveClassName
-                          }`}
-                          aria-pressed={sortMode === "recent"}
-                        >
-                          Most Recent
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="default"
-                          tone="blue"
-                          onClick={() => setSortMode("alpha")}
-                          className={`${leaderboardFilterButtonBaseClassName} ${
-                            sortMode === "alpha"
-                              ? leaderboardFilterButtonBlueActiveClassName
-                              : leaderboardFilterButtonBlueInactiveClassName
-                          }`}
-                          aria-pressed={sortMode === "alpha"}
-                        >
-                          A-Z
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                        Hand
-                      </span>
-                      <div className="flex flex-wrap items-center gap-1 rounded-2xl border border-zinc-800/80 bg-zinc-950/60 p-1">
-                        {[
-                          { label: "All", value: "all" as const },
-                          { label: "RHP", value: "R" as const },
-                          { label: "LHP", value: "L" as const },
-                        ].map((option) => (
-                          <Button
-                            key={option.value}
-                            type="button"
-                            variant="default"
-                            tone="blue"
-                            onClick={() => setHandFilter(option.value)}
-                            className={`${leaderboardFilterButtonBaseClassName} ${
-                              handFilter === option.value
-                                ? leaderboardFilterButtonBlueActiveClassName
-                                : leaderboardFilterButtonBlueInactiveClassName
-                            }`}
-                            aria-pressed={handFilter === option.value}
-                          >
-                            {option.label}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <LeaderboardPill tone="neutral">
-                      {filtered.length} Shown
-                    </LeaderboardPill>
-                  </div>
-                </div>
               </div>
-            </LeaderboardToolbar>
-
-            <section className="space-y-3">
-              <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-                  Trackman Roster
-                </div>
-                <div className="mt-1 text-sm text-zinc-500">
-                  Open a pitcher to review movement, velocity, and session history.
-                </div>
-              </div>
-
-              <LeaderboardPanel className="overflow-hidden p-4 sm:p-5">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {filtered.map((player) => {
-                    const hand = parseHand(player.handedness);
-                    const isMe = player.slug === selectedSlug;
-
-                    return (
-                      <Link
-                        key={player.slug}
-                        href={`/trackman/player/${player.slug}`}
-                        className={`group relative block overflow-hidden rounded-[1.7rem] border p-4 shadow-[0_20px_48px_rgba(0,0,0,0.20)] transition-smooth hover:-translate-y-0.5 hover:border-zinc-600 ${isMe ? "border-emerald-500/40 shadow-[0_26px_56px_rgba(16,185,129,0.08)] bg-[radial-gradient(circle_at_82%_16%,rgba(16,185,129,0.08),transparent_24%),linear-gradient(180deg,rgba(24,24,27,0.76),rgba(9,9,11,0.90))]" : "border-zinc-800 bg-[radial-gradient(circle_at_82%_16%,rgba(59,130,246,0.06),transparent_24%),linear-gradient(180deg,rgba(24,24,27,0.76),rgba(9,9,11,0.90))]"} `}
-                      >
-                        <GlowingEffect
-                          glow
-                          disabled={false}
-                          proximity={72}
-                          inactiveZone={0.18}
-                          spread={28}
-                          movementDuration={0.85}
-                          borderWidth={2}
-                          className="opacity-90"
-                        />
-                        <div
-                          className={`absolute left-0 top-5 bottom-5 w-[3px] rounded-full transition-smooth ${
-                            isMe
-                              ? "bg-emerald-400"
-                              : "bg-blue-400/0 group-hover:bg-blue-400/70"
-                          }`}
-                        />
-                        <div className="pointer-events-none mb-4 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent" />
-
-                        <div className="flex items-center justify-between gap-3 pl-2">
-                          <div className="flex min-w-0 items-center gap-2">
-                            <span className="truncate text-sm font-semibold text-zinc-50">
-                              {getCanonicalName(player.name)}
-                            </span>
-                            {isMe && (
-                              <span className="rounded-md border border-emerald-500/30 bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-400">
-                                You
-                              </span>
-                            )}
-                            {hand && (
-                              <span
-                                className={`rounded px-1.5 py-0.5 text-[10px] font-normal ${handBadgeClassesCompact(hand)}`}
-                              >
-                                {hand === "L" ? "LHP" : "RHP"}
-                              </span>
-                            )}
-                          </div>
-
-                          <span className="shrink-0 text-xs font-mono text-zinc-500">
-                            {player.sessionCount} session{player.sessionCount !== 1 ? "s" : ""}
-                          </span>
-                        </div>
-
-                        <div className="mt-3 flex items-center gap-3 pl-2 text-xs text-zinc-400">
-                          <span className="text-zinc-600">
-                            Last: {formatDate(player.latestDate)}
-                          </span>
-                        </div>
-
-                      </Link>
-                    );
-                  })}
-
-                  {filtered.length === 0 && (
-                    <p className="col-span-2 py-6 text-center text-sm text-zinc-500">
-                      No players match your search.
-                    </p>
-                  )}
-                </div>
-              </LeaderboardPanel>
             </section>
+
+            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {filtered.map((player) => (
+                <PlayerCard key={player.slug} player={player} isMe={player.slug === selectedSlug} />
+              ))}
+            </section>
+
+            {filtered.length === 0 ? (
+              <div className="rounded-[24px] border border-[#E5E7EB] bg-white px-6 py-14 text-center shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+                <Layers3 className="mx-auto mb-4 h-12 w-12 text-[#CBD5E1]" />
+                <h2 className="text-lg font-bold text-[#0F172A]">No players match your search</h2>
+                <p className="mt-2 text-sm text-[#64748B]">
+                  Try clearing the query or switching the hand filter back to All.
+                </p>
+              </div>
+            ) : null}
           </>
         )}
       </div>
-    </LeaderboardPageFrame>
+    </div>
+  );
+}
+
+function FilterGroup<T extends string>({
+  label,
+  items,
+  selected,
+  onChange,
+}: {
+  label: string;
+  items: { label: string; value: T }[];
+  selected: T;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+        {label}
+      </div>
+      <div className="inline-flex flex-wrap gap-1 rounded-2xl border border-[#E5E7EB] bg-[#F8FAFC] p-1">
+        {items.map((item) => {
+          const active = selected === item.value;
+          return (
+            <button
+              key={item.value}
+              type="button"
+              onClick={() => onChange(item.value)}
+              aria-pressed={active}
+              className={`rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
+                active
+                  ? "bg-white text-[#0F172A] shadow-[0_6px_18px_rgba(15,23,42,0.06)]"
+                  : "text-[#64748B] hover:text-[#0F172A]"
+              }`}
+            >
+              {item.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }

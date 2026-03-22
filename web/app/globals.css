@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-muted: #f8fafc;
+  --border-subtle: #e7edf5;
+  --text-muted: #64748b;
+  --brand-primary: #6366f1;
   --babson-green: #006644;
   --babson-green-rgb: 0, 102, 68;
   --babson-grey: #a3aaae;
@@ -12,23 +17,57 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border-subtle: var(--border-subtle);
+  --color-text-muted: var(--text-muted);
+  --color-brand-primary: var(--brand-primary);
   --color-babson-green: var(--babson-green);
   --color-babson-grey: var(--babson-grey);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-body);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #f8fafc;
+    --foreground: #0f172a;
   }
+}
+
+html {
+  background: var(--background);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-display {
+  font-family: var(--font-display), Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: rgba(99, 102, 241, 0.16);
+}
+
+.app-shell-surface {
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.05);
+}
+
+.app-shell-muted {
+  color: var(--text-muted);
 }
 
 .scrollbar-hide {

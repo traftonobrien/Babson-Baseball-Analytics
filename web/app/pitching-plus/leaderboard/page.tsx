@@ -1,32 +1,28 @@
 "use client";
 
 import Link from "next/link";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import {
   useDeferredValue,
   useEffect,
   useMemo,
   useState,
   type CSSProperties,
+  type ReactNode,
 } from "react";
 import {
   BookOpen,
+  ChevronRight,
   CircleHelp,
   Layers3,
   Search,
   Sparkles,
   Trophy,
+  TrendingDown,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
-import Breadcrumbs from "@/app/components/Breadcrumbs";
-import { LeaderboardPageFrame } from "@/app/components/leaderboards/LeaderboardChrome";
 import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
-import {
-  Button,
-  leaderboardFilterButtonAmberActiveClassName,
-  leaderboardFilterButtonBaseClassName,
-  leaderboardFilterButtonGhostInactiveClassName,
-  leaderboardFilterButtonZincActiveClassName,
-} from "@/components/ui/neon-button";
 import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { getSlugForPlayerId } from "@/lib/canonicalPlayers";
 import { mutedBadgeClasses, readinessBadgeClasses } from "@/lib/badgeStyles";
@@ -38,6 +34,11 @@ import type {
   PlusPlayerRow,
   PlusSeasonFilter,
 } from "@/lib/plusLeaderboardTypes";
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-plus-jakarta-sans",
+});
 
 type ViewMode = "players" | "pitchTypes";
 type HandFilter = "ALL" | "R" | "L";
@@ -62,9 +63,7 @@ function reasonCopy(reason: string | null): string {
   }
 }
 
-function metricValue(
-  row: { pitchingPlus: number | null },
-): number | null {
+function metricValue(row: { pitchingPlus: number | null }): number | null {
   return row.pitchingPlus;
 }
 
@@ -83,7 +82,9 @@ function compareMetric(
 function metricBadge(value: number | null) {
   if (value === null) {
     return (
-      <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${mutedBadgeClasses()}`}>
+      <span
+        className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${mutedBadgeClasses()}`}
+      >
         —
       </span>
     );
@@ -102,14 +103,18 @@ function metricBadge(value: number | null) {
 function handBadge(throws: "R" | "L" | null) {
   if (!throws) {
     return (
-      <span className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${mutedBadgeClasses()}`}>
+      <span
+        className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${mutedBadgeClasses()}`}
+      >
         —
       </span>
     );
   }
 
   return (
-    <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${handBadgeClasses(throws)}`}>
+    <span
+      className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${handBadgeClasses(throws)}`}
+    >
       {throws === "L" ? "LHP" : "RHP"}
     </span>
   );
@@ -158,49 +163,109 @@ function sampleOptionLabel(value: number): string {
   return value === 0 ? "Any" : `${value}+`;
 }
 
+function ShellBadge({ children }: { children: ReactNode }) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 shadow-sm">
+      {children}
+    </span>
+  );
+}
+
+function MetricCard({
+  label,
+  value,
+  detail,
+  trend,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  trend: "up" | "down";
+}) {
+  const TrendIcon = trend === "up" ? TrendingUp : TrendingDown;
+
+  return (
+    <div className="flex min-h-[132px] flex-col justify-between rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.26em] text-slate-500">
+            {label}
+          </div>
+          <div className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+            {value}
+          </div>
+        </div>
+        <span
+          className={`inline-flex h-9 w-9 items-center justify-center rounded-full border ${
+            trend === "up"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-600"
+              : "border-rose-200 bg-rose-50 text-rose-600"
+          }`}
+        >
+          <TrendIcon className="h-4 w-4" />
+        </span>
+      </div>
+      <p className="mt-4 max-w-[20rem] text-sm leading-6 text-slate-500">{detail}</p>
+    </div>
+  );
+}
+
+function ToggleButton({
+  active,
+  children,
+  onClick,
+}: {
+  active: boolean;
+  children: ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex h-10 items-center justify-center rounded-full px-4 text-sm font-semibold transition-all ${
+        active
+          ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
+          : "text-slate-500 hover:text-slate-900"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 function SegmentedRail<T extends string | number>({
   label,
   items,
   value,
   onChange,
-  tone,
-  activeClassName,
   compact = false,
 }: {
   label: string;
   items: SegmentedItem<T>[];
   value: T;
   onChange: (next: T) => void;
-  tone: "amber" | "zinc";
-  activeClassName: string;
   compact?: boolean;
 }) {
   return (
     <div className="space-y-2">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">
         {label}
       </div>
-      <div className={`inline-flex flex-wrap gap-1.5 rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5 ${compact ? "" : "w-full"}`}>
+      <div
+        className={`inline-flex flex-wrap gap-1 rounded-full border border-slate-200 bg-slate-100 p-1 ${
+          compact ? "" : "w-full"
+        }`}
+      >
         {items.map(({ value: optionValue, label: optionLabel, icon: Icon }) => {
           const active = value === optionValue;
           return (
-            <Button
-              key={String(optionValue)}
-              type="button"
-              size="sm"
-              variant="ghost"
-              neon
-              tone={tone}
-              onClick={() => onChange(optionValue)}
-              className={`${leaderboardFilterButtonBaseClassName} inline-flex items-center justify-center gap-1.5 ${
-                active
-                  ? activeClassName
-                  : leaderboardFilterButtonGhostInactiveClassName
-              } ${compact ? "min-w-[4.75rem]" : "flex-1"}`}
-            >
-              {Icon ? <Icon className="h-3.5 w-3.5" /> : null}
-              <span>{optionLabel}</span>
-            </Button>
+            <ToggleButton key={String(optionValue)} active={active} onClick={() => onChange(optionValue)}>
+              <span className="inline-flex items-center gap-1.5">
+                {Icon ? <Icon className="h-3.5 w-3.5" /> : null}
+                <span>{optionLabel}</span>
+              </span>
+            </ToggleButton>
           );
         })}
       </div>
@@ -208,20 +273,42 @@ function SegmentedRail<T extends string | number>({
   );
 }
 
-function EmptyState({
+function StatPill({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600">
+      <span className="text-slate-400">{label}:</span> {value}
+    </div>
+  );
+}
+
+function InfoPanel({
   title,
   detail,
+  action,
 }: {
   title: string;
   detail: string;
+  action: ReactNode;
 }) {
   return (
-    <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-10 text-center">
-      <div className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
-        No Rows
+    <div className="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+        {title}
       </div>
-      <div className="mt-3 text-2xl font-black text-zinc-100">{title}</div>
-      <div className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-zinc-400">
+      <p className="mt-3 text-sm leading-6 text-slate-600">{detail}</p>
+      <div className="mt-4">{action}</div>
+    </div>
+  );
+}
+
+function EmptyState({ title, detail }: { title: string; detail: string }) {
+  return (
+    <div className="rounded-[1.75rem] border border-slate-200 bg-white p-10 text-center shadow-sm">
+      <div className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+        No rows
+      </div>
+      <div className="mt-3 text-2xl font-bold tracking-tight text-slate-900">{title}</div>
+      <div className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-slate-500">
         {detail}
       </div>
     </div>
@@ -241,11 +328,11 @@ function HeaderTooltip({
       <button
         type="button"
         aria-label={`${label} explanation`}
-        className="inline-flex h-4 w-4 items-center justify-center rounded-full text-zinc-500 transition-smooth hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+        className="inline-flex h-4 w-4 items-center justify-center rounded-full text-slate-400 transition-smooth hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
       >
         <CircleHelp className="h-3.5 w-3.5" />
       </button>
-      <div className="pointer-events-none absolute left-1/2 top-full z-30 mt-2 hidden w-72 -translate-x-1/2 rounded-2xl border border-zinc-700/80 bg-zinc-950/95 px-3 py-2 text-left text-[11px] normal-case tracking-normal text-zinc-300 shadow-2xl shadow-black/40 group-hover:block group-focus-within:block">
+      <div className="pointer-events-none absolute left-1/2 top-full z-30 mt-2 hidden w-72 -translate-x-1/2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-left text-[11px] normal-case tracking-normal text-slate-600 shadow-xl group-hover:block group-focus-within:block">
         {tooltip}
       </div>
     </div>
@@ -262,29 +349,29 @@ function PlayerTable({
   getRowTransitionProps: (index: number) => RowTransitionProps;
 }) {
   return (
-    <div className="overflow-x-auto overflow-y-visible rounded-3xl border border-zinc-800/80 bg-zinc-950/65">
+    <div className="overflow-x-auto overflow-y-visible rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
       <table className="min-w-full text-sm">
-        <thead className="border-b border-zinc-800/80 bg-zinc-900/80">
-          <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-            <th className="px-4 py-3">Rank</th>
-            <th className="px-4 py-3">Pitcher</th>
-            <th className="px-4 py-3 text-center">Pitching+</th>
-            <th className="px-4 py-3 text-center">
+        <thead className="border-b border-slate-200 bg-slate-50">
+          <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <th className="px-5 py-3.5">Rank</th>
+            <th className="px-5 py-3.5">Pitcher</th>
+            <th className="px-5 py-3.5 text-center">Pitching+</th>
+            <th className="px-5 py-3.5 text-center">
               <HeaderTooltip
                 label="Command+"
                 tooltip="Command+ measures how precisely a pitcher locates the ball relative to the intended target. Better miss quality and more consistent execution drive the grade higher."
               />
             </th>
-            <th className="px-4 py-3 text-center">
+            <th className="px-5 py-3.5 text-center">
               <HeaderTooltip
                 label="W Stuff +"
                 tooltip="Weighted Stuff+ is the player-level Stuff+ blend inside Pitching+. Each qualifying pitch type contributes by usage, so the offerings a pitcher throws most heavily shape this number the most."
               />
             </th>
-            <th className="px-4 py-3">Overlap</th>
-            <th className="px-4 py-3">Tracked</th>
-            <th className="px-4 py-3">Outings</th>
-            <th className="px-4 py-3">Status</th>
+            <th className="px-5 py-3.5">Overlap</th>
+            <th className="px-5 py-3.5">Tracked</th>
+            <th className="px-5 py-3.5">Outings</th>
+            <th className="px-5 py-3.5">Status</th>
           </tr>
         </thead>
         <tbody key={`players-${transitionKey}`}>
@@ -293,27 +380,34 @@ function PlayerTable({
             return (
               <tr
                 key={row.playerId}
-                className={`${rowTransition.className} border-b border-zinc-900/80 transition-smooth hover:bg-zinc-900/35 last:border-b-0`}
+                className={`${rowTransition.className} border-b border-slate-100 transition-smooth hover:bg-slate-50/80 last:border-b-0`}
                 style={rowTransition.style}
               >
-                <td className="px-4 py-3 font-semibold text-zinc-500">{index + 1}</td>
-                <td className="px-4 py-3">
-                  <Link href={playerHref(row.playerId)} className="inline-flex items-center gap-2 font-semibold text-zinc-100 hover:text-cyan-300 transition-smooth">
+                <td className="px-5 py-4 font-semibold text-slate-500">{index + 1}</td>
+                <td className="px-5 py-4">
+                  <Link
+                    href={playerHref(row.playerId)}
+                    className="inline-flex items-center gap-2 font-semibold text-slate-900 transition-smooth hover:text-indigo-600"
+                  >
                     <span>{row.playerName}</span>
                     {handBadge(row.throws)}
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-center">{metricBadge(row.pitchingPlus)}</td>
-                <td className="px-4 py-3 text-center">{metricBadge(row.commandPlus)}</td>
-                <td className="px-4 py-3 text-center">{metricBadge(row.stuffPlus)}</td>
-                <td className="px-4 py-3 text-zinc-300">
-                  <div className="font-medium">{row.overlapPitchTypeCount} types</div>
-                  <div className="text-xs text-zinc-500">{row.overlapPitchCount} pitches</div>
+                <td className="px-5 py-4 text-center">{metricBadge(row.pitchingPlus)}</td>
+                <td className="px-5 py-4 text-center">{metricBadge(row.commandPlus)}</td>
+                <td className="px-5 py-4 text-center">{metricBadge(row.stuffPlus)}</td>
+                <td className="px-5 py-4 text-slate-600">
+                  <div className="font-medium text-slate-900">
+                    {row.overlapPitchTypeCount} types
+                  </div>
+                  <div className="text-xs text-slate-500">{row.overlapPitchCount} pitches</div>
                 </td>
-                <td className="px-4 py-3 text-zinc-300">{row.trackedPitchCount}</td>
-                <td className="px-4 py-3 text-zinc-300">{row.outingCount}</td>
-                <td className="px-4 py-3">
-                  <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${readinessBadgeClasses(row.ready)}`}>
+                <td className="px-5 py-4 text-slate-600">{row.trackedPitchCount}</td>
+                <td className="px-5 py-4 text-slate-600">{row.outingCount}</td>
+                <td className="px-5 py-4">
+                  <span
+                    className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${readinessBadgeClasses(row.ready)}`}
+                  >
                     {reasonCopy(row.notReadyReason)}
                   </span>
                 </td>
@@ -336,24 +430,24 @@ function PitchTypeTable({
   getRowTransitionProps: (index: number) => RowTransitionProps;
 }) {
   return (
-    <div className="overflow-x-auto rounded-3xl border border-zinc-800/80 bg-zinc-950/65">
+    <div className="overflow-x-auto rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
       <table className="min-w-full text-sm">
-        <thead className="border-b border-zinc-800/80 bg-zinc-900/80">
-          <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-            <th className="px-4 py-3">Rank</th>
-            <th className="px-4 py-3">Pitcher</th>
-            <th className="px-4 py-3">Pitch</th>
-            <th className="px-4 py-3 text-center">Pitching+</th>
-            <th className="px-4 py-3 text-center">
+        <thead className="border-b border-slate-200 bg-slate-50">
+          <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <th className="px-5 py-3.5">Rank</th>
+            <th className="px-5 py-3.5">Pitcher</th>
+            <th className="px-5 py-3.5">Pitch</th>
+            <th className="px-5 py-3.5 text-center">Pitching+</th>
+            <th className="px-5 py-3.5 text-center">
               <HeaderTooltip
                 label="Command+"
                 tooltip="Command+ measures how precisely that pitch type is located relative to the target. Stronger command grades come from tighter misses and more repeatable execution."
               />
             </th>
-            <th className="px-4 py-3 text-center">Stuff+</th>
-            <th className="px-4 py-3">Usage</th>
-            <th className="px-4 py-3">Pitches</th>
-            <th className="px-4 py-3">Status</th>
+            <th className="px-5 py-3.5 text-center">Stuff+</th>
+            <th className="px-5 py-3.5">Usage</th>
+            <th className="px-5 py-3.5">Pitches</th>
+            <th className="px-5 py-3.5">Status</th>
           </tr>
         </thead>
         <tbody key={`pitch-types-${transitionKey}`}>
@@ -362,29 +456,31 @@ function PitchTypeTable({
             return (
               <tr
                 key={`${row.playerId}-${row.commandPitchType}`}
-                className={`${rowTransition.className} border-b border-zinc-900/80 transition-smooth hover:bg-zinc-900/35 last:border-b-0`}
+                className={`${rowTransition.className} border-b border-slate-100 transition-smooth hover:bg-slate-50/80 last:border-b-0`}
                 style={rowTransition.style}
               >
-                <td className="px-4 py-3 font-semibold text-zinc-500">{index + 1}</td>
-                <td className="px-4 py-3">
-                  <Link href={playerHref(row.playerId)} className="inline-flex items-center gap-2 font-semibold text-zinc-100 hover:text-cyan-300 transition-smooth">
+                <td className="px-5 py-4 font-semibold text-slate-500">{index + 1}</td>
+                <td className="px-5 py-4">
+                  <Link
+                    href={playerHref(row.playerId)}
+                    className="inline-flex items-center gap-2 font-semibold text-slate-900 transition-smooth hover:text-indigo-600"
+                  >
                     <span>{row.playerName}</span>
                     {handBadge(row.throws)}
                   </Link>
                 </td>
-                <td className="px-4 py-3">
-                  <PitchTypeChip
-                    pitchType={row.commandPitchType}
-                    label={row.pitchLabel}
-                  />
+                <td className="px-5 py-4">
+                  <PitchTypeChip pitchType={row.commandPitchType} label={row.pitchLabel} />
                 </td>
-                <td className="px-4 py-3 text-center">{metricBadge(row.pitchingPlus)}</td>
-                <td className="px-4 py-3 text-center">{metricBadge(row.commandPlus)}</td>
-                <td className="px-4 py-3 text-center">{metricBadge(row.stuffPlus)}</td>
-                <td className="px-4 py-3 text-zinc-300">{fmtPct(row.usageShare)}</td>
-                <td className="px-4 py-3 text-zinc-300">{row.commandCount}</td>
-                <td className="px-4 py-3">
-                  <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${readinessBadgeClasses(row.includedInPitchingPlus)}`}>
+                <td className="px-5 py-4 text-center">{metricBadge(row.pitchingPlus)}</td>
+                <td className="px-5 py-4 text-center">{metricBadge(row.commandPlus)}</td>
+                <td className="px-5 py-4 text-center">{metricBadge(row.stuffPlus)}</td>
+                <td className="px-5 py-4 text-slate-600">{fmtPct(row.usageShare)}</td>
+                <td className="px-5 py-4 text-slate-600">{row.commandCount}</td>
+                <td className="px-5 py-4">
+                  <span
+                    className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${readinessBadgeClasses(row.includedInPitchingPlus)}`}
+                  >
                     {reasonCopy(row.reason)}
                   </span>
                 </td>
@@ -462,7 +558,10 @@ export default function PlusLeaderboardsPage() {
       .sort((a, b) => {
         const diff = compareMetric(a, b);
         if (diff !== 0) return diff;
-        return b.trackedPitchCount - a.trackedPitchCount || a.playerName.localeCompare(b.playerName);
+        return (
+          b.trackedPitchCount - a.trackedPitchCount ||
+          a.playerName.localeCompare(b.playerName)
+        );
       });
   }, [payload, handFilter, activeMinSample, q]);
 
@@ -520,175 +619,174 @@ export default function PlusLeaderboardsPage() {
         } Stuff+.`
       : "No visible rows are carrying Stuff+ under the current filters.";
 
+  const leaderMetricText = leaderMetricValue === null ? "—" : leaderMetricValue.toFixed(0);
+  const topTrend = leaderMetricValue === null ? "down" : leaderMetricValue >= 100 ? "up" : "down";
+  const updatedAt = payload?.generatedAt
+    ? new Date(payload.generatedAt).toLocaleString(undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : null;
+
   return (
-    <LeaderboardPageFrame maxWidth="max-w-7xl">
-        <Breadcrumbs
-          items={[
-            { label: "Home", href: "/" },
-            { label: "Leaderboards", href: "/leaderboards-hub" },
-            { label: "Pitching+" },
-          ]}
-        />
-
-        <section className="mt-6">
-          <div className="relative overflow-hidden rounded-[2rem] border border-amber-500/20 bg-zinc-950/80 shadow-2xl shadow-black/30">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(245,158,11,0.16),transparent_28%),radial-gradient(circle_at_86%_22%,rgba(56,189,248,0.12),transparent_24%),linear-gradient(135deg,rgba(24,24,27,0.88),rgba(3,7,18,0.96))]" />
-            <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent" />
-
-            <div className="relative p-6 sm:p-8">
-              <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
-                <div className="min-w-0">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-300">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    Pitching+ Leaderboard
-                  </div>
-                  <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-zinc-50 sm:text-[2.9rem] sm:leading-[1.02]">
-                    <span className="text-amber-300">Pitching+</span> Leaderboard
-                  </h1>
-
-                  <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
-                    <span className="inline-flex rounded-full border border-zinc-800 bg-zinc-950/70 px-3 py-1">
-                      2026 live season
-                    </span>
-                    <span className="inline-flex rounded-full border border-zinc-800 bg-zinc-950/70 px-3 py-1">
-                      {view === "pitchTypes" ? "Pitch mix view" : "Player view"}
-                    </span>
-                  </div>
-
-                  <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-400">
-                    {stuffReadout}
-                  </p>
-                </div>
-
-                <div className="grid gap-2 content-start">
-                  <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-                      Top {metricLabel()}
-                    </div>
-                    <div className="mt-2.5 flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="truncate text-base font-bold text-zinc-100">{leaderLabel}</div>
-                        <div className="mt-1 text-[11px] text-zinc-500">
-                          {payload?.generatedAt
-                            ? `Updated ${new Date(payload.generatedAt).toLocaleString(undefined, {
-                                month: "short",
-                                day: "numeric",
-                                hour: "numeric",
-                                minute: "2-digit",
-                              })}`
-                            : "Waiting on data"}
-                        </div>
-                      </div>
-                      <span className="shrink-0">
-                        {metricBadge(leaderMetricValue)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-                      Guide
-                    </div>
-                    <Link
-                      href="/pitching-plus"
-                      className="mt-2.5 inline-flex items-center gap-2 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-4 py-3.5 text-sm font-semibold text-amber-300 transition-smooth hover:border-amber-400/40 hover:text-amber-200"
-                    >
-                      <BookOpen className="h-4 w-4" />
-                      Full Methodology
-                    </Link>
-                  </div>
-                </div>
+    <div className={`${plusJakartaSans.className} min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.08),transparent_30%),linear-gradient(180deg,#f8fafc_0%,#f6f7fb_40%,#eef2ff_100%)] text-slate-900`}>
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
+        <section className="rounded-[2rem] border border-slate-200 bg-white px-5 py-5 shadow-sm sm:px-6">
+          <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap gap-2">
+                <ShellBadge>
+                  <Sparkles className="mr-1.5 h-3.5 w-3.5 text-indigo-500" />
+                  Pitching+
+                </ShellBadge>
+                <ShellBadge>{seasonFilter} season</ShellBadge>
+                <ShellBadge>{view === "pitchTypes" ? "Pitch type view" : "Player view"}</ShellBadge>
               </div>
 
-              <div className="mt-5 rounded-[1.5rem] border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(17,24,39,0.7),rgba(9,9,11,0.92))] p-4">
-                <div className="flex flex-col gap-4">
-                  <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto]">
-                    <SegmentedRail
-                      label="View"
-                      items={VIEW_OPTIONS}
-                      value={view}
-                      onChange={(nextView) => runWithTransition(() => setView(nextView))}
-                      tone="amber"
-                      activeClassName={leaderboardFilterButtonAmberActiveClassName}
-                    />
-                    <div className="flex items-end xl:min-w-[12rem]">
-                      <button
-                        onClick={() =>
-                          runWithTransition(() => {
-                            setHandFilter("ALL");
-                            setMinSample(sampleChoices[0]);
-                            setSearch("");
-                          })
-                        }
-                        className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
-                      >
-                        Reset
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 xl:grid-cols-[auto_minmax(14rem,16rem)_minmax(0,1fr)]">
-                    <SegmentedRail
-                      label="Handedness"
-                      items={HAND_OPTIONS}
-                      value={handFilter}
-                      onChange={(nextHand) => runWithTransition(() => setHandFilter(nextHand))}
-                      tone="zinc"
-                      activeClassName={leaderboardFilterButtonZincActiveClassName}
-                      compact
-                    />
-
-                    <div className="space-y-2">
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-                        {sampleLabel(view)}
-                      </div>
-                      <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
-                        <select
-                          value={activeMinSample}
-                          onChange={(event) =>
-                            runWithTransition(() => setMinSample(Number(event.target.value)))
-                          }
-                          className="w-full rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2.5 text-sm font-semibold text-zinc-100 outline-none"
-                        >
-                          {sampleChoices.map((value) => (
-                            <option key={value} value={value}>
-                              {sampleOptionLabel(value)}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-                        Search
-                      </div>
-                      <label className="flex items-center gap-3 rounded-2xl border border-zinc-800/80 bg-zinc-950/80 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                        <Search className="h-4 w-4 shrink-0 text-zinc-500" />
-                        <input
-                          value={search}
-                          onChange={(event) => setSearch(event.target.value)}
-                          placeholder="Search pitcher, ID, or pitch"
-                          className="w-full bg-transparent text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
-                        />
-                      </label>
-                    </div>
-                  </div>
-                </div>
+              <div className="mt-4 max-w-4xl">
+                <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-[2.75rem] sm:leading-[1.02]">
+                  Pitching+ leaderboard
+                </h1>
+                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-500">
+                  {stuffReadout}
+                </p>
               </div>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                <StatPill label="Visible rows" value={`${activeCount}`} />
+                <StatPill label="Stuff+ rows" value={`${stuffBackedCount}`} />
+                <StatPill label="Scope" value={view === "pitchTypes" ? "Pitch Types" : "Players"} />
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 xl:w-[30rem]">
+              <MetricCard
+                label={`Top ${metricLabel()}`}
+                value={leaderMetricText}
+                detail={
+                  leaderLabel === "—"
+                    ? "Waiting on leaderboard data."
+                    : `${leaderLabel}${updatedAt ? ` · Updated ${updatedAt}` : ""}`
+                }
+                trend={topTrend}
+              />
+              <MetricCard
+                label="Visible rows"
+                value={`${activeCount}`}
+                detail={`${stuffBackedCount} of those rows currently carry Stuff+.`}
+                trend="up"
+              />
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-3 xl:grid-cols-[minmax(0,1fr)_20rem]">
+            <InfoPanel
+              title="Guide"
+              detail="Open the Pitching+ methodology for the grading logic and the definitions behind each leaderboard column."
+              action={
+                <Link
+                  href="/pitching-plus"
+                  className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition-smooth hover:bg-slate-800"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  Full methodology
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              }
+            />
+            <InfoPanel
+              title="Status"
+              detail={updatedAt ? `Last refresh: ${updatedAt}.` : "Waiting on leaderboard data."}
+              action={
+                <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
+                  <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                  Live dataset
+                </div>
+              }
+            />
+          </div>
+        </section>
+
+        <section className="rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <SegmentedRail
+              label="View"
+              items={VIEW_OPTIONS}
+              value={view}
+              onChange={(nextView) => runWithTransition(() => setView(nextView))}
+            />
+            <button
+              type="button"
+              onClick={() =>
+                runWithTransition(() => {
+                  setHandFilter("ALL");
+                  setMinSample(sampleChoices[0]);
+                  setSearch("");
+                })
+              }
+              className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600 shadow-sm transition-smooth hover:border-slate-300 hover:text-slate-900"
+            >
+              Reset filters
+            </button>
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-[auto_minmax(14rem,16rem)_minmax(0,1fr)]">
+            <SegmentedRail
+              label="Handedness"
+              items={HAND_OPTIONS}
+              value={handFilter}
+              onChange={(nextHand) => runWithTransition(() => setHandFilter(nextHand))}
+              compact
+            />
+
+            <div className="space-y-2">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                {sampleLabel(view)}
+              </div>
+              <div className="rounded-full border border-slate-200 bg-slate-100 p-1">
+                <select
+                  value={activeMinSample}
+                  onChange={(event) =>
+                    runWithTransition(() => setMinSample(Number(event.target.value)))
+                  }
+                  className="h-10 w-full rounded-full border-0 bg-white px-4 text-sm font-semibold text-slate-900 outline-none ring-1 ring-transparent transition-all focus:ring-2 focus:ring-indigo-500/30"
+                >
+                  {sampleChoices.map((value) => (
+                    <option key={value} value={value}>
+                      {sampleOptionLabel(value)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                Search
+              </div>
+              <label className="flex h-11 items-center gap-3 rounded-full border border-slate-200 bg-slate-100 px-4 shadow-sm transition-all focus-within:border-indigo-300 focus-within:bg-white">
+                <Search className="h-4 w-4 shrink-0 text-slate-400" />
+                <input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search pitcher, ID, or pitch"
+                  className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                />
+              </label>
             </div>
           </div>
         </section>
 
-        <section className="mt-6">
-          <div
-            className={contentTransitionClassName}
-          >
+        <section>
+          <div className={contentTransitionClassName}>
             {loading ? (
-              <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-10 text-center text-zinc-500">
-                Loading plus leaderboard…
+              <div className="rounded-[1.75rem] border border-slate-200 bg-white p-10 text-center text-slate-500 shadow-sm">
+                Loading Pitching+ leaderboard…
               </div>
             ) : error ? (
-              <div className="rounded-3xl border border-rose-500/30 bg-rose-500/10 p-10 text-center text-rose-200">
+              <div className="rounded-[1.75rem] border border-rose-200 bg-rose-50 p-10 text-center text-rose-700 shadow-sm">
                 {error}
               </div>
             ) : activeCount === 0 ? (
@@ -708,6 +806,7 @@ export default function PlusLeaderboardsPage() {
             )}
           </div>
         </section>
-    </LeaderboardPageFrame>
+      </div>
+    </div>
   );
 }

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Player Profile - ProAnalytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#5b5df1",
+                        "background-light": "#FFFFFF",
+                        "background-dark": "#0F172A",
+                        "surface-light": "#FFFFFF",
+                        "surface-dark": "#1E293B",
+                        "border-light": "#F1F5F9",
+                        "border-dark": "#334155",
+                        "text-main": "#0F172A",
+                        "text-muted": "#64748B",
+                        "accent-mint": "#A7F3D0",
+                        "accent-peach": "#FBCFE8",
+                        "accent-sky": "#BAE6FD",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "8px", "lg": "16px", "xl": "24px", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-display { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined[data-weight="fill"] { font-variation-settings: 'FILL' 1; }
+        /* Hide scrollbar for a cleaner look */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+    </style>
+</head>
+<body class="bg-background-light text-text-main antialiased selection:bg-primary/20">
+<div class="flex h-screen w-full overflow-hidden">
+<!-- Shared Sidebar -->
+<div class="flex h-full flex-col justify-between bg-surface-light border-r border-border-light w-[240px] shrink-0 p-4">
+<div class="flex flex-col gap-6">
+<div class="flex flex-col px-3 pt-2">
+<h1 class="text-text-main text-lg font-bold leading-normal font-display tracking-tight">ProAnalytics</h1>
+<p class="text-text-muted text-xs font-semibold uppercase tracking-wider mt-1">D3 Baseball</p>
+</div>
+<nav class="flex flex-col gap-1.5 mt-4">
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-full hover:bg-slate-50 cursor-pointer transition-colors group">
+<span class="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors text-[20px]" data-icon="house" data-size="20px">house</span>
+<p class="text-text-muted group-hover:text-text-main text-sm font-semibold leading-normal font-body">Dashboard</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-full hover:bg-slate-50 cursor-pointer transition-colors group">
+<span class="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors text-[20px]" data-icon="users" data-size="20px">group</span>
+<p class="text-text-muted group-hover:text-text-main text-sm font-semibold leading-normal font-body">Roster</p>
+</div>
+<!-- Active Nav Item -->
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-full bg-primary/10 cursor-pointer">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="magnifying_glass" data-size="20px" data-weight="fill">search</span>
+<p class="text-primary text-sm font-bold leading-normal font-body">Scouting</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-full hover:bg-slate-50 cursor-pointer transition-colors group">
+<span class="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors text-[20px]" data-icon="chart_line" data-size="20px">show_chart</span>
+<p class="text-text-muted group-hover:text-text-main text-sm font-semibold leading-normal font-body">Pitch Charting</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-full hover:bg-slate-50 cursor-pointer transition-colors group">
+<span class="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors text-[20px]" data-icon="chart_bar" data-size="20px">bar_chart</span>
+<p class="text-text-muted group-hover:text-text-main text-sm font-semibold leading-normal font-body">Leaderboards</p>
+</div>
+</nav>
+</div>
+<!-- User Profile Mini -->
+<div class="mt-auto px-3 py-3 border-t border-border-light flex items-center gap-3 cursor-pointer hover:bg-slate-50 rounded-xl transition-colors">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-8 bg-slate-200" data-alt="Headshot of logged in user" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBWKM1WnoiZ5WVQvJS9Y99aq2DRzLm6dHdO5Zo_egxAclj4CENMnyk2ydk2FMPX4QwOqa3W8FtYp8K56mkMEDWdQ2VsNXoLdTF8MqyG4_AM5R5-TeD8GiXly5ojVpya7xpLjLQUwwJCMj-lxUVFdJa-xe9GDhGLt9DXChvpIVKyif7pnDnQ6alZlo0NFk37iA18SxAyXOdY3XDpMpAIdGfNJxna-5_ypSAZeh_uyfrtr7x2grz24WmgbIPE4lPBLH0KpRUBpq0HoyA1");'></div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-text-main leading-tight font-display">Coach Miller</span>
+<span class="text-xs text-text-muted font-medium">Head Coach</span>
+</div>
+</div>
+</div>
+<!-- Main Content Area -->
+<div class="flex flex-col flex-1 h-full overflow-hidden bg-background-light">
+<!-- Header -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-border-light px-10 py-4 bg-surface-light shrink-0">
+<div class="flex items-center gap-4 text-text-main">
+<h2 class="text-text-main text-xl font-bold leading-tight tracking-tight font-display">Player Profile</h2>
+</div>
+<div class="flex items-center gap-6">
+<label class="flex flex-col w-64 h-9">
+<div class="flex w-full flex-1 items-stretch rounded-full h-full border border-border-light bg-slate-50/50 hover:bg-white focus-within:bg-white focus-within:border-primary/50 transition-all">
+<div class="text-text-muted flex items-center justify-center pl-3 pr-2">
+<span class="material-symbols-outlined text-[18px]">search</span>
+</div>
+<input class="w-full bg-transparent border-none focus:ring-0 text-sm font-medium text-text-main placeholder:text-text-muted outline-none pr-4" placeholder="Search players..." value=""/>
+</div>
+</label>
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-full text-[13px] font-bold font-display hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-[16px]">download</span>
+                    Export PDF
+                </button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<main class="flex-1 overflow-y-auto p-10">
+<div class="max-w-[1400px] mx-auto flex gap-8">
+<!-- Left Column: Player Bio & Stats (300px) -->
+<div class="w-[300px] shrink-0 flex flex-col gap-6">
+<!-- Bio Card -->
+<div class="bg-surface-light border border-border-light rounded-[16px] p-6 flex flex-col items-center text-center">
+<div class="relative mb-4">
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-32 w-32 border-4 border-white shadow-[0_0_0_1px_rgba(241,245,249,1)]" data-alt="Headshot of baseball player Alex Mercer" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBAhhciPTMfNqEZ2wt38hJ3itsVfFJ_3ls2zeNLwzukxojDTBs3g1jyEF27ZOSD6COffGGz8LpimReh1L6PXBQ91mgrl_VBYzsW2Y7juVTpS3w24KE391tHj0lBjr4dWQFgc0pL6aury2NCFXivUNspAte07dBSPBBrcJOzItHyrz3QDW90DMVghiNbCS8qMsEExubwQkgEya3valNwPiaH-UyC2WHuWVOb3CUdLPuOp70r0fa1WDTi9jmNmKPS5NqNXZJfUt9GbP46");'></div>
+<div class="absolute -bottom-2 -right-2 bg-primary text-white text-sm font-bold font-display px-2.5 py-1 rounded-full border-2 border-white">#42</div>
+</div>
+<h2 class="text-text-main text-2xl font-bold leading-tight font-display mb-1">Alex Mercer</h2>
+<div class="flex items-center gap-2 justify-center mb-4">
+<span class="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-full font-display uppercase tracking-wider">Junior</span>
+<span class="w-1 h-1 rounded-full bg-slate-300"></span>
+<span class="text-text-muted text-sm font-semibold">RHP</span>
+<span class="w-1 h-1 rounded-full bg-slate-300"></span>
+<span class="text-text-muted text-sm font-semibold">6'3" 215 lbs</span>
+</div>
+<!-- Top Line Metrics Stack -->
+<div class="w-full flex flex-col border border-border-light rounded-xl overflow-hidden mt-2">
+<div class="flex justify-between items-center px-4 py-3 border-b border-border-light bg-slate-50/50">
+<span class="text-text-muted text-[13px] font-semibold">Season ERA</span>
+<span class="text-text-main text-base font-bold font-display">2.14</span>
+</div>
+<div class="flex justify-between items-center px-4 py-3 border-b border-border-light bg-white">
+<span class="text-text-muted text-[13px] font-semibold">WHIP</span>
+<span class="text-text-main text-base font-bold font-display">0.98</span>
+</div>
+<div class="flex justify-between items-center px-4 py-3 border-b border-border-light bg-slate-50/50">
+<span class="text-text-muted text-[13px] font-semibold">K/9</span>
+<span class="text-text-main text-base font-bold font-display text-primary">11.2</span>
+</div>
+<div class="flex justify-between items-center px-4 py-3 bg-white">
+<span class="text-text-muted text-[13px] font-semibold">Innings Pitched</span>
+<span class="text-text-main text-base font-bold font-display">46.1</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Visualizations -->
+<div class="flex-1 flex flex-col gap-6 min-w-0">
+<!-- Pitch Arsenal Table -->
+<div class="bg-surface-light border border-border-light rounded-[16px] p-6">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-text-main text-lg font-bold font-display">Pitch Arsenal</h3>
+<button class="text-text-muted hover:text-primary text-sm font-bold font-display transition-colors">View Log</button>
+</div>
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr>
+<th class="pb-3 text-[12px] uppercase text-text-muted font-bold tracking-wider font-body font-semibold">Pitch Type</th>
+<th class="pb-3 text-[12px] uppercase text-text-muted font-bold tracking-wider font-body font-semibold text-right">Usage %</th>
+<th class="pb-3 text-[12px] uppercase text-text-muted font-bold tracking-wider font-body font-semibold text-right">Avg Velo</th>
+<th class="pb-3 text-[12px] uppercase text-text-muted font-bold tracking-wider font-body font-semibold text-right">Max Velo</th>
+<th class="pb-3 text-[12px] uppercase text-text-muted font-bold tracking-wider font-body font-semibold text-right">Whiff %</th>
+</tr>
+</thead>
+<tbody>
+<tr class="group border-t border-border-light">
+<td class="py-3">
+<div class="flex items-center gap-2">
+<div class="w-2.5 h-2.5 rounded-full bg-accent-sky"></div>
+<span class="text-sm font-bold text-text-main font-display">Fastball</span>
+</div>
+</td>
+<td class="py-3 text-right text-sm font-semibold text-text-main">55%</td>
+<td class="py-3 text-right text-sm font-semibold text-text-main">92.4 <span class="text-xs text-text-muted font-normal ml-0.5">mph</span></td>
+<td class="py-3 text-right text-sm font-semibold text-text-main">95.1 <span class="text-xs text-text-muted font-normal ml-0.5">mph</span></td>
+<td class="py-3 text-right text-sm font-semibold text-text-main">22%</td>
+</tr>
+<tr class="group border-t border-border-light">
+<td class="py-3">
+<div class="flex items-center gap-2">
+<div class="w-2.5 h-2.5 rounded-full bg-accent-mint"></div>
+<span class="text-sm font-bold text-text-main font-display">Slider</span>
+</div>
+</td>
+<td class="py-3 text-right text-sm font-semibold text-text-main">30%</td>
+<td class="py-3 text-right text-sm font-semibold text-text-main">84.1 <span class="text-xs text-text-muted font-normal ml-0.5">mph</span></td>
+<td class="py-3 text-right text-sm font-semibold text-text-main">86.3 <span class="text-xs text-text-muted font-normal ml-0.5">mph</span></td>
+<td class="py-3 text-right text-sm font-bold text-primary font-display">38%</td>
+</tr>
+<tr class="group border-t border-border-light">
+<td class="py-3">
+<div class="flex items-center gap-2">
+<div class="w-2.5 h-2.5 rounded-full bg-accent-peach"></div>
+<span class="text-sm font-bold text-text-main font-display">Changeup</span>
+</div>
+</td>
+<td class="py-3 text-right text-sm font-semibold text-text-main">15%</td>
+<td class="py-3 text-right text-sm font-semibold text-text-main">82.8 <span class="text-xs text-text-muted font-normal ml-0.5">mph</span></td>
+<td class="py-3 text-right text-sm font-semibold text-text-main">84.5 <span class="text-xs text-text-muted font-normal ml-0.5">mph</span></td>
+<td class="py-3 text-right text-sm font-semibold text-text-main">31%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Charts Grid -->
+<div class="grid grid-cols-2 gap-6 h-[400px]">
+<!-- Velo Trend Graph -->
+<div class="bg-surface-light border border-border-light rounded-[16px] p-6 flex flex-col">
+<div class="flex justify-between items-center mb-6 shrink-0">
+<h3 class="text-text-main text-lg font-bold font-display">Velocity Trend (FB)</h3>
+<span class="text-xs text-text-muted font-semibold bg-slate-50 px-2 py-1 rounded-md border border-border-light">Last 10 Games</span>
+</div>
+<div class="flex-1 relative w-full mt-4">
+<!-- Y-Axis Labels -->
+<div class="absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[11px] font-semibold text-text-muted h-full w-6">
+<span>95</span>
+<span>93</span>
+<span>91</span>
+<span>89</span>
+</div>
+<!-- Graph Area -->
+<div class="absolute left-8 right-0 top-1 bottom-6">
+<!-- Grid Lines -->
+<div class="w-full h-full flex flex-col justify-between absolute inset-0 z-0">
+<div class="w-full border-b border-border-light"></div>
+<div class="w-full border-b border-border-light"></div>
+<div class="w-full border-b border-border-light"></div>
+<div class="w-full border-b border-border-light"></div>
+</div>
+<!-- SVG Line Graph -->
+<svg class="w-full h-full absolute inset-0 z-10 overflow-visible" preserveaspectratio="none" viewbox="0 0 100 100">
+<!-- Trend Line (3px thick, no fill) -->
+<polyline fill="none" points="0,70 15,50 30,60 45,30 60,40 75,10 90,20 100,5" stroke="#5b5df1" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></polyline>
+<!-- Data Points (Hover targets) -->
+<circle class="hover:r-5 transition-all cursor-crosshair group" cx="0" cy="70" fill="white" r="4" stroke="#5b5df1" stroke-width="2"></circle>
+<circle class="hover:r-5 transition-all cursor-crosshair" cx="15" cy="50" fill="white" r="4" stroke="#5b5df1" stroke-width="2"></circle>
+<circle class="hover:r-5 transition-all cursor-crosshair" cx="30" cy="60" fill="white" r="4" stroke="#5b5df1" stroke-width="2"></circle>
+<circle class="hover:r-5 transition-all cursor-crosshair" cx="45" cy="30" fill="white" r="4" stroke="#5b5df1" stroke-width="2"></circle>
+<circle class="hover:r-5 transition-all cursor-crosshair" cx="60" cy="40" fill="white" r="4" stroke="#5b5df1" stroke-width="2"></circle>
+<!-- Active Hover State Point (Mocked) -->
+<circle cx="75" cy="10" fill="#5b5df1" r="5"></circle>
+<circle cx="75" cy="10" fill="none" opacity="0.3" r="8" stroke="#5b5df1" stroke-width="2"></circle>
+<circle class="hover:r-5 transition-all cursor-crosshair" cx="90" cy="20" fill="white" r="4" stroke="#5b5df1" stroke-width="2"></circle>
+<circle class="hover:r-5 transition-all cursor-crosshair" cx="100" cy="5" fill="white" r="4" stroke="#5b5df1" stroke-width="2"></circle>
+</svg>
+<!-- Floating Tooltip (Mocked on the active point) -->
+<div class="absolute z-20 bg-white border border-border-light rounded-lg px-3 py-2 pointer-events-none" style="left: calc(75% - 35px); top: calc(10% - 50px);">
+<div class="text-[11px] text-text-muted font-bold mb-0.5">Apr 12 vs MIT</div>
+<div class="text-sm font-bold font-display text-text-main">94.8 mph</div>
+</div>
+</div>
+<!-- X-Axis Labels -->
+<div class="absolute left-8 right-0 bottom-0 flex justify-between text-[11px] font-semibold text-text-muted pt-2 border-t border-border-light">
+<span>Mar 1</span>
+<span>Mar 15</span>
+<span>Apr 1</span>
+<span>Apr 15</span>
+</div>
+</div>
+</div>
+<!-- Spray Chart -->
+<div class="bg-surface-light border border-border-light rounded-[16px] p-6 flex flex-col items-center">
+<div class="w-full flex justify-between items-center mb-4 shrink-0">
+<h3 class="text-text-main text-lg font-bold font-display">Spray Chart</h3>
+<div class="flex gap-3">
+<div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-accent-sky"></div><span class="text-[11px] font-bold text-text-muted uppercase tracking-wider">1B</span></div>
+<div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-primary"></div><span class="text-[11px] font-bold text-text-muted uppercase tracking-wider">XBH</span></div>
+<div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-accent-peach"></div><span class="text-[11px] font-bold text-text-muted uppercase tracking-wider">Out</span></div>
+</div>
+</div>
+<!-- Field Visualization -->
+<div class="relative w-full max-w-[280px] aspect-square flex-1 mt-2">
+<svg class="w-full h-full overflow-visible" viewbox="0 0 100 100">
+<!-- Outfield Grass (Subtle) -->
+<path d="M50,90 L5,45 C20,20 80,20 95,45 Z" fill="#F8FAFC"></path>
+<!-- Foul Lines & Infield Dirt Arc -->
+<path d="M50,90 L10,50" fill="none" stroke="#E2E8F0" stroke-width="1"></path>
+<path d="M50,90 L90,50" fill="none" stroke="#E2E8F0" stroke-width="1"></path>
+<path d="M25,65 Q50,45 75,65" fill="none" stroke="#E2E8F0" stroke-dasharray="2,2" stroke-width="1"></path>
+<!-- Bases Wireframe -->
+<path d="M50,90 L40,80 L50,70 L60,80 Z" fill="none" stroke="#E2E8F0" stroke-width="1"></path> <!-- Diamond -->
+<!-- Home Plate -->
+<polygon fill="#CBD5E1" points="50,90 48,88 48,86 52,86 52,88"></polygon>
+<!-- Data Points (Pastel, rounded-full dots) -->
+<!-- Outs (Peach) -->
+<circle class="hover:r-4 transition-all cursor-pointer" cx="35" cy="75" fill="#FBCFE8" r="3"></circle>
+<circle class="hover:r-4 transition-all cursor-pointer" cx="65" cy="72" fill="#FBCFE8" r="3"></circle>
+<circle class="hover:r-4 transition-all cursor-pointer" cx="45" cy="65" fill="#FBCFE8" r="3"></circle>
+<circle class="hover:r-4 transition-all cursor-pointer" cx="20" cy="55" fill="#FBCFE8" r="3"></circle>
+<circle class="hover:r-4 transition-all cursor-pointer" cx="80" cy="50" fill="#FBCFE8" r="3"></circle>
+<!-- Singles (Sky Blue) -->
+<circle class="hover:r-4 transition-all cursor-pointer" cx="48" cy="55" fill="#BAE6FD" r="3"></circle>
+<circle class="hover:r-4 transition-all cursor-pointer" cx="70" cy="45" fill="#BAE6FD" r="3"></circle>
+<circle class="hover:r-4 transition-all cursor-pointer" cx="30" cy="40" fill="#BAE6FD" r="3"></circle>
+<circle class="hover:r-4 transition-all cursor-pointer" cx="55" cy="35" fill="#BAE6FD" r="3"></circle>
+<!-- XBH (Primary) -->
+<circle class="hover:r-4.5 transition-all cursor-pointer" cx="15" cy="30" fill="#5b5df1" r="3.5"></circle>
+<circle class="hover:r-4.5 transition-all cursor-pointer" cx="85" cy="35" fill="#5b5df1" r="3.5"></circle>
+<!-- Highlighted Data Point (Mocking hover state) -->
+<circle cx="40" cy="25" fill="#5b5df1" r="4.5"></circle>
+<circle cx="40" cy="25" fill="none" opacity="0.4" r="8" stroke="#5b5df1" stroke-width="1.5"></circle>
+</svg>
+<!-- Floating Tooltip for Spray Chart -->
+<div class="absolute z-20 bg-white border border-border-light rounded-lg px-3 py-2 pointer-events-none w-32" style="left: calc(40% - 64px); top: calc(25% - 65px);">
+<div class="flex justify-between items-center mb-1">
+<span class="text-[11px] text-text-muted font-bold uppercase">Double</span>
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+</div>
+<div class="text-[13px] font-bold font-display text-text-main leading-tight">104.2 mph EV</div>
+<div class="text-[11px] text-text-muted font-semibold mt-0.5">385 ft Distance</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

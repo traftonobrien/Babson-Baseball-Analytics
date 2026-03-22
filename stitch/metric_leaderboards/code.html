@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Metric Leaderboards - Pro SaaS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#5b5df1",
+          "background-light": "#f6f6f8",
+          "background-dark": "#101122",
+        },
+        fontFamily: {
+          "display": ["Plus Jakarta Sans", "sans-serif"]
+        },
+        borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-4 md:px-10 lg:px-40 flex flex-1 justify-center py-5">
+<div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+<!-- Shared TopNavBar Header -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 px-4 md:px-10 py-3 bg-white dark:bg-slate-900 rounded-t-xl mt-4">
+<div class="flex items-center gap-4 text-[#111118] dark:text-white">
+<div class="size-4 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_6_543)">
+<path d="M42.1739 20.1739L27.8261 5.82609C29.1366 7.13663 28.3989 10.1876 26.2002 13.7654C24.8538 15.9564 22.9595 18.3449 20.6522 20.6522C18.3449 22.9595 15.9564 24.8538 13.7654 26.2002C10.1876 28.3989 7.13663 29.1366 5.82609 27.8261L20.1739 42.1739C21.4845 43.4845 24.5355 42.7467 28.1133 40.548C30.3042 39.2016 32.6927 37.3073 35 35C37.3073 32.6927 39.2016 30.3042 40.548 28.1133C42.7467 24.5355 43.4845 21.4845 42.1739 20.1739Z" fill="currentColor"></path>
+<path clip-rule="evenodd" d="M7.24189 26.4066C7.31369 26.4411 7.64204 26.5637 8.52504 26.3738C9.59462 26.1438 11.0343 25.5311 12.7183 24.4963C14.7583 23.2426 17.0256 21.4503 19.238 19.238C21.4503 17.0256 23.2426 14.7583 24.4963 12.7183C25.5311 11.0343 26.1438 9.59463 26.3738 8.52504C26.5637 7.64204 26.4411 7.31369 26.4066 7.24189C26.345 7.21246 26.143 7.14535 25.6664 7.1918C24.9745 7.25925 23.9954 7.5498 22.7699 8.14278C20.3369 9.32007 17.3369 11.4915 14.4142 14.4142C11.4915 17.3369 9.32007 20.3369 8.14278 22.7699C7.5498 23.9954 7.25925 24.9745 7.1918 25.6664C7.14534 26.143 7.21246 26.345 7.24189 26.4066ZM29.9001 10.7285C29.4519 12.0322 28.7617 13.4172 27.9042 14.8126C26.465 17.1544 24.4686 19.6641 22.0664 22.0664C19.6641 24.4686 17.1544 26.465 14.8126 27.9042C13.4172 28.7617 12.0322 29.4519 10.7285 29.9001L21.5754 40.747C21.6001 40.7606 21.8995 40.931 22.8729 40.7217C23.9424 40.4916 25.3821 39.879 27.0661 38.8441C29.1062 37.5904 31.3734 35.7982 33.5858 33.5858C35.7982 31.3734 37.5904 29.1062 38.8441 27.0661C39.879 25.3821 40.4916 23.9425 40.7216 22.8729C40.931 21.8995 40.7606 21.6001 40.747 21.5754L29.9001 10.7285ZM29.2403 4.41187L43.5881 18.7597C44.9757 20.1473 44.9743 22.1235 44.6322 23.7139C44.2714 25.3919 43.4158 27.2666 42.252 29.1604C40.8128 31.5022 38.8165 34.012 36.4142 36.4142C34.012 38.8165 31.5022 40.8128 29.1604 42.252C27.2666 43.4158 25.3919 44.2714 23.7139 44.6322C22.1235 44.9743 20.1473 44.9757 18.7597 43.5881L4.41187 29.2403C3.29027 28.1187 3.08209 26.5973 3.21067 25.2783C3.34099 23.9415 3.8369 22.4852 4.54214 21.0277C5.96129 18.0948 8.43335 14.7382 11.5858 11.5858C14.7382 8.43335 18.0948 5.9613 21.0277 4.54214C22.4852 3.8369 23.9415 3.34099 25.2783 3.21067C26.5973 3.08209 28.1187 3.29028 29.2403 4.41187Z" fill="currentColor" fill-rule="evenodd"></path>
+</g>
+<defs>
+<clippath id="clip0_6_543"><rect fill="white" height="48" width="48"></rect></clippath>
+</defs>
+</svg>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] font-display">Pro SaaS</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-slate-200" data-alt="User profile avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAY3pPrd8cE0TRZV83Z7sqESE9DpfHZ4fJGPvlCRWzOb4rKkUShsgIhVy1DTyHnzOOd64va-H6I_45BXiscakutdq9AOKBTA-GSqDkUcZOJK5d_AFSviSxYmf2Jgky8u1tkHqeeeSXSkLyRPay790eqq9XaTKh3KMZhpN-RSMQ8e-ITm1LyQOHVxiXsQq7nSt21CWvTbPmpWkhQOc7QPOm69dLfym67OTjpg4J-ubfDpwh6Y2y8-vaTkblMkHkR496jQCiu-2kVLvyr");'></div>
+</div>
+</header>
+<div class="bg-white dark:bg-slate-900 border-x border-slate-200 dark:border-slate-800">
+<div class="flex flex-wrap justify-between gap-3 p-4 md:px-10">
+<p class="text-slate-900 dark:text-white tracking-light text-[32px] font-bold leading-tight min-w-72 font-display">Metric Leaderboards</p>
+</div>
+<div class="flex px-4 md:px-10 py-3 pb-6">
+<div class="flex h-10 w-full max-w-md items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 p-1 border border-slate-200 dark:border-slate-700">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-slate-700 has-[:checked]:shadow-sm has-[:checked]:text-primary dark:has-[:checked]:text-primary text-slate-500 text-sm font-semibold leading-normal transition-all">
+<span class="truncate">Team</span>
+<input checked="" class="invisible w-0" name="scope-toggle" type="radio" value="Team"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-slate-700 has-[:checked]:shadow-sm has-[:checked]:text-primary text-slate-500 text-sm font-semibold leading-normal transition-all">
+<span class="truncate">Conference</span>
+<input class="invisible w-0" name="scope-toggle" type="radio" value="Conference"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-slate-700 has-[:checked]:shadow-sm has-[:checked]:text-primary text-slate-500 text-sm font-semibold leading-normal transition-all">
+<span class="truncate">National</span>
+<input class="invisible w-0" name="scope-toggle" type="radio" value="National"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Leaderboards Grid Area -->
+<div class="bg-white dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-800 rounded-b-xl p-4 md:px-10 pb-10 flex-1">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Card 1: Max Exit Velocity -->
+<div class="flex flex-col border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
+<div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+<h3 class="font-bold text-base text-slate-900 dark:text-white">Max Exit Velocity</h3>
+<span class="text-xs font-semibold text-slate-400">MPH</span>
+</div>
+<div class="p-2 flex flex-col gap-1">
+<!-- Row 1 -->
+<div class="relative flex items-center gap-3 p-2 rounded-lg z-10">
+<div class="absolute inset-0 bg-primary/10 dark:bg-primary/20 rounded-lg -z-10" style="width: 100%;"></div>
+<div class="size-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shadow-sm">1</div>
+<div class="flex-1 relative group cursor-pointer">
+<span class="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-primary transition-colors">Carter Hayes</span>
+<!-- Hover Popover -->
+<div class="absolute bottom-full left-0 mb-2 hidden group-hover:flex flex-col w-56 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-xl p-3 z-50">
+<div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-600 pb-2 mb-2">
+<div class="size-10 rounded-full bg-cover bg-center border border-slate-200" data-alt="Carter Hayes headshot" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBX1KRpuwOXpUH_04hPJVfTH5gnuZg__ppR4G3zD_z0YTY7YhfUUY5zbbEukBWMAewHGyoHrRD2vV5bT5UA4yeSWcDjXG_ZhNEI461jySnyn_BiqmFI0enXOOwcPeMKH8cj7PFErnxhc5aNVwQzraiLQ9OthgqWj7cK8WD_IJQXo9VtteP_IGN8oum0-UpWbHqGWXyuTvxAMTkWMu_4KYL16658l1iZiBYtsANtHEuS2M40rIjNeUgk3IsOGve5xmYdCfUIDcjZTT8s");'></div>
+<div>
+<div class="font-bold text-sm text-slate-900 dark:text-white leading-tight">Carter Hayes</div>
+<div class="text-xs text-slate-500 dark:text-slate-300">1B • Junior</div>
+</div>
+</div>
+<div class="flex justify-between text-xs font-semibold text-slate-600 dark:text-slate-200 px-1">
+<span>.345 AVG</span><span>12 HR</span><span>1.102 OPS</span>
+</div>
+</div>
+</div>
+<div class="font-bold text-slate-900 dark:text-white font-mono text-sm">112.4</div>
+</div>
+<!-- Row 2 -->
+<div class="relative flex items-center gap-3 p-2 rounded-lg z-10">
+<div class="absolute inset-0 bg-slate-100 dark:bg-slate-700 rounded-lg -z-10" style="width: 88%;"></div>
+<div class="size-6 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-200 flex items-center justify-center text-xs font-bold">2</div>
+<div class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">Marcus Reed</div>
+<div class="font-bold text-slate-900 dark:text-white font-mono text-sm">108.1</div>
+</div>
+<!-- Row 3 -->
+<div class="relative flex items-center gap-3 p-2 rounded-lg z-10">
+<div class="absolute inset-0 bg-slate-100 dark:bg-slate-700 rounded-lg -z-10" style="width: 82%;"></div>
+<div class="size-6 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-200 flex items-center justify-center text-xs font-bold">3</div>
+<div class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">Elijah Brooks</div>
+<div class="font-bold text-slate-900 dark:text-white font-mono text-sm">105.7</div>
+</div>
+<!-- Row 4 -->
+<div class="relative flex items-center gap-3 p-2 rounded-lg z-10">
+<div class="absolute inset-0 bg-slate-100 dark:bg-slate-700 rounded-lg -z-10" style="width: 75%;"></div>
+<div class="size-6 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-200 flex items-center justify-center text-xs font-bold">4</div>
+<div class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">Julian Martinez</div>
+<div class="font-bold text-slate-900 dark:text-white font-mono text-sm">102.9</div>
+</div>
+<!-- Row 5 -->
+<div class="relative flex items-center gap-3 p-2 rounded-lg z-10">
+<div class="absolute inset-0 bg-slate-100 dark:bg-slate-700 rounded-lg -z-10" style="width: 68%;"></div>
+<div class="size-6 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-200 flex items-center justify-center text-xs font-bold">5</div>
+<div class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">Donovan Smith</div>
+<div class="font-bold text-slate-900 dark:text-white font-mono text-sm">99.5</div>
+</div>
+</div>
+</div>
+<!-- Card 2: Avg Fastball Spin -->
+<div class="flex flex-col border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
+<div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+<h3 class="font-bold text-base text-slate-900 dark:text-white">Avg Fastball Spin</h3>
+<span class="text-xs font-semibold text-slate-400">RPM</span>
+</div>
+<div class="p-2 flex flex-col gap-1">
+<!-- Row 1 -->
+<div class="relative flex items-center gap-3 p-2 rounded-lg z-10">
+<div class="absolute inset-0 bg-primary/10 dark:bg-primary/20 rounded-lg -z-10" style="width: 100%;"></div>
+<div class="size-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shadow-sm">1</div>
+<div class="flex-1 text-sm font-semibold text-slate-900 dark:text-white">Jackson Pierce</div>
+<div class="font-bold text-slate-900 dark:text-white font-mono text-sm">2,485</div>
+</div>
+<!-- Row 2 -->
+<div class="relative flex items-center gap-3 p-2 rounded-lg z-10">
+<div class="absolute inset-0 bg-slate-100 dark:bg-slate-700 rounded-lg -z-10" style="width: 92%;"></div>
+<div class="size-6 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-200 flex items-center justify-center text-xs font-bold">2</div>
+<div class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">Liam O'Connor</div>
+<div class="font-bold text-slate-900 dark:text-white font-mono text-sm">2,390</div>
+</div>
+<!-- Row 3 -->
+<div class="relative flex items-center gap-3 p-2 rounded-lg z-10">
+<div class="absolute inset-0 bg-slate-100 dark:bg-slate-700 rounded-lg -z-10" style="width: 85%;"></div>
+<div class="size-6 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-200 flex items-center justify-center text-xs font-bold">3</div>
+<div class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">Noah Vance</div>
+<div class="font-bold text-slate-900 dark:text-white font-mono text-sm">2,315</div>
+</div>
+<!-- Row 4 -->
+<div class="relative flex items-center gap-3 p-2 rounded-lg z-10">
+<div class="absolute inset-0 bg-slate-100 dark:bg-slate-700 rounded-lg -z-10" style="width: 78%;"></div>
+<div class="size-6 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-200 flex items-center justify-center text-xs font-bold">4</div>
+<div class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">Caleb Wright</div>
+<div class="font-bold text-slate-900 dark:text-white font-mono text-sm">2,240</div>
+</div>
+<!-- Row 5 -->
+<div class="relative flex items-center gap-3 p-2 rounded-lg z-10">
+<div class="absolute inset-0 bg-slate-100 dark:bg-slate-700 rounded-lg -z-10" style="width: 70%;"></div>
+<div class="size-6 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-200 flex items-center justify-center text-xs font-bold">5</div>
+<div class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">Wyatt Cole</div>
+<div class="font-bold text-slate-900 dark:text-white font-mono text-sm">2,180</div>
+</div>
+</div>
+</div>
+<!-- Card 3: Hard Hit % -->
+<div class="flex flex-col border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
+<div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+<h3 class="font-bold text-base text-slate-900 dark:text-white">Hard Hit %</h3>
+<span class="text-xs font-semibold text-slate-400">%</span>
+</div>
+<div class="p-2 flex flex-col gap-1">
+<!-- Row 1 -->
+<div class="relative flex items-center gap-3 p-2 rounded-lg z-10">
+<div class="absolute inset-0 bg-primary/10 dark:bg-primary/20 rounded-lg -z-10" style="width: 100%;"></div>
+<div class="size-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shadow-sm">1</div>
+<div class="flex-1 text-sm font-semibold text-slate-900 dark:text-white">Carter Hayes</div>
+<div class="font-bold text-slate-900 dark:text-white font-mono text-sm">54.2</div>
+</div>
+<!-- Row 2 -->
+<div class="relative flex items-center gap-3 p-2 rounded-lg z-10">
+<div class="absolute inset-0 bg-slate-100 dark:bg-slate-700 rounded-lg -z-10" style="width: 80%;"></div>
+<div class="size-6 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-200 flex items-center justify-center text-xs font-bold">2</div>
+<div class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">Miles Jensen</div>
+<div class="font-bold text-slate-900 dark:text-white font-mono text-sm">48.7</div>
+</div>
+<!-- Row 3 -->
+<div class="relative flex items-center gap-3 p-2 rounded-lg z-10">
+<div class="absolute inset-0 bg-slate-100 dark:bg-slate-700 rounded-lg -z-10" style="width: 65%;"></div>
+<div class="size-6 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-200 flex items-center justify-center text-xs font-bold">3</div>
+<div class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">Elijah Brooks</div>
+<div class="font-bold text-slate-900 dark:text-white font-mono text-sm">42.1</div>
+</div>
+</div>
+</div>
+<!-- Card 4: Whiff % -->
+<div class="flex flex-col border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
+<div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+<h3 class="font-bold text-base text-slate-900 dark:text-white">Whiff %</h3>
+<span class="text-xs font-semibold text-slate-400">%</span>
+</div>
+<div class="p-2 flex flex-col gap-1">
+<!-- Row 1 -->
+<div class="relative flex items-center gap-3 p-2 rounded-lg z-10">
+<div class="absolute inset-0 bg-primary/10 dark:bg-primary/20 rounded-lg -z-10" style="width: 100%;"></div>
+<div class="size-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shadow-sm">1</div>
+<div class="flex-1 text-sm font-semibold text-slate-900 dark:text-white">Jackson Pierce</div>
+<div class="font-bold text-slate-900 dark:text-white font-mono text-sm">38.4</div>
+</div>
+<!-- Row 2 -->
+<div class="relative flex items-center gap-3 p-2 rounded-lg z-10">
+<div class="absolute inset-0 bg-slate-100 dark:bg-slate-700 rounded-lg -z-10" style="width: 85%;"></div>
+<div class="size-6 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-200 flex items-center justify-center text-xs font-bold">2</div>
+<div class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">Tyler Munson</div>
+<div class="font-bold text-slate-900 dark:text-white font-mono text-sm">34.1</div>
+</div>
+<!-- Row 3 -->
+<div class="relative flex items-center gap-3 p-2 rounded-lg z-10">
+<div class="absolute inset-0 bg-slate-100 dark:bg-slate-700 rounded-lg -z-10" style="width: 70%;"></div>
+<div class="size-6 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-200 flex items-center justify-center text-xs font-bold">3</div>
+<div class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">Noah Vance</div>
+<div class="font-bold text-slate-900 dark:text-white font-mono text-sm">31.8</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

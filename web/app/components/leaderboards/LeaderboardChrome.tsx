@@ -22,6 +22,7 @@ type PillTone =
   | "emerald"
   | "violet"
   | "indigo";
+type SurfaceVariant = "dark" | "light";
 
 const BRAND_FRAME_STYLE: CSSProperties = {
   backgroundImage:
@@ -126,6 +127,18 @@ const PILL_TONES: Record<Exclude<PillTone, "brand" | "neutral">, string> = {
   indigo: "border-indigo-500/25 bg-indigo-500/10 text-indigo-300",
 };
 
+const LIGHT_PILL_TONES: Record<PillTone, string> = {
+  brand: "border-indigo-200 bg-indigo-50 text-indigo-700",
+  neutral: "border-slate-200 bg-slate-100/90 text-slate-600",
+  amber: "border-amber-200 bg-amber-50 text-amber-700",
+  orange: "border-orange-200 bg-orange-50 text-orange-700",
+  blue: "border-blue-200 bg-blue-50 text-blue-700",
+  sky: "border-sky-200 bg-sky-50 text-sky-700",
+  emerald: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  violet: "border-violet-200 bg-violet-50 text-violet-700",
+  indigo: "border-indigo-200 bg-indigo-50 text-indigo-700",
+};
+
 function joinClasses(...values: Array<string | false | null | undefined>): string {
   return values.filter(Boolean).join(" ");
 }
@@ -148,19 +161,31 @@ export function LeaderboardPill({
   children,
   tone = "neutral",
   className,
+  variant = "dark",
 }: {
   children: ReactNode;
   tone?: PillTone;
   className?: string;
+  variant?: SurfaceVariant;
 }) {
   const pillStyle =
-    tone === "brand" ? BRAND_PILL_STYLE : tone === "neutral" ? NEUTRAL_PILL_STYLE : undefined;
+    variant === "dark"
+      ? tone === "brand"
+        ? BRAND_PILL_STYLE
+        : tone === "neutral"
+          ? NEUTRAL_PILL_STYLE
+          : undefined
+      : undefined;
 
   return (
     <span
       className={joinClasses(
         "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]",
-        tone === "brand" || tone === "neutral" ? undefined : PILL_TONES[tone],
+        variant === "light"
+          ? LIGHT_PILL_TONES[tone]
+          : tone === "brand" || tone === "neutral"
+            ? undefined
+            : PILL_TONES[tone],
         className,
       )}
       style={pillStyle}
@@ -174,26 +199,51 @@ export function LeaderboardStatBlock({
   label,
   value,
   detail,
-  emphasisClassName = "text-zinc-100",
+  emphasisClassName,
+  variant = "dark",
 }: {
   label: string;
   value: string;
   detail: string;
   emphasisClassName?: string;
+  variant?: SurfaceVariant;
 }) {
+  const emphasisClass =
+    emphasisClassName ?? (variant === "light" ? "text-slate-900" : "text-zinc-100");
+
   return (
     <div
-      className="relative overflow-hidden rounded-3xl border p-4"
-      style={BRAND_PANEL_STYLE}
+      className={joinClasses(
+        "relative overflow-hidden rounded-3xl border p-4",
+        variant === "light"
+          ? "border-slate-200/80 bg-white/95 shadow-[0_14px_32px_rgba(15,23,42,0.05)]"
+          : undefined,
+      )}
+      style={variant === "light" ? undefined : BRAND_PANEL_STYLE}
     >
-      <div className="pointer-events-none absolute inset-x-8 top-0 h-px" style={BRAND_RULE_STYLE} />
-      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+      <div
+        className={joinClasses(
+          "pointer-events-none absolute inset-x-8 top-0 h-px",
+          variant === "light"
+            ? "bg-gradient-to-r from-transparent via-slate-200 to-transparent"
+            : undefined,
+        )}
+        style={variant === "light" ? undefined : BRAND_RULE_STYLE}
+      />
+      <div
+        className={joinClasses(
+          "text-[10px] font-semibold uppercase tracking-[0.24em]",
+          variant === "light" ? "text-slate-500" : "text-zinc-500",
+        )}
+      >
         {label}
       </div>
-      <div className={joinClasses("mt-2 text-2xl font-black sm:text-[2rem]", emphasisClassName)}>
+      <div className={joinClasses("mt-2 text-2xl font-black sm:text-[2rem]", emphasisClass)}>
         {value}
       </div>
-      <div className="mt-1 text-xs text-zinc-500">{detail}</div>
+      <div className={joinClasses("mt-1 text-xs", variant === "light" ? "text-slate-500" : "text-zinc-500")}>
+        {detail}
+      </div>
     </div>
   );
 }
@@ -310,19 +360,32 @@ export function LeaderboardToolbar({
 export function LeaderboardPanel({
   children,
   className,
+  variant = "dark",
 }: {
   children: ReactNode;
   className?: string;
+  variant?: SurfaceVariant;
 }) {
   return (
     <div
       className={joinClasses(
         "relative overflow-hidden rounded-3xl border",
+        variant === "light"
+          ? "border-slate-200/80 bg-white/95 shadow-[0_18px_44px_rgba(15,23,42,0.06)]"
+          : undefined,
         className,
       )}
-      style={BRAND_PANEL_STYLE}
+      style={variant === "light" ? undefined : BRAND_PANEL_STYLE}
     >
-      <div className="pointer-events-none absolute inset-x-8 top-0 h-px" style={BRAND_RULE_STYLE} />
+      <div
+        className={joinClasses(
+          "pointer-events-none absolute inset-x-8 top-0 h-px",
+          variant === "light"
+            ? "bg-gradient-to-r from-transparent via-slate-200 to-transparent"
+            : undefined,
+        )}
+        style={variant === "light" ? undefined : BRAND_RULE_STYLE}
+      />
       {children}
     </div>
   );
