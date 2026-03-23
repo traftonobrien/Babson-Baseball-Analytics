@@ -318,7 +318,7 @@ function SessionList({
               <li key={`${session.gameId}-${title}`}>
                 <Link
                   href={`/charting/games/${session.gameId}`}
-                  className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-4 transition-smooth hover:border-emerald-200 hover:bg-slate-50"
+                  className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-surface px-4 py-4 transition-smooth hover:border-emerald-200 hover:bg-slate-50"
                 >
                   <div>
                     <div className="text-sm font-bold text-slate-900 transition-smooth">
@@ -421,7 +421,7 @@ function PitchZoneMaps({
           return (
             <div
               key={item.pitchType}
-              className={`rounded-[1.7rem] border ${accent.border} bg-white/95 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)]`}
+              className={`rounded-[1.7rem] border ${accent.border} bg-surface/95 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)]`}
             >
               {/* Header */}
               <div className="mb-3 flex items-center justify-between gap-2">
@@ -518,7 +518,7 @@ export default function LiveAbProfilePanel({
     <div className="space-y-8">
       <section className="space-y-5">
         <Link href="/charting/leaderboard">
-          <div className="group rounded-[1.7rem] border border-emerald-200 bg-white/95 p-5 shadow-[0_20px_44px_rgba(15,23,42,0.06)] transition-smooth hover:-translate-y-0.5 hover:border-emerald-300">
+          <div className="group rounded-[1.7rem] border border-emerald-200 bg-surface/95 p-5 shadow-[0_20px_44px_rgba(15,23,42,0.06)] transition-smooth hover:-translate-y-0.5 hover:border-emerald-300">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700">

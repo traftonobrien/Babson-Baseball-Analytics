@@ -48,14 +48,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${plusJakarta.variable} ${manrope.variable}`}>
       <body
-        className="min-h-screen bg-[#F8FAFC] text-[#0F172A] antialiased"
+        className="min-h-screen bg-background text-slate-900 dark:text-zinc-50 antialiased"
         style={teamThemeStyle}
       >
         <Providers>
           <DebugInit />
-          <div className="flex min-h-screen w-full flex-col bg-[#F8FAFC] xl:flex-row xl:items-start">
+          <div className="flex min-h-screen w-full flex-col bg-background xl:flex-row xl:items-start">
             <Sidebar />
-            <div className="min-w-0 flex-1 bg-[#F8FAFC]">
+            <div className="min-w-0 flex-1 bg-background">
               <PageTransition>{children}</PageTransition>
             </div>
           </div>

@@ -158,7 +158,7 @@ export default async function ChartingLeaderboardPage(props: {
         }
 
         return (
-            <LeaderboardPageFrame maxWidth="max-w-7xl">
+            <LeaderboardPageFrame variant="light" maxWidth="max-w-[1440px]">
                 {tab === "pitchers" ? (
                     <PitcherStatGroupWrapper
                         pitchers={pitcherRows}

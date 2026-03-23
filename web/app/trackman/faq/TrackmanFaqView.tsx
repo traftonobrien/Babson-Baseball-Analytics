@@ -31,7 +31,7 @@ export default function TrackmanFaqView() {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <DictionaryCard>
             <h3 className="text-lg font-bold text-emerald-400">Stuff+</h3>
-            <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+            <p className="mt-3 text-sm leading-relaxed text-slate-600">
               Grades the physical pitch profile: velocity, movement, spin,
               release point, and extension. It ignores location and answers one
               question: how good is the pitch on its own?
@@ -40,7 +40,7 @@ export default function TrackmanFaqView() {
 
           <DictionaryCard>
             <h3 className="text-lg font-bold text-amber-400">Pitching+</h3>
-            <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+            <p className="mt-3 text-sm leading-relaxed text-slate-600">
               The headline live pitcher grade on the site. It blends Trackman
               Stuff+ with live Command+, then rolls only the overlapping pitch
               types into one team-centered score.
@@ -49,7 +49,7 @@ export default function TrackmanFaqView() {
 
           <DictionaryCard>
             <h3 className="text-lg font-bold text-sky-400">Trackman&apos;s Role</h3>
-            <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+            <p className="mt-3 text-sm leading-relaxed text-slate-600">
               Trackman captures the raw shape and flight traits. It does not
               measure command, but it supplies the full pitch-quality input for
               Stuff+ and the Stuff side of Pitching+.
@@ -66,39 +66,39 @@ export default function TrackmanFaqView() {
       >
         <div className="space-y-6">
           <DictionaryCard className="sm:px-8">
-            <h3 className="text-lg font-bold text-zinc-200">
+            <h3 className="text-lg font-bold text-slate-900">
               IVB (Induced Vertical Break)
             </h3>
-            <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">
               Measured in inches. It shows how far a pitch moves vertically away
               from a gravity-only path.
             </p>
-            <ul className="mt-4 list-disc space-y-1.5 pl-5 text-sm text-zinc-400">
+            <ul className="mt-4 list-disc space-y-1.5 pl-5 text-sm text-slate-600">
               <li>
-                <strong className="text-zinc-300">Fastballs:</strong> Positive
+                <strong className="text-slate-800">Fastballs:</strong> Positive
                 IVB creates ride and keeps the ball above the barrel.
               </li>
               <li>
-                <strong className="text-zinc-300">Breaking Balls:</strong>{" "}
+                <strong className="text-slate-800">Breaking Balls:</strong>{" "}
                 Negative IVB indicates depth or sink.
               </li>
             </ul>
           </DictionaryCard>
 
           <DictionaryCard className="sm:px-8">
-            <h3 className="text-lg font-bold text-zinc-200">
+            <h3 className="text-lg font-bold text-slate-900">
               HB (Horizontal Break)
             </h3>
-            <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">
               Measured in inches. It shows how far a pitch moves horizontally.
             </p>
-            <ul className="mt-4 list-disc space-y-1.5 pl-5 text-sm text-zinc-400">
+            <ul className="mt-4 list-disc space-y-1.5 pl-5 text-sm text-slate-600">
               <li>
-                <strong className="text-zinc-300">Positive HB:</strong> The ball
+                <strong className="text-slate-800">Positive HB:</strong> The ball
                 moves to the right from the pitcher&apos;s perspective.
               </li>
               <li>
-                <strong className="text-zinc-300">Negative HB:</strong> The ball
+                <strong className="text-slate-800">Negative HB:</strong> The ball
                 moves to the left from the pitcher&apos;s perspective.
               </li>
             </ul>
@@ -106,26 +106,26 @@ export default function TrackmanFaqView() {
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <DictionaryCard>
-              <h3 className="text-lg font-bold text-zinc-200">Extension</h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+              <h3 className="text-lg font-bold text-slate-900">Extension</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
                 Measured in feet. It shows how far down the mound the ball is
                 released. More extension makes the pitch play faster.
               </p>
             </DictionaryCard>
 
             <DictionaryCard>
-              <h3 className="text-lg font-bold text-zinc-200">
+              <h3 className="text-lg font-bold text-slate-900">
                 Release Height &amp; Side
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
                 The 3D release point. Consistency here matters for tunneling and
                 disguise.
               </p>
             </DictionaryCard>
 
             <DictionaryCard className="sm:col-span-2">
-              <h3 className="text-lg font-bold text-zinc-200">Spin Rate</h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+              <h3 className="text-lg font-bold text-slate-900">Spin Rate</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
                 Measured in RPM. Total spin matters, but active spin and axis
                 direction are what actually create movement.
               </p>
@@ -141,7 +141,7 @@ export default function TrackmanFaqView() {
       >
         <DictionaryTableShell>
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-zinc-800/60 bg-zinc-900/85 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
+            <thead className="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
               <tr>
                 <th className="px-6 py-4">Tag</th>
                 <th className="px-6 py-4">Pitch Type</th>
@@ -150,52 +150,52 @@ export default function TrackmanFaqView() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-800/40 text-zinc-400">
-              <tr className="hover:bg-zinc-800/20 transition-smooth">
+            <tbody className="divide-y divide-slate-200 text-slate-600">
+              <tr className="hover:bg-slate-50 transition-smooth">
                 <td className="px-6 py-4 font-mono font-medium text-blue-400">FB</td>
-                <td className="px-6 py-4 text-zinc-200">Four-Seam Fastball</td>
+                <td className="px-6 py-4 text-slate-900">Four-Seam Fastball</td>
                 <td className="hidden px-6 py-4 sm:table-cell">
                   Ride with moderate arm-side run.
                 </td>
               </tr>
-              <tr className="hover:bg-zinc-800/20 transition-smooth">
+              <tr className="hover:bg-slate-50 transition-smooth">
                 <td className="px-6 py-4 font-mono font-medium text-teal-400">SI</td>
-                <td className="px-6 py-4 text-zinc-200">Sinker / Two-Seam</td>
+                <td className="px-6 py-4 text-slate-900">Sinker / Two-Seam</td>
                 <td className="hidden px-6 py-4 sm:table-cell">
                   Lower ride with more arm-side sink.
                 </td>
               </tr>
-              <tr className="hover:bg-zinc-800/20 transition-smooth">
+              <tr className="hover:bg-slate-50 transition-smooth">
                 <td className="px-6 py-4 font-mono font-medium text-orange-400">SL</td>
-                <td className="px-6 py-4 text-zinc-200">Slider</td>
+                <td className="px-6 py-4 text-slate-900">Slider</td>
                 <td className="hidden px-6 py-4 sm:table-cell">
                   Firm break with strong glove-side sweep.
                 </td>
               </tr>
-              <tr className="hover:bg-zinc-800/20 transition-smooth">
+              <tr className="hover:bg-slate-50 transition-smooth">
                 <td className="px-6 py-4 font-mono font-medium text-yellow-400">CB</td>
-                <td className="px-6 py-4 text-zinc-200">Curveball</td>
+                <td className="px-6 py-4 text-slate-900">Curveball</td>
                 <td className="hidden px-6 py-4 sm:table-cell">
                   More depth with lower velocity.
                 </td>
               </tr>
-              <tr className="hover:bg-zinc-800/20 transition-smooth">
+              <tr className="hover:bg-slate-50 transition-smooth">
                 <td className="px-6 py-4 font-mono font-medium text-rose-400">CH</td>
-                <td className="px-6 py-4 text-zinc-200">Changeup</td>
+                <td className="px-6 py-4 text-slate-900">Changeup</td>
                 <td className="hidden px-6 py-4 sm:table-cell">
                   Velocity separation with fade and depth.
                 </td>
               </tr>
-              <tr className="hover:bg-zinc-800/20 transition-smooth">
+              <tr className="hover:bg-slate-50 transition-smooth">
                 <td className="px-6 py-4 font-mono font-medium text-indigo-400">CU</td>
-                <td className="px-6 py-4 text-zinc-200">Cutter</td>
+                <td className="px-6 py-4 text-slate-900">Cutter</td>
                 <td className="hidden px-6 py-4 sm:table-cell">
                   Fastball look with slight cut.
                 </td>
               </tr>
-              <tr className="hover:bg-zinc-800/20 transition-smooth">
+              <tr className="hover:bg-slate-50 transition-smooth">
                 <td className="px-6 py-4 font-mono font-medium text-violet-400">SP</td>
-                <td className="px-6 py-4 text-zinc-200">Splitter</td>
+                <td className="px-6 py-4 text-slate-900">Splitter</td>
                 <td className="hidden px-6 py-4 sm:table-cell">
                   Lower spin with late tumble.
                 </td>

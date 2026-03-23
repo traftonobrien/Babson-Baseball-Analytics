@@ -1,6 +1,9 @@
+"use client";
+
 import type { CSSProperties } from "react";
 import { pitchColor } from "@/lib/pitchColors";
 import { pitchDisplayName } from "@/lib/pitchNames";
+import { useSiteAppearance } from "@/app/components/SiteAppearanceContext";
 import { cn } from "@/lib/utils";
 
 type PitchTypeChipSize = "sm" | "xs";
@@ -24,15 +27,21 @@ function hexToRgbChannels(value: string): string {
   return `${red}, ${green}, ${blue}`;
 }
 
-function pitchTypeChipStyle(pitchType: string, variant: PitchTypeChipVariant): CSSProperties {
+function pitchTypeChipStyle(
+  pitchType: string,
+  variant: PitchTypeChipVariant,
+  siteDark: boolean,
+): CSSProperties {
   const color = pitchColor(pitchType);
   const rgb = hexToRgbChannels(color);
 
   if (variant === "soft") {
     return {
-      borderColor: `rgba(${rgb}, 0.28)`,
-      backgroundColor: `rgba(${rgb}, 0.1)`,
-      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.75)",
+      borderColor: `rgba(${rgb}, ${siteDark ? 0.42 : 0.28})`,
+      backgroundColor: `rgba(${rgb}, ${siteDark ? 0.2 : 0.1})`,
+      boxShadow: siteDark
+        ? `inset 0 1px 0 rgba(255,255,255,0.07), 0 0 0 1px rgba(${rgb}, 0.12)`
+        : "inset 0 1px 0 rgba(255,255,255,0.75)",
     };
   }
 
@@ -66,6 +75,7 @@ export function PitchTypeChip({
   variant?: PitchTypeChipVariant;
   className?: string;
 }) {
+  const siteDark = useSiteAppearance() === "dark";
   const color = pitchColor(pitchType);
   const displayLabel = pitchDisplayName(label ?? pitchType);
 
@@ -73,17 +83,22 @@ export function PitchTypeChip({
     <span
       className={cn(
         "inline-flex items-center rounded-full border",
-        variant === "solid" ? "text-white" : "text-[#0f172a]",
+        variant === "solid" ? "text-white" : "text-slate-900 dark:text-zinc-100",
         chipSizeClasses[size],
         className,
       )}
-      style={pitchTypeChipStyle(pitchType, variant)}
+      style={pitchTypeChipStyle(pitchType, variant, siteDark)}
     >
       <span
-        className={cn("rounded-full shrink-0", dotSizeClasses[size])}
+        className={cn("shrink-0 rounded-full", dotSizeClasses[size])}
         style={{
           backgroundColor: color,
-          boxShadow: variant === "soft" ? `0 0 0 1px rgba(255,255,255,0.6) inset` : `0 0 10px ${color}`,
+          boxShadow:
+            variant === "soft"
+              ? siteDark
+                ? `0 0 0 1px rgba(255,255,255,0.14) inset`
+                : `0 0 0 1px rgba(255,255,255,0.6) inset`
+              : `0 0 10px ${color}`,
         }}
       />
       {displayLabel}

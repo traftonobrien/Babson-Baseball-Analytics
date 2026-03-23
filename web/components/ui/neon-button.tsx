@@ -6,7 +6,7 @@ type NeonButtonTone = "brand" | "blue" | "orange" | "amber" | "zinc";
 type NeonButtonVariant = "default" | "solid" | "ghost";
 
 const buttonVariants = cva(
-  "relative group border text-foreground text-center rounded-full transition-[color,background-color,border-color,box-shadow,transform] duration-300 ease-out will-change-transform active:scale-[0.985]",
+  "relative group border text-slate-900 dark:text-zinc-50 text-center rounded-full transition-[color,background-color,border-color,box-shadow,transform] duration-300 ease-out will-change-transform active:scale-[0.985]",
   {
     variants: {
       size: {
@@ -50,13 +50,13 @@ const variantToneClasses: Record<NeonButtonVariant, Record<NeonButtonTone, strin
     brand:
       "border-transparent bg-transparent text-zinc-300 hover:border-[rgba(var(--babson-grey-rgb),0.32)] hover:bg-[rgba(var(--babson-green-rgb),0.08)] hover:text-zinc-100",
     blue:
-      "border-transparent bg-transparent hover:border-zinc-600 hover:bg-white/10 text-zinc-300",
+      "border-transparent bg-transparent hover:border-zinc-600 hover:bg-surface/10 text-zinc-300",
     orange:
       "border-transparent bg-transparent text-zinc-300 hover:border-orange-500/25 hover:bg-orange-500/10 hover:text-orange-100",
     amber:
       "border-transparent bg-transparent text-zinc-300 hover:border-amber-500/25 hover:bg-amber-500/10 hover:text-amber-100",
     zinc:
-      "border-transparent bg-transparent hover:border-zinc-600 hover:bg-white/10 text-zinc-300",
+      "border-transparent bg-transparent hover:border-zinc-600 hover:bg-surface/10 text-zinc-300",
   },
 };
 

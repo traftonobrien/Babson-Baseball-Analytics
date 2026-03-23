@@ -5,7 +5,9 @@ import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { pitchColor } from "@/lib/pitchColors";
 import { pitchArmSideX, laneOf as classifyLane, laneDisplayName, hDirectionLabel, type Lane } from "@/lib/handedness";
 import { pitchDisplayName } from "@/lib/pitchNames";
+import { brandSoftActiveRingClasses } from "@/lib/brandSurfaces";
 import { sortPitchTypes } from "@/lib/pitchTypeOrder";
+import { cn } from "@/lib/utils";
 
 export type { Lane } from "@/lib/handedness";
 
@@ -137,13 +139,13 @@ function LanePanel({
             key={b.key}
             type="button"
             onClick={() => onSelectLane?.(b.key)}
-            className={[
-              "flex flex-col items-center gap-2 rounded-2xl border p-3 transition-smooth cursor-pointer",
+            className={cn(
+              "flex cursor-pointer flex-col items-center gap-2 rounded-2xl border p-3 transition-smooth",
               isActive
-                ? "border-orange-400/30 bg-orange-500/[0.08] ring-2 ring-orange-400/10"
-                : "border-zinc-800/70 bg-zinc-950/55 hover:border-zinc-700/80",
+                ? brandSoftActiveRingClasses
+                : "border-border bg-surface hover:border-[#CBD5E1] dark:hover:border-zinc-600",
               isDimmed ? "opacity-50 hover:opacity-80" : "",
-            ].join(" ")}
+            )}
           >
             <div className="flex h-24 w-full items-end justify-center">
               <div
@@ -159,30 +161,30 @@ function LanePanel({
               />
             </div>
             <div className="text-sm font-semibold">{b.label}</div>
-            <div className="text-xs text-zinc-500">
+            <div className="text-xs text-slate-500 dark:text-zinc-400">
               {b.pitches.length} pitch{b.pitches.length !== 1 && "es"}
             </div>
             {b.pitches.length > 0 && (
               <div className="w-full space-y-1 text-center">
-                <div className="text-xs text-zinc-400">
+                <div className="text-xs text-slate-500 dark:text-zinc-400">
                   Avg miss{" "}
-                  <span className="font-mono text-zinc-100">
+                  <span className="font-mono text-slate-900 dark:text-zinc-50">
                     {b.avgTotal.toFixed(1)}&quot;
                   </span>
                 </div>
-                <div className="text-xs text-zinc-400">
+                <div className="text-xs text-slate-500 dark:text-zinc-400">
                   H{" "}
-                  <span className="font-mono text-zinc-100">
+                  <span className="font-mono text-slate-900 dark:text-zinc-50">
                     {Math.abs(b.avgH).toFixed(1)}&quot;
                   </span>{" "}
-                  <span className="text-zinc-500">{hLabel(b.avgH)}</span>
+                  <span className="text-[#94A3B8] dark:text-zinc-500">{hLabel(b.avgH)}</span>
                 </div>
-                <div className="text-xs text-zinc-400">
+                <div className="text-xs text-slate-500 dark:text-zinc-400">
                   V{" "}
-                  <span className="font-mono text-zinc-100">
+                  <span className="font-mono text-slate-900 dark:text-zinc-50">
                     {Math.abs(b.avgV).toFixed(1)}&quot;
                   </span>{" "}
-                  <span className="text-zinc-500">{vLabel(b.avgV)}</span>
+                  <span className="text-[#94A3B8] dark:text-zinc-500">{vLabel(b.avgV)}</span>
                 </div>
               </div>
             )}
@@ -211,18 +213,18 @@ export default function LaneReport({ pitches, throwsHand, activeLane, onSelectLa
     "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
 
   return (
-    <div className="rounded-[1.8rem] border border-zinc-800/80 bg-zinc-950/72 p-5 shadow-[0_18px_48px_rgba(0,0,0,0.22)]">
+    <div className="rounded-[28px] border border-border bg-surface p-5 shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8] dark:text-zinc-500">
             Lane Report
           </p>
-          <p className="mt-1 text-sm text-zinc-300">
+          <p className="mt-1 text-sm text-[#475569] dark:text-zinc-400">
             See how misses play across glove side, middle, and arm side.
           </p>
         </div>
       </div>
-      <p className="mt-3 text-[11px] text-zinc-500">
+      <p className="mt-3 text-[11px] text-slate-500 dark:text-zinc-400">
         Click a lane to filter. Click again to clear it.
       </p>
       <div className={`mt-4 grid ${cols} gap-3`}>
@@ -231,11 +233,11 @@ export default function LaneReport({ pitches, throwsHand, activeLane, onSelectLa
           return (
             <div
               key={g.type}
-              className="overflow-hidden rounded-[1.5rem] border border-zinc-800/80 bg-zinc-950/62 p-4"
+              className="overflow-hidden rounded-2xl border border-border bg-background/80 p-4 dark:bg-zinc-900/30"
             >
-              <div className="flex items-center gap-2 mb-3">
-                <PitchTypeChip pitchType={g.type} label={pitchDisplayName(g.type)} size="xs" variant="solid" />
-                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              <div className="mb-3 flex items-center gap-2">
+                <PitchTypeChip pitchType={g.type} label={pitchDisplayName(g.type)} size="xs" variant="soft" />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8] dark:text-zinc-500">
                   By Lane
                 </span>
               </div>

@@ -14,13 +14,13 @@ function cell(v: number | null | undefined, unit: string, decimals: number = 1):
 
 export default function ComparePitchTypeTable({ comparison }: Props) {
   if (comparison.length === 0) {
-    return <p className="text-[10px] text-zinc-500 italic">No pitch type data.</p>;
+    return <p className="text-[10px] italic text-slate-500 dark:text-zinc-400">No pitch type data.</p>;
   }
 
   return (
     <table className="w-full text-[10px] border-collapse">
       <thead>
-        <tr className="text-left text-zinc-500 border-b border-zinc-600">
+        <tr className="border-b border-border text-left text-slate-500 dark:text-zinc-400">
           <th className="py-[3px] pr-1.5 font-semibold">Type</th>
           <th className="py-[3px] pr-1.5 text-right font-semibold">N (A)</th>
           <th className="py-[3px] pr-1.5 text-right font-semibold">N (B)</th>
@@ -31,19 +31,19 @@ export default function ComparePitchTypeTable({ comparison }: Props) {
       </thead>
       <tbody>
         {comparison.map((row, i) => {
-          const stripe = i % 2 === 1 ? "bg-zinc-900/30" : "";
+          const stripe = i % 2 === 1 ? "bg-slate-50/90" : "";
           const deltaColor =
             row.deltaAvgMiss == null
               ? ""
               : row.deltaAvgMiss < 0
-                ? "text-green-400"
+                ? "text-green-700"
                 : row.deltaAvgMiss > 0
-                  ? "text-red-400"
+                  ? "text-red-600"
                   : "";
           return (
             <tr
               key={row.pitchType}
-              className={`border-b border-zinc-800/40 ${stripe}`}
+              className={`border-b border-[#F1F5F9] ${stripe}`}
             >
               <td className="py-[3px] pr-1.5">
                 <span className="flex items-center gap-1">

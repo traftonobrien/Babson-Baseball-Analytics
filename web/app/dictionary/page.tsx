@@ -14,7 +14,7 @@ import {
   Users,
 } from "lucide-react";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
+import { HubActionCard } from "@/app/components/hub/HubHeader";
 
 const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
@@ -135,19 +135,19 @@ function DictCard({
   return (
     <Link
       href={href}
-      className={`group relative block overflow-hidden rounded-[1.75rem] border bg-white p-5 shadow-[0_18px_40px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_rgba(15,23,42,0.08)] ${styles?.ring ?? ""} ${featured ? "sm:col-span-2" : ""}`}
+      className={`group relative block overflow-hidden rounded-[1.75rem] border bg-surface p-5 shadow-[0_18px_40px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_rgba(15,23,42,0.08)] ${styles?.ring ?? ""} ${featured ? "sm:col-span-2" : ""}`}
     >
       <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${styles?.wash ?? ""} opacity-60`} />
       <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
       <div className="relative flex items-start gap-4">
-        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#F1F5F9] bg-[#F8FAFC] ${styles?.icon ?? ""}`}>
+        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#F1F5F9] bg-background ${styles?.icon ?? ""}`}>
           <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0 flex-1">
-          <h2 className={`${plusJakarta.className} text-[17px] font-bold tracking-tight text-[#0F172A]`}>
+          <h2 className={`${plusJakarta.className} text-[17px] font-bold tracking-tight text-slate-900 dark:text-zinc-50`}>
             {label}
           </h2>
-          <p className="mt-2 max-w-xl text-sm leading-7 text-[#64748B]">
+          <p className="mt-2 max-w-xl text-sm leading-7 text-slate-500 dark:text-zinc-400">
             {description}
           </p>
         </div>
@@ -162,55 +162,32 @@ export default function DictionaryPage() {
   const secondaryItems = DICTIONARY_ITEMS.slice(1);
 
   return (
-    <main className="min-h-screen bg-[#F8FAFC] text-[#0F172A]">
+    <main className="min-h-screen bg-background text-slate-900 dark:text-zinc-50">
       <div className="mx-auto max-w-[1440px] px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
-        <header className="rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
-          <div className="flex flex-col gap-6 p-5 sm:p-7">
-            <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
-              <div className="min-w-0 flex-1">
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#E0E7FF] bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6366F1]">
-                  <BookOpen className="h-3.5 w-3.5" aria-hidden />
-                  Metrics Dictionary
-                </div>
-                <h1 className={`${plusJakarta.className} mt-4 text-3xl font-black tracking-tight text-[#0F172A] sm:text-[2.85rem] sm:leading-[1.02]`}>
-                  Metrics Dictionary
-                </h1>
+        <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+          <div className="flex flex-col gap-5 p-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6 sm:p-7">
+            <div className="min-w-0 flex-1">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#E0E7FF] bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6366F1]">
+                <BookOpen className="h-3.5 w-3.5" aria-hidden />
+                Metrics Dictionary
               </div>
-
-              <div className="grid w-full grid-cols-2 gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
-                <HubActionCard
-                  href="/leaderboards-hub"
-                  icon={BarChart3}
-                  sectionTitle="Leaderboards"
-                  buttonLabel="All leaderboards"
-                />
-                <HubActionCard
-                  href="/pitching-plus"
-                  icon={Sparkles}
-                  sectionTitle="Plus models"
-                  buttonLabel="Methodology guide"
-                />
-              </div>
+              <h1 className={`${plusJakarta.className} mt-4 text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.85rem] sm:leading-[1.02]`}>
+                Metrics Dictionary
+              </h1>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              <HubStatCard
-                label="Sections"
-                value={String(DICTIONARY_ITEMS.length)}
-                detail="Plus stats, Trackman, Command, Players, Mechanics, Statistics, and Charting."
-                tone="indigo"
+            <div className="grid w-full grid-cols-2 gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
+              <HubActionCard
+                href="/leaderboards-hub"
+                icon={BarChart3}
+                sectionTitle="Leaderboards"
+                buttonLabel="All leaderboards"
               />
-              <HubStatCard
-                label="Featured"
-                value={featuredItem.label}
-                detail={featuredItem.description}
-                tone="amber"
-              />
-              <HubStatCard
-                label="Scope"
-                value="Reference"
-                detail="Definitions behind every leaderboard, model, and player view."
-                tone="sky"
+              <HubActionCard
+                href="/pitching-plus"
+                icon={Sparkles}
+                sectionTitle="Plus models"
+                buttonLabel="Methodology guide"
               />
             </div>
           </div>

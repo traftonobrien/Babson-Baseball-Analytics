@@ -80,16 +80,16 @@ export default function VideoPlayer({ pitch, overlayDir, clipsDir, pitcherHand }
 
   if (!pitch) {
     return (
-      <div className="w-full overflow-hidden rounded-[1.6rem] border border-zinc-800/80 bg-zinc-950/80 shadow-[0_18px_48px_rgba(0,0,0,0.22)]">
-        <div className="border-b border-zinc-800/70 px-4 py-3">
-          <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+      <div className="w-full overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+        <div className="border-b border-[#F1F5F9] px-4 py-3 dark:border-zinc-800">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8] dark:text-zinc-500">
             Video Review
           </div>
-          <div className="mt-1 text-xs text-zinc-500">
+          <div className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
             Select a pitch from the log to load video.
           </div>
         </div>
-        <div className="flex aspect-[352/342] items-center justify-center px-4 text-center text-sm text-zinc-500">
+        <div className="flex aspect-[352/342] items-center justify-center px-4 text-center text-sm text-slate-500 dark:text-zinc-400">
           Select a pitch to play overlay video
         </div>
       </div>
@@ -97,24 +97,24 @@ export default function VideoPlayer({ pitch, overlayDir, clipsDir, pitcherHand }
   }
 
   return (
-    <div className="w-full overflow-hidden rounded-[1.6rem] border border-zinc-800/80 bg-zinc-950/80 shadow-[0_18px_48px_rgba(0,0,0,0.22)]">
+    <div className="w-full overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
       {/* Header bar */}
-      <div className="border-b border-zinc-800/70 px-4 py-3">
+      <div className="border-b border-[#F1F5F9] px-4 py-3 dark:border-zinc-800">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-orange-500/20 bg-orange-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-orange-300">
+              <span className="rounded-full border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-primary-subtle-text)]">
                 Pitch #{pitch.pitch_number}
               </span>
-              <span className="text-sm font-semibold text-zinc-100">{pitch.pitch_type}</span>
+              <span className="text-sm font-semibold text-slate-900 dark:text-zinc-50">{pitch.pitch_type}</span>
             </div>
-            <div className="mt-1 text-xs text-zinc-500">
+            <div className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
               {Number.isFinite(pitch.total_miss_inches)
                 ? `${pitch.total_miss_inches.toFixed(1)}" miss`
                 : "No read"}
             </div>
           </div>
-          <span className="text-xs text-zinc-400">
+          <span className="text-xs text-slate-500 dark:text-zinc-400">
           {Number.isFinite(pitch.h_miss_inches) ? <>{pitch.h_miss_inches.toFixed(1)}&quot; {hDirectionLabel(pitchArmSideX(pitch, pitcherHand))},{" "}{pitch.v_miss_inches.toFixed(1)}&quot; {pitch.v_direction}</> : null}
           </span>
         </div>
@@ -123,14 +123,14 @@ export default function VideoPlayer({ pitch, overlayDir, clipsDir, pitcherHand }
       {/* Video viewport */}
       <div className="relative aspect-[352/342] bg-black max-h-[45vh]">
         {errored ? (
-          <div className="absolute inset-0 flex items-center justify-center text-zinc-500 text-sm px-4 text-center">
+          <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm px-4 text-center">
             Video unavailable for this pitch. Check that the overlay file exists
             in public/data/&hellip;/results/
           </div>
         ) : (
           <>
             {loading && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/80 text-sm text-zinc-400">
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/80 text-sm text-slate-200">
                 Loading video&hellip;
               </div>
             )}

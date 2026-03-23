@@ -343,7 +343,7 @@ export default function PlayerProfileTabs({
 
   return (
     <div className="space-y-5">
-      <div className="overflow-x-auto rounded-[1.5rem] border border-slate-200/80 bg-white/95 p-2 shadow-[0_18px_44px_rgba(15,23,42,0.06)] scrollbar-hide">
+      <div className="overflow-x-auto rounded-[1.5rem] border border-slate-200/80 bg-surface/95 p-2 shadow-[0_18px_44px_rgba(15,23,42,0.06)] scrollbar-hide">
         <div
           className="grid min-w-[22rem] gap-2 sm:min-w-[28rem] md:min-w-full"
           style={{ gridTemplateColumns: `repeat(${availableTabs.length}, minmax(0, 1fr))` }}
@@ -716,7 +716,7 @@ export default function PlayerProfileTabs({
                       <li key={`${s.dateSlug}-${s.sessionLabel}`}>
                         <Link
                           href={`/trackman/session/${playerSlug}/${s.dateSlug}?from=profile&slug=${playerSlug}`}
-                          className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-4 transition-smooth hover:border-blue-200 hover:bg-slate-50"
+                          className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-surface px-4 py-4 transition-smooth hover:border-blue-200 hover:bg-slate-50"
                         >
                           <div>
                             <div className="text-sm font-bold text-slate-900 transition-smooth">
@@ -834,7 +834,7 @@ export default function PlayerProfileTabs({
                           href={`/player/${o.playerId}?outingId=${encodeURIComponent(
                             o.outingId,
                           )}&from=profile&slug=${playerSlug}`}
-                          className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-4 transition-smooth hover:border-orange-200 hover:bg-slate-50"
+                          className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-surface px-4 py-4 transition-smooth hover:border-orange-200 hover:bg-slate-50"
                         >
                           <div>
                             <div className="text-sm font-bold text-slate-900 transition-smooth">

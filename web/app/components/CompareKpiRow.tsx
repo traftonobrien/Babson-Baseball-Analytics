@@ -17,10 +17,10 @@ function DeltaCell({ value, unit, invert }: { value: number; unit: string; inver
   const positive = invert ? value < 0 : value > 0;
   const negative = invert ? value > 0 : value < 0;
   const color = positive
-    ? "text-red-400"
+    ? "text-red-600"
     : negative
-      ? "text-green-400"
-      : "text-zinc-400";
+      ? "text-green-700"
+      : "text-slate-500 dark:text-zinc-400";
   const sign = value > 0 ? "+" : "";
   return (
     <span className={`font-mono text-[11px] ${color}`}>
@@ -39,21 +39,21 @@ function KpiCell({ label, valueA, valueB, delta, unit, invert, decimals = 1 }: {
   decimals?: number;
 }) {
   return (
-    <div className="rounded border border-zinc-700 px-2 py-1.5">
-      <div className="text-[7px] text-zinc-500 uppercase tracking-wider font-semibold mb-1">
+    <div className="rounded border border-border bg-surface px-2 py-1.5">
+      <div className="mb-1 text-[7px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
         {label}
       </div>
       <div className="grid grid-cols-3 gap-1 text-center">
         <div>
-          <div className="text-[7px] text-zinc-500 mb-0.5">A</div>
-          <div className="font-mono text-[12px] font-bold">{valueA.toFixed(decimals)}{unit}</div>
+          <div className="mb-0.5 text-[7px] text-[#94A3B8]">A</div>
+          <div className="font-mono text-[12px] font-bold text-slate-900 dark:text-zinc-50">{valueA.toFixed(decimals)}{unit}</div>
         </div>
         <div>
-          <div className="text-[7px] text-zinc-500 mb-0.5">B</div>
-          <div className="font-mono text-[12px] font-bold">{valueB.toFixed(decimals)}{unit}</div>
+          <div className="mb-0.5 text-[7px] text-[#94A3B8]">B</div>
+          <div className="font-mono text-[12px] font-bold text-slate-900 dark:text-zinc-50">{valueB.toFixed(decimals)}{unit}</div>
         </div>
         <div>
-          <div className="text-[7px] text-zinc-500 mb-0.5">&Delta;</div>
+          <div className="mb-0.5 text-[7px] text-[#94A3B8]">&Delta;</div>
           <div><DeltaCell value={delta} unit={unit} invert={invert} /></div>
         </div>
       </div>

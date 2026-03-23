@@ -15,7 +15,9 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+import { brandSoftPillClasses, brandSoftEyebrowTextClasses } from "@/lib/brandSurfaces";
 import { TEAM_NAME } from "@/lib/teamConfig";
+import { cn } from "@/lib/utils";
 
 const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 const manrope = Manrope({ subsets: ["latin"] });
@@ -138,12 +140,12 @@ function getGameTimestamp(game: ChartingGame): number {
 
 function statusPillClasses(status: string): string {
   if (status === "final") {
-    return "bg-[#E0F2FE] text-[#0EA5E9]";
+    return "bg-[#E0F2FE] text-[#0EA5E9] dark:bg-sky-950/55 dark:text-sky-300";
   }
   if (status === "active") {
-    return "bg-[#D1FAE5] text-[#10B981]";
+    return "bg-[#D1FAE5] text-[#10B981] dark:bg-emerald-950/50 dark:text-emerald-300";
   }
-  return "bg-[#FEF3C7] text-[#D97706]";
+  return "bg-[#FEF3C7] text-[#D97706] dark:bg-amber-950/45 dark:text-amber-300";
 }
 
 function statusLabel(status: string): string {
@@ -172,16 +174,16 @@ function PulseMetric({
 }: PulseMetricProps) {
   if (loading) {
     return (
-      <div className="relative overflow-hidden rounded-[26px] border border-[#E7EDF5] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.04)]">
+      <div className="relative overflow-hidden rounded-[26px] border border-[#E7EDF5] bg-surface p-5 shadow-[0_18px_48px_rgba(15,23,42,0.04)] dark:border-zinc-800 dark:shadow-[0_18px_48px_rgba(0,0,0,0.35)]">
         <div className="animate-pulse space-y-4">
-          <div className="h-3 w-24 rounded-full bg-[#E2E8F0]" />
-          <div className="h-9 w-32 rounded-xl bg-[#F1F5F9]" />
-          <div className="h-3 w-44 rounded-full bg-[#F1F5F9]" />
+          <div className="h-3 w-24 rounded-full bg-[#E2E8F0] dark:bg-zinc-700" />
+          <div className="h-9 w-32 rounded-xl bg-[#F1F5F9] dark:bg-zinc-800" />
+          <div className="h-3 w-44 rounded-full bg-[#F1F5F9] dark:bg-zinc-800" />
           <div className="mt-4 flex h-12 items-end gap-1">
             {[40, 22, 58, 34, 28, 46, 18].map((height) => (
               <div
                 key={height}
-                className="w-full rounded-t-sm bg-[#E2E8F0]"
+                className="w-full rounded-t-sm bg-[#E2E8F0] dark:bg-zinc-700"
                 style={{ height }}
               />
             ))}
@@ -192,9 +194,9 @@ function PulseMetric({
   }
 
   return (
-    <article className="group relative overflow-hidden rounded-[26px] border border-[#E7EDF5] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#DCE5EF] hover:shadow-[0_22px_56px_rgba(15,23,42,0.07)]">
+    <article className="group relative overflow-hidden rounded-[26px] border border-[#E7EDF5] bg-surface p-5 shadow-[0_18px_48px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#DCE5EF] hover:shadow-[0_22px_56px_rgba(15,23,42,0.07)] dark:border-zinc-800 dark:shadow-[0_18px_48px_rgba(0,0,0,0.35)] dark:hover:border-zinc-700 dark:hover:shadow-[0_22px_56px_rgba(0,0,0,0.45)]">
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-24 opacity-90"
+        className="pointer-events-none absolute inset-x-0 top-0 h-24 opacity-90 dark:opacity-55"
         style={{
           background:
             "radial-gradient(circle at top left, rgba(var(--brand-primary-rgb), 0.08), transparent 42%)",
@@ -202,21 +204,21 @@ function PulseMetric({
       />
       <div className="relative z-10">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
             {title}
           </p>
-          <h3 className={`${plusJakarta.className} mt-2 text-[2rem] font-extrabold tracking-tight text-[#0F172A]`}>
+          <h3 className={`${plusJakarta.className} mt-2 text-[2rem] font-extrabold tracking-tight text-slate-900 dark:text-zinc-50`}>
             {value}
           </h3>
         </div>
 
-        <p className="mt-3 text-[13px] text-[#64748B]">{detail}</p>
+        <p className="mt-3 text-[13px] text-slate-500 dark:text-zinc-400">{detail}</p>
 
         <div className="mt-5 flex h-12 items-end gap-1 opacity-50 transition-opacity duration-300 group-hover:opacity-70">
           {series.map((height, index) => (
             <div
               key={`${title}-${index}`}
-              className="w-full rounded-t-md bg-[#BDE0F6]"
+              className="w-full rounded-t-md bg-[#BDE0F6] dark:bg-sky-500/35"
               style={{ height: `${height}%` }}
             />
           ))}
@@ -236,18 +238,24 @@ function QuickLaunchTile({
   return (
     <Link
       href={item.href}
-      className="group rounded-[22px] border border-[#E7EDF5] bg-white p-4 shadow-[0_10px_24px_rgba(15,23,42,0.03)] transition-all duration-300 hover:border-[var(--brand-primary-border)] hover:bg-[var(--brand-primary-surface)]"
+      className="group rounded-[22px] border border-[#E7EDF5] bg-surface p-4 shadow-[0_10px_24px_rgba(15,23,42,0.03)] transition-all duration-300 hover:border-[var(--brand-primary-border)] hover:bg-[var(--brand-primary-surface)] dark:border-zinc-800 dark:shadow-[0_10px_24px_rgba(0,0,0,0.3)] dark:hover:border-[color-mix(in_srgb,rgb(var(--brand-primary-rgb))_38%,var(--border-subtle))] dark:hover:bg-[color-mix(in_srgb,rgb(var(--brand-primary-rgb))_10%,var(--surface))]"
     >
       <div className="flex items-center justify-between gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)]">
+        <div
+          className={cn(
+            "flex h-10 w-10 items-center justify-center rounded-2xl",
+            brandSoftPillClasses,
+            brandSoftEyebrowTextClasses,
+          )}
+        >
           <Icon className="h-4 w-4" />
         </div>
-        <ArrowRight className="h-4 w-4 text-[#94A3B8] transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-[var(--brand-primary-subtle-text)]" />
+        <ArrowRight className="h-4 w-4 text-[#94A3B8] transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-[var(--brand-primary-subtle-text)] dark:text-zinc-500 dark:group-hover:text-[var(--brand-primary-spotlight)]" />
       </div>
-      <p className={`${plusJakarta.className} mt-4 text-[15px] font-bold tracking-tight text-[#0F172A]`}>
+      <p className={`${plusJakarta.className} mt-4 text-[15px] font-bold tracking-tight text-slate-900 dark:text-zinc-50`}>
         {item.title}
       </p>
-      <p className="mt-1 text-[13px] leading-6 text-[#64748B]">{item.detail}</p>
+      <p className="mt-1 text-[13px] leading-6 text-slate-500 dark:text-zinc-400">{item.detail}</p>
     </Link>
   );
 }
@@ -260,26 +268,26 @@ function SessionRow({
   return (
     <Link
       href={`/charting/games/${game.id}`}
-      className="group flex flex-col gap-4 px-5 py-4 transition-colors hover:bg-[#F8FAFC] sm:flex-row sm:items-center sm:justify-between"
+      className="group flex flex-col gap-4 px-5 py-4 transition-colors hover:bg-background sm:flex-row sm:items-center sm:justify-between"
     >
       <div className="flex min-w-0 items-center gap-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#F8FAFC] text-[13px] font-bold text-[#64748B] ring-1 ring-[#F1F5F9]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-background text-[13px] font-bold text-slate-500 ring-1 ring-[#F1F5F9] dark:text-zinc-400 dark:ring-zinc-700">
           {getInitials(game.opponent ?? "Game")}
         </div>
         <div className="min-w-0">
-          <p className={`${plusJakarta.className} truncate text-[15px] font-bold text-[#0F172A] transition-colors group-hover:text-[var(--brand-primary-subtle-text)]`}>
+          <p className={`${plusJakarta.className} truncate text-[15px] font-bold text-slate-900 dark:text-zinc-50 transition-colors group-hover:text-[var(--brand-primary-subtle-text)]`}>
             {gameTitle(game)}
           </p>
-          <p className="mt-1 text-[13px] text-[#64748B]">{gameMeta(game)}</p>
+          <p className="mt-1 text-[13px] text-slate-500 dark:text-zinc-400">{gameMeta(game)}</p>
         </div>
       </div>
 
       <div className="flex items-center gap-4">
         <div className="text-left sm:text-right">
-          <p className={`${plusJakarta.className} text-[14px] font-semibold text-[#0F172A]`}>
+          <p className={`${plusJakarta.className} text-[14px] font-semibold text-slate-900 dark:text-zinc-50`}>
             {game.sessionType === "live_ab" ? "Live AB" : "Game Log"}
           </p>
-          <p className="text-[12px] text-[#94A3B8]">{formatUpdatedLabel(game.updatedAt)}</p>
+          <p className="text-[12px] text-[#94A3B8] dark:text-zinc-500">{formatUpdatedLabel(game.updatedAt)}</p>
         </div>
         <span
           className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] ${statusPillClasses(game.status)}`}
@@ -442,9 +450,11 @@ export default function HomeContent() {
   ];
 
   return (
-    <div className={`min-h-full bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_30%,#f8fafc_100%)] text-[#0F172A] ${manrope.className}`}>
+    <div
+      className={`relative min-h-full bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_30%,#f8fafc_100%)] text-slate-900 dark:bg-[linear-gradient(180deg,#09090b_0%,#18181b_38%,#09090b_100%)] dark:text-zinc-50 ${manrope.className}`}
+    >
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-80"
+        className="pointer-events-none absolute inset-x-0 top-0 h-80 opacity-100 dark:opacity-55"
         style={{
           background:
             "radial-gradient(circle at top center, rgba(var(--brand-primary-rgb), 0.09), transparent 60%)",
@@ -452,17 +462,24 @@ export default function HomeContent() {
       />
 
       <main className="relative mx-auto max-w-[1360px] px-4 py-6 sm:px-8 sm:py-8">
-        <section className="relative overflow-hidden rounded-[32px] border border-[var(--brand-primary-border)] bg-white px-6 py-6 shadow-[0_24px_64px_rgba(15,23,42,0.06)] sm:px-8 sm:py-8">
+        <section className="relative overflow-hidden rounded-[32px] border border-[var(--brand-primary-border)] bg-surface px-6 py-6 shadow-[0_24px_64px_rgba(15,23,42,0.06)] dark:border-[color-mix(in_srgb,rgb(var(--brand-primary-rgb))_38%,var(--border-subtle))] dark:shadow-[0_24px_64px_rgba(0,0,0,0.4)] sm:px-8 sm:py-8">
           <div
-            className="pointer-events-none absolute inset-0"
+            className="pointer-events-none absolute inset-0 dark:hidden"
             style={{
               background:
                 "radial-gradient(circle at top left, rgba(var(--brand-primary-rgb), 0.1), transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.94))",
             }}
           />
+          <div
+            className="pointer-events-none absolute inset-0 hidden dark:block"
+            style={{
+              background:
+                "radial-gradient(circle at top left, rgba(var(--brand-primary-rgb), 0.16), transparent 36%), linear-gradient(180deg, rgba(24,24,27,0.96), rgba(9,9,11,0.94))",
+            }}
+          />
 
           <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-7">
-            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-[30px] border border-[var(--brand-primary-border)] bg-white shadow-[0_18px_40px_rgba(15,23,42,0.04)]">
+            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-[30px] border border-[var(--brand-primary-border)] bg-surface shadow-[0_18px_40px_rgba(15,23,42,0.04)] dark:border-[color-mix(in_srgb,rgb(var(--brand-primary-rgb))_40%,var(--border-subtle))] dark:shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
               <Image
               src="/babson-logo.svg"
               alt={`${TEAM_NAME} logo`}
@@ -475,7 +492,7 @@ export default function HomeContent() {
 
             <div className="min-w-0 flex-1">
               <h1
-                className={`${plusJakarta.className} text-[2rem] font-extrabold leading-[0.98] tracking-tight text-[#0F172A] sm:text-[2.7rem] lg:text-[clamp(3rem,3.35vw,3.7rem)] lg:whitespace-nowrap`}
+                className={`${plusJakarta.className} text-[2rem] font-extrabold leading-[0.98] tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.7rem] lg:text-[clamp(3rem,3.35vw,3.7rem)] lg:whitespace-nowrap`}
               >
                 {TEAM_NAME} Baseball Data Insights Portal
               </h1>
@@ -498,7 +515,7 @@ export default function HomeContent() {
           </div>
         </section>
 
-        <section className="mt-8 rounded-[28px] border border-[#E7EDF5] bg-white p-6 shadow-[0_18px_48px_rgba(15,23,42,0.04)]">
+        <section className="mt-8 rounded-[28px] border border-[#E7EDF5] bg-surface p-6 shadow-[0_18px_48px_rgba(15,23,42,0.04)] dark:border-zinc-800 dark:shadow-[0_18px_48px_rgba(0,0,0,0.35)]">
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {quickLaunch.map((item) => (
               <QuickLaunchTile key={item.title} item={item} />
@@ -506,23 +523,23 @@ export default function HomeContent() {
           </div>
         </section>
 
-        <section className="mt-8 rounded-[28px] border border-[#E7EDF5] bg-white p-6 shadow-[0_18px_48px_rgba(15,23,42,0.04)]">
-          <div className="overflow-hidden rounded-[24px] border border-[#F1F5F9] bg-white">
+        <section className="mt-8 rounded-[28px] border border-[#E7EDF5] bg-surface p-6 shadow-[0_18px_48px_rgba(15,23,42,0.04)] dark:border-zinc-800 dark:shadow-[0_18px_48px_rgba(0,0,0,0.35)]">
+          <div className="overflow-hidden rounded-[24px] border border-[#F1F5F9] bg-surface dark:border-zinc-800">
             {gamesLoading ? (
               <div className="space-y-4 p-5">
                 {[0, 1, 2, 3].map((index) => (
                   <div
                     key={index}
-                    className="flex animate-pulse items-center justify-between gap-4 rounded-[18px] border border-[#F8FAFC] bg-[#FCFDFE] p-4"
+                    className="flex animate-pulse items-center justify-between gap-4 rounded-[18px] border border-border bg-surface p-4"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="h-11 w-11 rounded-full bg-[#E2E8F0]" />
+                      <div className="h-11 w-11 rounded-full bg-[#E2E8F0] dark:bg-zinc-700" />
                       <div className="space-y-2">
-                        <div className="h-4 w-40 rounded-full bg-[#E2E8F0]" />
-                        <div className="h-3 w-28 rounded-full bg-[#F1F5F9]" />
+                        <div className="h-4 w-40 rounded-full bg-[#E2E8F0] dark:bg-zinc-700" />
+                        <div className="h-3 w-28 rounded-full bg-[#F1F5F9] dark:bg-zinc-800" />
                       </div>
                     </div>
-                    <div className="h-7 w-16 rounded-full bg-[#F1F5F9]" />
+                    <div className="h-7 w-16 rounded-full bg-[#F1F5F9] dark:bg-zinc-800" />
                   </div>
                 ))}
               </div>
@@ -530,17 +547,17 @@ export default function HomeContent() {
               recentGames.map((game, index) => (
                 <div
                   key={game.id}
-                  className={index < recentGames.length - 1 ? "border-b border-[#F1F5F9]" : ""}
+                  className={index < recentGames.length - 1 ? "border-b border-[#F1F5F9] dark:border-zinc-800" : ""}
                 >
                   <SessionRow game={game} />
                 </div>
               ))
             ) : (
               <div className="p-8 text-center">
-                <p className={`${plusJakarta.className} text-[15px] font-semibold text-[#0F172A]`}>
+                <p className={`${plusJakarta.className} text-[15px] font-semibold text-slate-900 dark:text-zinc-50`}>
                   No recent game logs yet.
                 </p>
-                <p className="mt-2 text-sm text-[#64748B]">
+                <p className="mt-2 text-sm text-slate-500 dark:text-zinc-400">
                   Start a session to build the archive.
                 </p>
               </div>

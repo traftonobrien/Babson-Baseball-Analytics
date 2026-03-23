@@ -244,7 +244,7 @@ export const countPresetButtonClass = (
     "rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors",
     active
       ? "bg-[var(--babson-green)] text-white shadow-[0_10px_22px_rgba(var(--babson-green-rgb),0.2)]"
-      : "text-[rgb(212,220,218)] hover:bg-white/6",
+      : "text-[rgb(212,220,218)] hover:bg-surface/6",
     disabled ? "cursor-not-allowed opacity-70 hover:bg-transparent" : "",
   ].join(" ");
 };

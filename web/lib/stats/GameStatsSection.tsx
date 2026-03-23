@@ -26,7 +26,7 @@ function PitchingGrid({
 }) {
   if (!stats.pitching) {
     return (
-      <div className="rounded-[1.15rem] border border-dashed border-zinc-800/80 bg-zinc-950/55 px-4 py-5 text-sm text-zinc-500">
+      <div className="rounded-2xl border border-dashed border-[#E2E8F0] bg-background px-4 py-5 text-sm text-slate-500 dark:border-zinc-700 dark:text-zinc-400">
         No pitching line found for this game.
       </div>
     );
@@ -37,20 +37,20 @@ function PitchingGrid({
       {PITCHING_KEYS.map((k) => (
         <div
           key={k}
-          className="inline-flex w-full max-w-[7.5rem] min-w-0 items-center justify-center justify-self-center gap-2 rounded-full border border-zinc-800/80 bg-[linear-gradient(180deg,rgba(24,24,27,0.78),rgba(9,9,11,0.92))] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+          className="inline-flex w-full max-w-[7.5rem] min-w-0 items-center justify-center justify-self-center gap-2 rounded-full border border-[#E2E8F0] bg-surface px-3 py-3 shadow-sm dark:border-zinc-700"
           style={{
-            borderColor: hexToRgba(accent, 0.18),
+            borderColor: hexToRgba(accent, 0.28),
             boxShadow: [
-              "inset 0 1px 0 rgba(255,255,255,0.03)",
-              `0 0 0 1px ${hexToRgba(accent, 0.05)}`,
-              `0 0 14px ${hexToRgba(accent, 0.08)}`,
+              "0 1px 2px rgba(15,23,42,0.04)",
+              `0 0 0 1px ${hexToRgba(accent, 0.06)}`,
+              `0 8px 20px ${hexToRgba(accent, 0.08)}`,
             ].join(", "),
           }}
         >
-          <span className="truncate whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
+          <span className="truncate whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.16em] text-[#94A3B8] dark:text-zinc-500">
             {PITCHING_LABELS[k]}
           </span>
-          <span className="whitespace-nowrap font-mono text-xl font-semibold leading-none text-zinc-100 xl:text-2xl">
+          <span className="whitespace-nowrap font-mono text-xl font-semibold leading-none text-slate-900 dark:text-zinc-50 xl:text-2xl">
             {formatValue(k, p[k])}
           </span>
         </div>
@@ -70,13 +70,26 @@ export default function GameStatsSection({
 
   return (
     <section
-      className="rounded-[1.8rem] border p-5 shadow-[0_18px_48px_rgba(0,0,0,0.22)]"
+      className="relative overflow-hidden rounded-[28px] border border-border bg-surface p-5 shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:bg-zinc-950 dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]"
       style={{
-        borderColor: hexToRgba(shellAccent, 0.32),
-        background: `linear-gradient(180deg, ${hexToRgba(shellAccent, 0.08)} 0%, rgba(9,9,11,0.78) 100%)`,
+        borderColor: hexToRgba(shellAccent, 0.22),
       }}
     >
-      <div className="space-y-5">
+      <div
+        className="pointer-events-none absolute inset-0 dark:hidden"
+        style={{
+          background: `linear-gradient(180deg, ${hexToRgba(shellAccent, 0.06)} 0%, #ffffff 72%)`,
+        }}
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute inset-0 hidden dark:block"
+        style={{
+          background: `linear-gradient(180deg, ${hexToRgba(shellAccent, 0.12)} 0%, rgb(24 24 27) 72%)`,
+        }}
+        aria-hidden
+      />
+      <div className="relative space-y-5">
         {meta.linkedGames.map((game: LinkedGame) => {
           const stats = statsByGame[game.gameId] ?? null;
           const opponent = game.opponent ?? "Unknown";
@@ -85,24 +98,23 @@ export default function GameStatsSection({
           return (
             <div
               key={`${game.season}-${game.gameId}`}
-              className="rounded-[1.4rem] border border-zinc-800/70 bg-zinc-950/50 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+              className="rounded-2xl border border-border bg-background/80 p-4 shadow-sm dark:bg-zinc-900/35"
             >
               <div className="mb-4 flex flex-wrap items-center gap-2">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8] dark:text-zinc-500">
                   Pitching Line
                 </span>
                 <span
-                  className="rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+                  className="rounded-full border bg-surface px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-900 dark:text-zinc-50"
                   style={{
-                    borderColor: hexToRgba(accent, 0.28),
-                    background: `linear-gradient(135deg, ${hexToRgba(accent, 0.14)}, rgba(9,9,11,0.9))`,
-                    color: "#f4f4f5",
+                    borderColor: hexToRgba(accent, 0.35),
+                    backgroundImage: `linear-gradient(135deg, ${hexToRgba(accent, 0.12)}, transparent)`,
                   }}
                 >
                   vs {opponent}
                 </span>
                 {date && (
-                  <span className="rounded-full border border-zinc-800 bg-zinc-950/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                  <span className="rounded-full border border-[#E2E8F0] bg-surface px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:border-zinc-700 dark:text-zinc-400">
                     {date}
                   </span>
                 )}
@@ -111,7 +123,7 @@ export default function GameStatsSection({
               {stats ? (
                 <PitchingGrid stats={stats} accent={accent} />
               ) : (
-                <div className="rounded-[1.15rem] border border-dashed border-zinc-800/80 bg-zinc-950/55 px-4 py-5 text-sm text-zinc-500">
+                <div className="rounded-2xl border border-dashed border-[#E2E8F0] bg-surface px-4 py-5 text-sm text-slate-500 dark:border-zinc-700 dark:text-zinc-400">
                   Stats not found.
                 </div>
               )}

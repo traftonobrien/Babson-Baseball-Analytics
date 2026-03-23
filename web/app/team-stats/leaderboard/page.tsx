@@ -126,7 +126,7 @@ function HeaderTooltip({ label, tooltip }: { label: string; tooltip: string }) {
       >
         <CircleHelp className="h-3 w-3" />
       </button>
-      <div className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 hidden w-72 -translate-x-1/2 rounded-2xl border border-[#E2E8F0] bg-white px-3 py-2.5 text-left text-[11px] normal-case font-normal tracking-normal leading-relaxed text-[#475569] shadow-[0_20px_50px_rgba(15,23,42,0.12)] whitespace-normal group-hover:block group-focus-within:block">
+      <div className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 hidden w-72 -translate-x-1/2 rounded-2xl border border-[#E2E8F0] bg-surface px-3 py-2.5 text-left text-[11px] normal-case font-normal tracking-normal leading-relaxed text-[#475569] shadow-[0_20px_50px_rgba(15,23,42,0.12)] whitespace-normal group-hover:block group-focus-within:block dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
         {tooltip}
       </div>
     </div>
@@ -302,7 +302,7 @@ const HITTER_ADVANCED: HitterCol[] = [
 
 function rankColor(i: number): string {
   if (i === 0) return "text-[var(--brand-primary-subtle-text)]";
-  if (i === 1) return "text-[#64748B]";
+  if (i === 1) return "text-slate-500 dark:text-zinc-400";
   if (i === 2) return "text-[var(--brand-primary-spotlight)]";
   return "text-[#94A3B8]";
 }
@@ -418,9 +418,9 @@ export default function TeamStatsPage() {
   const rowCount = isPitchingView ? sortedPitchers.length : sortedHitters.length;
 
   return (
-    <main className={`min-h-screen bg-[#F8FAFC] text-[#0F172A] ${plusJakarta.className}`}>
+    <main className={`min-h-screen bg-background text-slate-900 dark:text-zinc-50 ${plusJakarta.className}`}>
       <div className="mx-auto max-w-[1440px] px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
-        <header className="rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+        <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
           <div className="flex flex-col gap-6 p-5 sm:p-7">
             <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
               <div className="min-w-0 flex-1">
@@ -428,7 +428,7 @@ export default function TeamStatsPage() {
                   <BarChart3 className="h-3.5 w-3.5" aria-hidden />
                   Statistics
                 </div>
-                <h1 className="mt-4 text-3xl font-black tracking-tight text-[#0F172A] sm:text-[2.85rem] sm:leading-[1.02]">
+                <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.85rem] sm:leading-[1.02]">
                   Statistics Leaderboard
                 </h1>
               </div>
@@ -480,18 +480,18 @@ export default function TeamStatsPage() {
           </div>
         </header>
 
-        <section className="mt-6 rounded-[1.75rem] border border-[#F1F5F9] bg-white p-4 shadow-[0_18px_48px_rgba(15,23,42,0.04)] sm:p-5">
+        <section className="mt-6 rounded-[28px] border border-border bg-surface p-4 shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)] sm:p-5">
           <div className="grid gap-4 xl:grid-cols-[minmax(13rem,16rem)_minmax(13rem,16rem)_minmax(12rem,14rem)_minmax(0,1fr)_auto] xl:items-end">
             <div className="space-y-2">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8]">View</div>
-              <div className="inline-flex rounded-full border border-[#F1F5F9] bg-[#F8FAFC] p-1">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8] dark:text-zinc-500">View</div>
+              <div className="inline-flex rounded-full border border-[#F1F5F9] bg-background p-1 dark:border-zinc-800">
                 {(["pitching", "batting"] as const).map((mode) => (
                   <button
                     key={mode}
                     type="button"
                     onClick={() => setStatMode(mode)}
                     className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                      statMode === mode ? "bg-white text-[var(--brand-primary-subtle-text)] shadow-sm" : "text-[#64748B] hover:text-[#0F172A]"
+                      statMode === mode ? "bg-surface text-[var(--brand-primary-subtle-text)] shadow-sm" : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50"
                     }`}
                   >
                     {mode === "pitching" ? "Pitchers" : "Hitters"}
@@ -501,15 +501,15 @@ export default function TeamStatsPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8]">Stats</div>
-              <div className="inline-flex rounded-full border border-[#F1F5F9] bg-[#F8FAFC] p-1">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8] dark:text-zinc-500">Stats</div>
+              <div className="inline-flex rounded-full border border-[#F1F5F9] bg-background p-1 dark:border-zinc-800">
                 {(["standard", "advanced"] as const).map((sec) => (
                   <button
                     key={sec}
                     type="button"
                     onClick={() => setStatSection(sec)}
                     className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                      statSection === sec ? "bg-white text-[#0F172A] shadow-sm" : "text-[#64748B] hover:text-[#0F172A]"
+                      statSection === sec ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm" : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50"
                     }`}
                   >
                     {sec === "standard" ? "Standard" : "Advanced"}
@@ -519,13 +519,13 @@ export default function TeamStatsPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8]">Qualification Floor</div>
-              <div className="rounded-2xl border border-[#F1F5F9] bg-[#F8FAFC] p-1.5">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8] dark:text-zinc-500">Qualification Floor</div>
+              <div className="rounded-2xl border border-[#F1F5F9] bg-background p-1.5 dark:border-zinc-800">
                 {isPitchingView ? (
                   <select
                     value={minIp}
                     onChange={(e) => setMinIp(Number(e.target.value))}
-                    className="w-full rounded-xl border border-[#E2E8F0] bg-white px-3 py-2.5 text-sm font-semibold text-[#0F172A] outline-none"
+                    className="w-full rounded-xl border border-[#E2E8F0] bg-surface px-3 py-2.5 text-sm font-semibold text-slate-900 outline-none dark:border-zinc-700 dark:text-zinc-50"
                   >
                     {[1, 5, 10, 15, 20, 25, 30].map((n) => (
                       <option key={n} value={n}>{n} IP</option>
@@ -535,7 +535,7 @@ export default function TeamStatsPage() {
                   <select
                     value={minPa}
                     onChange={(e) => setMinPa(Number(e.target.value))}
-                    className="w-full rounded-xl border border-[#E2E8F0] bg-white px-3 py-2.5 text-sm font-semibold text-[#0F172A] outline-none"
+                    className="w-full rounded-xl border border-[#E2E8F0] bg-surface px-3 py-2.5 text-sm font-semibold text-slate-900 outline-none dark:border-zinc-700 dark:text-zinc-50"
                   >
                     {[1, 10, 20, 30, 40, 50].map((n) => (
                       <option key={n} value={n}>{n} PA</option>
@@ -546,15 +546,15 @@ export default function TeamStatsPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8]">Search</div>
-              <label className="flex items-center gap-3 rounded-2xl border border-[#F1F5F9] bg-[#F8FAFC] px-4 py-3">
-                <Search className="h-4 w-4 shrink-0 text-[#94A3B8]" />
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8] dark:text-zinc-500">Search</div>
+              <label className="flex items-center gap-3 rounded-2xl border border-[#F1F5F9] bg-background px-4 py-3 dark:border-zinc-800">
+                <Search className="h-4 w-4 shrink-0 text-[#94A3B8] dark:text-zinc-500" />
                 <input
                   type="text"
                   placeholder={isPitchingView ? "Search pitcher..." : "Search hitter..."}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full bg-transparent text-sm text-[#0F172A] outline-none placeholder:text-[#94A3B8]"
+                  className="w-full bg-transparent text-sm text-slate-900 dark:text-zinc-50 outline-none placeholder:text-[#94A3B8]"
                 />
               </label>
             </div>
@@ -564,7 +564,7 @@ export default function TeamStatsPage() {
                 <button
                   type="button"
                   onClick={() => setSearch("")}
-                  className="rounded-full border border-[#E2E8F0] bg-white px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#64748B] transition-colors hover:border-[#CBD5E1] hover:text-[#0F172A]"
+                  className="rounded-full border border-[#E2E8F0] bg-surface px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 transition-colors hover:border-[#CBD5E1] hover:text-slate-900 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-50"
                 >
                   Clear
                 </button>
@@ -573,28 +573,28 @@ export default function TeamStatsPage() {
           </div>
         </section>
 
-        <section className="mt-6 overflow-hidden rounded-[1.75rem] border border-[#F1F5F9] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.04)]">
-          <div className="flex flex-col gap-3 border-b border-[#F1F5F9] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <section className="mt-6 overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+          <div className="flex flex-col gap-3 border-b border-[#F1F5F9] px-5 py-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-lg font-bold tracking-tight text-[#0F172A]">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-zinc-50">
                 {isPitchingView ? "Pitchers" : "Hitters"}
               </h2>
-              <p className="mt-1 text-sm text-[#64748B]">
+              <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
                 {rowCount} rows shown with live sorting and qualification filtering.
               </p>
             </div>
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
-              <span className="rounded-full bg-[#F8FAFC] px-3 py-1 ring-1 ring-[#E2E8F0]">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8] dark:text-zinc-500">
+              <span className="rounded-full bg-background px-3 py-1 ring-1 ring-[#E2E8F0] dark:ring-zinc-700">
                 {isPitchingView ? `${minIp}+ IP` : `${minPa}+ PA`}
               </span>
-              <span className="rounded-full bg-[#F8FAFC] px-3 py-1 ring-1 ring-[#E2E8F0]">
+              <span className="rounded-full bg-background px-3 py-1 ring-1 ring-[#E2E8F0] dark:ring-zinc-700">
                 {statSection === "standard" ? "Standard set" : "Advanced set"}
               </span>
             </div>
           </div>
 
           {loading ? (
-            <div className="p-10 text-center text-sm text-[#64748B]">Loading statistics...</div>
+            <div className="p-10 text-center text-sm text-slate-500 dark:text-zinc-400">Loading statistics...</div>
           ) : error ? (
             <div className="px-5 py-4 text-sm text-rose-700">
               {error}
@@ -602,12 +602,12 @@ export default function TeamStatsPage() {
           ) : (
             <div className="overflow-auto">
               <table className="min-w-[1200px] w-full border-separate border-spacing-0 text-[13px]">
-                <thead className="sticky top-0 z-10 bg-white">
+                <thead className="sticky top-0 z-10 bg-surface dark:bg-zinc-900/85">
                   <tr>
-                    <th className="border-b border-[#F1F5F9] bg-white px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8] w-14">
+                    <th className="border-b border-[#F1F5F9] bg-surface px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8] dark:border-zinc-800 dark:text-zinc-400 w-14">
                       #
                     </th>
-                    <th className="border-b border-[#F1F5F9] bg-white px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8]">
+                    <th className="border-b border-[#F1F5F9] bg-surface px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8] dark:border-zinc-800 dark:text-zinc-400">
                       Player
                     </th>
                     {activeCols.map(({ key, label, tooltip }) => {
@@ -620,7 +620,7 @@ export default function TeamStatsPage() {
                         <th
                           key={key}
                           onClick={() => (isPitchingView ? handlePitcherSort(key as PitcherSortKey) : handleHitterSort(key as HitterSortKey))}
-                          className="cursor-pointer border-b border-[#F1F5F9] bg-white px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8] transition-colors hover:text-[var(--brand-primary-subtle-text)] whitespace-nowrap"
+                          className="cursor-pointer border-b border-[#F1F5F9] bg-surface px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8] transition-colors hover:text-[var(--brand-primary-subtle-text)] whitespace-nowrap dark:border-zinc-800 dark:text-zinc-400"
                         >
                           <span className="inline-flex items-center justify-end gap-1">
                             {tooltip ? <HeaderTooltip label={label} tooltip={tooltip} /> : label}
@@ -634,7 +634,7 @@ export default function TeamStatsPage() {
                 <tbody>
                   {(isPitchingView ? sortedPitchers.length : sortedHitters.length) === 0 ? (
                     <tr>
-                      <td colSpan={totalCols} className="px-4 py-14 text-center text-sm text-[#64748B]">
+                      <td colSpan={totalCols} className="px-4 py-14 text-center text-sm text-slate-500 dark:text-zinc-400">
                         <div className="flex flex-col items-center gap-2">
                           <span>{isPitchingView ? "No pitchers match your search." : "No hitters match your search."}</span>
                           {search.trim() ? (
@@ -658,18 +658,18 @@ export default function TeamStatsPage() {
                         return (
                           <tr
                             key={p.playerId}
-                            className={`border-b border-[#F8FAFC] transition-colors ${isMe ? "bg-[#ECFDF5]" : ""} ${isQualified ? "hover:bg-[#F8FAFC]" : "opacity-60 hover:opacity-80"}`}
+                            className={`border-b border-border transition-colors ${isMe ? "bg-[#ECFDF5] dark:bg-emerald-950/40" : ""} ${isQualified ? "hover:bg-background dark:hover:bg-zinc-800/40" : "opacity-60 hover:opacity-80"}`}
                           >
                             <td className={`px-4 py-3 font-mono text-xs font-semibold ${isQualified ? rankColor(i) : "text-[#94A3B8]"}`}>
                               {i + 1}
                             </td>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
-                                <span className={isQualified ? "font-semibold text-[#0F172A]" : "font-semibold text-[#64748B]"}>
+                                <span className={isQualified ? "font-semibold text-slate-900 dark:text-zinc-50" : "font-semibold text-slate-500 dark:text-zinc-400"}>
                                   {p.slug ? (
                                     <Link
                                       href={`/players/${p.slug}`}
-                                      className={`transition-colors underline decoration-[#CBD5E1] underline-offset-2 hover:decoration-[var(--brand-primary-border)] ${isQualified ? "text-[#0F172A] hover:text-[var(--brand-primary-subtle-text)]" : "text-[#64748B] hover:text-[#0F172A]"}`}
+                                      className={`transition-colors underline decoration-[#CBD5E1] underline-offset-2 hover:decoration-[var(--brand-primary-border)] ${isQualified ? "text-slate-900 dark:text-zinc-50 hover:text-[var(--brand-primary-subtle-text)]" : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50"}`}
                                     >
                                       {p.playerName}
                                       {isMe ? <span className="ml-1.5 rounded-full bg-[#D1FAE5] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[#10B981] no-underline">You</span> : null}
@@ -679,14 +679,14 @@ export default function TeamStatsPage() {
                                   )}
                                 </span>
                                 {!isQualified ? (
-                                  <span className="rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-[#94A3B8]">
+                                  <span className="rounded-full border border-[#E2E8F0] bg-background px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-[#94A3B8]">
                                     Unqualified
                                   </span>
                                 ) : null}
                               </div>
                             </td>
                             {activePitcherCols.map((col) => (
-                              <td key={col.key} className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-[#94A3B8]" : "text-[#0F172A]"}`}>
+                              <td key={col.key} className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-[#94A3B8]" : "text-slate-900 dark:text-zinc-50"}`}>
                                 {col.fmt(p)}
                               </td>
                             ))}
@@ -699,18 +699,18 @@ export default function TeamStatsPage() {
                         return (
                           <tr
                             key={h.playerId}
-                            className={`border-b border-[#F8FAFC] transition-colors ${isMe ? "bg-[#ECFDF5]" : ""} ${isQualified ? "hover:bg-[#F8FAFC]" : "opacity-60 hover:opacity-80"}`}
+                            className={`border-b border-border transition-colors ${isMe ? "bg-[#ECFDF5] dark:bg-emerald-950/40" : ""} ${isQualified ? "hover:bg-background dark:hover:bg-zinc-800/40" : "opacity-60 hover:opacity-80"}`}
                           >
                             <td className={`px-4 py-3 font-mono text-xs font-semibold ${isQualified ? rankColor(i) : "text-[#94A3B8]"}`}>
                               {i + 1}
                             </td>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
-                                <span className={isQualified ? "font-semibold text-[#0F172A]" : "font-semibold text-[#64748B]"}>
+                                <span className={isQualified ? "font-semibold text-slate-900 dark:text-zinc-50" : "font-semibold text-slate-500 dark:text-zinc-400"}>
                                   {h.slug ? (
                                     <Link
                                       href={`/players/${h.slug}`}
-                                      className={`transition-colors underline decoration-[#CBD5E1] underline-offset-2 hover:decoration-[var(--brand-primary-border)] ${isQualified ? "text-[#0F172A] hover:text-[var(--brand-primary-subtle-text)]" : "text-[#64748B] hover:text-[#0F172A]"}`}
+                                      className={`transition-colors underline decoration-[#CBD5E1] underline-offset-2 hover:decoration-[var(--brand-primary-border)] ${isQualified ? "text-slate-900 dark:text-zinc-50 hover:text-[var(--brand-primary-subtle-text)]" : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50"}`}
                                     >
                                       {h.playerName}
                                       {isMe ? <span className="ml-1.5 rounded-full bg-[#D1FAE5] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[#10B981] no-underline">You</span> : null}
@@ -720,14 +720,14 @@ export default function TeamStatsPage() {
                                   )}
                                 </span>
                                 {!isQualified ? (
-                                  <span className="rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-[#94A3B8]">
+                                  <span className="rounded-full border border-[#E2E8F0] bg-background px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-[#94A3B8]">
                                     Unqualified
                                   </span>
                                 ) : null}
                               </div>
                             </td>
                             {activeHitterCols.map((col) => (
-                              <td key={col.key} className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-[#94A3B8]" : "text-[#0F172A]"}`}>
+                              <td key={col.key} className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-[#94A3B8]" : "text-slate-900 dark:text-zinc-50"}`}>
                                 {col.fmt(h)}
                               </td>
                             ))}

@@ -17,7 +17,7 @@ export default function CompareLaneTable({ comparison, pitcherHand }: Props) {
   return (
     <table className="w-full text-[10px] border-collapse">
       <thead>
-        <tr className="text-left text-zinc-500 border-b border-zinc-600">
+        <tr className="border-b border-border text-left text-slate-500 dark:text-zinc-400">
           <th className="py-[3px] pr-1.5 font-semibold">Lane</th>
           <th className="py-[3px] pr-1.5 text-right font-semibold">N (A)</th>
           <th className="py-[3px] pr-1.5 text-right font-semibold">N (B)</th>
@@ -31,27 +31,27 @@ export default function CompareLaneTable({ comparison, pitcherHand }: Props) {
       </thead>
       <tbody>
         {comparison.map((row, i) => {
-          const stripe = i % 2 === 1 ? "bg-zinc-900/30" : "";
+          const stripe = i % 2 === 1 ? "bg-slate-50/90" : "";
           const deltaAvgColor =
             row.deltaAvgMiss == null
               ? ""
               : row.deltaAvgMiss < 0
-                ? "text-green-400"
+                ? "text-green-700"
                 : row.deltaAvgMiss > 0
-                  ? "text-red-400"
+                  ? "text-red-600"
                   : "";
           const deltaTgtColor =
             row.deltaOnTargetPct == null
               ? ""
               : row.deltaOnTargetPct > 0
-                ? "text-green-400"
+                ? "text-green-700"
                 : row.deltaOnTargetPct < 0
-                  ? "text-red-400"
+                  ? "text-red-600"
                   : "";
           return (
             <tr
               key={row.lane}
-              className={`border-b border-zinc-800/40 ${stripe}`}
+              className={`border-b border-[#F1F5F9] ${stripe}`}
             >
               <td className="py-[3px] pr-1.5 font-semibold">
                 {laneDisplayName(row.lane, pitcherHand)}

@@ -31,7 +31,7 @@ export default function PlayersFaqView() {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <DictionaryCard>
             <h3 className="text-lg font-bold text-blue-400">1. Trackman Data</h3>
-            <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+            <p className="mt-3 text-sm leading-relaxed text-slate-600">
               Pulls arsenal data, velocity, Stuff+, and movement metrics from
               radar-tracked bullpens and scrimmages.
             </p>
@@ -39,7 +39,7 @@ export default function PlayersFaqView() {
 
           <DictionaryCard>
             <h3 className="text-lg font-bold text-rose-400">2. Mechanics</h3>
-            <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+            <p className="mt-3 text-sm leading-relaxed text-slate-600">
               Pulls from the AWRE computer-vision pipeline to surface efficiency
               scores and delivery flags.
             </p>
@@ -47,7 +47,7 @@ export default function PlayersFaqView() {
 
           <DictionaryCard>
             <h3 className="text-lg font-bold text-sky-400">3. Statistics</h3>
-            <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+            <p className="mt-3 text-sm leading-relaxed text-slate-600">
               Pulls in live NCAA competition results, including traditional box
               score totals and advanced season metrics.
             </p>
@@ -63,16 +63,16 @@ export default function PlayersFaqView() {
       >
         <div className="space-y-6">
           <DictionaryCard className="sm:px-8">
-            <h3 className="text-lg font-bold text-zinc-200">Search and Filters</h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+            <h3 className="text-lg font-bold text-slate-900">Search and Filters</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
               Use throwing-hand filters and the search bar to move through the
               roster quickly. Partial name search is supported.
               </p>
           </DictionaryCard>
 
           <DictionaryCard className="sm:px-8">
-            <h3 className="text-lg font-bold text-zinc-200">Profile Routing</h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+            <h3 className="text-lg font-bold text-slate-900">Profile Routing</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
               Every profile resolves through the same identity system, so
               Trackman, Command, Mechanics, and game stats all land on the same
               athlete record.
@@ -88,7 +88,7 @@ export default function PlayersFaqView() {
         description="The platform relies on one player identity contract so every subsystem joins cleanly."
       >
         <DictionaryCard className="sm:px-8">
-          <p className="text-sm leading-relaxed text-zinc-400">
+          <p className="text-sm leading-relaxed text-slate-600">
             The system uses canonical player IDs and shared alias resolution to
             bind different source formats into one profile. A player can be
             logged under slightly different names across Trackman, box scores,

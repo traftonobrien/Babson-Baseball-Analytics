@@ -27,14 +27,15 @@ type DictionaryTone =
   | "violet"
   | "indigo";
 
+/** Light-surface chips (metrics dictionaries / updated UI). */
 const TONE_ICON_CLASSES: Record<DictionaryTone, string> = {
-  amber: "border-amber-500/20 bg-amber-500/10 text-amber-300",
-  orange: "border-orange-500/20 bg-orange-500/10 text-orange-300",
-  blue: "border-blue-500/20 bg-blue-500/10 text-blue-300",
-  sky: "border-sky-500/20 bg-sky-500/10 text-sky-300",
-  emerald: "border-emerald-500/20 bg-emerald-500/10 text-emerald-300",
-  violet: "border-violet-500/20 bg-violet-500/10 text-violet-300",
-  indigo: "border-indigo-500/20 bg-indigo-500/10 text-indigo-300",
+  amber: "border-amber-200 bg-amber-50 text-amber-700",
+  orange: "border-orange-200 bg-orange-50 text-orange-700",
+  blue: "border-blue-200 bg-blue-50 text-blue-700",
+  sky: "border-sky-200 bg-sky-50 text-sky-700",
+  emerald: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  violet: "border-violet-200 bg-violet-50 text-violet-700",
+  indigo: "border-indigo-200 bg-indigo-50 text-indigo-700",
 };
 
 export function DictionaryPageShell({
@@ -59,9 +60,10 @@ export function DictionaryPageShell({
   children: ReactNode;
 }) {
   return (
-    <LeaderboardPageFrame maxWidth={maxWidth}>
-      <LeaderboardIntro breadcrumbs={breadcrumbs}>
+    <LeaderboardPageFrame maxWidth={maxWidth} variant="light">
+      <LeaderboardIntro breadcrumbs={breadcrumbs} surface="light">
         <LeaderboardHero
+          variant="light"
           tone={tone}
           icon={Icon}
           eyebrow={eyebrow}
@@ -70,8 +72,12 @@ export function DictionaryPageShell({
           meta={
             meta ?? (
               <>
-                <LeaderboardPill tone={tone}>Reference</LeaderboardPill>
-                <LeaderboardPill tone="neutral">Guides and definitions</LeaderboardPill>
+                <LeaderboardPill tone={tone} variant="light">
+                  Reference
+                </LeaderboardPill>
+                <LeaderboardPill tone="neutral" variant="light">
+                  Guides and definitions
+                </LeaderboardPill>
               </>
             )
           }
@@ -100,8 +106,8 @@ export function DictionarySection({
   contentClassName?: string;
 }) {
   return (
-    <LeaderboardPanel className={cn("p-5 sm:p-7", className)}>
-      <div className="border-b border-zinc-800/80 pb-4">
+    <LeaderboardPanel variant="light" className={cn("p-5 sm:p-7", className)}>
+      <div className="border-b border-slate-200 pb-4">
         <div className="flex items-start gap-3">
           {Icon ? (
             <div
@@ -114,13 +120,9 @@ export function DictionarySection({
             </div>
           ) : null}
           <div className="min-w-0">
-            <h2 className="text-2xl font-black tracking-tight text-zinc-50">
-              {title}
-            </h2>
+            <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-zinc-50">{title}</h2>
             {description ? (
-              <p className="mt-2 max-w-3xl text-sm leading-7 text-zinc-400">
-                {description}
-              </p>
+              <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">{description}</p>
             ) : null}
           </div>
         </div>
@@ -140,7 +142,7 @@ export function DictionaryCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-zinc-800/70 bg-zinc-900/45 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
+        "rounded-2xl border border-border bg-surface p-6 shadow-[0_12px_28px_rgba(15,23,42,0.04)]",
         className,
       )}
     >
@@ -159,7 +161,7 @@ export function DictionaryTableShell({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-2xl border border-zinc-800/70 bg-zinc-900/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
+        "overflow-hidden rounded-2xl border border-slate-200 bg-surface shadow-[0_8px_24px_rgba(15,23,42,0.04)]",
         className,
       )}
     >
@@ -185,8 +187,7 @@ export function DictionaryHubCard({
     <Link
       href={href}
       className={cn(
-        "group block rounded-3xl border p-5 transition-smooth hover:-translate-y-0.5 hover:border-zinc-700",
-        TONE_ICON_CLASSES[tone],
+        "group block rounded-3xl border border-border bg-surface p-5 shadow-[0_12px_28px_rgba(15,23,42,0.04)] transition-smooth hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_18px_40px_rgba(15,23,42,0.06)]",
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -198,11 +199,11 @@ export function DictionaryHubCard({
         >
           <Icon className="h-5 w-5" />
         </div>
-        <ArrowLeft className="h-4 w-4 rotate-180 text-zinc-500 transition-smooth group-hover:text-zinc-200" />
+        <ArrowLeft className="h-4 w-4 rotate-180 text-slate-400 transition-smooth group-hover:text-[#6366F1]" />
       </div>
       <div className="mt-4">
-        <div className="text-base font-bold text-zinc-100">{title}</div>
-        <p className="mt-1 text-sm leading-7 text-zinc-400">{description}</p>
+        <div className="text-base font-bold text-slate-900 dark:text-zinc-50">{title}</div>
+        <p className="mt-1 text-sm leading-7 text-slate-600">{description}</p>
       </div>
     </Link>
   );

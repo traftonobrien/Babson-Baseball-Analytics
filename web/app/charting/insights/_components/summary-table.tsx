@@ -38,14 +38,14 @@ export function SummaryTable({
     const pitcherSummary = summary as PitcherComparisonSummary;
 
     return (
-      <div className="overflow-hidden rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+      <div className="overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
         <div className="border-b border-[#E2E8F0] px-5 py-4 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
                 Summary Table
               </div>
-              <div className="mt-1 text-sm text-[#64748B]">
+              <div className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
                 Filtered season-line summary for the selected pitcher.
               </div>
             </div>
@@ -56,7 +56,7 @@ export function SummaryTable({
         <div className="overflow-x-auto">
           <table className="min-w-[1040px] w-full">
             <thead>
-              <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
+              <tr className="border-b border-[#E2E8F0] bg-background">
                 {[
                   "Player",
                   "Throw",
@@ -99,7 +99,7 @@ export function SummaryTable({
                           .join("")}
                       </div>
                       <div>
-                        <div className="font-semibold text-[#0F172A]">{pitcherEntry.displayName}</div>
+                        <div className="font-semibold text-slate-900 dark:text-zinc-50">{pitcherEntry.displayName}</div>
                         <div className="mt-1 text-[11px] text-[#94A3B8]">
                           {pitcherEntry.throws ? `${pitcherEntry.throws}HP` : "Hand unknown"}
                         </div>
@@ -109,7 +109,7 @@ export function SummaryTable({
                   <td className="px-4 py-4 text-sm text-[#334155]">
                     {pitcherEntry.throws ? `${pitcherEntry.throws}HP` : "—"}
                   </td>
-                  <td className="px-4 py-4 text-sm font-semibold text-[#0F172A]">{seasonLabel}</td>
+                  <td className="px-4 py-4 text-sm font-semibold text-slate-900 dark:text-zinc-50">{seasonLabel}</td>
                   <td className="px-4 py-4 text-sm text-[#334155]">
                     {formatCount(pitcherSummary.totalPitches)}
                   </td>
@@ -136,14 +136,14 @@ export function SummaryTable({
   const hitterSummary = summary as ChartingPlayerComparisonSummary;
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+    <div className="overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
       <div className="border-b border-[#E2E8F0] px-5 py-4 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
               Summary Table
             </div>
-            <div className="mt-1 text-sm text-[#64748B]">
+            <div className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
               Filtered season-line summary for the selected hitter.
             </div>
           </div>
@@ -154,7 +154,7 @@ export function SummaryTable({
       <div className="overflow-x-auto">
         <table className="min-w-[1020px] w-full">
           <thead>
-            <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
+            <tr className="border-b border-[#E2E8F0] bg-background">
               {[
                 "Player",
                 "Season",
@@ -199,14 +199,14 @@ export function SummaryTable({
                         .join("")}
                     </div>
                     <div>
-                      <div className="font-semibold text-[#0F172A]">{hitterEntry.displayName}</div>
+                      <div className="font-semibold text-slate-900 dark:text-zinc-50">{hitterEntry.displayName}</div>
                       <div className="mt-1 text-[11px] text-[#94A3B8]">
                         {hitterEntry.batterHand ? `${hitterEntry.batterHand}HH` : "Hand unknown"}
                       </div>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-4 text-sm font-semibold text-[#0F172A]">{seasonLabel}</td>
+                <td className="px-4 py-4 text-sm font-semibold text-slate-900 dark:text-zinc-50">{seasonLabel}</td>
                 <td className="px-4 py-4 text-sm text-[#334155]">
                   {formatCount(hitterSummary.totalPitches)}
                 </td>

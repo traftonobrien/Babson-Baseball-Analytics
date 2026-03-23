@@ -5,6 +5,7 @@ import {
   plusMetricBadgeStyle,
   stuffPlusAccentClass,
 } from "@/lib/stuffPlusUtils";
+import { useSiteAppearance } from "@/app/components/SiteAppearanceContext";
 
 interface StuffPlusPitch {
   pitchType: string;
@@ -19,7 +20,8 @@ interface Props {
 /**
  * Stuff+ hero card: Total Stuff+ number with color-coded badge and pitch count.
  */
-export default function StuffPlusSummaryCard({ arsenal, playerId }: Props) {
+export default function StuffPlusSummaryCard({ arsenal, playerId: _playerId }: Props) {
+  const isDark = useSiteAppearance() === "dark";
   if (arsenal.length === 0) return null;
 
   const total = computeTotalStuffPlus(arsenal);
@@ -28,21 +30,37 @@ export default function StuffPlusSummaryCard({ arsenal, playerId }: Props) {
 
   return (
     <div
-      className={`relative flex h-full min-h-[156px] flex-col overflow-hidden rounded-[1.2rem] border border-zinc-800/85 bg-[radial-gradient(circle_at_84%_14%,rgba(59,130,246,0.05),transparent_22%),linear-gradient(180deg,rgba(24,24,27,0.84),rgba(9,9,11,0.96))] p-3.5 shadow-[0_14px_28px_rgba(0,0,0,0.14)] ${accentBorder}`}
+      className={
+        isDark
+          ? `relative flex h-full min-h-[156px] flex-col overflow-hidden rounded-[1.2rem] border border-zinc-700 bg-zinc-900/50 p-3.5 shadow-[0_16px_40px_rgba(0,0,0,0.35)] ${accentBorder}`
+          : `relative flex h-full min-h-[156px] flex-col overflow-hidden rounded-[1.2rem] border border-border bg-surface p-3.5 shadow-[0_16px_40px_rgba(15,23,42,0.06)] ${accentBorder}`
+      }
     >
-      <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent" />
+      <div
+        className={
+          isDark
+            ? "pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-zinc-600 to-transparent"
+            : "pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"
+        }
+      />
       {total != null && (
         <>
           <div className="relative flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-zinc-400">
                 Total Stuff+
               </p>
-              <p className="mt-1.5 text-[13px] text-zinc-500">
+              <p className="mt-1.5 text-[13px] text-slate-500 dark:text-zinc-400">
                 Across the full Trackman sample.
               </p>
             </div>
-            <div className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-400">
+            <div
+              className={
+                isDark
+                  ? "shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500"
+                  : "shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#94A3B8]"
+              }
+            >
               {arsenal.length} pitch type{arsenal.length !== 1 ? "s" : ""}
             </div>
           </div>

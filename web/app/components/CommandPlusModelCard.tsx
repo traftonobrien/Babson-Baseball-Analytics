@@ -29,7 +29,7 @@ export default function CommandPlusModelCard({
               Command+ Model
             </p>
             {season != null ? (
-              <span className="rounded-full border border-orange-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-orange-700 shadow-[0_8px_18px_rgba(251,146,60,0.10)]">
+              <span className="rounded-full border border-orange-200 bg-surface px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-orange-700 shadow-[0_8px_18px_rgba(251,146,60,0.10)]">
                 {season} Live Season
               </span>
             ) : null}
@@ -57,14 +57,14 @@ export default function CommandPlusModelCard({
             {result?.overall?.toFixed(0)}
           </div>
         ) : (
-          <div className="inline-flex min-w-[8rem] items-center justify-center rounded-2xl border border-orange-200 bg-white px-4 py-3 font-mono text-sm font-black uppercase tracking-[0.18em] text-slate-500">
+          <div className="inline-flex min-w-[8rem] items-center justify-center rounded-2xl border border-orange-200 bg-surface px-4 py-3 font-mono text-sm font-black uppercase tracking-[0.18em] text-slate-500">
             Not Ready
           </div>
         )}
       </div>
 
       <div className="mt-6 grid gap-3 md:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
+        <div className="rounded-2xl border border-slate-200 bg-surface px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
             Qualified Pitches
           </p>
@@ -73,7 +73,7 @@ export default function CommandPlusModelCard({
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
+        <div className="rounded-2xl border border-slate-200 bg-surface px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
             Qualified Types
           </p>
@@ -82,7 +82,7 @@ export default function CommandPlusModelCard({
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
+        <div className="rounded-2xl border border-slate-200 bg-surface px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
             Excluded Types
           </p>
@@ -109,7 +109,7 @@ export default function CommandPlusModelCard({
               key={row.pitchType}
               className={`min-w-[188px] rounded-2xl border px-3 py-3 ${
                 row.eligible
-                  ? "border-slate-200 bg-white"
+                  ? "border-slate-200 bg-surface"
                   : "border-slate-200 bg-slate-50/70 opacity-75"
               }`}
             >

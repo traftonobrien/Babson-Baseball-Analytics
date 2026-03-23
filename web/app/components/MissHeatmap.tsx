@@ -225,22 +225,22 @@ export default function MissHeatmap({ pitches, throwsHand }: Props) {
   );
 
   return (
-    <div className="overflow-hidden rounded-[1.6rem] border border-zinc-800/80 bg-zinc-950/80 p-4 shadow-[0_18px_48px_rgba(0,0,0,0.22)]">
+    <div className="overflow-hidden rounded-[28px] border border-border bg-surface p-4 shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
       <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+          <h3 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8]">
             Target Heatmap
           </h3>
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
             Zones represent where the catcher set up.
           </p>
         </div>
-        <span className="rounded-full border border-zinc-800 bg-zinc-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+        <span className="rounded-full border border-[#E2E8F0] bg-background px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
           Catcher View
         </span>
       </div>
 
-      <p className="mb-3 text-xs text-zinc-500">
+      <p className="mb-3 text-xs text-slate-500 dark:text-zinc-400">
         Zones represent where the catcher set up &mdash; not where the pitch crossed the plate.
       </p>
 
@@ -277,7 +277,7 @@ export default function MissHeatmap({ pitches, throwsHand }: Props) {
         {/* Tooltip */}
         {tooltip && (
           <div
-            className="pointer-events-none absolute z-10 whitespace-nowrap rounded-xl border border-zinc-700 bg-zinc-800/95 px-2 py-1 text-xs text-zinc-200"
+            className="pointer-events-none absolute z-10 whitespace-nowrap rounded-xl border border-[#E2E8F0] bg-surface px-2 py-1 text-xs text-slate-900 dark:text-zinc-50 shadow-lg"
             style={{ left: tooltip.x + 12, top: tooltip.y - 32 }}
           >
             Hit spot {Math.round(tooltip.hitPct)}%
@@ -286,12 +286,12 @@ export default function MissHeatmap({ pitches, throwsHand }: Props) {
       </div>
 
       {/* Perspective caption */}
-      <p className="mt-2 text-center text-xs text-zinc-500">
+      <p className="mt-2 text-center text-xs text-slate-500 dark:text-zinc-400">
         Perspective: catcher view (looking at pitcher)
       </p>
 
       {/* Legend */}
-      <div className="mt-3 flex flex-wrap items-center justify-center gap-4 text-sm text-zinc-300">
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-4 text-sm text-[#475569]">
         <span className="flex items-center gap-1.5">
           <span
             className="inline-block h-3 w-3 rounded-sm"
@@ -307,7 +307,7 @@ export default function MissHeatmap({ pitches, throwsHand }: Props) {
           Missed target (DA / MA / UA)
         </span>
       </div>
-      <p className="mt-2 text-center text-xs text-zinc-500">
+      <p className="mt-2 text-center text-xs text-slate-500 dark:text-zinc-400">
         Color shows how often pitches hit the catcher&apos;s intended target zone.
       </p>
     </div>

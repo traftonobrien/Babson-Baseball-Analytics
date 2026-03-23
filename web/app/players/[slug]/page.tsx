@@ -201,11 +201,11 @@ function StatRow({
 }) {
   return (
     <div className="flex items-center justify-between border-b border-[#F1F5F9] px-4 py-3 last:border-b-0">
-      <span className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#64748B]">
+      <span className="text-[12px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-zinc-400">
         {label}
       </span>
       <span
-        className={`text-[15px] font-bold tracking-tight ${accent ? "text-[var(--brand-primary-subtle-text)]" : "text-[#0F172A]"}`}
+        className={`text-[15px] font-bold tracking-tight ${accent ? "text-[var(--brand-primary-subtle-text)]" : "text-slate-900 dark:text-zinc-50"}`}
       >
         {value}
       </span>
@@ -481,31 +481,33 @@ export default async function PlayerProfilePage({
   ];
 
   return (
-    <div className={`${manrope.className} min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_36%,#f8fafc_100%)] text-[#0F172A]`}>
+    <div
+      className={`${manrope.className} relative min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_36%,#f8fafc_100%)] text-slate-900 dark:bg-[linear-gradient(180deg,#09090b_0%,#18181b_36%,#09090b_100%)] dark:text-zinc-50`}
+    >
       <div
-        className="absolute inset-x-0 top-0 h-72"
+        className="pointer-events-none absolute inset-x-0 top-0 h-72 opacity-100 dark:opacity-50"
         style={{
           background:
             "radial-gradient(circle at top, rgba(var(--brand-primary-rgb), 0.1), transparent 58%)",
         }}
       />
       <div
-        className="absolute left-1/2 top-24 h-64 w-64 -translate-x-1/2 rounded-full blur-3xl"
+        className="pointer-events-none absolute left-1/2 top-24 h-64 w-64 -translate-x-1/2 rounded-full blur-3xl opacity-100 dark:opacity-35"
         style={{ backgroundColor: "rgba(var(--brand-primary-rgb), 0.18)" }}
       />
       <div className="relative mx-auto flex min-h-screen w-full max-w-[1820px] flex-col">
-        <header className="sticky top-0 z-20 border-b border-[#F1F5F9] bg-white/90 backdrop-blur">
+        <header className="sticky top-0 z-20 border-b border-[#F1F5F9] bg-surface/90 backdrop-blur">
           <div className="flex flex-col gap-4 px-5 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6 lg:px-8">
             <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
               <Link
                 href="/players"
-                className="inline-flex h-9 shrink-0 items-center gap-2 self-start rounded-full border border-[#E2E8F0] bg-white px-3 text-[12px] font-semibold leading-none text-[#475569] transition-colors hover:border-[#CBD5E1] hover:text-[#0F172A] sm:self-center"
+                className="inline-flex h-9 shrink-0 items-center gap-2 self-start rounded-full border border-[#E2E8F0] bg-surface px-3 text-[12px] font-semibold leading-none text-[#475569] transition-colors hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50 sm:self-center"
               >
                 <ArrowLeft className="h-4 w-4 shrink-0" />
                 Back to roster
               </Link>
               <h1
-                className={`${plusJakarta.className} m-0 min-w-0 flex-1 self-center text-[22px] font-extrabold leading-tight tracking-tight text-[#0F172A] sm:text-[28px] lg:text-[30px]`}
+                className={`${plusJakarta.className} m-0 min-w-0 flex-1 self-center text-[22px] font-extrabold leading-tight tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[28px] lg:text-[30px]`}
               >
                 {resolvedPlayer.name}
               </h1>
@@ -514,7 +516,7 @@ export default async function PlayerProfilePage({
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
               <Link
                 href="/players"
-                className="inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-white px-4 py-2 text-[13px] font-semibold text-[#475569] transition-colors hover:border-[#CBD5E1] hover:text-[#0F172A]"
+                className="inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-surface px-4 py-2 text-[13px] font-semibold text-[#475569] transition-colors hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
               >
                 <ScanLine className="h-4 w-4" />
                 Roster index
@@ -530,7 +532,7 @@ export default async function PlayerProfilePage({
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 xl:px-10 lg:py-8 2xl:px-12">
           <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)] 2xl:grid-cols-[280px_minmax(0,1fr)]">
             <aside className="order-2 space-y-6 self-start xl:order-1 xl:sticky xl:top-[104px]">
-              <section className="overflow-hidden rounded-[32px] border border-[#E2E8F0] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.06)]">
+              <section className="overflow-hidden rounded-[32px] border border-[#E2E8F0] bg-surface shadow-[0_24px_64px_rgba(15,23,42,0.06)]">
                 <div
                   className="px-6 pb-8 pt-6 text-white"
                   style={{
@@ -539,7 +541,7 @@ export default async function PlayerProfilePage({
                   }}
                 >
                   <div className="flex flex-col items-start gap-5">
-                    <div className="flex h-24 w-24 items-center justify-center rounded-full border border-white/20 bg-white/10 text-[2rem] font-extrabold tracking-tight shadow-[0_24px_40px_rgba(15,23,42,0.20)] backdrop-blur">
+                    <div className="flex h-24 w-24 items-center justify-center rounded-full border border-white/20 bg-surface/10 text-[2rem] font-extrabold tracking-tight shadow-[0_24px_40px_rgba(15,23,42,0.20)] backdrop-blur">
                       {profileInitials}
                     </div>
 
@@ -556,18 +558,18 @@ export default async function PlayerProfilePage({
                       {resolvedPlayer.positions.slice(0, 3).map((position) => (
                         <span
                           key={position}
-                          className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90"
+                          className="rounded-full border border-white/15 bg-surface/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90"
                         >
                           {position}
                         </span>
                       ))}
                       {handBadge ? (
-                        <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90">
+                        <span className="rounded-full border border-white/15 bg-surface/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90">
                           {handBadge}
                         </span>
                       ) : null}
                       {sizeLine ? (
-                        <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold tracking-wide text-white/90">
+                        <span className="rounded-full border border-white/15 bg-surface/10 px-3 py-1 text-[11px] font-semibold tracking-wide text-white/90">
                           {sizeLine}
                         </span>
                       ) : null}
@@ -586,7 +588,7 @@ export default async function PlayerProfilePage({
             </aside>
 
             <div className="order-1 min-w-0 space-y-8 xl:order-2">
-              <section className="overflow-hidden rounded-[32px] border border-[#E2E8F0] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.06)]">
+              <section className="overflow-hidden rounded-[32px] border border-[#E2E8F0] bg-surface shadow-[0_24px_64px_rgba(15,23,42,0.06)]">
                 <div className="px-6 pb-6 pt-3 sm:px-7 sm:pb-7 sm:pt-4">
                   <PlayerProfileTabs
                     profileMode={profileMode}

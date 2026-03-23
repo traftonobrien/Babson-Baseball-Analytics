@@ -3,6 +3,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import Breadcrumbs, { type BreadcrumbItem } from "@/app/components/Breadcrumbs";
+import { useSiteAppearance } from "@/app/components/SiteAppearanceContext";
 
 type LeaderboardTone =
   | "amber"
@@ -117,6 +118,17 @@ const HERO_TONES: Record<LeaderboardTone, {
   },
 };
 
+/** Light dictionary / hub-style hero eyebrow chips (matches updated UI). */
+const LIGHT_HERO_EYEBROW: Record<LeaderboardTone, string> = {
+  amber: "border-amber-200 bg-amber-50 text-amber-800",
+  orange: "border-orange-200 bg-orange-50 text-orange-800",
+  blue: "border-blue-200 bg-blue-50 text-blue-800",
+  sky: "border-sky-200 bg-sky-50 text-sky-800",
+  emerald: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  violet: "border-violet-200 bg-violet-50 text-violet-800",
+  indigo: "border-indigo-200 bg-indigo-50 text-indigo-800",
+};
+
 const PILL_TONES: Record<Exclude<PillTone, "brand" | "neutral">, string> = {
   amber: "border-amber-500/25 bg-amber-500/10 text-amber-300",
   orange: "border-orange-500/25 bg-orange-500/10 text-orange-300",
@@ -140,6 +152,30 @@ const LIGHT_PILL_TONES: Record<PillTone, string> = {
   indigo: "border-indigo-200 bg-indigo-50 text-indigo-700",
 };
 
+/** Light chrome when the site is in dark mode — zinc surfaces, readable tints. */
+const LIGHT_PILL_ON_DARK_SITE: Record<PillTone, string> = {
+  brand:
+    "border-[color-mix(in_srgb,rgb(var(--brand-primary-rgb))_42%,var(--border-subtle))] bg-[color-mix(in_srgb,rgb(var(--brand-primary-rgb))_18%,var(--surface))] text-[var(--brand-primary-spotlight)]",
+  neutral: "border-zinc-600 bg-zinc-800/90 text-zinc-200",
+  amber: "border-amber-500/35 bg-amber-950/55 text-amber-200",
+  orange: "border-orange-500/35 bg-orange-950/50 text-orange-200",
+  blue: "border-blue-500/35 bg-blue-950/50 text-blue-200",
+  sky: "border-sky-500/35 bg-sky-950/55 text-sky-200",
+  emerald: "border-emerald-500/35 bg-emerald-950/50 text-emerald-200",
+  violet: "border-violet-500/35 bg-violet-950/50 text-violet-200",
+  indigo: "border-indigo-500/35 bg-indigo-950/50 text-indigo-200",
+};
+
+const LIGHT_HERO_EYEBROW_ON_DARK_SITE: Record<LeaderboardTone, string> = {
+  amber: "border-amber-500/35 bg-amber-950/50 text-amber-200",
+  orange: "border-orange-500/35 bg-orange-950/45 text-orange-200",
+  blue: "border-blue-500/35 bg-blue-950/50 text-blue-200",
+  sky: "border-sky-500/35 bg-sky-950/50 text-sky-200",
+  emerald: "border-emerald-500/35 bg-emerald-950/45 text-emerald-200",
+  violet: "border-violet-500/35 bg-violet-950/50 text-violet-200",
+  indigo: "border-indigo-500/35 bg-indigo-950/50 text-indigo-200",
+};
+
 function joinClasses(...values: Array<string | false | null | undefined>): string {
   return values.filter(Boolean).join(" ");
 }
@@ -147,10 +183,20 @@ function joinClasses(...values: Array<string | false | null | undefined>): strin
 export function LeaderboardPageFrame({
   children,
   maxWidth = "max-w-7xl",
+  variant = "dark",
 }: {
   children: ReactNode;
   maxWidth?: string;
+  variant?: SurfaceVariant;
 }) {
+  if (variant === "light") {
+    return (
+      <main className="min-h-screen bg-background text-slate-900 dark:text-zinc-50">
+        <div className={joinClasses("mx-auto px-4 py-5 sm:px-6 sm:py-8 lg:px-8", maxWidth)}>{children}</div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen text-zinc-100" style={BRAND_FRAME_STYLE}>
       <div className={joinClasses("mx-auto px-4 py-8 sm:px-6", maxWidth)}>{children}</div>
@@ -169,6 +215,9 @@ export function LeaderboardPill({
   className?: string;
   variant?: SurfaceVariant;
 }) {
+  const siteAppearance = useSiteAppearance();
+  const lightOnDarkSite = variant === "light" && siteAppearance === "dark";
+
   const pillStyle =
     variant === "dark"
       ? tone === "brand"
@@ -178,12 +227,14 @@ export function LeaderboardPill({
           : undefined
       : undefined;
 
+  const lightPillClass = lightOnDarkSite ? LIGHT_PILL_ON_DARK_SITE[tone] : LIGHT_PILL_TONES[tone];
+
   return (
     <span
       className={joinClasses(
         "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]",
         variant === "light"
-          ? LIGHT_PILL_TONES[tone]
+          ? lightPillClass
           : tone === "brand" || tone === "neutral"
             ? undefined
             : PILL_TONES[tone],
@@ -209,15 +260,20 @@ export function LeaderboardStatBlock({
   emphasisClassName?: string;
   variant?: SurfaceVariant;
 }) {
+  const siteAppearance = useSiteAppearance();
+  const lightOnDarkSite = variant === "light" && siteAppearance === "dark";
+
   const emphasisClass =
-    emphasisClassName ?? (variant === "light" ? "text-slate-900" : "text-zinc-100");
+    emphasisClassName ?? (variant === "light" ? "text-slate-900 dark:text-zinc-50" : "text-zinc-100");
 
   return (
     <div
       className={joinClasses(
         "relative overflow-hidden rounded-3xl border p-4",
         variant === "light"
-          ? "border-slate-200/80 bg-white/95 shadow-[0_14px_32px_rgba(15,23,42,0.05)]"
+          ? lightOnDarkSite
+            ? "border-zinc-700/80 bg-zinc-900/55 shadow-[0_14px_32px_rgba(0,0,0,0.35)]"
+            : "border-slate-200/80 bg-surface/95 shadow-[0_14px_32px_rgba(15,23,42,0.05)]"
           : undefined,
       )}
       style={variant === "light" ? undefined : BRAND_PANEL_STYLE}
@@ -226,7 +282,9 @@ export function LeaderboardStatBlock({
         className={joinClasses(
           "pointer-events-none absolute inset-x-8 top-0 h-px",
           variant === "light"
-            ? "bg-gradient-to-r from-transparent via-slate-200 to-transparent"
+            ? lightOnDarkSite
+              ? "bg-gradient-to-r from-transparent via-zinc-600 to-transparent"
+              : "bg-gradient-to-r from-transparent via-slate-200 to-transparent"
             : undefined,
         )}
         style={variant === "light" ? undefined : BRAND_RULE_STYLE}
@@ -234,7 +292,7 @@ export function LeaderboardStatBlock({
       <div
         className={joinClasses(
           "text-[10px] font-semibold uppercase tracking-[0.24em]",
-          variant === "light" ? "text-slate-500" : "text-zinc-500",
+          variant === "light" ? "text-slate-500 dark:text-zinc-400" : "text-zinc-500",
         )}
       >
         {label}
@@ -242,7 +300,12 @@ export function LeaderboardStatBlock({
       <div className={joinClasses("mt-2 text-2xl font-black sm:text-[2rem]", emphasisClass)}>
         {value}
       </div>
-      <div className={joinClasses("mt-1 text-xs", variant === "light" ? "text-slate-500" : "text-zinc-500")}>
+      <div
+        className={joinClasses(
+          "mt-1 text-xs",
+          variant === "light" ? "text-slate-500 dark:text-zinc-400" : "text-zinc-500",
+        )}
+      >
         {detail}
       </div>
     </div>
@@ -258,6 +321,7 @@ export function LeaderboardHero({
   meta,
   summary,
   side,
+  variant = "dark",
 }: {
   tone: LeaderboardTone;
   icon: LucideIcon;
@@ -267,8 +331,58 @@ export function LeaderboardHero({
   meta?: ReactNode;
   summary?: ReactNode;
   side?: ReactNode;
+  variant?: SurfaceVariant;
 }) {
+  const siteAppearance = useSiteAppearance();
+  const lightOnDarkSite = variant === "light" && siteAppearance === "dark";
+
   const toneClasses = HERO_TONES[tone];
+  const lightEyebrow = lightOnDarkSite ? LIGHT_HERO_EYEBROW_ON_DARK_SITE[tone] : LIGHT_HERO_EYEBROW[tone];
+
+  if (variant === "light") {
+    return (
+      <section className="mt-6">
+        <div
+          className={joinClasses(
+            "relative overflow-hidden rounded-[28px] border shadow-[0_16px_40px_rgba(15,23,42,0.04)]",
+            lightOnDarkSite
+              ? "border-zinc-700 bg-zinc-900/50 shadow-[0_16px_40px_rgba(0,0,0,0.35)]"
+              : "border-border bg-surface",
+          )}
+        >
+          <div className="relative grid gap-5 p-5 sm:p-7 xl:grid-cols-[minmax(0,1.2fr)_minmax(16rem,0.8fr)]">
+            <div className="min-w-0">
+              <div
+                className={joinClasses(
+                  "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em]",
+                  lightEyebrow,
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {eyebrow}
+              </div>
+              <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.85rem] sm:leading-[1.02]">
+                {title}
+              </h1>
+              {description ? (
+                <div className="mt-3 max-w-3xl text-sm leading-7 text-slate-600 dark:text-zinc-400 sm:text-[14px]">
+                  {description}
+                </div>
+              ) : null}
+              {meta ? <div className="mt-4 flex flex-wrap items-center gap-2">{meta}</div> : null}
+            </div>
+
+            {summary || side ? (
+              <div className="flex min-w-0 w-full flex-col gap-3 self-start items-stretch xl:items-end">
+                {summary}
+                {side}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mt-6">
@@ -304,7 +418,7 @@ export function LeaderboardHero({
           </div>
 
           {(summary || side) ? (
-            <div className="grid gap-3">
+            <div className="flex min-w-0 w-full flex-col gap-3 self-start items-stretch xl:items-end">
               {summary}
               {side}
             </div>
@@ -320,16 +434,18 @@ export function LeaderboardIntro({
   actions,
   children,
   className,
+  surface = "dark",
 }: {
   breadcrumbs: BreadcrumbItem[];
   actions?: ReactNode;
   children: ReactNode;
   className?: string;
+  surface?: "dark" | "light";
 }) {
   return (
     <div className={joinClasses("space-y-4", className)}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Breadcrumbs items={breadcrumbs} className="mb-0" />
+        <Breadcrumbs items={breadcrumbs} className="mb-0" variant={surface} />
         {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
       </div>
       <div className="[&>section]:mt-0">{children}</div>
@@ -340,10 +456,31 @@ export function LeaderboardIntro({
 export function LeaderboardToolbar({
   children,
   className,
+  variant = "dark",
 }: {
   children: ReactNode;
   className?: string;
+  variant?: SurfaceVariant;
 }) {
+  const siteAppearance = useSiteAppearance();
+  const lightOnDarkSite = variant === "light" && siteAppearance === "dark";
+
+  if (variant === "light") {
+    return (
+      <div
+        className={joinClasses(
+          "relative overflow-visible rounded-[28px] border p-4 shadow-[0_16px_40px_rgba(15,23,42,0.04)] sm:p-5",
+          lightOnDarkSite
+            ? "border-zinc-700 bg-zinc-900/50 shadow-[0_16px_40px_rgba(0,0,0,0.35)]"
+            : "border-border bg-surface",
+          className,
+        )}
+      >
+        {children}
+      </div>
+    );
+  }
+
   return (
     <div
       className={joinClasses(
@@ -367,12 +504,17 @@ export function LeaderboardPanel({
   className?: string;
   variant?: SurfaceVariant;
 }) {
+  const siteAppearance = useSiteAppearance();
+  const lightOnDarkSite = variant === "light" && siteAppearance === "dark";
+
   return (
     <div
       className={joinClasses(
         "relative overflow-hidden rounded-3xl border",
         variant === "light"
-          ? "border-slate-200/80 bg-white/95 shadow-[0_18px_44px_rgba(15,23,42,0.06)]"
+          ? lightOnDarkSite
+            ? "border-zinc-700/90 bg-zinc-900/55 shadow-[0_18px_44px_rgba(0,0,0,0.35)]"
+            : "border-slate-200/80 bg-surface/95 shadow-[0_18px_44px_rgba(15,23,42,0.06)]"
           : undefined,
         className,
       )}
@@ -382,7 +524,9 @@ export function LeaderboardPanel({
         className={joinClasses(
           "pointer-events-none absolute inset-x-8 top-0 h-px",
           variant === "light"
-            ? "bg-gradient-to-r from-transparent via-slate-200 to-transparent"
+            ? lightOnDarkSite
+              ? "bg-gradient-to-r from-transparent via-zinc-600 to-transparent"
+              : "bg-gradient-to-r from-transparent via-slate-200 to-transparent"
             : undefined,
         )}
         style={variant === "light" ? undefined : BRAND_RULE_STYLE}

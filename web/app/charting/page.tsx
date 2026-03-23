@@ -121,13 +121,13 @@ export default async function ChartingHubPage(props: {
   const hasFilters = statusFilter !== "all" || typeFilter !== "all" || searchQuery.trim().length > 0;
 
   const quickActionClass =
-    "flex w-full min-h-[44px] items-center justify-center gap-2 rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-2.5 text-[13px] font-semibold text-[#0F172A] transition-colors hover:border-[var(--brand-primary-border)] hover:bg-white hover:text-[var(--brand-primary-subtle-text)]";
-  const quickActionIconClass = "h-4 w-4 shrink-0 text-[#64748B]";
+    "flex w-full min-h-[44px] items-center justify-center gap-2 rounded-2xl border border-border bg-[#F9FAFB] px-4 py-2.5 text-[13px] font-semibold text-slate-900 dark:text-zinc-50 transition-colors hover:border-[var(--brand-primary-border)] hover:bg-surface hover:text-[var(--brand-primary-subtle-text)]";
+  const quickActionIconClass = "h-4 w-4 shrink-0 text-slate-500 dark:text-zinc-400";
 
   return (
-    <div className={`min-h-full bg-[#F9FAFB] text-[#0F172A] ${plusJakarta.className}`}>
+    <div className={`min-h-full bg-[#F9FAFB] text-slate-900 dark:text-zinc-50 ${plusJakarta.className}`}>
       <div className="mx-auto flex max-w-[1440px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
-        <header className="rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+        <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
           <div className="flex flex-col gap-6 p-5 sm:p-7">
             <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
               <div className="min-w-0 flex-1">
@@ -135,7 +135,7 @@ export default async function ChartingHubPage(props: {
                   <ClipboardList className="h-3.5 w-3.5" aria-hidden />
                   Workspace
                 </div>
-                <h1 className="mt-4 text-3xl font-black tracking-tight text-[#0F172A] sm:text-[2.85rem] sm:leading-[1.02]">
+                <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.85rem] sm:leading-[1.02]">
                   Charting Hub
                 </h1>
               </div>
@@ -197,12 +197,12 @@ export default async function ChartingHubPage(props: {
         </header>
 
         <section>
-          <div className="overflow-hidden rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+          <div className="overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
             <div className="border-b border-[#EEF2F7] px-5 py-4 sm:px-6">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-bold text-[#0F172A]">Session Queue</h2>
-                  <p className="mt-1 text-sm text-[#64748B]">
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-50">Session Queue</h2>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
                     Search, filter, and jump into any charting session.
                   </p>
                 </div>
@@ -219,7 +219,7 @@ export default async function ChartingHubPage(props: {
                 <select
                   name="status"
                   defaultValue={statusFilter}
-                  className="w-full rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 text-sm font-semibold text-[#0F172A] outline-none transition-colors focus:border-[#C7D2FE] focus:bg-white"
+                  className="w-full rounded-2xl border border-border bg-[#F9FAFB] px-4 py-3 text-sm font-semibold text-slate-900 dark:text-zinc-50 outline-none transition-colors focus:border-[#C7D2FE] focus:bg-surface"
                 >
                   <option value="all">All statuses</option>
                   <option value="active">Active</option>
@@ -232,7 +232,7 @@ export default async function ChartingHubPage(props: {
                 <select
                   name="type"
                   defaultValue={typeFilter}
-                  className="w-full rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 text-sm font-semibold text-[#0F172A] outline-none transition-colors focus:border-[#C7D2FE] focus:bg-white"
+                  className="w-full rounded-2xl border border-border bg-[#F9FAFB] px-4 py-3 text-sm font-semibold text-slate-900 dark:text-zinc-50 outline-none transition-colors focus:border-[#C7D2FE] focus:bg-surface"
                 >
                   <option value="all">All types</option>
                   <option value="game">Games</option>
@@ -241,14 +241,14 @@ export default async function ChartingHubPage(props: {
               </Field>
 
               <Field label="Search">
-                <label className="flex items-center gap-3 rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 transition-colors focus-within:border-[#C7D2FE] focus-within:bg-white">
+                <label className="flex items-center gap-3 rounded-2xl border border-border bg-[#F9FAFB] px-4 py-3 transition-colors focus-within:border-[#C7D2FE] focus-within:bg-surface">
                   <Search className="h-4 w-4 shrink-0 text-[#94A3B8]" />
                   <input
                     type="text"
                     name="q"
                     defaultValue={searchQuery}
                     placeholder="Search opponent, date, or status..."
-                    className="w-full bg-transparent text-sm text-[#0F172A] outline-none placeholder:text-[#94A3B8]"
+                    className="w-full bg-transparent text-sm text-slate-900 dark:text-zinc-50 outline-none placeholder:text-[#94A3B8]"
                   />
                 </label>
               </Field>
@@ -263,7 +263,7 @@ export default async function ChartingHubPage(props: {
                 {hasFilters ? (
                   <Link
                     href="/charting"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-xs font-bold uppercase tracking-[0.18em] text-[#64748B] transition-colors hover:border-[#CBD5E1] hover:text-[#0F172A]"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-border bg-surface px-4 py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400 transition-colors hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
                   >
                     Clear
                   </Link>
@@ -274,8 +274,8 @@ export default async function ChartingHubPage(props: {
             {games.length === 0 ? (
               <div className="flex flex-col items-center justify-center px-6 py-24 text-center">
                 <ClipboardList className="mb-5 h-14 w-14 text-[#CBD5E1]" />
-                <h2 className="text-xl font-bold text-[#0F172A]">No games yet</h2>
-                <p className="mt-2 max-w-sm text-sm leading-7 text-[#64748B]">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-50">No games yet</h2>
+                <p className="mt-2 max-w-sm text-sm leading-7 text-slate-500 dark:text-zinc-400">
                   Start a new charting session to populate the hub.
                 </p>
                 <Link
@@ -289,13 +289,13 @@ export default async function ChartingHubPage(props: {
             ) : filteredGames.length === 0 ? (
               <div className="flex flex-col items-center justify-center px-6 py-24 text-center">
                 <Search className="mb-5 h-12 w-12 text-[#CBD5E1]" />
-                <h2 className="text-xl font-bold text-[#0F172A]">No matches</h2>
-                <p className="mt-2 max-w-sm text-sm leading-7 text-[#64748B]">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-50">No matches</h2>
+                <p className="mt-2 max-w-sm text-sm leading-7 text-slate-500 dark:text-zinc-400">
                   No charting games match the current search and filter set.
                 </p>
                 <Link
                   href="/charting"
-                  className="mt-6 inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-white px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#475569] transition-colors hover:border-[#CBD5E1] hover:text-[#0F172A]"
+                  className="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#475569] transition-colors hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
                 >
                   Clear Filters
                 </Link>
@@ -306,14 +306,14 @@ export default async function ChartingHubPage(props: {
                   const pa = paCountByGame.get(game.id) ?? 0;
 
                   return (
-                    <div key={game.id} className="group px-5 py-4 transition-colors hover:bg-[#F8FAFC] sm:px-6">
+                    <div key={game.id} className="group px-5 py-4 transition-colors hover:bg-background sm:px-6">
                       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <Link
                           href={`/charting/games/${game.id}`}
                           className="flex min-w-0 flex-1 items-center gap-4"
                           aria-label={`View data for game against ${game.opponent || "Unnamed Game"}`}
                         >
-                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#F8FAFC] text-[13px] font-bold text-[#64748B] ring-1 ring-[#E5E7EB]">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-background text-[13px] font-bold text-slate-500 dark:text-zinc-400 ring-1 ring-border">
                             {initialsForOpponent(game.opponent)}
                           </div>
 
@@ -328,7 +328,7 @@ export default async function ChartingHubPage(props: {
                               {pa > 0 ? <Pill tone="neutral">{pa} PA{pa !== 1 ? "s" : ""}</Pill> : null}
                             </div>
 
-                            <h3 className="mt-3 truncate text-[16px] font-bold text-[#0F172A] transition-colors group-hover:text-[#6366F1]">
+                            <h3 className="mt-3 truncate text-[16px] font-bold text-slate-900 dark:text-zinc-50 transition-colors group-hover:text-[#6366F1]">
                               <EditableChartingGameNameInList
                                 gameId={game.id}
                                 initialOpponent={game.opponent}
@@ -337,7 +337,7 @@ export default async function ChartingHubPage(props: {
                               />
                             </h3>
 
-                            <p className="mt-1 text-sm text-[#64748B]">
+                            <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
                               {format(parseISO(game.gameDate), "EEEE, MMMM d, yyyy")}
                             </p>
                           </div>
@@ -346,7 +346,7 @@ export default async function ChartingHubPage(props: {
                         <div className="flex items-center gap-2 lg:gap-3">
                           <Link
                             href={`/charting/games/${game.id}`}
-                            className="inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#475569] transition-colors hover:border-[#CBD5E1] hover:text-[#0F172A]"
+                            className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#475569] transition-colors hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
                           >
                             <CheckCircle2 className="h-3.5 w-3.5" />
                             Overview
@@ -414,7 +414,7 @@ function Pill({
           ? "border-[#DBEAFE] bg-[#EFF6FF] text-[#0EA5E9]"
           : tone === "status"
             ? ""
-            : "border-[#E5E7EB] bg-[#F8FAFC] text-[#64748B]";
+            : "border-border bg-background text-slate-500 dark:text-zinc-400";
 
   return (
     <span

@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { createElement } from "react";
 import GameStatsSection from "./GameStatsSection";
 import type { OutingMeta, PlayerGameStats } from "./index";
 
@@ -52,7 +53,7 @@ describe("GameStatsSection", () => {
 
   it("renders fallback when stats missing", () => {
     const html = renderToStaticMarkup(
-      GameStatsSection({ meta, statsByGame: { "14570": null } }),
+      createElement(GameStatsSection, { meta, statsByGame: { "14570": null } }),
     );
     expect(html).toContain("Stats not found");
   });

@@ -6,6 +6,7 @@ import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { pitchColor } from "@/lib/pitchColors";
 import { pitchDisplayName } from "@/lib/pitchNames";
 import { sortPitchTypes } from "@/lib/pitchTypeOrder";
+import { useSiteAppearance } from "@/app/components/SiteAppearanceContext";
 
 interface Props {
   pitches: Pitch[];
@@ -54,11 +55,11 @@ export default function PitchTypeSummaryCards({ pitches }: Props) {
         return (
           <div
             key={g.type}
-            className="overflow-hidden rounded-[1.5rem] border border-zinc-800/80 bg-zinc-950/72 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+            className="overflow-hidden rounded-2xl border border-border bg-surface p-4 shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]"
           >
             <div className="flex items-center justify-between gap-2">
-              <PitchTypeChip pitchType={g.type} label={pitchDisplayName(g.type)} size="xs" variant="solid" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              <PitchTypeChip pitchType={g.type} label={pitchDisplayName(g.type)} size="xs" variant="soft" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8] dark:text-zinc-500">
                 {g.pitches.length} pitch{g.pitches.length !== 1 && "es"}
               </span>
             </div>
@@ -109,16 +110,27 @@ function hexToRgbChannels(value: string): string {
   return `${red}, ${green}, ${blue}`;
 }
 
-function statStyle(pitchType: string): CSSProperties {
+function statStyle(pitchType: string, siteDark: boolean): CSSProperties {
   const color = pitchColor(pitchType);
   const rgb = hexToRgbChannels(color);
 
+  if (siteDark) {
+    return {
+      borderColor: `rgba(${rgb}, 0.38)`,
+      boxShadow: [
+        "0 1px 2px rgba(0,0,0,0.4)",
+        `0 0 0 1px rgba(${rgb}, 0.16)`,
+        `0 8px 20px rgba(${rgb}, 0.14)`,
+      ].join(", "),
+    };
+  }
+
   return {
-    borderColor: `rgba(${rgb}, 0.18)`,
+    borderColor: `rgba(${rgb}, 0.22)`,
     boxShadow: [
-      "inset 0 1px 0 rgba(255,255,255,0.03)",
-      `0 0 0 1px rgba(${rgb}, 0.05)`,
-      `0 0 14px rgba(${rgb}, 0.08)`,
+      "0 1px 2px rgba(15,23,42,0.04)",
+      `0 0 0 1px rgba(${rgb}, 0.08)`,
+      `0 8px 20px rgba(${rgb}, 0.06)`,
     ].join(", "),
   };
 }
@@ -132,16 +144,17 @@ function Stat({
   value: string;
   pitchType: string;
 }) {
+  const siteDark = useSiteAppearance() === "dark";
   return (
     <div
-      className="h-[3.75rem] w-[7.5rem] justify-self-center rounded-full border bg-[linear-gradient(180deg,rgba(24,24,27,0.78),rgba(9,9,11,0.92))] px-3 py-1.5 text-center"
-      style={statStyle(pitchType)}
+      className="h-[3.75rem] w-[7.5rem] justify-self-center rounded-full border bg-[linear-gradient(180deg,rgba(248,250,252,0.95),#ffffff)] px-3 py-1.5 text-center shadow-sm dark:bg-[linear-gradient(180deg,rgb(39_39_42_/_0.96),rgb(24_24_27))]"
+      style={statStyle(pitchType, siteDark)}
     >
       <div className="flex h-full flex-col items-center justify-center">
-        <div className="text-[1.22rem] font-mono font-semibold leading-none text-zinc-100">
+        <div className="text-[1.22rem] font-mono font-semibold leading-none text-slate-900 dark:text-zinc-50">
           {value}
         </div>
-        <div className="mt-0.5 max-w-[6rem] whitespace-nowrap text-[8px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+        <div className="mt-0.5 max-w-[6rem] whitespace-nowrap text-[8px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8] dark:text-zinc-500">
           {label}
         </div>
       </div>

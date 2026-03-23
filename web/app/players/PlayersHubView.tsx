@@ -131,7 +131,7 @@ function FilterChip({
         "rounded-full border px-4 py-2 text-[12px] font-semibold transition-all duration-300",
         active
           ? "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)] shadow-[0_10px_24px_rgba(var(--brand-primary-rgb),0.12)]"
-          : "border-[#E2E8F0] bg-white text-[#64748B] hover:border-[#CBD5E1] hover:text-[#0F172A]",
+          : "border-[#E2E8F0] bg-surface text-slate-500 dark:text-zinc-400 hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50",
       )}
     >
       {children}
@@ -160,8 +160,8 @@ function PlayerRow({
     <Link
       href={`/players/${player.slug}`}
       className={cn(
-        "group block border-t border-[#F1F5F9] transition-colors hover:bg-[#F8FAFC]",
-        pinned ? "bg-[var(--brand-primary-surface)]" : "bg-white",
+        "group block border-t border-[#F1F5F9] transition-colors hover:bg-background",
+        pinned ? "bg-[var(--brand-primary-surface)]" : "bg-surface",
       )}
     >
       <div className="grid gap-4 px-5 py-4 lg:grid-cols-[minmax(0,1.7fr)_7.5rem_7.5rem_7rem_minmax(0,1.1fr)] lg:items-center">
@@ -171,7 +171,7 @@ function PlayerRow({
               "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-[12px] font-bold",
               pinned
                 ? "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)]"
-                : "border-[#E2E8F0] bg-[#F8FAFC] text-[#64748B]",
+                : "border-[#E2E8F0] bg-background text-slate-500 dark:text-zinc-400",
             )}
           >
             {initials}
@@ -179,7 +179,7 @@ function PlayerRow({
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span
-                className={`${plusJakarta.className} truncate text-[15px] font-bold text-[#0F172A] transition-colors group-hover:text-[var(--brand-primary-subtle-text)]`}
+                className={`${plusJakarta.className} truncate text-[15px] font-bold text-slate-900 dark:text-zinc-50 transition-colors group-hover:text-[var(--brand-primary-subtle-text)]`}
               >
                 {displayName}
               </span>
@@ -192,14 +192,14 @@ function PlayerRow({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-[13px] font-semibold text-[#0F172A] lg:block lg:text-[#64748B]">
+        <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-900 dark:text-zinc-50 lg:block lg:text-slate-500 dark:lg:text-zinc-400">
           <span className="lg:hidden text-[11px] uppercase tracking-[0.16em] text-[#94A3B8]">
             Role
           </span>
           <span>{roleLabel}</span>
         </div>
 
-        <div className="flex items-center gap-2 text-[13px] font-semibold text-[#0F172A] lg:block lg:text-[#64748B]">
+        <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-900 dark:text-zinc-50 lg:block lg:text-slate-500 dark:lg:text-zinc-400">
           <span className="lg:hidden text-[11px] uppercase tracking-[0.16em] text-[#94A3B8]">
             Class
           </span>
@@ -226,7 +226,7 @@ function PlayerRow({
 
         <div className="flex items-center justify-between gap-3 lg:justify-end">
           <div className="text-right">
-            <div className="text-[13px] font-semibold text-[#0F172A]">
+            <div className="text-[13px] font-semibold text-slate-900 dark:text-zinc-50">
               {details.slice(0, 2).join(" · ") || "Open profile"}
             </div>
             <div className="mt-1 text-[11px] uppercase tracking-[0.16em] text-[#94A3B8]">
@@ -339,10 +339,10 @@ export default function PlayersHubView({
 
   return (
     <div
-      className={`relative min-h-full bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_30%,#f8fafc_100%)] text-[#0F172A] ${manrope.className}`}
+      className={`relative min-h-full bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_30%,#f8fafc_100%)] text-slate-900 dark:bg-[linear-gradient(180deg,#09090b_0%,#18181b_38%,#09090b_100%)] dark:text-zinc-50 ${manrope.className}`}
     >
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-80"
+        className="pointer-events-none absolute inset-x-0 top-0 h-80 opacity-100 dark:opacity-55"
         style={{
           background:
             "radial-gradient(circle at top center, rgba(var(--brand-primary-rgb), 0.09), transparent 60%)",
@@ -350,11 +350,11 @@ export default function PlayersHubView({
       />
 
       <main className="relative mx-auto max-w-[1440px] px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
-        <header className="rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+        <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
           <div className="flex flex-col gap-6 p-5 sm:p-7">
             <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
               <div className="flex min-w-0 flex-1 flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
-                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-[22px] border border-[#E5E7EB] bg-white shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-[22px] border border-border bg-surface shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
                   <Image
                     src="/babson-logo.svg"
                     alt={`${TEAM_NAME} logo`}
@@ -370,7 +370,7 @@ export default function PlayersHubView({
                     Roster
                   </div>
                   <h1
-                    className={`${plusJakarta.className} mt-4 text-3xl font-black tracking-tight text-[#0F172A] sm:text-[2.85rem] sm:leading-[1.02]`}
+                    className={`${plusJakarta.className} mt-4 text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.85rem] sm:leading-[1.02]`}
                   >
                     {TEAM_NAME} Team Roster
                   </h1>
@@ -418,107 +418,131 @@ export default function PlayersHubView({
 
         <section className="mt-8">
           <div className="space-y-4">
-            <div className="rounded-[28px] border border-[#E7EDF5] bg-white px-5 py-5 shadow-[0_18px_48px_rgba(15,23,42,0.04)]">
-              <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                <div className="flex flex-wrap gap-2">
-                  <FilterChip active={roleFilter === "pitchers"} onClick={() => setRoleFilter("pitchers")}>
-                    Pitchers
-                  </FilterChip>
-                  <FilterChip active={roleFilter === "hitters"} onClick={() => setRoleFilter("hitters")}>
-                    Hitters
-                  </FilterChip>
-                  <FilterChip active={roleFilter === "all"} onClick={() => setRoleFilter("all")}>
-                    All Players
-                  </FilterChip>
+            <section className="rounded-[28px] border border-border bg-surface p-4 shadow-[0_16px_40px_rgba(15,23,42,0.04)] sm:p-5">
+              <div className="grid gap-5">
+                <div className="grid gap-4 xl:grid-cols-[auto_minmax(0,1.2fr)_auto] xl:items-end">
+                  <div className="space-y-2">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+                      Roster view
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <FilterChip active={roleFilter === "pitchers"} onClick={() => setRoleFilter("pitchers")}>
+                        Pitchers
+                      </FilterChip>
+                      <FilterChip active={roleFilter === "hitters"} onClick={() => setRoleFilter("hitters")}>
+                        Hitters
+                      </FilterChip>
+                      <FilterChip active={roleFilter === "all"} onClick={() => setRoleFilter("all")}>
+                        All Players
+                      </FilterChip>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+                      Player search
+                    </div>
+                    <label className="flex items-center gap-3 rounded-2xl border border-[#E2E8F0] bg-background px-4 py-3 transition-colors focus-within:border-[var(--brand-primary-border)] focus-within:bg-surface focus-within:shadow-[0_0_0_4px_rgba(var(--brand-primary-rgb),0.10)]">
+                      <Search className="h-4 w-4 shrink-0 text-[#94A3B8]" />
+                      <input
+                        type="text"
+                        placeholder="Search players by name or position..."
+                        value={search}
+                        onChange={(event) => setSearch(event.target.value)}
+                        className="w-full min-w-0 bg-transparent text-sm text-slate-900 dark:text-zinc-50 outline-none placeholder:text-[#94A3B8]"
+                      />
+                    </label>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3 xl:justify-end">
+                    {hasActiveFilters ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearch("");
+                          setRoleFilter("pitchers");
+                          setHandFilter("all");
+                          setClassFilter("all");
+                        }}
+                        className="inline-flex items-center gap-2 rounded-2xl border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-primary-subtle-text)] transition-smooth hover:opacity-90"
+                      >
+                        Reset filters
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
 
-                <div className="relative w-full xl:max-w-md">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8]" />
-                  <input
-                    type="text"
-                    placeholder="Search players by name or position..."
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    className="w-full rounded-full border border-[#E2E8F0] bg-[#F8FAFC] py-2.5 pl-11 pr-4 text-[13px] text-[#0F172A] placeholder:text-[#94A3B8] outline-none transition-colors focus:border-[var(--brand-primary-border)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(var(--brand-primary-rgb),0.10)]"
-                  />
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+                      Hand
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { value: "all", label: "All" },
+                        { value: "R", label: "R" },
+                        { value: "L", label: "L" },
+                      ].map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setHandFilter(option.value as HandFilter)}
+                          className={cn(
+                            "rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors",
+                            handFilter === option.value
+                              ? "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)]"
+                              : "border-[#E2E8F0] bg-surface text-slate-500 dark:text-zinc-400 hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50",
+                          )}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+                      Class
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {[{ value: "all", label: "All" }, ...classOptions.map((classLabel) => ({
+                        value: classLabel,
+                        label: classLabel,
+                      }))].map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setClassFilter(option.value)}
+                          className={cn(
+                            "rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors",
+                            classFilter === option.value
+                              ? "border-[#BAE6FD] bg-[#E0F2FE] text-[#0369A1]"
+                              : "border-[#E2E8F0] bg-surface text-slate-500 dark:text-zinc-400 hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50",
+                          )}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex flex-wrap items-center gap-2">
-                  {[
-                    { value: "all", label: "All" },
-                    { value: "R", label: "R" },
-                    { value: "L", label: "L" },
-                  ].map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => setHandFilter(option.value as HandFilter)}
-                      className={cn(
-                        "rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors",
-                        handFilter === option.value
-                          ? "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)]"
-                          : "border-[#E2E8F0] bg-white text-[#64748B] hover:border-[#CBD5E1] hover:text-[#0F172A]",
-                      )}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  {[{ value: "all", label: "All" }, ...classOptions.map((classLabel) => ({
-                    value: classLabel,
-                    label: classLabel,
-                  }))].map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => setClassFilter(option.value)}
-                      className={cn(
-                        "rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors",
-                        classFilter === option.value
-                          ? "border-[#BAE6FD] bg-[#E0F2FE] text-[#0369A1]"
-                          : "border-[#E2E8F0] bg-white text-[#64748B] hover:border-[#CBD5E1] hover:text-[#0F172A]",
-                      )}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-
-                  {hasActiveFilters ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSearch("");
-                        setRoleFilter("pitchers");
-                        setHandFilter("all");
-                        setClassFilter("all");
-                      }}
-                      className="rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#64748B] transition-colors hover:border-[#CBD5E1] hover:text-[#0F172A]"
-                    >
-                      Reset
-                    </button>
-                  ) : null}
-                </div>
-              </div>
-            </div>
+            </section>
 
             {featuredPlayer ? (
-              <div className="rounded-[28px] border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] px-5 py-5 shadow-[0_18px_48px_rgba(15,23,42,0.04)]">
+              <div className="rounded-[28px] border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] px-5 py-5 shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex min-w-0 items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--brand-primary-border)] bg-white text-[13px] font-bold text-[var(--brand-primary-subtle-text)]">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--brand-primary-border)] bg-surface text-[13px] font-bold text-[var(--brand-primary-subtle-text)]">
                       {getLastNameInitial(featuredPlayer.name)}
                     </div>
                     <div className="min-w-0">
-                      <div className="inline-flex items-center gap-2 rounded-full border border-[var(--brand-primary-border)] bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--brand-primary-subtle-text)]">
+                      <div className="inline-flex items-center gap-2 rounded-full border border-[var(--brand-primary-border)] bg-surface px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--brand-primary-subtle-text)]">
                         <Sparkles className="h-3.5 w-3.5" />
                         Pinned Profile
                       </div>
                       <h2
-                        className={`${plusJakarta.className} mt-2 truncate text-[1.4rem] font-extrabold tracking-tight text-[#0F172A]`}
+                        className={`${plusJakarta.className} mt-2 truncate text-[1.4rem] font-extrabold tracking-tight text-slate-900 dark:text-zinc-50`}
                       >
                         {getPlayerDisplayLabel(featuredPlayer)}
                       </h2>
@@ -539,7 +563,7 @@ export default function PlayersHubView({
               </div>
             ) : null}
 
-            <div className="rounded-[28px] border border-[#E7EDF5] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.04)]">
+            <div className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
               <div className="hidden border-b border-[#F1F5F9] px-5 py-3 lg:grid lg:grid-cols-[minmax(0,1.7fr)_7.5rem_7.5rem_7rem_minmax(0,1.1fr)]">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
                   Player
@@ -569,7 +593,7 @@ export default function PlayersHubView({
                         <a
                           key={letter}
                           href={`#players-group-${letter}`}
-                          className="flex h-8 min-w-8 items-center justify-center rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#64748B] transition-colors hover:border-[var(--brand-primary-border)] hover:bg-[var(--brand-primary-soft)] hover:text-[var(--brand-primary-subtle-text)]"
+                          className="flex h-8 min-w-8 items-center justify-center rounded-full border border-[#E2E8F0] bg-background px-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-zinc-400 transition-colors hover:border-[var(--brand-primary-border)] hover:bg-[var(--brand-primary-soft)] hover:text-[var(--brand-primary-subtle-text)]"
                         >
                           {letter}
                         </a>
@@ -605,10 +629,10 @@ export default function PlayersHubView({
               ) : (
                 <div className="flex min-h-40 items-center justify-center px-6 py-14 text-center">
                   <div>
-                    <p className="text-[15px] font-semibold text-[#0F172A]">
+                    <p className="text-[15px] font-semibold text-slate-900 dark:text-zinc-50">
                       No players match this search.
                     </p>
-                    <p className="mt-2 text-[13px] text-[#64748B]">
+                    <p className="mt-2 text-[13px] text-slate-500 dark:text-zinc-400">
                       Clear filters or widen the search to bring the roster back.
                     </p>
                   </div>

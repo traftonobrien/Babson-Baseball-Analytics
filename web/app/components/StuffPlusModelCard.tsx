@@ -60,14 +60,14 @@ export default function StuffPlusModelCard({
             {overall.toFixed(1)}
           </div>
         ) : (
-          <div className="inline-flex min-w-[8rem] items-center justify-center rounded-2xl border border-blue-200 bg-white px-4 py-3 font-mono text-sm font-black uppercase tracking-[0.18em] text-slate-500">
+          <div className="inline-flex min-w-[8rem] items-center justify-center rounded-2xl border border-blue-200 bg-surface px-4 py-3 font-mono text-sm font-black uppercase tracking-[0.18em] text-slate-500">
             Not Ready
           </div>
         )}
       </div>
 
       <div className="mt-6 grid gap-3 md:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
+        <div className="rounded-2xl border border-slate-200 bg-surface px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
             Valid Types
           </p>
@@ -76,7 +76,7 @@ export default function StuffPlusModelCard({
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
+        <div className="rounded-2xl border border-slate-200 bg-surface px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
             Tracked Rows
           </p>
@@ -85,7 +85,7 @@ export default function StuffPlusModelCard({
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
+        <div className="rounded-2xl border border-slate-200 bg-surface px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
             Sessions
           </p>
@@ -108,7 +108,7 @@ export default function StuffPlusModelCard({
               key={row.pitchType ?? "unknown"}
               className={`min-w-[188px] rounded-2xl border px-3 py-3 ${
                 row.meanStuffPlus != null
-                  ? "border-slate-200 bg-white"
+                  ? "border-slate-200 bg-surface"
                   : "border-slate-200 bg-slate-50/70 opacity-75"
               }`}
             >

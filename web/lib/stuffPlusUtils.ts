@@ -139,6 +139,44 @@ export function plusMetricSurfaceClasses(v: number | null): PlusMetricSurfaceCla
   }
 }
 
+/** Light-theme surfaces for command outing / roster-style pages (slate + tinted tiers). */
+export function plusMetricSurfaceClassesLight(v: number | null): PlusMetricSurfaceClassSet {
+  if (v === null) {
+    return {
+      borderClass: "border-slate-200 dark:border-zinc-700",
+      bgClass: "bg-slate-50/90 dark:bg-zinc-900/60",
+      pillClass: "bg-slate-200 text-slate-700 dark:bg-zinc-800 dark:text-zinc-300",
+    };
+  }
+
+  switch (plusMetricTier(v)) {
+    case "elite":
+      return {
+        borderClass: "border-rose-200 dark:border-rose-800/40",
+        bgClass: "bg-rose-50/90 dark:bg-rose-950/45",
+        pillClass: "bg-rose-100 text-rose-800 dark:bg-rose-950/55 dark:text-rose-200",
+      };
+    case "aboveAverage":
+      return {
+        borderClass: "border-orange-200 dark:border-orange-800/40",
+        bgClass: "bg-orange-50/90 dark:bg-orange-950/45",
+        pillClass: "bg-orange-100 text-orange-800 dark:bg-orange-950/55 dark:text-orange-200",
+      };
+    case "average":
+      return {
+        borderClass: "border-slate-200 dark:border-zinc-700",
+        bgClass: "bg-slate-100/80 dark:bg-zinc-900/60",
+        pillClass: "bg-slate-200 text-slate-700 dark:bg-zinc-800 dark:text-zinc-300",
+      };
+    case "belowAverage":
+      return {
+        borderClass: "border-sky-200 dark:border-sky-800/45",
+        bgClass: "bg-sky-50/90 dark:bg-sky-950/48",
+        pillClass: "bg-sky-100 text-sky-800 dark:bg-sky-950/55 dark:text-sky-200",
+      };
+  }
+}
+
 /** Four-band scale with a light-to-dark ramp inside each color family. */
 export function stuffPlusBadgeTone(v: number): StuffPlusBadgeTone {
   const displayValue = displayPlusMetricValue(v);

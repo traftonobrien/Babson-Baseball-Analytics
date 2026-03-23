@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { HitterLeaderboardTable, type HitterLeaderboardRow } from "./HitterLeaderboardTable";
 import { LeaderboardClientState } from "./LeaderboardClientState";
-import { LeaderboardPanel } from "@/app/components/leaderboards/LeaderboardChrome";
 import type { StatGroup } from "./types";
 
 interface HitsProps {
@@ -46,13 +45,12 @@ export function HitterStatGroupWrapper({
                 games={games}
                 statGroup={statGroup}
                 onStatGroupChange={setStatGroup}
-                rowCount={hitters.length}
                 scopeLabel={scopeLabel}
                 scopeGameCount={scopeGameCount}
                 sessionType={sessionType}
             />
 
-            <LeaderboardPanel className="mt-6 overflow-hidden">
+            <div className="mt-6 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-surface shadow-sm dark:border-zinc-700 dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
                 <div className="max-h-[70vh] overflow-auto">
                     <HitterLeaderboardTable
                         hitters={hitters}
@@ -60,7 +58,7 @@ export function HitterStatGroupWrapper({
                         statGroup={statGroup}
                     />
                 </div>
-            </LeaderboardPanel>
+            </div>
         </>
     );
 }

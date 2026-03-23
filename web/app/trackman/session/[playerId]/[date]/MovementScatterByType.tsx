@@ -127,10 +127,15 @@ function hexToRgbChannels(value: string): string {
 export default function MovementScatterByType({
   pitchTypes,
   hand,
+  surface = "dark",
 }: {
   pitchTypes: TrackmanPitchTypeSummary[];
   hand?: "R" | "L";
+  surface?: "dark" | "light";
 }) {
+  const isLight = surface === "light";
+  const captionFill = isLight ? "fill-slate-600" : "fill-zinc-600";
+  const captionFill9 = isLight ? "fill-slate-600" : "fill-zinc-600";
   const [hoveredPitchType, setHoveredPitchType] = useState<string | null>(null);
   // Filter out "Other" and require valid movement data
   const valid = useMemo(
@@ -368,8 +373,20 @@ export default function MovementScatterByType({
   }, [pitchTypes, hand]);
 
   return (
-    <div className="h-full overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/65 p-5 shadow-[0_24px_64px_rgba(0,0,0,0.28)] flex flex-col">
-      <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+    <div
+      className={
+        isLight
+          ? "flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-surface p-5 shadow-[0_16px_40px_rgba(15,23,42,0.04)]"
+          : "flex h-full flex-col overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950/65 p-5 shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
+      }
+    >
+      <h3
+        className={
+          isLight
+            ? "mb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-zinc-400"
+            : "mb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500"
+        }
+      >
         Movement Shape (IVB vs HB)
       </h3>
 
@@ -460,7 +477,7 @@ export default function MovementScatterByType({
             x={toSvg(v, maxAbs)}
             y={PAD + PLOT + 15}
             textAnchor="middle"
-            className="fill-zinc-600 text-[8px] font-mono"
+            className={`${captionFill} text-[8px] font-mono`}
           >
             {v}
           </text>
@@ -471,14 +488,14 @@ export default function MovementScatterByType({
             x={PAD - 6}
             y={toSvg(-v, maxAbs) + 3}
             textAnchor="end"
-            className="fill-zinc-600 text-[8px] font-mono"
+            className={`${captionFill} text-[8px] font-mono`}
           >
             {v}
           </text>
         ))}
 
         {/* Axis titles */}
-        <text x={CENTER} y={SIZE - 4} textAnchor="middle" className="fill-zinc-600 text-[9px]">
+        <text x={CENTER} y={SIZE - 4} textAnchor="middle" className={`${captionFill9} text-[9px]`}>
           Horizontal Break ({"\u2033"})
         </text>
         <text
@@ -487,7 +504,7 @@ export default function MovementScatterByType({
           textAnchor="middle"
           dominantBaseline="middle"
           transform={`rotate(-90, 10, ${CENTER})`}
-          className="fill-zinc-600 text-[9px]"
+          className={`${captionFill9} text-[9px]`}
         >
           Induced Vertical Break ({"\u2033"})
         </text>
@@ -659,7 +676,13 @@ export default function MovementScatterByType({
         )}
       </svg>
 
-      <p className="mt-1.5 text-center text-[9px] text-zinc-600">
+      <p
+        className={
+          isLight
+            ? "mt-1.5 text-center text-[9px] text-slate-500 dark:text-zinc-400"
+            : "mt-1.5 text-center text-[9px] text-zinc-600"
+        }
+      >
         Halo radius is a visual cue only. PDF exports provide averages, not per-pitch variance.
       </p>
     </div>

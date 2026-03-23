@@ -104,7 +104,7 @@ export function ProfileHeroTile({
               {label}
             </p>
             {interactive && (
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-surface text-slate-500">
                 {active ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </span>
             )}
@@ -127,7 +127,7 @@ export function ProfileHeroTile({
           {label}
         </p>
         {interactive && (
-          <span className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500">
+          <span className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-surface text-slate-500">
             {active ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </span>
         )}

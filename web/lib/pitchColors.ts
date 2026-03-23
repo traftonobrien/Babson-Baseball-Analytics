@@ -3,6 +3,63 @@
  * Single source of truth for all UI components.
  */
 
+import type { CSSProperties } from "react";
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const raw = hex.trim().replace("#", "");
+  if (raw.length === 3) {
+    const [a, b, c] = raw.split("");
+    return {
+      r: parseInt(a + a, 16),
+      g: parseInt(b + b, 16),
+      b: parseInt(c + c, 16),
+    };
+  }
+  if (raw.length !== 6) {
+    return { r: 113, g: 113, b: 122 };
+  }
+  return {
+    r: parseInt(raw.slice(0, 2), 16),
+    g: parseInt(raw.slice(2, 4), 16),
+    b: parseInt(raw.slice(4, 6), 16),
+  };
+}
+
+/** Filter panel toggled-on chips — stronger tint. */
+export type PitchChipSurfaceVariant = "filterActive" | "tableSoft";
+
+/**
+ * Inline styles for pitch-type pills. Gradients use the same RGB at each stop (varying alpha only)
+ * so the browser never interpolates through white — important for dark mode.
+ */
+export function pitchChipSurfaceStyle(
+  hex: string,
+  variant: PitchChipSurfaceVariant,
+  siteDark: boolean,
+): CSSProperties {
+  const { r, g, b } = hexToRgb(hex);
+  if (variant === "filterActive") {
+    const aTop = siteDark ? 0.34 : 0.2;
+    const aMid = siteDark ? 0.14 : 0.08;
+    const aBorder = siteDark ? 0.52 : 0.38;
+    const aRing = siteDark ? 0.28 : 0.16;
+    return {
+      borderColor: `rgba(${r}, ${g}, ${b}, ${aBorder})`,
+      backgroundImage: `linear-gradient(135deg, rgba(${r},${g},${b},${aTop}) 0%, rgba(${r},${g},${b},${aMid}) 48%, rgba(${r},${g},${b},0) 100%)`,
+      boxShadow: `0 0 0 1px rgba(${r}, ${g}, ${b}, ${aRing}), inset 0 1px 0 rgba(255,255,255,${siteDark ? 0.05 : 0.1})`,
+    };
+  }
+  const aTop = siteDark ? 0.26 : 0.16;
+  const aMid = siteDark ? 0.1 : 0.05;
+  const aBorder = siteDark ? 0.45 : 0.33;
+  const aRing = siteDark ? 0.18 : 0.1;
+  return {
+    borderColor: `rgba(${r}, ${g}, ${b}, ${aBorder})`,
+    backgroundImage: `linear-gradient(135deg, rgba(${r},${g},${b},${aTop}) 0%, rgba(${r},${g},${b},${aMid}) 50%, rgba(${r},${g},${b},0) 100%)`,
+    boxShadow: `0 0 0 1px rgba(${r}, ${g}, ${b}, ${aRing})`,
+  };
+}
+
 const PITCH_COLORS: Record<string, string> = {
   // Abbreviations
   FF: "#ef4444",   // red

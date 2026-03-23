@@ -6,11 +6,7 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useMemo, useEffect, useState, useCallback } from "react";
 import { getPlayer } from "@/lib/dataIndex";
 import { getSlugForPlayerId } from "@/lib/canonicalPlayers";
-import {
-  buildReport,
-  isOutlier,
-  OUTLIER_MISS_THRESHOLD_IN,
-} from "@/lib/reportModel";
+import { buildReport } from "@/lib/reportModel";
 import {
   parseComparisonQueryParams,
   serializeComparisonQueryParams,
@@ -69,25 +65,10 @@ function CompareInner() {
     setSelectionB(parsed.selectionB);
   }, [parsed]);
 
-  // Exclude outliers: URL > localStorage > false
-  const lsKey = `compareExcludeOutliers:${playerId}`;
-  const [excludeOutliers, setExcludeOutliers] = useState(
-    parsed?.excludeOutliers ?? false,
-  );
-
-  // Load from localStorage on mount (only if URL didn't specify)
-  useEffect(() => {
-    if (searchParams.get("excludeOutliers") != null) return;
-    try {
-      const stored = localStorage.getItem(lsKey);
-      if (stored === "true") setExcludeOutliers(true);
-    } catch { /* noop */ }
-  }, [lsKey, searchParams]);
-
-  // Push URL
+  // Push URL (always include all pitches; no outlier toggle on this page)
   const pushUrl = useCallback(
-    (a: PitchSelection, b: PitchSelection, eo: boolean) => {
-      const params = serializeComparisonQueryParams(a, b, eo);
+    (a: PitchSelection, b: PitchSelection) => {
+      const params = serializeComparisonQueryParams(a, b, false);
       if (profileSlug) {
         params.set("from", "profile");
         params.set("slug", profileSlug);
@@ -100,27 +81,18 @@ function CompareInner() {
   const handleSelectionA = useCallback(
     (sel: PitchSelection) => {
       setSelectionA(sel);
-      pushUrl(sel, selectionB, excludeOutliers);
+      pushUrl(sel, selectionB);
     },
-    [selectionB, excludeOutliers, pushUrl],
+    [selectionB, pushUrl],
   );
 
   const handleSelectionB = useCallback(
     (sel: PitchSelection) => {
       setSelectionB(sel);
-      pushUrl(selectionA, sel, excludeOutliers);
+      pushUrl(selectionA, sel);
     },
-    [selectionA, excludeOutliers, pushUrl],
+    [selectionA, pushUrl],
   );
-
-  const toggleExcludeOutliers = useCallback(() => {
-    setExcludeOutliers((prev) => {
-      const next = !prev;
-      try { localStorage.setItem(lsKey, String(next)); } catch { /* noop */ }
-      pushUrl(selectionA, selectionB, next);
-      return next;
-    });
-  }, [lsKey, selectionA, selectionB, pushUrl]);
 
   // Load CSV data
   const outingA = player?.outings.find((o) => o.id === selectionA.outingId);
@@ -141,9 +113,9 @@ function CompareInner() {
       outingA?.label ?? "",
       pitcherHand,
       "outing",
-      { excludeOutliers },
+      { excludeOutliers: false },
     );
-  }, [pitchesA, player, outingA, excludeOutliers, pitcherHand]);
+  }, [pitchesA, player, outingA, pitcherHand]);
 
   const reportB = useMemo(() => {
     if (pitchesB.length === 0) return null;
@@ -153,19 +125,9 @@ function CompareInner() {
       outingB?.label ?? "",
       pitcherHand,
       "outing",
-      { excludeOutliers },
+      { excludeOutliers: false },
     );
-  }, [pitchesB, player, outingB, excludeOutliers, pitcherHand]);
-
-  // Filtered pitches for scatter plots (match what buildReport uses)
-  const scatterPitchesA = useMemo(
-    () => (excludeOutliers ? pitchesA.filter((p) => !isOutlier(p)) : pitchesA),
-    [pitchesA, excludeOutliers],
-  );
-  const scatterPitchesB = useMemo(
-    () => (excludeOutliers ? pitchesB.filter((p) => !isOutlier(p)) : pitchesB),
-    [pitchesB, excludeOutliers],
-  );
+  }, [pitchesB, player, outingB, pitcherHand]);
 
   // Build comparison
   const comparison = useMemo<ComparisonReport | { error: string } | null>(() => {
@@ -182,7 +144,7 @@ function CompareInner() {
 
   if (!player) {
     return (
-      <div className="flex items-center justify-center h-screen bg-zinc-950 text-red-400">
+      <div className="flex h-screen items-center justify-center bg-background text-red-600">
         Player not found.
       </div>
     );
@@ -197,84 +159,84 @@ function CompareInner() {
   const backLabel = profileSlug ? "Back to Player Profile" : "Back to Command Outing";
 
   return (
-    <LeaderboardPageFrame maxWidth="max-w-6xl">
-      <Breadcrumbs
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Players", href: "/players" },
-          { label: player.name, href: backHref },
-          { label: "Compare" },
-        ]}
-      />
+    <LeaderboardPageFrame maxWidth="max-w-6xl" variant="light">
+      <div className="relative">
+        <div
+          className="pointer-events-none absolute inset-x-0 -top-4 h-56 sm:-top-6"
+          style={{
+            background:
+              "radial-gradient(circle at top center, rgba(var(--brand-primary-rgb), 0.08), transparent 58%)",
+          }}
+        />
+        <div className="relative">
+          <Breadcrumbs
+            variant="light"
+            items={[
+              { label: "Home", href: "/" },
+              { label: "Players", href: "/players" },
+              { label: player.name, href: backHref },
+              { label: "Compare" },
+            ]}
+          />
 
-      <LeaderboardHero
-        tone="orange"
-        icon={Target}
-        eyebrow="Command Compare"
-        title={<>{player.name}</>}
-        description="Set two outings side by side to compare miss shape, pitch-level execution, and lane breakdowns."
-        meta={
-          <>
-            <LeaderboardPill tone="orange">Outing to outing</LeaderboardPill>
-            <LeaderboardPill tone="neutral">Same pitcher only</LeaderboardPill>
-          </>
-        }
-        side={
-          <div className="grid gap-3">
-            <Link
-              href={backHref}
-              className="inline-flex items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
-            >
-              {backLabel}
-            </Link>
-          </div>
-        }
-      />
+          <LeaderboardHero
+            tone="emerald"
+            variant="light"
+            icon={Target}
+            eyebrow="Command Compare"
+            title={<>{player.name}</>}
+            description="Set two outings side by side to compare miss shape, pitch-level execution, and lane breakdowns."
+            meta={
+              <>
+                <LeaderboardPill tone="brand" variant="light">
+                  Outing to outing
+                </LeaderboardPill>
+                <LeaderboardPill tone="neutral" variant="light">
+                  Same pitcher only
+                </LeaderboardPill>
+              </>
+            }
+            side={
+              <Link
+                href={backHref}
+                className="inline-flex w-full min-w-0 items-center justify-center rounded-2xl border border-[#E2E8F0] bg-surface px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400 shadow-sm transition-smooth hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50 xl:w-fit xl:shrink-0"
+              >
+                {backLabel}
+              </Link>
+            }
+          />
 
-      <LeaderboardToolbar>
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
-          <div className="grid gap-3 md:grid-cols-2">
-            <CompareControls
-              side="A"
-              selection={selectionA}
-              onChange={handleSelectionA}
-              availableOutings={player.outings}
-              playerId={playerId}
-            />
-            <CompareControls
-              side="B"
-              selection={selectionB}
-              onChange={handleSelectionB}
-              availableOutings={player.outings}
-              playerId={playerId}
-            />
-          </div>
-          <label className="inline-flex min-h-[3.75rem] items-center gap-3 rounded-3xl border border-zinc-800/80 bg-zinc-950/80 px-4 py-3 text-xs text-zinc-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-            <input
-              type="checkbox"
-              checked={excludeOutliers}
-              onChange={toggleExcludeOutliers}
-              className="h-4 w-4 accent-orange-400"
-            />
-            <span className="font-semibold uppercase tracking-[0.18em] text-zinc-300">
-              Exclude outliers &gt;{OUTLIER_MISS_THRESHOLD_IN}&Prime;
-            </span>
-          </label>
-        </div>
-      </LeaderboardToolbar>
+          <LeaderboardToolbar variant="light" className="mt-6">
+            <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
+              <CompareControls
+                side="A"
+                selection={selectionA}
+                onChange={handleSelectionA}
+                availableOutings={player.outings}
+                playerId={playerId}
+              />
+              <CompareControls
+                side="B"
+                selection={selectionB}
+                onChange={handleSelectionB}
+                availableOutings={player.outings}
+                playerId={playerId}
+              />
+            </div>
+          </LeaderboardToolbar>
 
       {(loadingA || loadingB) && (
-        <div className="mt-6 rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-8 text-center text-zinc-400">
+        <div className="mt-6 rounded-[28px] border border-border bg-surface p-8 text-center text-slate-500 dark:text-zinc-400 shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
           Loading pitch data...
         </div>
       )}
       {errorA && (
-        <div className="mt-6 rounded-3xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+        <div className="mt-6 rounded-[28px] border border-red-200 bg-red-50 p-4 text-sm text-red-800">
           Side A error: {errorA}
         </div>
       )}
       {errorB && (
-        <div className="mt-4 rounded-3xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+        <div className="mt-4 rounded-[28px] border border-red-200 bg-red-50 p-4 text-sm text-red-800">
           Side B error: {errorB}
         </div>
       )}
@@ -282,18 +244,18 @@ function CompareInner() {
       {!loadingA && !loadingB && !errorA && !errorB && (
         <div className="mt-6 space-y-5">
           {!selectionA.outingId && (
-            <LeaderboardPanel className="p-5 text-sm text-zinc-500">
+            <LeaderboardPanel variant="light" className="p-5 text-sm text-slate-500 dark:text-zinc-400">
               Select an outing for Side A to begin the comparison.
             </LeaderboardPanel>
           )}
           {!selectionB.outingId && (
-            <LeaderboardPanel className="p-5 text-sm text-zinc-500">
+            <LeaderboardPanel variant="light" className="p-5 text-sm text-slate-500 dark:text-zinc-400">
               Select an outing for Side B to begin the comparison.
             </LeaderboardPanel>
           )}
 
           {isComparisonError && (
-            <div className="rounded-3xl border border-amber-500/25 bg-amber-500/10 p-4 text-sm text-amber-300">
+            <div className="rounded-[28px] border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
               Cannot compare these outings because the detected pitcher handedness does not match.
             </div>
           )}
@@ -311,22 +273,22 @@ function CompareInner() {
               <Section title="Miss Scatter">
                 <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
                   <div>
-                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-zinc-400">
                       Side A: {outingA?.label ?? ""}
                     </div>
                     <StrikeZoneScatter
-                      pitches={scatterPitchesA}
+                      pitches={pitchesA}
                       selected={null}
                       onSelect={() => {}}
                       throwsHand={pitcherHand}
                     />
                   </div>
                   <div>
-                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                    <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-zinc-400">
                       Side B: {outingB?.label ?? ""}
                     </div>
                     <StrikeZoneScatter
-                      pitches={scatterPitchesB}
+                      pitches={pitchesB}
                       selected={null}
                       onSelect={() => {}}
                       throwsHand={pitcherHand}
@@ -349,17 +311,19 @@ function CompareInner() {
           )}
 
           {!comparison && reportA && !reportB && selectionB.outingId && !loadingB && (
-            <LeaderboardPanel className="p-5 text-sm text-zinc-500">
+            <LeaderboardPanel variant="light" className="p-5 text-sm text-slate-500 dark:text-zinc-400">
               No pitches were found for Side B.
             </LeaderboardPanel>
           )}
           {!comparison && !reportA && reportB && selectionA.outingId && !loadingA && (
-            <LeaderboardPanel className="p-5 text-sm text-zinc-500">
+            <LeaderboardPanel variant="light" className="p-5 text-sm text-slate-500 dark:text-zinc-400">
               No pitches were found for Side A.
             </LeaderboardPanel>
           )}
         </div>
       )}
+        </div>
+      </div>
     </LeaderboardPageFrame>
   );
 }
@@ -370,8 +334,8 @@ function CompareInner() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <LeaderboardPanel className="p-5 sm:p-6">
-      <h2 className="border-b border-zinc-800/80 pb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+    <LeaderboardPanel variant="light" className="p-5 sm:p-6">
+      <h2 className="border-b border-border pb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
         {title}
       </h2>
       <div className="mt-4">{children}</div>
@@ -387,8 +351,8 @@ export default function ComparePage() {
   return (
     <Suspense
       fallback={
-        <LeaderboardPageFrame maxWidth="max-w-6xl">
-          <div className="flex min-h-[60vh] items-center justify-center text-zinc-400">
+        <LeaderboardPageFrame maxWidth="max-w-6xl" variant="light">
+          <div className="flex min-h-[60vh] items-center justify-center text-slate-500 dark:text-zinc-400">
             Loading comparison...
           </div>
         </LeaderboardPageFrame>

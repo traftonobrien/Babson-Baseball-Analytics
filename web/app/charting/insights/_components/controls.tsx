@@ -36,12 +36,12 @@ export function SearchResultCard({
         "rounded-[1.5rem] border px-4 py-4 text-left transition-smooth",
         active
           ? "border-emerald-300 bg-emerald-50 shadow-[0_4px_12px_rgba(16,185,129,0.10)]"
-          : "border-[#E2E8F0] bg-white hover:border-[#CBD5E1] hover:bg-[#F8FAFC]",
+          : "border-[#E2E8F0] bg-surface hover:border-[#CBD5E1] hover:bg-background",
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-sm font-bold text-[#0F172A]">{entry.displayName}</div>
+          <div className="text-sm font-bold text-slate-900 dark:text-zinc-50">{entry.displayName}</div>
           <div className="mt-1 text-[11px] text-[#94A3B8]">
             {entry.seasons[0] ?? "No season"} • {formatCount(entry.totalPitches)} pitches
           </div>
@@ -54,7 +54,7 @@ export function SearchResultCard({
         />
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
-        <span className="rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#64748B]">
+        <span className="rounded-full border border-[#E2E8F0] bg-background px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-zinc-400">
           {entry.sessionCount} session{entry.sessionCount === 1 ? "" : "s"}
         </span>
         {handLabel ? (
@@ -83,11 +83,11 @@ export function FilterSelect({
       <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
         {label}
       </div>
-      <div className="rounded-2xl border border-[#E2E8F0] bg-white p-1.5">
+      <div className="rounded-2xl border border-[#E2E8F0] bg-surface p-1.5">
         <select
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-2.5 text-sm font-semibold text-[#0F172A] outline-none focus:border-[var(--brand-primary-border)] focus:bg-white"
+          className="w-full rounded-xl border border-[#E2E8F0] bg-background px-3 py-2.5 text-sm font-semibold text-slate-900 dark:text-zinc-50 outline-none focus:border-[var(--brand-primary-border)] focus:bg-surface"
         >
           {children}
         </select>
@@ -120,8 +120,8 @@ export function ComparisonViewToggle({
             className={joinClasses(
               "rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-smooth",
               view === option.id
-                ? "bg-white text-[#0F172A] shadow-sm ring-1 ring-slate-200"
-                : "text-[#64748B] hover:text-[#0F172A]",
+                ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm ring-1 ring-slate-200"
+                : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50",
             )}
           >
             {option.label}
@@ -149,7 +149,7 @@ export function VelocityRangeControl({
 }) {
   if (!range) {
     return (
-      <div className="rounded-[1.4rem] border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-4">
+      <div className="rounded-[1.4rem] border border-[#E2E8F0] bg-background px-4 py-4">
         <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
           {label}
         </div>
@@ -161,12 +161,12 @@ export function VelocityRangeControl({
   const resolved = value ?? (boundary === "min" ? range.min : range.max);
 
   return (
-    <div className="rounded-[1.4rem] border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-4">
+    <div className="rounded-[1.4rem] border border-[#E2E8F0] bg-background px-4 py-4">
       <div className="flex items-center justify-between gap-3">
         <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
           {label}
         </div>
-        <span className="rounded-full border border-[#E2E8F0] bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#334155]">
+        <span className="rounded-full border border-[#E2E8F0] bg-surface px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#334155]">
           {placeholderVelocityText(value, fallback, boundary)}
         </span>
       </div>
@@ -223,8 +223,8 @@ export function MetricToggle({
             className={joinClasses(
               "rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-smooth",
               value === metric.id
-                ? "bg-white text-[#0F172A] shadow-sm ring-1 ring-slate-200"
-                : "text-[#64748B] hover:text-[#0F172A]",
+                ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm ring-1 ring-slate-200"
+                : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50",
             )}
           >
             {metric.label}
@@ -259,8 +259,8 @@ export function ZoneDisplayModeToggle({
             className={joinClasses(
               "rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-smooth",
               value === option.id
-                ? "bg-white text-[#0F172A] shadow-sm ring-1 ring-slate-200"
-                : "text-[#64748B] hover:text-[#0F172A]",
+                ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm ring-1 ring-slate-200"
+                : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50",
             )}
           >
             {option.label}
@@ -285,10 +285,10 @@ export function MiniStat({
       ? "text-emerald-600"
       : tone === "sky"
         ? "text-sky-600"
-        : "text-[#0F172A]";
+        : "text-slate-900 dark:text-zinc-50";
 
   return (
-    <div className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3">
+    <div className="rounded-2xl border border-[#E2E8F0] bg-surface px-4 py-3">
       <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
         {label}
       </div>
@@ -309,7 +309,7 @@ export function PitchMixPanel({
   pitches: ComparisonPitchMixItem[];
 }) {
   return (
-    <div className="rounded-[1.6rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+    <div className="rounded-[1.6rem] border border-[#E2E8F0] bg-background p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
@@ -317,13 +317,13 @@ export function PitchMixPanel({
           </div>
           <div className="mt-1 text-[11px] text-[#94A3B8]">{subtitle}</div>
         </div>
-        <div className="rounded-full border border-[#E2E8F0] bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#334155]">
+        <div className="rounded-full border border-[#E2E8F0] bg-surface px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#334155]">
           {pitches.length} type{pitches.length === 1 ? "" : "s"}
         </div>
       </div>
 
       {pitches.length === 0 ? (
-        <div className="mt-4 rounded-2xl border border-dashed border-[#E2E8F0] bg-white px-4 py-5 text-sm text-[#94A3B8]">
+        <div className="mt-4 rounded-2xl border border-dashed border-[#E2E8F0] bg-surface px-4 py-5 text-sm text-[#94A3B8]">
           No pitches in this sample.
         </div>
       ) : (
@@ -341,13 +341,13 @@ export function PitchMixPanel({
             {pitches.map((item) => (
               <div
                 key={item.pitchType}
-                className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3 rounded-2xl border border-[#E2E8F0] bg-white px-3 py-2.5"
+                className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3 rounded-2xl border border-[#E2E8F0] bg-surface px-3 py-2.5"
               >
                 <span
                   className="h-2.5 w-2.5 rounded-full"
                   style={{ backgroundColor: item.color }}
                 />
-                <div className="min-w-0 text-sm font-semibold text-[#0F172A]">{item.label}</div>
+                <div className="min-w-0 text-sm font-semibold text-slate-900 dark:text-zinc-50">{item.label}</div>
                 <div className="text-xs text-[#94A3B8]">{formatCount(item.count)}</div>
                 <div className="text-xs font-semibold text-[#334155]">
                   {formatPct(item.share, 1)}

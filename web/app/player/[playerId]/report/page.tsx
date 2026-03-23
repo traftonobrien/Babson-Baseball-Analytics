@@ -157,8 +157,15 @@ function ReportInner() {
     : `/player/${playerId}/compare`;
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.10),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(251,191,36,0.08),_transparent_24%),linear-gradient(180deg,_#09090b_0%,_#111827_56%,_#09090b_100%)] text-zinc-100 print:bg-white print:text-black">
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 print:hidden">
+    <main className="relative min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_35%,#f8fafc_100%)] text-slate-900 dark:text-zinc-50 print:bg-surface print:text-black">
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-64 print:hidden"
+        style={{
+          background:
+            "radial-gradient(circle at top center, rgba(var(--brand-primary-rgb), 0.08), transparent 58%)",
+        }}
+      />
+      <div className="relative mx-auto max-w-6xl px-4 py-8 sm:px-6 print:hidden">
         <Breadcrumbs
           items={[
             { label: "Home", href: "/" },
@@ -168,37 +175,40 @@ function ReportInner() {
           ]}
         />
         <LeaderboardHero
-          tone="orange"
+          tone="emerald"
+          variant="light"
           icon={Target}
           eyebrow="Printable Command Report"
           title={<>{report.meta.playerName}</>}
           description="Printable command breakdown for a single outing or a rolling overall view."
           meta={(
             <>
-              <LeaderboardPill tone="orange">
+              <LeaderboardPill tone="brand" variant="light">
                 {report.meta.scope === "overall" ? "Overall" : "Single outing"}
               </LeaderboardPill>
-              <LeaderboardPill tone="neutral">{report.meta.totalPitches} pitches</LeaderboardPill>
+              <LeaderboardPill tone="neutral" variant="light">
+                {report.meta.totalPitches} pitches
+              </LeaderboardPill>
             </>
           )}
           side={(
             <div className="grid gap-3">
               <a
                 href={backHref}
-                className="inline-flex items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
+                className="inline-flex items-center justify-center rounded-2xl border border-[#E2E8F0] bg-surface px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400 shadow-sm transition-smooth hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
               >
                 {backLabel}
               </a>
               <a
                 href={compareHref}
-                className="inline-flex items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-orange-400/25 hover:text-zinc-100"
+                className="inline-flex items-center justify-center rounded-2xl border border-[#E2E8F0] bg-surface px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400 shadow-sm transition-smooth hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
               >
                 Compare
               </a>
               {profileSlug && !profileHref ? (
                 <a
                   href={`/players/${profileSlug}?tab=Command`}
-                  className="inline-flex items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/75 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
+                  className="inline-flex items-center justify-center rounded-2xl border border-[#E2E8F0] bg-surface px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400 shadow-sm transition-smooth hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
                 >
                   View Full Profile
                 </a>
@@ -206,7 +216,7 @@ function ReportInner() {
               <button
                 type="button"
                 onClick={handlePrint}
-                className="inline-flex items-center justify-center rounded-2xl border border-orange-500/25 bg-orange-500/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-orange-200 transition-smooth hover:border-orange-400/40 hover:bg-orange-500/14"
+                className="inline-flex items-center justify-center rounded-2xl border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-primary-subtle-text)] transition-smooth hover:opacity-90"
               >
                 Export PDF
               </button>
@@ -215,31 +225,31 @@ function ReportInner() {
         />
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 pb-8 sm:px-6 print:max-w-none print:px-0 print:pb-0">
-        <div className="rounded-[2rem] border border-zinc-800/80 bg-zinc-950/68 p-5 shadow-[0_24px_64px_rgba(0,0,0,0.28)] print:rounded-none print:border-0 print:bg-white print:p-0 print:shadow-none">
+      <div className="relative mx-auto max-w-6xl px-4 pb-8 sm:px-6 print:max-w-none print:px-0 print:pb-0">
+        <div className="rounded-[28px] border border-border bg-surface p-5 shadow-[0_16px_40px_rgba(15,23,42,0.04)] print:rounded-none print:border-0 print:bg-surface print:p-0 print:shadow-none">
           <div className="report-root max-w-[740px] mx-auto px-6 py-5 print:max-w-none print:px-0 print:py-0">
 
       {/* ============================================================ */}
       {/*  HEADER                                                       */}
       {/* ============================================================ */}
       <header className="report-header mb-3">
-        <div className="flex items-baseline justify-between border-b-2 border-zinc-600 print:border-black pb-2">
+        <div className="flex items-baseline justify-between border-b-2 border-border print:border-black pb-2">
           <div>
-            <h1 className="text-xl font-extrabold tracking-tight leading-none">
+            <h1 className="text-xl font-extrabold tracking-tight leading-none text-slate-900 dark:text-zinc-50 print:text-black">
               {report.meta.playerName}
             </h1>
-            <p className="text-[12px] text-zinc-400 print:text-zinc-700 mt-1 leading-none">
+            <p className="text-[12px] text-slate-500 dark:text-zinc-400 print:text-zinc-700 mt-1 leading-none">
               {report.meta.outingLabel}
             </p>
           </div>
           <div className="text-right shrink-0 pl-4 flex items-start gap-3">
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.15em] print:text-black">
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-slate-500 dark:text-zinc-400 print:text-black">
               Printable Command Report
             </div>
           </div>
         </div>
         {/* Metadata pills */}
-        <div className="flex items-center gap-2 mt-1.5 text-[9px] text-zinc-500 print:text-zinc-600 flex-wrap">
+        <div className="flex items-center gap-2 mt-1.5 text-[9px] text-slate-500 dark:text-zinc-400 print:text-zinc-600 flex-wrap">
           <Pill>{report.meta.scope === "overall" ? "Overall" : "Single Outing"}</Pill>
           <Pill>{report.meta.totalPitches} pitches</Pill>
           <span
@@ -254,12 +264,12 @@ function ReportInner() {
               type="checkbox"
               checked={excludeOutliers}
               onChange={toggleExcludeOutliers}
-              className="accent-zinc-400 w-3 h-3"
+              className="h-3 w-3 accent-[var(--brand-primary)]"
             />
-            <span className="text-[9px] font-medium text-zinc-400">Exclude outliers</span>
+            <span className="text-[9px] font-medium text-slate-500 dark:text-zinc-400">Exclude outliers</span>
           </label>
           {excludeOutliers && report.meta.outlierCount > 0 && (
-            <span className="text-[9px] text-zinc-500 print:text-zinc-600">
+            <span className="text-[9px] text-slate-500 dark:text-zinc-400 print:text-zinc-600">
               Outliers excluded: {report.meta.outlierCount} of {report.meta.allPitchCount} over {OUTLIER_MISS_THRESHOLD_IN} inches
             </span>
           )}
@@ -333,7 +343,7 @@ function ReportInner() {
       {/* ============================================================ */}
       <div className="report-zone-lane mb-3">
         <ReportSection title="Horizontal Command Lanes (Catcher View)" compact>
-          <p className="text-[8px] text-zinc-500 print:text-zinc-500 mb-1 leading-tight">
+          <p className="mb-1 text-[8px] leading-tight text-slate-500 dark:text-zinc-400 print:text-zinc-500">
             Lateral miss relative to the catcher&apos;s target. Catcher view. Lanes labeled by arm-side vs glove-side.
           </p>
           <HorizontalLanesSection data={report.lanesDetailed} takeaways={report.laneTakeaways} pitcherHand={report.meta.pitcherHand} />
@@ -349,7 +359,7 @@ function ReportInner() {
       </div>
 
       {/* ---- Footer ---- */}
-      <footer className="pt-1.5 border-t border-zinc-700 print:border-zinc-400 text-[8px] text-zinc-500 print:text-zinc-500 flex justify-between">
+      <footer className="pt-1.5 border-t border-border print:border-zinc-400 text-[8px] text-slate-500 dark:text-zinc-400 print:text-zinc-500 flex justify-between">
         <span>{TEAM_NAME} Baseball Pitching Portal &mdash; Printable Command Report</span>
         <span>{generatedDate}</span>
       </footer>
@@ -366,7 +376,9 @@ function ReportInner() {
 
 function Msg({ text, error }: { text: string; error?: boolean }) {
   return (
-    <div className={`flex items-center justify-center h-screen bg-zinc-950 ${error ? "text-red-400" : "text-zinc-400"}`}>
+    <div
+      className={`flex h-screen items-center justify-center bg-background print:bg-surface ${error ? "text-red-600" : "text-slate-500 dark:text-zinc-400"}`}
+    >
       {text}
     </div>
   );
@@ -374,7 +386,7 @@ function Msg({ text, error }: { text: string; error?: boolean }) {
 
 function Pill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-block border border-zinc-700 print:border-zinc-400 rounded px-1.5 py-[1px] font-medium">
+    <span className="inline-block rounded border border-[#E2E8F0] bg-background px-1.5 py-[1px] font-medium text-[#475569] print:border-zinc-400 print:bg-surface print:text-black">
       {children}
     </span>
   );
@@ -391,7 +403,7 @@ function ReportSection({
 }) {
   return (
     <section className={compact ? "mb-0" : "mb-3"}>
-      <h2 className="text-[9px] font-bold uppercase tracking-[0.1em] text-zinc-500 print:text-zinc-700 mb-1 border-b border-zinc-800 print:border-zinc-300 pb-[3px]">
+      <h2 className="mb-1 border-b border-border pb-[3px] text-[9px] font-bold uppercase tracking-[0.1em] text-[#94A3B8] print:border-zinc-300 print:text-zinc-700">
         {title}
       </h2>
       {children}
@@ -419,14 +431,14 @@ function KPICard({
   accent?: "green" | "red";
 }) {
   // Border accent
-  let borderCls = "border-zinc-700 print:border-zinc-400";
-  let bgCls = "print:bg-white";
+  let borderCls = "border-border print:border-zinc-400";
+  let bgCls = "bg-surface print:bg-surface";
   if (highlight === "good") {
     borderCls = "border-green-500/70 print:border-green-700";
-    bgCls = "bg-green-950/20 print:bg-green-50";
+    bgCls = "bg-green-50/90 print:bg-green-50";
   } else if (highlight === "bad") {
     borderCls = "border-red-500/70 print:border-red-700";
-    bgCls = "bg-red-950/20 print:bg-red-50";
+    bgCls = "bg-red-50/90 print:bg-red-50";
   }
 
   // Left accent strip for best/worst
@@ -436,15 +448,15 @@ function KPICard({
 
   return (
     <div className={`rounded border ${borderCls} ${bgCls} ${leftAccent} px-1 py-1.5 text-center`}>
-      <div className="text-[7px] text-zinc-500 print:text-zinc-600 uppercase tracking-wider leading-none mb-[3px] font-semibold">
+      <div className="mb-[3px] text-[7px] font-semibold uppercase leading-none tracking-wider text-slate-500 dark:text-zinc-400 print:text-zinc-600">
         {label}
       </div>
-      <div className="font-bold font-mono leading-none">
+      <div className="font-mono font-bold leading-none text-slate-900 dark:text-zinc-50 print:text-black">
         <span className="text-[16px]">{value}</span>
-        {unit && <span className="text-[9px] text-zinc-400 print:text-zinc-600 ml-[1px]">{unit}</span>}
+        {unit && <span className="ml-[1px] text-[9px] text-[#94A3B8] print:text-zinc-600">{unit}</span>}
       </div>
       {subtitle && (
-        <div className="text-[7px] text-zinc-500 print:text-zinc-500 leading-none mt-[2px]">
+        <div className="mt-[2px] text-[7px] leading-none text-slate-500 dark:text-zinc-400 print:text-zinc-500">
           {subtitle}
         </div>
       )}
@@ -460,25 +472,25 @@ function PitchMixTable({ data }: { data: PitchTypeSummary[] }) {
   return (
     <table className="w-full text-[10px] border-collapse">
       <thead>
-        <tr className="text-left text-zinc-500 print:text-zinc-600 border-b border-zinc-600 print:border-zinc-400">
+        <tr className="border-b border-border text-left text-slate-500 dark:text-zinc-400 print:border-zinc-400 print:text-zinc-600">
           <th className="py-[3px] pr-1.5 font-semibold">Type</th>
           <th className="py-[3px] pr-1.5 text-right font-semibold">N</th>
           <th className="py-[3px] pr-1.5 text-right font-semibold">Usage</th>
           <th className="py-[3px] pr-1.5 text-right font-semibold">Avg Miss</th>
           <th className="py-[3px] pr-1.5 text-right font-semibold">Avg H</th>
           <th className="py-[3px] pr-1.5 text-right font-semibold">Avg V</th>
-          <th className="py-[3px] pr-1.5 text-right font-semibold text-zinc-600 print:text-zinc-500">Med</th>
-          <th className="py-[3px] pr-1.5 text-right font-semibold text-zinc-600 print:text-zinc-500">SD</th>
+          <th className="py-[3px] pr-1.5 text-right font-semibold text-slate-500 dark:text-zinc-400 print:text-zinc-500">Med</th>
+          <th className="py-[3px] pr-1.5 text-right font-semibold text-slate-500 dark:text-zinc-400 print:text-zinc-500">SD</th>
           <th className="py-[3px] text-right font-semibold" title={`≤ ${ON_TARGET_THRESHOLD_IN}″`}>On Tgt</th>
         </tr>
       </thead>
       <tbody>
         {data.map((pt, i) => {
-          const stripe = i % 2 === 1 ? "bg-zinc-900/30 print:bg-zinc-50" : "";
+          const stripe = i % 2 === 1 ? "bg-slate-50/90 print:bg-zinc-50" : "";
           return (
             <tr
               key={pt.pitchType}
-              className={`border-b border-zinc-800/40 print:border-zinc-200 ${stripe}`}
+              className={`border-b border-[#F1F5F9] print:border-zinc-200 ${stripe}`}
             >
               <td className="py-[3px] pr-1.5">
                 <span className="flex items-center gap-1">
@@ -488,7 +500,7 @@ function PitchMixTable({ data }: { data: PitchTypeSummary[] }) {
                   />
                   <span className="font-mono font-bold text-[11px]">{pt.pitchType}</span>
                   {pt.lowSample && (
-                    <span className="text-[7px] text-zinc-500 print:text-zinc-500 italic ml-0.5">
+                    <span className="ml-0.5 text-[7px] italic text-[#94A3B8] print:text-zinc-500">
                       n&lt;5
                     </span>
                   )}
@@ -507,10 +519,10 @@ function PitchMixTable({ data }: { data: PitchTypeSummary[] }) {
               <td className="py-[3px] pr-1.5 text-right font-mono">
                 {pt.avgVAbs.toFixed(1)}&Prime;
               </td>
-              <td className="py-[3px] pr-1.5 text-right font-mono text-zinc-500 print:text-zinc-500">
+              <td className="py-[3px] pr-1.5 text-right font-mono text-slate-500 dark:text-zinc-400 print:text-zinc-500">
                 {pt.medianMiss.toFixed(1)}&Prime;
               </td>
-              <td className="py-[3px] pr-1.5 text-right font-mono text-zinc-500 print:text-zinc-500">
+              <td className="py-[3px] pr-1.5 text-right font-mono text-slate-500 dark:text-zinc-400 print:text-zinc-500">
                 {pt.stdDev.toFixed(1)}&Prime;
               </td>
               <td className="py-[3px] text-right font-mono font-bold">
@@ -564,7 +576,7 @@ function HorizontalLanesSection({
   return (
     <div>
       {/* Stacked horizontal bar */}
-      <div className="flex h-4 rounded-sm overflow-hidden border border-zinc-700 print:border-zinc-400 mb-1.5">
+      <div className="mb-1.5 flex h-4 overflow-hidden rounded-sm border border-border print:border-zinc-400">
         {data.map((l) => {
           const w = (l.count / total) * 100;
           if (w === 0) return null;
@@ -594,38 +606,38 @@ function HorizontalLanesSection({
           return (
             <div
               key={l.lane}
-              className="rounded-sm border border-zinc-800 print:border-zinc-300 px-1.5 py-1 print:bg-white"
+              className="rounded-sm border border-border px-1.5 py-1 print:border-zinc-300 print:bg-surface"
             >
               <div className="flex items-baseline justify-between">
-                <span className="text-[8px] font-bold text-zinc-400 print:text-zinc-700 uppercase tracking-wider">
+                <span className="text-[8px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 print:text-zinc-700">
                   {displayName}
                 </span>
-                <span className="text-[7px] text-zinc-600 print:text-zinc-500">
+                <span className="text-[7px] text-slate-500 dark:text-zinc-400 print:text-zinc-500">
                   {LANE_SUBTITLE[l.lane]}
                 </span>
               </div>
-              <div className="text-[13px] font-mono font-extrabold leading-tight mt-[2px]">
+              <div className="mt-[2px] text-[13px] font-mono font-extrabold leading-tight text-slate-900 dark:text-zinc-50 print:text-black">
                 {l.avgMiss.toFixed(1)}&Prime;
-                <span className="text-[8px] font-normal text-zinc-500 print:text-zinc-600 ml-0.5">avg miss</span>
+                <span className="ml-0.5 text-[8px] font-normal text-slate-500 dark:text-zinc-400 print:text-zinc-600">avg miss</span>
               </div>
-              <div className="text-[8px] text-zinc-400 print:text-zinc-600 font-mono leading-tight mt-[1px]">
+              <div className="mt-[1px] font-mono text-[8px] leading-tight text-slate-500 dark:text-zinc-400 print:text-zinc-600">
                 H: {l.avgHAbs.toFixed(1)}&Prime;{hD ? ` ${hD}` : ""}
               </div>
-              <div className="text-[8px] text-zinc-400 print:text-zinc-600 font-mono leading-tight">
+              <div className="font-mono text-[8px] leading-tight text-slate-500 dark:text-zinc-400 print:text-zinc-600">
                 V: {l.avgVAbs.toFixed(1)}&Prime;{vD ? ` ${vD}` : ""}
               </div>
-              <div className="flex items-center justify-between mt-[3px]">
+              <div className="mt-[3px] flex items-center justify-between">
                 <span
-                  className={`text-[8px] font-mono font-bold px-1 py-[1px] rounded-sm ${l.onTargetPct >= 50
-                    ? "bg-green-900/40 text-green-400 print:bg-green-100 print:text-green-800"
+                  className={`rounded-sm px-1 py-[1px] text-[8px] font-mono font-bold ${l.onTargetPct >= 50
+                    ? "bg-green-100 text-green-800 print:bg-green-100 print:text-green-800"
                     : l.onTargetPct < 35
-                      ? "bg-red-900/40 text-red-400 print:bg-red-100 print:text-red-800"
-                      : "bg-zinc-800 text-zinc-300 print:bg-zinc-100 print:text-zinc-700"
+                      ? "bg-red-100 text-red-800 print:bg-red-100 print:text-red-800"
+                      : "bg-slate-100 text-slate-700 print:bg-zinc-100 print:text-zinc-700"
                     }`}
                 >
                   {l.onTargetPct.toFixed(0)}% on target
                 </span>
-                <span className="text-[7px] font-mono text-zinc-500 print:text-zinc-600">
+                <span className="font-mono text-[7px] text-slate-500 dark:text-zinc-400 print:text-zinc-600">
                   n={l.count}
                 </span>
               </div>
@@ -638,7 +650,7 @@ function HorizontalLanesSection({
       {takeaways.length > 0 && (
         <div className="mt-1 space-y-0.5">
           {takeaways.map((t, i) => (
-            <p key={i} className="text-[8px] text-zinc-400 print:text-zinc-600 italic leading-snug">
+            <p key={i} className="text-[8px] italic leading-snug text-slate-500 dark:text-zinc-400 print:text-zinc-600">
               {t}
             </p>
           ))}
@@ -658,19 +670,19 @@ function PitchGroupCommandSection({ data, pitcherHand }: { data: PitchGroupHoriz
   if (data.totalPitches === 0) {
     return (
       <ReportSection title={`${data.label} Horizontal Command (Catcher View)`} compact>
-        <p className="text-[8px] text-zinc-500 italic">No {data.label.toLowerCase()} data.</p>
+        <p className="text-[8px] italic text-slate-500 dark:text-zinc-400">No {data.label.toLowerCase()} data.</p>
       </ReportSection>
     );
   }
 
   return (
     <ReportSection title={`${data.label} Horizontal Command (Catcher View)`} compact>
-      <p className="text-[8px] text-zinc-500 print:text-zinc-500 mb-1 leading-tight">
+      <p className="mb-1 text-[8px] leading-tight text-slate-500 dark:text-zinc-400 print:text-zinc-500">
         Catcher view. Lanes labeled by arm-side vs glove-side. Based on catcher target miss. n={data.totalPitches}.
       </p>
 
       {/* Stacked horizontal bar */}
-      <div className="flex h-4 rounded-sm overflow-hidden border border-zinc-700 print:border-zinc-400 mb-1.5">
+      <div className="mb-1.5 flex h-4 overflow-hidden rounded-sm border border-border print:border-zinc-400">
         {data.lanes.map((l) => {
           const w = (l.count / total) * 100;
           if (w === 0) return null;
@@ -700,33 +712,33 @@ function PitchGroupCommandSection({ data, pitcherHand }: { data: PitchGroupHoriz
           return (
             <div
               key={l.lane}
-              className="rounded-sm border border-zinc-800 print:border-zinc-300 px-1.5 py-1 print:bg-white"
+              className="rounded-sm border border-border px-1.5 py-1 print:border-zinc-300 print:bg-surface"
             >
               <div className="flex items-baseline justify-between">
-                <span className="text-[8px] font-bold text-zinc-400 print:text-zinc-700 uppercase tracking-wider">
+                <span className="text-[8px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 print:text-zinc-700">
                   {displayName}
                 </span>
-                <span className="text-[7px] font-mono text-zinc-500 print:text-zinc-600">
+                <span className="font-mono text-[7px] text-slate-500 dark:text-zinc-400 print:text-zinc-600">
                   n={l.count}
                 </span>
               </div>
-              <div className="text-[11px] font-mono font-extrabold leading-tight mt-[1px]">
+              <div className="mt-[1px] text-[11px] font-mono font-extrabold leading-tight text-slate-900 dark:text-zinc-50 print:text-black">
                 {l.avgMiss.toFixed(1)}&Prime;
-                <span className="text-[8px] font-normal text-zinc-500 print:text-zinc-600 ml-0.5">avg</span>
+                <span className="ml-0.5 text-[8px] font-normal text-slate-500 dark:text-zinc-400 print:text-zinc-600">avg</span>
               </div>
-              <div className="text-[8px] text-zinc-400 print:text-zinc-600 font-mono leading-tight mt-[1px]">
+              <div className="mt-[1px] font-mono text-[8px] leading-tight text-slate-500 dark:text-zinc-400 print:text-zinc-600">
                 H: {l.avgHAbs.toFixed(1)}&Prime;{hD ? ` ${hD}` : ""}
               </div>
-              <div className="text-[8px] text-zinc-400 print:text-zinc-600 font-mono leading-tight">
+              <div className="font-mono text-[8px] leading-tight text-slate-500 dark:text-zinc-400 print:text-zinc-600">
                 V: {l.avgVAbs.toFixed(1)}&Prime;{vD ? ` ${vD}` : ""}
               </div>
-              <div className="flex items-center justify-between mt-[2px]">
+              <div className="mt-[2px] flex items-center justify-between">
                 <span
-                  className={`text-[8px] font-mono font-bold px-1 py-[1px] rounded-sm ${l.onTargetPct >= 50
-                    ? "bg-green-900/40 text-green-400 print:bg-green-100 print:text-green-800"
+                  className={`rounded-sm px-1 py-[1px] text-[8px] font-mono font-bold ${l.onTargetPct >= 50
+                    ? "bg-green-100 text-green-800 print:bg-green-100 print:text-green-800"
                     : l.onTargetPct < 35
-                      ? "bg-red-900/40 text-red-400 print:bg-red-100 print:text-red-800"
-                      : "bg-zinc-800 text-zinc-300 print:bg-zinc-100 print:text-zinc-700"
+                      ? "bg-red-100 text-red-800 print:bg-red-100 print:text-red-800"
+                      : "bg-slate-100 text-slate-700 print:bg-zinc-100 print:text-zinc-700"
                     }`}
                 >
                   {l.onTargetPct.toFixed(0)}% on target
@@ -739,7 +751,7 @@ function PitchGroupCommandSection({ data, pitcherHand }: { data: PitchGroupHoriz
 
       {/* Takeaway */}
       {data.takeaway && (
-        <p className="text-[8px] text-zinc-400 print:text-zinc-600 mt-1 italic leading-snug">
+        <p className="mt-1 text-[8px] italic leading-snug text-slate-500 dark:text-zinc-400 print:text-zinc-600">
           {data.takeaway}
         </p>
       )}
@@ -754,10 +766,10 @@ function PitchGroupCommandSection({ data, pitcherHand }: { data: PitchGroupHoriz
 
 export default function ReportPage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 print:bg-white print:text-black">
+    <div className="min-h-screen bg-background text-slate-900 dark:text-zinc-50 print:bg-surface print:text-black">
       <Suspense
         fallback={
-          <div className="flex items-center justify-center h-screen text-zinc-400">
+          <div className="flex h-screen items-center justify-center bg-background text-slate-500 dark:text-zinc-400 print:bg-surface">
             Loading...
           </div>
         }

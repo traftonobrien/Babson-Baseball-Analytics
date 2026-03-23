@@ -2,30 +2,22 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
-import { Trophy, Search, BookOpen, ChevronDown, Check } from "lucide-react";
+import { Plus_Jakarta_Sans } from "next/font/google";
+import { Trophy, Search, BookOpen, ChevronDown, Check, Activity } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Button,
-  leaderboardFilterButtonBaseClassName,
-  leaderboardFilterButtonBlueActiveClassName,
-  leaderboardFilterButtonBlueInactiveClassName,
-  leaderboardFilterButtonGhostInactiveClassName,
-} from "@/components/ui/neon-button";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
+import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
 import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
-import {
-  LeaderboardHero,
-  LeaderboardIntro,
-  LeaderboardPageFrame,
-  LeaderboardPanel,
-  LeaderboardPill,
-  LeaderboardToolbar,
-} from "@/app/components/leaderboards/LeaderboardChrome";
+import { LeaderboardPageFrame, LeaderboardToolbar } from "@/app/components/leaderboards/LeaderboardChrome";
 import { pitchColor } from "@/lib/pitchColors";
 import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
 import { getCanonicalName, getSlugForPlayerId } from "@/lib/canonicalPlayers";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
 import { computeTotalStuffPlus, plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
+import { cn } from "@/lib/utils";
+
+const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
 interface LeaderboardEntry {
   rank: number;
@@ -66,6 +58,16 @@ const CATEGORY_LABELS: Record<string, string> = {
   avg_fb_spin: "Avg Spin Rate (Fastballs)",
   avg_bb_spin: "Avg Spin Rate (Breaking Balls)",
   avg_extension: "Avg Extension",
+};
+
+/** Compact labels for the desktop metric grid (full names stay in tooltips + mobile dropdown). */
+const CATEGORY_SHORT_LABELS: Record<string, string> = {
+  stuff_plus: "Stuff+",
+  max_fb_velo: "Max FB",
+  avg_fb_velo: "Avg FB velo",
+  avg_fb_spin: "FB spin",
+  avg_bb_spin: "BB spin",
+  avg_extension: "Extension",
 };
 
 const CATEGORY_UNITS: Record<string, string> = {
@@ -120,29 +122,26 @@ function DropdownFilter<T extends string>({ label, options, selected, onChange }
   const selectedOption = options.find((opt) => opt.value === selected) ?? options[0];
 
   return (
-    <div className="space-y-2 relative w-full" ref={containerRef}>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+    <div className="relative w-full space-y-2" ref={containerRef}>
+      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-zinc-400">
         {label}
       </div>
-      <Button
+      <button
         type="button"
-        variant="default"
-        neon
-        tone="blue"
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-between min-w-[14rem] w-full px-3.5 py-2 font-medium"
+        className="flex min-w-[14rem] w-full items-center justify-between rounded-full border border-slate-200 bg-surface px-3.5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition-smooth hover:border-slate-300 dark:border-zinc-700 dark:text-zinc-100 dark:hover:border-zinc-600"
       >
         <span className="flex items-center gap-2">
           {selectedOption?.chip && (
             <span
-              className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
+              className="h-2.5 w-2.5 shrink-0 rounded-full shadow-sm"
               style={{ backgroundColor: pitchColor(selectedOption.chip) }}
             />
           )}
           {selectedOption?.display}
         </span>
-        <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
-      </Button>
+        <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-200 dark:text-zinc-500 ${open ? "rotate-180" : ""}`} />
+      </button>
 
       <AnimatePresence>
         {open && (
@@ -151,37 +150,35 @@ function DropdownFilter<T extends string>({ label, options, selected, onChange }
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute z-50 top-full left-0 min-w-full mt-2 rounded-2xl border border-zinc-800/90 bg-zinc-900/95 backdrop-blur-xl p-1.5 shadow-2xl"
+            className="absolute left-0 top-full z-50 mt-2 min-w-full rounded-2xl border border-slate-200 bg-surface p-1.5 shadow-xl dark:border-zinc-700 dark:bg-zinc-900"
           >
-            <div className="flex flex-col gap-0.5 max-h-[300px] overflow-y-auto overflow-x-hidden p-0.5 custom-scrollbar">
+            <div className="custom-scrollbar flex max-h-[300px] flex-col gap-0.5 overflow-y-auto overflow-x-hidden p-0.5">
               {options.map((opt) => (
-                <Button
+                <button
                   key={opt.value}
                   type="button"
-                  variant={selected === opt.value ? "default" : "ghost"}
-                  neon
-                  tone="blue"
                   onClick={() => {
                     onChange(opt.value);
                     setOpen(false);
                   }}
-                  className={`flex items-center justify-between w-full px-3.5 py-2 font-medium rounded-xl ${
+                  className={cn(
+                    "flex w-full items-center justify-between rounded-xl px-3.5 py-2 text-left text-sm font-medium transition-smooth",
                     selected === opt.value
-                      ? leaderboardFilterButtonBlueActiveClassName
-                      : "text-zinc-300 hover:text-white"
-                  }`}
+                      ? "bg-slate-100 text-slate-900 ring-1 ring-slate-200 dark:bg-zinc-800 dark:text-zinc-100 dark:ring-zinc-700"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-100",
+                  )}
                 >
                   <span className="flex items-center gap-2 truncate whitespace-nowrap">
                     {opt.chip && (
                       <span
-                        className="w-2.5 h-2.5 rounded-full shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"
+                        className="h-2.5 w-2.5 shrink-0 rounded-full shadow-sm"
                         style={{ backgroundColor: pitchColor(opt.chip) }}
                       />
                     )}
                     {opt.display}
                   </span>
-                  {selected === opt.value && <Check className="w-4 h-4 ml-6 shrink-0 text-blue-400" />}
-                </Button>
+                  {selected === opt.value ? <Check className="ml-6 h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400" /> : null}
+                </button>
               ))}
             </div>
           </motion.div>
@@ -190,12 +187,32 @@ function DropdownFilter<T extends string>({ label, options, selected, onChange }
     </div>
   );
 }
+
 function rankColor(i: number): string {
-  const glow = "[text-shadow:0_0_8px_currentColor]";
-  if (i === 0) return `text-amber-400 ${glow}`; // gold
-  if (i === 1) return `text-zinc-400 ${glow}`; // silver
-  if (i === 2) return `text-amber-600 ${glow}`; // bronze
-  return "text-zinc-500";
+  const glow = "[text-shadow:0_0_6px_rgba(234,179,8,0.35)]";
+  if (i === 0) return `text-amber-600 ${glow} dark:text-amber-400`;
+  if (i === 1) return `text-slate-400 ${glow} dark:text-zinc-400`;
+  if (i === 2) return `text-amber-700 ${glow} dark:text-amber-500`;
+  return "text-slate-500 dark:text-zinc-400";
+}
+
+function lightPill(active: boolean): string {
+  return cn(
+    "inline-flex min-h-10 items-center justify-center rounded-full px-4 text-sm font-semibold transition-all",
+    active
+      ? "bg-surface text-slate-900 shadow-sm ring-1 ring-slate-200 dark:text-zinc-100 dark:ring-zinc-700"
+      : "text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-100",
+  );
+}
+
+/** Denser pill for multi-metric grid / filter rails. */
+function metricSelectPill(active: boolean): string {
+  return cn(
+    "inline-flex min-h-[2.25rem] w-full items-center justify-center rounded-xl px-2 py-1.5 text-center text-[11px] font-semibold leading-tight transition-all sm:text-xs sm:leading-snug",
+    active
+      ? "bg-surface text-slate-900 shadow-sm ring-1 ring-slate-200 dark:text-zinc-100 dark:ring-zinc-700"
+      : "text-slate-500 hover:bg-surface/60 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/40 dark:hover:text-zinc-100",
+  );
 }
 
 function trackmanPlayerHref(playerId: string): string {
@@ -376,65 +393,93 @@ export default function TrackmanLeaderboardsPage() {
   const activeLabel = activeCategory ? (CATEGORY_LABELS[activeCategory] ?? activeCategory) : "Trackman";
 
   return (
-    <LeaderboardPageFrame maxWidth="max-w-7xl">
-      <LeaderboardIntro
-        breadcrumbs={[
-          { label: "Home", href: "/" },
-          { label: "Leaderboards", href: "/leaderboards-hub" },
-          { label: "Trackman" },
-        ]}
-      >
-        <LeaderboardHero
-          tone="blue"
-          icon={Trophy}
-          eyebrow="Stuff And Trackman"
-          title={<>Trackman Leaderboard</>}
-          meta={(
-            <>
-              <LeaderboardPill tone="blue">{activeLabel}</LeaderboardPill>
-              <LeaderboardPill tone="neutral">
-                {data?.session_count ?? 0} session{data?.session_count === 1 ? "" : "s"}
-              </LeaderboardPill>
-              {data?.generated_at ? (
-                <LeaderboardPill tone="neutral">
-                  Updated {new Date(data.generated_at).toLocaleDateString()}
-                </LeaderboardPill>
-              ) : null}
-            </>
-          )}
-          side={(
-            <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Guide</div>
-              <Link
-                href="/trackman/faq"
-                className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-blue-500/25 bg-blue-500/10 px-4 py-3.5 text-sm font-semibold text-blue-300 transition-smooth hover:border-blue-400/40 hover:text-blue-200"
-              >
-                <BookOpen className="h-4 w-4" />
-                Metrics Dictionary
-              </Link>
-            </div>
-          )}
+    <LeaderboardPageFrame variant="light" maxWidth="max-w-[1440px]">
+      <div className={`${plusJakarta.className} flex min-h-full flex-col gap-6`}>
+        <Breadcrumbs
+          variant="light"
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Leaderboards", href: "/leaderboards-hub" },
+            { label: "Trackman" },
+          ]}
         />
-      </LeaderboardIntro>
+
+        <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+          <div className="flex flex-col gap-6 p-5 sm:p-7">
+            <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
+              <div className="min-w-0 flex-1">
+                <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-800">
+                  <Activity className="h-3.5 w-3.5" aria-hidden />
+                  Trackman
+                </div>
+                <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.85rem] sm:leading-[1.02]">
+                  Trackman Leaderboard
+                </h1>
+                <p className="mt-2 text-sm text-slate-600 dark:text-zinc-400">
+                  {activeLabel}
+                  {data?.generated_at
+                    ? ` · Updated ${new Date(data.generated_at).toLocaleDateString()}`
+                    : ""}
+                </p>
+              </div>
+
+              <div className="grid w-full grid-cols-2 gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
+                <HubActionCard
+                  href="/trackman"
+                  icon={Trophy}
+                  sectionTitle="Trackman hub"
+                  buttonLabel="View hub"
+                />
+                <HubActionCard
+                  href="/trackman/faq"
+                  icon={BookOpen}
+                  sectionTitle="Dictionary"
+                  buttonLabel="Metrics FAQ"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <HubStatCard
+                label="Sessions"
+                value={loading ? "—" : String(data?.session_count ?? 0)}
+                detail="Imported Trackman sessions in the published bundle."
+                tone="indigo"
+              />
+              <HubStatCard
+                label="Stuff+ rows"
+                value={loading ? "—" : String(stuffPlusRows.length)}
+                detail="Pitch-type rows from the Stuff+ API feed."
+                tone="emerald"
+              />
+              <HubStatCard
+                label="Metrics available"
+                value={loading ? "—" : String(categories.length)}
+                detail="Leaderboard columns with data for the current build."
+                tone="sky"
+              />
+            </div>
+          </div>
+        </header>
 
       {loading ? (
-        <LeaderboardPanel className="mt-6 p-10 text-center text-zinc-500">
+        <div className="rounded-[1.75rem] border border-slate-200 bg-surface p-10 text-center text-slate-500 shadow-sm dark:border-zinc-700 dark:text-zinc-400 dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
           Loading leaderboards...
-        </LeaderboardPanel>
+        </div>
       ) : categories.length === 0 ? (
-        <LeaderboardPanel className="mt-6 p-8 text-center">
-          <Trophy className="mx-auto mb-3 h-8 w-8 text-zinc-600" />
-          <p className="text-sm text-zinc-400">No leaderboard data yet.</p>
-          <p className="mt-2 text-xs text-zinc-600">
-            Import sessions with <code className="rounded bg-zinc-800 px-1 py-0.5">scripts/import_trackman_pdf.py</code>, run{" "}
-            <code className="rounded bg-zinc-800 px-1 py-0.5">scripts/build_trackman_leaderboards.py</code>, or load Stuff+ with{" "}
-            <code className="rounded bg-zinc-800 px-1 py-0.5">npm run load:stuff-plus</code>
+        <div className="rounded-[1.75rem] border border-slate-200 bg-surface p-8 text-center shadow-sm dark:border-zinc-700 dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+          <Trophy className="mx-auto mb-3 h-8 w-8 text-slate-400 dark:text-zinc-500" />
+          <p className="text-sm text-slate-600 dark:text-zinc-300">No leaderboard data yet.</p>
+          <p className="mt-2 text-xs text-slate-500 dark:text-zinc-500">
+            Import sessions with <code className="rounded border border-slate-200 bg-slate-50 px-1 py-0.5 dark:border-zinc-700 dark:bg-zinc-900/70">scripts/import_trackman_pdf.py</code>, run{" "}
+            <code className="rounded border border-slate-200 bg-slate-50 px-1 py-0.5 dark:border-zinc-700 dark:bg-zinc-900/70">scripts/build_trackman_leaderboards.py</code>, or load Stuff+ with{" "}
+            <code className="rounded border border-slate-200 bg-slate-50 px-1 py-0.5 dark:border-zinc-700 dark:bg-zinc-900/70">npm run load:stuff-plus</code>
           </p>
-        </LeaderboardPanel>
+        </div>
       ) : (
         <>
-          <LeaderboardToolbar>
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,1.75fr)_minmax(18rem,22rem)] xl:items-end">
+          <LeaderboardToolbar variant="light">
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)] xl:items-end">
               <div className="xl:hidden">
                 <DropdownFilter<string>
                   label="Metric"
@@ -446,46 +491,40 @@ export default function TrackmanLeaderboardsPage() {
                   onChange={(cat) => runWithTransition(() => setActiveCategory(cat))}
                 />
               </div>
-              <div className="hidden xl:block space-y-2">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+              <div className="hidden min-w-0 space-y-2 xl:block">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-zinc-400">
                   Metric
                 </div>
-                <div className="flex min-h-[3.75rem] flex-wrap items-center gap-1.5 rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
-                  {categories.map((cat) => (
-                    <Button
-                      key={cat}
-                      type="button"
-                      size="sm"
-                      variant="default"
-                      neon
-                      tone="blue"
-                      onClick={() => runWithTransition(() => setActiveCategory(cat))}
-                      title={CATEGORY_TOOLTIPS[cat]}
-                      className={`${leaderboardFilterButtonBaseClassName} ${
-                        activeCategory === cat
-                          ? leaderboardFilterButtonBlueActiveClassName
-                          : leaderboardFilterButtonBlueInactiveClassName
-                      }`}
-                    >
-                      {CATEGORY_LABELS[cat] ?? cat}
-                    </Button>
-                  ))}
+                <div className="rounded-2xl border border-slate-200 bg-slate-100 p-1.5 dark:border-zinc-700 dark:bg-zinc-900/70">
+                  <div className="grid grid-cols-[repeat(auto-fit,minmax(7.25rem,1fr))] gap-1">
+                    {categories.map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => runWithTransition(() => setActiveCategory(cat))}
+                        title={`${CATEGORY_LABELS[cat] ?? cat} — ${CATEGORY_TOOLTIPS[cat] ?? ""}`}
+                        className={metricSelectPill(activeCategory === cat)}
+                      >
+                        {CATEGORY_SHORT_LABELS[cat] ?? CATEGORY_LABELS[cat] ?? cat}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
               <div className="grid gap-2">
                 <div className="space-y-2">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-zinc-400">
                     Search
                   </div>
-                  <label className="flex items-center gap-3 rounded-2xl border border-zinc-800/80 bg-zinc-950/80 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                    <Search className="h-4 w-4 shrink-0 text-zinc-500" />
+                  <label className="flex items-center gap-3 rounded-full border border-slate-200 bg-slate-100 px-4 py-3 shadow-sm transition-all focus-within:border-sky-300 focus-within:bg-surface dark:border-zinc-700 dark:bg-zinc-900/70 dark:focus-within:border-sky-500/60">
+                    <Search className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
                     <input
                       type="text"
                       placeholder="Search pitcher..."
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      className="w-full bg-transparent text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
+                      className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-zinc-100 dark:placeholder:text-zinc-500"
                     />
                   </label>
                 </div>
@@ -511,30 +550,22 @@ export default function TrackmanLeaderboardsPage() {
                     onChange={(val) => runWithTransition(() => setCategoryPitchFilter(val))}
                   />
                 </div>
-                <div className="hidden xl:flex mt-3 flex-wrap gap-1.5">
+                <div className="mt-3 hidden flex-wrap gap-1 rounded-full border border-slate-200 bg-slate-100 p-1 dark:border-zinc-700 dark:bg-zinc-900/70 xl:flex">
                   {categoryPitchOptions.map((opt) => (
-                    <Button
+                    <button
                       key={opt.value}
                       type="button"
-                      size="sm"
-                      variant="default"
-                      neon
-                      tone="blue"
                       onClick={() => runWithTransition(() => setCategoryPitchFilter(opt.value))}
-                      className={`${leaderboardFilterButtonBaseClassName} flex items-center gap-1 ${
-                        categoryPitchFilter === opt.value
-                          ? leaderboardFilterButtonBlueActiveClassName
-                          : leaderboardFilterButtonBlueInactiveClassName
-                      }`}
+                      className={`${lightPill(categoryPitchFilter === opt.value)} inline-flex items-center gap-1`}
                     >
                       {opt.value !== "all" && (
                         <span
-                          className="w-2 h-2 rounded-full shrink-0 shadow-sm"
+                          className="h-2 w-2 shrink-0 rounded-full shadow-sm"
                           style={{ backgroundColor: pitchColor(opt.label) }}
                         />
                       )}
                       {opt.label}
-                    </Button>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -560,76 +591,52 @@ export default function TrackmanLeaderboardsPage() {
                       onChange={(val) => runWithTransition(() => setStuffPlusPitchFilter(val))}
                     />
                   </div>
-                  <div className="hidden xl:flex mt-3 flex-wrap gap-1.5">
-                    <Button
+                  <div className="mt-3 hidden flex-wrap gap-1 rounded-full border border-slate-200 bg-slate-100 p-1 dark:border-zinc-700 dark:bg-zinc-900/70 xl:flex">
+                    <button
                       type="button"
-                      size="sm"
-                      variant="default"
-                      neon
-                      tone="blue"
                       onClick={() => runWithTransition(() => setStuffPlusPitchFilter("total"))}
-                      className={`${leaderboardFilterButtonBaseClassName} ${
-                        stuffPlusPitchFilter === "total"
-                          ? leaderboardFilterButtonBlueActiveClassName
-                          : leaderboardFilterButtonBlueInactiveClassName
-                      }`}
+                      className={lightPill(stuffPlusPitchFilter === "total")}
                     >
                       Total Grade
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                       type="button"
-                      size="sm"
-                      variant="default"
-                      neon
-                      tone="blue"
                       onClick={() => runWithTransition(() => setStuffPlusPitchFilter("all"))}
-                      className={`${leaderboardFilterButtonBaseClassName} ${
-                        stuffPlusPitchFilter === "all"
-                          ? leaderboardFilterButtonBlueActiveClassName
-                          : leaderboardFilterButtonBlueInactiveClassName
-                      }`}
+                      className={lightPill(stuffPlusPitchFilter === "all")}
                     >
                       Top Pitch
-                    </Button>
+                    </button>
                     {stuffPlusPitchTypes.map((pt) => (
-                      <Button
+                      <button
                         key={pt}
                         type="button"
-                        size="sm"
-                        variant="default"
-                        neon
-                        tone="blue"
                         onClick={() => runWithTransition(() => setStuffPlusPitchFilter(pt))}
-                        className={`${leaderboardFilterButtonBaseClassName} flex items-center gap-1 ${
-                          stuffPlusPitchFilter === pt
-                            ? leaderboardFilterButtonBlueActiveClassName
-                            : leaderboardFilterButtonBlueInactiveClassName
-                        }`}
+                        className={`${lightPill(stuffPlusPitchFilter === pt)} inline-flex items-center gap-1`}
                       >
                         <span
-                          className="w-2 h-2 rounded-full shrink-0 shadow-sm"
+                          className="h-2 w-2 shrink-0 rounded-full shadow-sm"
                           style={{ backgroundColor: pitchColor(pt) }}
                         />
                         {pt}
-                      </Button>
+                      </button>
                     ))}
                   </div>
                 </div>
-                <LeaderboardPanel className="mt-4 overflow-hidden">
+                <div className="mt-4 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-surface shadow-sm dark:border-zinc-700 dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
                   <div className="max-h-[70vh] overflow-auto">
                   <table className="w-full text-sm">
-                    <thead className="sticky top-0 z-10 bg-zinc-900/95 backdrop-blur-sm">
+                    <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
                       <tr>
-                        <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-12">#</th>
-                        <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Player</th>
+                        <th className="w-12 px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">#</th>
+                        <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Player</th>
                         {stuffPlusPitchFilter === "all" && (
-                          <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Pitch</th>
+                          <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Pitch</th>
                         )}
-                        <th className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider" title={CATEGORY_TOOLTIPS.stuff_plus}>Stuff+</th>
+                        <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400" title={CATEGORY_TOOLTIPS.stuff_plus}>Stuff+</th>
                         {stuffPlusPitchFilter !== "total" && (
-                          <th className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Velo</th>
+                          <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Velo</th>
                         )}
-                        <th className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Sessions</th>
+                        <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Sessions</th>
                       </tr>
                     </thead>
                     <tbody key={`stuff-${transitionKey}`}>
@@ -639,17 +646,17 @@ export default function TrackmanLeaderboardsPage() {
                         return (
                         <tr
                           key={`${r.playerId}-${r.pitchType}-${i}`}
-                          className={`${rowTransition.className} border-b border-zinc-800/50 hover:bg-blue-500/5 transition-smooth ${isMe ? "bg-emerald-500/5" : ""}`}
+                          className={`${rowTransition.className} border-b border-slate-100 transition-smooth last:border-b-0 hover:bg-slate-50/80 dark:border-zinc-800 dark:hover:bg-zinc-800/40 ${isMe ? "bg-emerald-50/80 dark:bg-emerald-950/40" : ""}`}
                           style={rowTransition.style}
                         >
                           <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>{i + 1}</td>
-                          <td className="px-4 py-3 font-medium">
+                          <td className="px-4 py-3 font-medium text-slate-900 dark:text-zinc-100">
                             <Link
                               href={trackmanPlayerHref(r.playerId)}
-                              className="text-blue-400 hover:text-blue-300 transition-smooth"
+                              className="text-slate-900 transition-smooth hover:text-sky-700 dark:text-zinc-100 dark:hover:text-sky-400"
                             >
                               {getCanonicalName(r.playerName ?? r.playerId ?? "")}
-                              {isMe && <span className="ml-1.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-400">You</span>}
+                              {isMe && <span className="ml-1.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">You</span>}
                             </Link>
                           </td>
                           {stuffPlusPitchFilter === "all" && (
@@ -658,7 +665,6 @@ export default function TrackmanLeaderboardsPage() {
                                 pitchType={getStuffPlusDisplayPitchType(r.playerId, r.pitchType)}
                                 label={getStuffPlusDisplayPitchType(r.playerId, r.pitchType)}
                                 size="xs"
-                                variant="solid"
                               />
                             </td>
                           )}
@@ -671,11 +677,11 @@ export default function TrackmanLeaderboardsPage() {
                             </span>
                           </td>
                           {stuffPlusPitchFilter !== "total" && (
-                            <td className="px-4 py-3 text-right font-mono text-zinc-400">
+                            <td className="px-4 py-3 text-right font-mono text-slate-600 dark:text-zinc-400">
                               {r.avgVeloMph != null ? `${r.avgVeloMph.toFixed(1)} mph` : "—"}
                             </td>
                           )}
-                          <td className="px-4 py-3 text-right font-mono text-zinc-500">
+                          <td className="px-4 py-3 text-right font-mono text-slate-600 dark:text-zinc-400">
                             {r.nSessions ?? "—"}
                           </td>
                         </tr>
@@ -684,15 +690,15 @@ export default function TrackmanLeaderboardsPage() {
                     </tbody>
                   </table>
                   </div>
-                </LeaderboardPanel>
+                </div>
                 {rankedStuffPlus.length === 0 && (
                   <div className="flex flex-col items-center gap-2 py-8">
-                    <p className="text-zinc-500 text-sm">No players match your search.</p>
+                    <p className="text-sm text-slate-500 dark:text-zinc-400">No players match your search.</p>
                     {search.trim() && (
                       <button
                         type="button"
                         onClick={() => setSearch("")}
-                        className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-smooth"
+                        className="text-sm font-medium text-sky-700 transition-smooth hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300"
                       >
                         Clear filters
                       </button>
@@ -703,20 +709,20 @@ export default function TrackmanLeaderboardsPage() {
             ) : activeCategory ? (
               <>
                 {/* Trackman leaderboard table */}
-                <LeaderboardPanel className="mt-4 overflow-hidden">
+                <div className="mt-4 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-surface shadow-sm dark:border-zinc-700 dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
                   <div className="max-h-[70vh] overflow-auto">
                   <table className="w-full text-sm">
-                    <thead className="sticky top-0 z-10 bg-zinc-900/95 backdrop-blur-sm">
+                    <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
                       <tr>
-                        <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider w-12">#</th>
-                        <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Player</th>
+                        <th className="w-12 px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">#</th>
+                        <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Player</th>
                         {activeCategory === "max_fb_velo" && categoryPitchOptions.length > 0 && (
-                          <th className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Pitch</th>
+                          <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Pitch</th>
                         )}
                         {activeCategory !== "max_fb_velo" && (
-                          <th className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Sessions</th>
+                          <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Sessions</th>
                         )}
-                        <th className="px-4 py-3 text-right text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                           {CATEGORY_LABELS[activeCategory] ?? activeCategory}
                         </th>
                       </tr>
@@ -726,12 +732,12 @@ export default function TrackmanLeaderboardsPage() {
                         <tr>
                           <td colSpan={5} className="px-4 py-12 text-center">
                             <div className="flex flex-col items-center gap-2">
-                              <span className="text-zinc-500">No players match your search.</span>
+                              <span className="text-slate-500 dark:text-zinc-400">No players match your search.</span>
                               {search.trim() && (
                                 <button
                                   type="button"
                                   onClick={() => setSearch("")}
-                                  className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-smooth"
+                                  className="text-sm font-medium text-sky-700 transition-smooth hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300"
                                 >
                                   Clear filters
                                 </button>
@@ -747,17 +753,17 @@ export default function TrackmanLeaderboardsPage() {
                         return (
                         <tr
                           key={`${e.playerSlug}-${i}`}
-                          className={`${rowTransition.className} border-b border-zinc-800/50 hover:bg-blue-500/5 transition-smooth ${isMe ? "bg-emerald-500/5" : ""}`}
+                          className={`${rowTransition.className} border-b border-slate-100 transition-smooth last:border-b-0 hover:bg-slate-50/80 dark:border-zinc-800 dark:hover:bg-zinc-800/40 ${isMe ? "bg-emerald-50/80 dark:bg-emerald-950/40" : ""}`}
                           style={rowTransition.style}
                         >
                           <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(i)}`}>{e.rank}</td>
-                          <td className="px-4 py-3 font-medium">
+                          <td className="px-4 py-3 font-medium text-slate-900 dark:text-zinc-100">
                             <Link
                               href={`/trackman/player/${e.playerSlug}`}
-                              className="text-blue-400 hover:text-blue-300 transition-smooth"
+                              className="transition-smooth hover:text-sky-700 dark:text-zinc-100 dark:hover:text-sky-400"
                             >
                               {getCanonicalName(e.playerName)}
-                              {isMe && <span className="ml-1.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-400">You</span>}
+                              {isMe && <span className="ml-1.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">You</span>}
                             </Link>
                           </td>
                           {activeCategory === "max_fb_velo" && categoryPitchOptions.length > 0 && (
@@ -767,21 +773,20 @@ export default function TrackmanLeaderboardsPage() {
                                   pitchType={pitchLabel}
                                   label={pitchLabel}
                                   size="xs"
-                                  variant="solid"
                                 />
                               ) : (
-                                <span className="text-zinc-500">—</span>
+                                <span className="text-slate-400 dark:text-zinc-500">—</span>
                               )}
                             </td>
                           )}
                           {activeCategory !== "max_fb_velo" && (
-                            <td className="px-4 py-3 text-right text-zinc-500 font-mono">
+                            <td className="px-4 py-3 text-right font-mono text-slate-600 dark:text-zinc-400">
                               {e.sessionCount ?? "\u2014"}
                             </td>
                           )}
-                          <td className="px-4 py-3 text-right font-mono font-medium">
+                          <td className="px-4 py-3 text-right font-mono font-medium text-slate-900 dark:text-zinc-100">
                             {fmt(e.value, activeCategory)}{" "}
-                            <span className="text-zinc-500">
+                            <span className="text-slate-500 dark:text-zinc-500">
                               {CATEGORY_UNITS[activeCategory] ?? ""}
                             </span>
                           </td>
@@ -790,20 +795,20 @@ export default function TrackmanLeaderboardsPage() {
                     </tbody>
                   </table>
                   </div>
-                </LeaderboardPanel>
+                </div>
               </>
             ) : null}
 
             {/* Pitch mix */}
             {data?.pitch_mix && data.pitch_mix.length > 0 && (
-              <LeaderboardPanel className="mt-6 p-5">
-                <h3 className="text-xs uppercase tracking-wider text-zinc-400 mb-3">
+              <div className="mt-6 rounded-[1.75rem] border border-slate-200 bg-surface p-5 shadow-sm dark:border-zinc-700 dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+                <h3 className="mb-3 text-xs uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                   Team Pitch Mix
                 </h3>
-                <div className="flex gap-4 flex-wrap">
+                <div className="flex flex-wrap gap-4">
                   {data.pitch_mix.map((pm) => (
                     <div key={pm.pitch_type} className="text-center">
-                      <div className="text-lg font-mono font-semibold">
+                      <div className="text-lg font-mono font-semibold text-slate-900 dark:text-zinc-100">
                         {pm.pct}%
                       </div>
                       <div className="mt-1 flex justify-center">
@@ -811,18 +816,18 @@ export default function TrackmanLeaderboardsPage() {
                           pitchType={pm.pitch_type}
                           label={pm.pitch_type}
                           size="xs"
-                          variant="solid"
                         />
                       </div>
-                      <div className="text-[10px] text-zinc-600">{pm.count}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-zinc-500">{pm.count}</div>
                     </div>
                   ))}
                 </div>
-              </LeaderboardPanel>
+              </div>
             )}
           </div>
           </>
         )}
+      </div>
     </LeaderboardPageFrame>
   );
 }

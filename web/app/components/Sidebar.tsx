@@ -24,6 +24,8 @@ import {
   X
 } from "lucide-react";
 import { TEAM_NAME } from "@/lib/teamConfig";
+import { useSiteAppearance } from "./SiteAppearanceContext";
+import SiteAppearanceToggle from "./SiteAppearanceToggle";
 
 const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
@@ -160,6 +162,7 @@ function shouldHideSidebar(pathname: string | null): boolean {
 export default function Sidebar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isDark = useSiteAppearance() === "dark";
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -183,7 +186,13 @@ export default function Sidebar() {
 
   const renderNavLinks = () => (
     <nav className="flex flex-1 flex-col gap-1.5 overflow-y-auto px-4 py-3">
-      <div className="mt-4 px-3 text-[11px] font-bold uppercase tracking-[0.15em] text-[#94A3B8]">
+      <div
+        className={
+          isDark
+            ? "mt-4 px-3 text-[11px] font-bold uppercase tracking-[0.15em] text-zinc-500"
+            : "mt-4 px-3 text-[11px] font-bold uppercase tracking-[0.15em] text-[#94A3B8]"
+        }
+      >
         Main Menu
       </div>
       {NAV_ITEMS.map((item, index) => {
@@ -195,20 +204,26 @@ export default function Sidebar() {
 
         return (
           <div key={item.name} className="flex flex-col gap-1.5">
-            {startsNewSection && <div className="my-2 w-full h-px bg-[#F1F5F9]" />}
+            {startsNewSection && (
+              <div className={isDark ? "my-2 w-full h-px bg-zinc-800" : "my-2 w-full h-px bg-[#F1F5F9]"} />
+            )}
             <Link
               href={item.url}
               className={
                 isActive
                   ? "flex items-center gap-3 rounded-full bg-[var(--brand-primary-soft)] px-3 py-2.5 text-[13px] font-bold text-[var(--brand-primary-subtle-text)] transition-colors"
-                  : "group flex items-center gap-3 rounded-full px-3 py-2.5 text-[13px] font-semibold text-[#64748B] transition-colors hover:bg-[#F8FAFC] hover:text-[#0F172A]"
+                  : isDark
+                    ? "group flex items-center gap-3 rounded-full px-3 py-2.5 text-[13px] font-semibold text-zinc-400 transition-colors hover:bg-zinc-900/80 hover:text-zinc-100"
+                    : "group flex items-center gap-3 rounded-full px-3 py-2.5 text-[13px] font-semibold text-slate-500 dark:text-zinc-400 transition-colors hover:bg-background hover:text-slate-900 dark:hover:text-zinc-50"
               }
             >
               <Icon
                 className={
                   isActive
                     ? "h-5 w-5 text-[var(--brand-primary-subtle-text)]"
-                  : "w-5 h-5 text-[#94A3B8] group-hover:text-[#64748B] transition-colors"
+                    : isDark
+                      ? "w-5 h-5 text-zinc-500 group-hover:text-zinc-400 transition-colors"
+                      : "w-5 h-5 text-[#94A3B8] group-hover:text-slate-500 dark:hover:text-zinc-400 transition-colors"
                 }
               />
               {item.name}
@@ -221,7 +236,13 @@ export default function Sidebar() {
 
   return (
     <>
-      <div className={`sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-[#F1F5F9] bg-white px-4 py-4 xl:hidden ${plusJakarta.className}`}>
+      <div
+        className={
+          isDark
+            ? `sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-950 px-4 py-4 xl:hidden ${plusJakarta.className}`
+            : `sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-[#F1F5F9] bg-surface px-4 py-4 xl:hidden ${plusJakarta.className}`
+        }
+      >
         <Link href="/" className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--brand-primary)]">
             <Image
@@ -234,16 +255,43 @@ export default function Sidebar() {
             />
           </div>
           <div>
-            <span className="block text-lg font-bold tracking-tight text-[#0F172A]">{TEAM_NAME}</span>
-            <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#94A3B8]">Pitch Tracker</span>
+            <span
+              className={
+                isDark ? "block text-lg font-bold tracking-tight text-zinc-100" : "block text-lg font-bold tracking-tight text-slate-900 dark:text-zinc-50"
+              }
+            >
+              {TEAM_NAME}
+            </span>
+            <span
+              className={
+                isDark
+                  ? "block text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500"
+                  : "block text-[10px] font-bold uppercase tracking-[0.14em] text-[#94A3B8]"
+              }
+            >
+              Pitch Tracker
+            </span>
           </div>
         </Link>
-        <button onClick={() => setIsMobileMenuOpen(true)} className="rounded-xl p-2 text-[#64748B] transition-colors hover:bg-[#F8FAFC] hover:text-[#0F172A]">
+        <button
+          onClick={() => setIsMobileMenuOpen(true)}
+          className={
+            isDark
+              ? "rounded-xl p-2 text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-zinc-100"
+              : "rounded-xl p-2 text-slate-500 dark:text-zinc-400 transition-colors hover:bg-background hover:text-slate-900 dark:hover:text-zinc-50"
+          }
+        >
           <Menu className="w-5 h-5" />
         </button>
       </div>
 
-      <aside className={`hidden h-screen w-[240px] shrink-0 border-r border-[#F1F5F9] bg-white xl:sticky xl:top-0 xl:flex xl:flex-col ${plusJakarta.className}`}>
+      <aside
+        className={
+          isDark
+            ? `hidden h-screen w-[240px] shrink-0 border-r border-zinc-800 bg-zinc-950 xl:sticky xl:top-0 xl:flex xl:flex-col ${plusJakarta.className}`
+            : `hidden h-screen w-[240px] shrink-0 border-r border-[#F1F5F9] bg-surface xl:sticky xl:top-0 xl:flex xl:flex-col ${plusJakarta.className}`
+        }
+      >
         <div className="px-6 pb-4 pt-6">
           <Link href="/" className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand-primary)]">
@@ -257,15 +305,34 @@ export default function Sidebar() {
               />
             </div>
             <div>
-              <h1 className="text-[17px] font-extrabold leading-tight tracking-tight text-[#0F172A]">{TEAM_NAME}</h1>
-              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#64748B]">Pitch Tracker</p>
+              <h1
+                className={
+                  isDark
+                    ? "text-[17px] font-extrabold leading-tight tracking-tight text-zinc-100"
+                    : "text-[17px] font-extrabold leading-tight tracking-tight text-slate-900 dark:text-zinc-50"
+                }
+              >
+                {TEAM_NAME}
+              </h1>
+              <p
+                className={
+                  isDark
+                    ? "text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500"
+                    : "text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-zinc-400"
+                }
+              >
+                Pitch Tracker
+              </p>
             </div>
           </Link>
         </div>
 
         {renderNavLinks()}
 
-        <div className="border-t border-[#F1F5F9] p-4">
+        <div className={isDark ? "border-t border-zinc-800 p-4" : "border-t border-[#F1F5F9] p-4"}>
+          <div className="mb-3">
+            <SiteAppearanceToggle />
+          </div>
           <Link
             href="/charting/new"
             className="flex items-center justify-center gap-2 rounded-full bg-[var(--brand-primary)] px-4 py-2.5 text-[13px] font-bold text-white shadow-[0_12px_28px_rgba(var(--brand-primary-rgb),0.18)] transition-all duration-300 hover:bg-[var(--brand-primary-hover)]"
@@ -292,16 +359,36 @@ export default function Sidebar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className={`fixed inset-y-0 right-0 z-[70] flex w-[85vw] max-w-sm flex-col border-l border-[#F1F5F9] bg-white shadow-2xl xl:hidden ${plusJakarta.className}`}
+              className={
+                isDark
+                  ? `fixed inset-y-0 right-0 z-[70] flex w-[85vw] max-w-sm flex-col border-l border-zinc-800 bg-zinc-950 shadow-2xl xl:hidden ${plusJakarta.className}`
+                  : `fixed inset-y-0 right-0 z-[70] flex w-[85vw] max-w-sm flex-col border-l border-[#F1F5F9] bg-surface shadow-2xl xl:hidden ${plusJakarta.className}`
+              }
             >
-              <div className="flex items-center justify-between border-b border-[#F1F5F9] p-5">
-                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#94A3B8]">
+              <div
+                className={
+                  isDark
+                    ? "flex items-center justify-between border-b border-zinc-800 p-5"
+                    : "flex items-center justify-between border-b border-[#F1F5F9] p-5"
+                }
+              >
+                <div
+                  className={
+                    isDark
+                      ? "text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500"
+                      : "text-[10px] font-bold uppercase tracking-[0.2em] text-[#94A3B8]"
+                  }
+                >
                   Navigation
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F8FAFC] border border-[#F1F5F9] text-[#64748B] transition-colors hover:bg-[#F1F5F9] hover:text-[#0F172A]"
+                  className={
+                    isDark
+                      ? "flex h-8 w-8 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
+                      : "flex h-8 w-8 items-center justify-center rounded-full bg-background border border-[#F1F5F9] text-slate-500 dark:text-zinc-400 transition-colors hover:bg-[#F1F5F9] hover:text-slate-900 dark:hover:text-zinc-50"
+                  }
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -309,7 +396,10 @@ export default function Sidebar() {
               <div className="flex-1 overflow-y-auto">
                 {renderNavLinks()}
               </div>
-              <div className="border-t border-[#F1F5F9] p-4">
+              <div className={isDark ? "border-t border-zinc-800 p-4" : "border-t border-[#F1F5F9] p-4"}>
+                <div className="mb-3">
+                  <SiteAppearanceToggle />
+                </div>
                 <Link
                   href="/charting/new"
                   onClick={() => setIsMobileMenuOpen(false)}

@@ -4,12 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Outing } from "@/lib/dataIndex";
 import { seasonFromDateId } from "@/lib/season";
-import {
-  Button,
-  leaderboardFilterButtonBaseClassName,
-  leaderboardFilterButtonGhostInactiveClassName,
-  leaderboardFilterButtonOrangeActiveClassName,
-} from "@/components/ui/neon-button";
+import { cn } from "@/lib/utils";
 
 type SeasonValue = "2026" | "2025" | "all";
 
@@ -84,40 +79,37 @@ export default function OutingSelect({
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
       {hasMultipleSeasons && (
         <div className="space-y-2">
-          <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8]">
             Season
           </div>
-          <div className="inline-flex flex-wrap gap-1.5 rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
+          <div className="inline-flex flex-wrap gap-1.5 rounded-2xl border border-border bg-background p-1.5">
             {[
               ...seasons.map((yr) => ({ value: String(yr), display: String(yr) })),
               { value: "all", display: "All" },
             ].map((option) => (
-              <Button
+              <button
                 key={option.value}
                 type="button"
-                size="sm"
-                variant="ghost"
-                neon
-                tone="orange"
                 onClick={() => setSeasonFilter(option.value as SeasonValue)}
-                className={`${leaderboardFilterButtonBaseClassName} min-w-[4.75rem] ${
+                className={cn(
+                  "min-w-[4.75rem] whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] font-semibold transition-smooth",
                   seasonFilter === option.value
-                    ? leaderboardFilterButtonOrangeActiveClassName
-                    : leaderboardFilterButtonGhostInactiveClassName
-                }`}
+                    ? "border border-orange-300 bg-orange-50 text-orange-900 shadow-sm"
+                    : "border border-transparent bg-transparent text-slate-500 dark:text-zinc-400 hover:border-[#E2E8F0] hover:bg-surface hover:text-slate-900 dark:hover:text-zinc-50",
+                )}
               >
                 {option.display}
-              </Button>
+              </button>
             ))}
           </div>
         </div>
       )}
-      <label className="space-y-2 text-xs text-zinc-400">
-        <span className="block text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+      <label className="space-y-2 text-xs text-slate-500 dark:text-zinc-400">
+        <span className="block text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8]">
           Outing
         </span>
         <select
-          className="min-w-[16rem] rounded-2xl border border-zinc-800 bg-zinc-950/80 px-3 py-2.5 text-xs text-zinc-200 outline-none transition-all duration-300 hover:border-orange-400/25 focus:border-orange-400/35"
+          className="min-w-[16rem] rounded-2xl border border-border bg-surface px-3 py-2.5 text-xs text-slate-900 dark:text-zinc-50 outline-none transition-all duration-300 hover:border-[#CBD5E1] focus:border-orange-300 focus:ring-2 focus:ring-orange-500/15"
           value={filtered.some((o) => o.id === selectedOutingId) ? selectedOutingId : filtered[0]?.id ?? ""}
           onChange={(event) => {
             const params = new URLSearchParams(searchParams.toString());

@@ -3,6 +3,8 @@
 import type { Filters, Pitch } from "../types";
 import { uniqueTypes, pitchColor } from "../utils";
 import { pitchDisplayName } from "@/lib/pitchNames";
+import { pitchChipSurfaceStyle } from "@/lib/pitchColors";
+import { useSiteAppearance } from "@/app/components/SiteAppearanceContext";
 
 interface Props {
   pitches: Pitch[];
@@ -11,6 +13,7 @@ interface Props {
 }
 
 export default function FilterPanel({ pitches, filters, onChange }: Props) {
+  const siteDark = useSiteAppearance() === "dark";
   const types = uniqueTypes(pitches);
 
   const toggleType = (t: string) => {
@@ -23,12 +26,12 @@ export default function FilterPanel({ pitches, filters, onChange }: Props) {
     <div className="space-y-5 text-sm">
       {/* Pitch type */}
       <div className="space-y-2.5">
-        <h3 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+        <h3 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8] dark:text-zinc-500">
           Pitch Type
         </h3>
         <div className="flex flex-wrap gap-2">
           {types.length === 0 ? (
-            <span className="text-xs text-zinc-500 italic">No pitches in this view</span>
+            <span className="text-xs italic text-[#94A3B8] dark:text-zinc-500">No pitches in this view</span>
           ) : types.map((t) => {
             const active =
               filters.pitchTypes.size === 0 || filters.pitchTypes.has(t);
@@ -40,22 +43,14 @@ export default function FilterPanel({ pitches, filters, onChange }: Props) {
                 onClick={() => toggleType(t)}
                 className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-all duration-300 ${
                   active
-                    ? "text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-                    : "border-zinc-800 bg-zinc-950/70 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
+                    ? "border-transparent bg-surface text-slate-900 shadow-sm dark:bg-zinc-900/90 dark:text-zinc-50"
+                    : "border-[#E2E8F0] bg-surface text-slate-500 hover:border-[#CBD5E1] hover:text-slate-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-50"
                 }`}
-                style={
-                  active
-                    ? {
-                        borderColor: `${color}55`,
-                        background: `linear-gradient(135deg, ${color}22, rgba(9,9,11,0.92))`,
-                        boxShadow: `0 0 0 1px ${color}12`,
-                      }
-                    : undefined
-                }
+                style={active ? pitchChipSurfaceStyle(color, "filterActive", siteDark) : undefined}
               >
                 <span
                   className="inline-block h-2 w-2 rounded-full"
-                  style={{ backgroundColor: color, boxShadow: active ? `0 0 10px ${color}` : "none" }}
+                  style={{ backgroundColor: color, boxShadow: active ? `0 0 8px ${color}` : "none" }}
                 />
                 {pitchDisplayName(t)}
               </button>
@@ -67,14 +62,14 @@ export default function FilterPanel({ pitches, filters, onChange }: Props) {
       {/* Miss max */}
       <div className="space-y-2.5">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+          <h3 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8] dark:text-zinc-500">
             Max Miss
           </h3>
-          <span className="rounded-full border border-zinc-800 bg-zinc-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
+          <span className="rounded-full border border-[#E2E8F0] bg-background px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:border-zinc-700 dark:text-zinc-400">
             {filters.maxMiss !== null ? `≤ ${filters.maxMiss}"` : "All"}
           </span>
         </div>
-        <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 px-3 py-3">
+        <div className="rounded-2xl border border-border bg-background px-3 py-3">
           <input
             type="range"
             min={0}
@@ -85,7 +80,7 @@ export default function FilterPanel({ pitches, filters, onChange }: Props) {
               const v = parseFloat(e.target.value);
               onChange({ ...filters, maxMiss: v >= 24 ? null : v });
             }}
-            className="w-full accent-orange-400"
+            className="w-full accent-[var(--brand-primary)]"
           />
         </div>
       </div>
@@ -94,7 +89,7 @@ export default function FilterPanel({ pitches, filters, onChange }: Props) {
       <button
         type="button"
         onClick={() => onChange({ pitchTypes: new Set(), maxMiss: null })}
-        className="rounded-full border border-zinc-800 bg-zinc-950/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500 transition-all duration-300 hover:border-zinc-700 hover:text-zinc-300"
+        className="rounded-full border border-[#E2E8F0] bg-surface px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 transition-all duration-300 hover:border-[#CBD5E1] hover:text-slate-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-50"
       >
         Reset filters
       </button>

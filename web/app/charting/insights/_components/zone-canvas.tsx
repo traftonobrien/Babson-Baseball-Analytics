@@ -112,7 +112,7 @@ export function ZoneCanvas({
           ? `Col: ${ZONE_COL_LABELS[focusColId] ?? focusColId}`
           : focusLayout?.label ?? null;
   return (
-    <div className="rounded-[1.9rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+    <div className="rounded-[1.9rem] border border-[#E2E8F0] bg-background p-4">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
@@ -151,7 +151,7 @@ export function ZoneCanvas({
               onSelectRow(null);
               onSelectCol(null);
             }}
-            className="rounded-full border border-[#E2E8F0] bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#64748B] transition-smooth hover:border-[#CBD5E1] hover:text-[#0F172A]"
+            className="rounded-full border border-[#E2E8F0] bg-surface px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-zinc-400 transition-smooth hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
           >
             Clear Selection
           </button>
@@ -295,7 +295,7 @@ export function ZoneCanvas({
                     "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition-smooth",
                     selectedRowId === row
                       ? "bg-sky-100 text-sky-700 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.30)]"
-                      : "text-[#94A3B8] hover:bg-slate-200 hover:text-[#0F172A]",
+                      : "text-[#94A3B8] hover:bg-slate-200 hover:text-slate-900 dark:hover:text-zinc-50",
                   )}
                 >
                   {ZONE_ROW_LABELS[row]}
@@ -317,7 +317,7 @@ export function ZoneCanvas({
                     "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition-smooth",
                     selectedColId === col
                       ? "bg-sky-100 text-sky-700 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.30)]"
-                      : "text-[#94A3B8] hover:bg-slate-200 hover:text-[#0F172A]",
+                      : "text-[#94A3B8] hover:bg-slate-200 hover:text-slate-900 dark:hover:text-zinc-50",
                   )}
                 >
                   {ZONE_COL_LABELS[col]}
@@ -400,15 +400,15 @@ export function ZoneCanvas({
           </div>
 
           {hasAnyFocus && focusSummary ? (
-            <div className="pointer-events-none absolute right-3 top-16 rounded-[0.75rem] border border-[#E2E8F0] bg-white px-3 py-2 text-[11px] text-[#64748B] shadow-[0_8px_20px_rgba(15,23,42,0.12)]">
-              <div className="font-semibold text-[#0F172A]">{focusLabel}</div>
+            <div className="pointer-events-none absolute right-3 top-16 rounded-[0.75rem] border border-[#E2E8F0] bg-surface px-3 py-2 text-[11px] text-slate-500 dark:text-zinc-400 shadow-[0_8px_20px_rgba(15,23,42,0.12)]">
+              <div className="font-semibold text-slate-900 dark:text-zinc-50">{focusLabel}</div>
               <div className="mt-1 flex flex-wrap items-center gap-3">
                 <span>
-                  n=<span className="font-semibold text-[#0F172A]">{focusSummary.totalPitches}</span>
+                  n=<span className="font-semibold text-slate-900 dark:text-zinc-50">{focusSummary.totalPitches}</span>
                 </span>
                 <span>
                   {activeMetric}{" "}
-                  <span className="font-semibold text-[#0F172A]">
+                  <span className="font-semibold text-slate-900 dark:text-zinc-50">
                     {formatMetricValue(view, metricId, metricValueForSummary(view, focusSummary, metricId))}
                   </span>
                 </span>

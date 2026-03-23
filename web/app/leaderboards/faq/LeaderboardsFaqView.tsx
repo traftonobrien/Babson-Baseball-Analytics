@@ -29,14 +29,14 @@ export default function LeaderboardsFaqView() {
       >
         <div className="space-y-6">
           <DictionaryCard className="sm:px-8">
-            <h3 className="text-lg font-bold text-zinc-200">On-Target %</h3>
-            <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+            <h3 className="text-lg font-bold text-slate-900">On-Target %</h3>
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">
                   The share of pitches that finished within an{" "}
-                  <strong className="text-zinc-200">8-inch radius</strong> of the
+                  <strong className="text-slate-900">8-inch radius</strong> of the
                   catcher&apos;s target.
             </p>
-            <div className="mt-4 rounded-2xl border border-zinc-800/80 bg-zinc-950/75 p-4 text-sm text-zinc-500">
-              <strong className="mb-1 block text-zinc-300">Why 8 inches?</strong>
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+              <strong className="mb-1 block text-slate-800">Why 8 inches?</strong>
               The 8-inch halo leaves room for normal variation while still
               keeping the pitch close enough to be genuinely competitive.
             </div>
@@ -44,10 +44,10 @@ export default function LeaderboardsFaqView() {
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <DictionaryCard>
-              <h3 className="text-lg font-bold text-zinc-200">
+              <h3 className="text-lg font-bold text-slate-900">
                 Average Miss (Total)
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
                 Measured in inches. This is the average straight-line miss from
                 the target across the full sample. Lower is better. Around
                 10.0&quot; is strong Division III command.
@@ -55,12 +55,12 @@ export default function LeaderboardsFaqView() {
             </DictionaryCard>
 
             <DictionaryCard>
-              <h3 className="text-lg font-bold text-zinc-200">
+              <h3 className="text-lg font-bold text-slate-900">
                 Consistency (Std Dev)
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
                 Measured in inches. This is the{" "}
-                <strong className="text-zinc-300">standard deviation</strong> of
+                <strong className="text-slate-800">standard deviation</strong> of
                 total miss. Lower means the misses cluster tightly. Higher means
                 they scatter.
               </p>
@@ -70,12 +70,12 @@ export default function LeaderboardsFaqView() {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <DictionaryCard>
               <div className="mb-2 flex items-center gap-2">
-                <Navigation className="h-4 w-4 text-zinc-400" />
-                <h3 className="text-lg font-bold text-zinc-200">
+                <Navigation className="h-4 w-4 text-slate-600" />
+                <h3 className="text-lg font-bold text-slate-900">
                   Horizontal Miss (Avg H)
                 </h3>
               </div>
-              <p className="text-sm leading-relaxed text-zinc-400">
+              <p className="text-sm leading-relaxed text-slate-600">
                 The average absolute miss on the horizontal plane. This is the
                 quickest way to spot arm-side or glove-side drift.
               </p>
@@ -83,19 +83,19 @@ export default function LeaderboardsFaqView() {
 
             <DictionaryCard>
               <div className="mb-2 flex items-center gap-2">
-                <Navigation className="h-4 w-4 rotate-90 text-zinc-400" />
-                <h3 className="text-lg font-bold text-zinc-200">
+                <Navigation className="h-4 w-4 rotate-90 text-slate-600" />
+                <h3 className="text-lg font-bold text-slate-900">
                   Vertical Miss (Avg V)
                 </h3>
               </div>
-              <p className="text-sm leading-relaxed text-zinc-400">
+              <p className="text-sm leading-relaxed text-slate-600">
                   The average absolute miss on the vertical plane. It shows how
                   often the pitcher misses above or below the target line.
               </p>
             </DictionaryCard>
           </div>
 
-          <DictionaryCard className="border-rose-900/30 bg-rose-950/15">
+          <DictionaryCard className="border-rose-200 bg-rose-50">
             <h3 className="text-lg font-bold text-rose-200">Outlier %</h3>
             <p className="mt-2 text-sm leading-relaxed text-rose-200/70">
               The share of pitches that missed the target by more than{" "}
@@ -104,19 +104,19 @@ export default function LeaderboardsFaqView() {
             </p>
           </DictionaryCard>
 
-          <DictionaryCard className="border-orange-500/20 bg-orange-950/15">
-            <h3 className="text-lg font-bold text-orange-300">Command+</h3>
+          <DictionaryCard className="border-orange-200 bg-orange-50">
+            <h3 className="text-lg font-bold text-orange-900">Command+</h3>
             <div className="mt-3 space-y-4">
-              <p className="text-sm leading-relaxed text-orange-200/70">
+              <p className="text-sm leading-relaxed text-slate-700">
                 Command+ compares a pitcher&apos;s live miss distance to the
                 team&apos;s current baseline for the same pitch type. A score of
                 100 is team average. Higher is better.
               </p>
-              <div className="rounded-2xl border border-orange-900/50 bg-orange-950/35 p-4">
-                <h4 className="mb-2 text-sm font-semibold text-orange-300">
+              <div className="rounded-2xl border border-orange-200 bg-surface/80 p-4">
+                <h4 className="mb-2 text-sm font-semibold text-orange-900">
                   How Command+ Works
                 </h4>
-                <ul className="list-disc space-y-2 pl-5 text-sm text-orange-200/65">
+                <ul className="list-disc space-y-2 pl-5 text-sm text-slate-700">
                   <li>
                     <strong>Pitch baseline:</strong> Live team miss average for
                     each valid pitch type.
@@ -131,7 +131,7 @@ export default function LeaderboardsFaqView() {
                   </li>
                   <li>
                     <strong>Eligibility:</strong> Blank, unknown, and{" "}
-                    <code className="rounded bg-orange-950 px-1 py-0.5 text-orange-300">
+                    <code className="rounded bg-orange-100 px-1 py-0.5 font-mono text-orange-900">
                       OTHER
                     </code>{" "}
                     rows are excluded.

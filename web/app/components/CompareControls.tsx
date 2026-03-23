@@ -19,8 +19,8 @@ export default function CompareControls({
   playerId,
 }: Props) {
   return (
-    <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-      <label className="block text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+    <div className="flex min-h-0 min-w-0 flex-col rounded-3xl border border-border bg-background p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] sm:p-4">
+      <label className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-zinc-400">
         Side {side}
       </label>
       <select
@@ -29,7 +29,7 @@ export default function CompareControls({
           const val = e.target.value || null;
           onChange({ ...selection, playerId, outingId: val });
         }}
-        className="mt-3 w-full rounded-2xl border border-zinc-800 bg-zinc-950/85 px-4 py-3 text-sm text-zinc-200 outline-none transition-smooth focus:border-orange-400/35"
+        className="mt-2 w-full min-w-0 rounded-2xl border border-[#E2E8F0] bg-surface px-3 py-2.5 text-sm text-slate-900 dark:text-zinc-50 outline-none transition-smooth focus:border-[var(--brand-primary-border)] focus:ring-1 focus:ring-[var(--brand-primary-border)] sm:mt-2.5 sm:px-4 sm:py-3"
       >
         <option value="">Select outing...</option>
         {availableOutings.map((o) => (

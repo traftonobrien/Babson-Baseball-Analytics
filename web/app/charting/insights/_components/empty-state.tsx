@@ -27,17 +27,17 @@ export function EmptyState({
   const isPitcher = isPitcherView(view);
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-[#E5E7EB] bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.04)] sm:p-7">
+    <div className="overflow-hidden rounded-[28px] border border-border bg-surface p-6 shadow-[0_16px_40px_rgba(15,23,42,0.04)] sm:p-7">
       <div className="grid gap-6 xl:grid-cols-[minmax(18rem,0.85fr)_minmax(0,1.15fr)] xl:items-center">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border border-[#E0E7FF] bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6366F1]">
             <ClipboardList className="h-3.5 w-3.5" />
             Player Visuals
           </div>
-          <h2 className="mt-4 text-3xl font-black tracking-tight text-[#0F172A]">
+          <h2 className="mt-4 text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-50">
             Search a {isPitcher ? "pitcher" : "hitter"} to open the visuals.
           </h2>
-          <p className="mt-3 max-w-xl text-sm leading-7 text-[#64748B]">
+          <p className="mt-3 max-w-xl text-sm leading-7 text-slate-500 dark:text-zinc-400">
             {isPitcher
               ? `This page mirrors the Savant workflow with the ${TEAM_NAME} pitcher data we actually capture: player search, season and pitch filters, pitch-speed scope, command/result slices, rough zone buckets, and a one-line season table below.`
               : `This page mirrors the Savant workflow with the ${TEAM_NAME} data we actually capture: player search, pitcher hand, season and pitch filters, pitch-speed scope, rough zone buckets, and a one-line season table below.`}
@@ -54,7 +54,7 @@ export function EmptyState({
             <button
               type="button"
               onClick={onOpenPinned}
-              className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-2 text-sm font-semibold text-[#334155] transition-smooth hover:border-[var(--brand-primary-border)] hover:text-[var(--brand-primary-subtle-text)]"
+              className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-background px-4 py-2 text-sm font-semibold text-[#334155] transition-smooth hover:border-[var(--brand-primary-border)] hover:text-[var(--brand-primary-subtle-text)]"
             >
               Reopen pinned {countNounForView(view)}
               <ArrowRight className="h-4 w-4" />
@@ -62,13 +62,13 @@ export function EmptyState({
           ) : null}
         </div>
 
-        <div className="rounded-[2rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
-          <div className="relative aspect-square rounded-[1.75rem] border border-[#E2E8F0] bg-white">
+        <div className="rounded-[2rem] border border-[#E2E8F0] bg-background p-4">
+          <div className="relative aspect-square rounded-[1.75rem] border border-[#E2E8F0] bg-surface">
             <div className="pointer-events-none absolute inset-[22%] rounded-[1.5rem] border border-dashed border-[#CBD5E1]" />
             {Object.values(ZONE_BUCKET_LAYOUT).map((bucket) => (
               <div
                 key={bucket.label}
-                className="absolute overflow-hidden rounded-[1.4rem] border border-[#E2E8F0] bg-[#F8FAFC]"
+                className="absolute overflow-hidden rounded-[1.4rem] border border-[#E2E8F0] bg-background"
                 style={{
                   ...bucket.style,
                   clipPath: bucket.chaseKind ? clipPathForLocationCell(bucket.chaseKind) : "none",

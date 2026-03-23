@@ -3,6 +3,8 @@
 import { useState } from "react";
 import type { Pitch } from "../types";
 import { pitchColor } from "../utils";
+import { pitchChipSurfaceStyle } from "@/lib/pitchColors";
+import { useSiteAppearance } from "@/app/components/SiteAppearanceContext";
 import { isOutlier as isOutlierPitch, OUTLIER_MISS_THRESHOLD_IN } from "@/lib/reportModel";
 import { pitchArmSideX, hDirectionLabel } from "@/lib/handedness";
 
@@ -30,11 +32,12 @@ export default function PitchTable({
   pitchTypeOptions,
 }: Props) {
   const [editingPitch, setEditingPitch] = useState<number | null>(null);
+  const siteDark = useSiteAppearance() === "dark";
 
   return (
     <div className="max-h-[calc(100vh-280px)] overflow-y-auto">
       <table className="w-full text-xs">
-        <thead className="sticky top-0 z-10 bg-zinc-950/95 text-zinc-500 backdrop-blur">
+        <thead className="sticky top-0 z-10 border-b border-[#F1F5F9] bg-background/95 text-[#94A3B8] backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90 dark:text-zinc-500">
           <tr>
             <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.2em]">#</th>
             <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.2em]">Type</th>
@@ -55,13 +58,13 @@ export default function PitchTable({
               <tr
                 key={p.pitch_number}
                 onClick={() => onSelect(p)}
-                className={`cursor-pointer border-b border-zinc-800/70 transition-all duration-300 ${
+                className={`cursor-pointer border-b border-[#F1F5F9] transition-all duration-300 ${
                   isSelected
-                    ? "bg-orange-500/[0.09] shadow-[inset_2px_0_0_rgba(251,146,60,0.7)]"
-                    : "hover:bg-zinc-900/80"
+                    ? "bg-[var(--brand-primary-soft)] shadow-[inset_2px_0_0_rgba(var(--brand-primary-rgb),0.55)]"
+                    : "hover:bg-background"
                 } ${isOutlier ? "opacity-55 grayscale hover:opacity-75" : ""}`}
               >
-                <td className="px-3 py-2 font-mono text-zinc-300">{p.pitch_number}</td>
+                <td className="px-3 py-2 font-mono text-[#475569] dark:text-zinc-400">{p.pitch_number}</td>
                 <td className="px-3 py-2">
                   {isEditing && onEditPitchType && pitchTypeOptions ? (
                     <select
@@ -73,7 +76,7 @@ export default function PitchTable({
                         setEditingPitch(null);
                       }}
                       onBlur={() => setEditingPitch(null)}
-                      className="rounded-xl border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-100 outline-none"
+                      className="rounded-xl border border-[#E2E8F0] bg-surface px-2 py-1 text-xs text-slate-900 outline-none focus:border-[var(--brand-primary-border)] dark:border-zinc-700 dark:text-zinc-50"
                     >
                       {pitchTypeOptions.map((t) => (
                         <option key={t} value={t}>
@@ -84,11 +87,8 @@ export default function PitchTable({
                   ) : (
                     <span className="flex flex-wrap items-center gap-1.5">
                       <span
-                        className="inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-semibold text-zinc-100"
-                        style={{
-                          borderColor: `${pitchColor(p.pitch_type)}55`,
-                          background: `linear-gradient(135deg, ${pitchColor(p.pitch_type)}22, rgba(9,9,11,0.92))`,
-                        }}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-transparent bg-surface px-2 py-0.5 text-[10px] font-semibold text-slate-900 dark:bg-zinc-900/88 dark:text-zinc-50"
+                        style={pitchChipSurfaceStyle(pitchColor(p.pitch_type), "tableSoft", siteDark)}
                       >
                         <span
                           className="inline-block h-1.5 w-1.5 rounded-full"
@@ -97,17 +97,17 @@ export default function PitchTable({
                         {p.pitch_type}
                       </span>
                       {isEdited && (
-                        <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-amber-300">
+                        <span className="rounded-full border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--brand-primary-subtle-text)]">
                           edited
                         </span>
                       )}
                       {isOutlier && (
                         <span
-                          className="ml-1 inline-flex items-center gap-0.5 rounded-full border border-zinc-700 bg-zinc-900 px-1.5 py-0 text-[9px] font-semibold text-amber-300 print:border-zinc-400 print:bg-white print:text-black"
+                          className="ml-1 inline-flex items-center gap-0.5 rounded-full border border-slate-200 bg-slate-100 px-1.5 py-0 text-[9px] font-semibold text-slate-700 print:border-slate-300 print:bg-surface print:text-black dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
                           title={`Outlier: miss > ${OUTLIER_MISS_THRESHOLD_IN}\u2033`}
                         >
                           OUTLIER
-                          <span className="text-[8px] font-normal text-zinc-400 print:text-black">
+                          <span className="text-[8px] font-normal text-slate-500 dark:text-zinc-400 print:text-black">
                             &gt;{OUTLIER_MISS_THRESHOLD_IN}&Prime;
                           </span>
                         </span>
@@ -115,13 +115,13 @@ export default function PitchTable({
                     </span>
                   )}
                 </td>
-                <td className="px-3 py-2 text-right font-mono text-zinc-200">
+                <td className="px-3 py-2 text-right font-mono text-[#334155] dark:text-zinc-300">
                   {Number.isFinite(p.total_miss_inches) ? `${p.total_miss_inches.toFixed(1)}"` : "—"}
                 </td>
-                <td className="px-3 py-2 text-zinc-400">
+                <td className="px-3 py-2 text-slate-500 dark:text-zinc-400">
                   {Number.isFinite(p.h_miss_inches) ? `${p.h_miss_inches.toFixed(1)}" ${hDirectionLabel(pitchArmSideX(p, pitcherHand))}` : "—"}
                 </td>
-                <td className="px-3 py-2 text-zinc-400">
+                <td className="px-3 py-2 text-slate-500 dark:text-zinc-400">
                   {Number.isFinite(p.v_miss_inches) ? `${p.v_miss_inches.toFixed(1)}" ${p.v_direction}` : "—"}
                 </td>
                 {onEditPitchType && (
@@ -133,7 +133,7 @@ export default function PitchTable({
                         e.stopPropagation();
                         setEditingPitch(isEditing ? null : p.pitch_number);
                       }}
-                      className="rounded-md px-1 text-[11px] text-zinc-500 transition-all duration-300 hover:bg-zinc-800 hover:text-zinc-300"
+                      className="rounded-md px-1 text-[11px] text-[#94A3B8] transition-all duration-300 hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
                     >
                       ✎
                     </button>

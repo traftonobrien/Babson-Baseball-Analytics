@@ -49,7 +49,7 @@ export function ProfileHubLink({
   return (
     <Link href={href} className="block">
       <div
-        className={`group rounded-[1.7rem] border bg-white/95 p-5 shadow-[0_20px_44px_rgba(15,23,42,0.06)] transition-smooth hover:-translate-y-0.5 ${toneStyles.border}`}
+        className={`group rounded-[1.7rem] border bg-surface/95 p-5 shadow-[0_20px_44px_rgba(15,23,42,0.06)] transition-smooth hover:-translate-y-0.5 ${toneStyles.border}`}
       >
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">

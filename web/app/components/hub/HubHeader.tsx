@@ -1,12 +1,22 @@
+"use client";
+
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useSiteAppearance } from "@/app/components/SiteAppearanceContext";
 
 const STAT_TONE_STYLES = {
   indigo: "from-[#EEF2FF] to-white text-[#4F46E5] border-[#E0E7FF]",
   emerald: "from-[#ECFDF5] to-white text-[#10B981] border-[#D1FAE5]",
   sky: "from-[#EFF6FF] to-white text-[#0EA5E9] border-[#DBEAFE]",
   violet: "from-[#FAF5FF] to-white text-[#8B5CF6] border-[#E9D5FF]",
+} as const;
+
+const STAT_TONE_STYLES_DARK = {
+  indigo: "from-zinc-900 to-zinc-950 text-indigo-300 border-indigo-500/30",
+  emerald: "from-zinc-900 to-zinc-950 text-emerald-300 border-emerald-500/30",
+  sky: "from-zinc-900 to-zinc-950 text-sky-300 border-sky-500/30",
+  violet: "from-zinc-900 to-zinc-950 text-violet-300 border-violet-500/30",
 } as const;
 
 export type HubStatTone = keyof typeof STAT_TONE_STYLES;
@@ -23,13 +33,18 @@ export function HubStatCard({
   detail: string;
   tone: HubStatTone;
 }) {
-  const toneStyles = STAT_TONE_STYLES[tone];
+  const siteDark = useSiteAppearance() === "dark";
+  const toneStyles = siteDark ? STAT_TONE_STYLES_DARK[tone] : STAT_TONE_STYLES[tone];
 
   return (
-    <div className={`rounded-[24px] border bg-gradient-to-br p-4 shadow-[0_16px_36px_rgba(15,23,42,0.04)] ${toneStyles}`}>
-      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">{label}</div>
-      <div className="mt-3 text-[2rem] font-black tracking-tight text-[#0F172A]">{value}</div>
-      <div className="mt-1 text-sm text-[#64748B]">{detail}</div>
+    <div
+      className={`rounded-[24px] border bg-gradient-to-br p-4 shadow-[0_16px_36px_rgba(15,23,42,0.04)] ${toneStyles} ${
+        siteDark ? "shadow-[0_16px_36px_rgba(0,0,0,0.35)]" : ""
+      }`}
+    >
+      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">{label}</div>
+      <div className="mt-3 text-[2rem] font-black tracking-tight text-slate-900 dark:text-zinc-50">{value}</div>
+      <div className="mt-1 text-sm text-slate-500 dark:text-zinc-400">{detail}</div>
     </div>
   );
 }
@@ -46,9 +61,19 @@ export function HubActionCard({
   sectionTitle: string;
   buttonLabel: string;
 }) {
+  const siteDark = useSiteAppearance() === "dark";
+
   return (
-    <div className="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">{sectionTitle}</div>
+    <div
+      className={
+        siteDark
+          ? "rounded-[1.5rem] border border-zinc-700 bg-zinc-900/50 p-5 shadow-sm"
+          : "rounded-[1.5rem] border border-slate-200 bg-surface p-5 shadow-sm"
+      }
+    >
+      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-zinc-400">
+        {sectionTitle}
+      </div>
       <div className="mt-3">
         <Link
           href={href}

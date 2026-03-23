@@ -38,10 +38,10 @@ export default function Segment<T extends string>({
             className={`px-3 py-1.5 text-sm font-medium transition-smooth rounded-md ${
               selected === opt.value
                 ? isLight
-                  ? "border border-[var(--brand-primary-border)] bg-white text-[var(--brand-primary-subtle-text)] shadow-sm"
+                  ? "border border-[var(--brand-primary-border)] bg-surface text-[var(--brand-primary-subtle-text)] shadow-sm"
                   : "bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-sm"
                 : isLight
-                  ? "text-slate-500 hover:bg-white hover:text-slate-900"
+                  ? "text-slate-500 hover:bg-surface hover:text-slate-900"
                   : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60"
             }`}
           >

@@ -8,7 +8,6 @@ import {
   useMemo,
   useState,
   type CSSProperties,
-  type ReactNode,
 } from "react";
 import {
   BookOpen,
@@ -20,6 +19,7 @@ import {
   Trophy,
   type LucideIcon,
 } from "lucide-react";
+import { SegmentedRail, type SegmentedItem } from "@/app/components/leaderboards/SegmentedRail";
 import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
 import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
 import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
@@ -124,12 +124,6 @@ function playerHref(playerId: string): string {
   return slug ? `/players/${slug}` : `/player/${playerId}`;
 }
 
-interface SegmentedItem<T extends string | number> {
-  value: T;
-  label: string;
-  icon?: LucideIcon;
-}
-
 const VIEW_OPTIONS: SegmentedItem<ViewMode>[] = [
   { value: "players", label: "Players", icon: Trophy },
   { value: "pitchTypes", label: "Pitch Types", icon: Layers3 },
@@ -158,77 +152,14 @@ function sampleOptionLabel(value: number): string {
   return value === 0 ? "Any" : `${value}+`;
 }
 
-function ToggleButton({
-  active,
-  children,
-  onClick,
-}: {
-  active: boolean;
-  children: ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`inline-flex h-10 items-center justify-center rounded-full px-4 text-sm font-semibold transition-all ${
-        active
-          ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
-          : "text-slate-500 hover:text-slate-900"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function SegmentedRail<T extends string | number>({
-  label,
-  items,
-  value,
-  onChange,
-  compact = false,
-}: {
-  label: string;
-  items: SegmentedItem<T>[];
-  value: T;
-  onChange: (next: T) => void;
-  compact?: boolean;
-}) {
-  return (
-    <div className="space-y-2">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-        {label}
-      </div>
-      <div
-        className={`inline-flex flex-wrap gap-1 rounded-full border border-slate-200 bg-slate-100 p-1 ${
-          compact ? "" : "w-full"
-        }`}
-      >
-        {items.map(({ value: optionValue, label: optionLabel, icon: Icon }) => {
-          const active = value === optionValue;
-          return (
-            <ToggleButton key={String(optionValue)} active={active} onClick={() => onChange(optionValue)}>
-              <span className="inline-flex items-center gap-1.5">
-                {Icon ? <Icon className="h-3.5 w-3.5" /> : null}
-                <span>{optionLabel}</span>
-              </span>
-            </ToggleButton>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 function EmptyState({ title, detail }: { title: string; detail: string }) {
   return (
-    <div className="rounded-[1.75rem] border border-slate-200 bg-white p-10 text-center shadow-sm">
-      <div className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+    <div className="rounded-[1.75rem] border border-slate-200 bg-surface p-10 text-center shadow-sm dark:border-zinc-700 dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+      <div className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400">
         No rows
       </div>
-      <div className="mt-3 text-2xl font-bold tracking-tight text-slate-900">{title}</div>
-      <div className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-slate-500">
+      <div className="mt-3 text-2xl font-bold tracking-tight text-slate-900 dark:text-zinc-50">{title}</div>
+      <div className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-slate-500 dark:text-zinc-400">
         {detail}
       </div>
     </div>
@@ -248,11 +179,11 @@ function HeaderTooltip({
       <button
         type="button"
         aria-label={`${label} explanation`}
-        className="inline-flex h-4 w-4 items-center justify-center rounded-full text-slate-400 transition-smooth hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
+        className="inline-flex h-4 w-4 items-center justify-center rounded-full text-slate-400 transition-smooth hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60 dark:text-zinc-500 dark:hover:text-zinc-300"
       >
         <CircleHelp className="h-3.5 w-3.5" />
       </button>
-      <div className="pointer-events-none absolute left-1/2 top-full z-30 mt-2 hidden w-72 -translate-x-1/2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-left text-[11px] normal-case tracking-normal text-slate-600 shadow-xl group-hover:block group-focus-within:block">
+      <div className="pointer-events-none absolute left-1/2 top-full z-30 mt-2 hidden w-72 -translate-x-1/2 rounded-2xl border border-slate-200 bg-surface px-3 py-2 text-left text-[11px] normal-case tracking-normal text-slate-600 shadow-xl group-hover:block group-focus-within:block dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-300">
         {tooltip}
       </div>
     </div>
@@ -269,10 +200,10 @@ function PlayerTable({
   getRowTransitionProps: (index: number) => RowTransitionProps;
 }) {
   return (
-    <div className="overflow-x-auto overflow-y-visible rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-x-auto overflow-y-visible rounded-[1.75rem] border border-slate-200 bg-surface shadow-sm dark:border-zinc-700 dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
       <table className="min-w-full text-sm">
-        <thead className="border-b border-slate-200 bg-slate-50">
-          <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+        <thead className="border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
+          <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
             <th className="px-5 py-3.5">Rank</th>
             <th className="px-5 py-3.5">Pitcher</th>
             <th className="px-5 py-3.5 text-center">Pitching+</th>
@@ -300,14 +231,14 @@ function PlayerTable({
             return (
               <tr
                 key={row.playerId}
-                className={`${rowTransition.className} border-b border-slate-100 transition-smooth hover:bg-slate-50/80 last:border-b-0`}
+                className={`${rowTransition.className} border-b border-slate-100 transition-smooth hover:bg-slate-50/80 last:border-b-0 dark:border-zinc-800 dark:hover:bg-zinc-800/40`}
                 style={rowTransition.style}
               >
-                <td className="px-5 py-4 font-semibold text-slate-500">{index + 1}</td>
+                <td className="px-5 py-4 font-semibold text-slate-500 dark:text-zinc-400">{index + 1}</td>
                 <td className="px-5 py-4">
                   <Link
                     href={playerHref(row.playerId)}
-                    className="inline-flex items-center gap-2 font-semibold text-slate-900 transition-smooth hover:text-indigo-600"
+                    className="inline-flex items-center gap-2 font-semibold text-slate-900 transition-smooth hover:text-indigo-600 dark:text-zinc-100 dark:hover:text-indigo-400"
                   >
                     <span>{row.playerName}</span>
                     {handBadge(row.throws)}
@@ -316,14 +247,14 @@ function PlayerTable({
                 <td className="px-5 py-4 text-center">{metricBadge(row.pitchingPlus)}</td>
                 <td className="px-5 py-4 text-center">{metricBadge(row.commandPlus)}</td>
                 <td className="px-5 py-4 text-center">{metricBadge(row.stuffPlus)}</td>
-                <td className="px-5 py-4 text-slate-600">
-                  <div className="font-medium text-slate-900">
+                <td className="px-5 py-4 text-slate-600 dark:text-zinc-400">
+                  <div className="font-medium text-slate-900 dark:text-zinc-100">
                     {row.overlapPitchTypeCount} types
                   </div>
-                  <div className="text-xs text-slate-500">{row.overlapPitchCount} pitches</div>
+                  <div className="text-xs text-slate-500 dark:text-zinc-500">{row.overlapPitchCount} pitches</div>
                 </td>
-                <td className="px-5 py-4 text-slate-600">{row.trackedPitchCount}</td>
-                <td className="px-5 py-4 text-slate-600">{row.outingCount}</td>
+                <td className="px-5 py-4 text-slate-600 dark:text-zinc-400">{row.trackedPitchCount}</td>
+                <td className="px-5 py-4 text-slate-600 dark:text-zinc-400">{row.outingCount}</td>
                 <td className="px-5 py-4">
                   <span
                     className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${readinessBadgeClasses(row.ready)}`}
@@ -350,10 +281,10 @@ function PitchTypeTable({
   getRowTransitionProps: (index: number) => RowTransitionProps;
 }) {
   return (
-    <div className="overflow-x-auto rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-x-auto rounded-[1.75rem] border border-slate-200 bg-surface shadow-sm dark:border-zinc-700 dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
       <table className="min-w-full text-sm">
-        <thead className="border-b border-slate-200 bg-slate-50">
-          <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+        <thead className="border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
+          <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
             <th className="px-5 py-3.5">Rank</th>
             <th className="px-5 py-3.5">Pitcher</th>
             <th className="px-5 py-3.5">Pitch</th>
@@ -376,14 +307,14 @@ function PitchTypeTable({
             return (
               <tr
                 key={`${row.playerId}-${row.commandPitchType}`}
-                className={`${rowTransition.className} border-b border-slate-100 transition-smooth hover:bg-slate-50/80 last:border-b-0`}
+                className={`${rowTransition.className} border-b border-slate-100 transition-smooth hover:bg-slate-50/80 last:border-b-0 dark:border-zinc-800 dark:hover:bg-zinc-800/40`}
                 style={rowTransition.style}
               >
-                <td className="px-5 py-4 font-semibold text-slate-500">{index + 1}</td>
+                <td className="px-5 py-4 font-semibold text-slate-500 dark:text-zinc-400">{index + 1}</td>
                 <td className="px-5 py-4">
                   <Link
                     href={playerHref(row.playerId)}
-                    className="inline-flex items-center gap-2 font-semibold text-slate-900 transition-smooth hover:text-indigo-600"
+                    className="inline-flex items-center gap-2 font-semibold text-slate-900 transition-smooth hover:text-indigo-600 dark:text-zinc-100 dark:hover:text-indigo-400"
                   >
                     <span>{row.playerName}</span>
                     {handBadge(row.throws)}
@@ -395,8 +326,8 @@ function PitchTypeTable({
                 <td className="px-5 py-4 text-center">{metricBadge(row.pitchingPlus)}</td>
                 <td className="px-5 py-4 text-center">{metricBadge(row.commandPlus)}</td>
                 <td className="px-5 py-4 text-center">{metricBadge(row.stuffPlus)}</td>
-                <td className="px-5 py-4 text-slate-600">{fmtPct(row.usageShare)}</td>
-                <td className="px-5 py-4 text-slate-600">{row.commandCount}</td>
+                <td className="px-5 py-4 text-slate-600 dark:text-zinc-400">{fmtPct(row.usageShare)}</td>
+                <td className="px-5 py-4 text-slate-600 dark:text-zinc-400">{row.commandCount}</td>
                 <td className="px-5 py-4">
                   <span
                     className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${readinessBadgeClasses(row.includedInPitchingPlus)}`}
@@ -527,9 +458,9 @@ export default function PlusLeaderboardsPage() {
       ? "Try a broader player, pitch, or date search. The search box checks names, player IDs, and pitch labels where they apply."
       : `Loosen the ${sampleLabel(view).toLowerCase()} or switch handedness back to all.`;
   return (
-    <div className={`${plusJakartaSans.className} min-h-full bg-[#F8FAFC] text-[#0F172A]`}>
+    <div className={`${plusJakartaSans.className} min-h-full bg-background text-slate-900 dark:text-zinc-50`}>
       <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
-        <header className="rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+        <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
           <div className="flex flex-col gap-6 p-5 sm:p-7">
             <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
               <div className="min-w-0 flex-1">
@@ -537,7 +468,7 @@ export default function PlusLeaderboardsPage() {
                   <Sparkles className="h-3.5 w-3.5" aria-hidden />
                   Pitching+
                 </div>
-                <h1 className="mt-4 text-3xl font-black tracking-tight text-[#0F172A] sm:text-[2.85rem] sm:leading-[1.02]">
+                <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.85rem] sm:leading-[1.02]">
                   Pitching+ Leaderboard
                 </h1>
               </div>
@@ -581,7 +512,7 @@ export default function PlusLeaderboardsPage() {
           </div>
         </header>
 
-        <section className="rounded-[28px] border border-[#E5E7EB] bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.04)] sm:p-5">
+        <section className="rounded-[28px] border border-border bg-surface p-4 shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)] sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <SegmentedRail
               label="View"
@@ -598,7 +529,7 @@ export default function PlusLeaderboardsPage() {
                   setSearch("");
                 })
               }
-              className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600 shadow-sm transition-smooth hover:border-slate-300 hover:text-slate-900"
+              className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-surface px-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600 shadow-sm transition-smooth hover:border-slate-300 hover:text-slate-900 dark:border-zinc-600 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-50"
             >
               Reset filters
             </button>
@@ -614,16 +545,16 @@ export default function PlusLeaderboardsPage() {
             />
 
             <div className="space-y-2">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-zinc-400">
                 {sampleLabel(view)}
               </div>
-              <div className="rounded-full border border-slate-200 bg-slate-100 p-1">
+              <div className="rounded-full border border-slate-200 bg-slate-100 p-1 dark:border-zinc-700 dark:bg-zinc-900/70">
                 <select
                   value={activeMinSample}
                   onChange={(event) =>
                     runWithTransition(() => setMinSample(Number(event.target.value)))
                   }
-                  className="h-10 w-full rounded-full border-0 bg-white px-4 text-sm font-semibold text-slate-900 outline-none ring-1 ring-transparent transition-all focus:ring-2 focus:ring-indigo-500/30"
+                  className="h-10 w-full rounded-full border-0 bg-surface px-4 text-sm font-semibold text-slate-900 outline-none ring-1 ring-transparent transition-all focus:ring-2 focus:ring-indigo-500/30 dark:text-zinc-100"
                 >
                   {sampleChoices.map((value) => (
                     <option key={value} value={value}>
@@ -635,16 +566,16 @@ export default function PlusLeaderboardsPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-zinc-400">
                 Search
               </div>
-              <label className="flex h-11 items-center gap-3 rounded-full border border-slate-200 bg-slate-100 px-4 shadow-sm transition-all focus-within:border-indigo-300 focus-within:bg-white">
-                <Search className="h-4 w-4 shrink-0 text-slate-400" />
+              <label className="flex h-11 items-center gap-3 rounded-full border border-slate-200 bg-slate-100 px-4 shadow-sm transition-all focus-within:border-indigo-300 focus-within:bg-surface dark:border-zinc-700 dark:bg-zinc-900/70 dark:focus-within:border-indigo-500/50">
+                <Search className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
                 <input
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Search pitcher, ID, or pitch"
-                  className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                  className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-zinc-100 dark:placeholder:text-zinc-500"
                 />
               </label>
             </div>
@@ -654,11 +585,11 @@ export default function PlusLeaderboardsPage() {
         <section>
           <div className={contentTransitionClassName}>
             {loading ? (
-              <div className="rounded-[1.75rem] border border-slate-200 bg-white p-10 text-center text-slate-500 shadow-sm">
+              <div className="rounded-[1.75rem] border border-slate-200 bg-surface p-10 text-center text-slate-500 shadow-sm dark:border-zinc-700 dark:text-zinc-400">
                 Loading Pitching+ Leaderboard…
               </div>
             ) : error ? (
-              <div className="rounded-[1.75rem] border border-rose-200 bg-rose-50 p-10 text-center text-rose-700 shadow-sm">
+              <div className="rounded-[1.75rem] border border-rose-200 bg-rose-50 p-10 text-center text-rose-700 shadow-sm dark:border-rose-900/60 dark:bg-rose-950/50 dark:text-rose-300">
                 {error}
               </div>
             ) : activeCount === 0 ? (

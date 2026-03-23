@@ -26,7 +26,7 @@ export default function MechanicsProfileCard({ entry, profileSlug }: Props) {
   // No sessions or player not found
   if (!entry || !entry.sessions.length) {
     return (
-      <div className="rounded-[1.5rem] border border-slate-200/80 bg-white px-5 py-5 shadow-[0_16px_36px_rgba(15,23,42,0.05)]">
+      <div className="rounded-[1.5rem] border border-slate-200/80 bg-surface px-5 py-5 shadow-[0_16px_36px_rgba(15,23,42,0.05)]">
         <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
           Mechanics
         </p>
@@ -52,7 +52,7 @@ export default function MechanicsProfileCard({ entry, profileSlug }: Props) {
   const thumbSrc = `/mechanics/${entry.slug}/${latest.slug}/release.png`;
 
   return (
-    <div className="overflow-hidden rounded-[1.5rem] border border-slate-200/80 bg-white shadow-[0_16px_36px_rgba(15,23,42,0.05)]">
+    <div className="overflow-hidden rounded-[1.5rem] border border-slate-200/80 bg-surface shadow-[0_16px_36px_rgba(15,23,42,0.05)]">
       {/* Section label */}
       <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">

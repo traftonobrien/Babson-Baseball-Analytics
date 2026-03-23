@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { PitcherLeaderboardTable, type PitcherLeaderboardRow } from "./PitcherLeaderboardTable";
 import { LeaderboardClientState } from "./LeaderboardClientState";
-import { LeaderboardPanel } from "@/app/components/leaderboards/LeaderboardChrome";
 import type { StatGroup } from "./types";
 
 interface PitchProps {
@@ -46,13 +45,12 @@ export function PitcherStatGroupWrapper({
                 games={games}
                 statGroup={statGroup}
                 onStatGroupChange={setStatGroup}
-                rowCount={pitchers.length}
                 scopeLabel={scopeLabel}
                 scopeGameCount={scopeGameCount}
                 sessionType={sessionType}
             />
 
-            <LeaderboardPanel className="mt-6 overflow-hidden">
+            <div className="mt-6 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-surface shadow-sm dark:border-zinc-700 dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
                 <div className="max-h-[70vh] overflow-auto">
                     <PitcherLeaderboardTable
                         pitchers={pitchers}
@@ -60,7 +58,7 @@ export function PitcherStatGroupWrapper({
                         statGroup={statGroup}
                     />
                 </div>
-            </LeaderboardPanel>
+            </div>
         </>
     );
 }

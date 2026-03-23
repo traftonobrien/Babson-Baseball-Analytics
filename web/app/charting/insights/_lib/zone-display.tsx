@@ -285,8 +285,8 @@ export const zoneSectionStyle = ({
 }: ZoneSectionStyleArgs): CSSProperties => {
   if (empty) {
     return {
-      borderColor: selected ? "rgba(99,102,241,0.30)" : "#E2E8F0",
-      background: "#F8FAFC",
+      borderColor: selected ? "rgba(99,102,241,0.30)" : "var(--border-subtle)",
+      background: "var(--surface-muted)",
     };
   }
 

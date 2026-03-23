@@ -89,7 +89,7 @@ export function ZoneSectionRegion({
               ? "text-[11px] text-[#CBD5E1]"
               : lowSample
                 ? "text-sm text-[#94A3B8]"
-                : "text-sm text-[#0F172A]",
+                : "text-sm text-slate-900 dark:text-zinc-50",
           )}
         >
           {empty ? "—" : formatMetricValue(view, metricId, metricValue)}

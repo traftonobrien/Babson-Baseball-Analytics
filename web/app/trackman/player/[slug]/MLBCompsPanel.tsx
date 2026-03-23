@@ -19,6 +19,7 @@ import {
 } from "@/lib/mlbComps";
 import type { TrackmanPitchTypeSummary } from "@/lib/trackman/metrics";
 import VideoClipsModal from "./VideoClipsModal";
+import { useSiteAppearance } from "@/app/components/SiteAppearanceContext";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -37,15 +38,15 @@ function compPitchLabel(pitch: MLBCompResult["pitch"]): string {
 }
 
 function DeltaBadge({ value }: { value: number | null }) {
-  if (value == null) return <span className="text-zinc-600 text-[10px]">—</span>;
+  if (value == null) return <span className="text-[10px] text-[#94A3B8]">—</span>;
   const isPos = value >= 0;
   const abs = Math.abs(value);
   const cls =
     abs < 1.5
-      ? "text-emerald-400"
+      ? "text-emerald-700"
       : abs < 3
-        ? "text-yellow-400"
-        : "text-red-400";
+        ? "text-amber-700"
+        : "text-red-600";
   return (
     <span className={`text-[10px] font-mono ${cls}`}>
       {isPos ? `+${value.toFixed(1)}` : value.toFixed(1)}
@@ -125,10 +126,15 @@ function WatchClipButton({
   onClick: () => void;
   title: string;
 }) {
+  const isDark = useSiteAppearance() === "dark";
   return (
     <button
       onClick={onClick}
-      className="flex h-[30px] w-[96px] shrink-0 items-center justify-start gap-1.5 whitespace-nowrap rounded-xl border border-zinc-700/70 bg-zinc-800/90 px-2.5 text-[11px] font-medium text-zinc-300 transition-smooth hover:border-zinc-600 hover:bg-zinc-700/90 hover:text-zinc-100"
+      className={
+        isDark
+          ? "flex h-[30px] w-[96px] shrink-0 items-center justify-start gap-1.5 whitespace-nowrap rounded-xl border border-zinc-600 bg-zinc-900 px-2.5 text-[11px] font-medium text-zinc-300 transition-smooth hover:border-zinc-500 hover:bg-zinc-800 hover:text-zinc-100"
+          : "flex h-[30px] w-[96px] shrink-0 items-center justify-start gap-1.5 whitespace-nowrap rounded-xl border border-[#E2E8F0] bg-surface px-2.5 text-[11px] font-medium text-[#475569] transition-smooth hover:border-[#CBD5E1] hover:bg-background hover:text-slate-900 dark:hover:text-zinc-50"
+      }
       title={title}
     >
       <Play className="w-3 h-3 fill-current shrink-0" />
@@ -146,33 +152,40 @@ function PitchCompCard({
   rank: number;
   onWatch?: () => void;
 }) {
-  const rankColors = ["text-yellow-400", "text-zinc-300", "text-amber-600"];
-  const rankColor = rankColors[rank] ?? "text-zinc-500";
+  const isDark = useSiteAppearance() === "dark";
+  const rankColors = ["text-amber-700", "text-slate-600", "text-amber-800"];
+  const rankColor = rankColors[rank] ?? (isDark ? "text-zinc-500" : "text-slate-500 dark:text-zinc-400");
   const pitchLabel = compPitchLabel(result.pitch);
 
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b border-zinc-800/60 last:border-0">
+    <div
+      className={
+        isDark
+          ? "flex items-center gap-3 border-b border-zinc-700/80 py-2.5 last:border-0"
+          : "flex items-center gap-3 border-b border-border/60 py-2.5 last:border-0"
+      }
+    >
       <span className={`text-xs font-bold w-4 shrink-0 ${rankColor}`}>
         {rank + 1}
       </span>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-zinc-200 truncate">
+        <div className={isDark ? "truncate text-sm font-medium text-zinc-100" : "truncate text-sm font-medium text-slate-900 dark:text-zinc-50"}>
           {result.pitcher.name}
         </div>
-        <div className="flex items-center gap-2 mt-0.5">
-          <span className="text-[10px] font-medium text-zinc-400">
+        <div className="mt-0.5 flex items-center gap-2">
+          <span className={isDark ? "text-[10px] font-medium text-zinc-400" : "text-[10px] font-medium text-slate-500 dark:text-zinc-400"}>
             {pitchLabel}
           </span>
-          <span className="text-zinc-700">·</span>
-          <span className="text-[10px] font-mono text-zinc-500">
+          <span className={isDark ? "text-zinc-600" : "text-[#94A3B8]"}>·</span>
+          <span className={isDark ? "text-[10px] font-mono text-zinc-400" : "text-[10px] font-mono text-slate-500 dark:text-zinc-400"}>
             IVB {fmt(result.pitch.avgIvb)}&quot;
           </span>
-          <span className="text-zinc-700">·</span>
-          <span className="text-[10px] font-mono text-zinc-500">
+          <span className={isDark ? "text-zinc-600" : "text-[#94A3B8]"}>·</span>
+          <span className={isDark ? "text-[10px] font-mono text-zinc-400" : "text-[10px] font-mono text-slate-500 dark:text-zinc-400"}>
             HB {fmt(result.pitch.avgHb)}&quot;
           </span>
-          <span className="text-zinc-700">·</span>
-          <span className="text-[10px] font-mono text-zinc-400">
+          <span className={isDark ? "text-zinc-600" : "text-[#94A3B8]"}>·</span>
+          <span className={isDark ? "text-[10px] font-mono text-zinc-400" : "text-[10px] font-mono text-slate-500 dark:text-zinc-400"}>
             {fmt(result.pitch.avgVelo)} mph
           </span>
         </div>
@@ -184,11 +197,13 @@ function PitchCompCard({
             title={`Watch ${result.pitcher.name}'s ${pitchLabel} strike clip`}
           />
         )}
-        <div className="text-right shrink-0 ml-8">
-          <div className="text-[10px] uppercase tracking-wide text-zinc-600 mb-0.5">Δ shape</div>
+        <div className="ml-8 shrink-0 text-right">
+          <div className={isDark ? "mb-0.5 text-[10px] uppercase tracking-wide text-zinc-500" : "mb-0.5 text-[10px] uppercase tracking-wide text-[#94A3B8]"}>
+            Δ shape
+          </div>
           <div className="flex items-center gap-1.5">
             <DeltaBadge value={result.deltas.ivb} />
-            <span className="text-zinc-700 text-[10px]">/</span>
+            <span className={isDark ? "text-[10px] text-zinc-600" : "text-[10px] text-[#94A3B8]"}>/</span>
             <DeltaBadge value={result.deltas.hb} />
           </div>
         </div>
@@ -204,22 +219,41 @@ function ArsenalCompCard({
   result: ArsenalCompResult;
   rank: number;
 }) {
-  const rankColors = ["text-yellow-400", "text-zinc-300", "text-amber-600"];
-  const rankColor = rankColors[rank] ?? "text-zinc-500";
+  const isDark = useSiteAppearance() === "dark";
+  const rankColors = ["text-amber-700", "text-slate-600", "text-amber-800"];
+  const rankColor = rankColors[rank] ?? (isDark ? "text-zinc-500" : "text-slate-500 dark:text-zinc-400");
 
   return (
-    <div className="flex items-center gap-3 py-3 border-b border-zinc-800/60 last:border-0">
-      <span className={`text-xs font-bold w-4 shrink-0 ${rankColor}`}>
+    <div
+      className={
+        isDark
+          ? "flex items-center gap-3 border-b border-zinc-700 py-3 last:border-0"
+          : "flex items-center gap-3 border-b border-border py-3 last:border-0"
+      }
+    >
+      <span className={`w-4 shrink-0 text-xs font-bold ${rankColor}`}>
         {rank + 1}
       </span>
-      <div className="flex-1 min-w-0 text-sm font-medium text-zinc-200 truncate">
+      <div className={isDark ? "min-w-0 flex-1 truncate text-sm font-medium text-zinc-100" : "min-w-0 flex-1 truncate text-sm font-medium text-slate-900 dark:text-zinc-50"}>
         {result.pitcher.name}
       </div>
-      <div className="inline-flex shrink-0 min-w-[8.5rem] items-center justify-end gap-2 rounded-xl border border-blue-500/20 bg-blue-500/[0.08] px-3 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-        <span className="text-sm font-mono font-semibold text-blue-200">
+      <div
+        className={
+          isDark
+            ? "inline-flex min-w-[8.5rem] shrink-0 items-center justify-end gap-2 rounded-xl border border-blue-900/60 bg-blue-950/50 px-3 py-1.5"
+            : "inline-flex min-w-[8.5rem] shrink-0 items-center justify-end gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-1.5"
+        }
+      >
+        <span className={isDark ? "font-mono text-sm font-semibold text-blue-200" : "font-mono text-sm font-semibold text-blue-900"}>
           {result.avgDistance.toFixed(2)}
         </span>
-        <span className="whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.14em] text-blue-300/70">
+        <span
+          className={
+            isDark
+              ? "whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.14em] text-blue-300"
+              : "whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.14em] text-blue-700"
+          }
+        >
           Arsenal Delta
         </span>
       </div>
@@ -240,6 +274,7 @@ export default function MLBCompsPanel({
   aggregated: TrackmanPitchTypeSummary[];
   hand: "R" | "L" | undefined;
 }) {
+  const isDark = useSiteAppearance() === "dark";
   const [mlbData, setMlbData] = useState<MLBCompsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -305,19 +340,33 @@ export default function MLBCompsPanel({
   if (arsenal.length === 0) return null;
 
   return (
-    <div className="rounded-[1.35rem] border border-zinc-800/90 bg-[radial-gradient(circle_at_84%_14%,rgba(59,130,246,0.08),transparent_22%),linear-gradient(180deg,rgba(24,24,27,0.78),rgba(9,9,11,0.94))] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.20)]">
+    <div
+      className={
+        isDark
+          ? "rounded-[1.35rem] border border-zinc-700 bg-zinc-900/50 p-5 shadow-[0_16px_40px_rgba(0,0,0,0.35)]"
+          : "rounded-[1.35rem] border border-border bg-surface p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]"
+      }
+    >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-zinc-100">MLB Shape Comps</h3>
+          <h3 className={isDark ? "text-sm font-semibold text-zinc-100" : "text-sm font-semibold text-slate-900 dark:text-zinc-50"}>
+            MLB Shape Comps
+          </h3>
           {mlbData && (
-            <p className="text-[10px] text-zinc-500 mt-0.5">
+            <p className={isDark ? "mt-0.5 text-[10px] text-zinc-400" : "mt-0.5 text-[10px] text-slate-500 dark:text-zinc-400"}>
               {mlbData.year} · {mlbData.pitchers.length} MLB pitchers · matched by IVB &amp; HB
             </p>
           )}
         </div>
         {/* Mode toggle */}
-        <div className="flex items-center gap-1 rounded-2xl border border-zinc-800/80 bg-zinc-950/60 p-1">
+        <div
+          className={
+            isDark
+              ? "flex items-center gap-1 rounded-2xl border border-zinc-700 bg-zinc-950/80 p-1"
+              : "flex items-center gap-1 rounded-2xl border border-border bg-background p-1"
+          }
+        >
           {(["per-pitch", "arsenal"] as const).map((m) => (
             <Button
               key={m}
@@ -338,10 +387,10 @@ export default function MLBCompsPanel({
       </div>
 
       {loading && (
-        <p className="text-zinc-500 text-sm">Loading MLB data...</p>
+        <p className={isDark ? "text-sm text-zinc-400" : "text-sm text-slate-500 dark:text-zinc-400"}>Loading MLB data...</p>
       )}
       {error && (
-        <p className="text-red-400 text-sm">Failed to load: {error}</p>
+        <p className={isDark ? "text-sm text-red-400" : "text-sm text-red-700"}>Failed to load: {error}</p>
       )}
 
       {!loading && !error && mlbData && (
@@ -377,7 +426,13 @@ export default function MLBCompsPanel({
                   <div>
                     {/* Babson pitcher's stats for context */}
                     {input && (
-                      <div className="flex items-center gap-3 mb-3 pb-3 border-b border-zinc-800">
+                      <div
+                        className={
+                          isDark
+                            ? "mb-3 flex items-center gap-3 border-b border-zinc-700 pb-3"
+                            : "mb-3 flex items-center gap-3 border-b border-border pb-3"
+                        }
+                      >
                         <div className="flex items-center gap-2">
                           <PitchTypeChip
                             pitchType={currentPitch}
@@ -386,13 +441,13 @@ export default function MLBCompsPanel({
                             variant="solid"
                           />
                         </div>
-                        <span className="text-[11px] font-mono text-zinc-400">
+                        <span className={isDark ? "text-[11px] font-mono text-zinc-400" : "text-[11px] font-mono text-slate-500 dark:text-zinc-400"}>
                           IVB {fmt(input.ivb)}&quot;
                         </span>
-                        <span className="text-[11px] font-mono text-zinc-400">
+                        <span className={isDark ? "text-[11px] font-mono text-zinc-400" : "text-[11px] font-mono text-slate-500 dark:text-zinc-400"}>
                           HB {fmt(input.hb)}&quot;
                         </span>
-                        <span className="text-[11px] font-mono text-zinc-600">
+                        <span className={isDark ? "text-[11px] font-mono text-zinc-500" : "text-[11px] font-mono text-[#94A3B8]"}>
                           {fmt(input.velo)} mph
                         </span>
                       </div>
@@ -403,10 +458,21 @@ export default function MLBCompsPanel({
                       const lines = describePerPitchComp(comps[0]);
                       if (lines.length === 0) return null;
                       return (
-                        <div className="mb-3 rounded-[1.1rem] border border-zinc-800/50 bg-zinc-950/40 px-4 py-3">
+                        <div
+                          className={
+                            isDark
+                              ? "mb-3 rounded-[1.1rem] border border-zinc-700 bg-zinc-950/80 px-4 py-3"
+                              : "mb-3 rounded-[1.1rem] border border-border bg-background px-4 py-3"
+                          }
+                        >
                           <ul className="space-y-1">
                             {lines.map((l) => (
-                              <li key={l} className="text-[12px] leading-relaxed text-zinc-400">{l}</li>
+                              <li
+                                key={l}
+                                className={isDark ? "text-[12px] leading-relaxed text-zinc-400" : "text-[12px] leading-relaxed text-slate-500 dark:text-zinc-400"}
+                              >
+                                {l}
+                              </li>
                             ))}
                           </ul>
                         </div>
@@ -414,8 +480,8 @@ export default function MLBCompsPanel({
                     })()}
 
                     {/* Legend */}
-                    <div className="flex justify-end mb-1">
-                      <span className="text-[9px] uppercase tracking-wider text-zinc-600">
+                    <div className="mb-1 flex justify-end">
+                      <span className={isDark ? "text-[9px] uppercase tracking-wider text-zinc-500" : "text-[9px] uppercase tracking-wider text-[#94A3B8]"}>
                         Δ ivb / Δ hb
                       </span>
                     </div>
@@ -441,7 +507,7 @@ export default function MLBCompsPanel({
               })()}
 
               {pitchKeys.length === 0 && (
-                <p className="text-zinc-500 text-sm">
+                <p className={isDark ? "text-sm text-zinc-400" : "text-sm text-slate-500 dark:text-zinc-400"}>
                   No {hand}HP pitchers found for this arsenal.
                 </p>
               )}
@@ -450,7 +516,7 @@ export default function MLBCompsPanel({
 
           {mode === "arsenal" && (
             <div>
-              <p className="text-[11px] text-zinc-500 mb-3">
+              <p className={isDark ? "mb-3 text-[11px] text-zinc-400" : "mb-3 text-[11px] text-slate-500 dark:text-zinc-400"}>
                 Closest full-arsenal matches across {arsenal.length} pitch{arsenal.length !== 1 ? "es" : ""}
               </p>
               {/* Arsenal comp interpretation */}
@@ -458,17 +524,28 @@ export default function MLBCompsPanel({
                 const lines = describeArsenalComp(arsenal.length, arsenalComps[0]);
                 if (lines.length === 0) return null;
                 return (
-                  <div className="mb-3 rounded-[1.1rem] border border-zinc-800/50 bg-zinc-950/40 px-4 py-3">
+                  <div
+                    className={
+                      isDark
+                        ? "mb-3 rounded-[1.1rem] border border-zinc-700 bg-zinc-950/80 px-4 py-3"
+                        : "mb-3 rounded-[1.1rem] border border-border bg-background px-4 py-3"
+                    }
+                  >
                     <ul className="space-y-1">
                       {lines.map((l) => (
-                        <li key={l} className="text-[12px] leading-relaxed text-zinc-400">{l}</li>
+                        <li
+                          key={l}
+                          className={isDark ? "text-[12px] leading-relaxed text-zinc-400" : "text-[12px] leading-relaxed text-slate-500 dark:text-zinc-400"}
+                        >
+                          {l}
+                        </li>
                       ))}
                     </ul>
                   </div>
                 );
               })()}
               {arsenalComps.length === 0 ? (
-                <p className="text-zinc-500 text-sm">No matches found.</p>
+                <p className={isDark ? "text-sm text-zinc-400" : "text-sm text-slate-500 dark:text-zinc-400"}>No matches found.</p>
               ) : (
                 arsenalComps.map((comp, i) => (
                   <ArsenalCompCard key={comp.pitcher.id} result={comp} rank={i} />

@@ -52,11 +52,11 @@ const BASIC_KEYS: SortKey[] = ["sessions", "totalPAs", "avg", "obp", "slg", "ops
 const ADVANCED_KEYS: SortKey[] = ["sessions", "totalPAs", "fbWhiff", "brkWhiff", "offWhiff", "zoneSwingPct", "zoneWfPct", "babip", "iso"];
 
 function rankColor(i: number): string {
-    const glow = "[text-shadow:0_0_8px_currentColor]";
-    if (i === 0) return `text-amber-400 ${glow}`;
-    if (i === 1) return `text-zinc-400 ${glow}`;
-    if (i === 2) return `text-amber-600 ${glow}`;
-    return "text-zinc-500";
+    const glow = "[text-shadow:0_0_6px_rgba(234,179,8,0.35)]";
+    if (i === 0) return `text-amber-600 ${glow} dark:text-amber-400`;
+    if (i === 1) return `text-slate-400 ${glow} dark:text-zinc-400`;
+    if (i === 2) return `text-amber-700 ${glow} dark:text-amber-500`;
+    return "text-slate-500 dark:text-zinc-400";
 }
 
 export type StatGroup = "basic" | "advanced";
@@ -110,23 +110,23 @@ export function HitterLeaderboardTable({
 
     return (
         <table className="w-full text-sm">
-            <thead className="sticky top-0 z-10 bg-zinc-900/95 backdrop-blur-sm">
+            <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
                 <tr>
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400 w-12">
+                    <th className="w-12 px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                         #
                     </th>
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400 w-48">
+                    <th className="w-48 px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                         Hitter
                     </th>
                     {visibleColumns.map(({ key, label }) => (
                         <th
                             key={key}
-                            className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-zinc-400 cursor-pointer whitespace-nowrap transition-smooth hover:text-emerald-300"
+                            className="cursor-pointer whitespace-nowrap px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-500 transition-smooth hover:text-emerald-700 dark:text-zinc-400 dark:hover:text-emerald-400"
                             onClick={() => handleSort(key)}
                         >
                             {label}
                             {sortKey === key ? (
-                                <span className="ml-1 text-emerald-300">
+                                <span className="ml-1 text-emerald-600 dark:text-emerald-400">
                                     {sortDesc ? "\u25BC" : "\u25B2"}
                                 </span>
                             ) : null}
@@ -139,7 +139,7 @@ export function HitterLeaderboardTable({
                     <tr>
                         <td colSpan={visibleColumns.length + 2} className="px-4 py-12 text-center">
                             <div className="flex flex-col items-center gap-2">
-                                <span className="text-zinc-500">No hitters match your filters.</span>
+                                <span className="text-slate-500 dark:text-zinc-400">No hitters match your filters.</span>
                             </div>
                         </td>
                     </tr>
@@ -147,18 +147,18 @@ export function HitterLeaderboardTable({
                 {sorted.map((hitter, index) => (
                     <tr
                         key={hitter.hitterName}
-                        className="border-b border-zinc-800/50 transition-smooth hover:bg-emerald-500/5 last:border-b-0"
+                        className="border-b border-slate-100 transition-smooth last:border-b-0 hover:bg-slate-50/80 dark:border-zinc-800 dark:hover:bg-zinc-800/40"
                     >
                         <td className={`px-4 py-3 font-mono text-xs font-semibold ${rankColor(index)}`}>
                             {index + 1}
                         </td>
                         <td className="px-4 py-3">
-                            <span className="font-medium text-zinc-100">{hitter.hitterName}</span>
+                            <span className="font-medium text-slate-900 dark:text-zinc-100">{hitter.hitterName}</span>
                         </td>
                         {visibleColumns.map(({ key, getValue, format }) => {
                             const val = getValue(hitter);
                             return (
-                                <td key={key} className="px-4 py-3 text-right font-mono text-zinc-300">
+                                <td key={key} className="px-4 py-3 text-right font-mono text-slate-700 dark:text-zinc-300">
                                     {format ? format(val) : val}
                                 </td>
                             );
