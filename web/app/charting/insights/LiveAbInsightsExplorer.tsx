@@ -7,19 +7,14 @@ import {
   BarChart3,
   BookOpen,
   ClipboardList,
-  Crosshair,
   RotateCcw,
   Search,
   Sparkles,
 } from "lucide-react";
 import {
-  LeaderboardHero,
-  LeaderboardIntro,
-  LeaderboardPanel,
   LeaderboardPill,
-  LeaderboardStatBlock,
-  LeaderboardToolbar,
 } from "@/app/components/leaderboards/LeaderboardChrome";
+import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
 import {
   CHARTING_PLAYER_COMPARISON_PITCHER_HAND_OPTIONS,
   type ChartingPlayerComparisonPitcherHandFilter,
@@ -41,7 +36,6 @@ import {
 } from "./_components/controls";
 import { EmptyState } from "./_components/empty-state";
 import { SummaryTable } from "./_components/summary-table";
-import { TakeawaysPanel } from "./_components/takeaways-panel";
 import { ZoneCanvas } from "./_components/zone-canvas";
 import {
   buildCatalog,
@@ -457,107 +451,85 @@ export default function LiveAbInsightsExplorer({
     router.replace(nextHref);
   }
 
-  const resultsVisible = deferredSearch.trim().length > 0 || !selectedEntry;
+  const resultsVisible = deferredSearch.trim().length > 0;
   const visibleResults = resultsVisible ? filteredEntries.slice(0, SEARCH_RESULT_LIMIT) : [];
 
   return (
-    <div className="flex flex-col gap-6">
-      <LeaderboardIntro
-        breadcrumbs={[
-          { label: "Home", href: "/" },
-          { label: "Charting", href: "/charting" },
-          { label: "Insights" },
-        ]}
-      >
-        <LeaderboardHero
-          tone="emerald"
-          icon={ClipboardList}
-          eyebrow="Charting"
-          title={<>Player Comparison Visuals</>}
-          description={heroDescriptionForView(view)}
-          meta={
-            <>
-              <LeaderboardPill tone="emerald">
-                {entries.length} {countNounForView(view)}
-                {entries.length === 1 ? "" : "s"}
-              </LeaderboardPill>
-              <LeaderboardPill tone="neutral">
-                {formatCount(totalPitches)} charted pitches
-              </LeaderboardPill>
-              <LeaderboardPill tone="neutral">
-                {totalSeasons} season{totalSeasons === 1 ? "" : "s"}
-              </LeaderboardPill>
-            </>
-          }
-          summary={
-            <LeaderboardStatBlock
-              label="Zone Schema"
-              value="9"
-              detail="4 rough quadrants, heart, and 4 chase corners"
-              emphasisClassName="text-emerald-300"
-            />
-          }
-          side={
-            <div className="grid gap-3">
-              <Link
-                href={`/charting/leaderboard?tab=${isPitcher ? "pitchers" : "hitters"}`}
-                className="block"
-              >
-                <div className="rounded-3xl border border-emerald-500/20 bg-emerald-500/10 p-4 transition-smooth hover:border-emerald-400/35">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-500/20 bg-zinc-950/70 text-emerald-300">
-                      <BarChart3 className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-200/80">
-                        Compare
-                      </div>
-                      <div className="mt-1 text-sm font-semibold text-emerald-50">
-                        Open {isPitcher ? "Pitcher" : "Hitter"} Leaderboard
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-              <Link href="/charting/faq" className="block">
-                <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/75 p-4 transition-smooth hover:border-emerald-400/25">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/80 text-zinc-300">
-                      <BookOpen className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                        Reference
-                      </div>
-                      <div className="mt-1 text-sm font-semibold text-zinc-100">
-                        Charting FAQ & metrics
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          }
-        />
-      </LeaderboardIntro>
+    <div className="min-h-full bg-[#F8FAFC] text-[#0F172A]">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
 
-      <LeaderboardToolbar>
+      {/* ── Hub header ── */}
+      <header className="rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+        <div className="flex flex-col gap-6 p-5 sm:p-7">
+          <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
+            <div className="min-w-0 flex-1">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#E0E7FF] bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6366F1]">
+                <ClipboardList className="h-3.5 w-3.5" aria-hidden />
+                Charting
+              </div>
+              <h1 className="mt-4 text-3xl font-black tracking-tight text-[#0F172A] sm:text-[2.85rem] sm:leading-[1.02]">
+                Player Insights
+              </h1>
+              <p className="mt-2 text-sm leading-6 text-[#64748B]">
+                {heroDescriptionForView(view)}
+              </p>
+            </div>
+            <div className="grid w-full grid-cols-2 gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
+              <HubActionCard
+                href={`/charting/leaderboard?tab=${isPitcher ? "pitchers" : "hitters"}`}
+                icon={BarChart3}
+                sectionTitle="Compare"
+                buttonLabel={isPitcher ? "Pitcher Board" : "Hitter Board"}
+              />
+              <HubActionCard
+                href="/charting/faq"
+                icon={BookOpen}
+                sectionTitle="Reference"
+                buttonLabel="Charting FAQ"
+              />
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            <HubStatCard
+              label={`${countNounForView(view)}s`}
+              value={String(entries.length)}
+              detail="With charted session data"
+              tone="indigo"
+            />
+            <HubStatCard
+              label="Charted Pitches"
+              value={formatCount(totalPitches)}
+              detail="Across all seasons and players"
+              tone="emerald"
+            />
+            <HubStatCard
+              label="Seasons"
+              value={String(totalSeasons)}
+              detail="Seasons of data available"
+              tone="sky"
+            />
+          </div>
+        </div>
+      </header>
+
+      {/* ── Filter toolbar ── */}
+      <section className="rounded-[28px] border border-[#E5E7EB] bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.04)] sm:p-5">
         <div className="grid gap-5">
           <div className="grid gap-4 xl:grid-cols-[auto_minmax(0,1.2fr)_auto] xl:items-end">
             <ComparisonViewToggle view={view} onChange={handleChangeView} />
 
             <div className="space-y-2">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
                 Player Search
               </div>
-              <label className="flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                <Search className="h-4 w-4 shrink-0 text-zinc-500" />
+              <label className="flex items-center gap-3 rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3 transition-colors focus-within:border-[var(--brand-primary-border)] focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(var(--brand-primary-rgb),0.10)]">
+                <Search className="h-4 w-4 shrink-0 text-[#94A3B8]" />
                 <input
                   type="text"
                   value={searchInput}
                   onChange={(event) => setSearchInput(event.target.value)}
                   placeholder={searchPlaceholderForView(view)}
-                  className="w-full bg-transparent text-sm text-zinc-100 outline-none placeholder:text-zinc-600"
+                  className="w-full bg-transparent text-sm text-[#0F172A] outline-none placeholder:text-[#94A3B8]"
                 />
               </label>
             </div>
@@ -573,7 +545,7 @@ export default function LiveAbInsightsExplorer({
                     setSelectedColId(null);
                     setSelectedPlayerSlug(null);
                   }}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/80 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-300 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#64748B] transition-smooth hover:border-[#CBD5E1] hover:text-[#0F172A]"
                 >
                   Clear Player
                 </button>
@@ -589,7 +561,7 @@ export default function LiveAbInsightsExplorer({
                   setVeloMinParam(null);
                   setVeloMaxParam(null);
                 }}
-                className="inline-flex items-center gap-2 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200 transition-smooth hover:border-emerald-400/35 hover:bg-emerald-500/15"
+                className="inline-flex items-center gap-2 rounded-2xl border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-primary-subtle-text)] transition-smooth hover:opacity-90"
               >
                 <RotateCcw className="h-4 w-4" />
                 Clear Filters
@@ -600,7 +572,7 @@ export default function LiveAbInsightsExplorer({
           {resultsVisible ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {visibleResults.length === 0 ? (
-                <div className="col-span-full flex min-h-32 items-center justify-center rounded-[1.4rem] border border-dashed border-zinc-800 bg-zinc-950/60 px-5 text-center text-sm text-zinc-500">
+                <div className="col-span-full flex min-h-32 items-center justify-center rounded-[1.4rem] border border-dashed border-[#E2E8F0] bg-[#F8FAFC] px-5 text-center text-sm text-[#94A3B8]">
                   No {countNounForView(view)}s match this search.
                 </div>
               ) : (
@@ -728,22 +700,23 @@ export default function LiveAbInsightsExplorer({
             />
           </div>
         </div>
-      </LeaderboardToolbar>
+      </section>
 
+      {/* ── Selected player panel ── */}
       {selectedEntry ? (
         <>
-          <LeaderboardPanel className="overflow-hidden">
-            <div className="border-b border-zinc-800/80 px-5 py-5 sm:px-6">
+          <div className="overflow-hidden rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+            <div className="border-b border-[#F1F5F9] px-5 py-5 sm:px-6">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
                     <Sparkles className="h-3.5 w-3.5" />
                     Current {isPitcher ? "Pitcher" : "Hitter"}
                   </div>
-                  <h2 className="mt-4 text-3xl font-black tracking-tight text-zinc-50">
+                  <h2 className="mt-4 text-3xl font-black tracking-tight text-[#0F172A]">
                     {selectedEntry.displayName}
                   </h2>
-                  <p className="mt-2 max-w-3xl text-sm leading-7 text-zinc-400">
+                  <p className="mt-2 max-w-3xl text-sm leading-7 text-[#64748B]">
                     {isPitcher
                       ? `Single-player charting visuals modeled after the Savant workflow, scoped to the filters currently applied across this pitcher’s ${TEAM_NAME} charting data.`
                       : `Single-player charting visuals modeled after the Savant workflow, scoped to the filters currently applied across this hitter’s ${TEAM_NAME} charting data.`}
@@ -753,7 +726,7 @@ export default function LiveAbInsightsExplorer({
                 <div className="flex flex-wrap gap-2">
                   <Link
                     href={`/players/${selectedEntry.playerSlug}?tab=live-ab`}
-                    className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950/80 px-4 py-2 text-sm font-semibold text-zinc-200 transition-smooth hover:border-zinc-700 hover:text-white"
+                    className="inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-2 text-sm font-semibold text-[#334155] transition-smooth hover:border-[#CBD5E1] hover:text-[#0F172A]"
                   >
                     Open player page
                   </Link>
@@ -762,7 +735,7 @@ export default function LiveAbInsightsExplorer({
 
               <div className="mt-5 flex flex-wrap gap-2">
                 {activeFilterChips.map((chip) => (
-                  <LeaderboardPill key={`${chip.label}-${chip.value}`} tone="neutral">
+                  <LeaderboardPill key={`${chip.label}-${chip.value}`} tone="neutral" variant="light">
                     {chip.label}: {chip.value}
                   </LeaderboardPill>
                 ))}
@@ -815,7 +788,7 @@ export default function LiveAbInsightsExplorer({
                     setSelectedRowId(null);
                   }}
                 />
-                <div className="rounded-[1.5rem] border border-zinc-800/80 bg-zinc-950/60 px-4 py-3 text-[11px] text-zinc-500">
+                <div className="rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3 text-[11px] text-[#94A3B8]">
                   {hiddenZonePitchCount > 0
                     ? `${hiddenZonePitchCount} filtered pitch${hiddenZonePitchCount === 1 ? "" : "es"} fall outside the visible rough-zone buckets and are omitted from the grid.`
                     : "All mapped pitches in the current sample land inside the visible rough-zone schema."}
@@ -823,14 +796,14 @@ export default function LiveAbInsightsExplorer({
               </div>
 
               <div className="space-y-4">
-                <div className="rounded-[1.6rem] border border-zinc-800/80 bg-zinc-950/60 px-4 py-3">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                <div className="rounded-[1.6rem] border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
                     Selection Scope
                   </div>
-                  <div className="mt-2 text-lg font-black tracking-tight text-zinc-100">
+                  <div className="mt-2 text-lg font-black tracking-tight text-[#0F172A]">
                     {selectionLabel}
                   </div>
-                  <div className="mt-1 text-[11px] text-zinc-500">
+                  <div className="mt-1 text-[11px] text-[#94A3B8]">
                     {selectionSummary.totalPitches === filteredSummary.totalPitches
                       ? "Current filters with no zone slice applied."
                       : "Current filters with a zone-level slice applied."}
@@ -912,12 +885,6 @@ export default function LiveAbInsightsExplorer({
                   )}
                 </div>
 
-                <TakeawaysPanel
-                  isPitcher={isPitcher}
-                  summary={selectionSummary}
-                  pitchMix={selectionPitchMix}
-                />
-
                 <PitchMixPanel
                   title={
                     selectedCellId !== null
@@ -944,30 +911,9 @@ export default function LiveAbInsightsExplorer({
                   pitches={selectionPitchMix}
                 />
 
-                <div className="rounded-[1.6rem] border border-zinc-800/80 bg-zinc-950/60 p-4">
-                  <div className="flex items-center gap-2 text-zinc-200">
-                    <Crosshair className="h-4 w-4 text-sky-300" />
-                    <div className="text-sm font-bold tracking-tight">What This View Has</div>
-                  </div>
-                  <div className="mt-3 grid gap-2 text-sm text-zinc-400">
-                    <div className="rounded-2xl border border-zinc-800/70 bg-zinc-950/70 px-3 py-2.5">
-                      {isPitcher
-                        ? "Exact player search, season scope, pitch type, count, event, and pitch-speed filters."
-                        : "Exact player search, pitcher hand, season scope, pitch type, count, event, and pitch-speed filters."}
-                    </div>
-                    <div className="rounded-2xl border border-zinc-800/70 bg-zinc-950/70 px-3 py-2.5">
-                      Same 9 rough zone buckets and the same heatmap versus sections layout used by the hitter visuals.
-                    </div>
-                    <div className="rounded-2xl border border-zinc-800/70 bg-zinc-950/70 px-3 py-2.5">
-                      {isPitcher
-                        ? "Command and result metrics only in v1: Strike%, Whiff%, Chase%, BAA, filtered pitch mix, and the one-line summary table."
-                        : "No exit velocity, launch-speed, or quality-of-contact controls in this visuals view."}
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
-          </LeaderboardPanel>
+          </div>
 
           <SummaryTable
             view={view}
@@ -988,6 +934,7 @@ export default function LiveAbInsightsExplorer({
           }
         />
       )}
+      </div>
     </div>
   );
 }

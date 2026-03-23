@@ -7,9 +7,7 @@ import type { ComparisonZoneBucketId } from "@/lib/charting/comparisonZones";
 
 import type { ComparisonView } from "../explorerState";
 import {
-  formatCount,
   formatMetricValue,
-  formatPct,
   joinClasses,
   metricValueForSummary,
 } from "../_lib/helpers";
@@ -50,7 +48,6 @@ export function ZoneCanvas({
   rowSummaries,
   colSummaries,
   allSummary,
-  allPitchCount,
   onSelectBucket,
   onSelectCell,
   onSelectRow,
@@ -114,19 +111,16 @@ export function ZoneCanvas({
         : focusColId !== null
           ? `Col: ${ZONE_COL_LABELS[focusColId] ?? focusColId}`
           : focusLayout?.label ?? null;
-  const focusShare =
-    focusSummary && allPitchCount > 0 ? (focusSummary.totalPitches / allPitchCount) * 100 : null;
-
   return (
-    <div className="rounded-[1.9rem] border border-zinc-800/80 bg-[radial-gradient(circle_at_50%_28%,rgba(45,212,191,0.08),transparent_30%),linear-gradient(180deg,rgba(24,24,27,0.96),rgba(9,9,11,0.95))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+    <div className="rounded-[1.9rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
             {displayMode === "heatmap" ? "Pitch Heatmap" : "Zone Sections"}
           </div>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-zinc-500">
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-[#94A3B8]">
             <span>{activeMetric}</span>
-            <span className="text-zinc-700">•</span>
+            <span className="text-[#CBD5E1]">•</span>
             <span>
               {displayMode === "heatmap"
                 ? "Pitch location adjusted to batter zone"
@@ -134,8 +128,8 @@ export function ZoneCanvas({
             </span>
             {selectedBucket || selectedCellId !== null || selectedRowId !== null || selectedColId !== null ? (
               <>
-                <span className="text-zinc-700">•</span>
-                <span className="text-zinc-300">
+                <span className="text-[#CBD5E1]">•</span>
+                <span className="text-[#334155]">
                   {selectedCellId !== null
                     ? `Cell ${selectedCellId}`
                     : selectedRowId !== null
@@ -157,7 +151,7 @@ export function ZoneCanvas({
               onSelectRow(null);
               onSelectCol(null);
             }}
-            className="rounded-full border border-zinc-800 bg-zinc-950/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"
+            className="rounded-full border border-[#E2E8F0] bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#64748B] transition-smooth hover:border-[#CBD5E1] hover:text-[#0F172A]"
           >
             Clear Selection
           </button>
@@ -165,7 +159,7 @@ export function ZoneCanvas({
       </div>
 
       {displayMode === "heatmap" ? (
-        <div className="relative aspect-[0.92] overflow-hidden rounded-[2.15rem] border border-zinc-800/80 bg-[radial-gradient(circle_at_50%_38%,rgba(37,99,235,0.10),transparent_34%),linear-gradient(180deg,rgba(17,24,39,0.98),rgba(9,9,11,0.96))] p-3">
+        <div className="relative aspect-[0.92] overflow-hidden rounded-[2.15rem] border border-[#E2E8F0] bg-[#EEF2FF] p-3">
           <svg
             viewBox={`0 0 ${SIZE} ${SIZE}`}
             className="absolute inset-3 h-[calc(100%-1.5rem)] w-[calc(100%-1.5rem)]"
@@ -271,8 +265,8 @@ export function ZoneCanvas({
                 onClick={() => onSelectBucket(selected ? null : bucket.id)}
                 title={`${layout.label}: ${layout.caption}`}
                 className={joinClasses(
-                  "absolute rounded-[1.2rem] border border-transparent transition-smooth hover:border-white/12",
-                  selected ? "border-white/25 bg-white/[0.03]" : "bg-transparent",
+                  "absolute rounded-[1.2rem] border border-transparent transition-smooth hover:border-slate-900/10",
+                  selected ? "border-slate-900/20 bg-slate-900/[0.03]" : "bg-transparent",
                 )}
                 style={{
                   ...layout.style,
@@ -281,13 +275,13 @@ export function ZoneCanvas({
               />
             );
           })}
-          <div className="pointer-events-none absolute inset-3 rounded-[1.9rem] border border-white/5" />
+          <div className="pointer-events-none absolute inset-3 rounded-[1.9rem] border border-slate-900/5" />
         </div>
       ) : (
-        <div className="relative rounded-[2.15rem] border border-zinc-800/80 bg-[radial-gradient(circle_at_50%_38%,rgba(37,99,235,0.10),transparent_34%),linear-gradient(180deg,rgba(17,24,39,0.98),rgba(9,9,11,0.96))] p-3">
+        <div className="relative rounded-[2.15rem] border border-[#E2E8F0] bg-[#F1F5F9] p-3">
           <div className="mb-2 flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5">
-              <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-600">Row</span>
+              <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#94A3B8]">Row</span>
               {([0, 1, 2] as const).map((row) => (
                 <button
                   key={row}
@@ -300,8 +294,8 @@ export function ZoneCanvas({
                   className={joinClasses(
                     "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition-smooth",
                     selectedRowId === row
-                      ? "bg-sky-500/18 text-sky-200 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.35)]"
-                      : "text-zinc-500 hover:bg-zinc-800/60 hover:text-zinc-200",
+                      ? "bg-sky-100 text-sky-700 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.30)]"
+                      : "text-[#94A3B8] hover:bg-slate-200 hover:text-[#0F172A]",
                   )}
                 >
                   {ZONE_ROW_LABELS[row]}
@@ -309,7 +303,7 @@ export function ZoneCanvas({
               ))}
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-600">Col</span>
+              <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#94A3B8]">Col</span>
               {([0, 1, 2] as const).map((col) => (
                 <button
                   key={col}
@@ -322,8 +316,8 @@ export function ZoneCanvas({
                   className={joinClasses(
                     "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition-smooth",
                     selectedColId === col
-                      ? "bg-sky-500/18 text-sky-200 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.35)]"
-                      : "text-zinc-500 hover:bg-zinc-800/60 hover:text-zinc-200",
+                      ? "bg-sky-100 text-sky-700 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.30)]"
+                      : "text-[#94A3B8] hover:bg-slate-200 hover:text-[#0F172A]",
                   )}
                 >
                   {ZONE_COL_LABELS[col]}
@@ -406,15 +400,15 @@ export function ZoneCanvas({
           </div>
 
           {hasAnyFocus && focusSummary ? (
-            <div className="pointer-events-none absolute right-3 top-16 rounded-[0.75rem] border border-white/10 bg-zinc-950/92 px-3 py-2 text-[11px] text-zinc-300 shadow-[0_8px_20px_rgba(0,0,0,0.4)] backdrop-blur-sm">
-              <div className="font-semibold text-zinc-100">{focusLabel}</div>
+            <div className="pointer-events-none absolute right-3 top-16 rounded-[0.75rem] border border-[#E2E8F0] bg-white px-3 py-2 text-[11px] text-[#64748B] shadow-[0_8px_20px_rgba(15,23,42,0.12)]">
+              <div className="font-semibold text-[#0F172A]">{focusLabel}</div>
               <div className="mt-1 flex flex-wrap items-center gap-3">
                 <span>
-                  n=<span className="font-semibold text-zinc-100">{focusSummary.totalPitches}</span>
+                  n=<span className="font-semibold text-[#0F172A]">{focusSummary.totalPitches}</span>
                 </span>
                 <span>
                   {activeMetric}{" "}
-                  <span className="font-semibold text-zinc-100">
+                  <span className="font-semibold text-[#0F172A]">
                     {formatMetricValue(view, metricId, metricValueForSummary(view, focusSummary, metricId))}
                   </span>
                 </span>
@@ -424,64 +418,6 @@ export function ZoneCanvas({
         </div>
       )}
 
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[1.4rem] border border-zinc-800/70 bg-zinc-950/55 px-4 py-3">
-        <div className="text-[11px] text-zinc-500">
-          {hasAnyFocus ? (
-            <>
-              <span className="font-semibold text-zinc-200">{focusLabel}</span>
-              {focusLayout?.caption && focusCellId === null && focusRowId === null && focusColId === null ? (
-                <>
-                  <span className="mx-2 text-zinc-700">•</span>
-                  <span>{focusLayout.caption}</span>
-                </>
-              ) : null}
-            </>
-          ) : (
-            displayMode === "sections"
-              ? "Hover or click a cell to inspect that zone."
-              : "Click a zone to isolate that rough bucket."
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-4 text-[11px]">
-          {hasAnyFocus && focusSummary ? (
-            <>
-              <span className="text-zinc-500">
-                Pitches{" "}
-                <span className="font-semibold text-zinc-100">
-                  {formatCount(focusSummary.totalPitches)}
-                </span>
-              </span>
-              <span className="text-zinc-500">
-                {activeMetric}{" "}
-                <span className="font-semibold text-zinc-100">
-                  {formatMetricValue(view, metricId, metricValueForSummary(view, focusSummary, metricId))}
-                </span>
-              </span>
-              <span className="text-zinc-500">
-                Share{" "}
-                <span className="font-semibold text-zinc-100">
-                  {focusShare === null ? "—" : formatPct(focusShare, 0)}
-                </span>
-              </span>
-            </>
-          ) : (
-            <>
-              <span className="text-zinc-500">
-                Pitches{" "}
-                <span className="font-semibold text-zinc-100">
-                  {formatCount(displayedSummary.totalPitches)}
-                </span>
-              </span>
-              <span className="text-zinc-500">
-                {activeMetric}{" "}
-                <span className="font-semibold text-zinc-100">
-                  {formatMetricValue(view, metricId, metricValueForSummary(view, displayedSummary, metricId))}
-                </span>
-              </span>
-            </>
-          )}
-        </div>
-      </div>
     </div>
   );
 }

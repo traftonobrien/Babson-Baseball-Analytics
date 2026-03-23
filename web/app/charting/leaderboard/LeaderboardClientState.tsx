@@ -171,7 +171,7 @@ export function LeaderboardClientState({
                             Session Type
                         </div>
                         <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
-                            <div className="grid grid-cols-2 gap-1">
+                            <div className="grid grid-cols-3 gap-1">
                                 <button
                                     type="button"
                                     onClick={() => updateQuery({ sessionType: "game", session: "all" })}
@@ -181,6 +181,16 @@ export function LeaderboardClientState({
                                         }`}
                                 >
                                     Games
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => updateQuery({ sessionType: "live_ab", session: "all" })}
+                                    className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-smooth ${sessionType === "live_ab"
+                                        ? "border border-emerald-500/25 bg-emerald-500/10 text-emerald-300"
+                                        : "border border-transparent text-zinc-400 hover:text-zinc-100"
+                                        }`}
+                                >
+                                    Live AB
                                 </button>
                                 <button
                                     type="button"

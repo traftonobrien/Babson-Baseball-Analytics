@@ -1,4 +1,3 @@
-import { LeaderboardPageFrame } from "@/app/components/leaderboards/LeaderboardChrome";
 import LiveAbInsightsExplorer from "./LiveAbInsightsExplorer";
 import { normalizeComparisonView } from "./explorerState";
 import {
@@ -37,12 +36,10 @@ export default async function ChartingInsightsPage(props: {
       : await loadChartingHitterComparisonDirectory();
 
   return (
-    <LeaderboardPageFrame maxWidth="max-w-7xl">
-      <LiveAbInsightsExplorer
-        key={`${view}:${explorerParams.toString()}`}
-        entries={entries}
-        view={view}
-      />
-    </LeaderboardPageFrame>
+    <LiveAbInsightsExplorer
+      key={`${view}:${explorerParams.toString()}`}
+      entries={entries}
+      view={view}
+    />
   );
 }

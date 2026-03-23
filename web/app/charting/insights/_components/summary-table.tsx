@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  LeaderboardPanel,
-  LeaderboardPill,
-} from "@/app/components/leaderboards/LeaderboardChrome";
+import { LeaderboardPill } from "@/app/components/leaderboards/LeaderboardChrome";
 import type {
   ChartingPlayerComparisonDirectoryEntry,
   ChartingPlayerComparisonSummary,
@@ -41,25 +38,25 @@ export function SummaryTable({
     const pitcherSummary = summary as PitcherComparisonSummary;
 
     return (
-      <LeaderboardPanel className="overflow-hidden">
-        <div className="border-b border-zinc-800/80 px-5 py-4 sm:px-6">
+      <div className="overflow-hidden rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+        <div className="border-b border-[#E2E8F0] px-5 py-4 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
                 Summary Table
               </div>
-              <div className="mt-1 text-sm text-zinc-500">
+              <div className="mt-1 text-sm text-[#64748B]">
                 Filtered season-line summary for the selected pitcher.
               </div>
             </div>
-            <LeaderboardPill tone="neutral">{seasonLabel}</LeaderboardPill>
+            <LeaderboardPill tone="neutral" variant="light">{seasonLabel}</LeaderboardPill>
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="min-w-[1040px] w-full">
             <thead>
-              <tr className="border-b border-zinc-800/80 bg-zinc-950/40">
+              <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
                 {[
                   "Player",
                   "Throw",
@@ -76,7 +73,7 @@ export function SummaryTable({
                 ].map((label) => (
                   <th
                     key={label}
-                    className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500"
+                    className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]"
                   >
                     {label}
                   </th>
@@ -86,15 +83,15 @@ export function SummaryTable({
             <tbody>
               {pitcherSummary.totalPitches === 0 ? (
                 <tr>
-                  <td colSpan={12} className="px-6 py-10 text-center text-sm text-zinc-500">
+                  <td colSpan={12} className="px-6 py-10 text-center text-sm text-[#94A3B8]">
                     No pitches match the current player and filter scope.
                   </td>
                 </tr>
               ) : (
-                <tr className="border-b border-zinc-800/70 transition-smooth hover:bg-emerald-500/5">
+                <tr className="border-b border-[#E2E8F0] transition-smooth hover:bg-emerald-50/60">
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-sm font-black text-emerald-200">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-sm font-black text-emerald-700">
                         {pitcherEntry.displayName
                           .split(/\s+/)
                           .slice(0, 2)
@@ -102,36 +99,36 @@ export function SummaryTable({
                           .join("")}
                       </div>
                       <div>
-                        <div className="font-semibold text-zinc-100">{pitcherEntry.displayName}</div>
-                        <div className="mt-1 text-[11px] text-zinc-500">
+                        <div className="font-semibold text-[#0F172A]">{pitcherEntry.displayName}</div>
+                        <div className="mt-1 text-[11px] text-[#94A3B8]">
                           {pitcherEntry.throws ? `${pitcherEntry.throws}HP` : "Hand unknown"}
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm text-zinc-200">
+                  <td className="px-4 py-4 text-sm text-[#334155]">
                     {pitcherEntry.throws ? `${pitcherEntry.throws}HP` : "—"}
                   </td>
-                  <td className="px-4 py-4 text-sm font-semibold text-zinc-100">{seasonLabel}</td>
-                  <td className="px-4 py-4 text-sm text-zinc-200">
+                  <td className="px-4 py-4 text-sm font-semibold text-[#0F172A]">{seasonLabel}</td>
+                  <td className="px-4 py-4 text-sm text-[#334155]">
                     {formatCount(pitcherSummary.totalPitches)}
                   </td>
-                  <td className="px-4 py-4 text-sm text-zinc-200">{pitcherSummary.plateAppearances}</td>
-                  <td className="px-4 py-4 text-sm text-zinc-200">{formatPct(pitcherSummary.strikePct, 1)}</td>
-                  <td className="px-4 py-4 text-sm text-zinc-200">{formatPct(pitcherSummary.zonePct, 1)}</td>
-                  <td className="px-4 py-4 text-sm text-zinc-200">{formatPct(pitcherSummary.whiffPct, 1)}</td>
-                  <td className="px-4 py-4 text-sm text-zinc-200">{formatPct(pitcherSummary.chasePct, 1)}</td>
-                  <td className="px-4 py-4 text-sm font-semibold text-emerald-200">
+                  <td className="px-4 py-4 text-sm text-[#334155]">{pitcherSummary.plateAppearances}</td>
+                  <td className="px-4 py-4 text-sm text-[#334155]">{formatPct(pitcherSummary.strikePct, 1)}</td>
+                  <td className="px-4 py-4 text-sm text-[#334155]">{formatPct(pitcherSummary.zonePct, 1)}</td>
+                  <td className="px-4 py-4 text-sm text-[#334155]">{formatPct(pitcherSummary.whiffPct, 1)}</td>
+                  <td className="px-4 py-4 text-sm text-[#334155]">{formatPct(pitcherSummary.chasePct, 1)}</td>
+                  <td className="px-4 py-4 text-sm font-semibold text-emerald-600">
                     {formatRate(pitcherSummary.baa)}
                   </td>
-                  <td className="px-4 py-4 text-sm text-zinc-200">{formatPct(pitcherSummary.kPct, 1)}</td>
-                  <td className="px-4 py-4 text-sm text-zinc-200">{formatPct(pitcherSummary.bbPct, 1)}</td>
+                  <td className="px-4 py-4 text-sm text-[#334155]">{formatPct(pitcherSummary.kPct, 1)}</td>
+                  <td className="px-4 py-4 text-sm text-[#334155]">{formatPct(pitcherSummary.bbPct, 1)}</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-      </LeaderboardPanel>
+      </div>
     );
   }
 
@@ -139,25 +136,25 @@ export function SummaryTable({
   const hitterSummary = summary as ChartingPlayerComparisonSummary;
 
   return (
-    <LeaderboardPanel className="overflow-hidden">
-      <div className="border-b border-zinc-800/80 px-5 py-4 sm:px-6">
+    <div className="overflow-hidden rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+      <div className="border-b border-[#E2E8F0] px-5 py-4 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
               Summary Table
             </div>
-            <div className="mt-1 text-sm text-zinc-500">
+            <div className="mt-1 text-sm text-[#64748B]">
               Filtered season-line summary for the selected hitter.
             </div>
           </div>
-          <LeaderboardPill tone="neutral">{seasonLabel}</LeaderboardPill>
+          <LeaderboardPill tone="neutral" variant="light">{seasonLabel}</LeaderboardPill>
         </div>
       </div>
 
       <div className="overflow-x-auto">
         <table className="min-w-[1020px] w-full">
           <thead>
-            <tr className="border-b border-zinc-800/80 bg-zinc-950/40">
+            <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
               {[
                 "Player",
                 "Season",
@@ -176,7 +173,7 @@ export function SummaryTable({
               ].map((label) => (
                 <th
                   key={label}
-                  className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500"
+                  className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]"
                 >
                   {label}
                 </th>
@@ -186,15 +183,15 @@ export function SummaryTable({
           <tbody>
             {hitterSummary.totalPitches === 0 ? (
               <tr>
-                <td colSpan={14} className="px-6 py-10 text-center text-sm text-zinc-500">
+                <td colSpan={14} className="px-6 py-10 text-center text-sm text-[#94A3B8]">
                   No pitches match the current player and filter scope.
                 </td>
               </tr>
             ) : (
-              <tr className="border-b border-zinc-800/70 transition-smooth hover:bg-emerald-500/5">
+              <tr className="border-b border-[#E2E8F0] transition-smooth hover:bg-emerald-50/60">
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-sm font-black text-emerald-200">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-sm font-black text-emerald-700">
                       {entry.displayName
                         .split(/\s+/)
                         .slice(0, 2)
@@ -202,32 +199,32 @@ export function SummaryTable({
                         .join("")}
                     </div>
                     <div>
-                      <div className="font-semibold text-zinc-100">{hitterEntry.displayName}</div>
-                      <div className="mt-1 text-[11px] text-zinc-500">
+                      <div className="font-semibold text-[#0F172A]">{hitterEntry.displayName}</div>
+                      <div className="mt-1 text-[11px] text-[#94A3B8]">
                         {hitterEntry.batterHand ? `${hitterEntry.batterHand}HH` : "Hand unknown"}
                       </div>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-4 text-sm font-semibold text-zinc-100">{seasonLabel}</td>
-                <td className="px-4 py-4 text-sm text-zinc-200">
+                <td className="px-4 py-4 text-sm font-semibold text-[#0F172A]">{seasonLabel}</td>
+                <td className="px-4 py-4 text-sm text-[#334155]">
                   {formatCount(hitterSummary.totalPitches)}
                 </td>
-                <td className="px-4 py-4 text-sm text-zinc-200">{hitterSummary.plateAppearances}</td>
-                <td className="px-4 py-4 text-sm text-zinc-200">{hitterSummary.atBats}</td>
-                <td className="px-4 py-4 text-sm text-zinc-200">{hitterSummary.hits}</td>
-                <td className="px-4 py-4 text-sm text-zinc-200">{hitterSummary.singles}</td>
-                <td className="px-4 py-4 text-sm text-zinc-200">{hitterSummary.doubles}</td>
-                <td className="px-4 py-4 text-sm text-zinc-200">{hitterSummary.triples}</td>
-                <td className="px-4 py-4 text-sm text-zinc-200">{hitterSummary.homeRuns}</td>
-                <td className="px-4 py-4 text-sm font-semibold text-emerald-200">
+                <td className="px-4 py-4 text-sm text-[#334155]">{hitterSummary.plateAppearances}</td>
+                <td className="px-4 py-4 text-sm text-[#334155]">{hitterSummary.atBats}</td>
+                <td className="px-4 py-4 text-sm text-[#334155]">{hitterSummary.hits}</td>
+                <td className="px-4 py-4 text-sm text-[#334155]">{hitterSummary.singles}</td>
+                <td className="px-4 py-4 text-sm text-[#334155]">{hitterSummary.doubles}</td>
+                <td className="px-4 py-4 text-sm text-[#334155]">{hitterSummary.triples}</td>
+                <td className="px-4 py-4 text-sm text-[#334155]">{hitterSummary.homeRuns}</td>
+                <td className="px-4 py-4 text-sm font-semibold text-emerald-600">
                   {formatRate(hitterSummary.battingAverage)}
                 </td>
-                <td className="px-4 py-4 text-sm text-zinc-200">{hitterSummary.strikeouts}</td>
-                <td className="px-4 py-4 text-sm text-zinc-200">
+                <td className="px-4 py-4 text-sm text-[#334155]">{hitterSummary.strikeouts}</td>
+                <td className="px-4 py-4 text-sm text-[#334155]">
                   {formatPct(hitterSummary.strikeoutRate, 1)}
                 </td>
-                <td className="px-4 py-4 text-sm font-semibold text-sky-200">
+                <td className="px-4 py-4 text-sm font-semibold text-sky-600">
                   {formatRate(hitterSummary.woba)}
                 </td>
               </tr>
@@ -235,6 +232,6 @@ export function SummaryTable({
           </tbody>
         </table>
       </div>
-    </LeaderboardPanel>
+    </div>
   );
 }

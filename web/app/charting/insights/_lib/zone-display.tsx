@@ -285,17 +285,17 @@ export const zoneSectionStyle = ({
 }: ZoneSectionStyleArgs): CSSProperties => {
   if (empty) {
     return {
-      borderColor: selected ? "rgba(244,244,245,0.18)" : "rgba(39,39,42,0.5)",
-      background: "rgba(9,9,11,0.7)",
+      borderColor: selected ? "rgba(99,102,241,0.30)" : "#E2E8F0",
+      background: "#F8FAFC",
     };
   }
 
   const palette = bucketPalette(heat);
-  const fillAlpha = chase ? 0.05 + heat * 0.07 : 0.1 + heat * 0.18;
+  const fillAlpha = chase ? 0.08 + heat * 0.10 : 0.13 + heat * 0.22;
   return {
     borderColor: selected
-      ? "rgba(255,255,255,0.28)"
-      : withAlpha(palette.solid, chase ? 0.12 : 0.22),
+      ? "rgba(99,102,241,0.35)"
+      : withAlpha(palette.solid, chase ? 0.18 : 0.30),
     background: withAlpha(palette.solid, fillAlpha),
   };
 };
@@ -321,7 +321,7 @@ export const SimpleZoneOverlay = () => {
         height={SIZE - 40}
         rx="28"
         fill="none"
-        stroke="rgba(255,255,255,0.08)"
+        stroke="rgba(15,23,42,0.05)"
       />
       <rect
         x={zx1}
@@ -330,18 +330,18 @@ export const SimpleZoneOverlay = () => {
         height={zh}
         rx="8"
         fill="none"
-        stroke="#71717a"
+        stroke="#94A3B8"
         strokeWidth="1.4"
         strokeDasharray="4 3"
       />
-      <line x1={col1} x2={col1} y1={zy1} y2={zy2} stroke="#3f3f46" strokeWidth="1" />
-      <line x1={col2} x2={col2} y1={zy1} y2={zy2} stroke="#3f3f46" strokeWidth="1" />
-      <line x1={zx1} x2={zx2} y1={row1} y2={row1} stroke="#3f3f46" strokeWidth="1" />
-      <line x1={zx1} x2={zx2} y1={row2} y2={row2} stroke="#3f3f46" strokeWidth="1" />
+      <line x1={col1} x2={col1} y1={zy1} y2={zy2} stroke="#CBD5E1" strokeWidth="1" />
+      <line x1={col2} x2={col2} y1={zy1} y2={zy2} stroke="#CBD5E1" strokeWidth="1" />
+      <line x1={zx1} x2={zx2} y1={row1} y2={row1} stroke="#CBD5E1" strokeWidth="1" />
+      <line x1={zx1} x2={zx2} y1={row2} y2={row2} stroke="#CBD5E1" strokeWidth="1" />
       <path
         d="M144 286h32l8 18-24 8-24-8 8-18z"
-        fill="#d4d4d8"
-        opacity="0.18"
+        fill="#94A3B8"
+        opacity="0.25"
       />
     </g>
   );
