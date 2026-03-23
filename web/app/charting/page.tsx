@@ -39,7 +39,7 @@ function normalizeTypeFilter(value: string | string[] | undefined): HubTypeFilte
     if (value === "live_ab" || value === "game" || value === "all") {
         return value;
     }
-    return "game";
+    return "all";
 }
 
 function matchesQuery(
@@ -268,8 +268,9 @@ export default async function ChartingHubPage(props: {
                                 defaultValue={typeFilter}
                                 className="w-full rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2.5 text-sm font-semibold text-zinc-100 outline-none"
                             >
-                                <option value="game">Games</option>
                                 <option value="all">All types</option>
+                                <option value="game">Games</option>
+                                <option value="live_ab">Live ABs</option>
                             </select>
                         </div>
                     </div>
