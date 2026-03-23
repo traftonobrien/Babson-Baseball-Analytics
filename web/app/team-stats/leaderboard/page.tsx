@@ -3,11 +3,9 @@
 import Link from "next/link";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { BarChart3, BookOpen, CircleHelp, Search, ChevronDown, ChevronUp, Trophy } from "lucide-react";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
+import { playerRegistry } from "@/lib/playerRegistry";
 import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
-
-const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
 type StatMode = "pitching" | "batting";
 type StatSection = "standard" | "advanced";
@@ -416,9 +414,11 @@ export default function TeamStatsPage() {
 
   const isPitchingView = statMode === "pitching";
   const rowCount = isPitchingView ? sortedPitchers.length : sortedHitters.length;
+  const registryPitcherCount = playerRegistry.filter((player) => player.isPitcher).length;
+  const registryHitterCount = playerRegistry.filter((player) => player.isHitter).length;
 
   return (
-    <main className={`min-h-screen bg-background text-slate-900 dark:text-zinc-50 ${plusJakarta.className}`}>
+    <main className="font-display min-h-screen bg-background text-slate-900 dark:text-zinc-50">
       <div className="mx-auto max-w-[1440px] px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
         <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
           <div className="flex flex-col gap-6 p-5 sm:p-7">
@@ -451,29 +451,21 @@ export default function TeamStatsPage() {
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               <HubStatCard
-                label="Pitchers"
-                value={loading ? "—" : String(pitchers.length)}
-                detail={
-                  seasonYear
-                    ? `${seasonYear} season · ${minIp}+ IP to qualify (pitching view).`
-                    : "Pitching rows from the synced NCAA feed."
-                }
+                label="Directory"
+                value={String(playerRegistry.length)}
+                detail="Players in the registry with profiles."
                 tone="indigo"
               />
               <HubStatCard
-                label="Hitters"
-                value={loading ? "—" : String(hitters.length)}
-                detail={`${minPa}+ PA to qualify (hitting view). NCAA D3.`}
+                label="Pitchers"
+                value={String(registryPitcherCount)}
+                detail="Pitchers on the roster."
                 tone="emerald"
               />
               <HubStatCard
-                label="Sync status"
-                value={syncedAt ? (isStale ? "Stale" : "Current") : "—"}
-                detail={
-                  syncedAt
-                    ? `${new Date(syncedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} · ${isStale ? "refresh recommended" : "cache is fresh"}`
-                    : "Load the table to pull sync metadata."
-                }
+                label="Hitters"
+                value={String(registryHitterCount)}
+                detail="Hitters on the roster."
                 tone="sky"
               />
             </div>
@@ -484,14 +476,14 @@ export default function TeamStatsPage() {
           <div className="grid gap-4 xl:grid-cols-[minmax(13rem,16rem)_minmax(13rem,16rem)_minmax(12rem,14rem)_minmax(0,1fr)_auto] xl:items-end">
             <div className="space-y-2">
               <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">View</div>
-              <div className="inline-flex rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1 dark:border-zinc-800">
+              <div className="inline-flex rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1">
                 {(["pitching", "batting"] as const).map((mode) => (
                   <button
                     key={mode}
                     type="button"
                     onClick={() => setStatMode(mode)}
                     className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                      statMode === mode ? "bg-surface text-[var(--brand-primary-subtle-text)] shadow-sm" : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50"
+                      statMode === mode ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm" : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50"
                     }`}
                   >
                     {mode === "pitching" ? "Pitchers" : "Hitters"}
@@ -502,7 +494,7 @@ export default function TeamStatsPage() {
 
             <div className="space-y-2">
               <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">Stats</div>
-              <div className="inline-flex rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1 dark:border-zinc-800">
+              <div className="inline-flex rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1">
                 {(["standard", "advanced"] as const).map((sec) => (
                   <button
                     key={sec}

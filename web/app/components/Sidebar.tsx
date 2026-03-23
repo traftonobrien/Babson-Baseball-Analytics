@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Activity,
@@ -25,8 +24,6 @@ import {
 import { TEAM_NAME } from "@/lib/teamConfig";
 import { useSiteAppearance } from "./SiteAppearanceContext";
 import SiteAppearanceToggle from "./SiteAppearanceToggle";
-
-const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
 function isDictionaryRoute(pathname: string): boolean {
   return (
@@ -238,8 +235,8 @@ export default function Sidebar() {
       <div
         className={
           isDark
-            ? `sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-950 px-4 py-4 xl:hidden ${plusJakarta.className}`
-            : `sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-slate-100 dark:border-zinc-800 bg-surface px-4 py-4 xl:hidden ${plusJakarta.className}`
+            ? "font-display sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-950 px-4 py-4 xl:hidden"
+            : "font-display sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-slate-100 dark:border-zinc-800 bg-surface px-4 py-4 xl:hidden"
         }
       >
         <Link href="/" className="flex items-center gap-3">
@@ -277,8 +274,8 @@ export default function Sidebar() {
       <aside
         className={
           isDark
-            ? `hidden h-screen w-[240px] shrink-0 border-r border-zinc-800 bg-zinc-950 xl:sticky xl:top-0 xl:flex xl:flex-col ${plusJakarta.className}`
-            : `hidden h-screen w-[240px] shrink-0 border-r border-slate-100 dark:border-zinc-800 bg-surface xl:sticky xl:top-0 xl:flex xl:flex-col ${plusJakarta.className}`
+            ? "font-display hidden h-screen w-[240px] shrink-0 border-r border-zinc-800 bg-zinc-950 xl:sticky xl:top-0 xl:flex xl:flex-col"
+            : "font-display hidden h-screen w-[240px] shrink-0 border-r border-slate-100 dark:border-zinc-800 bg-surface xl:sticky xl:top-0 xl:flex xl:flex-col"
         }
       >
         <div className="px-6 pb-4 pt-6">
@@ -340,8 +337,8 @@ export default function Sidebar() {
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className={
                 isDark
-                  ? `fixed inset-y-0 right-0 z-[70] flex w-[85vw] max-w-sm flex-col border-l border-zinc-800 bg-zinc-950 shadow-2xl xl:hidden ${plusJakarta.className}`
-                  : `fixed inset-y-0 right-0 z-[70] flex w-[85vw] max-w-sm flex-col border-l border-slate-100 dark:border-zinc-800 bg-surface shadow-2xl xl:hidden ${plusJakarta.className}`
+                  ? "font-display fixed inset-y-0 right-0 z-[70] flex w-[85vw] max-w-sm flex-col border-l border-zinc-800 bg-zinc-950 shadow-2xl xl:hidden"
+                  : "font-display fixed inset-y-0 right-0 z-[70] flex w-[85vw] max-w-sm flex-col border-l border-slate-100 dark:border-zinc-800 bg-surface shadow-2xl xl:hidden"
               }
             >
               <div

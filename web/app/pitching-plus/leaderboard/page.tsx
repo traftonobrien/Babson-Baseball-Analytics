@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import {
   useDeferredValue,
   useEffect,
@@ -33,11 +32,6 @@ import type {
   PlusPlayerRow,
   PlusSeasonFilter,
 } from "@/lib/plusLeaderboardTypes";
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-plus-jakarta-sans",
-});
 
 type ViewMode = "players" | "pitchTypes";
 type HandFilter = "ALL" | "R" | "L";
@@ -458,7 +452,7 @@ export default function PlusLeaderboardsPage() {
       ? "Try a broader player, pitch, or date search. The search box checks names, player IDs, and pitch labels where they apply."
       : `Loosen the ${sampleLabel(view).toLowerCase()} or switch handedness back to all.`;
   return (
-    <div className={`${plusJakartaSans.className} min-h-full bg-background text-slate-900 dark:text-zinc-50`}>
+    <div className="font-display min-h-full bg-background text-slate-900 dark:text-zinc-50">
       <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
         <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
           <div className="flex flex-col gap-6 p-5 sm:p-7">

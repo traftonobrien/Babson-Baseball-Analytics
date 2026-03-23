@@ -27,22 +27,20 @@ export default function Segment<T extends string>({
         {label}
       </span>
       <div
-        className={`flex rounded-lg overflow-hidden border p-0.5 ${
-          isLight ? "border-slate-200 bg-slate-100/90" : "border-zinc-700/80 bg-zinc-900/60"
+        className={`inline-flex rounded-full border bg-background p-1 ${
+          isLight ? "border-slate-100" : "border-zinc-800"
         }`}
       >
         {options.map((opt) => (
           <button
             key={opt.value}
             onClick={() => onChange(opt.value)}
-            className={`px-3 py-1.5 text-sm font-medium transition-smooth rounded-md ${
+            className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
               selected === opt.value
-                ? isLight
-                  ? "border border-[var(--brand-primary-border)] bg-surface text-[var(--brand-primary-subtle-text)] shadow-sm"
-                  : "bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-sm"
+                ? "bg-surface text-slate-900 shadow-sm dark:text-zinc-50"
                 : isLight
-                  ? "text-slate-500 hover:bg-surface hover:text-slate-900"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60"
+                  ? "text-slate-500 hover:text-slate-900"
+                  : "text-zinc-400 hover:text-zinc-50"
             }`}
           >
             {opt.display}

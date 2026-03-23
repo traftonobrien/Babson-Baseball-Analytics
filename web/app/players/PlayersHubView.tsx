@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Manrope, Plus_Jakarta_Sans } from "next/font/google";
 import { useMemo, useState, type ReactNode } from "react";
 import {
   BookOpen,
@@ -19,9 +18,6 @@ import type { PlayerRegistryEntry } from "@/lib/playerRegistry";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
 import { TEAM_NAME } from "@/lib/teamConfig";
 import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
-
-const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
-const manrope = Manrope({ subsets: ["latin"] });
 
 export interface RosterEntry {
   height?: string;
@@ -129,7 +125,7 @@ function FilterChip({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-xl px-3 py-2 text-sm font-semibold transition-colors",
+        "rounded-full px-4 py-2 text-sm font-semibold transition-colors",
         active
           ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm"
           : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50",
@@ -192,7 +188,7 @@ function PlayerRow({
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span
-                className={`${plusJakarta.className} truncate text-[15px] font-bold text-slate-900 dark:text-zinc-50 transition-colors group-hover:text-[var(--brand-primary-subtle-text)]`}
+                className="font-display truncate text-[15px] font-bold text-slate-900 dark:text-zinc-50 transition-colors group-hover:text-[var(--brand-primary-subtle-text)]"
               >
                 {displayName}
               </span>
@@ -357,7 +353,7 @@ export default function PlayersHubView({
 
   return (
     <div
-      className={`relative min-h-full bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_30%,#f8fafc_100%)] text-slate-900 dark:bg-[linear-gradient(180deg,#09090b_0%,#18181b_38%,#09090b_100%)] dark:text-zinc-50 ${manrope.className}`}
+      className="font-sans relative min-h-full bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_30%,#f8fafc_100%)] text-slate-900 dark:bg-[linear-gradient(180deg,#09090b_0%,#18181b_38%,#09090b_100%)] dark:text-zinc-50"
     >
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-80 opacity-100 dark:opacity-55"
@@ -378,7 +374,7 @@ export default function PlayersHubView({
                     Roster
                   </div>
                   <h1
-                    className={`${plusJakarta.className} mt-4 text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.85rem] sm:leading-[1.02]`}
+                    className="font-display mt-4 text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.85rem] sm:leading-[1.02]"
                   >
                     {TEAM_NAME} Team Roster
                   </h1>
@@ -433,7 +429,7 @@ export default function PlayersHubView({
                     <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
                       Roster view
                     </div>
-                    <div className="inline-flex flex-wrap gap-1 rounded-2xl border border-border bg-background p-1">
+                    <div className="inline-flex flex-wrap gap-1 rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1">
                       <FilterChip active={roleFilter === "pitchers"} onClick={() => setRoleFilter("pitchers")}>
                         Pitchers
                       </FilterChip>
@@ -485,7 +481,7 @@ export default function PlayersHubView({
                     <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
                       Hand
                     </div>
-                    <div className="inline-flex flex-wrap gap-1 rounded-2xl border border-border bg-background p-1">
+                    <div className="inline-flex flex-wrap gap-1 rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1">
                       {[
                         { value: "all", label: "All" },
                         { value: "R", label: "R" },
@@ -496,7 +492,7 @@ export default function PlayersHubView({
                           type="button"
                           onClick={() => setHandFilter(option.value as HandFilter)}
                           className={cn(
-                            "rounded-xl px-3 py-2 text-sm font-semibold uppercase tracking-[0.14em] transition-colors",
+                            "rounded-full px-4 py-2 text-sm font-semibold uppercase tracking-[0.14em] transition-colors",
                             handFilter === option.value
                               ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm"
                               : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50",
@@ -512,7 +508,7 @@ export default function PlayersHubView({
                     <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
                       Class
                     </div>
-                    <div className="inline-flex flex-wrap gap-1 rounded-2xl border border-border bg-background p-1">
+                    <div className="inline-flex flex-wrap gap-1 rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1">
                       {[{ value: "all", label: "All" }, ...classOptions.map((classLabel) => ({
                         value: classLabel,
                         label: classLabel,
@@ -522,7 +518,7 @@ export default function PlayersHubView({
                           type="button"
                           onClick={() => setClassFilter(option.value)}
                           className={cn(
-                            "rounded-xl px-3 py-2 text-sm font-semibold uppercase tracking-[0.14em] transition-colors",
+                            "rounded-full px-4 py-2 text-sm font-semibold uppercase tracking-[0.14em] transition-colors",
                             classFilter === option.value
                               ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm"
                               : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50",
@@ -563,7 +559,7 @@ export default function PlayersHubView({
                         Pinned Profile
                       </div>
                       <h2
-                        className={`${plusJakarta.className} mt-2 truncate text-[1.4rem] font-extrabold tracking-tight text-slate-900 dark:text-zinc-50`}
+                        className="font-display mt-2 truncate text-[1.4rem] font-extrabold tracking-tight text-slate-900 dark:text-zinc-50"
                       >
                         {getPlayerDisplayLabel(featuredPlayer)}
                       </h2>

@@ -10,7 +10,6 @@ import {
   Target,
   Trophy,
 } from "lucide-react";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import { players, type Outing } from "@/lib/dataIndex";
 import { seasonFromDateId } from "@/lib/season";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
@@ -19,8 +18,6 @@ import { getTeamAccentColor, getTeamBrandEntry, hexToRgba } from "@/lib/teamBran
 import { TEAM_THEME } from "@/lib/teamConfig";
 import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
 import { HubActionCard } from "@/app/components/hub/HubHeader";
-
-const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
 type ViewMode = "outings" | "players";
 type SeriesOption = {
@@ -157,7 +154,7 @@ function SectionHeader({
           <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
             {eyebrow}
           </div>
-          <h2 className={`${plusJakarta.className} mt-2 text-[1.55rem] font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[1.8rem]`}>
+          <h2 className="font-display mt-2 text-[1.55rem] font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[1.8rem]">
             {title}
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-500 dark:text-zinc-400">
@@ -362,12 +359,12 @@ function SeriesDropdown({
                   boxShadow: `0 0 10px ${hexToRgba(selectedOption.accent, 0.32)}`,
                 }}
               />
-              <span className={`${plusJakarta.className} truncate text-sm font-semibold text-slate-900 dark:text-zinc-50`}>
+              <span className="font-display truncate text-sm font-semibold text-slate-900 dark:text-zinc-50">
                 {selectedOption.label}
               </span>
             </>
           ) : (
-            <span className={`${plusJakarta.className} text-sm font-semibold text-slate-900 dark:text-zinc-50`}>
+            <span className="font-display text-sm font-semibold text-slate-900 dark:text-zinc-50">
               All opponents
             </span>
           )}
@@ -399,7 +396,7 @@ function HubSegment<T extends string>({
       <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-zinc-500">
         {label}
       </div>
-      <div className="flex h-11 min-h-[2.75rem] flex-nowrap items-center gap-1 rounded-2xl border border-slate-200 dark:border-zinc-700 bg-background p-1 shadow-[0_10px_24px_rgba(15,23,42,0.03)]">
+      <div className="flex h-11 min-h-[2.75rem] flex-nowrap items-center gap-1 rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1">
         {options.map((option) => {
           const isActive = selected === option.value;
 
@@ -410,8 +407,8 @@ function HubSegment<T extends string>({
               onClick={() => onChange(option.value)}
               className={`inline-flex h-9 min-h-0 min-w-0 flex-1 basis-0 items-center justify-center rounded-full px-2 text-sm font-semibold transition-all duration-200 sm:px-3 ${
                 isActive
-                  ? "bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)] shadow-[0_1px_0_rgba(var(--brand-primary-rgb),0.18)]"
-                  : "text-slate-500 dark:text-zinc-400 hover:bg-surface hover:text-slate-900 dark:hover:text-zinc-50"
+                  ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm"
+                  : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50"
               }`}
             >
               <span className="truncate">{option.display}</span>
@@ -545,7 +542,7 @@ export default function CommandPage() {
   }, [filterOutings, selectedPlayerId]);
 
   return (
-    <main className={`min-h-screen bg-background text-slate-900 dark:text-zinc-50 ${plusJakarta.className}`}>
+    <main className="font-display min-h-screen bg-background text-slate-900 dark:text-zinc-50">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-6 px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
         <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
           <div className="flex flex-col gap-5 p-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6 sm:p-7">
@@ -794,7 +791,7 @@ export default function CommandPage() {
                 <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
                   Focused row
                 </div>
-                <h3 className={`${plusJakarta.className} mt-2 text-[1.2rem] font-bold tracking-tight text-slate-900 dark:text-zinc-50`}>
+                <h3 className="font-display mt-2 text-[1.2rem] font-bold tracking-tight text-slate-900 dark:text-zinc-50">
                   Selected player pinned
                 </h3>
                 <p className="mt-3 text-sm leading-7 text-slate-500 dark:text-zinc-400">

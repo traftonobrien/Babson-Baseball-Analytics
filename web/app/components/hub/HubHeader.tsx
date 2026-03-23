@@ -42,9 +42,9 @@ export function HubStatCard({
         siteDark ? "shadow-[0_16px_36px_rgba(0,0,0,0.35)]" : ""
       }`}
     >
-      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">{label}</div>
-      <div className="mt-3 text-[2rem] font-black tracking-tight text-slate-900 dark:text-zinc-50">{value}</div>
-      <div className="mt-1 text-sm text-slate-500 dark:text-zinc-400">{detail}</div>
+      <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">{label}</div>
+      <div className="font-display mt-3 text-[2rem] font-black tracking-tight text-slate-900 dark:text-zinc-50">{value}</div>
+      <div className="font-sans mt-1 text-sm text-slate-500 dark:text-zinc-400">{detail}</div>
     </div>
   );
 }

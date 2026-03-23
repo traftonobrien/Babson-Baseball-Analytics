@@ -3,10 +3,7 @@
 import Link from "next/link";
 import type { ComponentType } from "react";
 import { ArrowRight, Activity, BarChart3, BookOpen, ClipboardList, Sparkles, Target, Trophy } from "lucide-react";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import { HubActionCard } from "@/app/components/hub/HubHeader";
-
-const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
 const LEADERBOARD_ITEMS = [
   {
@@ -118,7 +115,7 @@ function BoardCard({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h2 className={`${plusJakarta.className} text-[17px] font-bold tracking-tight text-slate-900 dark:text-zinc-50`}>
+            <h2 className="font-display text-[17px] font-bold tracking-tight text-slate-900 dark:text-zinc-50">
               {label}
             </h2>
             {featured ? (
@@ -151,7 +148,7 @@ export default function LeaderboardsHubPage() {
                 <Trophy className="h-3.5 w-3.5" aria-hidden />
                 Leaderboards
               </div>
-              <h1 className={`${plusJakarta.className} mt-4 text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.85rem] sm:leading-[1.02]`}>
+              <h1 className="font-display mt-4 text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.85rem] sm:leading-[1.02]">
                 Metric Leaderboards
               </h1>
             </div>

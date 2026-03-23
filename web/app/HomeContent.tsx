@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
-import { Manrope, Plus_Jakarta_Sans } from "next/font/google";
 import {
   Activity,
   ArrowRight,
@@ -17,9 +16,6 @@ import {
 import { brandSoftPillClasses, brandSoftEyebrowTextClasses } from "@/lib/brandSurfaces";
 import { TEAM_NAME } from "@/lib/teamConfig";
 import { cn } from "@/lib/utils";
-
-const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
-const manrope = Manrope({ subsets: ["latin"] });
 
 type PitcherRow = {
   playerId: string;
@@ -206,7 +202,7 @@ function PulseMetric({
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
             {title}
           </p>
-          <h3 className={`${plusJakarta.className} mt-2 text-[2rem] font-extrabold tracking-tight text-slate-900 dark:text-zinc-50`}>
+          <h3 className="font-display mt-2 text-[2rem] font-extrabold tracking-tight text-slate-900 dark:text-zinc-50">
             {value}
           </h3>
         </div>
@@ -251,7 +247,7 @@ function QuickLaunchTile({
         </div>
         <ArrowRight className="h-4 w-4 text-slate-400 dark:text-zinc-500 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-[var(--brand-primary-subtle-text)] dark:text-zinc-500 dark:group-hover:text-[var(--brand-primary-spotlight)]" />
       </div>
-      <p className={`${plusJakarta.className} mt-4 text-[15px] font-bold tracking-tight text-slate-900 dark:text-zinc-50`}>
+      <p className="font-display mt-4 text-[15px] font-bold tracking-tight text-slate-900 dark:text-zinc-50">
         {item.title}
       </p>
       <p className="mt-1 text-[13px] leading-6 text-slate-500 dark:text-zinc-400">{item.detail}</p>
@@ -274,7 +270,7 @@ function SessionRow({
           {getInitials(game.opponent ?? "Game")}
         </div>
         <div className="min-w-0">
-          <p className={`${plusJakarta.className} truncate text-[15px] font-bold text-slate-900 dark:text-zinc-50 transition-colors group-hover:text-[var(--brand-primary-subtle-text)]`}>
+          <p className="font-display truncate text-[15px] font-bold text-slate-900 dark:text-zinc-50 transition-colors group-hover:text-[var(--brand-primary-subtle-text)]">
             {gameTitle(game)}
           </p>
           <p className="mt-1 text-[13px] text-slate-500 dark:text-zinc-400">{gameMeta(game)}</p>
@@ -283,7 +279,7 @@ function SessionRow({
 
       <div className="flex items-center gap-4">
         <div className="text-left sm:text-right">
-          <p className={`${plusJakarta.className} text-[14px] font-semibold text-slate-900 dark:text-zinc-50`}>
+          <p className="font-display text-[14px] font-semibold text-slate-900 dark:text-zinc-50">
             {game.sessionType === "live_ab" ? "Live AB" : "Game Log"}
           </p>
           <p className="text-[12px] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">{formatUpdatedLabel(game.updatedAt)}</p>
@@ -450,7 +446,7 @@ export default function HomeContent() {
 
   return (
     <div
-      className={`relative min-h-full bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_30%,#f8fafc_100%)] text-slate-900 dark:bg-[linear-gradient(180deg,#09090b_0%,#18181b_38%,#09090b_100%)] dark:text-zinc-50 ${manrope.className}`}
+      className="font-sans relative min-h-full bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_30%,#f8fafc_100%)] text-slate-900 dark:bg-[linear-gradient(180deg,#09090b_0%,#18181b_38%,#09090b_100%)] dark:text-zinc-50"
     >
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-80 opacity-100 dark:opacity-55"
@@ -480,7 +476,7 @@ export default function HomeContent() {
           <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-7">
             <div className="min-w-0 flex-1">
               <h1
-                className={`${plusJakarta.className} text-[2rem] font-extrabold leading-[0.98] tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.7rem] lg:text-[clamp(3rem,3.35vw,3.7rem)] lg:whitespace-nowrap`}
+                className="font-display text-[2rem] font-extrabold leading-[0.98] tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.7rem] lg:text-[clamp(3rem,3.35vw,3.7rem)] lg:whitespace-nowrap"
               >
                 {TEAM_NAME} Baseball and Analytics Portal
               </h1>
@@ -542,7 +538,7 @@ export default function HomeContent() {
               ))
             ) : (
               <div className="p-8 text-center">
-                <p className={`${plusJakarta.className} text-[15px] font-semibold text-slate-900 dark:text-zinc-50`}>
+                <p className="font-display text-[15px] font-semibold text-slate-900 dark:text-zinc-50">
                   No recent game logs yet.
                 </p>
                 <p className="mt-2 text-sm text-slate-500 dark:text-zinc-400">

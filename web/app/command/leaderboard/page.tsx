@@ -3,15 +3,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import { BookOpen, Search, Target } from "lucide-react";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
 import { SegmentedRail, type SegmentedItem } from "@/app/components/leaderboards/SegmentedRail";
 import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
 import { LeaderboardPageFrame, LeaderboardToolbar } from "@/app/components/leaderboards/LeaderboardChrome";
-
-const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 import {
   loadAllOutingData,
   computeLeaderboardRows,
@@ -423,7 +420,7 @@ export default function LeaderboardsPage() {
 
   return (
     <LeaderboardPageFrame variant="light" maxWidth="max-w-[1440px]">
-      <div className={`${plusJakarta.className} flex min-h-full flex-col gap-6`}>
+      <div className="font-display flex min-h-full flex-col gap-6">
         <Breadcrumbs
           variant="light"
           items={[

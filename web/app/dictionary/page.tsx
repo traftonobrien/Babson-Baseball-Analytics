@@ -13,10 +13,7 @@ import {
   Target,
   Users,
 } from "lucide-react";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import { HubActionCard } from "@/app/components/hub/HubHeader";
-
-const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
 const DICTIONARY_ITEMS = [
   {
@@ -144,7 +141,7 @@ function DictCard({
           <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0 flex-1">
-          <h2 className={`${plusJakarta.className} text-[17px] font-bold tracking-tight text-slate-900 dark:text-zinc-50`}>
+          <h2 className="font-display text-[17px] font-bold tracking-tight text-slate-900 dark:text-zinc-50">
             {label}
           </h2>
           <p className="mt-2 max-w-xl text-sm leading-7 text-slate-500 dark:text-zinc-400">
@@ -171,7 +168,7 @@ export default function DictionaryPage() {
                 <BookOpen className="h-3.5 w-3.5" aria-hidden />
                 Metrics Dictionary
               </div>
-              <h1 className={`${plusJakarta.className} mt-4 text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.85rem] sm:leading-[1.02]`}>
+              <h1 className="font-display mt-4 text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.85rem] sm:leading-[1.02]">
                 Metrics Dictionary
               </h1>
             </div>

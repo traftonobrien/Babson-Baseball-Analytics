@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import { Trophy, Search, BookOpen, ChevronDown, Check, Activity } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
@@ -16,8 +15,6 @@ import { getCanonicalName, getSlugForPlayerId } from "@/lib/canonicalPlayers";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
 import { computeTotalStuffPlus, plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
 import { cn } from "@/lib/utils";
-
-const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
 interface LeaderboardEntry {
   rank: number;
@@ -394,7 +391,7 @@ export default function TrackmanLeaderboardsPage() {
 
   return (
     <LeaderboardPageFrame variant="light" maxWidth="max-w-[1440px]">
-      <div className={`${plusJakarta.className} flex min-h-full flex-col gap-6`}>
+      <div className="font-display flex min-h-full flex-col gap-6">
         <Breadcrumbs
           variant="light"
           items={[

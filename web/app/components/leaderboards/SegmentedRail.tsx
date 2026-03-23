@@ -24,7 +24,7 @@ function ToggleButton({
       onClick={onClick}
       className={`inline-flex h-10 items-center justify-center rounded-full px-4 text-sm font-semibold transition-all ${
         active
-          ? "bg-surface text-slate-900 shadow-sm ring-1 ring-slate-200 dark:text-zinc-50 dark:ring-zinc-600"
+          ? "bg-surface text-slate-900 shadow-sm dark:text-zinc-50"
           : "text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-100"
       }`}
     >
@@ -55,7 +55,7 @@ export function SegmentedRail<T extends string | number>({
         {label}
       </div>
       <div
-        className={`inline-flex flex-wrap gap-1 rounded-full border border-slate-200 bg-slate-100 p-1 dark:border-zinc-700 dark:bg-zinc-900/70 ${
+        className={`inline-flex flex-wrap gap-1 rounded-full border border-slate-100 bg-background p-1 dark:border-zinc-800 ${
           compact ? "" : "w-full"
         }`}
       >

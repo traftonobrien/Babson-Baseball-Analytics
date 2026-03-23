@@ -477,7 +477,7 @@ function FilterGroup<T extends string>({
       <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
         {label}
       </div>
-      <div className="inline-flex flex-wrap gap-1 rounded-2xl border border-border bg-background p-1">
+      <div className="inline-flex flex-wrap gap-1 rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1">
         {items.map((item) => {
           const active = selected === item.value;
           return (
@@ -486,9 +486,9 @@ function FilterGroup<T extends string>({
               type="button"
               onClick={() => onChange(item.value)}
               aria-pressed={active}
-              className={`rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                 active
-                  ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-[0_6px_18px_rgba(15,23,42,0.06)]"
+                  ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm"
                   : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50"
               }`}
             >

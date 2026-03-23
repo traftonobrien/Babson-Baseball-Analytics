@@ -3,15 +3,12 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useDeferredValue, useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import { BarChart3, BookOpen, ClipboardList, Search } from "lucide-react";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import { HubActionCard } from "@/app/components/hub/HubHeader";
 import { LeaderboardToolbar } from "@/app/components/leaderboards/LeaderboardChrome";
 import { cn } from "@/lib/utils";
 import type { StatGroup } from "./types";
-
-const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
 interface GameInfo {
     id: string;
@@ -21,10 +18,10 @@ interface GameInfo {
 
 function lightPill(active: boolean): string {
     return cn(
-        "rounded-xl px-2 py-2 text-xs font-semibold transition-smooth sm:px-3 sm:text-sm",
+        "rounded-full px-4 py-2 text-sm font-semibold transition-colors",
         active
-            ? "border border-emerald-200 bg-emerald-50 text-emerald-800 ring-1 ring-emerald-100 dark:border-emerald-800/60 dark:bg-emerald-950/50 dark:text-emerald-200 dark:ring-emerald-900/50"
-            : "border border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/40 dark:hover:text-zinc-100",
+            ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm"
+            : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50",
     );
 }
 
@@ -118,7 +115,7 @@ export function LeaderboardClientState({
         sessionType !== "game";
 
     return (
-        <div className={`${plusJakarta.className} flex flex-col gap-6`}>
+        <div className="font-display flex flex-col gap-6">
             <Breadcrumbs
                 variant="light"
                 items={[
@@ -167,7 +164,7 @@ export function LeaderboardClientState({
                             <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-zinc-400">
                                 Session Type
                             </div>
-                            <div className="rounded-2xl border border-slate-200 bg-slate-100 p-1.5 dark:border-zinc-700 dark:bg-zinc-900/70">
+                            <div className="rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1">
                                 <div className="grid grid-cols-3 gap-1">
                                     <button
                                         type="button"
@@ -198,7 +195,7 @@ export function LeaderboardClientState({
                             <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-zinc-400">
                                 Leaderboard View
                             </div>
-                            <div className="rounded-2xl border border-slate-200 bg-slate-100 p-1.5 dark:border-zinc-700 dark:bg-zinc-900/70">
+                            <div className="rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1">
                                 <div className="grid grid-cols-2 gap-1">
                                     <button
                                         type="button"
@@ -222,7 +219,7 @@ export function LeaderboardClientState({
                             <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-zinc-400">
                                 Stat Group
                             </div>
-                            <div className="rounded-2xl border border-slate-200 bg-slate-100 p-1.5 dark:border-zinc-700 dark:bg-zinc-900/70">
+                            <div className="rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1">
                                 <div className="grid grid-cols-2 gap-1">
                                     <button
                                         type="button"
@@ -254,12 +251,12 @@ export function LeaderboardClientState({
                             <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-zinc-400">
                                 Date Range
                             </div>
-                            <div className="rounded-2xl border border-slate-200 bg-slate-100 p-1.5 dark:border-zinc-700 dark:bg-zinc-900/70">
+                            <div className="rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1">
                                 <select
                                     value={session !== "all" ? "all" : range}
                                     disabled={session !== "all"}
                                     onChange={(event) => updateQuery({ range: event.target.value })}
-                                    className="h-11 w-full rounded-xl border border-slate-200 bg-surface px-3 text-sm font-semibold text-slate-900 outline-none disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-100"
+                                    className="h-11 w-full rounded-full border border-slate-200 dark:border-zinc-700 bg-surface px-4 text-sm font-semibold text-slate-900 dark:text-zinc-50 outline-none disabled:opacity-50"
                                 >
                                     <option value="all">All Time</option>
                                     <option value="7d">Last 7 Days</option>
@@ -272,11 +269,11 @@ export function LeaderboardClientState({
                             <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-zinc-400">
                                 Session
                             </div>
-                            <div className="rounded-2xl border border-slate-200 bg-slate-100 p-1.5 dark:border-zinc-700 dark:bg-zinc-900/70">
+                            <div className="rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1">
                                 <select
                                     value={session}
                                     onChange={(event) => updateQuery({ session: event.target.value })}
-                                    className="h-11 w-full max-w-full rounded-xl border border-slate-200 bg-surface px-3 text-sm font-semibold text-slate-900 outline-none dark:border-zinc-700 dark:text-zinc-100"
+                                    className="h-11 w-full max-w-full rounded-full border border-slate-200 dark:border-zinc-700 bg-surface px-4 text-sm font-semibold text-slate-900 dark:text-zinc-50 outline-none"
                                 >
                                     <option value="all">All Sessions</option>
                                     {games.map((game) => (

@@ -462,17 +462,12 @@ export function LeaderboardToolbar({
   className?: string;
   variant?: SurfaceVariant;
 }) {
-  const siteAppearance = useSiteAppearance();
-  const lightOnDarkSite = variant === "light" && siteAppearance === "dark";
-
   if (variant === "light") {
     return (
       <div
         className={joinClasses(
           "relative overflow-visible rounded-[28px] border p-4 shadow-[0_16px_40px_rgba(15,23,42,0.04)] sm:p-5",
-          lightOnDarkSite
-            ? "border-zinc-700 bg-zinc-900/50 shadow-[0_16px_40px_rgba(0,0,0,0.35)]"
-            : "border-border bg-surface",
+          "border-border bg-surface dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]",
           className,
         )}
       >

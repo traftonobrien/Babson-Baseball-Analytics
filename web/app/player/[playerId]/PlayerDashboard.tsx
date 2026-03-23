@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState, useEffect, useMemo, useCallback, type ReactNode } from "react";
 import { ArrowLeft, Pencil, Target } from "lucide-react";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import { usePitchData } from "../../hooks/usePitchData";
 import { applyFilters } from "../../utils";
 import type { Pitch, Filters } from "../../types";
@@ -34,8 +33,6 @@ import {
 } from "@/lib/brandSurfaces";
 import { LeaderboardPill } from "@/app/components/leaderboards/LeaderboardChrome";
 import { cn } from "@/lib/utils";
-
-const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
 const EMPTY_FILTERS: Filters = {
   pitchTypes: new Set(),
@@ -400,7 +397,7 @@ export default function PlayerDashboard({
                       }
                     }}
                     autoFocus
-                    className={`${plusJakarta.className} min-w-[12rem] flex-1 rounded-xl border border-slate-200 dark:border-zinc-700 bg-background px-3 py-2.5 text-2xl font-black tracking-tight text-slate-900 outline-none transition-colors focus:border-[var(--brand-primary-border)] focus:bg-surface focus:ring-2 focus:ring-[rgba(var(--brand-primary-rgb),0.18)] dark:border-zinc-700 dark:text-zinc-50 sm:text-4xl`}
+                    className="font-display min-w-[12rem] flex-1 rounded-xl border border-slate-200 dark:border-zinc-700 bg-background px-3 py-2.5 text-2xl font-black tracking-tight text-slate-900 outline-none transition-colors focus:border-[var(--brand-primary-border)] focus:bg-surface focus:ring-2 focus:ring-[rgba(var(--brand-primary-rgb),0.18)] dark:border-zinc-700 dark:text-zinc-50 sm:text-4xl"
                   />
                 </div>
               ) : (
@@ -414,7 +411,7 @@ export default function PlayerDashboard({
                   aria-label="Edit outing name"
                 >
                   <h1
-                    className={`${plusJakarta.className} min-w-0 text-2xl font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.35rem] sm:leading-[1.08]`}
+                    className="font-display min-w-0 text-2xl font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.35rem] sm:leading-[1.08]"
                   >
                     {displayOutingLabel}
                   </h1>

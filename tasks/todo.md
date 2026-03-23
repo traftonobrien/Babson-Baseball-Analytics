@@ -22,6 +22,9 @@
 - [ ] Decision: add sacrifice-fly tracking or defer to next charting follow-up
 
 ## Done
+- [x] 2026-03-23 — Font harmony pass: removed per-page `next/font/google` loads and standardized typography usage to global `font-display`/`font-sans` classes (layout remains single font source)
+- [x] 2026-03-23 — Set global default segmented menu/filter button style across shared controls (`Segment`, `SegmentedRail`, charting insights toggles)
+- [x] 2026-03-23 — Team stats segmented controls: aligned Pitchers/Hitters + Stats toggles to Trackman button treatment (neutral active text in light/dark)
 - [x] 2026-03-22 — **Players hub + profile backgrounds**: `PlayersHubView` + `players/[slug]/page.tsx` — `dark:` zinc page gradient (match home), softer brand radial / blur in dark; `npm run build` OK
 - [x] 2026-03-22 — **Home dashboard `/` (`HomeContent.tsx`) site dark**: page gradient + hero dual overlay (light vs zinc), brand borders via `color-mix`, pulse cards/skeletons/sparklines, quick-launch tiles (`brandSoftPillClasses`), games list borders/session pills/status chips; `npm run build` OK
 - [x] 2026-03-22 — **Player command dashboard (site dark)**: `web/lib/brandSurfaces.ts` (`brandSoftPillClasses`, `brandHighlightCardClasses`, `brandSoftEyebrowTextClasses`, `brandSoftActiveRingClasses`) for body-injected light brand hexes; `PlayerDashboard` (hero chip, emphasis quick links, edited-pitch notice), `CommandPlusSection` season badge, `TeamAveragesBar` refactor, `LaneReport` selected lane, `LeaderboardPill` brand on dark site (`LeaderboardChrome`); `plusMetricSurfaceClassesLight` darker tier fills/borders; `npm run build` OK

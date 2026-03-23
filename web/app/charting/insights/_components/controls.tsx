@@ -108,7 +108,7 @@ export function ComparisonViewToggle({
       <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500">
         View
       </span>
-      <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 dark:border-zinc-700 bg-slate-100 dark:bg-zinc-800 p-1">
+      <div className="inline-flex items-center gap-1 rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1">
         {([
           { id: "hitters", label: "Hitters" },
           { id: "pitchers", label: "Pitchers" },
@@ -120,7 +120,7 @@ export function ComparisonViewToggle({
             className={joinClasses(
               "rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-smooth",
               view === option.id
-                ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm ring-1 ring-slate-200"
+                ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm"
                 : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50",
             )}
           >
@@ -214,7 +214,7 @@ export function MetricToggle({
       <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500">
         Metric
       </span>
-      <div className="inline-flex flex-wrap items-center gap-1 rounded-full border border-slate-200 dark:border-zinc-700 bg-slate-100 dark:bg-zinc-800 p-1">
+      <div className="inline-flex flex-wrap items-center gap-1 rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1">
         {metricOptionsForView(view).map((metric) => (
           <button
             key={metric.id}
@@ -223,7 +223,7 @@ export function MetricToggle({
             className={joinClasses(
               "rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-smooth",
               value === metric.id
-                ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm ring-1 ring-slate-200"
+                ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm"
                 : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50",
             )}
           >
@@ -247,7 +247,7 @@ export function ZoneDisplayModeToggle({
       <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500">
         View
       </span>
-      <div className="inline-flex flex-wrap items-center gap-1 rounded-full border border-slate-200 dark:border-zinc-700 bg-slate-100 dark:bg-zinc-800 p-1">
+      <div className="inline-flex flex-wrap items-center gap-1 rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1">
         {[
           { id: "heatmap", label: "Heatmap" },
           { id: "sections", label: "Zone Sections" },
@@ -259,7 +259,7 @@ export function ZoneDisplayModeToggle({
             className={joinClasses(
               "rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-smooth",
               value === option.id
-                ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm ring-1 ring-slate-200"
+                ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm"
                 : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50",
             )}
           >

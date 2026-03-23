@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Manrope, Plus_Jakarta_Sans } from "next/font/google";
 import { cache } from "react";
 import path from "path";
 import { promises as fs } from "fs";
@@ -92,8 +91,6 @@ type OverviewStats = {
 };
 
 const TARGET_YEAR = 2026;
-const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
-const manrope = Manrope({ subsets: ["latin"] });
 
 const loadTrackmanIndex = cache(async (): Promise<TrackmanIndexEntry[]> => {
   try {
@@ -484,7 +481,7 @@ export default async function PlayerProfilePage({
 
   return (
     <div
-      className={`${manrope.className} relative min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_36%,#f8fafc_100%)] text-slate-900 dark:bg-[linear-gradient(180deg,#09090b_0%,#18181b_36%,#09090b_100%)] dark:text-zinc-50`}
+      className="font-sans relative min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_36%,#f8fafc_100%)] text-slate-900 dark:bg-[linear-gradient(180deg,#09090b_0%,#18181b_36%,#09090b_100%)] dark:text-zinc-50"
     >
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-72 opacity-100 dark:opacity-50"
@@ -509,7 +506,7 @@ export default async function PlayerProfilePage({
                 Back to roster
               </Link>
               <h1
-                className={`${plusJakarta.className} m-0 min-w-0 flex-1 self-center text-[22px] font-extrabold leading-tight tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[28px] lg:text-[30px]`}
+                className="font-display m-0 min-w-0 flex-1 self-center text-[22px] font-extrabold leading-tight tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[28px] lg:text-[30px]"
               >
                 {resolvedPlayer.name}
               </h1>
@@ -559,7 +556,7 @@ export default async function PlayerProfilePage({
                     </div>
 
                     <div>
-                      <h2 className={`${plusJakarta.className} text-[30px] font-extrabold tracking-tight`}>
+                      <h2 className="font-display text-[30px] font-extrabold tracking-tight">
                         {resolvedPlayer.name}
                       </h2>
                       <p className="mt-2 text-sm font-medium text-white/80">

@@ -12,15 +12,12 @@ import {
   Trophy,
 } from "lucide-react";
 import { count, desc } from "drizzle-orm";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import { db } from "@/db";
 import { chartingGames, chartingPlateAppearances } from "@/db/schema";
 import { EditableChartingGameNameInList } from "@/app/charting/_components/EditableChartingGameNameInList";
 import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
 
 export const revalidate = 0;
-
-const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
 type HubStatusFilter = "all" | "active" | "final" | "draft";
 type HubTypeFilter = "all" | "live_ab" | "game";
@@ -125,7 +122,7 @@ export default async function ChartingHubPage(props: {
   const quickActionIconClass = "h-4 w-4 shrink-0 text-slate-500 dark:text-zinc-400";
 
   return (
-    <div className={`min-h-full bg-[#F9FAFB] text-slate-900 dark:text-zinc-50 ${plusJakarta.className}`}>
+    <div className="font-display min-h-full bg-[#F9FAFB] text-slate-900 dark:text-zinc-50">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
         <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
           <div className="flex flex-col gap-6 p-5 sm:p-7">
