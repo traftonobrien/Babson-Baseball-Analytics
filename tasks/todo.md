@@ -4,6 +4,8 @@
 
 ## Active
 
+- [x] 2026-03-22 — Render `roster.json` player photos on roster pages (`PlayersHubView`, `players/[slug]/page.tsx`) with initials fallback
+
 ## Backlog
 
 ### Session Start Ritual (run at the top of every new session)

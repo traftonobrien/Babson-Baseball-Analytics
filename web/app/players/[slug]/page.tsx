@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Manrope, Plus_Jakarta_Sans } from "next/font/google";
 import { cache } from "react";
@@ -331,7 +332,7 @@ export default async function PlayerProfilePage({
         };
       })()
     : undefined;
-  const roster = rosterData as Record<string, { height?: string; weight?: string; class?: string }>;
+  const roster = rosterData as Record<string, { height?: string; weight?: string; class?: string; photo?: string }>;
   const rosterInfo = roster[resolvedPlayer.slug];
   const throwHand =
     getHand(resolvedPlayer.slug) ??
@@ -465,6 +466,7 @@ export default async function PlayerProfilePage({
   }
 
   const profileInitials = getInitials(resolvedPlayer.name);
+  const profilePhoto = rosterInfo?.photo?.trim() || null;
   const classYear = rosterInfo?.class ?? resolvedPlayer.academicYear ?? "Unknown";
   const sizeLine = [
     rosterInfo?.height,
@@ -541,8 +543,19 @@ export default async function PlayerProfilePage({
                   }}
                 >
                   <div className="flex flex-col items-start gap-5">
-                    <div className="flex h-24 w-24 items-center justify-center rounded-full border border-white/20 bg-surface/10 text-[2rem] font-extrabold tracking-tight shadow-[0_24px_40px_rgba(15,23,42,0.20)] backdrop-blur">
-                      {profileInitials}
+                    <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-surface/10 text-[2rem] font-extrabold tracking-tight shadow-[0_24px_40px_rgba(15,23,42,0.20)] backdrop-blur">
+                      {profilePhoto ? (
+                        <Image
+                          src={profilePhoto}
+                          alt={`${resolvedPlayer.name} headshot`}
+                          fill
+                          sizes="96px"
+                          className="object-cover object-[center_15%]"
+                          unoptimized
+                        />
+                      ) : (
+                        profileInitials
+                      )}
                     </div>
 
                     <div>

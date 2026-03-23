@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
 import { Manrope, Plus_Jakarta_Sans } from "next/font/google";
 import { useMemo, useState, type ReactNode } from "react";
 import {
@@ -27,6 +27,7 @@ export interface RosterEntry {
   height?: string;
   weight?: string;
   class?: string;
+  photo?: string;
 }
 
 type HandFilter = "all" | "R" | "L";
@@ -128,10 +129,10 @@ function FilterChip({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-full border px-4 py-2 text-[12px] font-semibold transition-all duration-300",
+        "rounded-xl px-3 py-2 text-sm font-semibold transition-colors",
         active
-          ? "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)] shadow-[0_10px_24px_rgba(var(--brand-primary-rgb),0.12)]"
-          : "border-slate-200 dark:border-zinc-700 bg-surface text-slate-500 dark:text-zinc-400 hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50",
+          ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm"
+          : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50",
       )}
     >
       {children}
@@ -155,6 +156,7 @@ function PlayerRow({
   const details = formatRosterDetails(rosterInfo);
   const initials = getLastNameInitial(player.name);
   const classLabel = rosterInfo?.class?.trim() || "—";
+  const photoPath = rosterInfo?.photo?.trim() || null;
 
   return (
     <Link
@@ -168,13 +170,24 @@ function PlayerRow({
         <div className="flex min-w-0 items-center gap-4">
           <div
             className={cn(
-              "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-[12px] font-bold",
+              "relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border text-[12px] font-bold",
               pinned
                 ? "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)]"
                 : "border-slate-200 dark:border-zinc-700 bg-background text-slate-500 dark:text-zinc-400",
             )}
           >
-            {initials}
+            {photoPath ? (
+              <Image
+                src={photoPath}
+                alt={`${displayName} headshot`}
+                fill
+                sizes="44px"
+                className="object-cover object-[center_15%]"
+                unoptimized
+              />
+            ) : (
+              initials
+            )}
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -314,6 +327,11 @@ export default function PlayersHubView({
   const featuredPlayer = selectedSlug
     ? filtered.find((player) => player.slug === selectedSlug) ?? null
     : null;
+  const featuredPhotoPath = (() => {
+    if (!featuredPlayer) return null;
+    const photo = roster[featuredPlayer.slug]?.photo;
+    return photo ? photo.trim() : null;
+  })();
   const rosterPlayers = featuredPlayer
     ? filtered.filter((player) => player.slug !== featuredPlayer.slug)
     : filtered;
@@ -354,16 +372,6 @@ export default function PlayersHubView({
           <div className="flex flex-col gap-6 p-5 sm:p-7">
             <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
               <div className="flex min-w-0 flex-1 flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
-                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-[22px] border border-border bg-surface shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
-                  <Image
-                    src="/babson-logo.svg"
-                    alt={`${TEAM_NAME} logo`}
-                    width={56}
-                    height={56}
-                    priority
-                    className="h-auto w-auto max-h-full max-w-full"
-                  />
-                </div>
                 <div className="min-w-0">
                   <div className="inline-flex items-center gap-2 rounded-full border border-[#E0E7FF] bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6366F1]">
                     <Users className="h-3.5 w-3.5" aria-hidden />
@@ -382,7 +390,7 @@ export default function PlayersHubView({
                   href="/leaderboards-hub"
                   icon={Trophy}
                   sectionTitle="Leaderboards"
-                  buttonLabel="All boards"
+                  buttonLabel="All Boards"
                 />
                 <HubActionCard
                   href="/players/faq"
@@ -425,7 +433,7 @@ export default function PlayersHubView({
                     <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
                       Roster view
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="inline-flex flex-wrap gap-1 rounded-2xl border border-border bg-background p-1">
                       <FilterChip active={roleFilter === "pitchers"} onClick={() => setRoleFilter("pitchers")}>
                         Pitchers
                       </FilterChip>
@@ -477,7 +485,7 @@ export default function PlayersHubView({
                     <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
                       Hand
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="inline-flex flex-wrap gap-1 rounded-2xl border border-border bg-background p-1">
                       {[
                         { value: "all", label: "All" },
                         { value: "R", label: "R" },
@@ -488,10 +496,10 @@ export default function PlayersHubView({
                           type="button"
                           onClick={() => setHandFilter(option.value as HandFilter)}
                           className={cn(
-                            "rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors",
+                            "rounded-xl px-3 py-2 text-sm font-semibold uppercase tracking-[0.14em] transition-colors",
                             handFilter === option.value
-                              ? "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)]"
-                              : "border-slate-200 dark:border-zinc-700 bg-surface text-slate-500 dark:text-zinc-400 hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50",
+                              ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm"
+                              : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50",
                           )}
                         >
                           {option.label}
@@ -504,7 +512,7 @@ export default function PlayersHubView({
                     <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
                       Class
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="inline-flex flex-wrap gap-1 rounded-2xl border border-border bg-background p-1">
                       {[{ value: "all", label: "All" }, ...classOptions.map((classLabel) => ({
                         value: classLabel,
                         label: classLabel,
@@ -514,10 +522,10 @@ export default function PlayersHubView({
                           type="button"
                           onClick={() => setClassFilter(option.value)}
                           className={cn(
-                            "rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors",
+                            "rounded-xl px-3 py-2 text-sm font-semibold uppercase tracking-[0.14em] transition-colors",
                             classFilter === option.value
-                              ? "border-[#BAE6FD] bg-[#E0F2FE] text-[#0369A1]"
-                              : "border-slate-200 dark:border-zinc-700 bg-surface text-slate-500 dark:text-zinc-400 hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50",
+                              ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm"
+                              : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50",
                           )}
                         >
                           {option.label}
@@ -533,9 +541,22 @@ export default function PlayersHubView({
               <div className="rounded-[28px] border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] px-5 py-5 shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex min-w-0 items-center gap-4">
+                  {featuredPhotoPath ? (
+                    <div className="relative h-12 w-12 overflow-hidden rounded-full border border-[var(--brand-primary-border)] bg-surface">
+                      <Image
+                        src={featuredPhotoPath}
+                        alt={`${getPlayerDisplayLabel(featuredPlayer)} headshot`}
+                        fill
+                        sizes="48px"
+                        className="object-cover object-[center_15%]"
+                        unoptimized
+                      />
+                    </div>
+                  ) : (
                     <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--brand-primary-border)] bg-surface text-[13px] font-bold text-[var(--brand-primary-subtle-text)]">
                       {getLastNameInitial(featuredPlayer.name)}
                     </div>
+                  )}
                     <div className="min-w-0">
                       <div className="inline-flex items-center gap-2 rounded-full border border-[var(--brand-primary-border)] bg-surface px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--brand-primary-subtle-text)]">
                         <Sparkles className="h-3.5 w-3.5" />

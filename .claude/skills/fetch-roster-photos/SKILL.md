@@ -98,3 +98,4 @@ Committed: <hash>
 • The script detects WebP content-type automatically even when URLs end in .jpg — do not change file extensions manually.
 • If a player has no photo on the Babson roster page, the UI falls back to an initials avatar — this is expected behavior, not a bug.
 • Only commit web/public/images/players/ and web/data/roster.json — do not commit source code changes unless explicitly asked.
+• The `<Image>` components for player photos MUST keep `unoptimized` prop — the Babson CDN returns small WebP files that the Next.js image optimizer cannot process. If photos show as broken icons, check that `unoptimized` is present on all three Image tags in `PlayersHubView.tsx` and `players/[slug]/page.tsx`.
