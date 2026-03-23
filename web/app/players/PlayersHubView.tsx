@@ -27,6 +27,7 @@ export interface RosterEntry {
   height?: string;
   weight?: string;
   class?: string;
+  photo?: string;
 }
 
 type HandFilter = "all" | "R" | "L";
@@ -166,16 +167,32 @@ function PlayerRow({
     >
       <div className="grid gap-4 px-5 py-4 lg:grid-cols-[minmax(0,1.7fr)_7.5rem_7.5rem_7rem_minmax(0,1.1fr)] lg:items-center">
         <div className="flex min-w-0 items-center gap-4">
-          <div
-            className={cn(
-              "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-[12px] font-bold",
-              pinned
-                ? "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)]"
-                : "border-[#E2E8F0] bg-background text-slate-500 dark:text-zinc-400",
-            )}
-          >
-            {initials}
-          </div>
+          {rosterInfo?.photo ? (
+            <div className={cn(
+              "h-11 w-11 shrink-0 overflow-hidden rounded-full border",
+              pinned ? "border-[var(--brand-primary-border)]" : "border-[#E2E8F0] dark:border-zinc-700",
+            )}>
+              <Image
+                src={rosterInfo.photo}
+                alt={displayName}
+                width={44}
+                height={44}
+                className="h-full w-full object-cover object-top"
+                unoptimized
+              />
+            </div>
+          ) : (
+            <div
+              className={cn(
+                "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-[12px] font-bold",
+                pinned
+                  ? "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)]"
+                  : "border-[#E2E8F0] bg-background text-slate-500 dark:text-zinc-400",
+              )}
+            >
+              {initials}
+            </div>
+          )}
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span
@@ -382,7 +399,7 @@ export default function PlayersHubView({
                   href="/leaderboards-hub"
                   icon={Trophy}
                   sectionTitle="Leaderboards"
-                  buttonLabel="All boards"
+                  buttonLabel="All Leaderboards"
                 />
                 <HubActionCard
                   href="/players/faq"
@@ -533,9 +550,22 @@ export default function PlayersHubView({
               <div className="rounded-[28px] border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] px-5 py-5 shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex min-w-0 items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--brand-primary-border)] bg-surface text-[13px] font-bold text-[var(--brand-primary-subtle-text)]">
-                      {getLastNameInitial(featuredPlayer.name)}
-                    </div>
+                    {roster[featuredPlayer.slug]?.photo ? (
+                      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full border border-[var(--brand-primary-border)]">
+                        <Image
+                          src={roster[featuredPlayer.slug].photo!}
+                          alt={getPlayerDisplayLabel(featuredPlayer)}
+                          width={48}
+                          height={48}
+                          className="h-full w-full object-cover object-top"
+                          unoptimized
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--brand-primary-border)] bg-surface text-[13px] font-bold text-[var(--brand-primary-subtle-text)]">
+                        {getLastNameInitial(featuredPlayer.name)}
+                      </div>
+                    )}
                     <div className="min-w-0">
                       <div className="inline-flex items-center gap-2 rounded-full border border-[var(--brand-primary-border)] bg-surface px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--brand-primary-subtle-text)]">
                         <Sparkles className="h-3.5 w-3.5" />

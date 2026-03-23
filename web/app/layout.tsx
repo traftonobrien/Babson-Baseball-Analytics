@@ -46,11 +46,30 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${plusJakarta.variable} ${manrope.variable}`}>
+    <html
+      lang="en"
+      data-site-appearance="light"
+      suppressHydrationWarning
+      className={`${plusJakarta.variable} ${manrope.variable}`}
+    >
+      <head>
+        <script
+          id="site-appearance-bootstrap"
+          dangerouslySetInnerHTML={{
+            __html:
+              '(function(){try{var key="pitch-tracker-site-appearance";var legacy="pitch-tracker-trackman-player-appearance";var cookieKey="pitch-tracker-site-appearance";var getCookie=function(name){var entries=document.cookie?document.cookie.split("; "):[];for(var i=0;i<entries.length;i+=1){var parts=entries[i].split("=");if(parts[0]===name){return parts.slice(1).join("=");}}return null;};var stored=localStorage.getItem(key);if(stored!=="dark"&&stored!=="light"){stored=localStorage.getItem(legacy);if(stored==="dark"||stored==="light"){localStorage.setItem(key,stored);}}if(stored!=="dark"&&stored!=="light"){var cookieValue=getCookie(cookieKey);if(cookieValue==="dark"||cookieValue==="light"){stored=cookieValue;}}var appearance=(stored==="dark"||stored==="light")?stored:"light";var root=document.documentElement;root.setAttribute("data-site-appearance",appearance);root.classList.toggle("dark",appearance==="dark");}catch(e){}})();',
+          }}
+        />
+      </head>
       <body
         className="min-h-screen bg-background text-slate-900 dark:text-zinc-50 antialiased"
         style={teamThemeStyle}
       >
+        {process.env.NODE_ENV === "development" ? (
+          <div className="pointer-events-none fixed bottom-2 right-2 z-[9999] rounded-md bg-black/80 px-2 py-1 text-[10px] font-semibold tracking-[0.08em] text-white">
+            LOCAL UI BUILD 2026-03-23
+          </div>
+        ) : null}
         <Providers>
           <DebugInit />
           <div className="flex min-h-screen w-full flex-col bg-background xl:flex-row xl:items-start">

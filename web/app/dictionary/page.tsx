@@ -181,7 +181,7 @@ export default function DictionaryPage() {
                 href="/leaderboards-hub"
                 icon={BarChart3}
                 sectionTitle="Leaderboards"
-                buttonLabel="All leaderboards"
+                buttonLabel="All Leaderboards"
               />
               <HubActionCard
                 href="/pitching-plus"

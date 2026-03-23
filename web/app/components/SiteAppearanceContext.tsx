@@ -11,6 +11,7 @@ import {
 } from "react";
 
 export const SITE_APPEARANCE_STORAGE_KEY = "pitch-tracker-site-appearance";
+const SITE_APPEARANCE_COOKIE_KEY = "pitch-tracker-site-appearance";
 const LEGACY_TRACKMAN_KEY = "pitch-tracker-trackman-player-appearance";
 
 export type SiteAppearance = "light" | "dark";
@@ -36,15 +37,33 @@ function readStoredAppearance(): SiteAppearance {
   } catch {
     /* noop */
   }
+  try {
+    const match = document.cookie
+      .split("; ")
+      .find((entry) => entry.startsWith(`${SITE_APPEARANCE_COOKIE_KEY}=`))
+      ?.split("=")[1];
+    if (match === "dark" || match === "light") return match;
+  } catch {
+    /* noop */
+  }
   return "light";
 }
 
-export function SiteAppearanceProvider({ children }: { children: ReactNode }) {
-  const [appearance, setAppearanceState] = useState<SiteAppearance>("light");
+function persistAppearance(next: SiteAppearance) {
+  try {
+    localStorage.setItem(SITE_APPEARANCE_STORAGE_KEY, next);
+  } catch {
+    /* noop */
+  }
+  try {
+    document.cookie = `${SITE_APPEARANCE_COOKIE_KEY}=${next}; Path=/; Max-Age=31536000; SameSite=Lax`;
+  } catch {
+    /* noop */
+  }
+}
 
-  useEffect(() => {
-    setAppearanceState(readStoredAppearance());
-  }, []);
+export function SiteAppearanceProvider({ children }: { children: ReactNode }) {
+  const [appearance, setAppearanceState] = useState<SiteAppearance>(() => readStoredAppearance());
 
   useEffect(() => {
     const root = document.documentElement;
@@ -54,21 +73,13 @@ export function SiteAppearanceProvider({ children }: { children: ReactNode }) {
 
   const setAppearance = useCallback((a: SiteAppearance) => {
     setAppearanceState(a);
-    try {
-      localStorage.setItem(SITE_APPEARANCE_STORAGE_KEY, a);
-    } catch {
-      /* noop */
-    }
+    persistAppearance(a);
   }, []);
 
   const toggleAppearance = useCallback(() => {
     setAppearanceState((prev) => {
       const next: SiteAppearance = prev === "light" ? "dark" : "light";
-      try {
-        localStorage.setItem(SITE_APPEARANCE_STORAGE_KEY, next);
-      } catch {
-        /* noop */
-      }
+      persistAppearance(next);
       return next;
     });
   }, []);

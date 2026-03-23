@@ -438,7 +438,7 @@ export default function TeamStatsPage() {
                   href="/leaderboards-hub"
                   icon={Trophy}
                   sectionTitle="Leaderboards"
-                  buttonLabel="All boards"
+                  buttonLabel="All Leaderboards"
                 />
                 <HubActionCard
                   href="/team-stats/faq"

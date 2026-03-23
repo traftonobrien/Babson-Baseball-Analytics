@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Manrope, Plus_Jakarta_Sans } from "next/font/google";
@@ -331,8 +332,9 @@ export default async function PlayerProfilePage({
         };
       })()
     : undefined;
-  const roster = rosterData as Record<string, { height?: string; weight?: string; class?: string }>;
+  const roster = rosterData as Record<string, { height?: string; weight?: string; class?: string; photo?: string }>;
   const rosterInfo = roster[resolvedPlayer.slug];
+  const profilePhoto = rosterInfo?.photo ?? null;
   const throwHand =
     getHand(resolvedPlayer.slug) ??
     (resolvedPlayer.throws === "R" || resolvedPlayer.throws === "L" ? resolvedPlayer.throws : null);
@@ -541,9 +543,23 @@ export default async function PlayerProfilePage({
                   }}
                 >
                   <div className="flex flex-col items-start gap-5">
-                    <div className="flex h-24 w-24 items-center justify-center rounded-full border border-white/20 bg-surface/10 text-[2rem] font-extrabold tracking-tight shadow-[0_24px_40px_rgba(15,23,42,0.20)] backdrop-blur">
-                      {profileInitials}
-                    </div>
+                    {profilePhoto ? (
+                      <div className="h-24 w-24 overflow-hidden rounded-full border border-white/20 shadow-[0_24px_40px_rgba(15,23,42,0.20)]">
+                        <Image
+                          src={profilePhoto}
+                          alt={resolvedPlayer.name}
+                          width={96}
+                          height={96}
+                          className="h-full w-full object-cover object-top"
+                          priority
+                          unoptimized
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex h-24 w-24 items-center justify-center rounded-full border border-white/20 bg-surface/10 text-[2rem] font-extrabold tracking-tight shadow-[0_24px_40px_rgba(15,23,42,0.20)] backdrop-blur">
+                        {profileInitials}
+                      </div>
+                    )}
 
                     <div>
                       <h2 className={`${plusJakarta.className} text-[30px] font-extrabold tracking-tight`}>

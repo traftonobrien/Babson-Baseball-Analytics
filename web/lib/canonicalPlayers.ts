@@ -7,6 +7,7 @@ import {
   CANONICAL_BY_PLAYER_ID,
   HAND_BY_PLAYER_ID,
   PLAYER_ID_BY_ALIAS,
+  PLAYER_ID_BY_SLUG,
   SLUG_BY_PLAYER_ID,
 } from "./canonicalPlayersData";
 
@@ -37,6 +38,10 @@ function resolveCanonicalPlayerId(raw: string): string | null {
   const key = raw.trim();
   if (!key) return null;
   if (CANONICAL_BY_PLAYER_ID[key]) return key;
+  const exactSlugMatch = PLAYER_ID_BY_SLUG[key.toLowerCase()];
+  if (exactSlugMatch) return exactSlugMatch;
+  const parsedSlugMatch = PLAYER_ID_BY_SLUG[parseToSlug(key)];
+  if (parsedSlugMatch) return parsedSlugMatch;
   return PLAYER_ID_BY_ALIAS[normalizePlayerAlias(key)] ?? null;
 }
 

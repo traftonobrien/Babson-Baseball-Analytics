@@ -2,251 +2,301 @@
   "miller_wyatt": {
     "height": "5'11\"",
     "weight": "160",
-    "class": "Fr."
+    "class": "Fr.",
+    "photo": "/images/players/miller_wyatt.webp"
   },
   "drazka_dylan": {
     "height": "5'9\"",
     "weight": "180",
-    "class": "So."
+    "class": "So.",
+    "photo": "/images/players/drazka_dylan.webp"
   },
   "teator_zander": {
     "height": "6'0\"",
     "weight": "200",
-    "class": "Sr."
+    "class": "Sr.",
+    "photo": "/images/players/teator_zander.webp"
   },
   "harmon_gabe": {
     "height": "5'11\"",
     "weight": "180",
-    "class": "So."
+    "class": "So.",
+    "photo": "/images/players/harmon_gabe.webp"
   },
   "wilson_alexander": {
     "height": "5'9\"",
     "weight": "180",
-    "class": "Jr."
+    "class": "Jr.",
+    "photo": "/images/players/wilson_alexander.webp"
   },
   "christensen_robert": {
     "height": "5'11\"",
     "weight": "200",
-    "class": "Fr."
+    "class": "Fr.",
+    "photo": "/images/players/christensen_robert.webp"
   },
   "davanzo_dante": {
     "height": "6'0\"",
     "weight": "185",
-    "class": "Jr."
+    "class": "Jr.",
+    "photo": "/images/players/davanzo_dante.webp"
   },
   "cushner_gabe": {
     "height": "5'10\"",
     "weight": "190",
-    "class": "So."
+    "class": "So.",
+    "photo": "/images/players/cushner_gabe.webp"
   },
   "clark_james": {
     "height": "6'3\"",
     "weight": "215",
-    "class": "Sr."
+    "class": "Sr.",
+    "photo": "/images/players/clark_james.webp"
   },
   "laforest_ian": {
     "height": "6'3\"",
     "weight": "200",
-    "class": "Jr."
+    "class": "Jr.",
+    "photo": "/images/players/laforest_ian.webp"
   },
   "frickey_connor": {
     "height": "6'5\"",
     "weight": "215",
-    "class": "Jr."
+    "class": "Jr.",
+    "photo": "/images/players/frickey_connor.webp"
   },
   "valente_ben": {
     "height": "6'3\"",
     "weight": "205",
-    "class": "So."
+    "class": "So.",
+    "photo": "/images/players/valente_ben.webp"
   },
   "hvozdovic_ryan": {
     "height": "5'11\"",
     "weight": "180",
-    "class": "Sr."
+    "class": "Sr.",
+    "photo": "/images/players/hvozdovic_ryan.webp"
   },
   "doan_connor": {
     "height": "5'8\"",
     "weight": "130",
-    "class": "Sr."
+    "class": "Sr.",
+    "photo": "/images/players/doan_connor.webp"
   },
   "liss_ryan": {
     "height": "6'3\"",
     "weight": "210",
-    "class": "Jr."
+    "class": "Jr.",
+    "photo": "/images/players/liss_ryan.webp"
   },
   "grace_ryan": {
     "height": "5'9\"",
     "weight": "210",
-    "class": "Gr."
+    "class": "Gr.",
+    "photo": "/images/players/grace_ryan.webp"
   },
   "camardi_michael": {
     "height": "5'9\"",
     "weight": "155",
-    "class": "Gr."
+    "class": "Gr.",
+    "photo": "/images/players/camardi_michael.webp"
   },
   "herrera_julian": {
     "height": "6'2\"",
     "weight": "185",
-    "class": "Fr."
+    "class": "Fr.",
+    "photo": "/images/players/herrera_julian.webp"
   },
   "moses_jack": {
     "height": "6'2\"",
     "weight": "200",
-    "class": "Jr."
+    "class": "Jr.",
+    "photo": "/images/players/moses_jack.webp"
   },
   "saft_brooks": {
     "height": "6'1\"",
     "weight": "200",
-    "class": "So."
+    "class": "So.",
+    "photo": "/images/players/saft_brooks.webp"
   },
   "mccarthy_michael": {
     "height": "6'3\"",
     "weight": "200",
-    "class": "Fr."
+    "class": "Fr.",
+    "photo": "/images/players/mccarthy_michael.webp"
   },
   "burk_bobby": {
     "height": "6'2\"",
     "weight": "210",
-    "class": "So."
+    "class": "So.",
+    "photo": "/images/players/burk_bobby.webp"
   },
   "james_dillon": {
     "height": "6'1\"",
     "weight": "195",
-    "class": "So."
+    "class": "So.",
+    "photo": "/images/players/james_dillon.webp"
   },
   "noone_sean": {
     "height": "5'11\"",
     "weight": "200",
-    "class": "Fr."
+    "class": "Fr.",
+    "photo": "/images/players/noone_sean.webp"
   },
   "chou_colin": {
     "height": "6'3\"",
     "weight": "205",
-    "class": "So."
+    "class": "So.",
+    "photo": "/images/players/chou_colin.webp"
   },
   "langan_shane": {
     "height": "6'0\"",
     "weight": "180",
-    "class": "Fr."
+    "class": "Fr.",
+    "photo": "/images/players/langan_shane.webp"
   },
   "flack_tj": {
     "height": "5'8\"",
     "weight": "175",
-    "class": "Fr."
+    "class": "Fr.",
+    "photo": "/images/players/flack_tj.webp"
   },
   "burrows_chase": {
     "height": "6'0\"",
     "weight": "180",
-    "class": "So."
+    "class": "So.",
+    "photo": "/images/players/burrows_chase.webp"
   },
   "lapierre_anthony": {
     "height": "6'6\"",
     "weight": "205",
-    "class": "So."
+    "class": "So.",
+    "photo": "/images/players/lapierre_anthony.webp"
   },
   "grindle_cameron": {
     "height": "6'3\"",
     "weight": "215",
-    "class": "Jr."
+    "class": "Jr.",
+    "photo": "/images/players/grindle_cameron.webp"
   },
   "grindle_cam": {
     "height": "6'3\"",
     "weight": "215",
-    "class": "Jr."
+    "class": "Jr.",
+    "photo": "/images/players/grindle_cameron.webp"
   },
   "carrea_joe": {
     "height": "6'2\"",
     "weight": "195",
-    "class": "Gr."
+    "class": "Gr.",
+    "photo": "/images/players/carrea_joe.webp"
   },
   "obrien_trafton": {
     "height": "6'3\"",
     "weight": "210",
-    "class": "So."
+    "class": "So.",
+    "photo": "/images/players/obrien_trafton.webp"
   },
   "rhodes_patrick": {
     "height": "6'2\"",
     "weight": "200",
-    "class": "Fr."
+    "class": "Fr.",
+    "photo": "/images/players/rhodes_patrick.webp"
   },
   "rhodes_pat": {
     "height": "6'2\"",
     "weight": "200",
-    "class": "Fr."
+    "class": "Fr.",
+    "photo": "/images/players/rhodes_patrick.webp"
   },
   "clarke_griffin": {
     "height": "5'10\"",
     "weight": "185",
-    "class": "Fr."
+    "class": "Fr.",
+    "photo": "/images/players/clarke_griffin.webp"
   },
   "getchell_jacob": {
     "height": "5'11\"",
     "weight": "215",
-    "class": "Fr."
+    "class": "Fr.",
+    "photo": "/images/players/getchell_jacob.webp"
   },
   "pearl_tristan": {
     "height": "6'2\"",
     "weight": "180",
-    "class": "Jr."
+    "class": "Jr.",
+    "photo": "/images/players/pearl_tristan.webp"
   },
   "purpura_vinnie": {
     "height": "6'7\"",
     "weight": "200",
-    "class": "Sr."
+    "class": "Sr.",
+    "photo": "/images/players/purpura_vinnie.webp"
   },
   "finkelstein_jason": {
     "height": "6'2\"",
     "weight": "215",
-    "class": "Jr."
+    "class": "Jr.",
+    "photo": "/images/players/finkelstein_jason.webp"
   },
   "vyse_graydon": {
     "height": "6'7\"",
     "weight": "212",
-    "class": "So."
+    "class": "So.",
+    "photo": "/images/players/vyse_graydon.webp"
   },
   "shapiro_brennan": {
     "height": "6'6\"",
     "weight": "225",
-    "class": "Jr."
+    "class": "Jr.",
+    "photo": "/images/players/shapiro_brennan.webp"
   },
   "place_cal": {
     "height": "6'5\"",
     "weight": "240",
-    "class": "Gr."
+    "class": "Gr.",
+    "photo": "/images/players/place_cal.webp"
   },
   "smith_cooper": {
     "height": "6'2\"",
     "weight": "204",
-    "class": "Gr."
+    "class": "Gr.",
+    "photo": "/images/players/smith_cooper.webp"
   },
   "stephens_owen": {
     "height": "6'0\"",
     "weight": "215",
-    "class": "Sr."
+    "class": "Sr.",
+    "photo": "/images/players/stephens_owen.webp"
   },
   "labrador_jayson": {
     "height": "5'10\"",
     "weight": "185",
-    "class": "Fr."
+    "class": "Fr.",
+    "photo": "/images/players/labrador_jayson.webp"
   },
   "okeefe_quinn": {
     "height": "6'1\"",
     "weight": "180",
-    "class": "So."
+    "class": "So.",
+    "photo": "/images/players/okeefe_quinn.webp"
   },
   "reid_bourke": {
     "height": "6'3\"",
     "weight": "195",
-    "class": "Fr."
+    "class": "Fr.",
+    "photo": "/images/players/reid_bourke.webp"
   },
   "schildcrout_joshua": {
     "height": "6'3\"",
     "weight": "220",
-    "class": "Fr."
+    "class": "Fr.",
+    "photo": "/images/players/schildcrout_joshua.webp"
   },
   "snyder_drew": {
     "height": "6'0\"",
     "weight": "185",
-    "class": "Fr."
+    "class": "Fr.",
+    "photo": "/images/players/snyder_drew.webp"
   }
 }

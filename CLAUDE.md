@@ -8,6 +8,17 @@ Project: Pitch Tracker
 - Read `tasks/lessons.md` at session start
 - Update `tasks/todo.md` as you work
 
+## UI RULES — LIGHT & DARK MODE (non-negotiable)
+Every UI edit must preserve both light and dark mode. Neither mode is allowed to regress.
+
+### Checklist for any styling change
+1. **Use semantic tokens** — always prefer `text-foreground`, `bg-background`, `bg-surface`, `border-border`, `text-muted` over hardcoded colors or raw Tailwind grays.
+2. **Pair every light class with a dark variant** — if you write a Tailwind color class that differs in dark mode, add the matching `dark:` class. Never leave one mode unhandled.
+3. **Site dark vs system dark** — this app uses `html[data-site-appearance="dark"]` (user toggle), not just `prefers-color-scheme`. The `dark:` prefix maps to that attribute via `globals.css`. Do not mix them up.
+4. **Brand surfaces** — use helpers from `web/lib/brandSurfaces.ts` for brand-tinted pills/panels/highlights. Do not inline one-off brand hex values.
+5. **After any UI change, mentally verify both modes** — ask: "Does this look correct with `data-site-appearance` set to both `light` and `dark`?"
+6. **`npm --prefix web run build` must pass** — run it after every UI change before marking done.
+
 ## MEMORY SYSTEM
 All persistent memory for this project flows through `./memory.sh`.
 - **Launch sessions** via `./memory.sh` — it injects primer + git context + lessons as system prompt

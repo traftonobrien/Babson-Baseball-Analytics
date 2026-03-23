@@ -16,6 +16,7 @@ describe("canonicalPlayers", () => {
   it("resolves canonical playerId from slug aliases", () => {
     expect(getCanonicalPlayerId("obrien_trafton")).toBe("TOBrien1");
     expect(getCanonicalPlayerId("trafton_obrien")).toBe("TOBrien1");
+    expect(getCanonicalPlayerId("smith_cooper")).toBe("CSmith1");
   });
 
   it("recognizes messy name variants for the same player", () => {
@@ -25,12 +26,14 @@ describe("canonicalPlayers", () => {
     expect(getCanonicalPlayerId("OBrien, Trafton")).toBe("TOBrien1");
     expect(getCanonicalPlayerId("OBrien")).toBe("TOBrien1");
     expect(getCanonicalPlayerId("Trafton")).toBe("TOBrien1");
+    expect(getCanonicalPlayerId("Smith, Cooper")).toBe("CSmith1");
   });
 
   it("normalizes display values back to the canonical name", () => {
     expect(getCanonicalName("O'Brien, Trafton")).toBe("Trafton OBrien");
     expect(getCanonicalName("trafton_obrien")).toBe("Trafton OBrien");
     expect(getCanonicalName("T OBrien")).toBe("Trafton OBrien");
+    expect(getCanonicalName("smith_cooper")).toBe("Cooper Smith");
   });
 
   it("skips ambiguous short aliases", () => {
