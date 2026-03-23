@@ -161,13 +161,13 @@ export default function LeaderboardsHubPage() {
                 href="/dictionary"
                 icon={BookOpen}
                 sectionTitle="Dictionary"
-                buttonLabel="Metrics glossary"
+                buttonLabel="Metrics Glossary"
               />
               <HubActionCard
                 href="/pitching-plus"
                 icon={Sparkles}
                 sectionTitle="Plus models"
-                buttonLabel="Methodology guide"
+                buttonLabel="Methodology Guide"
               />
             </div>
           </div>

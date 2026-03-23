@@ -145,13 +145,13 @@ export default async function ChartingHubPage(props: {
                   href="/charting/faq"
                   icon={BookOpen}
                   sectionTitle="Dictionary"
-                  buttonLabel="Metrics glossary"
+                  buttonLabel="Metrics Glossary"
                 />
                 <HubActionCard
                   href="/charting/leaderboard"
                   icon={Trophy}
                   sectionTitle="Leaderboards"
-                  buttonLabel="Open rankings"
+                  buttonLabel="Open Rankings"
                 />
               </div>
             </div>

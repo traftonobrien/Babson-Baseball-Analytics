@@ -454,7 +454,7 @@ export default function LeaderboardsPage() {
                   href="/command"
                   icon={Target}
                   sectionTitle="Command hub"
-                  buttonLabel="View hub"
+                  buttonLabel="View Hub"
                 />
                 <HubActionCard
                   href="/command/faq"

@@ -148,7 +148,7 @@ export function LeaderboardClientState({
                             href="/charting"
                             icon={ClipboardList}
                             sectionTitle="Charting hub"
-                            buttonLabel="Open hub"
+                            buttonLabel="Open Hub"
                         />
                         <HubActionCard
                             href="/charting/faq"

@@ -478,13 +478,13 @@ export default function PlusLeaderboardsPage() {
                   href="/pitching-plus"
                   icon={Sparkles}
                   sectionTitle="Methodology"
-                  buttonLabel="Full methodology"
+                  buttonLabel="Full Methodology"
                 />
                 <HubActionCard
                   href="/dictionary"
                   icon={BookOpen}
                   sectionTitle="Dictionary"
-                  buttonLabel="Metrics glossary"
+                  buttonLabel="Metrics Glossary"
                 />
               </div>
             </div>

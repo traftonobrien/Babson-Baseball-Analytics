@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -244,23 +243,13 @@ export default function Sidebar() {
         }
       >
         <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--brand-primary)]">
-            <Image
-              src="/babson-logo.svg"
-              alt={`${TEAM_NAME} logo`}
-              width={20}
-              height={20}
-              className="h-auto w-auto max-h-full max-w-full filter brightness-0 invert"
-              priority
-            />
-          </div>
           <div>
             <span
               className={
                 isDark ? "block text-lg font-bold tracking-tight text-zinc-100" : "block text-lg font-bold tracking-tight text-slate-900 dark:text-zinc-50"
               }
             >
-              {TEAM_NAME}
+              {TEAM_NAME} Baseball
             </span>
             <span
               className={
@@ -269,7 +258,7 @@ export default function Sidebar() {
                   : "block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-zinc-500"
               }
             >
-              Pitch Tracker
+              Analytics Portal
             </span>
           </div>
         </Link>
@@ -294,16 +283,6 @@ export default function Sidebar() {
       >
         <div className="px-6 pb-4 pt-6">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand-primary)]">
-              <Image
-                src="/babson-logo.svg"
-                alt={`${TEAM_NAME} logo`}
-                width={20}
-                height={20}
-                className="h-auto w-auto max-h-full max-w-full filter brightness-0 invert"
-                priority
-              />
-            </div>
             <div>
               <h1
                 className={
@@ -312,7 +291,7 @@ export default function Sidebar() {
                     : "text-[17px] font-extrabold leading-tight tracking-tight text-slate-900 dark:text-zinc-50"
                 }
               >
-                {TEAM_NAME}
+                {TEAM_NAME} Baseball
               </h1>
               <p
                 className={
@@ -321,7 +300,7 @@ export default function Sidebar() {
                     : "text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-zinc-400"
                 }
               >
-                Pitch Tracker
+                Analytics Portal
               </p>
             </div>
           </Link>

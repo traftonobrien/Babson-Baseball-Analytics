@@ -428,7 +428,7 @@ export default function TrackmanLeaderboardsPage() {
                   href="/trackman"
                   icon={Trophy}
                   sectionTitle="Trackman hub"
-                  buttonLabel="View hub"
+                  buttonLabel="View Hub"
                 />
                 <HubActionCard
                   href="/trackman/faq"

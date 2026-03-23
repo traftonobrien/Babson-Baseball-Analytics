@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
@@ -479,22 +478,11 @@ export default function HomeContent() {
           />
 
           <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-7">
-            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-[30px] border border-[var(--brand-primary-border)] bg-surface shadow-[0_18px_40px_rgba(15,23,42,0.04)] dark:border-[color-mix(in_srgb,rgb(var(--brand-primary-rgb))_40%,var(--border-subtle))] dark:shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
-              <Image
-              src="/babson-logo.svg"
-              alt={`${TEAM_NAME} logo`}
-              width={66}
-              height={66}
-              priority
-              className="h-auto w-auto max-h-full max-w-full"
-            />
-            </div>
-
             <div className="min-w-0 flex-1">
               <h1
                 className={`${plusJakarta.className} text-[2rem] font-extrabold leading-[0.98] tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.7rem] lg:text-[clamp(3rem,3.35vw,3.7rem)] lg:whitespace-nowrap`}
               >
-                {TEAM_NAME} Baseball Data Insights Portal
+                {TEAM_NAME} Baseball and Analytics Portal
               </h1>
             </div>
           </div>

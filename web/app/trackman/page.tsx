@@ -342,13 +342,13 @@ export default function TrackmanPlayersPage() {
                   href="/trackman/faq"
                   icon={BookOpen}
                   sectionTitle="Dictionary"
-                  buttonLabel="Metrics glossary"
+                  buttonLabel="Metrics Glossary"
                 />
                 <ActionCard
                   href="/trackman/leaderboard"
                   icon={Trophy}
                   sectionTitle="Leaderboards"
-                  buttonLabel="Open rankings"
+                  buttonLabel="Open Rankings"
                 />
               </div>
             </div>
