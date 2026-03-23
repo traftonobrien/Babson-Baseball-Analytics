@@ -120,7 +120,7 @@ function HeaderActionLink({
         "inline-flex items-center rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] transition-smooth",
         emphasis
           ? cn(brandSoftPillClasses, brandSoftEyebrowTextClasses, "hover:opacity-90")
-          : "border-[#E2E8F0] bg-surface text-slate-500 hover:border-[#CBD5E1] hover:text-slate-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-50",
+          : "border-slate-200 dark:border-zinc-700 bg-surface text-slate-500 hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-50",
       )}
     >
       {label}
@@ -139,8 +139,8 @@ function SidebarPanel({
 }) {
   return (
     <section className="overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
-      <div className="border-b border-[#F1F5F9] px-4 py-3 dark:border-zinc-800">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8] dark:text-zinc-500">
+      <div className="border-b border-slate-100 dark:border-zinc-800 px-4 py-3 dark:border-zinc-800">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">
           {title}
         </div>
         {detail ? <div className="mt-1 text-xs text-slate-500 dark:text-zinc-400">{detail}</div> : null}
@@ -339,14 +339,14 @@ export default function PlayerDashboard({
               <div className="flex min-w-0 flex-wrap items-center gap-3">
                 <Link
                   href={backTo ?? "/"}
-                  className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#E2E8F0] bg-background px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 transition-smooth hover:border-[#CBD5E1] hover:bg-surface hover:text-slate-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-50"
+                  className="inline-flex shrink-0 items-center gap-2 rounded-full border border-slate-200 dark:border-zinc-700 bg-background px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 transition-smooth hover:border-slate-300 dark:hover:border-zinc-600 hover:bg-surface hover:text-slate-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-50"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
                   {backLabel ?? "Home"}
                 </Link>
                 <div className="hidden h-8 w-px shrink-0 bg-[#E2E8F0] dark:bg-zinc-700 sm:block" aria-hidden />
                 <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8] dark:text-zinc-500">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">
                     Command outing
                   </p>
                   <p className="mt-0.5 max-w-xl text-[13px] leading-snug text-slate-500 dark:text-zinc-400">
@@ -400,7 +400,7 @@ export default function PlayerDashboard({
                       }
                     }}
                     autoFocus
-                    className={`${plusJakarta.className} min-w-[12rem] flex-1 rounded-xl border border-[#E2E8F0] bg-background px-3 py-2.5 text-2xl font-black tracking-tight text-slate-900 outline-none transition-colors focus:border-[var(--brand-primary-border)] focus:bg-surface focus:ring-2 focus:ring-[rgba(var(--brand-primary-rgb),0.18)] dark:border-zinc-700 dark:text-zinc-50 sm:text-4xl`}
+                    className={`${plusJakarta.className} min-w-[12rem] flex-1 rounded-xl border border-slate-200 dark:border-zinc-700 bg-background px-3 py-2.5 text-2xl font-black tracking-tight text-slate-900 outline-none transition-colors focus:border-[var(--brand-primary-border)] focus:bg-surface focus:ring-2 focus:ring-[rgba(var(--brand-primary-rgb),0.18)] dark:border-zinc-700 dark:text-zinc-50 sm:text-4xl`}
                   />
                 </div>
               ) : (
@@ -419,7 +419,7 @@ export default function PlayerDashboard({
                     {displayOutingLabel}
                   </h1>
                   <Pencil
-                    className="mt-1.5 h-4 w-4 shrink-0 text-[#94A3B8] opacity-60 group-hover:opacity-100 dark:text-zinc-500 sm:mt-2 sm:h-5 sm:w-5"
+                    className="mt-1.5 h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500 opacity-60 group-hover:opacity-100 dark:text-zinc-500 sm:mt-2 sm:h-5 sm:w-5"
                     aria-hidden
                   />
                 </button>
@@ -440,8 +440,8 @@ export default function PlayerDashboard({
             </div>
 
             {/* Quick links */}
-            <div className="mt-6 border-t border-[#F1F5F9] pt-6 dark:border-zinc-800">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8] dark:text-zinc-500">Quick links</p>
+            <div className="mt-6 border-t border-slate-100 dark:border-zinc-800 pt-6 dark:border-zinc-800">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">Quick links</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {profileHref ? (
                   <HeaderActionLink href={profileHref} label="Player Profile" />
@@ -497,8 +497,8 @@ export default function PlayerDashboard({
           ) : null}
 
           <section className="overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
-            <div className="border-b border-[#F1F5F9] px-4 py-3 dark:border-zinc-800">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8] dark:text-zinc-500">
+            <div className="border-b border-slate-100 dark:border-zinc-800 px-4 py-3 dark:border-zinc-800">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">
                 Pitch Log
               </div>
               <div className="mt-1 text-xs text-slate-500 dark:text-zinc-400">

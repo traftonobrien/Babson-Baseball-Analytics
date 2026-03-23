@@ -72,46 +72,46 @@ const DICTIONARY_ITEMS = [
 
 const ACCENT_STYLES: Record<string, { ring: string; chip: string; icon: string; wash: string }> = {
   amber: {
-    ring: "border-amber-100 hover:border-amber-200",
-    chip: "bg-amber-50 text-amber-600",
-    icon: "text-amber-500",
-    wash: "from-amber-50 to-transparent",
+    ring: "border-amber-100 hover:border-amber-200 dark:border-amber-900/45 dark:hover:border-amber-800/60",
+    chip: "bg-amber-50 text-amber-600 dark:bg-amber-950/45 dark:text-amber-300",
+    icon: "text-amber-500 dark:text-amber-300",
+    wash: "from-amber-50 to-transparent dark:from-amber-950/35 dark:to-transparent",
   },
   blue: {
-    ring: "border-blue-100 hover:border-blue-200",
-    chip: "bg-blue-50 text-blue-600",
-    icon: "text-blue-500",
-    wash: "from-blue-50 to-transparent",
+    ring: "border-blue-100 hover:border-blue-200 dark:border-blue-900/45 dark:hover:border-blue-800/60",
+    chip: "bg-blue-50 text-blue-600 dark:bg-blue-950/45 dark:text-blue-300",
+    icon: "text-blue-500 dark:text-blue-300",
+    wash: "from-blue-50 to-transparent dark:from-blue-950/35 dark:to-transparent",
   },
   orange: {
-    ring: "border-orange-100 hover:border-orange-200",
-    chip: "bg-orange-50 text-orange-600",
-    icon: "text-orange-500",
-    wash: "from-orange-50 to-transparent",
+    ring: "border-orange-100 hover:border-orange-200 dark:border-orange-900/45 dark:hover:border-orange-800/60",
+    chip: "bg-orange-50 text-orange-600 dark:bg-orange-950/45 dark:text-orange-300",
+    icon: "text-orange-500 dark:text-orange-300",
+    wash: "from-orange-50 to-transparent dark:from-orange-950/35 dark:to-transparent",
   },
   indigo: {
-    ring: "border-indigo-100 hover:border-indigo-200",
-    chip: "bg-indigo-50 text-indigo-600",
-    icon: "text-indigo-500",
-    wash: "from-indigo-50 to-transparent",
+    ring: "border-indigo-100 hover:border-indigo-200 dark:border-indigo-900/45 dark:hover:border-indigo-800/60",
+    chip: "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/45 dark:text-indigo-300",
+    icon: "text-indigo-500 dark:text-indigo-300",
+    wash: "from-indigo-50 to-transparent dark:from-indigo-950/35 dark:to-transparent",
   },
   violet: {
-    ring: "border-violet-100 hover:border-violet-200",
-    chip: "bg-violet-50 text-violet-600",
-    icon: "text-violet-500",
-    wash: "from-violet-50 to-transparent",
+    ring: "border-violet-100 hover:border-violet-200 dark:border-violet-900/45 dark:hover:border-violet-800/60",
+    chip: "bg-violet-50 text-violet-600 dark:bg-violet-950/45 dark:text-violet-300",
+    icon: "text-violet-500 dark:text-violet-300",
+    wash: "from-violet-50 to-transparent dark:from-violet-950/35 dark:to-transparent",
   },
   sky: {
-    ring: "border-sky-100 hover:border-sky-200",
-    chip: "bg-sky-50 text-sky-600",
-    icon: "text-sky-500",
-    wash: "from-sky-50 to-transparent",
+    ring: "border-sky-100 hover:border-sky-200 dark:border-sky-900/45 dark:hover:border-sky-800/60",
+    chip: "bg-sky-50 text-sky-600 dark:bg-sky-950/45 dark:text-sky-300",
+    icon: "text-sky-500 dark:text-sky-300",
+    wash: "from-sky-50 to-transparent dark:from-sky-950/35 dark:to-transparent",
   },
   emerald: {
-    ring: "border-emerald-100 hover:border-emerald-200",
-    chip: "bg-emerald-50 text-emerald-600",
-    icon: "text-emerald-500",
-    wash: "from-emerald-50 to-transparent",
+    ring: "border-emerald-100 hover:border-emerald-200 dark:border-emerald-900/45 dark:hover:border-emerald-800/60",
+    chip: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/45 dark:text-emerald-300",
+    icon: "text-emerald-500 dark:text-emerald-300",
+    wash: "from-emerald-50 to-transparent dark:from-emerald-950/35 dark:to-transparent",
   },
 };
 
@@ -138,9 +138,9 @@ function DictCard({
       className={`group relative block overflow-hidden rounded-[1.75rem] border bg-surface p-5 shadow-[0_18px_40px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_rgba(15,23,42,0.08)] ${styles?.ring ?? ""} ${featured ? "sm:col-span-2" : ""}`}
     >
       <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${styles?.wash ?? ""} opacity-60`} />
-      <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-zinc-700 to-transparent" />
       <div className="relative flex items-start gap-4">
-        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#F1F5F9] bg-background ${styles?.icon ?? ""}`}>
+        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-100 dark:border-zinc-800 bg-background ${styles?.icon ?? ""}`}>
           <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0 flex-1">
@@ -151,7 +151,7 @@ function DictCard({
             {description}
           </p>
         </div>
-        <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-[#94A3B8] transition-transform group-hover:translate-x-0.5 group-hover:text-[#6366F1]" />
+        <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500 transition-transform group-hover:translate-x-0.5 group-hover:text-indigo-500 dark:group-hover:text-indigo-300" />
       </div>
     </Link>
   );
@@ -167,7 +167,7 @@ export default function DictionaryPage() {
         <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
           <div className="flex flex-col gap-5 p-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6 sm:p-7">
             <div className="min-w-0 flex-1">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#E0E7FF] bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6366F1]">
+              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-100 dark:border-indigo-900/50 bg-indigo-50 dark:bg-indigo-950/45 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-indigo-600 dark:text-indigo-300">
                 <BookOpen className="h-3.5 w-3.5" aria-hidden />
                 Metrics Dictionary
               </div>
@@ -181,7 +181,7 @@ export default function DictionaryPage() {
                 href="/leaderboards-hub"
                 icon={BarChart3}
                 sectionTitle="Leaderboards"
-                buttonLabel="All Leaderboards"
+                buttonLabel="All leaderboards"
               />
               <HubActionCard
                 href="/pitching-plus"

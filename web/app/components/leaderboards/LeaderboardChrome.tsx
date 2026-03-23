@@ -199,7 +199,7 @@ export function LeaderboardPageFrame({
 
   return (
     <main className="min-h-screen text-zinc-100" style={BRAND_FRAME_STYLE}>
-      <div className={joinClasses("mx-auto px-4 py-8 sm:px-6", maxWidth)}>{children}</div>
+      <div className={joinClasses("mx-auto px-4 py-5 sm:px-6 sm:py-8 lg:px-8", maxWidth)}>{children}</div>
     </main>
   );
 }
@@ -388,7 +388,7 @@ export function LeaderboardHero({
     <section className="mt-6">
       <div
         className={joinClasses(
-          "relative overflow-hidden rounded-[2rem] border bg-zinc-950/80 shadow-2xl shadow-black/30",
+          "relative overflow-hidden rounded-[28px] border bg-zinc-950/80 shadow-2xl shadow-black/30",
           toneClasses.border,
         )}
       >
@@ -406,7 +406,7 @@ export function LeaderboardHero({
               <Icon className="h-3.5 w-3.5" />
               {eyebrow}
             </div>
-            <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-zinc-50 sm:text-[2.9rem] sm:leading-[1.02]">
+            <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-zinc-50 sm:text-[2.85rem] sm:leading-[1.02]">
               {title}
             </h1>
             {description ? (
@@ -484,7 +484,7 @@ export function LeaderboardToolbar({
   return (
     <div
       className={joinClasses(
-        "relative mt-5 overflow-visible rounded-[1.5rem] border p-4",
+        "relative overflow-visible rounded-[28px] border p-4 sm:p-5",
         className,
       )}
       style={BRAND_PANEL_STYLE}

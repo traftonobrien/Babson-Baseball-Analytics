@@ -54,7 +54,7 @@ export function EmptyState({
             <button
               type="button"
               onClick={onOpenPinned}
-              className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-background px-4 py-2 text-sm font-semibold text-[#334155] transition-smooth hover:border-[var(--brand-primary-border)] hover:text-[var(--brand-primary-subtle-text)]"
+              className="mt-5 inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-zinc-700 bg-background px-4 py-2 text-sm font-semibold text-[#334155] transition-smooth hover:border-[var(--brand-primary-border)] hover:text-[var(--brand-primary-subtle-text)]"
             >
               Reopen pinned {countNounForView(view)}
               <ArrowRight className="h-4 w-4" />
@@ -62,20 +62,20 @@ export function EmptyState({
           ) : null}
         </div>
 
-        <div className="rounded-[2rem] border border-[#E2E8F0] bg-background p-4">
-          <div className="relative aspect-square rounded-[1.75rem] border border-[#E2E8F0] bg-surface">
+        <div className="rounded-[2rem] border border-slate-200 dark:border-zinc-700 bg-background p-4">
+          <div className="relative aspect-square rounded-[1.75rem] border border-slate-200 dark:border-zinc-700 bg-surface">
             <div className="pointer-events-none absolute inset-[22%] rounded-[1.5rem] border border-dashed border-[#CBD5E1]" />
             {Object.values(ZONE_BUCKET_LAYOUT).map((bucket) => (
               <div
                 key={bucket.label}
-                className="absolute overflow-hidden rounded-[1.4rem] border border-[#E2E8F0] bg-background"
+                className="absolute overflow-hidden rounded-[1.4rem] border border-slate-200 dark:border-zinc-700 bg-background"
                 style={{
                   ...bucket.style,
                   clipPath: bucket.chaseKind ? clipPathForLocationCell(bucket.chaseKind) : "none",
                 }}
               >
                 <div className="p-2.5">
-                  <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#94A3B8]">
+                  <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 dark:text-zinc-500">
                     {bucket.label}
                   </div>
                   <div className="mt-6 text-right text-xl font-black tracking-tight text-[#CBD5E1]">

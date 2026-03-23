@@ -58,7 +58,7 @@ export default function StuffPlusSummaryCard({ arsenal, playerId: _playerId }: P
               className={
                 isDark
                   ? "shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500"
-                  : "shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#94A3B8]"
+                  : "shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-zinc-500"
               }
             >
               {arsenal.length} pitch type{arsenal.length !== 1 ? "s" : ""}

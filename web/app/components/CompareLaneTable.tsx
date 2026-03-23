@@ -51,7 +51,7 @@ export default function CompareLaneTable({ comparison, pitcherHand }: Props) {
           return (
             <tr
               key={row.lane}
-              className={`border-b border-[#F1F5F9] ${stripe}`}
+              className={`border-b border-slate-100 dark:border-zinc-800 ${stripe}`}
             >
               <td className="py-[3px] pr-1.5 font-semibold">
                 {laneDisplayName(row.lane, pitcherHand)}

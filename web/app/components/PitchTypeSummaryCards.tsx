@@ -59,7 +59,7 @@ export default function PitchTypeSummaryCards({ pitches }: Props) {
           >
             <div className="flex items-center justify-between gap-2">
               <PitchTypeChip pitchType={g.type} label={pitchDisplayName(g.type)} size="xs" variant="soft" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8] dark:text-zinc-500">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">
                 {g.pitches.length} pitch{g.pitches.length !== 1 && "es"}
               </span>
             </div>
@@ -154,7 +154,7 @@ function Stat({
         <div className="text-[1.22rem] font-mono font-semibold leading-none text-slate-900 dark:text-zinc-50">
           {value}
         </div>
-        <div className="mt-0.5 max-w-[6rem] whitespace-nowrap text-[8px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8] dark:text-zinc-500">
+        <div className="mt-0.5 max-w-[6rem] whitespace-nowrap text-[8px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">
           {label}
         </div>
       </div>

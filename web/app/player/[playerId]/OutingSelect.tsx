@@ -79,7 +79,7 @@ export default function OutingSelect({
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
       {hasMultipleSeasons && (
         <div className="space-y-2">
-          <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8]">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-zinc-500">
             Season
           </div>
           <div className="inline-flex flex-wrap gap-1.5 rounded-2xl border border-border bg-background p-1.5">
@@ -95,7 +95,7 @@ export default function OutingSelect({
                   "min-w-[4.75rem] whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] font-semibold transition-smooth",
                   seasonFilter === option.value
                     ? "border border-orange-300 bg-orange-50 text-orange-900 shadow-sm"
-                    : "border border-transparent bg-transparent text-slate-500 dark:text-zinc-400 hover:border-[#E2E8F0] hover:bg-surface hover:text-slate-900 dark:hover:text-zinc-50",
+                    : "border border-transparent bg-transparent text-slate-500 dark:text-zinc-400 hover:border-slate-200 dark:border-zinc-700 hover:bg-surface hover:text-slate-900 dark:hover:text-zinc-50",
                 )}
               >
                 {option.display}
@@ -105,11 +105,11 @@ export default function OutingSelect({
         </div>
       )}
       <label className="space-y-2 text-xs text-slate-500 dark:text-zinc-400">
-        <span className="block text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8]">
+        <span className="block text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-zinc-500">
           Outing
         </span>
         <select
-          className="min-w-[16rem] rounded-2xl border border-border bg-surface px-3 py-2.5 text-xs text-slate-900 dark:text-zinc-50 outline-none transition-all duration-300 hover:border-[#CBD5E1] focus:border-orange-300 focus:ring-2 focus:ring-orange-500/15"
+          className="min-w-[16rem] rounded-2xl border border-border bg-surface px-3 py-2.5 text-xs text-slate-900 dark:text-zinc-50 outline-none transition-all duration-300 hover:border-slate-300 dark:hover:border-zinc-600 focus:border-orange-300 focus:ring-2 focus:ring-orange-500/15"
           value={filtered.some((o) => o.id === selectedOutingId) ? selectedOutingId : filtered[0]?.id ?? ""}
           onChange={(event) => {
             const params = new URLSearchParams(searchParams.toString());

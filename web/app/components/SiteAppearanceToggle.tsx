@@ -25,7 +25,7 @@ export default function SiteAppearanceToggle() {
         onClick={() => setAppearance("light")}
         className={
           isLight
-            ? "inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[#F1F5F9] px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-900 dark:text-zinc-50"
+            ? "inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-slate-100 dark:bg-zinc-800 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-900 dark:text-zinc-50"
             : "inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 transition-smooth hover:text-zinc-300"
         }
         aria-pressed={isLight}

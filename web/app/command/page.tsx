@@ -15,7 +15,6 @@ import { players, type Outing } from "@/lib/dataIndex";
 import { seasonFromDateId } from "@/lib/season";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
 import { getCanonicalPlayerId } from "@/lib/canonicalPlayers";
-import { useSiteAppearance } from "@/app/components/SiteAppearanceContext";
 import { getTeamAccentColor, getTeamBrandEntry, hexToRgba } from "@/lib/teamBranding";
 import { TEAM_THEME } from "@/lib/teamConfig";
 import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
@@ -109,8 +108,6 @@ function OutingContextPill({
   date: Date | null;
   opponent?: string | null;
 }) {
-  const siteAppearance = useSiteAppearance();
-  const siteDark = siteAppearance === "dark";
   const accent = opponent ? getTeamAccentColor(opponent) : null;
   const brand = opponent ? getTeamBrandEntry(opponent) : null;
   const opponentLabel = opponent ? brand?.name ?? stripTeamRanking(opponent) : null;
@@ -119,14 +116,12 @@ function OutingContextPill({
 
   return (
     <span
-      className="inline-flex items-center rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600 dark:text-zinc-300"
+      className="inline-flex items-center rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-zinc-400"
       style={
         accent
           ? {
               borderColor: hexToRgba(accent, 0.24),
-              background: siteDark
-                ? `linear-gradient(135deg, ${hexToRgba(accent, 0.2)}, rgba(24,24,27,0.96))`
-                : `linear-gradient(135deg, ${hexToRgba(accent, 0.08)}, rgba(248,250,252,0.96))`,
+              background: `linear-gradient(135deg, ${hexToRgba(accent, 0.08)}, rgba(248,250,252,0.96))`,
             }
           : undefined
       }
@@ -156,7 +151,7 @@ function SectionHeader({
   meta?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-4 border-b border-slate-100 dark:border-zinc-800 px-5 py-4 sm:px-6">
+    <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-4 sm:px-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
           <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
@@ -285,7 +280,7 @@ function SeriesDropdown({
       ? createPortal(
           <div
             ref={menuRef}
-            className={`fixed z-[120] origin-top overflow-hidden rounded-[1.5rem] border border-slate-200 dark:border-zinc-700 bg-surface shadow-[0_20px_50px_rgba(15,23,42,0.12)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)] transition-all duration-220 ease-out ${
+            className={`fixed z-[120] origin-top overflow-hidden rounded-[1.5rem] border border-slate-200 dark:border-zinc-700 bg-surface shadow-[0_20px_50px_rgba(15,23,42,0.12)] transition-all duration-220 ease-out ${
               menuVisible
                 ? "pointer-events-auto translate-y-0 scale-y-100 opacity-100"
                 : "pointer-events-none -translate-y-1 scale-y-95 opacity-0"
@@ -313,9 +308,7 @@ function SeriesDropdown({
                       setOpen(false);
                     }}
                     className={`flex w-full items-center gap-2.5 rounded-full border px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.16em] transition-all duration-200 ease-out ${
-                      isSelected
-                        ? "text-slate-900 dark:text-zinc-50"
-                        : "text-slate-500 dark:text-zinc-400 hover:translate-x-0.5 hover:text-slate-900 dark:hover:text-zinc-50"
+                      isSelected ? "text-slate-900 dark:text-zinc-50" : "text-slate-500 dark:text-zinc-400 hover:translate-x-0.5 hover:text-slate-900 dark:hover:text-zinc-50"
                     }`}
                     style={{
                       borderColor: isSelected ? hexToRgba(option.accent, 0.3) : "rgba(226,232,240,0.9)",
@@ -357,7 +350,7 @@ function SeriesDropdown({
         ref={triggerRef}
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className="flex h-11 min-h-[2.75rem] w-full min-w-0 items-center justify-between gap-2.5 rounded-2xl border border-slate-200 dark:border-zinc-700 bg-background px-4 py-0 text-left shadow-[0_10px_24px_rgba(15,23,42,0.03)] transition-all duration-200 hover:border-slate-300 dark:hover:border-zinc-600 hover:bg-surface"
+        className="flex h-11 min-h-[2.75rem] w-full min-w-0 items-center justify-between gap-2.5 rounded-2xl border border-slate-200 dark:border-zinc-700 bg-background px-4 py-0 text-left shadow-[0_10px_24px_rgba(15,23,42,0.03)] transition-all duration-200 hover:border-[var(--brand-primary-border)] hover:bg-surface"
       >
         <span className="flex min-w-0 items-center gap-2.5">
           {selectedOption ? (
@@ -406,7 +399,7 @@ function HubSegment<T extends string>({
       <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-zinc-500">
         {label}
       </div>
-      <div className="inline-flex h-11 min-h-[2.75rem] flex-nowrap items-center gap-1 rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1 shadow-[0_10px_24px_rgba(15,23,42,0.03)]">
+      <div className="flex h-11 min-h-[2.75rem] flex-nowrap items-center gap-1 rounded-2xl border border-slate-200 dark:border-zinc-700 bg-background p-1 shadow-[0_10px_24px_rgba(15,23,42,0.03)]">
         {options.map((option) => {
           const isActive = selected === option.value;
 
@@ -417,8 +410,8 @@ function HubSegment<T extends string>({
               onClick={() => onChange(option.value)}
               className={`inline-flex h-9 min-h-0 min-w-0 flex-1 basis-0 items-center justify-center rounded-full px-2 text-sm font-semibold transition-all duration-200 sm:px-3 ${
                 isActive
-                  ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm"
-                  : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50"
+                  ? "bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)] shadow-[0_1px_0_rgba(var(--brand-primary-rgb),0.18)]"
+                  : "text-slate-500 dark:text-zinc-400 hover:bg-surface hover:text-slate-900 dark:hover:text-zinc-50"
               }`}
             >
               <span className="truncate">{option.display}</span>
@@ -613,7 +606,7 @@ export default function CommandPage() {
               }
             />
 
-            <div className="grid gap-4 border-b border-slate-100 dark:border-zinc-800 px-5 py-5 sm:px-6 lg:grid-cols-[minmax(14rem,17rem)_minmax(14rem,17rem)_minmax(0,1fr)]">
+            <div className="grid gap-4 border-b border-slate-100 px-5 py-5 sm:px-6 lg:grid-cols-[minmax(14rem,17rem)_minmax(14rem,17rem)_minmax(0,1fr)]">
               <HubSegment
                 label="View"
                 className="w-full min-w-0"
@@ -773,7 +766,7 @@ export default function CommandPage() {
                                 <Link
                                   key={outing.id}
                                   href={`/player/${item.player.id}?outingId=${outing.id}&from=command`}
-                                  className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 dark:border-zinc-700 bg-surface px-3.5 py-2.5 text-sm transition-all duration-300 hover:border-slate-300 dark:hover:border-zinc-600 hover:bg-background"
+                                  className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 dark:border-zinc-700 bg-surface px-3.5 py-2.5 text-sm transition-all duration-300 hover:border-[var(--brand-primary-border)] hover:bg-background"
                                 >
                                   <div className="flex min-w-0 items-center gap-3">
                                     <OutingContextPill date={outing.date} opponent={outing.opponent} />

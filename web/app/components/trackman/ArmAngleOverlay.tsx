@@ -13,6 +13,7 @@ interface ArmAngleOverlayProps {
   plotSize: number;
   pad: number;
   maxAbs: number;
+  surface?: "dark" | "light";
   hoveredPitchType?: string | null;
   onHoverPitchType?: (pitchType: string | null) => void;
 }
@@ -39,9 +40,11 @@ export function ArmAngleOverlay({
   plotSize,
   pad,
   maxAbs,
+  surface = "dark",
   hoveredPitchType,
   onHoverPitchType,
 }: ArmAngleOverlayProps) {
+  const isLight = surface === "light";
   const primary = useMemo(() => rays.find((r) => r.isPrimary) ?? rays[0], [rays]);
   const displayRay = useMemo(() => {
     if (hoveredPitchType) {
@@ -292,10 +295,10 @@ export function ArmAngleOverlay({
             width={pillW}
             height={pillH}
             rx={13}
-            fill="rgba(0,0,0,0.88)"
+            fill={isLight ? "rgba(248,250,252,0.96)" : "rgba(0,0,0,0.88)"}
             stroke={pillColor}
             strokeWidth={1.5}
-            filter="url(#pillShadow-multi)"
+            filter={isLight ? undefined : "url(#pillShadow-multi)"}
           />
           <text
             x={0}
@@ -303,7 +306,7 @@ export function ArmAngleOverlay({
             textAnchor="middle"
             dominantBaseline="central"
             className="text-[11px] font-bold font-mono tracking-tight"
-            fill={RELEASE_THEME.colors.zinc.text}
+            fill={isLight ? "#0f172a" : RELEASE_THEME.colors.zinc.text}
           >
             {pillAngle}
           </text>

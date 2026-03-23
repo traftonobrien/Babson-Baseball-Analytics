@@ -228,14 +228,14 @@ export default function MissHeatmap({ pitches, throwsHand }: Props) {
     <div className="overflow-hidden rounded-[28px] border border-border bg-surface p-4 shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
       <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8]">
+          <h3 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-zinc-500">
             Target Heatmap
           </h3>
           <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
             Zones represent where the catcher set up.
           </p>
         </div>
-        <span className="rounded-full border border-[#E2E8F0] bg-background px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
+        <span className="rounded-full border border-slate-200 dark:border-zinc-700 bg-background px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
           Catcher View
         </span>
       </div>
@@ -277,7 +277,7 @@ export default function MissHeatmap({ pitches, throwsHand }: Props) {
         {/* Tooltip */}
         {tooltip && (
           <div
-            className="pointer-events-none absolute z-10 whitespace-nowrap rounded-xl border border-[#E2E8F0] bg-surface px-2 py-1 text-xs text-slate-900 dark:text-zinc-50 shadow-lg"
+            className="pointer-events-none absolute z-10 whitespace-nowrap rounded-xl border border-slate-200 dark:border-zinc-700 bg-surface px-2 py-1 text-xs text-slate-900 dark:text-zinc-50 shadow-lg"
             style={{ left: tooltip.x + 12, top: tooltip.y - 32 }}
           >
             Hit spot {Math.round(tooltip.hitPct)}%
@@ -291,7 +291,7 @@ export default function MissHeatmap({ pitches, throwsHand }: Props) {
       </p>
 
       {/* Legend */}
-      <div className="mt-3 flex flex-wrap items-center justify-center gap-4 text-sm text-[#475569]">
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-4 text-sm text-slate-500 dark:text-zinc-400">
         <span className="flex items-center gap-1.5">
           <span
             className="inline-block h-3 w-3 rounded-sm"

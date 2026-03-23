@@ -177,8 +177,8 @@ function PulseMetric({
       <div className="relative overflow-hidden rounded-[26px] border border-[#E7EDF5] bg-surface p-5 shadow-[0_18px_48px_rgba(15,23,42,0.04)] dark:border-zinc-800 dark:shadow-[0_18px_48px_rgba(0,0,0,0.35)]">
         <div className="animate-pulse space-y-4">
           <div className="h-3 w-24 rounded-full bg-[#E2E8F0] dark:bg-zinc-700" />
-          <div className="h-9 w-32 rounded-xl bg-[#F1F5F9] dark:bg-zinc-800" />
-          <div className="h-3 w-44 rounded-full bg-[#F1F5F9] dark:bg-zinc-800" />
+          <div className="h-9 w-32 rounded-xl bg-slate-100 dark:bg-zinc-800 dark:bg-zinc-800" />
+          <div className="h-3 w-44 rounded-full bg-slate-100 dark:bg-zinc-800 dark:bg-zinc-800" />
           <div className="mt-4 flex h-12 items-end gap-1">
             {[40, 22, 58, 34, 28, 46, 18].map((height) => (
               <div
@@ -250,7 +250,7 @@ function QuickLaunchTile({
         >
           <Icon className="h-4 w-4" />
         </div>
-        <ArrowRight className="h-4 w-4 text-[#94A3B8] transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-[var(--brand-primary-subtle-text)] dark:text-zinc-500 dark:group-hover:text-[var(--brand-primary-spotlight)]" />
+        <ArrowRight className="h-4 w-4 text-slate-400 dark:text-zinc-500 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-[var(--brand-primary-subtle-text)] dark:text-zinc-500 dark:group-hover:text-[var(--brand-primary-spotlight)]" />
       </div>
       <p className={`${plusJakarta.className} mt-4 text-[15px] font-bold tracking-tight text-slate-900 dark:text-zinc-50`}>
         {item.title}
@@ -287,14 +287,14 @@ function SessionRow({
           <p className={`${plusJakarta.className} text-[14px] font-semibold text-slate-900 dark:text-zinc-50`}>
             {game.sessionType === "live_ab" ? "Live AB" : "Game Log"}
           </p>
-          <p className="text-[12px] text-[#94A3B8] dark:text-zinc-500">{formatUpdatedLabel(game.updatedAt)}</p>
+          <p className="text-[12px] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">{formatUpdatedLabel(game.updatedAt)}</p>
         </div>
         <span
           className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] ${statusPillClasses(game.status)}`}
         >
           {statusLabel(game.status)}
         </span>
-        <ArrowRight className="h-4 w-4 text-[#94A3B8] transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-[var(--brand-primary-subtle-text)]" />
+        <ArrowRight className="h-4 w-4 text-slate-400 dark:text-zinc-500 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-[var(--brand-primary-subtle-text)]" />
       </div>
     </Link>
   );
@@ -524,7 +524,7 @@ export default function HomeContent() {
         </section>
 
         <section className="mt-8 rounded-[28px] border border-[#E7EDF5] bg-surface p-6 shadow-[0_18px_48px_rgba(15,23,42,0.04)] dark:border-zinc-800 dark:shadow-[0_18px_48px_rgba(0,0,0,0.35)]">
-          <div className="overflow-hidden rounded-[24px] border border-[#F1F5F9] bg-surface dark:border-zinc-800">
+          <div className="overflow-hidden rounded-[24px] border border-slate-100 dark:border-zinc-800 bg-surface dark:border-zinc-800">
             {gamesLoading ? (
               <div className="space-y-4 p-5">
                 {[0, 1, 2, 3].map((index) => (
@@ -536,10 +536,10 @@ export default function HomeContent() {
                       <div className="h-11 w-11 rounded-full bg-[#E2E8F0] dark:bg-zinc-700" />
                       <div className="space-y-2">
                         <div className="h-4 w-40 rounded-full bg-[#E2E8F0] dark:bg-zinc-700" />
-                        <div className="h-3 w-28 rounded-full bg-[#F1F5F9] dark:bg-zinc-800" />
+                        <div className="h-3 w-28 rounded-full bg-slate-100 dark:bg-zinc-800 dark:bg-zinc-800" />
                       </div>
                     </div>
-                    <div className="h-7 w-16 rounded-full bg-[#F1F5F9] dark:bg-zinc-800" />
+                    <div className="h-7 w-16 rounded-full bg-slate-100 dark:bg-zinc-800 dark:bg-zinc-800" />
                   </div>
                 ))}
               </div>
@@ -547,7 +547,7 @@ export default function HomeContent() {
               recentGames.map((game, index) => (
                 <div
                   key={game.id}
-                  className={index < recentGames.length - 1 ? "border-b border-[#F1F5F9] dark:border-zinc-800" : ""}
+                  className={index < recentGames.length - 1 ? "border-b border-slate-100 dark:border-zinc-800 dark:border-zinc-800" : ""}
                 >
                   <SessionRow game={game} />
                 </div>

@@ -195,20 +195,20 @@ function ReportInner() {
             <div className="grid gap-3">
               <a
                 href={backHref}
-                className="inline-flex items-center justify-center rounded-2xl border border-[#E2E8F0] bg-surface px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400 shadow-sm transition-smooth hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
+                className="inline-flex items-center justify-center rounded-2xl border border-slate-200 dark:border-zinc-700 bg-surface px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400 shadow-sm transition-smooth hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50"
               >
                 {backLabel}
               </a>
               <a
                 href={compareHref}
-                className="inline-flex items-center justify-center rounded-2xl border border-[#E2E8F0] bg-surface px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400 shadow-sm transition-smooth hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
+                className="inline-flex items-center justify-center rounded-2xl border border-slate-200 dark:border-zinc-700 bg-surface px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400 shadow-sm transition-smooth hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50"
               >
                 Compare
               </a>
               {profileSlug && !profileHref ? (
                 <a
                   href={`/players/${profileSlug}?tab=Command`}
-                  className="inline-flex items-center justify-center rounded-2xl border border-[#E2E8F0] bg-surface px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400 shadow-sm transition-smooth hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
+                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 dark:border-zinc-700 bg-surface px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400 shadow-sm transition-smooth hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50"
                 >
                   View Full Profile
                 </a>
@@ -386,7 +386,7 @@ function Msg({ text, error }: { text: string; error?: boolean }) {
 
 function Pill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-block rounded border border-[#E2E8F0] bg-background px-1.5 py-[1px] font-medium text-[#475569] print:border-zinc-400 print:bg-surface print:text-black">
+    <span className="inline-block rounded border border-slate-200 dark:border-zinc-700 bg-background px-1.5 py-[1px] font-medium text-slate-500 dark:text-zinc-400 print:border-zinc-400 print:bg-surface print:text-black">
       {children}
     </span>
   );
@@ -403,7 +403,7 @@ function ReportSection({
 }) {
   return (
     <section className={compact ? "mb-0" : "mb-3"}>
-      <h2 className="mb-1 border-b border-border pb-[3px] text-[9px] font-bold uppercase tracking-[0.1em] text-[#94A3B8] print:border-zinc-300 print:text-zinc-700">
+      <h2 className="mb-1 border-b border-border pb-[3px] text-[9px] font-bold uppercase tracking-[0.1em] text-slate-400 dark:text-zinc-500 print:border-zinc-300 print:text-zinc-700">
         {title}
       </h2>
       {children}
@@ -453,7 +453,7 @@ function KPICard({
       </div>
       <div className="font-mono font-bold leading-none text-slate-900 dark:text-zinc-50 print:text-black">
         <span className="text-[16px]">{value}</span>
-        {unit && <span className="ml-[1px] text-[9px] text-[#94A3B8] print:text-zinc-600">{unit}</span>}
+        {unit && <span className="ml-[1px] text-[9px] text-slate-400 dark:text-zinc-500 print:text-zinc-600">{unit}</span>}
       </div>
       {subtitle && (
         <div className="mt-[2px] text-[7px] leading-none text-slate-500 dark:text-zinc-400 print:text-zinc-500">
@@ -490,7 +490,7 @@ function PitchMixTable({ data }: { data: PitchTypeSummary[] }) {
           return (
             <tr
               key={pt.pitchType}
-              className={`border-b border-[#F1F5F9] print:border-zinc-200 ${stripe}`}
+              className={`border-b border-slate-100 dark:border-zinc-800 print:border-zinc-200 ${stripe}`}
             >
               <td className="py-[3px] pr-1.5">
                 <span className="flex items-center gap-1">
@@ -500,7 +500,7 @@ function PitchMixTable({ data }: { data: PitchTypeSummary[] }) {
                   />
                   <span className="font-mono font-bold text-[11px]">{pt.pitchType}</span>
                   {pt.lowSample && (
-                    <span className="ml-0.5 text-[7px] italic text-[#94A3B8] print:text-zinc-500">
+                    <span className="ml-0.5 text-[7px] italic text-slate-400 dark:text-zinc-500 print:text-zinc-500">
                       n&lt;5
                     </span>
                   )}

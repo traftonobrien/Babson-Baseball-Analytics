@@ -242,13 +242,13 @@ export default async function ChartingHubPage(props: {
 
               <Field label="Search">
                 <label className="flex items-center gap-3 rounded-2xl border border-border bg-[#F9FAFB] px-4 py-3 transition-colors focus-within:border-[#C7D2FE] focus-within:bg-surface">
-                  <Search className="h-4 w-4 shrink-0 text-[#94A3B8]" />
+                  <Search className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
                   <input
                     type="text"
                     name="q"
                     defaultValue={searchQuery}
                     placeholder="Search opponent, date, or status..."
-                    className="w-full bg-transparent text-sm text-slate-900 dark:text-zinc-50 outline-none placeholder:text-[#94A3B8]"
+                    className="w-full bg-transparent text-sm text-slate-900 dark:text-zinc-50 outline-none placeholder:text-slate-400 dark:text-zinc-500"
                   />
                 </label>
               </Field>
@@ -263,7 +263,7 @@ export default async function ChartingHubPage(props: {
                 {hasFilters ? (
                   <Link
                     href="/charting"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-border bg-surface px-4 py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400 transition-colors hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-border bg-surface px-4 py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400 transition-colors hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50"
                   >
                     Clear
                   </Link>
@@ -295,7 +295,7 @@ export default async function ChartingHubPage(props: {
                 </p>
                 <Link
                   href="/charting"
-                  className="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#475569] transition-colors hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
+                  className="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-zinc-400 transition-colors hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50"
                 >
                   Clear Filters
                 </Link>
@@ -346,7 +346,7 @@ export default async function ChartingHubPage(props: {
                         <div className="flex items-center gap-2 lg:gap-3">
                           <Link
                             href={`/charting/games/${game.id}`}
-                            className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#475569] transition-colors hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
+                            className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-zinc-400 transition-colors hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50"
                           >
                             <CheckCircle2 className="h-3.5 w-3.5" />
                             Overview
@@ -388,7 +388,7 @@ function initialsForOpponent(opponent: string | null): string {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8]">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-zinc-500">
         {label}
       </div>
       {children}

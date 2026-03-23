@@ -39,10 +39,10 @@ export function SummaryTable({
 
     return (
       <div className="overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
-        <div className="border-b border-[#E2E8F0] px-5 py-4 sm:px-6">
+        <div className="border-b border-slate-200 dark:border-zinc-700 px-5 py-4 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
                 Summary Table
               </div>
               <div className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
@@ -56,7 +56,7 @@ export function SummaryTable({
         <div className="overflow-x-auto">
           <table className="min-w-[1040px] w-full">
             <thead>
-              <tr className="border-b border-[#E2E8F0] bg-background">
+              <tr className="border-b border-slate-200 dark:border-zinc-700 bg-background">
                 {[
                   "Player",
                   "Throw",
@@ -73,7 +73,7 @@ export function SummaryTable({
                 ].map((label) => (
                   <th
                     key={label}
-                    className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]"
+                    className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500"
                   >
                     {label}
                   </th>
@@ -83,12 +83,12 @@ export function SummaryTable({
             <tbody>
               {pitcherSummary.totalPitches === 0 ? (
                 <tr>
-                  <td colSpan={12} className="px-6 py-10 text-center text-sm text-[#94A3B8]">
+                  <td colSpan={12} className="px-6 py-10 text-center text-sm text-slate-400 dark:text-zinc-500">
                     No pitches match the current player and filter scope.
                   </td>
                 </tr>
               ) : (
-                <tr className="border-b border-[#E2E8F0] transition-smooth hover:bg-emerald-50/60">
+                <tr className="border-b border-slate-200 dark:border-zinc-700 transition-smooth hover:bg-emerald-50/60">
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-sm font-black text-emerald-700">
@@ -100,7 +100,7 @@ export function SummaryTable({
                       </div>
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-zinc-50">{pitcherEntry.displayName}</div>
-                        <div className="mt-1 text-[11px] text-[#94A3B8]">
+                        <div className="mt-1 text-[11px] text-slate-400 dark:text-zinc-500">
                           {pitcherEntry.throws ? `${pitcherEntry.throws}HP` : "Hand unknown"}
                         </div>
                       </div>
@@ -137,10 +137,10 @@ export function SummaryTable({
 
   return (
     <div className="overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
-      <div className="border-b border-[#E2E8F0] px-5 py-4 sm:px-6">
+      <div className="border-b border-slate-200 dark:border-zinc-700 px-5 py-4 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
               Summary Table
             </div>
             <div className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
@@ -154,7 +154,7 @@ export function SummaryTable({
       <div className="overflow-x-auto">
         <table className="min-w-[1020px] w-full">
           <thead>
-            <tr className="border-b border-[#E2E8F0] bg-background">
+            <tr className="border-b border-slate-200 dark:border-zinc-700 bg-background">
               {[
                 "Player",
                 "Season",
@@ -173,7 +173,7 @@ export function SummaryTable({
               ].map((label) => (
                 <th
                   key={label}
-                  className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]"
+                  className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500"
                 >
                   {label}
                 </th>
@@ -183,12 +183,12 @@ export function SummaryTable({
           <tbody>
             {hitterSummary.totalPitches === 0 ? (
               <tr>
-                <td colSpan={14} className="px-6 py-10 text-center text-sm text-[#94A3B8]">
+                <td colSpan={14} className="px-6 py-10 text-center text-sm text-slate-400 dark:text-zinc-500">
                   No pitches match the current player and filter scope.
                 </td>
               </tr>
             ) : (
-              <tr className="border-b border-[#E2E8F0] transition-smooth hover:bg-emerald-50/60">
+              <tr className="border-b border-slate-200 dark:border-zinc-700 transition-smooth hover:bg-emerald-50/60">
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-sm font-black text-emerald-700">
@@ -200,7 +200,7 @@ export function SummaryTable({
                     </div>
                     <div>
                       <div className="font-semibold text-slate-900 dark:text-zinc-50">{hitterEntry.displayName}</div>
-                      <div className="mt-1 text-[11px] text-[#94A3B8]">
+                      <div className="mt-1 text-[11px] text-slate-400 dark:text-zinc-500">
                         {hitterEntry.batterHand ? `${hitterEntry.batterHand}HH` : "Hand unknown"}
                       </div>
                     </div>

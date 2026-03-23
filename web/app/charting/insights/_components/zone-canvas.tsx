@@ -112,13 +112,13 @@ export function ZoneCanvas({
           ? `Col: ${ZONE_COL_LABELS[focusColId] ?? focusColId}`
           : focusLayout?.label ?? null;
   return (
-    <div className="rounded-[1.9rem] border border-[#E2E8F0] bg-background p-4">
+    <div className="rounded-[1.9rem] border border-slate-200 dark:border-zinc-700 bg-background p-4">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
             {displayMode === "heatmap" ? "Pitch Heatmap" : "Zone Sections"}
           </div>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-[#94A3B8]">
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-400 dark:text-zinc-500">
             <span>{activeMetric}</span>
             <span className="text-[#CBD5E1]">•</span>
             <span>
@@ -151,7 +151,7 @@ export function ZoneCanvas({
               onSelectRow(null);
               onSelectCol(null);
             }}
-            className="rounded-full border border-[#E2E8F0] bg-surface px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-zinc-400 transition-smooth hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
+            className="rounded-full border border-slate-200 dark:border-zinc-700 bg-surface px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-zinc-400 transition-smooth hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50"
           >
             Clear Selection
           </button>
@@ -159,7 +159,7 @@ export function ZoneCanvas({
       </div>
 
       {displayMode === "heatmap" ? (
-        <div className="relative aspect-[0.92] overflow-hidden rounded-[2.15rem] border border-[#E2E8F0] bg-[#EEF2FF] p-3">
+        <div className="relative aspect-[0.92] overflow-hidden rounded-[2.15rem] border border-slate-200 dark:border-zinc-700 bg-[#EEF2FF] p-3">
           <svg
             viewBox={`0 0 ${SIZE} ${SIZE}`}
             className="absolute inset-3 h-[calc(100%-1.5rem)] w-[calc(100%-1.5rem)]"
@@ -278,10 +278,10 @@ export function ZoneCanvas({
           <div className="pointer-events-none absolute inset-3 rounded-[1.9rem] border border-slate-900/5" />
         </div>
       ) : (
-        <div className="relative rounded-[2.15rem] border border-[#E2E8F0] bg-[#F1F5F9] p-3">
+        <div className="relative rounded-[2.15rem] border border-slate-200 dark:border-zinc-700 bg-slate-100 dark:bg-zinc-800 p-3">
           <div className="mb-2 flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5">
-              <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#94A3B8]">Row</span>
+              <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500">Row</span>
               {([0, 1, 2] as const).map((row) => (
                 <button
                   key={row}
@@ -295,7 +295,7 @@ export function ZoneCanvas({
                     "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition-smooth",
                     selectedRowId === row
                       ? "bg-sky-100 text-sky-700 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.30)]"
-                      : "text-[#94A3B8] hover:bg-slate-200 hover:text-slate-900 dark:hover:text-zinc-50",
+                      : "text-slate-400 dark:text-zinc-500 hover:bg-slate-200 hover:text-slate-900 dark:hover:text-zinc-50",
                   )}
                 >
                   {ZONE_ROW_LABELS[row]}
@@ -303,7 +303,7 @@ export function ZoneCanvas({
               ))}
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#94A3B8]">Col</span>
+              <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500">Col</span>
               {([0, 1, 2] as const).map((col) => (
                 <button
                   key={col}
@@ -317,7 +317,7 @@ export function ZoneCanvas({
                     "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition-smooth",
                     selectedColId === col
                       ? "bg-sky-100 text-sky-700 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.30)]"
-                      : "text-[#94A3B8] hover:bg-slate-200 hover:text-slate-900 dark:hover:text-zinc-50",
+                      : "text-slate-400 dark:text-zinc-500 hover:bg-slate-200 hover:text-slate-900 dark:hover:text-zinc-50",
                   )}
                 >
                   {ZONE_COL_LABELS[col]}
@@ -400,7 +400,7 @@ export function ZoneCanvas({
           </div>
 
           {hasAnyFocus && focusSummary ? (
-            <div className="pointer-events-none absolute right-3 top-16 rounded-[0.75rem] border border-[#E2E8F0] bg-surface px-3 py-2 text-[11px] text-slate-500 dark:text-zinc-400 shadow-[0_8px_20px_rgba(15,23,42,0.12)]">
+            <div className="pointer-events-none absolute right-3 top-16 rounded-[0.75rem] border border-slate-200 dark:border-zinc-700 bg-surface px-3 py-2 text-[11px] text-slate-500 dark:text-zinc-400 shadow-[0_8px_20px_rgba(15,23,42,0.12)]">
               <div className="font-semibold text-slate-900 dark:text-zinc-50">{focusLabel}</div>
               <div className="mt-1 flex flex-wrap items-center gap-3">
                 <span>

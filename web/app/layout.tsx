@@ -65,11 +65,6 @@ export default function RootLayout({
         className="min-h-screen bg-background text-slate-900 dark:text-zinc-50 antialiased"
         style={teamThemeStyle}
       >
-        {process.env.NODE_ENV === "development" ? (
-          <div className="pointer-events-none fixed bottom-2 right-2 z-[9999] rounded-md bg-black/80 px-2 py-1 text-[10px] font-semibold tracking-[0.08em] text-white">
-            LOCAL UI BUILD 2026-03-23
-          </div>
-        ) : null}
         <Providers>
           <DebugInit />
           <div className="flex min-h-screen w-full flex-col bg-background xl:flex-row xl:items-start">

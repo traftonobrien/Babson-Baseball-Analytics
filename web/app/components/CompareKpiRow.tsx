@@ -45,15 +45,15 @@ function KpiCell({ label, valueA, valueB, delta, unit, invert, decimals = 1 }: {
       </div>
       <div className="grid grid-cols-3 gap-1 text-center">
         <div>
-          <div className="mb-0.5 text-[7px] text-[#94A3B8]">A</div>
+          <div className="mb-0.5 text-[7px] text-slate-400 dark:text-zinc-500">A</div>
           <div className="font-mono text-[12px] font-bold text-slate-900 dark:text-zinc-50">{valueA.toFixed(decimals)}{unit}</div>
         </div>
         <div>
-          <div className="mb-0.5 text-[7px] text-[#94A3B8]">B</div>
+          <div className="mb-0.5 text-[7px] text-slate-400 dark:text-zinc-500">B</div>
           <div className="font-mono text-[12px] font-bold text-slate-900 dark:text-zinc-50">{valueB.toFixed(decimals)}{unit}</div>
         </div>
         <div>
-          <div className="mb-0.5 text-[7px] text-[#94A3B8]">&Delta;</div>
+          <div className="mb-0.5 text-[7px] text-slate-400 dark:text-zinc-500">&Delta;</div>
           <div><DeltaCell value={delta} unit={unit} invert={invert} /></div>
         </div>
       </div>

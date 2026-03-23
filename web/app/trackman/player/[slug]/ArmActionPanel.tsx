@@ -21,31 +21,43 @@ function confidenceColor(c: ArmActionProfile["confidence"]): string {
 }
 
 function actionAccentClasses(action: ArmActionProfile["armAction"]): {
-  bg: string;
-  border: string;
-  text: string;
+  bgLight: string;
+  borderLight: string;
+  textLight: string;
+  bgDark: string;
+  borderDark: string;
+  textDark: string;
   glow: string;
 } {
   switch (action) {
     case "Pronator":
       return {
-        bg: "bg-blue-50",
-        border: "border-blue-200",
-        text: "text-blue-800",
+        bgLight: "bg-blue-50",
+        borderLight: "border-blue-200",
+        textLight: "text-blue-800",
+        bgDark: "bg-blue-950/45",
+        borderDark: "border-blue-800/70",
+        textDark: "text-blue-200",
         glow: "rgba(59,130,246,0.08)",
       };
     case "Supinator":
       return {
-        bg: "bg-violet-50",
-        border: "border-violet-200",
-        text: "text-violet-800",
+        bgLight: "bg-violet-50",
+        borderLight: "border-violet-200",
+        textLight: "text-violet-800",
+        bgDark: "bg-violet-950/45",
+        borderDark: "border-violet-800/70",
+        textDark: "text-violet-200",
         glow: "rgba(139,92,246,0.08)",
       };
     default:
       return {
-        bg: "bg-slate-100",
-        border: "border-slate-200",
-        text: "text-slate-700",
+        bgLight: "bg-slate-100",
+        borderLight: "border-slate-200",
+        textLight: "text-slate-700",
+        bgDark: "bg-zinc-800/70",
+        borderDark: "border-zinc-700",
+        textDark: "text-zinc-200",
         glow: "rgba(148,163,184,0.12)",
       };
   }
@@ -72,12 +84,12 @@ function RecommendationRow({
         {rec.priority === "Primary" ? (
           <PlusCircle className="h-4 w-4 text-blue-600" />
         ) : (
-          <span className="inline-block h-4 w-4 text-center text-[10px] leading-4 text-[#94A3B8]">○</span>
+          <span className="inline-block h-4 w-4 text-center text-[10px] leading-4 text-slate-400 dark:text-zinc-500">○</span>
         )}
       </div>
       <div className="min-w-0 flex-1">
         <div className="mb-1 flex items-center gap-2">
-          <PitchTypeChip pitchType={rec.pitchType} label={displayLabel} size="xs" variant="solid" />
+          <PitchTypeChip pitchType={rec.pitchType} label={displayLabel} size="xs" variant="soft" />
           {rec.priority === "Primary" ? (
             <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-blue-700">
               Primary Add
@@ -160,7 +172,7 @@ export default function ArmActionPanel({
             className={
               isDark
                 ? "flex h-6 w-6 items-center justify-center rounded-full border border-zinc-600 bg-zinc-900 text-zinc-400 transition-colors hover:border-zinc-500 hover:text-zinc-100"
-                : "flex h-6 w-6 items-center justify-center rounded-full border border-[#E2E8F0] bg-background text-slate-500 dark:text-zinc-400 transition-colors hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
+                : "flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 dark:border-zinc-700 bg-background text-slate-500 dark:text-zinc-400 transition-colors hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50"
             }
           >
             <HelpCircle className="h-3.5 w-3.5" />
@@ -172,9 +184,13 @@ export default function ArmActionPanel({
 
       {/* Classification badge */}
       <div
-        className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 mb-5 ${accent.bg} ${accent.border}`}
+        className={`mb-5 inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 ${
+          isDark
+            ? `${accent.bgDark} ${accent.borderDark}`
+            : `${accent.bgLight} ${accent.borderLight}`
+        }`}
       >
-        <span className={`text-lg font-bold tracking-tight ${accent.text}`}>
+        <span className={`text-lg font-bold tracking-tight ${isDark ? accent.textDark : accent.textLight}`}>
           {profile.label}
         </span>
       </div>

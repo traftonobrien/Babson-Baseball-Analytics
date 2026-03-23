@@ -143,7 +143,7 @@ function LanePanel({
               "flex cursor-pointer flex-col items-center gap-2 rounded-2xl border p-3 transition-smooth",
               isActive
                 ? brandSoftActiveRingClasses
-                : "border-border bg-surface hover:border-[#CBD5E1] dark:hover:border-zinc-600",
+                : "border-border bg-surface hover:border-slate-300 dark:hover:border-zinc-600 dark:hover:border-zinc-600",
               isDimmed ? "opacity-50 hover:opacity-80" : "",
             )}
           >
@@ -177,14 +177,14 @@ function LanePanel({
                   <span className="font-mono text-slate-900 dark:text-zinc-50">
                     {Math.abs(b.avgH).toFixed(1)}&quot;
                   </span>{" "}
-                  <span className="text-[#94A3B8] dark:text-zinc-500">{hLabel(b.avgH)}</span>
+                  <span className="text-slate-400 dark:text-zinc-500 dark:text-zinc-500">{hLabel(b.avgH)}</span>
                 </div>
                 <div className="text-xs text-slate-500 dark:text-zinc-400">
                   V{" "}
                   <span className="font-mono text-slate-900 dark:text-zinc-50">
                     {Math.abs(b.avgV).toFixed(1)}&quot;
                   </span>{" "}
-                  <span className="text-[#94A3B8] dark:text-zinc-500">{vLabel(b.avgV)}</span>
+                  <span className="text-slate-400 dark:text-zinc-500 dark:text-zinc-500">{vLabel(b.avgV)}</span>
                 </div>
               </div>
             )}
@@ -216,10 +216,10 @@ export default function LaneReport({ pitches, throwsHand, activeLane, onSelectLa
     <div className="rounded-[28px] border border-border bg-surface p-5 shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8] dark:text-zinc-500">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">
             Lane Report
           </p>
-          <p className="mt-1 text-sm text-[#475569] dark:text-zinc-400">
+          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400 dark:text-zinc-400">
             See how misses play across glove side, middle, and arm side.
           </p>
         </div>
@@ -237,7 +237,7 @@ export default function LaneReport({ pitches, throwsHand, activeLane, onSelectLa
             >
               <div className="mb-3 flex items-center gap-2">
                 <PitchTypeChip pitchType={g.type} label={pitchDisplayName(g.type)} size="xs" variant="soft" />
-                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8] dark:text-zinc-500">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">
                   By Lane
                 </span>
               </div>

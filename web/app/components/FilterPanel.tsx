@@ -26,12 +26,12 @@ export default function FilterPanel({ pitches, filters, onChange }: Props) {
     <div className="space-y-5 text-sm">
       {/* Pitch type */}
       <div className="space-y-2.5">
-        <h3 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8] dark:text-zinc-500">
+        <h3 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">
           Pitch Type
         </h3>
         <div className="flex flex-wrap gap-2">
           {types.length === 0 ? (
-            <span className="text-xs italic text-[#94A3B8] dark:text-zinc-500">No pitches in this view</span>
+            <span className="text-xs italic text-slate-400 dark:text-zinc-500 dark:text-zinc-500">No pitches in this view</span>
           ) : types.map((t) => {
             const active =
               filters.pitchTypes.size === 0 || filters.pitchTypes.has(t);
@@ -44,7 +44,7 @@ export default function FilterPanel({ pitches, filters, onChange }: Props) {
                 className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-all duration-300 ${
                   active
                     ? "border-transparent bg-surface text-slate-900 shadow-sm dark:bg-zinc-900/90 dark:text-zinc-50"
-                    : "border-[#E2E8F0] bg-surface text-slate-500 hover:border-[#CBD5E1] hover:text-slate-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-50"
+                    : "border-slate-200 dark:border-zinc-700 bg-surface text-slate-500 hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-50"
                 }`}
                 style={active ? pitchChipSurfaceStyle(color, "filterActive", siteDark) : undefined}
               >
@@ -62,10 +62,10 @@ export default function FilterPanel({ pitches, filters, onChange }: Props) {
       {/* Miss max */}
       <div className="space-y-2.5">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8] dark:text-zinc-500">
+          <h3 className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">
             Max Miss
           </h3>
-          <span className="rounded-full border border-[#E2E8F0] bg-background px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:border-zinc-700 dark:text-zinc-400">
+          <span className="rounded-full border border-slate-200 dark:border-zinc-700 bg-background px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:border-zinc-700 dark:text-zinc-400">
             {filters.maxMiss !== null ? `≤ ${filters.maxMiss}"` : "All"}
           </span>
         </div>
@@ -89,7 +89,7 @@ export default function FilterPanel({ pitches, filters, onChange }: Props) {
       <button
         type="button"
         onClick={() => onChange({ pitchTypes: new Set(), maxMiss: null })}
-        className="rounded-full border border-[#E2E8F0] bg-surface px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 transition-all duration-300 hover:border-[#CBD5E1] hover:text-slate-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-50"
+        className="rounded-full border border-slate-200 dark:border-zinc-700 bg-surface px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 transition-all duration-300 hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-50"
       >
         Reset filters
       </button>

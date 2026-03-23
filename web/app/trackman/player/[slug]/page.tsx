@@ -527,7 +527,7 @@ function TrackmanPlayerPageInner({
                       className={
                         isDark
                           ? "rounded-3xl border border-zinc-700/90 bg-zinc-900/50 p-4 shadow-sm transition-smooth hover:border-zinc-600"
-                          : "rounded-3xl border border-border bg-surface p-4 shadow-sm transition-smooth hover:border-[#CBD5E1]"
+                          : "rounded-3xl border border-border bg-surface p-4 shadow-sm transition-smooth hover:border-slate-300 dark:hover:border-zinc-600"
                       }
                     >
                       <div className="flex items-center gap-3">
@@ -569,7 +569,7 @@ function TrackmanPlayerPageInner({
                         className={
                           isDark
                             ? "rounded-3xl border border-zinc-700/90 bg-zinc-900/50 p-4 shadow-sm transition-smooth hover:border-zinc-600"
-                            : "rounded-3xl border border-border bg-surface p-4 shadow-sm transition-smooth hover:border-[#CBD5E1]"
+                            : "rounded-3xl border border-border bg-surface p-4 shadow-sm transition-smooth hover:border-slate-300 dark:hover:border-zinc-600"
                         }
                       >
                         <div className="flex items-center gap-3">
@@ -663,7 +663,7 @@ function TrackmanPlayerPageInner({
                           className={
                             isDark
                               ? "group min-w-[12.25rem] shrink-0 rounded-2xl border border-zinc-700 bg-zinc-900/60 px-4 py-2.5 text-zinc-100 shadow-sm transition-smooth hover:border-zinc-600"
-                              : "group min-w-[12.25rem] shrink-0 rounded-2xl border border-border bg-surface px-4 py-2.5 text-slate-900 dark:text-zinc-50 shadow-sm transition-smooth hover:border-[#CBD5E1]"
+                              : "group min-w-[12.25rem] shrink-0 rounded-2xl border border-border bg-surface px-4 py-2.5 text-slate-900 dark:text-zinc-50 shadow-sm transition-smooth hover:border-slate-300 dark:hover:border-zinc-600"
                           }
                         >
                           <div className="flex items-center justify-between gap-3">

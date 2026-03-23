@@ -38,7 +38,7 @@ function compPitchLabel(pitch: MLBCompResult["pitch"]): string {
 }
 
 function DeltaBadge({ value }: { value: number | null }) {
-  if (value == null) return <span className="text-[10px] text-[#94A3B8]">—</span>;
+  if (value == null) return <span className="text-[10px] text-slate-400 dark:text-zinc-500">—</span>;
   const isPos = value >= 0;
   const abs = Math.abs(value);
   const cls =
@@ -133,7 +133,7 @@ function WatchClipButton({
       className={
         isDark
           ? "flex h-[30px] w-[96px] shrink-0 items-center justify-start gap-1.5 whitespace-nowrap rounded-xl border border-zinc-600 bg-zinc-900 px-2.5 text-[11px] font-medium text-zinc-300 transition-smooth hover:border-zinc-500 hover:bg-zinc-800 hover:text-zinc-100"
-          : "flex h-[30px] w-[96px] shrink-0 items-center justify-start gap-1.5 whitespace-nowrap rounded-xl border border-[#E2E8F0] bg-surface px-2.5 text-[11px] font-medium text-[#475569] transition-smooth hover:border-[#CBD5E1] hover:bg-background hover:text-slate-900 dark:hover:text-zinc-50"
+          : "flex h-[30px] w-[96px] shrink-0 items-center justify-start gap-1.5 whitespace-nowrap rounded-xl border border-slate-200 dark:border-zinc-700 bg-surface px-2.5 text-[11px] font-medium text-slate-500 dark:text-zinc-400 transition-smooth hover:border-slate-300 dark:hover:border-zinc-600 hover:bg-background hover:text-slate-900 dark:hover:text-zinc-50"
       }
       title={title}
     >
@@ -176,15 +176,15 @@ function PitchCompCard({
           <span className={isDark ? "text-[10px] font-medium text-zinc-400" : "text-[10px] font-medium text-slate-500 dark:text-zinc-400"}>
             {pitchLabel}
           </span>
-          <span className={isDark ? "text-zinc-600" : "text-[#94A3B8]"}>·</span>
+          <span className={isDark ? "text-zinc-600" : "text-slate-400 dark:text-zinc-500"}>·</span>
           <span className={isDark ? "text-[10px] font-mono text-zinc-400" : "text-[10px] font-mono text-slate-500 dark:text-zinc-400"}>
             IVB {fmt(result.pitch.avgIvb)}&quot;
           </span>
-          <span className={isDark ? "text-zinc-600" : "text-[#94A3B8]"}>·</span>
+          <span className={isDark ? "text-zinc-600" : "text-slate-400 dark:text-zinc-500"}>·</span>
           <span className={isDark ? "text-[10px] font-mono text-zinc-400" : "text-[10px] font-mono text-slate-500 dark:text-zinc-400"}>
             HB {fmt(result.pitch.avgHb)}&quot;
           </span>
-          <span className={isDark ? "text-zinc-600" : "text-[#94A3B8]"}>·</span>
+          <span className={isDark ? "text-zinc-600" : "text-slate-400 dark:text-zinc-500"}>·</span>
           <span className={isDark ? "text-[10px] font-mono text-zinc-400" : "text-[10px] font-mono text-slate-500 dark:text-zinc-400"}>
             {fmt(result.pitch.avgVelo)} mph
           </span>
@@ -198,12 +198,12 @@ function PitchCompCard({
           />
         )}
         <div className="ml-8 shrink-0 text-right">
-          <div className={isDark ? "mb-0.5 text-[10px] uppercase tracking-wide text-zinc-500" : "mb-0.5 text-[10px] uppercase tracking-wide text-[#94A3B8]"}>
+          <div className={isDark ? "mb-0.5 text-[10px] uppercase tracking-wide text-zinc-500" : "mb-0.5 text-[10px] uppercase tracking-wide text-slate-400 dark:text-zinc-500"}>
             Δ shape
           </div>
           <div className="flex items-center gap-1.5">
             <DeltaBadge value={result.deltas.ivb} />
-            <span className={isDark ? "text-[10px] text-zinc-600" : "text-[10px] text-[#94A3B8]"}>/</span>
+            <span className={isDark ? "text-[10px] text-zinc-600" : "text-[10px] text-slate-400 dark:text-zinc-500"}>/</span>
             <DeltaBadge value={result.deltas.hb} />
           </div>
         </div>
@@ -411,7 +411,7 @@ export default function MLBCompsPanel({
                         }`}
                         aria-pressed={isActive}
                       >
-                        <PitchTypeChip pitchType={pt} label={pt} size="xs" variant="solid" />
+                        <PitchTypeChip pitchType={pt} label={pt} size="xs" variant="soft" />
                       </button>
                     );
                   })}
@@ -438,7 +438,7 @@ export default function MLBCompsPanel({
                             pitchType={currentPitch}
                             label={`Your ${currentPitch}`}
                             size="xs"
-                            variant="solid"
+                            variant="soft"
                           />
                         </div>
                         <span className={isDark ? "text-[11px] font-mono text-zinc-400" : "text-[11px] font-mono text-slate-500 dark:text-zinc-400"}>
@@ -447,7 +447,7 @@ export default function MLBCompsPanel({
                         <span className={isDark ? "text-[11px] font-mono text-zinc-400" : "text-[11px] font-mono text-slate-500 dark:text-zinc-400"}>
                           HB {fmt(input.hb)}&quot;
                         </span>
-                        <span className={isDark ? "text-[11px] font-mono text-zinc-500" : "text-[11px] font-mono text-[#94A3B8]"}>
+                        <span className={isDark ? "text-[11px] font-mono text-zinc-500" : "text-[11px] font-mono text-slate-400 dark:text-zinc-500"}>
                           {fmt(input.velo)} mph
                         </span>
                       </div>
@@ -481,7 +481,7 @@ export default function MLBCompsPanel({
 
                     {/* Legend */}
                     <div className="mb-1 flex justify-end">
-                      <span className={isDark ? "text-[9px] uppercase tracking-wider text-zinc-500" : "text-[9px] uppercase tracking-wider text-[#94A3B8]"}>
+                      <span className={isDark ? "text-[9px] uppercase tracking-wider text-zinc-500" : "text-[9px] uppercase tracking-wider text-slate-400 dark:text-zinc-500"}>
                         Δ ivb / Δ hb
                       </span>
                     </div>

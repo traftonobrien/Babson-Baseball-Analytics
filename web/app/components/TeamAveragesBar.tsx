@@ -38,13 +38,13 @@ export default function TeamAveragesBar({
       aria-labelledby="team-baseline-heading"
     >
       {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#F1F5F9] bg-background/90 px-4 py-3.5 dark:border-zinc-800 sm:px-5">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 dark:border-zinc-800 bg-background/90 px-4 py-3.5 dark:border-zinc-800 sm:px-5">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h4 id="team-baseline-heading" className="text-sm font-semibold text-slate-900 dark:text-zinc-50">
               Team baseline &amp; Command+
             </h4>
-            <span className="shrink-0 rounded-full border border-[#E2E8F0] bg-surface px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:border-zinc-700 dark:text-zinc-400">
+            <span className="shrink-0 rounded-full border border-slate-200 dark:border-zinc-700 bg-surface px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:border-zinc-700 dark:text-zinc-400">
               {season} season
             </span>
           </div>
@@ -57,7 +57,7 @@ export default function TeamAveragesBar({
 
       {/* Primary: outing vs mix */}
       {hasSummary ? (
-        <div className="grid gap-3 border-b border-[#F1F5F9] p-4 dark:border-zinc-800 sm:grid-cols-2 sm:p-5">
+        <div className="grid gap-3 border-b border-slate-100 dark:border-zinc-800 p-4 dark:border-zinc-800 sm:grid-cols-2 sm:p-5">
           <div className={cn("rounded-xl px-4 py-4", brandHighlightCardClasses)}>
             <p className={cn("text-[10px] font-semibold uppercase tracking-[0.2em]", brandSoftEyebrowTextClasses)}>
               This outing
@@ -69,7 +69,7 @@ export default function TeamAveragesBar({
             <p className="mt-1 text-[12px] text-slate-500 dark:text-zinc-400">Weighted average miss</p>
           </div>
           <div className="rounded-xl border border-border bg-surface px-4 py-4 shadow-sm">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#94A3B8] dark:text-zinc-500">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">
               Team mix benchmark
             </p>
             <p className="mt-2 font-mono text-3xl font-bold tabular-nums tracking-tight text-slate-900 dark:text-zinc-50">
@@ -84,26 +84,26 @@ export default function TeamAveragesBar({
       {/* Per pitch: team baseline + Command+ */}
       {hasTable ? (
         <div className="p-4 sm:p-5">
-          <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8] dark:text-zinc-500">
+          <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">
             By pitch type
           </p>
           <div className="overflow-x-auto rounded-xl border border-border">
             <table className="w-full min-w-[640px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-[#F1F5F9] bg-background text-left dark:border-zinc-800 dark:bg-zinc-950/80">
-                  <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8] dark:text-zinc-500 sm:px-4">
+                <tr className="border-b border-slate-100 dark:border-zinc-800 bg-background text-left dark:border-zinc-800 dark:bg-zinc-950/80">
+                  <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500 sm:px-4">
                     Pitch
                   </th>
-                  <th scope="col" className="whitespace-nowrap px-3 py-2.5 text-right text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8] dark:text-zinc-500 sm:px-4">
+                  <th scope="col" className="whitespace-nowrap px-3 py-2.5 text-right text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500 sm:px-4">
                     Team avg miss
                   </th>
-                  <th scope="col" className="whitespace-nowrap px-3 py-2.5 text-right text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8] dark:text-zinc-500 sm:px-4">
+                  <th scope="col" className="whitespace-nowrap px-3 py-2.5 text-right text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500 sm:px-4">
                     Team n
                   </th>
-                  <th scope="col" className="whitespace-nowrap px-3 py-2.5 text-right text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8] dark:text-zinc-500 sm:px-4">
+                  <th scope="col" className="whitespace-nowrap px-3 py-2.5 text-right text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500 sm:px-4">
                     Outing n
                   </th>
-                  <th scope="col" className="whitespace-nowrap px-3 py-2.5 text-right text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8] dark:text-zinc-500 sm:px-4">
+                  <th scope="col" className="whitespace-nowrap px-3 py-2.5 text-right text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500 sm:px-4">
                     Your Cmd+
                   </th>
                 </tr>
@@ -120,7 +120,7 @@ export default function TeamAveragesBar({
                   }) => (
                     <tr
                       key={pitchType}
-                      className={`border-b border-[#F1F5F9] last:border-b-0 hover:bg-background/80 dark:border-zinc-800 dark:hover:bg-zinc-800/30 ${!qualified ? "opacity-[0.88]" : ""}`}
+                      className={`border-b border-slate-100 dark:border-zinc-800 last:border-b-0 hover:bg-background/80 dark:border-zinc-800 dark:hover:bg-zinc-800/30 ${!qualified ? "opacity-[0.88]" : ""}`}
                       title={
                         teamSampleCount > 0
                           ? `${teamSampleCount.toLocaleString()} pitches in ${season} baseline`
@@ -148,7 +148,7 @@ export default function TeamAveragesBar({
                       <td className="px-3 py-2.5 text-right sm:px-4">
                         <div className="flex items-center justify-end gap-1.5">
                           {yourCmdPlus === null ? (
-                            <span className="font-mono text-sm font-semibold text-[#94A3B8]">—</span>
+                            <span className="font-mono text-sm font-semibold text-slate-400 dark:text-zinc-500">—</span>
                           ) : (
                             <span
                               className="inline-flex min-w-[2.5rem] items-center justify-center rounded-md px-2 py-0.5 font-mono text-sm font-extrabold tabular-nums"

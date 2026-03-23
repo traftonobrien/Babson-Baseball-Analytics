@@ -132,13 +132,16 @@ function StatCard({
   tone: "indigo" | "emerald" | "sky";
 }) {
   const toneStyles = {
-    indigo: "from-[#EEF2FF] to-white text-[#4F46E5] border-[#E0E7FF]",
-    emerald: "from-[#ECFDF5] to-white text-[#10B981] border-[#D1FAE5]",
-    sky: "from-[#EFF6FF] to-white text-[#0EA5E9] border-[#DBEAFE]",
+    indigo:
+      "from-[#EEF2FF] to-white text-[#4F46E5] border-[#E0E7FF] dark:from-indigo-950/45 dark:to-zinc-900 dark:text-indigo-300 dark:border-indigo-800/60",
+    emerald:
+      "from-[#ECFDF5] to-white text-[#10B981] border-[#D1FAE5] dark:from-emerald-950/45 dark:to-zinc-900 dark:text-emerald-300 dark:border-emerald-800/60",
+    sky:
+      "from-[#EFF6FF] to-white text-[#0EA5E9] border-[#DBEAFE] dark:from-sky-950/45 dark:to-zinc-900 dark:text-sky-300 dark:border-sky-800/60",
   }[tone];
 
   return (
-    <div className={`rounded-[24px] border bg-gradient-to-br p-4 shadow-[0_16px_36px_rgba(15,23,42,0.04)] ${toneStyles}`}>
+    <div className={`rounded-[24px] border bg-gradient-to-br p-4 shadow-[0_16px_36px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_36px_rgba(0,0,0,0.35)] ${toneStyles}`}>
       <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
         {label}
       </div>
@@ -190,13 +193,13 @@ function PlayerCard({
   return (
     <Link
       href={`/trackman/player/${player.slug}`}
-      className={`group relative block overflow-hidden rounded-[24px] border bg-surface p-5 shadow-[0_16px_36px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#CBD5E1] hover:shadow-[0_20px_44px_rgba(15,23,42,0.08)] ${
-        isMe ? "border-[#C7D2FE] bg-[linear-gradient(135deg,rgba(238,242,255,0.9),white)]" : "border-border"
+      className={`group relative block overflow-hidden rounded-[24px] border bg-surface p-5 shadow-[0_16px_36px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 dark:hover:border-zinc-700 hover:shadow-[0_20px_44px_rgba(15,23,42,0.08)] ${
+        isMe ? "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)]" : "border-border"
       }`}
     >
       <div
         className={`absolute left-0 top-5 bottom-5 w-[3px] rounded-full transition-colors ${
-          isMe ? "bg-[#4F46E5]" : "bg-[#4F46E5]/0 group-hover:bg-[#4F46E5]/60"
+          isMe ? "bg-[var(--brand-primary)]" : "bg-[var(--brand-primary)]/0 group-hover:bg-[var(--brand-primary)]/60"
         }`}
       />
 
@@ -204,11 +207,11 @@ function PlayerCard({
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="truncate text-[15px] font-bold text-slate-900 dark:text-zinc-50 transition-colors group-hover:text-[#4F46E5]">
+              <h3 className="truncate text-[15px] font-bold text-slate-900 dark:text-zinc-50 transition-colors group-hover:text-[var(--brand-primary)]">
                 {getCanonicalName(player.name)}
               </h3>
               {isMe ? (
-                <span className="rounded-full border border-[#C7D2FE] bg-[#EEF2FF] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#4F46E5]">
+                <span className="rounded-full border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--brand-primary-subtle-text)]">
                   You
                 </span>
               ) : null}
@@ -223,11 +226,11 @@ function PlayerCard({
             </p>
           </div>
 
-          <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-[#94A3B8] transition-colors group-hover:text-[#4F46E5]" />
+          <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-slate-400 dark:text-zinc-500 transition-colors group-hover:text-[var(--brand-primary)]" />
         </div>
 
         <div className="mt-5">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#94A3B8]">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400 dark:text-zinc-500">
             Latest Session
           </div>
           <div className="mt-1 text-sm font-semibold text-slate-900 dark:text-zinc-50">{formatDate(player.latestDate)}</div>
@@ -325,7 +328,7 @@ export default function TrackmanPlayersPage() {
           <div className="flex flex-col gap-6 p-5 sm:p-7">
             <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
               <div className="min-w-0 flex-1">
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#E0E7FF] bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6366F1]">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--brand-primary-subtle-text)]">
                   <Radio className="h-3.5 w-3.5" />
                   Player roster
                 </div>
@@ -376,8 +379,8 @@ export default function TrackmanPlayersPage() {
         {loading ? (
           <div className="rounded-[28px] border border-border bg-surface p-6 shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
             <div className="animate-pulse space-y-4">
-              <div className="h-4 w-40 rounded-full bg-[#E2E8F0]" />
-              <div className="h-12 rounded-[20px] bg-[#F1F5F9]" />
+              <div className="h-4 w-40 rounded-full bg-slate-200 dark:bg-zinc-800" />
+              <div className="h-12 rounded-[20px] bg-slate-100 dark:bg-zinc-900" />
               <div className="grid gap-4 md:grid-cols-2">
                 {[0, 1, 2].map((index) => (
                   <div key={index} className="h-36 rounded-[24px] bg-background" />
@@ -387,12 +390,12 @@ export default function TrackmanPlayersPage() {
           </div>
         ) : players.length === 0 ? (
           <div className="rounded-[28px] border border-border bg-surface px-6 py-20 text-center shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
-            <Radio className="mx-auto mb-4 h-14 w-14 text-[#CBD5E1]" />
+            <Radio className="mx-auto mb-4 h-14 w-14 text-slate-300 dark:text-zinc-700" />
             <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-50">No Trackman sessions imported yet</h2>
             <p className="mx-auto mt-2 max-w-md text-sm leading-7 text-slate-500 dark:text-zinc-400">
               Run the import script to populate the roster, then return here to review velocity, pitch mix, and session history.
             </p>
-            <p className="mt-4 text-xs font-medium uppercase tracking-[0.18em] text-[#94A3B8]">
+            <p className="mt-4 text-xs font-medium uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500">
               scripts/import_trackman_pdf.py
             </p>
           </div>
@@ -423,14 +426,14 @@ export default function TrackmanPlayersPage() {
                   />
                 </div>
 
-                <label className="flex min-w-0 items-center gap-3 rounded-2xl border border-border bg-background px-4 py-3 transition-colors focus-within:border-[#C7D2FE] focus-within:bg-surface">
-                  <Search className="h-4 w-4 shrink-0 text-[#94A3B8]" />
+                <label className="flex min-w-0 items-center gap-3 rounded-2xl border border-border bg-background px-4 py-3 transition-colors focus-within:border-[var(--brand-primary-border)] focus-within:bg-surface">
+                  <Search className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
                   <input
                     type="text"
                     placeholder="Search players..."
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
-                    className="w-full min-w-0 bg-transparent text-sm text-slate-900 dark:text-zinc-50 outline-none placeholder:text-[#94A3B8]"
+                    className="w-full min-w-0 bg-transparent text-sm text-slate-900 dark:text-zinc-50 outline-none placeholder:text-slate-400 dark:placeholder:text-zinc-500"
                   />
                 </label>
               </div>
@@ -444,7 +447,7 @@ export default function TrackmanPlayersPage() {
 
             {filtered.length === 0 ? (
               <div className="rounded-[24px] border border-border bg-surface px-6 py-14 text-center shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
-                <Layers3 className="mx-auto mb-4 h-12 w-12 text-[#CBD5E1]" />
+                <Layers3 className="mx-auto mb-4 h-12 w-12 text-slate-300 dark:text-zinc-700" />
                 <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-50">No players match your search</h2>
                 <p className="mt-2 text-sm text-slate-500 dark:text-zinc-400">
                   Try clearing the query or switching the hand filter back to All.
@@ -471,7 +474,7 @@ function FilterGroup<T extends string>({
 }) {
   return (
     <div className="space-y-2">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
         {label}
       </div>
       <div className="inline-flex flex-wrap gap-1 rounded-2xl border border-border bg-background p-1">

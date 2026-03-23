@@ -45,6 +45,14 @@ function pitchTypeChipStyle(
     };
   }
 
+  if (!siteDark) {
+    return {
+      borderColor: `rgba(${rgb}, 0.34)`,
+      background: `linear-gradient(135deg, rgba(${rgb}, 0.2), rgba(248, 250, 252, 0.96))`,
+      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.72), 0 0 0 1px rgba(${rgb}, 0.08)`,
+    };
+  }
+
   return {
     borderColor: `rgba(${rgb}, 0.42)`,
     background: `linear-gradient(135deg, rgba(${rgb}, 0.24), rgba(9, 9, 11, 0.92))`,

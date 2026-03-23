@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Manrope, Plus_Jakarta_Sans } from "next/font/google";
@@ -201,7 +200,7 @@ function StatRow({
   accent?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between border-b border-[#F1F5F9] px-4 py-3 last:border-b-0">
+    <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 px-4 py-3 last:border-b-0">
       <span className="text-[12px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-zinc-400">
         {label}
       </span>
@@ -332,9 +331,8 @@ export default async function PlayerProfilePage({
         };
       })()
     : undefined;
-  const roster = rosterData as Record<string, { height?: string; weight?: string; class?: string; photo?: string }>;
+  const roster = rosterData as Record<string, { height?: string; weight?: string; class?: string }>;
   const rosterInfo = roster[resolvedPlayer.slug];
-  const profilePhoto = rosterInfo?.photo ?? null;
   const throwHand =
     getHand(resolvedPlayer.slug) ??
     (resolvedPlayer.throws === "R" || resolvedPlayer.throws === "L" ? resolvedPlayer.throws : null);
@@ -498,12 +496,12 @@ export default async function PlayerProfilePage({
         style={{ backgroundColor: "rgba(var(--brand-primary-rgb), 0.18)" }}
       />
       <div className="relative mx-auto flex min-h-screen w-full max-w-[1820px] flex-col">
-        <header className="sticky top-0 z-20 border-b border-[#F1F5F9] bg-surface/90 backdrop-blur">
+        <header className="sticky top-0 z-20 border-b border-slate-100 dark:border-zinc-800 bg-surface/90 backdrop-blur">
           <div className="flex flex-col gap-4 px-5 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6 lg:px-8">
             <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
               <Link
                 href="/players"
-                className="inline-flex h-9 shrink-0 items-center gap-2 self-start rounded-full border border-[#E2E8F0] bg-surface px-3 text-[12px] font-semibold leading-none text-[#475569] transition-colors hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50 sm:self-center"
+                className="inline-flex h-9 shrink-0 items-center gap-2 self-start rounded-full border border-slate-200 dark:border-zinc-700 bg-surface px-3 text-[12px] font-semibold leading-none text-slate-500 dark:text-zinc-400 transition-colors hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50 sm:self-center"
               >
                 <ArrowLeft className="h-4 w-4 shrink-0" />
                 Back to roster
@@ -518,7 +516,7 @@ export default async function PlayerProfilePage({
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
               <Link
                 href="/players"
-                className="inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-surface px-4 py-2 text-[13px] font-semibold text-[#475569] transition-colors hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
+                className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-zinc-700 bg-surface px-4 py-2 text-[13px] font-semibold text-slate-500 dark:text-zinc-400 transition-colors hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50"
               >
                 <ScanLine className="h-4 w-4" />
                 Roster index
@@ -534,7 +532,7 @@ export default async function PlayerProfilePage({
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 xl:px-10 lg:py-8 2xl:px-12">
           <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)] 2xl:grid-cols-[280px_minmax(0,1fr)]">
             <aside className="order-2 space-y-6 self-start xl:order-1 xl:sticky xl:top-[104px]">
-              <section className="overflow-hidden rounded-[32px] border border-[#E2E8F0] bg-surface shadow-[0_24px_64px_rgba(15,23,42,0.06)]">
+              <section className="overflow-hidden rounded-[32px] border border-slate-200 dark:border-zinc-700 bg-surface shadow-[0_24px_64px_rgba(15,23,42,0.06)]">
                 <div
                   className="px-6 pb-8 pt-6 text-white"
                   style={{
@@ -543,23 +541,9 @@ export default async function PlayerProfilePage({
                   }}
                 >
                   <div className="flex flex-col items-start gap-5">
-                    {profilePhoto ? (
-                      <div className="h-24 w-24 overflow-hidden rounded-full border border-white/20 shadow-[0_24px_40px_rgba(15,23,42,0.20)]">
-                        <Image
-                          src={profilePhoto}
-                          alt={resolvedPlayer.name}
-                          width={96}
-                          height={96}
-                          className="h-full w-full object-cover object-top"
-                          priority
-                          unoptimized
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex h-24 w-24 items-center justify-center rounded-full border border-white/20 bg-surface/10 text-[2rem] font-extrabold tracking-tight shadow-[0_24px_40px_rgba(15,23,42,0.20)] backdrop-blur">
-                        {profileInitials}
-                      </div>
-                    )}
+                    <div className="flex h-24 w-24 items-center justify-center rounded-full border border-white/20 bg-surface/10 text-[2rem] font-extrabold tracking-tight shadow-[0_24px_40px_rgba(15,23,42,0.20)] backdrop-blur">
+                      {profileInitials}
+                    </div>
 
                     <div>
                       <h2 className={`${plusJakarta.className} text-[30px] font-extrabold tracking-tight`}>
@@ -604,7 +588,7 @@ export default async function PlayerProfilePage({
             </aside>
 
             <div className="order-1 min-w-0 space-y-8 xl:order-2">
-              <section className="overflow-hidden rounded-[32px] border border-[#E2E8F0] bg-surface shadow-[0_24px_64px_rgba(15,23,42,0.06)]">
+              <section className="overflow-hidden rounded-[32px] border border-slate-200 dark:border-zinc-700 bg-surface shadow-[0_24px_64px_rgba(15,23,42,0.06)]">
                 <div className="px-6 pb-6 pt-3 sm:px-7 sm:pb-7 sm:pt-4">
                   <PlayerProfileTabs
                     profileMode={profileMode}

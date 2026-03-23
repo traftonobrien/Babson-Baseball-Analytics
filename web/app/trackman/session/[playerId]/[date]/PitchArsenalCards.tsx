@@ -41,7 +41,7 @@ function Metric({
       <span className={light ? "font-mono text-sm text-slate-900 dark:text-zinc-50" : "text-sm font-mono text-zinc-200"}>
         {value}
         {unit && (
-          <span className={light ? "ml-0.5 text-[10px] text-[#94A3B8]" : "ml-0.5 text-[10px] text-zinc-500"}>
+          <span className={light ? "ml-0.5 text-[10px] text-slate-400 dark:text-zinc-500" : "ml-0.5 text-[10px] text-zinc-500"}>
             {unit}
           </span>
         )}
@@ -84,7 +84,7 @@ export default function PitchArsenalCards({
               key={row.pitchType}
               className={
                 light
-                  ? "group relative overflow-hidden rounded-[1.35rem] border border-border p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] transition-smooth duration-300 hover:border-[#CBD5E1]"
+                  ? "group relative overflow-hidden rounded-[1.35rem] border border-border p-4 shadow-[0_16px_40px_rgba(15,23,42,0.06)] transition-smooth duration-300 hover:border-slate-300 dark:hover:border-zinc-600"
                   : "group relative overflow-hidden rounded-[1.35rem] border border-zinc-800/90 p-4 shadow-[0_18px_40px_rgba(0,0,0,0.20)] transition-smooth duration-300 hover:border-zinc-700"
               }
               style={{ background: light ? accentBackgroundLight(color) : accentBackground(color) }}
@@ -102,14 +102,14 @@ export default function PitchArsenalCards({
                   <PitchTypeChip
                     pitchType={row.pitchType}
                     label={row.pitchType}
-                    size="sm"
-                    variant="solid"
+                    size="xs"
+                    variant="soft"
                   />
                   {row.count != null ? (
                     <span
                       className={
                         light
-                          ? "rounded-full border border-[#E2E8F0] bg-background px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-zinc-400"
+                          ? "rounded-full border border-slate-200 dark:border-zinc-700 bg-background px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-zinc-400"
                           : "rounded-full border border-zinc-800 bg-zinc-950/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500"
                       }
                     >

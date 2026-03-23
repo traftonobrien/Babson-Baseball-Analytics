@@ -43,7 +43,7 @@ export default function ComparePitchTypeTable({ comparison }: Props) {
           return (
             <tr
               key={row.pitchType}
-              className={`border-b border-[#F1F5F9] ${stripe}`}
+              className={`border-b border-slate-100 dark:border-zinc-800 ${stripe}`}
             >
               <td className="py-[3px] pr-1.5">
                 <span className="flex items-center gap-1">

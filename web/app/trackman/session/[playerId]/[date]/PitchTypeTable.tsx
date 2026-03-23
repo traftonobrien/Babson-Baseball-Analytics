@@ -79,7 +79,7 @@ export default function PitchTypeTable({
                     pitchType={row.pitchType}
                     label={pitchDisplayName(row.pitchType)}
                     size="xs"
-                    variant="solid"
+                    variant="soft"
                     className="align-middle"
                   />
                 </td>
@@ -97,7 +97,7 @@ export default function PitchTypeTable({
                       {row.meanStuffPlus.toFixed(1)}
                     </span>
                   ) : (
-                    <span className={light ? "font-mono text-[#94A3B8]" : "font-mono text-zinc-500"}>—</span>
+                    <span className={light ? "font-mono text-slate-400 dark:text-zinc-500" : "font-mono text-zinc-500"}>—</span>
                   )}
                 </td>
                 <td className="px-5 py-3 text-right font-mono">{fmt(row.avgVelo)}</td>

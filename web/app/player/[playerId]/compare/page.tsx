@@ -199,7 +199,7 @@ function CompareInner() {
             side={
               <Link
                 href={backHref}
-                className="inline-flex w-full min-w-0 items-center justify-center rounded-2xl border border-[#E2E8F0] bg-surface px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400 shadow-sm transition-smooth hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50 xl:w-fit xl:shrink-0"
+                className="inline-flex w-full min-w-0 items-center justify-center rounded-2xl border border-slate-200 dark:border-zinc-700 bg-surface px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400 shadow-sm transition-smooth hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50 xl:w-fit xl:shrink-0"
               >
                 {backLabel}
               </Link>
@@ -335,7 +335,7 @@ function CompareInner() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <LeaderboardPanel variant="light" className="p-5 sm:p-6">
-      <h2 className="border-b border-border pb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+      <h2 className="border-b border-border pb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
         {title}
       </h2>
       <div className="mt-4">{children}</div>

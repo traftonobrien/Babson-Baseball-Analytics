@@ -190,7 +190,7 @@ export default function Sidebar() {
         className={
           isDark
             ? "mt-4 px-3 text-[11px] font-bold uppercase tracking-[0.15em] text-zinc-500"
-            : "mt-4 px-3 text-[11px] font-bold uppercase tracking-[0.15em] text-[#94A3B8]"
+            : "mt-4 px-3 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-400 dark:text-zinc-500"
         }
       >
         Main Menu
@@ -205,7 +205,7 @@ export default function Sidebar() {
         return (
           <div key={item.name} className="flex flex-col gap-1.5">
             {startsNewSection && (
-              <div className={isDark ? "my-2 w-full h-px bg-zinc-800" : "my-2 w-full h-px bg-[#F1F5F9]"} />
+              <div className={isDark ? "my-2 w-full h-px bg-zinc-800" : "my-2 w-full h-px bg-slate-100 dark:bg-zinc-800"} />
             )}
             <Link
               href={item.url}
@@ -223,7 +223,7 @@ export default function Sidebar() {
                     ? "h-5 w-5 text-[var(--brand-primary-subtle-text)]"
                     : isDark
                       ? "w-5 h-5 text-zinc-500 group-hover:text-zinc-400 transition-colors"
-                      : "w-5 h-5 text-[#94A3B8] group-hover:text-slate-500 dark:hover:text-zinc-400 transition-colors"
+                      : "w-5 h-5 text-slate-400 dark:text-zinc-500 group-hover:text-slate-500 dark:hover:text-zinc-400 transition-colors"
                 }
               />
               {item.name}
@@ -240,7 +240,7 @@ export default function Sidebar() {
         className={
           isDark
             ? `sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-950 px-4 py-4 xl:hidden ${plusJakarta.className}`
-            : `sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-[#F1F5F9] bg-surface px-4 py-4 xl:hidden ${plusJakarta.className}`
+            : `sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-slate-100 dark:border-zinc-800 bg-surface px-4 py-4 xl:hidden ${plusJakarta.className}`
         }
       >
         <Link href="/" className="flex items-center gap-3">
@@ -266,7 +266,7 @@ export default function Sidebar() {
               className={
                 isDark
                   ? "block text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500"
-                  : "block text-[10px] font-bold uppercase tracking-[0.14em] text-[#94A3B8]"
+                  : "block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-zinc-500"
               }
             >
               Pitch Tracker
@@ -289,7 +289,7 @@ export default function Sidebar() {
         className={
           isDark
             ? `hidden h-screen w-[240px] shrink-0 border-r border-zinc-800 bg-zinc-950 xl:sticky xl:top-0 xl:flex xl:flex-col ${plusJakarta.className}`
-            : `hidden h-screen w-[240px] shrink-0 border-r border-[#F1F5F9] bg-surface xl:sticky xl:top-0 xl:flex xl:flex-col ${plusJakarta.className}`
+            : `hidden h-screen w-[240px] shrink-0 border-r border-slate-100 dark:border-zinc-800 bg-surface xl:sticky xl:top-0 xl:flex xl:flex-col ${plusJakarta.className}`
         }
       >
         <div className="px-6 pb-4 pt-6">
@@ -329,7 +329,7 @@ export default function Sidebar() {
 
         {renderNavLinks()}
 
-        <div className={isDark ? "border-t border-zinc-800 p-4" : "border-t border-[#F1F5F9] p-4"}>
+        <div className={isDark ? "border-t border-zinc-800 p-4" : "border-t border-slate-100 dark:border-zinc-800 p-4"}>
           <div className="mb-3">
             <SiteAppearanceToggle />
           </div>
@@ -362,21 +362,21 @@ export default function Sidebar() {
               className={
                 isDark
                   ? `fixed inset-y-0 right-0 z-[70] flex w-[85vw] max-w-sm flex-col border-l border-zinc-800 bg-zinc-950 shadow-2xl xl:hidden ${plusJakarta.className}`
-                  : `fixed inset-y-0 right-0 z-[70] flex w-[85vw] max-w-sm flex-col border-l border-[#F1F5F9] bg-surface shadow-2xl xl:hidden ${plusJakarta.className}`
+                  : `fixed inset-y-0 right-0 z-[70] flex w-[85vw] max-w-sm flex-col border-l border-slate-100 dark:border-zinc-800 bg-surface shadow-2xl xl:hidden ${plusJakarta.className}`
               }
             >
               <div
                 className={
                   isDark
                     ? "flex items-center justify-between border-b border-zinc-800 p-5"
-                    : "flex items-center justify-between border-b border-[#F1F5F9] p-5"
+                    : "flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 p-5"
                 }
               >
                 <div
                   className={
                     isDark
                       ? "text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500"
-                      : "text-[10px] font-bold uppercase tracking-[0.2em] text-[#94A3B8]"
+                      : "text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500"
                   }
                 >
                   Navigation
@@ -387,7 +387,7 @@ export default function Sidebar() {
                   className={
                     isDark
                       ? "flex h-8 w-8 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
-                      : "flex h-8 w-8 items-center justify-center rounded-full bg-background border border-[#F1F5F9] text-slate-500 dark:text-zinc-400 transition-colors hover:bg-[#F1F5F9] hover:text-slate-900 dark:hover:text-zinc-50"
+                      : "flex h-8 w-8 items-center justify-center rounded-full bg-background border border-slate-100 dark:border-zinc-800 text-slate-500 dark:text-zinc-400 transition-colors hover:bg-slate-100 dark:bg-zinc-800 hover:text-slate-900 dark:hover:text-zinc-50"
                   }
                 >
                   <X className="h-4 w-4" />
@@ -396,7 +396,7 @@ export default function Sidebar() {
               <div className="flex-1 overflow-y-auto">
                 {renderNavLinks()}
               </div>
-              <div className={isDark ? "border-t border-zinc-800 p-4" : "border-t border-[#F1F5F9] p-4"}>
+              <div className={isDark ? "border-t border-zinc-800 p-4" : "border-t border-slate-100 dark:border-zinc-800 p-4"}>
                 <div className="mb-3">
                   <SiteAppearanceToggle />
                 </div>

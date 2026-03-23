@@ -112,7 +112,7 @@ function BoardCard({
       <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-zinc-700" />
       <div className="relative flex items-start gap-4">
         <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#F1F5F9] bg-background dark:border-zinc-700 dark:bg-zinc-900/60 ${styles.icon}`}
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-100 dark:border-zinc-800 bg-background dark:border-zinc-700 dark:bg-zinc-900/60 ${styles.icon}`}
         >
           <Icon className="h-5 w-5" />
         </div>
@@ -131,7 +131,7 @@ function BoardCard({
             {description}
           </p>
         </div>
-        <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-[#94A3B8] transition-transform group-hover:translate-x-0.5 group-hover:text-[#6366F1] dark:text-zinc-500 dark:group-hover:text-indigo-400" />
+        <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500 transition-transform group-hover:translate-x-0.5 group-hover:text-[#6366F1] dark:text-zinc-500 dark:group-hover:text-indigo-400" />
       </div>
     </Link>
   );

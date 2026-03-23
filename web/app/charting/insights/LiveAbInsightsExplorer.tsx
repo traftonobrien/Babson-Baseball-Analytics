@@ -519,17 +519,17 @@ export default function LiveAbInsightsExplorer({
             <ComparisonViewToggle view={view} onChange={handleChangeView} />
 
             <div className="space-y-2">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
                 Player Search
               </div>
-              <label className="flex items-center gap-3 rounded-2xl border border-[#E2E8F0] bg-background px-4 py-3 transition-colors focus-within:border-[var(--brand-primary-border)] focus-within:bg-surface focus-within:shadow-[0_0_0_4px_rgba(var(--brand-primary-rgb),0.10)]">
-                <Search className="h-4 w-4 shrink-0 text-[#94A3B8]" />
+              <label className="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-zinc-700 bg-background px-4 py-3 transition-colors focus-within:border-[var(--brand-primary-border)] focus-within:bg-surface focus-within:shadow-[0_0_0_4px_rgba(var(--brand-primary-rgb),0.10)]">
+                <Search className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
                 <input
                   type="text"
                   value={searchInput}
                   onChange={(event) => setSearchInput(event.target.value)}
                   placeholder={searchPlaceholderForView(view)}
-                  className="w-full bg-transparent text-sm text-slate-900 dark:text-zinc-50 outline-none placeholder:text-[#94A3B8]"
+                  className="w-full bg-transparent text-sm text-slate-900 dark:text-zinc-50 outline-none placeholder:text-slate-400 dark:text-zinc-500"
                 />
               </label>
             </div>
@@ -545,7 +545,7 @@ export default function LiveAbInsightsExplorer({
                     setSelectedColId(null);
                     setSelectedPlayerSlug(null);
                   }}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-[#E2E8F0] bg-background px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400 transition-smooth hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-zinc-700 bg-background px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400 transition-smooth hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50"
                 >
                   Clear Player
                 </button>
@@ -572,7 +572,7 @@ export default function LiveAbInsightsExplorer({
           {resultsVisible ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {visibleResults.length === 0 ? (
-                <div className="col-span-full flex min-h-32 items-center justify-center rounded-[1.4rem] border border-dashed border-[#E2E8F0] bg-background px-5 text-center text-sm text-[#94A3B8]">
+                <div className="col-span-full flex min-h-32 items-center justify-center rounded-[1.4rem] border border-dashed border-slate-200 dark:border-zinc-700 bg-background px-5 text-center text-sm text-slate-400 dark:text-zinc-500">
                   No {countNounForView(view)}s match this search.
                 </div>
               ) : (
@@ -706,7 +706,7 @@ export default function LiveAbInsightsExplorer({
       {selectedEntry ? (
         <>
           <div className="overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
-            <div className="border-b border-[#F1F5F9] px-5 py-5 sm:px-6">
+            <div className="border-b border-slate-100 dark:border-zinc-800 px-5 py-5 sm:px-6">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
@@ -726,7 +726,7 @@ export default function LiveAbInsightsExplorer({
                 <div className="flex flex-wrap gap-2">
                   <Link
                     href={`/players/${selectedEntry.playerSlug}?tab=live-ab`}
-                    className="inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-background px-4 py-2 text-sm font-semibold text-[#334155] transition-smooth hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50"
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-zinc-700 bg-background px-4 py-2 text-sm font-semibold text-[#334155] transition-smooth hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50"
                   >
                     Open player page
                   </Link>
@@ -788,7 +788,7 @@ export default function LiveAbInsightsExplorer({
                     setSelectedRowId(null);
                   }}
                 />
-                <div className="rounded-[1.5rem] border border-[#E2E8F0] bg-background px-4 py-3 text-[11px] text-[#94A3B8]">
+                <div className="rounded-[1.5rem] border border-slate-200 dark:border-zinc-700 bg-background px-4 py-3 text-[11px] text-slate-400 dark:text-zinc-500">
                   {hiddenZonePitchCount > 0
                     ? `${hiddenZonePitchCount} filtered pitch${hiddenZonePitchCount === 1 ? "" : "es"} fall outside the visible rough-zone buckets and are omitted from the grid.`
                     : "All mapped pitches in the current sample land inside the visible rough-zone schema."}
@@ -796,14 +796,14 @@ export default function LiveAbInsightsExplorer({
               </div>
 
               <div className="space-y-4">
-                <div className="rounded-[1.6rem] border border-[#E2E8F0] bg-background px-4 py-3">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
+                <div className="rounded-[1.6rem] border border-slate-200 dark:border-zinc-700 bg-background px-4 py-3">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500">
                     Selection Scope
                   </div>
                   <div className="mt-2 text-lg font-black tracking-tight text-slate-900 dark:text-zinc-50">
                     {selectionLabel}
                   </div>
-                  <div className="mt-1 text-[11px] text-[#94A3B8]">
+                  <div className="mt-1 text-[11px] text-slate-400 dark:text-zinc-500">
                     {selectionSummary.totalPitches === filteredSummary.totalPitches
                       ? "Current filters with no zone slice applied."
                       : "Current filters with a zone-level slice applied."}

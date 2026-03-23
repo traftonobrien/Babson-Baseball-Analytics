@@ -37,7 +37,7 @@ export default function PitchTable({
   return (
     <div className="max-h-[calc(100vh-280px)] overflow-y-auto">
       <table className="w-full text-xs">
-        <thead className="sticky top-0 z-10 border-b border-[#F1F5F9] bg-background/95 text-[#94A3B8] backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90 dark:text-zinc-500">
+        <thead className="sticky top-0 z-10 border-b border-slate-100 dark:border-zinc-800 bg-background/95 text-slate-400 dark:text-zinc-500 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90 dark:text-zinc-500">
           <tr>
             <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.2em]">#</th>
             <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.2em]">Type</th>
@@ -58,13 +58,13 @@ export default function PitchTable({
               <tr
                 key={p.pitch_number}
                 onClick={() => onSelect(p)}
-                className={`cursor-pointer border-b border-[#F1F5F9] transition-all duration-300 ${
+                className={`cursor-pointer border-b border-slate-100 dark:border-zinc-800 transition-all duration-300 ${
                   isSelected
                     ? "bg-[var(--brand-primary-soft)] shadow-[inset_2px_0_0_rgba(var(--brand-primary-rgb),0.55)]"
                     : "hover:bg-background"
                 } ${isOutlier ? "opacity-55 grayscale hover:opacity-75" : ""}`}
               >
-                <td className="px-3 py-2 font-mono text-[#475569] dark:text-zinc-400">{p.pitch_number}</td>
+                <td className="px-3 py-2 font-mono text-slate-500 dark:text-zinc-400 dark:text-zinc-400">{p.pitch_number}</td>
                 <td className="px-3 py-2">
                   {isEditing && onEditPitchType && pitchTypeOptions ? (
                     <select
@@ -76,7 +76,7 @@ export default function PitchTable({
                         setEditingPitch(null);
                       }}
                       onBlur={() => setEditingPitch(null)}
-                      className="rounded-xl border border-[#E2E8F0] bg-surface px-2 py-1 text-xs text-slate-900 outline-none focus:border-[var(--brand-primary-border)] dark:border-zinc-700 dark:text-zinc-50"
+                      className="rounded-xl border border-slate-200 dark:border-zinc-700 bg-surface px-2 py-1 text-xs text-slate-900 outline-none focus:border-[var(--brand-primary-border)] dark:border-zinc-700 dark:text-zinc-50"
                     >
                       {pitchTypeOptions.map((t) => (
                         <option key={t} value={t}>
@@ -133,7 +133,7 @@ export default function PitchTable({
                         e.stopPropagation();
                         setEditingPitch(isEditing ? null : p.pitch_number);
                       }}
-                      className="rounded-md px-1 text-[11px] text-[#94A3B8] transition-all duration-300 hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+                      className="rounded-md px-1 text-[11px] text-slate-400 dark:text-zinc-500 transition-all duration-300 hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
                     >
                       ✎
                     </button>

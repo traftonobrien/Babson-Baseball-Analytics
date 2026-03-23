@@ -122,7 +122,7 @@ export default function CommandPlusSection({ pitches, outingId }: Props) {
         <div className={`rounded-[28px] border ${tierClass.borderClass} ${tierClass.bgClass} flex flex-col gap-4 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]`}>
             <div className="flex items-center justify-between">
                 <div>
-                    <h3 className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#94A3B8] dark:text-zinc-500">
+                    <h3 className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">
                         Command+
                         <span
                           className={cn(
@@ -135,7 +135,7 @@ export default function CommandPlusSection({ pitches, outingId }: Props) {
                             {season} Live Season
                         </span>
                     </h3>
-                    <p className="mt-2 text-sm text-[#475569] dark:text-zinc-400">
+                    <p className="mt-2 text-sm text-slate-500 dark:text-zinc-400 dark:text-zinc-400">
                         This outing&apos;s command grade against the current team baseline. 100 is team average.
                     </p>
                     {!isQualified && (
@@ -145,7 +145,7 @@ export default function CommandPlusSection({ pitches, outingId }: Props) {
                     )}
                 </div>
                 {overall === null ? (
-                    <div className="inline-flex min-w-[5rem] items-center justify-center rounded-xl border border-slate-200 bg-surface px-4 py-2 font-mono text-4xl font-extrabold tracking-tight text-[#94A3B8] dark:border-zinc-700 dark:text-zinc-500">
+                    <div className="inline-flex min-w-[5rem] items-center justify-center rounded-xl border border-slate-200 bg-surface px-4 py-2 font-mono text-4xl font-extrabold tracking-tight text-slate-400 dark:text-zinc-500 dark:border-zinc-700 dark:text-zinc-500">
                         --
                     </div>
                 ) : (

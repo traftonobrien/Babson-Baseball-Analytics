@@ -136,6 +136,14 @@ export default function MovementScatterByType({
   const isLight = surface === "light";
   const captionFill = isLight ? "fill-slate-600" : "fill-zinc-600";
   const captionFill9 = isLight ? "fill-slate-600" : "fill-zinc-600";
+  const plotFill = isLight ? "#f8fafc" : "#101116";
+  const ringStroke = isLight ? "#cbd5e1" : "#27272a";
+  const gridStroke = isLight ? "#e2e8f0" : "#1a1a1f";
+  const axisStroke = isLight ? "#94a3b8" : "#3f3f46";
+  const labelTitleClass = isLight ? "fill-slate-900 text-[8px] font-semibold" : "fill-zinc-200 text-[8px] font-semibold";
+  const labelMetricsClass = isLight ? "fill-slate-500 text-[7px] font-mono" : "fill-zinc-500 text-[7px] font-mono";
+  const legendTextClass = isLight ? "fill-slate-500 text-[8px] uppercase tracking-[0.14em]" : "fill-zinc-600 text-[8px] uppercase tracking-[0.14em]";
+  const emptyTextClass = isLight ? "fill-slate-500 text-[11px]" : "fill-zinc-500 text-[11px]";
   const [hoveredPitchType, setHoveredPitchType] = useState<string | null>(null);
   // Filter out "Other" and require valid movement data
   const valid = useMemo(
@@ -405,16 +413,16 @@ export default function MovementScatterByType({
                 <line x1={0} y1={0} x2={0} y2={4} stroke={color} strokeWidth={1.5} opacity={0.7} />
               </pattern>
               <linearGradient id={labelGradientId(color)} x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor={color} stopOpacity="0.14" />
-                <stop offset="28%" stopColor={color} stopOpacity="0.06" />
-                <stop offset="100%" stopColor="#09090b" stopOpacity="0.95" />
+                <stop offset="0%" stopColor={color} stopOpacity={isLight ? "0.2" : "0.14"} />
+                <stop offset="28%" stopColor={color} stopOpacity={isLight ? "0.1" : "0.06"} />
+                <stop offset="100%" stopColor={isLight ? "#ffffff" : "#09090b"} stopOpacity={isLight ? "0.95" : "0.95"} />
               </linearGradient>
             </g>
           ))}
         </defs>
 
         {/* Background */}
-        <rect x={PAD} y={PAD} width={PLOT} height={PLOT} fill="#101116" rx={8} />
+        <rect x={PAD} y={PAD} width={PLOT} height={PLOT} fill={plotFill} rx={8} />
 
         {/* Concentric rings */}
         {rings.map((inches) => {
@@ -426,7 +434,7 @@ export default function MovementScatterByType({
                 cy={CENTER}
                 r={r}
                 fill="none"
-                stroke="#27272a"
+                stroke={ringStroke}
                 strokeWidth={0.7}
                 strokeDasharray="3 2"
                 opacity={0.6}
@@ -434,7 +442,7 @@ export default function MovementScatterByType({
               <text
                 x={CENTER + r + 2}
                 y={CENTER - 3}
-                className="fill-zinc-600 text-[8px] font-mono"
+                className={`${captionFill} text-[8px] font-mono`}
                 opacity={0.75}
               >
                 {inches}{"\u2033"}
@@ -449,7 +457,7 @@ export default function MovementScatterByType({
           cy={CENTER}
           r={inchesToPx(OUTER_RING, maxAbs)}
           fill="none"
-          stroke="#27272a"
+          stroke={ringStroke}
           strokeWidth={0.5}
           strokeDasharray="2 3"
           opacity={0.35}
@@ -460,15 +468,15 @@ export default function MovementScatterByType({
           const pos = toSvg(v, maxAbs);
           return (
             <g key={`grid-${v}`}>
-              <line x1={pos} y1={PAD} x2={pos} y2={PAD + PLOT} stroke="#1a1a1f" strokeWidth={0.5} opacity={0.45} />
-              <line x1={PAD} y1={pos} x2={PAD + PLOT} y2={pos} stroke="#1a1a1f" strokeWidth={0.5} opacity={0.45} />
+              <line x1={pos} y1={PAD} x2={pos} y2={PAD + PLOT} stroke={gridStroke} strokeWidth={0.5} opacity={0.45} />
+              <line x1={PAD} y1={pos} x2={PAD + PLOT} y2={pos} stroke={gridStroke} strokeWidth={0.5} opacity={0.45} />
             </g>
           );
         })}
 
         {/* Crosshair axes */}
-        <line x1={PAD} y1={CENTER} x2={PAD + PLOT} y2={CENTER} stroke="#3f3f46" strokeWidth={0.75} opacity={0.8} />
-        <line x1={CENTER} y1={PAD} x2={CENTER} y2={PAD + PLOT} stroke="#3f3f46" strokeWidth={0.75} opacity={0.8} />
+        <line x1={PAD} y1={CENTER} x2={PAD + PLOT} y2={CENTER} stroke={axisStroke} strokeWidth={0.75} opacity={0.8} />
+        <line x1={CENTER} y1={PAD} x2={CENTER} y2={PAD + PLOT} stroke={axisStroke} strokeWidth={0.75} opacity={0.8} />
 
         {/* Axis tick labels */}
         {ticks.map((v) => (
@@ -549,6 +557,7 @@ export default function MovementScatterByType({
             plotSize={PLOT}
             pad={PAD}
             maxAbs={maxAbs}
+            surface={surface}
             hoveredPitchType={hoveredPitchType}
             onHoverPitchType={setHoveredPitchType}
           />
@@ -624,18 +633,10 @@ export default function MovementScatterByType({
                 r={2.4}
                 fill={label.color}
               />
-              <text
-                x={label.rect.x + 17}
-                y={label.rect.y + 16}
-                className="fill-zinc-200 text-[8px] font-semibold"
-              >
+              <text x={label.rect.x + 17} y={label.rect.y + 16} className={labelTitleClass}>
                 {label.displayLabel}
               </text>
-              <text
-                x={label.rect.x + 9}
-                y={label.rect.y + 24.75}
-                className="fill-zinc-500 text-[7px] font-mono"
-              >
+              <text x={label.rect.x + 9} y={label.rect.y + 24.75} className={labelMetricsClass}>
                 {label.metrics}
               </text>
               {label.rename?.wasRenamed && (
@@ -659,18 +660,14 @@ export default function MovementScatterByType({
               strokeWidth={0.75}
               opacity={0.55}
             />
-            <text
-              x={PAD + PLOT - 40}
-              y={PAD + 17}
-              className="fill-zinc-600 text-[8px] uppercase tracking-[0.14em]"
-            >
+            <text x={PAD + PLOT - 40} y={PAD + 17} className={legendTextClass}>
               MLB Avg
             </text>
           </g>
         )}
 
         {valid.length === 0 && (
-          <text x={CENTER} y={CENTER} textAnchor="middle" className="fill-zinc-500 text-[11px]">
+          <text x={CENTER} y={CENTER} textAnchor="middle" className={emptyTextClass}>
             No movement data
           </text>
         )}

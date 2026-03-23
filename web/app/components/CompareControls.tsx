@@ -29,7 +29,7 @@ export default function CompareControls({
           const val = e.target.value || null;
           onChange({ ...selection, playerId, outingId: val });
         }}
-        className="mt-2 w-full min-w-0 rounded-2xl border border-[#E2E8F0] bg-surface px-3 py-2.5 text-sm text-slate-900 dark:text-zinc-50 outline-none transition-smooth focus:border-[var(--brand-primary-border)] focus:ring-1 focus:ring-[var(--brand-primary-border)] sm:mt-2.5 sm:px-4 sm:py-3"
+        className="mt-2 w-full min-w-0 rounded-2xl border border-slate-200 dark:border-zinc-700 bg-surface px-3 py-2.5 text-sm text-slate-900 dark:text-zinc-50 outline-none transition-smooth focus:border-[var(--brand-primary-border)] focus:ring-1 focus:ring-[var(--brand-primary-border)] sm:mt-2.5 sm:px-4 sm:py-3"
       >
         <option value="">Select outing...</option>
         {availableOutings.map((o) => (

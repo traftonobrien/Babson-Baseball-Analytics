@@ -74,8 +74,8 @@ export function ZoneSectionRegion({
         className={joinClasses(
           "absolute font-bold uppercase leading-none tracking-wider",
           chase
-            ? joinClasses("text-[8px] text-[#94A3B8]", labelCornerClass ?? "left-4 top-3")
-            : "left-1.5 top-1.5 text-[8px] text-[#94A3B8]",
+            ? joinClasses("text-[8px] text-slate-400 dark:text-zinc-500", labelCornerClass ?? "left-4 top-3")
+            : "left-1.5 top-1.5 text-[8px] text-slate-400 dark:text-zinc-500",
         )}
       >
         {labelText}
@@ -88,7 +88,7 @@ export function ZoneSectionRegion({
             empty
               ? "text-[11px] text-[#CBD5E1]"
               : lowSample
-                ? "text-sm text-[#94A3B8]"
+                ? "text-sm text-slate-400 dark:text-zinc-500"
                 : "text-sm text-slate-900 dark:text-zinc-50",
           )}
         >
@@ -101,8 +101,8 @@ export function ZoneSectionRegion({
           className={joinClasses(
             "absolute leading-none tabular-nums",
             chase
-              ? "bottom-3 right-3 text-[10px] font-semibold text-[#94A3B8]"
-              : "bottom-1.5 right-1.5 text-[8px] font-semibold text-[#94A3B8]",
+              ? "bottom-3 right-3 text-[10px] font-semibold text-slate-400 dark:text-zinc-500"
+              : "bottom-1.5 right-1.5 text-[8px] font-semibold text-slate-400 dark:text-zinc-500",
           )}
         >
           {count}

@@ -27,7 +27,6 @@ export interface RosterEntry {
   height?: string;
   weight?: string;
   class?: string;
-  photo?: string;
 }
 
 type HandFilter = "all" | "R" | "L";
@@ -132,7 +131,7 @@ function FilterChip({
         "rounded-full border px-4 py-2 text-[12px] font-semibold transition-all duration-300",
         active
           ? "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)] shadow-[0_10px_24px_rgba(var(--brand-primary-rgb),0.12)]"
-          : "border-[#E2E8F0] bg-surface text-slate-500 dark:text-zinc-400 hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50",
+          : "border-slate-200 dark:border-zinc-700 bg-surface text-slate-500 dark:text-zinc-400 hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50",
       )}
     >
       {children}
@@ -161,38 +160,22 @@ function PlayerRow({
     <Link
       href={`/players/${player.slug}`}
       className={cn(
-        "group block border-t border-[#F1F5F9] transition-colors hover:bg-background",
+        "group block border-t border-slate-100 dark:border-zinc-800 transition-colors hover:bg-background",
         pinned ? "bg-[var(--brand-primary-surface)]" : "bg-surface",
       )}
     >
       <div className="grid gap-4 px-5 py-4 lg:grid-cols-[minmax(0,1.7fr)_7.5rem_7.5rem_7rem_minmax(0,1.1fr)] lg:items-center">
         <div className="flex min-w-0 items-center gap-4">
-          {rosterInfo?.photo ? (
-            <div className={cn(
-              "h-11 w-11 shrink-0 overflow-hidden rounded-full border",
-              pinned ? "border-[var(--brand-primary-border)]" : "border-[#E2E8F0] dark:border-zinc-700",
-            )}>
-              <Image
-                src={rosterInfo.photo}
-                alt={displayName}
-                width={44}
-                height={44}
-                className="h-full w-full object-cover object-top"
-                unoptimized
-              />
-            </div>
-          ) : (
-            <div
-              className={cn(
-                "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-[12px] font-bold",
-                pinned
-                  ? "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)]"
-                  : "border-[#E2E8F0] bg-background text-slate-500 dark:text-zinc-400",
-              )}
-            >
-              {initials}
-            </div>
-          )}
+          <div
+            className={cn(
+              "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-[12px] font-bold",
+              pinned
+                ? "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)]"
+                : "border-slate-200 dark:border-zinc-700 bg-background text-slate-500 dark:text-zinc-400",
+            )}
+          >
+            {initials}
+          </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span
@@ -210,21 +193,21 @@ function PlayerRow({
         </div>
 
         <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-900 dark:text-zinc-50 lg:block lg:text-slate-500 dark:lg:text-zinc-400">
-          <span className="lg:hidden text-[11px] uppercase tracking-[0.16em] text-[#94A3B8]">
+          <span className="lg:hidden text-[11px] uppercase tracking-[0.16em] text-slate-400 dark:text-zinc-500">
             Role
           </span>
           <span>{roleLabel}</span>
         </div>
 
         <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-900 dark:text-zinc-50 lg:block lg:text-slate-500 dark:lg:text-zinc-400">
-          <span className="lg:hidden text-[11px] uppercase tracking-[0.16em] text-[#94A3B8]">
+          <span className="lg:hidden text-[11px] uppercase tracking-[0.16em] text-slate-400 dark:text-zinc-500">
             Class
           </span>
           <span>{classLabel}</span>
         </div>
 
         <div className="flex items-center gap-2 lg:justify-start">
-          <span className="lg:hidden text-[11px] uppercase tracking-[0.16em] text-[#94A3B8]">
+          <span className="lg:hidden text-[11px] uppercase tracking-[0.16em] text-slate-400 dark:text-zinc-500">
             Hand
           </span>
           {handLabel ? (
@@ -237,7 +220,7 @@ function PlayerRow({
               {handLabel}
             </span>
           ) : (
-            <span className="text-[13px] font-semibold text-[#94A3B8]">—</span>
+            <span className="text-[13px] font-semibold text-slate-400 dark:text-zinc-500">—</span>
           )}
         </div>
 
@@ -246,7 +229,7 @@ function PlayerRow({
             <div className="text-[13px] font-semibold text-slate-900 dark:text-zinc-50">
               {details.slice(0, 2).join(" · ") || "Open profile"}
             </div>
-            <div className="mt-1 text-[11px] uppercase tracking-[0.16em] text-[#94A3B8]">
+            <div className="mt-1 text-[11px] uppercase tracking-[0.16em] text-slate-400 dark:text-zinc-500">
               Player details
             </div>
           </div>
@@ -399,7 +382,7 @@ export default function PlayersHubView({
                   href="/leaderboards-hub"
                   icon={Trophy}
                   sectionTitle="Leaderboards"
-                  buttonLabel="All Leaderboards"
+                  buttonLabel="All boards"
                 />
                 <HubActionCard
                   href="/players/faq"
@@ -439,7 +422,7 @@ export default function PlayersHubView({
               <div className="grid gap-5">
                 <div className="grid gap-4 xl:grid-cols-[auto_minmax(0,1.2fr)_auto] xl:items-end">
                   <div className="space-y-2">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
                       Roster view
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -456,17 +439,17 @@ export default function PlayersHubView({
                   </div>
 
                   <div className="space-y-2">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
                       Player search
                     </div>
-                    <label className="flex items-center gap-3 rounded-2xl border border-[#E2E8F0] bg-background px-4 py-3 transition-colors focus-within:border-[var(--brand-primary-border)] focus-within:bg-surface focus-within:shadow-[0_0_0_4px_rgba(var(--brand-primary-rgb),0.10)]">
-                      <Search className="h-4 w-4 shrink-0 text-[#94A3B8]" />
+                    <label className="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-zinc-700 bg-background px-4 py-3 transition-colors focus-within:border-[var(--brand-primary-border)] focus-within:bg-surface focus-within:shadow-[0_0_0_4px_rgba(var(--brand-primary-rgb),0.10)]">
+                      <Search className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
                       <input
                         type="text"
                         placeholder="Search players by name or position..."
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
-                        className="w-full min-w-0 bg-transparent text-sm text-slate-900 dark:text-zinc-50 outline-none placeholder:text-[#94A3B8]"
+                        className="w-full min-w-0 bg-transparent text-sm text-slate-900 dark:text-zinc-50 outline-none placeholder:text-slate-400 dark:text-zinc-500"
                       />
                     </label>
                   </div>
@@ -491,7 +474,7 @@ export default function PlayersHubView({
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
                       Hand
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -508,7 +491,7 @@ export default function PlayersHubView({
                             "rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors",
                             handFilter === option.value
                               ? "border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)]"
-                              : "border-[#E2E8F0] bg-surface text-slate-500 dark:text-zinc-400 hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50",
+                              : "border-slate-200 dark:border-zinc-700 bg-surface text-slate-500 dark:text-zinc-400 hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50",
                           )}
                         >
                           {option.label}
@@ -518,7 +501,7 @@ export default function PlayersHubView({
                   </div>
 
                   <div className="space-y-2">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#94A3B8]">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
                       Class
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -534,7 +517,7 @@ export default function PlayersHubView({
                             "rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors",
                             classFilter === option.value
                               ? "border-[#BAE6FD] bg-[#E0F2FE] text-[#0369A1]"
-                              : "border-[#E2E8F0] bg-surface text-slate-500 dark:text-zinc-400 hover:border-[#CBD5E1] hover:text-slate-900 dark:hover:text-zinc-50",
+                              : "border-slate-200 dark:border-zinc-700 bg-surface text-slate-500 dark:text-zinc-400 hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50",
                           )}
                         >
                           {option.label}
@@ -550,22 +533,9 @@ export default function PlayersHubView({
               <div className="rounded-[28px] border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] px-5 py-5 shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex min-w-0 items-center gap-4">
-                    {roster[featuredPlayer.slug]?.photo ? (
-                      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full border border-[var(--brand-primary-border)]">
-                        <Image
-                          src={roster[featuredPlayer.slug].photo!}
-                          alt={getPlayerDisplayLabel(featuredPlayer)}
-                          width={48}
-                          height={48}
-                          className="h-full w-full object-cover object-top"
-                          unoptimized
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--brand-primary-border)] bg-surface text-[13px] font-bold text-[var(--brand-primary-subtle-text)]">
-                        {getLastNameInitial(featuredPlayer.name)}
-                      </div>
-                    )}
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--brand-primary-border)] bg-surface text-[13px] font-bold text-[var(--brand-primary-subtle-text)]">
+                      {getLastNameInitial(featuredPlayer.name)}
+                    </div>
                     <div className="min-w-0">
                       <div className="inline-flex items-center gap-2 rounded-full border border-[var(--brand-primary-border)] bg-surface px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--brand-primary-subtle-text)]">
                         <Sparkles className="h-3.5 w-3.5" />
@@ -576,7 +546,7 @@ export default function PlayersHubView({
                       >
                         {getPlayerDisplayLabel(featuredPlayer)}
                       </h2>
-                      <p className="mt-1 text-[13px] text-[#475569]">
+                      <p className="mt-1 text-[13px] text-slate-500 dark:text-zinc-400">
                         {getRoleLabel(featuredPlayer)} · {roster[featuredPlayer.slug]?.class?.trim() || "Class n/a"}
                       </p>
                     </div>
@@ -594,28 +564,28 @@ export default function PlayersHubView({
             ) : null}
 
             <div className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
-              <div className="hidden border-b border-[#F1F5F9] px-5 py-3 lg:grid lg:grid-cols-[minmax(0,1.7fr)_7.5rem_7.5rem_7rem_minmax(0,1.1fr)]">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
+              <div className="hidden border-b border-slate-100 dark:border-zinc-800 px-5 py-3 lg:grid lg:grid-cols-[minmax(0,1.7fr)_7.5rem_7.5rem_7rem_minmax(0,1.1fr)]">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500">
                   Player
                 </div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500">
                   Role
                 </div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500">
                   Class
                 </div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500">
                   Hand
                 </div>
-                <div className="text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
+                <div className="text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500">
                   Details
                 </div>
               </div>
 
               {rosterIndexLetters.length > 1 ? (
-                <div className="border-b border-[#F1F5F9] px-5 py-4">
+                <div className="border-b border-slate-100 dark:border-zinc-800 px-5 py-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500">
                       Browse by last initial
                     </div>
                     <div className="flex flex-wrap gap-1.5">
@@ -623,7 +593,7 @@ export default function PlayersHubView({
                         <a
                           key={letter}
                           href={`#players-group-${letter}`}
-                          className="flex h-8 min-w-8 items-center justify-center rounded-full border border-[#E2E8F0] bg-background px-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-zinc-400 transition-colors hover:border-[var(--brand-primary-border)] hover:bg-[var(--brand-primary-soft)] hover:text-[var(--brand-primary-subtle-text)]"
+                          className="flex h-8 min-w-8 items-center justify-center rounded-full border border-slate-200 dark:border-zinc-700 bg-background px-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-zinc-400 transition-colors hover:border-[var(--brand-primary-border)] hover:bg-[var(--brand-primary-soft)] hover:text-[var(--brand-primary-subtle-text)]"
                         >
                           {letter}
                         </a>
