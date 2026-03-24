@@ -21,17 +21,14 @@ NCAA_BASE_URL <- "https://stats.ncaa.org"
 # ---------------------------------------------------------------------------
 
 .ncaa_get_session <- function() {
-  ses <- .ncaa_state$session
-  alive <- if (is.null(ses)) FALSE else tryCatch({ ses$readyState(); TRUE }, error = function(e) FALSE)
-
-  if (!alive) {
+  if (is.null(.ncaa_state$session)) {
     message("[ncaa] Starting shared browser session")
     ses <- chromote::ChromoteSession$new()
     ses$Network$enable()
     ses$Network$setUserAgentOverride(userAgent = .NCAA_UA)
     .ncaa_state$session <- ses
   }
-  ses
+  .ncaa_state$session
 }
 
 #' Close the shared session. Call once at the end of the sync run.
@@ -117,6 +114,9 @@ ncaa_fetch_page <- function(url, max_wait_seconds = 8L, max_retries = 2L) {
         doc  <- ses$DOM$getDocument()
         html <- ses$DOM$getOuterHTML(nodeId = doc$root$nodeId)[["outerHTML"]]
       }
+
+      # Navigate to blank between teams to free Chrome memory (important on 381-team full runs)
+      try(ses$Page$navigate(url = "about:blank"), silent = TRUE)
 
       list(status = "success", html = html, url = url, attempts = attempt, error = NULL)
 
