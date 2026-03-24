@@ -220,7 +220,9 @@ export default function LiveAbInsightsExplorer({
         ? readPitcherExplorerQuery(new URLSearchParams(window.location.search))
         : readHitterExplorerQuery(new URLSearchParams(window.location.search));
       setSelectedPlayerSlug(nextQuery.playerSlug);
-      setPitcherHandParam(isPitcher ? "all" : hitterQuery.pitcherHand);
+      setPitcherHandParam(
+        isPitcher ? "all" : (nextQuery as typeof hitterQuery).pitcherHand,
+      );
       setSeasonParam(nextQuery.season);
       setPitchTypeParam(nextQuery.pitchType);
       setCountParam(nextQuery.count);
@@ -459,11 +461,11 @@ export default function LiveAbInsightsExplorer({
       <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
 
       {/* ── Hub header ── */}
-      <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+      <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_24px_56px_rgba(0,0,0,0.34)]">
         <div className="flex flex-col gap-6 p-5 sm:p-7">
           <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
             <div className="min-w-0 flex-1">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#E0E7FF] bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6366F1]">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#E0E7FF] bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6366F1] dark:border-indigo-500/20 dark:bg-indigo-500/12 dark:text-indigo-200">
                 <ClipboardList className="h-3.5 w-3.5" aria-hidden />
                 Charting
               </div>
@@ -513,7 +515,7 @@ export default function LiveAbInsightsExplorer({
       </header>
 
       {/* ── Filter toolbar ── */}
-      <section className="rounded-[28px] border border-border bg-surface p-4 shadow-[0_16px_40px_rgba(15,23,42,0.04)] sm:p-5">
+      <section className="rounded-[28px] border border-border bg-surface p-4 shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_24px_56px_rgba(0,0,0,0.34)] sm:p-5">
         <div className="grid gap-5">
           <div className="grid gap-4 xl:grid-cols-[auto_minmax(0,1.2fr)_auto] xl:items-end">
             <ComparisonViewToggle view={view} onChange={handleChangeView} />
@@ -529,7 +531,7 @@ export default function LiveAbInsightsExplorer({
                   value={searchInput}
                   onChange={(event) => setSearchInput(event.target.value)}
                   placeholder={searchPlaceholderForView(view)}
-                  className="w-full bg-transparent text-sm text-slate-900 dark:text-zinc-50 outline-none placeholder:text-slate-400 dark:text-zinc-500"
+                  className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-zinc-50 dark:placeholder:text-zinc-500"
                 />
               </label>
             </div>
@@ -705,11 +707,11 @@ export default function LiveAbInsightsExplorer({
       {/* ── Selected player panel ── */}
       {selectedEntry ? (
         <>
-          <div className="overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+          <div className="overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_24px_56px_rgba(0,0,0,0.34)]">
             <div className="border-b border-slate-100 dark:border-zinc-800 px-5 py-5 sm:px-6">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/12 dark:text-emerald-200">
                     <Sparkles className="h-3.5 w-3.5" />
                     Current {isPitcher ? "Pitcher" : "Hitter"}
                   </div>
@@ -726,7 +728,7 @@ export default function LiveAbInsightsExplorer({
                 <div className="flex flex-wrap gap-2">
                   <Link
                     href={`/players/${selectedEntry.playerSlug}?tab=live-ab`}
-                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-zinc-700 bg-background px-4 py-2 text-sm font-semibold text-[#334155] transition-smooth hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:hover:text-zinc-50"
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-zinc-700 bg-background px-4 py-2 text-sm font-semibold text-[#334155] transition-smooth hover:border-slate-300 dark:hover:border-zinc-600 hover:text-slate-900 dark:text-zinc-200 dark:hover:text-zinc-50"
                   >
                     Open player page
                   </Link>

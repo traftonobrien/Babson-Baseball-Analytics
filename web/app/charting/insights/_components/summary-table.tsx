@@ -38,7 +38,7 @@ export function SummaryTable({
     const pitcherSummary = summary as PitcherComparisonSummary;
 
     return (
-      <div className="overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+      <div className="overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_24px_56px_rgba(0,0,0,0.34)]">
         <div className="border-b border-slate-200 dark:border-zinc-700 px-5 py-4 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -88,10 +88,10 @@ export function SummaryTable({
                   </td>
                 </tr>
               ) : (
-                <tr className="border-b border-slate-200 dark:border-zinc-700 transition-smooth hover:bg-emerald-50/60">
+                <tr className="border-b border-slate-200 dark:border-zinc-700 transition-smooth hover:bg-emerald-50/60 dark:hover:bg-emerald-500/8">
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-sm font-black text-emerald-700">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-sm font-black text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/12 dark:text-emerald-200">
                         {pitcherEntry.displayName
                           .split(/\s+/)
                           .slice(0, 2)
@@ -106,23 +106,23 @@ export function SummaryTable({
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm text-[#334155]">
+                  <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">
                     {pitcherEntry.throws ? `${pitcherEntry.throws}HP` : "—"}
                   </td>
                   <td className="px-4 py-4 text-sm font-semibold text-slate-900 dark:text-zinc-50">{seasonLabel}</td>
-                  <td className="px-4 py-4 text-sm text-[#334155]">
+                  <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">
                     {formatCount(pitcherSummary.totalPitches)}
                   </td>
-                  <td className="px-4 py-4 text-sm text-[#334155]">{pitcherSummary.plateAppearances}</td>
-                  <td className="px-4 py-4 text-sm text-[#334155]">{formatPct(pitcherSummary.strikePct, 1)}</td>
-                  <td className="px-4 py-4 text-sm text-[#334155]">{formatPct(pitcherSummary.zonePct, 1)}</td>
-                  <td className="px-4 py-4 text-sm text-[#334155]">{formatPct(pitcherSummary.whiffPct, 1)}</td>
-                  <td className="px-4 py-4 text-sm text-[#334155]">{formatPct(pitcherSummary.chasePct, 1)}</td>
+                  <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">{pitcherSummary.plateAppearances}</td>
+                  <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">{formatPct(pitcherSummary.strikePct, 1)}</td>
+                  <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">{formatPct(pitcherSummary.zonePct, 1)}</td>
+                  <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">{formatPct(pitcherSummary.whiffPct, 1)}</td>
+                  <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">{formatPct(pitcherSummary.chasePct, 1)}</td>
                   <td className="px-4 py-4 text-sm font-semibold text-emerald-600">
                     {formatRate(pitcherSummary.baa)}
                   </td>
-                  <td className="px-4 py-4 text-sm text-[#334155]">{formatPct(pitcherSummary.kPct, 1)}</td>
-                  <td className="px-4 py-4 text-sm text-[#334155]">{formatPct(pitcherSummary.bbPct, 1)}</td>
+                  <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">{formatPct(pitcherSummary.kPct, 1)}</td>
+                  <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">{formatPct(pitcherSummary.bbPct, 1)}</td>
                 </tr>
               )}
             </tbody>
@@ -136,7 +136,7 @@ export function SummaryTable({
   const hitterSummary = summary as ChartingPlayerComparisonSummary;
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
+    <div className="overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_24px_56px_rgba(0,0,0,0.34)]">
       <div className="border-b border-slate-200 dark:border-zinc-700 px-5 py-4 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -188,10 +188,10 @@ export function SummaryTable({
                 </td>
               </tr>
             ) : (
-              <tr className="border-b border-slate-200 dark:border-zinc-700 transition-smooth hover:bg-emerald-50/60">
+              <tr className="border-b border-slate-200 dark:border-zinc-700 transition-smooth hover:bg-emerald-50/60 dark:hover:bg-emerald-500/8">
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-sm font-black text-emerald-700">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-sm font-black text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/12 dark:text-emerald-200">
                       {entry.displayName
                         .split(/\s+/)
                         .slice(0, 2)
@@ -207,21 +207,21 @@ export function SummaryTable({
                   </div>
                 </td>
                 <td className="px-4 py-4 text-sm font-semibold text-slate-900 dark:text-zinc-50">{seasonLabel}</td>
-                <td className="px-4 py-4 text-sm text-[#334155]">
+                <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">
                   {formatCount(hitterSummary.totalPitches)}
                 </td>
-                <td className="px-4 py-4 text-sm text-[#334155]">{hitterSummary.plateAppearances}</td>
-                <td className="px-4 py-4 text-sm text-[#334155]">{hitterSummary.atBats}</td>
-                <td className="px-4 py-4 text-sm text-[#334155]">{hitterSummary.hits}</td>
-                <td className="px-4 py-4 text-sm text-[#334155]">{hitterSummary.singles}</td>
-                <td className="px-4 py-4 text-sm text-[#334155]">{hitterSummary.doubles}</td>
-                <td className="px-4 py-4 text-sm text-[#334155]">{hitterSummary.triples}</td>
-                <td className="px-4 py-4 text-sm text-[#334155]">{hitterSummary.homeRuns}</td>
+                <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">{hitterSummary.plateAppearances}</td>
+                <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">{hitterSummary.atBats}</td>
+                <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">{hitterSummary.hits}</td>
+                <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">{hitterSummary.singles}</td>
+                <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">{hitterSummary.doubles}</td>
+                <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">{hitterSummary.triples}</td>
+                <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">{hitterSummary.homeRuns}</td>
                 <td className="px-4 py-4 text-sm font-semibold text-emerald-600">
                   {formatRate(hitterSummary.battingAverage)}
                 </td>
-                <td className="px-4 py-4 text-sm text-[#334155]">{hitterSummary.strikeouts}</td>
-                <td className="px-4 py-4 text-sm text-[#334155]">
+                <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">{hitterSummary.strikeouts}</td>
+                <td className="px-4 py-4 text-sm text-[#334155] dark:text-zinc-200">
                   {formatPct(hitterSummary.strikeoutRate, 1)}
                 </td>
                 <td className="px-4 py-4 text-sm font-semibold text-sky-600">

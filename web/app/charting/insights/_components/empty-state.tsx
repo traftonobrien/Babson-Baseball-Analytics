@@ -30,7 +30,7 @@ export function EmptyState({
     <div className="overflow-hidden rounded-[28px] border border-border bg-surface p-6 shadow-[0_16px_40px_rgba(15,23,42,0.04)] sm:p-7">
       <div className="grid gap-6 xl:grid-cols-[minmax(18rem,0.85fr)_minmax(0,1.15fr)] xl:items-center">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#E0E7FF] bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6366F1]">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#E0E7FF] bg-[#EEF2FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6366F1] dark:border-indigo-500/20 dark:bg-indigo-500/12 dark:text-indigo-200">
             <ClipboardList className="h-3.5 w-3.5" />
             Player Visuals
           </div>
@@ -54,7 +54,7 @@ export function EmptyState({
             <button
               type="button"
               onClick={onOpenPinned}
-              className="mt-5 inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-zinc-700 bg-background px-4 py-2 text-sm font-semibold text-[#334155] transition-smooth hover:border-[var(--brand-primary-border)] hover:text-[var(--brand-primary-subtle-text)]"
+              className="mt-5 inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-zinc-700 bg-background px-4 py-2 text-sm font-semibold text-[#334155] transition-smooth hover:border-[var(--brand-primary-border)] hover:text-[var(--brand-primary-subtle-text)] dark:text-zinc-200"
             >
               Reopen pinned {countNounForView(view)}
               <ArrowRight className="h-4 w-4" />

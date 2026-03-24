@@ -129,7 +129,7 @@ export function ZoneCanvas({
             {selectedBucket || selectedCellId !== null || selectedRowId !== null || selectedColId !== null ? (
               <>
                 <span className="text-[#CBD5E1]">•</span>
-                <span className="text-[#334155]">
+                <span className="text-[#334155] dark:text-zinc-300">
                   {selectedCellId !== null
                     ? `Cell ${selectedCellId}`
                     : selectedRowId !== null
@@ -159,7 +159,7 @@ export function ZoneCanvas({
       </div>
 
       {displayMode === "heatmap" ? (
-        <div className="relative aspect-[0.92] overflow-hidden rounded-[2.15rem] border border-slate-200 dark:border-zinc-700 bg-[#EEF2FF] p-3">
+        <div className="relative aspect-[0.92] overflow-hidden rounded-[2.15rem] border border-slate-200 dark:border-zinc-700 bg-[#EEF2FF] p-3 dark:bg-[radial-gradient(circle_at_50%_38%,rgba(96,165,250,0.18),rgba(24,24,27,0.98)_70%)]">
           <svg
             viewBox={`0 0 ${SIZE} ${SIZE}`}
             className="absolute inset-3 h-[calc(100%-1.5rem)] w-[calc(100%-1.5rem)]"
@@ -265,8 +265,10 @@ export function ZoneCanvas({
                 onClick={() => onSelectBucket(selected ? null : bucket.id)}
                 title={`${layout.label}: ${layout.caption}`}
                 className={joinClasses(
-                  "absolute rounded-[1.2rem] border border-transparent transition-smooth hover:border-slate-900/10",
-                  selected ? "border-slate-900/20 bg-slate-900/[0.03]" : "bg-transparent",
+                  "absolute rounded-[1.2rem] border border-transparent transition-smooth hover:border-slate-900/10 dark:hover:border-white/10",
+                  selected
+                    ? "border-slate-900/20 bg-slate-900/[0.03] dark:border-white/20 dark:bg-white/[0.04]"
+                    : "bg-transparent",
                 )}
                 style={{
                   ...layout.style,
@@ -275,7 +277,7 @@ export function ZoneCanvas({
               />
             );
           })}
-          <div className="pointer-events-none absolute inset-3 rounded-[1.9rem] border border-slate-900/5" />
+          <div className="pointer-events-none absolute inset-3 rounded-[1.9rem] border border-slate-900/5 dark:border-white/10" />
         </div>
       ) : (
         <div className="relative rounded-[2.15rem] border border-slate-200 dark:border-zinc-700 bg-slate-100 dark:bg-zinc-800 p-3">
@@ -294,7 +296,7 @@ export function ZoneCanvas({
                   className={joinClasses(
                     "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition-smooth",
                     selectedRowId === row
-                      ? "bg-sky-100 text-sky-700 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.30)]"
+                      ? "bg-sky-100 text-sky-700 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.30)] dark:bg-sky-500/18 dark:text-sky-100 dark:shadow-[inset_0_0_0_1px_rgba(125,211,252,0.22)]"
                       : "text-slate-400 dark:text-zinc-500 hover:bg-slate-200 hover:text-slate-900 dark:hover:text-zinc-50",
                   )}
                 >
@@ -316,7 +318,7 @@ export function ZoneCanvas({
                   className={joinClasses(
                     "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition-smooth",
                     selectedColId === col
-                      ? "bg-sky-100 text-sky-700 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.30)]"
+                      ? "bg-sky-100 text-sky-700 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.30)] dark:bg-sky-500/18 dark:text-sky-100 dark:shadow-[inset_0_0_0_1px_rgba(125,211,252,0.22)]"
                       : "text-slate-400 dark:text-zinc-500 hover:bg-slate-200 hover:text-slate-900 dark:hover:text-zinc-50",
                   )}
                 >
@@ -400,7 +402,7 @@ export function ZoneCanvas({
           </div>
 
           {hasAnyFocus && focusSummary ? (
-            <div className="pointer-events-none absolute right-3 top-16 rounded-[0.75rem] border border-slate-200 dark:border-zinc-700 bg-surface px-3 py-2 text-[11px] text-slate-500 dark:text-zinc-400 shadow-[0_8px_20px_rgba(15,23,42,0.12)]">
+            <div className="pointer-events-none absolute right-3 top-16 rounded-[0.75rem] border border-slate-200 dark:border-zinc-700 bg-surface px-3 py-2 text-[11px] text-slate-500 dark:text-zinc-400 shadow-[0_8px_20px_rgba(15,23,42,0.12)] dark:shadow-[0_18px_34px_rgba(0,0,0,0.32)]">
               <div className="font-semibold text-slate-900 dark:text-zinc-50">{focusLabel}</div>
               <div className="mt-1 flex flex-wrap items-center gap-3">
                 <span>

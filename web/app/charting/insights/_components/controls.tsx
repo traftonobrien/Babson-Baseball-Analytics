@@ -35,7 +35,7 @@ export function SearchResultCard({
       className={joinClasses(
         "rounded-[1.5rem] border px-4 py-4 text-left transition-smooth",
         active
-          ? "border-emerald-300 bg-emerald-50 shadow-[0_4px_12px_rgba(16,185,129,0.10)]"
+          ? "border-emerald-300 bg-emerald-50 shadow-[0_4px_12px_rgba(16,185,129,0.10)] dark:border-emerald-500/30 dark:bg-emerald-500/12 dark:shadow-[0_14px_30px_rgba(6,95,70,0.22)]"
           : "border-slate-200 dark:border-zinc-700 bg-surface hover:border-slate-300 dark:hover:border-zinc-600 hover:bg-background",
       )}
     >
@@ -49,7 +49,7 @@ export function SearchResultCard({
         <ArrowRight
           className={joinClasses(
             "mt-0.5 h-4 w-4 shrink-0",
-            active ? "text-emerald-600" : "text-[#CBD5E1]",
+            active ? "text-emerald-600 dark:text-emerald-300" : "text-[#CBD5E1] dark:text-zinc-600",
           )}
         />
       </div>
@@ -58,7 +58,7 @@ export function SearchResultCard({
           {entry.sessionCount} session{entry.sessionCount === 1 ? "" : "s"}
         </span>
         {handLabel ? (
-          <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
+          <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/12 dark:text-emerald-200">
             {handLabel}
           </span>
         ) : null}
@@ -120,7 +120,7 @@ export function ComparisonViewToggle({
             className={joinClasses(
               "rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-smooth",
               view === option.id
-                ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm"
+                ? "bg-surface text-slate-900 shadow-sm dark:bg-zinc-900 dark:text-zinc-50 dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]"
                 : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50",
             )}
           >
@@ -166,7 +166,7 @@ export function VelocityRangeControl({
         <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500">
           {label}
         </div>
-        <span className="rounded-full border border-slate-200 dark:border-zinc-700 bg-surface px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#334155]">
+        <span className="rounded-full border border-slate-200 dark:border-zinc-700 bg-surface px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#334155] dark:text-zinc-200">
           {placeholderVelocityText(value, fallback, boundary)}
         </span>
       </div>
@@ -223,7 +223,7 @@ export function MetricToggle({
             className={joinClasses(
               "rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-smooth",
               value === metric.id
-                ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm"
+                ? "bg-surface text-slate-900 shadow-sm dark:bg-zinc-900 dark:text-zinc-50 dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]"
                 : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50",
             )}
           >
@@ -259,7 +259,7 @@ export function ZoneDisplayModeToggle({
             className={joinClasses(
               "rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-smooth",
               value === option.id
-                ? "bg-surface text-slate-900 dark:text-zinc-50 shadow-sm"
+                ? "bg-surface text-slate-900 shadow-sm dark:bg-zinc-900 dark:text-zinc-50 dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]"
                 : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-50",
             )}
           >
@@ -282,9 +282,9 @@ export function MiniStat({
 }) {
   const emphasis =
     tone === "emerald"
-      ? "text-emerald-600"
+      ? "text-emerald-600 dark:text-emerald-300"
       : tone === "sky"
-        ? "text-sky-600"
+        ? "text-sky-600 dark:text-sky-300"
         : "text-slate-900 dark:text-zinc-50";
 
   return (
@@ -317,7 +317,7 @@ export function PitchMixPanel({
           </div>
           <div className="mt-1 text-[11px] text-slate-400 dark:text-zinc-500">{subtitle}</div>
         </div>
-        <div className="rounded-full border border-slate-200 dark:border-zinc-700 bg-surface px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#334155]">
+        <div className="rounded-full border border-slate-200 dark:border-zinc-700 bg-surface px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#334155] dark:text-zinc-200">
           {pitches.length} type{pitches.length === 1 ? "" : "s"}
         </div>
       </div>
@@ -349,7 +349,7 @@ export function PitchMixPanel({
                 />
                 <div className="min-w-0 text-sm font-semibold text-slate-900 dark:text-zinc-50">{item.label}</div>
                 <div className="text-xs text-slate-400 dark:text-zinc-500">{formatCount(item.count)}</div>
-                <div className="text-xs font-semibold text-[#334155]">
+                <div className="text-xs font-semibold text-[#334155] dark:text-zinc-200">
                   {formatPct(item.share, 1)}
                 </div>
               </div>
