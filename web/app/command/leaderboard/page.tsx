@@ -3,12 +3,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookOpen, Search, Target } from "lucide-react";
-import Breadcrumbs from "@/app/components/Breadcrumbs";
-import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
+import { BookOpen, ChevronRight, Search, Target } from "lucide-react";
 import { SegmentedRail, type SegmentedItem } from "@/app/components/leaderboards/SegmentedRail";
 import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
-import { LeaderboardPageFrame, LeaderboardToolbar } from "@/app/components/leaderboards/LeaderboardChrome";
+import {
+  LeaderboardHero,
+  LeaderboardIntro,
+  LeaderboardPageFrame,
+  LeaderboardPanel,
+  LeaderboardPill,
+  LeaderboardStatBlock,
+  LeaderboardToolbar,
+} from "@/app/components/leaderboards/LeaderboardChrome";
 import {
   loadAllOutingData,
   computeLeaderboardRows,
@@ -23,7 +29,7 @@ import type {
   LeaderboardMode,
 } from "@/lib/leaderboards/types";
 import type { PitchGroup } from "@/lib/leaderboards/pitchGroups";
-import { handBadgeClassesCompact } from "@/lib/handBadge";
+import { handBadgeClasses } from "@/lib/handBadge";
 import { savantColorAt } from "@/lib/savantColors";
 import { plusMetricBadgeStyle } from "@/lib/stuffPlusUtils";
 
@@ -125,7 +131,7 @@ function hexToRgba(hex: string, alpha: number): string {
 
 function glowingBadgeStyle(style: { bg: string; text: string }) {
   return {
-    color: style.text,
+    color: "#ffffff",
     background: `linear-gradient(180deg, ${hexToRgba(style.bg, 0.98)} 0%, ${hexToRgba(style.bg, 0.84)} 100%)`,
     border: `1px solid ${hexToRgba(style.bg, 0.6)}`,
     boxShadow: [
@@ -134,7 +140,7 @@ function glowingBadgeStyle(style: { bg: string; text: string }) {
       `0 0 16px ${hexToRgba(style.bg, 0.32)}`,
       `0 0 28px ${hexToRgba(style.bg, 0.14)}`,
     ].join(", "),
-    textShadow: style.text === "#ffffff" ? "0 1px 1px rgba(0, 0, 0, 0.28)" : "none",
+    textShadow: "0 1px 1px rgba(0, 0, 0, 0.28)",
   };
 }
 
@@ -155,10 +161,40 @@ function HandBadge({ hand, unknown }: { hand: "R" | "L"; unknown: boolean }) {
   }
   return (
     <span
-      className={`ml-2 text-[10px] px-1.5 py-0.5 rounded font-normal ${handBadgeClassesCompact(hand)}`}
+      className={`ml-2 inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${handBadgeClasses(hand)}`}
     >
       {hand === "L" ? "LHP" : "RHP"}
     </span>
+  );
+}
+
+function LeaderboardActionCard({
+  href,
+  sectionTitle,
+  buttonLabel,
+  icon: Icon,
+}: {
+  href: string;
+  sectionTitle: string;
+  buttonLabel: string;
+  icon: typeof Target;
+}) {
+  return (
+    <div className="rounded-[1.5rem] border border-slate-200 bg-surface p-4 shadow-[0_12px_28px_rgba(15,23,42,0.04)] dark:border-zinc-700 dark:bg-zinc-900/55 dark:shadow-[0_12px_28px_rgba(0,0,0,0.35)]">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-zinc-400">
+        {sectionTitle}
+      </div>
+      <div className="mt-3">
+        <Link
+          href={href}
+          className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(var(--brand-primary-rgb),0.22)] transition-smooth hover:bg-[var(--brand-primary-hover)]"
+        >
+          <Icon className="h-4 w-4 shrink-0" aria-hidden />
+          {buttonLabel}
+          <ChevronRight className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
+        </Link>
+      </div>
+    </div>
   );
 }
 
@@ -421,69 +457,66 @@ export default function LeaderboardsPage() {
   return (
     <LeaderboardPageFrame variant="light" maxWidth="max-w-[1440px]">
       <div className="font-display flex min-h-full flex-col gap-6">
-        <Breadcrumbs
-          variant="light"
-          items={[
+        <LeaderboardIntro
+          surface="light"
+          breadcrumbs={[
             { label: "Home", href: "/" },
             { label: "Leaderboards", href: "/leaderboards-hub" },
             { label: "Command" },
           ]}
-        />
-
-        <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
-          <div className="flex flex-col gap-6 p-5 sm:p-7">
-            <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
-              <div className="min-w-0 flex-1">
-                <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-800">
-                  <Target className="h-3.5 w-3.5" aria-hidden />
-                  Command
-                </div>
-                <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.85rem] sm:leading-[1.02]">
-                  Command Leaderboard
-                </h1>
-                <p className="mt-2 text-sm text-slate-600 dark:text-zinc-400">
-                  {activeSeasonLabel} · {filterSummary}
-                </p>
-              </div>
-
-              <div className="grid w-full grid-cols-2 gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
-                <HubActionCard
+        >
+          <LeaderboardHero
+            tone="amber"
+            icon={Target}
+            eyebrow="Command"
+            title="Command Leaderboard"
+            description="Track Command+, on-target rate, miss shape, and consistency across the current command filter stack."
+            meta={
+              <>
+                <LeaderboardPill variant="light" tone="brand">{activeSeasonLabel}</LeaderboardPill>
+                <LeaderboardPill variant="light" tone="neutral">{filterSummary}</LeaderboardPill>
+              </>
+            }
+            side={
+              <div className="grid w-full gap-3 sm:grid-cols-2 xl:w-[26rem]">
+                <LeaderboardActionCard
                   href="/command"
                   icon={Target}
                   sectionTitle="Command hub"
                   buttonLabel="View Hub"
                 />
-                <HubActionCard
+                <LeaderboardActionCard
                   href="/command/faq"
                   icon={BookOpen}
                   sectionTitle="Dictionary"
                   buttonLabel="Metrics FAQ"
                 />
               </div>
-            </div>
+            }
+            variant="light"
+          />
+        </LeaderboardIntro>
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              <HubStatCard
-                label="Table rows"
-                value={loading ? "—" : String(rowCount)}
-                detail={`${mode === "outings" ? "Outing" : "Player"} view · search filtered.`}
-                tone="indigo"
-              />
-              <HubStatCard
-                label="Outings loaded"
-                value={loading ? "—" : String(outingRows.length)}
-                detail="Outings in the current season cache after mix filters."
-                tone="emerald"
-              />
-              <HubStatCard
-                label="Pitchers (aggregate)"
-                value={loading ? "—" : String(playerRows.length)}
-                detail="Player rows available in player view for the same filters."
-                tone="sky"
-              />
-            </div>
-          </div>
-        </header>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <LeaderboardStatBlock
+            label="Table rows"
+            value={loading ? "—" : String(rowCount)}
+            detail={`${mode === "outings" ? "Outing" : "Player"} view · search filtered.`}
+            variant="light"
+          />
+          <LeaderboardStatBlock
+            label="Outings loaded"
+            value={loading ? "—" : String(outingRows.length)}
+            detail="Outings in the current season cache after mix filters."
+            variant="light"
+          />
+          <LeaderboardStatBlock
+            label="Pitchers (aggregate)"
+            value={loading ? "—" : String(playerRows.length)}
+            detail="Player rows available in player view for the same filters."
+            variant="light"
+          />
+        </div>
 
         <LeaderboardToolbar variant="light">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -562,7 +595,7 @@ export default function LeaderboardsPage() {
         </LeaderboardToolbar>
 
         <div className={contentTransitionClassName}>
-          <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-surface shadow-sm dark:border-zinc-700 dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+          <LeaderboardPanel variant="light" className="overflow-hidden shadow-sm">
             <div className="max-h-[70vh] overflow-auto">
               <table className="w-full text-sm">
                 <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
@@ -694,7 +727,7 @@ export default function LeaderboardsPage() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </LeaderboardPanel>
 
           {!loading && mode === "players" && displayedPlayers.length > 0 ? (
             <p className="mt-4 text-xs text-slate-500 dark:text-zinc-500">

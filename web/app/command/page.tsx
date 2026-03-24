@@ -113,12 +113,12 @@ function OutingContextPill({
 
   return (
     <span
-      className="inline-flex items-center rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-zinc-400"
+      className="inline-flex items-center rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:border-zinc-700 dark:text-zinc-400"
       style={
         accent
           ? {
               borderColor: hexToRgba(accent, 0.24),
-              background: `linear-gradient(135deg, ${hexToRgba(accent, 0.08)}, rgba(248,250,252,0.96))`,
+              background: `linear-gradient(135deg, ${hexToRgba(accent, 0.16)}, ${hexToRgba(accent, 0.03)})`,
             }
           : undefined
       }
@@ -148,7 +148,7 @@ function SectionHeader({
   meta?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-4 sm:px-6">
+    <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-4 dark:border-zinc-800 sm:px-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
           <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-zinc-500">
@@ -308,10 +308,10 @@ function SeriesDropdown({
                       isSelected ? "text-slate-900 dark:text-zinc-50" : "text-slate-500 dark:text-zinc-400 hover:translate-x-0.5 hover:text-slate-900 dark:hover:text-zinc-50"
                     }`}
                     style={{
-                      borderColor: isSelected ? hexToRgba(option.accent, 0.3) : "rgba(226,232,240,0.9)",
+                      borderColor: isSelected ? hexToRgba(option.accent, 0.3) : undefined,
                       background: isSelected
-                        ? `linear-gradient(135deg, ${hexToRgba(option.accent, 0.12)}, rgba(255,255,255,0.96))`
-                        : `linear-gradient(135deg, ${hexToRgba(option.accent, isDefault ? 0.08 : 0.06)}, rgba(248,250,252,0.96))`,
+                        ? `linear-gradient(135deg, ${hexToRgba(option.accent, 0.18)}, ${hexToRgba(option.accent, 0.04)})`
+                        : `linear-gradient(135deg, ${hexToRgba(option.accent, isDefault ? 0.12 : 0.08)}, ${hexToRgba(option.accent, 0.02)})`,
                       boxShadow: isSelected ? `0 0 0 1px ${hexToRgba(option.accent, 0.05)}` : undefined,
                       opacity: isRevealed ? 1 : 0,
                       transform: isRevealed ? "translateY(0)" : "translateY(-10px)",
@@ -554,7 +554,7 @@ export default function CommandPage() {
               <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-50 sm:text-[2.85rem] sm:leading-[1.02]">
                 Command Hub
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-zinc-400">
                 Browse command outings, filter by season and opponent, and open the full outing report from any row.
                 Use the leaderboard and dictionary for definitions and rankings.
               </p>
@@ -603,7 +603,7 @@ export default function CommandPage() {
               }
             />
 
-            <div className="grid gap-4 border-b border-slate-100 px-5 py-5 sm:px-6 lg:grid-cols-[minmax(14rem,17rem)_minmax(14rem,17rem)_minmax(0,1fr)]">
+            <div className="grid gap-4 border-b border-slate-100 px-5 py-5 dark:border-zinc-800 sm:px-6 lg:grid-cols-[minmax(14rem,17rem)_minmax(14rem,17rem)_minmax(0,1fr)]">
               <HubSegment
                 label="View"
                 className="w-full min-w-0"
@@ -656,7 +656,7 @@ export default function CommandPage() {
             <div key={`${viewMode}-${seasonFilter}-${resolvedSeriesFilter}-${transitionKey}`} className="p-4 sm:p-5">
               {viewMode === "outings" ? (
                 outingRows.length === 0 ? (
-                  <div className="rounded-[1.5rem] border border-dashed border-slate-200 bg-background px-6 py-12 text-center text-sm text-slate-600">
+                  <div className="rounded-[1.5rem] border border-dashed border-slate-200 bg-background px-6 py-12 text-center text-sm text-slate-600 dark:border-zinc-800 dark:text-zinc-400">
                     No command outings for this season.
                   </div>
                 ) : (
@@ -698,7 +698,7 @@ export default function CommandPage() {
                   </div>
                 )
               ) : pitcherData.length === 0 ? (
-                <div className="rounded-[1.5rem] border border-dashed border-slate-200 bg-background px-6 py-12 text-center text-sm text-slate-600">
+                <div className="rounded-[1.5rem] border border-dashed border-slate-200 bg-background px-6 py-12 text-center text-sm text-slate-600 dark:border-zinc-800 dark:text-zinc-400">
                   No pitchers for this season.
                 </div>
               ) : (
@@ -736,11 +736,11 @@ export default function CommandPage() {
                               <span>
                                 {item.outings.length} outing{item.outings.length !== 1 ? "s" : ""}
                               </span>
-                              <span className="text-[#CBD5E1]">•</span>
+                              <span className="text-slate-300 dark:text-zinc-700">•</span>
                               <span className="font-medium tabular-nums">{item.totalPitches} pitches</span>
                               {item.latestDate ? (
                                 <>
-                                  <span className="text-[#CBD5E1]">•</span>
+                                  <span className="text-slate-300 dark:text-zinc-700">•</span>
                                   <span>Latest {formatDate(item.latestDate)}</span>
                                 </>
                               ) : null}
@@ -757,7 +757,7 @@ export default function CommandPage() {
                         </button>
 
                         {isExpanded ? (
-                          <div className="border-t border-slate-100 bg-background px-3 pb-3 pt-2.5">
+                          <div className="border-t border-slate-100 bg-background px-3 pb-3 pt-2.5 dark:border-zinc-800">
                             <div className="space-y-1.5">
                               {item.outings.map((outing) => (
                                 <Link
@@ -788,7 +788,7 @@ export default function CommandPage() {
           {selectedPlayerId ? (
             <aside className="space-y-6">
               <div className="rounded-[28px] border border-border bg-surface p-5 shadow-[0_16px_40px_rgba(15,23,42,0.04)]">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-zinc-400">
                   Focused row
                 </div>
                 <h3 className="font-display mt-2 text-[1.2rem] font-bold tracking-tight text-slate-900 dark:text-zinc-50">
