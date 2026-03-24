@@ -46,7 +46,7 @@ export const OUT_TYPE_LABELS: Record<string, string> = {
 };
 
 export const WIZARD_BTN =
-  "flex items-center gap-2 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-4 py-2.5 text-sm font-bold text-[rgb(212,220,218)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)] transition-colors hover:border-[rgba(var(--babson-green-rgb),0.35)] hover:bg-[rgba(var(--babson-green-rgb),0.12)]";
+  "flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-[var(--brand-primary-border)] hover:bg-[var(--brand-primary-soft)] hover:text-[var(--brand-primary-subtle-text)] dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:border-[rgba(var(--brand-primary-rgb),0.35)] dark:hover:bg-zinc-900 dark:hover:text-zinc-50";
 
 export const OUT_TYPE_TO_OPTIONS: Record<InPlayOutType, readonly PAResultType[]> = {
   ground: GROUND_OUT_OPTIONS,

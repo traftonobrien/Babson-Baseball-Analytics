@@ -12,7 +12,12 @@ import {
 } from "lucide-react";
 
 import type { ChartingGameStatus } from "./types";
-import { StatusBadge } from "./ui";
+import {
+  EDITOR_GHOST_BUTTON_CLASS,
+  EDITOR_ICON_BUTTON_CLASS,
+  EDITOR_INPUT_CLASS,
+  StatusBadge,
+} from "./ui";
 import type { SaveState } from "./types";
 
 interface ChartingEditorTopHeaderProps {
@@ -44,50 +49,56 @@ export const ChartingEditorTopHeader = ({
   onToggleTopBar,
   onStatusChange,
 }: ChartingEditorTopHeaderProps) => {
+  const toolbarButtonClass = `${EDITOR_GHOST_BUTTON_CLASS} h-9 rounded-full px-3 py-1.5 text-xs font-bold`;
+
   return (
     <>
-      <header className="flex items-center justify-between border-b border-[rgba(var(--babson-grey-rgb),0.18)] bg-zinc-950/90 px-6 py-4 lg:px-8">
-        <div className="flex items-center gap-4">
+      <header className="flex items-center justify-between border-b border-border/70 bg-background/88 px-6 py-4 backdrop-blur-xl lg:px-8 dark:border-zinc-800/80 dark:bg-zinc-950/82">
+        <div className="flex min-w-0 items-center gap-4">
           <Link
             href={`/charting/games/${gameId}`}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] text-zinc-400 transition-colors hover:border-[rgba(var(--babson-grey-rgb),0.32)] hover:text-zinc-100"
+            className={`${EDITOR_ICON_BUTTON_CLASS} h-9 w-9`}
             aria-label="Back to game view"
           >
             <ChevronLeft className="h-5 w-5" />
           </Link>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold tracking-tight text-white">{opponent}</h1>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="truncate text-xl font-bold tracking-tight text-foreground dark:text-zinc-50">
+                {opponent}
+              </h1>
               <StatusBadge status={status} />
               {sessionType === "game" ? (
-                <span className="inline-flex items-center rounded-full border border-sky-500/25 bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-sky-300">
+                <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-200">
                   Game
                 </span>
               ) : null}
               {hasGameStateOverride ? (
-                <span className="inline-flex flex-none items-center gap-1.5 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-500">
+                <span className="inline-flex flex-none items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-300">
                   <WandSparkles className="h-3 w-3" />
                   Override
                 </span>
               ) : null}
             </div>
-            <div className="mt-0.5 text-xs text-zinc-500">{liveSummary}</div>
+            <div className="mt-0.5 text-xs text-muted">{liveSummary}</div>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           {sessionType === "game" ? (
             <button
+              type="button"
               onClick={onOpenLineupEditor}
-              className="flex items-center gap-2 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 py-1.5 text-xs font-bold text-[rgb(212,220,218)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)] transition-colors hover:border-[rgba(var(--babson-grey-rgb),0.32)]"
+              className={toolbarButtonClass}
             >
               <Timer className="h-4 w-4" />
               <span>Lineups</span>
             </button>
           ) : null}
           <button
+            type="button"
             onClick={onToggleTopBar}
-            className="flex items-center gap-2 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 py-1.5 text-xs font-bold text-[rgb(212,220,218)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)] transition-colors hover:border-[rgba(var(--babson-grey-rgb),0.32)]"
+            className={toolbarButtonClass}
           >
             <span>{isTopBarOpen ? "Hide Bar" : "Show Bar"}</span>
             <ChevronDown
@@ -96,7 +107,7 @@ export const ChartingEditorTopHeader = ({
               }`}
             />
           </button>
-          <div className="hidden items-center gap-1.5 text-xs text-zinc-500 sm:flex">
+          <div className="hidden items-center gap-1.5 text-xs text-muted sm:flex">
             {saveState === "saving" ? (
               <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
             ) : saveState === "saved" ? (
@@ -112,7 +123,7 @@ export const ChartingEditorTopHeader = ({
           <select
             value={status}
             onChange={(event) => onStatusChange(event.target.value as ChartingGameStatus)}
-            className="h-9 cursor-pointer rounded-lg border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-medium text-zinc-300 outline-none hover:border-[rgba(var(--babson-grey-rgb),0.32)] focus:border-[rgba(var(--babson-green-rgb),0.45)]"
+            className={`${EDITOR_INPUT_CLASS} h-9 cursor-pointer rounded-lg px-3 text-xs font-medium`}
           >
             <option value="draft">Draft</option>
             <option value="active">Active</option>
@@ -122,18 +133,18 @@ export const ChartingEditorTopHeader = ({
       </header>
 
       {status === "final" ? (
-        <div className="flex items-center justify-between border-b border-sky-500/20 bg-sky-500/8 px-6 py-2 text-xs">
-          <div className="flex items-center gap-2 text-sky-300">
+        <div className="flex items-center justify-between border-b border-sky-200 bg-sky-50/85 px-6 py-2 text-xs dark:border-sky-500/20 dark:bg-sky-500/10">
+          <div className="flex items-center gap-2 text-sky-700 dark:text-sky-200">
             <CheckCircle2 className="h-3.5 w-3.5 flex-none" />
             <span className="font-semibold uppercase tracking-wider">Game Finalized</span>
-            <span className="hidden text-sky-400/60 sm:inline">
+            <span className="hidden text-sky-600/70 sm:inline dark:text-sky-300/70">
               - viewing complete record
             </span>
           </div>
           <button
             type="button"
             onClick={() => onStatusChange("active")}
-            className="text-xs text-sky-400 underline underline-offset-2 transition-colors hover:text-sky-200"
+            className="text-left text-xs font-semibold text-sky-700 underline underline-offset-2 transition-colors hover:text-sky-900 dark:text-sky-200 dark:hover:text-sky-100"
           >
             Reopen for editing
           </button>

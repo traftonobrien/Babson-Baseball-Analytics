@@ -342,20 +342,11 @@ export function ChartingEditor({
       queueSnapshotSave(nextSnapshot, "Hitter saved");
     }
   };
-  const handleBaserunnerDraftChange = (
-    field: keyof ChartingBaserunnerState,
-    value: string,
-  ) => {
-    setBaserunnerDraft((current) => ({
-      ...current,
-      [field]: value,
-    }));
-  };
   const commitBaserunnerDraft = (
     nextDraft: Partial<ChartingBaserunnerState> | null | undefined,
     successNote: string,
   ) => {
-    const normalizedBaserunners = normalizeBaserunnerState(nextDraft);
+    const normalizedBaserunners = normalizeBaserunnerState({ ...baserunnerDraft, ...nextDraft });
     if (!openPlateAppearance) {
       setBaserunnerDraft(normalizedBaserunners);
       return;
@@ -375,9 +366,6 @@ export function ChartingEditor({
     };
     setBaserunnerDraft(normalizedBaserunners);
     applyOptimisticSnapshot(nextSnapshot, gameStateOverride, successNote);
-  };
-  const handleBaserunnerDraftBlur = () => {
-    commitBaserunnerDraft(baserunnerDraft, "Base state updated");
   };
   const syncMatchupInputs = (
     nextSnapshot: ChartingGameSnapshot,
@@ -786,11 +774,7 @@ export function ChartingEditor({
   };
   return (
     <div
-      className="fixed inset-0 flex flex-col overflow-hidden text-zinc-100"
-      style={{
-        backgroundImage:
-          "radial-gradient(circle at top left, rgba(var(--babson-green-rgb), 0.18), transparent 24%), radial-gradient(circle at top right, rgba(var(--babson-grey-rgb), 0.14), transparent 26%), linear-gradient(180deg, #09090b 0%, #111827 56%, #09090b 100%)",
-      }}
+      className="fixed inset-0 flex flex-col overflow-hidden bg-background text-foreground [background-image:radial-gradient(circle_at_top_left,rgba(var(--brand-primary-rgb),0.14),transparent_24%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.82),transparent_32%)] dark:text-zinc-100 dark:[background-image:radial-gradient(circle_at_top_left,rgba(var(--brand-primary-rgb),0.18),transparent_24%),radial-gradient(circle_at_top_right,rgba(63,63,70,0.26),transparent_32%)]"
     >
       <ChartingEditorTopHeader
         gameId={snapshot.game.id}
@@ -843,8 +827,6 @@ export function ChartingEditor({
             onVenueSideChange={handleVenueSideChange}
             onResetOverride={handleResetOverride}
             onOverrideChange={handleOverrideChange}
-            onBaserunnerDraftChange={handleBaserunnerDraftChange}
-            onBaserunnerDraftBlur={handleBaserunnerDraftBlur}
             onCommitBaserunnerDraft={commitBaserunnerDraft}
             onCountPresetChange={setCountPreset}
           />

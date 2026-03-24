@@ -5,6 +5,11 @@ import type { PAResultType } from "@/lib/charting/live";
 import type { PitchResult, PitchType } from "@/lib/charting/types";
 
 import { buildPendingPitchSummary } from "./pitch-utils";
+import {
+  EDITOR_GHOST_BUTTON_CLASS,
+  EDITOR_INPUT_CLASS,
+  EDITOR_PANEL_MUTED_CLASS,
+} from "./ui";
 
 interface ChartingEditorBottomBarProps {
   showPitchRecordedFlash: boolean;
@@ -49,8 +54,10 @@ export const ChartingEditorBottomBar = ({
   onClosePlateAppearance,
   paResultOutsRecorded,
 }: ChartingEditorBottomBarProps) => {
+  const actionButtonClass = `${EDITOR_GHOST_BUTTON_CLASS} h-12 rounded-2xl px-6`;
+
   return (
-    <section className="relative flex-shrink-0 border-t border-[rgba(var(--babson-grey-rgb),0.18)] bg-zinc-950/95 p-4 shadow-[0_-20px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl lg:px-8 lg:py-4">
+    <section className="relative flex-shrink-0 border-t border-border/70 bg-background/88 p-4 shadow-[0_-18px_32px_rgba(15,23,42,0.08)] backdrop-blur-xl lg:px-8 lg:py-4 dark:border-zinc-800/80 dark:bg-zinc-950/88 dark:shadow-[0_-20px_40px_rgba(0,0,0,0.38)]">
       <AnimatePresence>
         {showPitchRecordedFlash ? (
           <motion.div
@@ -70,15 +77,15 @@ export const ChartingEditorBottomBar = ({
       <div className="mx-auto max-w-7xl">
         {needsPAClosure && closureState === "in_play" ? (
           <div className="flex items-center justify-center py-4">
-            <p className="text-sm font-medium text-amber-200/80">
+            <p className="text-sm font-medium text-amber-700 dark:text-amber-200/80">
               Ball in play — select the result in the popup above
             </p>
           </div>
         ) : needsPAClosure ? (
           <div className="flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
             <div>
-              <h3 className="text-xl font-bold text-amber-500">{closureTitle}</h3>
-              <p className="mt-1 text-sm font-medium text-amber-200/60">
+              <h3 className="text-xl font-bold text-amber-700 dark:text-amber-300">{closureTitle}</h3>
+              <p className="mt-1 text-sm font-medium text-amber-700/75 dark:text-amber-200/60">
                 {guidanceText}
               </p>
             </div>
@@ -89,11 +96,11 @@ export const ChartingEditorBottomBar = ({
                     key={result}
                     type="button"
                     onClick={() => onClosePlateAppearance(result)}
-                    className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-6 py-3.5 text-left transition-colors hover:bg-amber-500/20"
+                    className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-6 py-3.5 text-left transition-colors hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:hover:bg-amber-500/20"
                   >
-                    <span className="text-sm font-bold text-amber-100">{result}</span>
+                    <span className="text-sm font-bold text-amber-900 dark:text-amber-100">{result}</span>
                     {paResultOutsRecorded(result) > 0 ? (
-                      <span className="rounded bg-amber-500/20 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-amber-400">
+                      <span className="rounded-full bg-amber-200/70 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-amber-800 dark:bg-amber-500/20 dark:text-amber-400">
                         {paResultOutsRecorded(result)} out
                       </span>
                     ) : null}
@@ -105,11 +112,11 @@ export const ChartingEditorBottomBar = ({
         ) : (
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 items-center rounded-2xl border border-[rgba(var(--babson-grey-rgb),0.12)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-5 text-sm font-medium text-zinc-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
-                <span className="mr-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+              <div className={`${EDITOR_PANEL_MUTED_CLASS} flex h-12 items-center px-5 text-sm font-medium text-foreground dark:text-zinc-200`}>
+                <span className="mr-3 text-[10px] font-bold uppercase tracking-widest text-muted">
                   Pending
                 </span>
-                <span className="text-white">
+                <span>
                   {buildPendingPitchSummary({
                     selectedPitchType: activePitchType,
                     selectedLocation,
@@ -123,7 +130,7 @@ export const ChartingEditorBottomBar = ({
                 value={pendingVelocity}
                 onChange={(event) => onPendingVelocityChange(event.target.value)}
                 placeholder="Velo (mph)"
-                className="h-12 w-32 rounded-2xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-center text-sm font-bold text-white outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] focus:shadow-[0_0_0_1px_rgba(var(--babson-green-rgb),0.12)]"
+                className={`${EDITOR_INPUT_CLASS} h-12 w-32 rounded-2xl px-3 text-center text-sm font-bold`}
               />
             </div>
 
@@ -131,7 +138,7 @@ export const ChartingEditorBottomBar = ({
               <button
                 type="button"
                 onClick={onClearPitchDraft}
-                className="h-12 rounded-2xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-6 text-sm font-semibold text-[rgb(212,220,218)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)] transition-all hover:border-[rgba(var(--babson-grey-rgb),0.38)] hover:text-zinc-200"
+                className={actionButtonClass}
               >
                 Clear
               </button>
@@ -139,7 +146,7 @@ export const ChartingEditorBottomBar = ({
                 type="button"
                 onClick={onUndo}
                 disabled={pitchCount === 0}
-                className="h-12 rounded-2xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-6 text-sm font-semibold text-[rgb(212,220,218)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)] transition-all hover:border-[rgba(var(--babson-grey-rgb),0.38)] hover:text-zinc-200 disabled:opacity-50"
+                className={`${actionButtonClass} disabled:opacity-50`}
               >
                 Undo
               </button>
@@ -147,7 +154,7 @@ export const ChartingEditorBottomBar = ({
                 type="button"
                 onClick={onRecordPitch}
                 disabled={!canConfirmPitch}
-                className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-transparent bg-[var(--babson-green)] px-10 font-bold text-white shadow-[0_12px_26px_rgba(var(--babson-green-rgb),0.22)] transition-colors hover:bg-[#00573a] disabled:border-[rgba(var(--babson-grey-rgb),0.22)] disabled:bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] disabled:text-zinc-500 disabled:shadow-none"
+                className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-transparent bg-[var(--babson-green)] px-10 font-bold text-white shadow-[0_12px_26px_rgba(var(--babson-green-rgb),0.22)] transition-all hover:brightness-95 disabled:border-border disabled:bg-background disabled:text-muted disabled:shadow-none disabled:hover:brightness-100 dark:disabled:border-zinc-700 dark:disabled:bg-zinc-900/82 dark:disabled:text-zinc-500"
               >
                 <ArrowRight className="h-5 w-5" /> Record Pitch
               </button>

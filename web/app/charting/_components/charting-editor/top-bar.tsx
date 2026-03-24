@@ -1,6 +1,5 @@
 import type { ChangeEvent } from "react";
 
-import { emptyBaserunnerState } from "@/lib/charting/live";
 import type {
   ChartingBaserunnerState,
   ChartingBootstrapPitcher,
@@ -8,9 +7,18 @@ import type {
   ChartingMatchupSide,
 } from "@/lib/charting/types";
 
-import { COUNT_PRESET_OPTIONS, INNING_OPTIONS, OUT_OPTIONS } from "./constants";
+import { OnBasePanel } from "./on-base-panel";
+
+import { COUNT_PRESET_OPTIONS, INNING_OPTIONS } from "./constants";
 import type { LiveABCountPreset } from "./types";
-import { countPresetButtonClass } from "./ui";
+import {
+  countPresetButtonClass,
+  EDITOR_INPUT_CLASS,
+  EDITOR_MUTED_LABEL_CLASS,
+  EDITOR_PANEL_CLASS,
+  EDITOR_PANEL_MUTED_CLASS,
+  EDITOR_PILL_CLASS,
+} from "./ui";
 import { TEAM_NAME } from "@/lib/teamConfig";
 
 interface ChartingEditorTopBarProps {
@@ -51,11 +59,6 @@ interface ChartingEditorTopBarProps {
     field: "inning" | "isTopInning" | "outs",
     value: number | boolean,
   ) => void;
-  onBaserunnerDraftChange: (
-    field: keyof ChartingBaserunnerState,
-    value: string,
-  ) => void;
-  onBaserunnerDraftBlur: () => void;
   onCommitBaserunnerDraft: (
     nextDraft: Partial<ChartingBaserunnerState> | null | undefined,
     successNote: string,
@@ -98,35 +101,51 @@ export const ChartingEditorTopBar = ({
   onVenueSideChange,
   onResetOverride,
   onOverrideChange,
-  onBaserunnerDraftChange,
-  onBaserunnerDraftBlur,
   onCommitBaserunnerDraft,
   onCountPresetChange,
 }: ChartingEditorTopBarProps) => {
   const battingTeamLabel = activeBattingSide === "our" ? ourTeamLabel : opponentTeamLabel;
   const pitchingTeamLabel = activePitchingSide === "our" ? ourTeamLabel : opponentTeamLabel;
+  const venueSegmentClass = `${EDITOR_PANEL_MUTED_CLASS} flex items-center gap-0 rounded-md p-0.5`;
+  const venueButtonClass = (active: boolean) =>
+    `rounded px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] transition-colors ${
+      active
+        ? "bg-surface text-foreground shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
+        : "text-muted hover:text-foreground dark:text-zinc-400 dark:hover:text-zinc-100"
+    }`;
+  const inningSegmentClass = `${EDITOR_PANEL_MUTED_CLASS} flex flex-1 items-center gap-0 rounded-xl p-0.5`;
+  const inningButtonClass = (active: boolean) =>
+    `flex-1 rounded-[10px] py-1.5 text-[9px] font-bold uppercase tracking-[0.18em] transition-all ${
+      active
+        ? "bg-surface text-foreground shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
+        : "text-muted hover:text-foreground dark:text-zinc-400 dark:hover:text-zinc-100"
+    }`;
+  const compactMetricPillClass =
+    "flex items-center gap-1.5 rounded-full border border-border bg-background px-2 py-0.5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/82";
 
   return (
     <section
-      className="border-b border-[rgba(var(--babson-grey-rgb),0.18)] px-3 py-1.5 lg:px-4"
-      style={{
-        backgroundImage:
-          "linear-gradient(to bottom, rgba(var(--babson-grey-rgb), 0.04), transparent)",
-      }}
+      className="border-b border-border/60 bg-background/55 px-3 py-1.5 backdrop-blur-xl lg:px-4 dark:border-zinc-800/80 dark:bg-zinc-950/35"
     >
-      <div className="mx-auto grid w-full max-w-[1680px] gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.35fr)_minmax(0,1.9fr)_minmax(0,1.25fr)]">
-        <div className="flex min-w-0 flex-col rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
+      <div className="mx-auto grid w-full max-w-[1680px] gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1.6fr)_minmax(0,1.05fr)_minmax(0,1.25fr)]">
+        <div className={`${EDITOR_PANEL_CLASS} flex min-w-0 flex-col p-3`}>
           <div className="mb-2 flex items-center justify-between gap-2">
-            <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-              Current At-Bat
+            <div className="flex items-center gap-1.5">
+              <span className="relative flex h-1.5 w-1.5 shrink-0">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[rgba(var(--babson-green-rgb),0.6)] opacity-75" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[var(--babson-green)]" />
+              </span>
+              <div className={EDITOR_MUTED_LABEL_CLASS}>
+                Current At-Bat
+              </div>
             </div>
-            <span className="rounded-full border border-[rgba(var(--babson-grey-rgb),0.18)] bg-zinc-950/60 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
+            <span className={EDITOR_PILL_CLASS}>
               {battingTeamLabel} batting
             </span>
           </div>
-          <div className="grid gap-2 sm:grid-cols-2">
-            <label className="min-w-0">
-              <span className="mb-1 block text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+          <div className="grid gap-x-2 gap-y-1.5 sm:grid-cols-[1fr_auto_1fr]">
+            <label className="min-w-0 border-l-2 border-l-[rgba(var(--brand-primary-rgb),0.35)] pl-2">
+              <span className={EDITOR_MUTED_LABEL_CLASS}>
                 {pitchingTeamLabel} pitcher
               </span>
               <input
@@ -137,7 +156,7 @@ export const ChartingEditorTopBar = ({
                 placeholder={
                   activePitchingSide === "our" ? `${TEAM_NAME} pitcher` : "Opponent pitcher"
                 }
-                className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-bold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] focus:shadow-[0_0_0_1px_rgba(var(--babson-green-rgb),0.12)] placeholder:font-normal placeholder:text-zinc-600 disabled:opacity-50"
+                className={`${EDITOR_INPUT_CLASS} h-9 px-3 text-xs font-bold placeholder:font-normal disabled:cursor-not-allowed disabled:opacity-60`}
               />
               <datalist id={pitcherDatalistId}>
                 {activePitchingSide === "our"
@@ -147,8 +166,13 @@ export const ChartingEditorTopBar = ({
                   : null}
               </datalist>
             </label>
-            <label className="min-w-0">
-              <span className="mb-1 block text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+            <div className="hidden items-end pb-[11px] sm:flex">
+              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-muted">
+                vs
+              </span>
+            </div>
+            <label className="min-w-0 border-l-2 border-l-border pl-2 dark:border-l-zinc-700">
+              <span className={EDITOR_MUTED_LABEL_CLASS}>
                 {battingTeamLabel} hitter
               </span>
               <input
@@ -157,7 +181,7 @@ export const ChartingEditorTopBar = ({
                 onChange={(event) => onHitterChange(event.target.value)}
                 onBlur={onHitterBlur}
                 placeholder={activeBattingSide === "our" ? `${TEAM_NAME} hitter` : "Opponent hitter"}
-                className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-bold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] focus:shadow-[0_0_0_1px_rgba(var(--babson-green-rgb),0.12)] placeholder:font-normal placeholder:text-zinc-600"
+                className={`${EDITOR_INPUT_CLASS} h-9 px-3 text-xs font-bold placeholder:font-normal`}
               />
               <datalist id={datalistId}>
                 {hitterSuggestions.map((name) => (
@@ -168,33 +192,25 @@ export const ChartingEditorTopBar = ({
           </div>
         </div>
 
-        <div className="flex min-w-0 flex-col rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
+        <div className={`${EDITOR_PANEL_CLASS} flex min-w-0 flex-col p-3`}>
           <div className="mb-2 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+              <div className={EDITOR_MUTED_LABEL_CLASS}>
                 Game State
               </div>
               {sessionType === "game" ? (
-                <div className="flex items-center rounded-md border border-[rgba(var(--babson-grey-rgb),0.22)] bg-zinc-950/60 p-0.5">
+                <div className={venueSegmentClass}>
                   <button
                     type="button"
                     onClick={() => onVenueSideChange("home")}
-                    className={`rounded px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] transition-colors ${
-                      babsonVenueSide === "home"
-                        ? "bg-zinc-700 text-zinc-100"
-                        : "text-zinc-500 hover:text-zinc-300"
-                    }`}
+                    className={venueButtonClass(babsonVenueSide === "home")}
                   >
                     Home
                   </button>
                   <button
                     type="button"
                     onClick={() => onVenueSideChange("away")}
-                    className={`rounded px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] transition-colors ${
-                      babsonVenueSide === "away"
-                        ? "bg-zinc-700 text-zinc-100"
-                        : "text-zinc-500 hover:text-zinc-300"
-                    }`}
+                    className={venueButtonClass(babsonVenueSide === "away")}
                   >
                     Away
                   </button>
@@ -203,18 +219,19 @@ export const ChartingEditorTopBar = ({
             </div>
             {hasGameStateOverride ? (
               <button
+                type="button"
                 onClick={onResetOverride}
-                className="shrink-0 whitespace-nowrap text-[10px] font-semibold text-amber-500 hover:text-amber-400"
+                className="shrink-0 whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700 transition-colors hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-100"
               >
                 Reset
               </button>
             ) : null}
           </div>
-          <div className="grid gap-2 sm:grid-cols-3">
+          <div className="flex flex-col gap-3">
             <select
               value={overrideInning}
               onChange={(event) => onOverrideChange("inning", Number(event.target.value))}
-              className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-semibold text-[rgb(212,220,218)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)]"
+              className={`${EDITOR_INPUT_CLASS} h-9 px-3 text-xs font-bold`}
             >
               {INNING_OPTIONS.map((inning) => (
                 <option key={inning} value={inning}>
@@ -222,100 +239,93 @@ export const ChartingEditorTopBar = ({
                 </option>
               ))}
             </select>
-            <select
-              value={overrideIsTopInning ? "top" : "bottom"}
-              onChange={(event) =>
-                onOverrideChange("isTopInning", event.target.value === "top")
-              }
-              className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-semibold text-[rgb(212,220,218)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)]"
-            >
-              <option value="top">Top - {topBattingTeam} bat</option>
-              <option value="bottom">Bot - {botBattingTeam} bat</option>
-            </select>
-            <select
-              value={overrideOuts}
-              onChange={(event) => onOverrideChange("outs", Number(event.target.value))}
-              className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-semibold text-[rgb(212,220,218)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)]"
-            >
-              {OUT_OPTIONS.map((outs) => (
-                <option key={outs} value={outs}>
-                  {outs} Outs
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              <div className={inningSegmentClass}>
+                <button
+                  type="button"
+                  onClick={() => onOverrideChange("isTopInning", true)}
+                  className={inningButtonClass(overrideIsTopInning)}
+                  title={`Top: ${topBattingTeam} batting`}
+                >
+                  Top
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onOverrideChange("isTopInning", false)}
+                  className={inningButtonClass(!overrideIsTopInning)}
+                  title={`Bottom: ${botBattingTeam} batting`}
+                >
+                  Bot
+                </button>
+              </div>
+              <div className={`${EDITOR_PANEL_MUTED_CLASS} flex items-center gap-1 rounded-xl px-3 py-2`}>
+                <span className="mr-1.5 text-[8px] font-semibold uppercase tracking-[0.18em] text-muted">
+                  Out
+                </span>
+                {[0, 1].map((pipIndex) => {
+                  const filled = overrideOuts > pipIndex;
+                  return (
+                    <button
+                      key={pipIndex}
+                      type="button"
+                      onClick={() =>
+                        onOverrideChange("outs", filled ? pipIndex : pipIndex + 1)
+                      }
+                      className={`h-3.5 w-3.5 rounded-full border transition-all ${
+                        filled
+                          ? "border-amber-400/70 bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.42)]"
+                          : "border-border bg-transparent hover:border-amber-300 dark:border-zinc-600 dark:hover:border-zinc-400"
+                      }`}
+                      title={filled ? `Click to set ${pipIndex} out(s)` : `Click to set ${pipIndex + 1} out(s)`}
+                    />
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
         {sessionType === "game" ? (
-          <div className="flex min-w-0 flex-col rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                On Base
-              </div>
-              <button
-                type="button"
-                onClick={() => onCommitBaserunnerDraft(emptyBaserunnerState(), "Base state cleared")}
-                className="text-[10px] font-semibold text-zinc-500 transition-colors hover:text-zinc-300"
-              >
-                Clear
-              </button>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {([
-                ["runnerOnFirst", "1B"],
-                ["runnerOnSecond", "2B"],
-                ["runnerOnThird", "3B"],
-              ] as const).map(([field, label]) => (
-                <label key={field} className="min-w-0">
-                  <span className="mb-1 block text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                    {label}
-                  </span>
-                  <input
-                    list={datalistId}
-                    value={baserunnerDraft[field] ?? ""}
-                    onChange={(event) => onBaserunnerDraftChange(field, event.target.value)}
-                    onBlur={onBaserunnerDraftBlur}
-                    placeholder="Name"
-                    className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-semibold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] placeholder:text-zinc-600"
-                  />
-                </label>
-              ))}
-            </div>
-          </div>
+          <OnBasePanel
+            baserunnerDraft={baserunnerDraft}
+            onCommitBaserunnerDraft={onCommitBaserunnerDraft}
+          />
         ) : null}
 
-        <div className="flex min-w-0 flex-col justify-center rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
+        <div className={`${EDITOR_PANEL_CLASS} flex min-w-0 flex-col justify-center p-3`}>
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex min-w-0 items-center gap-2">
-                <div className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                <div className={`${EDITOR_MUTED_LABEL_CLASS} shrink-0`}>
                   Pitch Count
                 </div>
                 {needsPAClosure ? (
-                  <span className="shrink-0 rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold tracking-widest text-amber-500">
+                  <span className="shrink-0 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-bold tracking-[0.16em] text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
                     CLOSE PA
                   </span>
                 ) : null}
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="flex items-center gap-1.5 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-2 py-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
-                  <span className="text-[9px] font-semibold uppercase tracking-wider text-[rgb(212,220,218)]">
+                <span className={compactMetricPillClass}>
+                  <span className="text-[9px] font-semibold uppercase tracking-wider text-muted">
                     Total
                   </span>
-                  <span className="text-sm font-black text-white">
+                  <span className="text-sm font-black text-foreground dark:text-zinc-50">
                     {activePitcherPitchCount}
                   </span>
                 </span>
-                <span className="flex items-center gap-1.5 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-2 py-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
-                  <span className="text-[9px] font-semibold uppercase tracking-wider text-[rgb(212,220,218)]">
+                <span className={compactMetricPillClass}>
+                  <span className="text-[9px] font-semibold uppercase tracking-wider text-muted">
                     Inning
                   </span>
-                  <span className="text-sm font-black text-white">{inningPitches}</span>
+                  <span className="text-sm font-black text-foreground dark:text-zinc-50">
+                    {inningPitches}
+                  </span>
                 </span>
               </div>
             </div>
-            <div className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
-              <span className="shrink-0 text-[9px] font-semibold uppercase tracking-wider text-[rgb(212,220,218)]">
+            <div className={`${EDITOR_PANEL_MUTED_CLASS} flex min-w-0 items-center justify-between gap-2 rounded-xl px-3 py-2`}>
+              <span className="shrink-0 text-[9px] font-semibold uppercase tracking-wider text-muted">
                 Live Count
               </span>
               <span className="shrink-0 text-[1.75rem] font-black leading-none tracking-[0.28em] tabular-nums text-[var(--babson-green)]">
@@ -326,10 +336,10 @@ export const ChartingEditorTopBar = ({
               <div className="flex min-w-0 items-center gap-2">
                 {sessionType !== "game" ? (
                   <>
-                    <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                    <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.2em] text-muted">
                       Start State
                     </span>
-                    <div className="inline-flex flex-wrap items-center gap-1 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)]">
+                    <div className={`${EDITOR_PANEL_MUTED_CLASS} inline-flex flex-wrap items-center gap-1 rounded-full p-1`}>
                       {COUNT_PRESET_OPTIONS.map((option) => (
                         <button
                           key={option.value}
@@ -350,9 +360,9 @@ export const ChartingEditorTopBar = ({
                   </>
                 ) : null}
               </div>
-              <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
                 {effectiveBuntMode ? (
-                  <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-emerald-300">
+                  <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
                     Bunt Active
                   </span>
                 ) : null}
