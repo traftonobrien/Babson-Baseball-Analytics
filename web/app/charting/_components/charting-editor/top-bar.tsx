@@ -1,12 +1,13 @@
 import type { ChangeEvent } from "react";
 
-import { emptyBaserunnerState } from "@/lib/charting/live";
 import type {
   ChartingBaserunnerState,
   ChartingBootstrapPitcher,
   ChartingGameSnapshot,
   ChartingMatchupSide,
 } from "@/lib/charting/types";
+
+import { OnBasePanel } from "./on-base-panel";
 
 import { COUNT_PRESET_OPTIONS, INNING_OPTIONS, OUT_OPTIONS } from "./constants";
 import type { LiveABCountPreset } from "./types";
@@ -114,19 +115,25 @@ export const ChartingEditorTopBar = ({
           "linear-gradient(to bottom, rgba(var(--babson-grey-rgb), 0.04), transparent)",
       }}
     >
-      <div className="mx-auto grid w-full max-w-[1680px] gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.35fr)_minmax(0,1.9fr)_minmax(0,1.25fr)]">
+      <div className="mx-auto grid w-full max-w-[1680px] gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1.6fr)_minmax(0,1.05fr)_minmax(0,1.25fr)]">
         <div className="flex min-w-0 flex-col rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
           <div className="mb-2 flex items-center justify-between gap-2">
-            <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-              Current At-Bat
+            <div className="flex items-center gap-1.5">
+              <span className="relative flex h-1.5 w-1.5 shrink-0">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[rgba(var(--babson-green-rgb),0.6)] opacity-75" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[var(--babson-green)]" />
+              </span>
+              <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                Current At-Bat
+              </div>
             </div>
             <span className="rounded-full border border-[rgba(var(--babson-grey-rgb),0.18)] bg-zinc-950/60 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
               {battingTeamLabel} batting
             </span>
           </div>
-          <div className="grid gap-2 sm:grid-cols-2">
-            <label className="min-w-0">
-              <span className="mb-1 block text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+          <div className="grid gap-x-2 gap-y-1.5 sm:grid-cols-[1fr_auto_1fr]">
+            <label className="min-w-0 border-l-2 border-l-[rgba(var(--babson-green-rgb),0.4)] pl-2">
+              <span className="mb-1 block text-[9px] font-semibold uppercase tracking-[0.18em] text-[rgba(var(--babson-green-rgb),0.7)]">
                 {pitchingTeamLabel} pitcher
               </span>
               <input
@@ -147,7 +154,10 @@ export const ChartingEditorTopBar = ({
                   : null}
               </datalist>
             </label>
-            <label className="min-w-0">
+            <div className="hidden items-end pb-[11px] sm:flex">
+              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-600">vs</span>
+            </div>
+            <label className="min-w-0 border-l-2 border-l-zinc-700 pl-2">
               <span className="mb-1 block text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
                 {battingTeamLabel} hitter
               </span>
@@ -210,11 +220,12 @@ export const ChartingEditorTopBar = ({
               </button>
             ) : null}
           </div>
-          <div className="grid gap-2 sm:grid-cols-3">
+          <div className="flex flex-col gap-2">
+            {/* Inning select — prominent */}
             <select
               value={overrideInning}
               onChange={(event) => onOverrideChange("inning", Number(event.target.value))}
-              className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-semibold text-[rgb(212,220,218)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)]"
+              className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-bold text-[rgb(212,220,218)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)]"
             >
               {INNING_OPTIONS.map((inning) => (
                 <option key={inning} value={inning}>
@@ -222,66 +233,65 @@ export const ChartingEditorTopBar = ({
                 </option>
               ))}
             </select>
-            <select
-              value={overrideIsTopInning ? "top" : "bottom"}
-              onChange={(event) =>
-                onOverrideChange("isTopInning", event.target.value === "top")
-              }
-              className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-semibold text-[rgb(212,220,218)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)]"
-            >
-              <option value="top">Top - {topBattingTeam} bat</option>
-              <option value="bottom">Bot - {botBattingTeam} bat</option>
-            </select>
-            <select
-              value={overrideOuts}
-              onChange={(event) => onOverrideChange("outs", Number(event.target.value))}
-              className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-semibold text-[rgb(212,220,218)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)] outline-none focus:border-[rgba(var(--babson-green-rgb),0.45)]"
-            >
-              {OUT_OPTIONS.map((outs) => (
-                <option key={outs} value={outs}>
-                  {outs} Outs
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              {/* TOP / BOT toggle */}
+              <div className="flex flex-1 items-center rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-zinc-950/60 p-0.5">
+                <button
+                  type="button"
+                  onClick={() => onOverrideChange("isTopInning", true)}
+                  className={`flex-1 rounded-[10px] py-1.5 text-[9px] font-bold uppercase tracking-[0.18em] transition-all ${
+                    overrideIsTopInning
+                      ? "bg-zinc-700 text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                      : "text-zinc-500 hover:text-zinc-300"
+                  }`}
+                >
+                  Top
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onOverrideChange("isTopInning", false)}
+                  className={`flex-1 rounded-[10px] py-1.5 text-[9px] font-bold uppercase tracking-[0.18em] transition-all ${
+                    !overrideIsTopInning
+                      ? "bg-zinc-700 text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                      : "text-zinc-500 hover:text-zinc-300"
+                  }`}
+                >
+                  Bot
+                </button>
+              </div>
+              {/* Outs pip dots */}
+              <div className="flex items-center gap-1 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-zinc-950/60 px-3 py-2">
+                <span className="mr-1.5 text-[8px] font-semibold uppercase tracking-[0.18em] text-zinc-600">
+                  Out
+                </span>
+                {[0, 1].map((pipIndex) => {
+                  const filled = overrideOuts > pipIndex;
+                  return (
+                    <button
+                      key={pipIndex}
+                      type="button"
+                      onClick={() =>
+                        onOverrideChange("outs", filled ? pipIndex : pipIndex + 1)
+                      }
+                      className={`h-3.5 w-3.5 rounded-full border transition-all ${
+                        filled
+                          ? "border-amber-400/60 bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.5)]"
+                          : "border-zinc-600 bg-transparent hover:border-zinc-400"
+                      }`}
+                      title={filled ? `Click to set ${pipIndex} out(s)` : `Click to set ${pipIndex + 1} out(s)`}
+                    />
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
         {sessionType === "game" ? (
-          <div className="flex min-w-0 flex-col rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <div className="text-[9px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                On Base
-              </div>
-              <button
-                type="button"
-                onClick={() => onCommitBaserunnerDraft(emptyBaserunnerState(), "Base state cleared")}
-                className="text-[10px] font-semibold text-zinc-500 transition-colors hover:text-zinc-300"
-              >
-                Clear
-              </button>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {([
-                ["runnerOnFirst", "1B"],
-                ["runnerOnSecond", "2B"],
-                ["runnerOnThird", "3B"],
-              ] as const).map(([field, label]) => (
-                <label key={field} className="min-w-0">
-                  <span className="mb-1 block text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                    {label}
-                  </span>
-                  <input
-                    list={datalistId}
-                    value={baserunnerDraft[field] ?? ""}
-                    onChange={(event) => onBaserunnerDraftChange(field, event.target.value)}
-                    onBlur={onBaserunnerDraftBlur}
-                    placeholder="Name"
-                    className="h-9 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-xs font-semibold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] placeholder:text-zinc-600"
-                  />
-                </label>
-              ))}
-            </div>
-          </div>
+          <OnBasePanel
+            baserunnerDraft={baserunnerDraft}
+            onCommitBaserunnerDraft={onCommitBaserunnerDraft}
+          />
         ) : null}
 
         <div className="flex min-w-0 flex-col justify-center rounded-xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-3 shadow-[0_12px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">

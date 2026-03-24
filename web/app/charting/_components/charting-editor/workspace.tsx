@@ -67,7 +67,7 @@ export const ChartingEditorWorkspace = ({
 }: ChartingEditorWorkspaceProps) => {
   return (
     <section className="mx-auto flex w-full max-w-[1680px] flex-1 flex-col lg:flex-row gap-6 overflow-y-auto lg:overflow-hidden p-4 min-h-0">
-      <div className="flex w-full lg:w-fit min-h-0 shrink-0 flex-col items-center rounded-[2rem] border border-[rgba(var(--babson-grey-rgb),0.12)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-4 shadow-[0_24px_64px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
+      <div className="flex w-full lg:w-[38rem] min-h-0 shrink-0 flex-col items-center rounded-[2rem] border border-[rgba(var(--babson-grey-rgb),0.12)] bg-[linear-gradient(180deg,rgba(12,18,17,0.82),rgba(9,9,11,0.92))] p-4 shadow-[0_24px_64px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_1px_rgba(var(--babson-green-rgb),0.04)]">
         <div className="mb-3 flex w-full items-center justify-between gap-4">
           <div className="flex min-w-0 flex-col">
             <div className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
@@ -87,7 +87,7 @@ export const ChartingEditorWorkspace = ({
           </div>
         </div>
 
-        <div className="flex min-h-0 w-full max-w-[24rem] flex-1 items-center justify-center">
+        <div className="flex min-h-0 w-full max-w-[34rem] flex-1 items-center justify-center">
           <PitchLocationGrid
             selectedLocation={selectedLocation}
             disabled={selectedPitchResult === "hit_by_pitch"}

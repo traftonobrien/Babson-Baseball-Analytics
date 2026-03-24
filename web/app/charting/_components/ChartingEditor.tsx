@@ -355,7 +355,7 @@ export function ChartingEditor({
     nextDraft: Partial<ChartingBaserunnerState> | null | undefined,
     successNote: string,
   ) => {
-    const normalizedBaserunners = normalizeBaserunnerState(nextDraft);
+    const normalizedBaserunners = normalizeBaserunnerState({ ...baserunnerDraft, ...nextDraft });
     if (!openPlateAppearance) {
       setBaserunnerDraft(normalizedBaserunners);
       return;
