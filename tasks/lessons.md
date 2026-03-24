@@ -4,6 +4,7 @@
 
 ## 2026-03-23
 - [UI rule] Every styling change must keep both light and dark mode working. Use semantic tokens (`text-foreground`, `bg-background`, `bg-surface`, `border-border`, `text-muted`). Pair every light Tailwind color class with a `dark:` variant if they differ. Site dark uses `html[data-site-appearance="dark"]` via `globals.css` — not `prefers-color-scheme`. Brand tints go through `web/lib/brandSurfaces.ts`. Never leave one mode unverified.
+- [Site appearance] For presentational styling, prefer CSS dark selectors (`dark:*`, semantic tokens, or `data-site-appearance`) over `useSiteAppearance()` branching. Browser Use/Chromium caught client components rendering their light branch even when `html[data-site-appearance="dark"]` was already set; CSS-based dark classes stayed correct.
 - [Canonical player IDs] Stuff+ rows can arrive with slug-style player IDs like `smith_cooper` while charting/leaderboards use roster IDs like `CSmith1`; canonical resolution must check exact / parsed slugs via `PLAYER_ID_BY_SLUG` before alias fallback so Pitching+ merges the same player correctly.
 
 ## 2026-03-15

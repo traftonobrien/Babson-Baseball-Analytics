@@ -207,9 +207,7 @@ export default function Sidebar() {
               href={item.url}
               className={
                 isActive
-                  ? isDark
-                    ? "flex items-center gap-3 rounded-full border border-zinc-700 bg-zinc-900/90 px-3 py-2.5 text-[13px] font-bold text-[var(--brand-primary-spotlight)] shadow-[0_10px_28px_rgba(0,0,0,0.35)] transition-colors"
-                    : "flex items-center gap-3 rounded-full bg-[var(--brand-primary-soft)] px-3 py-2.5 text-[13px] font-bold text-[var(--brand-primary-subtle-text)] transition-colors"
+                  ? "flex items-center gap-3 rounded-full bg-[var(--brand-primary-soft)] px-3 py-2.5 text-[13px] font-bold text-[var(--brand-primary-subtle-text)] transition-colors dark:border dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-[var(--brand-primary-spotlight)] dark:shadow-[0_10px_28px_rgba(0,0,0,0.35)]"
                   : isDark
                     ? "group flex items-center gap-3 rounded-full px-3 py-2.5 text-[13px] font-semibold text-zinc-400 transition-colors hover:bg-zinc-900/80 hover:text-zinc-100"
                     : "group flex items-center gap-3 rounded-full px-3 py-2.5 text-[13px] font-semibold text-slate-500 dark:text-zinc-400 transition-colors hover:bg-background hover:text-slate-900 dark:hover:text-zinc-50"
@@ -218,9 +216,7 @@ export default function Sidebar() {
               <Icon
                 className={
                   isActive
-                    ? isDark
-                      ? "h-5 w-5 text-[var(--brand-primary-spotlight)]"
-                      : "h-5 w-5 text-[var(--brand-primary-subtle-text)]"
+                    ? "h-5 w-5 text-[var(--brand-primary-subtle-text)] dark:text-[var(--brand-primary-spotlight)]"
                     : isDark
                       ? "w-5 h-5 text-zinc-500 group-hover:text-zinc-400 transition-colors"
                       : "w-5 h-5 text-slate-400 dark:text-zinc-500 group-hover:text-slate-500 dark:hover:text-zinc-400 transition-colors"

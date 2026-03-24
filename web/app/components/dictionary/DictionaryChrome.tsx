@@ -29,13 +29,13 @@ type DictionaryTone =
 
 /** Light-surface chips (metrics dictionaries / updated UI). */
 const TONE_ICON_CLASSES: Record<DictionaryTone, string> = {
-  amber: "border-amber-200 bg-amber-50 text-amber-700",
-  orange: "border-orange-200 bg-orange-50 text-orange-700",
-  blue: "border-blue-200 bg-blue-50 text-blue-700",
-  sky: "border-sky-200 bg-sky-50 text-sky-700",
-  emerald: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  violet: "border-violet-200 bg-violet-50 text-violet-700",
-  indigo: "border-indigo-200 bg-indigo-50 text-indigo-700",
+  amber: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-950/45 dark:text-amber-200",
+  orange: "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-500/30 dark:bg-orange-950/45 dark:text-orange-200",
+  blue: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-950/45 dark:text-blue-200",
+  sky: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-500/30 dark:bg-sky-950/45 dark:text-sky-200",
+  emerald: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-950/45 dark:text-emerald-200",
+  violet: "border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-500/30 dark:bg-violet-950/45 dark:text-violet-200",
+  indigo: "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-950/45 dark:text-indigo-200",
 };
 
 export function DictionaryPageShell({
@@ -122,7 +122,7 @@ export function DictionarySection({
           <div className="min-w-0">
             <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-zinc-50">{title}</h2>
             {description ? (
-              <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">{description}</p>
+              <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600 dark:text-zinc-400">{description}</p>
             ) : null}
           </div>
         </div>
@@ -142,7 +142,7 @@ export function DictionaryCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border bg-surface p-6 shadow-[0_12px_28px_rgba(15,23,42,0.04)]",
+        "rounded-2xl border border-border bg-surface p-6 shadow-[0_12px_28px_rgba(15,23,42,0.04)] dark:border-zinc-800 dark:bg-zinc-950/72 dark:shadow-[0_18px_36px_rgba(0,0,0,0.34)]",
         className,
       )}
     >
@@ -161,7 +161,7 @@ export function DictionaryTableShell({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-2xl border border-slate-200 bg-surface shadow-[0_8px_24px_rgba(15,23,42,0.04)]",
+        "overflow-hidden rounded-2xl border border-slate-200 bg-surface shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:border-zinc-800 dark:bg-zinc-950/72 dark:shadow-[0_18px_36px_rgba(0,0,0,0.34)]",
         className,
       )}
     >
@@ -187,7 +187,7 @@ export function DictionaryHubCard({
     <Link
       href={href}
       className={cn(
-        "group block rounded-3xl border border-border bg-surface p-5 shadow-[0_12px_28px_rgba(15,23,42,0.04)] transition-smooth hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_18px_40px_rgba(15,23,42,0.06)]",
+        "group block rounded-3xl border border-border bg-surface p-5 shadow-[0_12px_28px_rgba(15,23,42,0.04)] transition-smooth hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_18px_40px_rgba(15,23,42,0.06)] dark:border-zinc-800 dark:bg-zinc-950/72 dark:shadow-[0_18px_36px_rgba(0,0,0,0.34)] dark:hover:border-zinc-700 dark:hover:shadow-[0_24px_48px_rgba(0,0,0,0.44)]",
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -199,11 +199,11 @@ export function DictionaryHubCard({
         >
           <Icon className="h-5 w-5" />
         </div>
-        <ArrowLeft className="h-4 w-4 rotate-180 text-slate-400 transition-smooth group-hover:text-[#6366F1]" />
+        <ArrowLeft className="h-4 w-4 rotate-180 text-slate-400 transition-smooth group-hover:text-[#6366F1] dark:text-zinc-500 dark:group-hover:text-indigo-300" />
       </div>
       <div className="mt-4">
         <div className="text-base font-bold text-slate-900 dark:text-zinc-50">{title}</div>
-        <p className="mt-1 text-sm leading-7 text-slate-600">{description}</p>
+        <p className="mt-1 text-sm leading-7 text-slate-600 dark:text-zinc-400">{description}</p>
       </div>
     </Link>
   );

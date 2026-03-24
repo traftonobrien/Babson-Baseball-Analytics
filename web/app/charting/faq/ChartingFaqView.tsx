@@ -202,8 +202,8 @@ export default function ChartingFaqView() {
       >
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <DictionaryCard>
-            <h3 className="text-lg font-bold text-emerald-900">Scope</h3>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600">
+            <h3 className="text-lg font-bold text-emerald-900 dark:text-emerald-200">Scope</h3>
+            <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-zinc-400">
               Every row updates from the current session filter or date range. A
               single-session view shows only one charted outing. Wider scopes
               aggregate every matching game session.
@@ -211,17 +211,17 @@ export default function ChartingFaqView() {
           </DictionaryCard>
 
           <DictionaryCard>
-            <h3 className="text-lg font-bold text-slate-900">Location Rules</h3>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-50">Location Rules</h3>
+            <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-zinc-400">
               Zone and chase metrics only use pitches with a recorded location
               cell. If a pitch was charted without location, it stays in pitch
               totals but drops out of zone-based percentages.
             </p>
           </DictionaryCard>
 
-          <DictionaryCard className="border-emerald-200 bg-emerald-50">
-            <h3 className="text-lg font-bold text-emerald-900">Why TBF, Not WHIP</h3>
-            <p className="mt-3 text-sm leading-relaxed text-slate-700">
+          <DictionaryCard className="border-emerald-200 bg-emerald-50 dark:border-emerald-500/30 dark:bg-emerald-950/35">
+            <h3 className="text-lg font-bold text-emerald-900 dark:text-emerald-200">Why TBF, Not WHIP</h3>
+            <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-zinc-300">
               Game innings may not always follow standard out counts due to
               pitching changes mid-inning. Total batters faced is the cleaner
               workload number for this environment, so the leaderboard uses TBF
@@ -239,16 +239,16 @@ export default function ChartingFaqView() {
       >
         <DictionaryTableShell>
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <thead className="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-500">
               <tr>
                 <th className="w-32 px-6 py-4">Stat</th>
                 <th className="px-6 py-4">Definition</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 text-slate-600">
+            <tbody className="divide-y divide-slate-200 text-slate-600 dark:divide-zinc-800 dark:text-zinc-400">
               {PITCHER_STATS.map(({ stat, definition }) => (
-                <tr key={stat} className="transition-smooth hover:bg-slate-50">
-                  <td className="px-6 py-4 font-mono font-medium text-slate-900">{stat}</td>
+                <tr key={stat} className="transition-smooth hover:bg-slate-50 dark:hover:bg-zinc-900/80">
+                  <td className="px-6 py-4 font-mono font-medium text-slate-900 dark:text-zinc-50">{stat}</td>
                   <td className="px-6 py-4">{definition}</td>
                 </tr>
               ))}
@@ -266,16 +266,16 @@ export default function ChartingFaqView() {
         <div className="space-y-6">
           <DictionaryTableShell>
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+              <thead className="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-500">
                 <tr>
                   <th className="w-36 px-6 py-4">Stat</th>
                   <th className="px-6 py-4">Definition</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 text-slate-600">
+              <tbody className="divide-y divide-slate-200 text-slate-600 dark:divide-zinc-800 dark:text-zinc-400">
                 {HITTER_STATS.map(({ stat, definition }) => (
-                  <tr key={stat} className="transition-smooth hover:bg-slate-50">
-                    <td className="px-6 py-4 font-mono font-medium text-slate-900">{stat}</td>
+                  <tr key={stat} className="transition-smooth hover:bg-slate-50 dark:hover:bg-zinc-900/80">
+                    <td className="px-6 py-4 font-mono font-medium text-slate-900 dark:text-zinc-50">{stat}</td>
                     <td className="px-6 py-4">{definition}</td>
                   </tr>
                 ))}
@@ -285,26 +285,26 @@ export default function ChartingFaqView() {
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             <DictionaryCard>
-              <h3 className="text-lg font-bold text-slate-900">Fastball Group</h3>
-              <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                Includes pitches charted as <strong className="text-slate-800">Fastball</strong>.
+              <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-50">Fastball Group</h3>
+              <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-zinc-400">
+                Includes pitches charted as <strong className="text-slate-800 dark:text-zinc-200">Fastball</strong>.
               </p>
             </DictionaryCard>
 
             <DictionaryCard>
-              <h3 className="text-lg font-bold text-slate-900">Breaking Group</h3>
-              <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                Includes <strong className="text-slate-800">Curveball</strong> and{" "}
-                <strong className="text-slate-800">Slider</strong>.
+              <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-50">Breaking Group</h3>
+              <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-zinc-400">
+                Includes <strong className="text-slate-800 dark:text-zinc-200">Curveball</strong> and{" "}
+                <strong className="text-slate-800 dark:text-zinc-200">Slider</strong>.
               </p>
             </DictionaryCard>
 
             <DictionaryCard>
-              <h3 className="text-lg font-bold text-slate-900">Offspeed Group</h3>
-              <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                Includes <strong className="text-slate-800">Changeup</strong>,{" "}
-                <strong className="text-slate-800">Split/Cut</strong>, and{" "}
-                <strong className="text-slate-800">Other</strong>.
+              <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-50">Offspeed Group</h3>
+              <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-zinc-400">
+                Includes <strong className="text-slate-800 dark:text-zinc-200">Changeup</strong>,{" "}
+                <strong className="text-slate-800 dark:text-zinc-200">Split/Cut</strong>, and{" "}
+                <strong className="text-slate-800 dark:text-zinc-200">Other</strong>.
               </p>
             </DictionaryCard>
           </div>

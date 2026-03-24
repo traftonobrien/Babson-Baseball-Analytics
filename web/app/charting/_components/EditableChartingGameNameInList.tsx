@@ -99,7 +99,7 @@ export function EditableChartingGameNameInList({
             }}
             autoFocus
             disabled={isSaving}
-            className="min-w-[8rem] rounded-md border border-zinc-600 bg-zinc-800 px-2.5 py-1.5 text-[15px] font-semibold text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-60"
+            className="min-w-[8rem] rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[15px] font-semibold text-slate-900 outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-60 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white"
           />
           <input
             type="date"
@@ -115,7 +115,7 @@ export function EditableChartingGameNameInList({
               }
             }}
             disabled={isSaving}
-            className="rounded-md border border-zinc-600 bg-zinc-800 px-2.5 py-1.5 text-[15px] font-semibold text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-60"
+            className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[15px] font-semibold text-slate-900 outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-60 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white"
           />
         </div>
       </div>
@@ -130,10 +130,13 @@ export function EditableChartingGameNameInList({
         className="group relative z-20 flex cursor-pointer items-baseline gap-1.5 text-left hover:opacity-90 w-fit"
         aria-label="Edit session name and date"
       >
-        <span className="text-[17px] font-semibold text-white">{opponent}</span>
-        <Pencil className="h-3.5 w-3.5 shrink-0 text-zinc-600 opacity-0 transition-opacity group-hover:opacity-100" aria-hidden />
+        <span className="text-[17px] font-semibold text-slate-900 dark:text-zinc-50">{opponent}</span>
+        <Pencil
+          className="h-3.5 w-3.5 shrink-0 text-slate-400 opacity-0 transition-opacity group-hover:opacity-100 dark:text-zinc-600"
+          aria-hidden
+        />
       </button>
-      <div className="flex items-center gap-2 text-[15px] text-zinc-500">
+      <div className="flex items-center gap-2 text-[15px] text-slate-500 dark:text-zinc-500">
         <span>
           {format(parseISO(gameDate), "MMM d, yyyy")}
         </span>
