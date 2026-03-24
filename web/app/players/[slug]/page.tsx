@@ -203,7 +203,11 @@ function StatRow({
         {label}
       </span>
       <span
-        className={`text-[15px] font-bold tracking-tight ${accent ? "text-[var(--brand-primary-subtle-text)]" : "text-slate-900 dark:text-zinc-50"}`}
+        className={`text-[15px] font-bold tracking-tight ${
+          accent
+            ? "text-[var(--brand-primary-subtle-text)] dark:text-[var(--brand-primary-spotlight)]"
+            : "text-slate-900 dark:text-zinc-50"
+        }`}
       >
         {value}
       </span>
@@ -588,7 +592,7 @@ export default async function PlayerProfilePage({
                 </div>
 
                 <div className="space-y-6 px-6 py-6">
-                  <div className="grid gap-2 rounded-[24px] border border-[var(--brand-primary-border)] bg-[var(--brand-primary-surface)] p-2">
+                  <div className="grid gap-2 rounded-[24px] border border-[var(--brand-primary-border)] bg-[var(--brand-primary-surface)] p-2 dark:border-zinc-700 dark:bg-zinc-900/90 dark:shadow-[inset_0_1px_0_rgba(var(--brand-primary-rgb),0.18)]">
                     {profileDetails.map((detail) => (
                       <StatRow key={detail.label} label={detail.label} value={detail.value} />
                     ))}

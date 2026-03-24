@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useSiteAppearance } from "@/app/components/SiteAppearanceContext";
 
 type HeroTone = "amber" | "orange" | "blue";
 
@@ -26,6 +27,7 @@ const HERO_TONE_STYLES: Record<
     label: string;
     value: string;
     note: string;
+    chip: string;
   }
 > = {
   amber: {
@@ -36,6 +38,7 @@ const HERO_TONE_STYLES: Record<
     label: "text-amber-700",
     value: "text-slate-950",
     note: "text-slate-500",
+    chip: "border-slate-200 bg-surface text-slate-500",
   },
   orange: {
     border: "border-orange-200 hover:border-orange-300",
@@ -45,6 +48,7 @@ const HERO_TONE_STYLES: Record<
     label: "text-orange-700",
     value: "text-slate-950",
     note: "text-slate-500",
+    chip: "border-slate-200 bg-surface text-slate-500",
   },
   blue: {
     border: "border-blue-200 hover:border-blue-300",
@@ -54,6 +58,40 @@ const HERO_TONE_STYLES: Record<
     label: "text-blue-700",
     value: "text-slate-950",
     note: "text-slate-500",
+    chip: "border-slate-200 bg-surface text-slate-500",
+  },
+};
+
+const HERO_TONE_STYLES_DARK: Record<HeroTone, (typeof HERO_TONE_STYLES)[HeroTone]> = {
+  amber: {
+    border: "border-amber-500/30 hover:border-amber-400/45",
+    surface: "from-amber-950/45 via-zinc-950 to-zinc-900",
+    glow: "bg-amber-500/25",
+    rail: "bg-amber-400",
+    label: "text-amber-200",
+    value: "text-zinc-50",
+    note: "text-zinc-400",
+    chip: "border-zinc-700 bg-zinc-900/85 text-zinc-300",
+  },
+  orange: {
+    border: "border-orange-500/30 hover:border-orange-400/45",
+    surface: "from-orange-950/45 via-zinc-950 to-zinc-900",
+    glow: "bg-orange-500/25",
+    rail: "bg-orange-400",
+    label: "text-orange-200",
+    value: "text-zinc-50",
+    note: "text-zinc-400",
+    chip: "border-zinc-700 bg-zinc-900/85 text-zinc-300",
+  },
+  blue: {
+    border: "border-blue-500/30 hover:border-blue-400/45",
+    surface: "from-blue-950/45 via-zinc-950 to-zinc-900",
+    glow: "bg-blue-500/25",
+    rail: "bg-blue-400",
+    label: "text-blue-200",
+    value: "text-zinc-50",
+    note: "text-zinc-400",
+    chip: "border-zinc-700 bg-zinc-900/85 text-zinc-300",
   },
 };
 
@@ -68,7 +106,8 @@ export function ProfileHeroTile({
   active = false,
   featured = false,
 }: HeroTileConfig & { index: number }) {
-  const toneStyles = HERO_TONE_STYLES[tone];
+  const siteDark = useSiteAppearance() === "dark";
+  const toneStyles = siteDark ? HERO_TONE_STYLES_DARK[tone] : HERO_TONE_STYLES[tone];
   const interactive = typeof onClick === "function";
 
   const valueNode = badgeStyle ? (
@@ -104,7 +143,7 @@ export function ProfileHeroTile({
               {label}
             </p>
             {interactive && (
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-surface text-slate-500">
+              <span className={`inline-flex h-8 w-8 items-center justify-center rounded-full border ${toneStyles.chip}`}>
                 {active ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </span>
             )}
@@ -127,7 +166,7 @@ export function ProfileHeroTile({
           {label}
         </p>
         {interactive && (
-          <span className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-surface text-slate-500">
+          <span className={`mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full border ${toneStyles.chip}`}>
             {active ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </span>
         )}
@@ -142,7 +181,11 @@ export function ProfileHeroTile({
   );
 
   const sharedClassName =
-    `group relative overflow-hidden rounded-[1.75rem] border ${toneStyles.border} bg-gradient-to-br ${toneStyles.surface} opacity-0 shadow-[0_18px_44px_rgba(15,23,42,0.06)] ${
+    `group relative overflow-hidden rounded-[1.75rem] border ${toneStyles.border} bg-gradient-to-br ${toneStyles.surface} opacity-0 ${
+      siteDark
+        ? "shadow-[0_18px_44px_rgba(0,0,0,0.38)]"
+        : "shadow-[0_18px_44px_rgba(15,23,42,0.06)]"
+    } ${
       featured ? "p-5 sm:p-6" : "p-4"
     }`;
 
@@ -161,7 +204,11 @@ export function ProfileHeroTile({
     </button>
   ) : (
     <div
-      className={`relative overflow-hidden rounded-[1.75rem] border ${toneStyles.border} bg-gradient-to-br ${toneStyles.surface} p-4 opacity-0 shadow-[0_18px_44px_rgba(15,23,42,0.06)]`}
+      className={`relative overflow-hidden rounded-[1.75rem] border ${toneStyles.border} bg-gradient-to-br ${toneStyles.surface} p-4 opacity-0 ${
+        siteDark
+          ? "shadow-[0_18px_44px_rgba(0,0,0,0.38)]"
+          : "shadow-[0_18px_44px_rgba(15,23,42,0.06)]"
+      }`}
       style={{
         animation: `savantFadeIn 0.4s ease-out ${index * 60}ms forwards`,
       }}

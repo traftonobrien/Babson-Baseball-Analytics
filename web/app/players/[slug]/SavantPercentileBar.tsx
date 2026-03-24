@@ -4,6 +4,8 @@
 /*  Gradient-sampled badge color — matches the track at badge position */
 /* ------------------------------------------------------------------ */
 
+import { useSiteAppearance } from "@/app/components/SiteAppearanceContext";
+
 type RGB = [number, number, number];
 
 function hexToRgb(hex: string): RGB {
@@ -77,6 +79,7 @@ export default function SavantPercentileBar({
   percentile,
   index,
 }: Props) {
+  const siteDark = useSiteAppearance() === "dark";
   const p =
     percentile != null && Number.isFinite(percentile)
       ? Math.min(100, Math.max(0, percentile))
@@ -94,7 +97,7 @@ export default function SavantPercentileBar({
       }}
     >
       {/* Metric */}
-      <div className="w-[56px] shrink-0 text-right text-[11px] font-black uppercase tracking-[0.08em] text-slate-500">
+      <div className="w-[56px] shrink-0 text-right text-[11px] font-black uppercase tracking-[0.08em] text-slate-500 dark:text-zinc-400">
         {label}
       </div>
 
@@ -124,14 +127,16 @@ export default function SavantPercentileBar({
         {/* Badge */}
         {n != null && style ? (
           <div
-            className="absolute top-1/2 z-10 flex items-center justify-center rounded-full ring-2 ring-white"
+            className={`absolute top-1/2 z-10 flex items-center justify-center rounded-full ring-2 ${siteDark ? "ring-zinc-950" : "ring-white"}`}
             style={{
               left: `${p}%`,
               transform: "translate(-50%, -50%)",
               width: 38,
               height: 38,
               backgroundColor: style.bg,
-              boxShadow: `0 0 12px ${style.glow}90, 0 0 0 3px #f8fafc, 0 10px 24px rgba(15,23,42,0.12)`,
+              boxShadow: siteDark
+                ? `0 0 16px ${style.glow}70, 0 0 0 3px rgba(9,9,11,0.92), 0 12px 28px rgba(0,0,0,0.36)`
+                : `0 0 12px ${style.glow}90, 0 0 0 3px #f8fafc, 0 10px 24px rgba(15,23,42,0.12)`,
             }}
           >
             <span
@@ -143,21 +148,21 @@ export default function SavantPercentileBar({
           </div>
         ) : (
           <div
-            className="absolute right-0 top-1/2 z-10 flex items-center justify-center rounded-full bg-slate-100"
+            className={`absolute right-0 top-1/2 z-10 flex items-center justify-center rounded-full ${siteDark ? "bg-zinc-800" : "bg-slate-100"}`}
             style={{
               transform: "translateY(-50%)",
               width: 38,
               height: 38,
-              boxShadow: "0 0 0 3px #f8fafc",
+              boxShadow: siteDark ? "0 0 0 3px rgba(9,9,11,0.92)" : "0 0 0 3px #f8fafc",
             }}
           >
-            <span className="text-[13px] font-black text-white">--</span>
+            <span className={`text-[13px] font-black ${siteDark ? "text-zinc-300" : "text-slate-500"}`}>--</span>
           </div>
         )}
       </div>
 
       {/* Value */}
-      <div className="w-[60px] shrink-0 text-right font-mono text-[13px] font-black tabular-nums leading-none text-slate-900">
+      <div className="w-[60px] shrink-0 text-right font-mono text-[13px] font-black tabular-nums leading-none text-slate-900 dark:text-zinc-50">
         {value}
       </div>
     </div>

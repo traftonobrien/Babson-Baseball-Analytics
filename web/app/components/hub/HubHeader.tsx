@@ -1,7 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import {
+  Activity,
+  BarChart3,
+  BookOpen,
+  ChevronRight,
+  ClipboardList,
+  Sparkles,
+  Target,
+  Trophy,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useSiteAppearance } from "@/app/components/SiteAppearanceContext";
 
@@ -20,6 +29,18 @@ const STAT_TONE_STYLES_DARK = {
 } as const;
 
 export type HubStatTone = keyof typeof STAT_TONE_STYLES;
+
+const HUB_ACTION_ICONS = {
+  activity: Activity,
+  barChart3: BarChart3,
+  bookOpen: BookOpen,
+  clipboardList: ClipboardList,
+  sparkles: Sparkles,
+  target: Target,
+  trophy: Trophy,
+} as const;
+
+export type HubActionIconName = keyof typeof HUB_ACTION_ICONS;
 
 /** Gradient stat tile (Trackman / Command / Charting hub pattern). */
 export function HubStatCard({
@@ -52,16 +73,19 @@ export function HubStatCard({
 /** Section label + brand primary CTA (hub pattern). */
 export function HubActionCard({
   href,
-  icon: Icon,
+  icon,
+  iconName,
   sectionTitle,
   buttonLabel,
 }: {
   href: string;
-  icon: LucideIcon;
+  icon?: LucideIcon;
+  iconName?: HubActionIconName;
   sectionTitle: string;
   buttonLabel: string;
 }) {
   const siteDark = useSiteAppearance() === "dark";
+  const Icon = iconName ? HUB_ACTION_ICONS[iconName] : icon;
 
   return (
     <div
@@ -79,7 +103,7 @@ export function HubActionCard({
           href={href}
           className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(var(--brand-primary-rgb),0.22)] transition-smooth hover:bg-[var(--brand-primary-hover)]"
         >
-          <Icon className="h-4 w-4 shrink-0" aria-hidden />
+          {Icon ? <Icon className="h-4 w-4 shrink-0" aria-hidden /> : null}
           {buttonLabel}
           <ChevronRight className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
         </Link>

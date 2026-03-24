@@ -11,3 +11,6 @@
 - sessionType must be passed through from the games DB query all the way to PitcherRawPitchRecord for game/live_ab filtering to work.
 - Thermographic color gradients (black → purple → red → orange → yellow) work better than emerald/cyan for heat maps.
 - `config` in PitcherZoneHeatmap must use named import syntax, not default import.
+
+## 2026-03-23
+- In Next.js App Router, do not pass Lucide icon components directly from a server component into a client component. Use a serializable key/enum and resolve the icon inside the client component, or keep the whole boundary on one side.

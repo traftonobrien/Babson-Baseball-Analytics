@@ -343,7 +343,7 @@ export default function PlayerProfileTabs({
 
   return (
     <div className="space-y-5">
-      <div className="overflow-x-auto rounded-[1.5rem] border border-slate-200/80 bg-surface/95 p-2 shadow-[0_18px_44px_rgba(15,23,42,0.06)] scrollbar-hide">
+      <div className="overflow-x-auto rounded-[1.5rem] border border-slate-200/80 bg-surface/95 p-2 shadow-[0_18px_44px_rgba(15,23,42,0.06)] scrollbar-hide dark:border-zinc-700/80 dark:bg-zinc-950/70 dark:shadow-[0_18px_44px_rgba(0,0,0,0.4)]">
         <div
           className="grid min-w-[22rem] gap-2 sm:min-w-[28rem] md:min-w-full"
           style={{ gridTemplateColumns: `repeat(${availableTabs.length}, minmax(0, 1fr))` }}
@@ -355,8 +355,8 @@ export default function PlayerProfileTabs({
               onClick={() => setActiveTab(tab)}
               className={`w-full rounded-[1.1rem] px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] transition-smooth sm:px-4 sm:py-3 sm:text-[11px] ${
                 activeTab === tab
-                  ? "border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)] shadow-[0_10px_24px_rgba(var(--brand-primary-rgb),0.08)]"
-                  : "border border-transparent text-slate-500 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900"
+                  ? "border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)] shadow-[0_10px_24px_rgba(var(--brand-primary-rgb),0.08)] dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-[var(--brand-primary-spotlight)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+                  : "border border-transparent text-slate-500 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-900/80 dark:hover:text-zinc-50"
               }`}
             >
               {tab}
@@ -378,10 +378,10 @@ export default function PlayerProfileTabs({
             {profileMode === "two-way" && (
               <section className="space-y-3">
                 <div>
-                  <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500">
+                  <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-zinc-400">
                     Overview Mode
                   </h2>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
                     Switch this profile between pitching and hitting season views.
                   </p>
                 </div>
@@ -403,10 +403,10 @@ export default function PlayerProfileTabs({
             {profileMode === "hitter" || activeOverviewMode === "hitting" ? (
               <section className="space-y-5">
                 <div>
-                  <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500">
+                  <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-zinc-400">
                     Hitting Snapshot
                   </h2>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
                     Season production and plate-discipline context for this hitter profile.
                   </p>
                 </div>
@@ -416,42 +416,42 @@ export default function PlayerProfileTabs({
                     label="AVG"
                     value={seasonStatMap.get("AVG") ?? "--"}
                     detail="batting average"
-                    emphasisClassName="text-emerald-600"
+                    emphasisClassName="text-emerald-600 dark:text-emerald-300"
                     variant="light"
                   />
                   <LeaderboardStatBlock
                     label="OPS"
                     value={seasonStatMap.get("OPS") ?? "--"}
                     detail="on-base plus slugging"
-                    emphasisClassName="text-slate-900"
+                    emphasisClassName="text-slate-900 dark:text-zinc-50"
                     variant="light"
                   />
                   <LeaderboardStatBlock
                     label="HR"
                     value={seasonStatMap.get("HR") ?? "--"}
                     detail="home runs"
-                    emphasisClassName="text-slate-900"
+                    emphasisClassName="text-slate-900 dark:text-zinc-50"
                     variant="light"
                   />
                   <LeaderboardStatBlock
                     label="RBI"
                     value={seasonStatMap.get("RBI") ?? "--"}
                     detail="runs batted in"
-                    emphasisClassName="text-slate-900"
+                    emphasisClassName="text-slate-900 dark:text-zinc-50"
                     variant="light"
                   />
                   <LeaderboardStatBlock
                     label="BB%"
                     value={seasonStatMap.get("BB%") ?? "--"}
                     detail="walk rate"
-                    emphasisClassName="text-slate-900"
+                    emphasisClassName="text-slate-900 dark:text-zinc-50"
                     variant="light"
                   />
                   <LeaderboardStatBlock
                     label="K%"
                     value={seasonStatMap.get("K%") ?? "--"}
                     detail="strikeout rate"
-                    emphasisClassName="text-slate-900"
+                    emphasisClassName="text-slate-900 dark:text-zinc-50"
                     variant="light"
                   />
                 </div>
@@ -556,7 +556,7 @@ export default function PlayerProfileTabs({
             )}
 
             {seasonStats.length === 0 && seasonPercentiles.length === 0 ? (
-              <LeaderboardPanel className="p-5 text-sm text-slate-500" variant="light">
+              <LeaderboardPanel className="p-5 text-sm text-slate-500 dark:text-zinc-400" variant="light">
                 No {seasonYear} stats available.
               </LeaderboardPanel>
             ) : (
@@ -564,7 +564,7 @@ export default function PlayerProfileTabs({
                 <section className="space-y-4">
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
-                      <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500">
+                      <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-zinc-400">
                         Season Stats
                       </h2>
                     </div>
@@ -582,15 +582,15 @@ export default function PlayerProfileTabs({
                       {seasonStats.map((stat, i) => (
                         <div
                           key={stat.label}
-                          className="min-w-0 rounded-2xl border border-slate-200/80 bg-slate-50/80 px-2 py-3 text-center opacity-0 sm:px-3 sm:py-3.5"
+                          className="min-w-0 rounded-2xl border border-slate-200/80 bg-slate-50/80 px-2 py-3 text-center opacity-0 sm:px-3 sm:py-3.5 dark:border-zinc-700 dark:bg-zinc-900/75"
                           style={{
                             animation: `savantFadeIn 0.4s ease-out ${i * 50}ms forwards`,
                           }}
                         >
-                          <div className="text-[10px] font-bold uppercase leading-snug tracking-wide text-slate-400 sm:tracking-[0.16em]">
+                          <div className="text-[10px] font-bold uppercase leading-snug tracking-wide text-slate-400 dark:text-zinc-500 sm:tracking-[0.16em]">
                             {stat.label}
                           </div>
-                          <div className="mt-2 font-mono text-xl font-black tabular-nums leading-none tracking-tight text-slate-900 sm:text-2xl">
+                          <div className="mt-2 font-mono text-xl font-black tabular-nums leading-none tracking-tight text-slate-900 dark:text-zinc-50 sm:text-2xl">
                             {stat.value}
                           </div>
                         </div>
@@ -602,10 +602,10 @@ export default function PlayerProfileTabs({
                 <section className="space-y-4">
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
-                      <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500">
+                      <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-zinc-400">
                         NCAA Percentile Rankings
                       </h2>
-                      <p className="mt-1 text-sm text-slate-500">
+                      <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
                         Versus Division III {percentileAudienceLabel} in {seasonYear}.
                       </p>
                     </div>
@@ -666,14 +666,14 @@ export default function PlayerProfileTabs({
                       ? "current live arsenal grade"
                       : "waiting on a full grade"
                   }
-                  emphasisClassName="text-blue-600"
+                  emphasisClassName="text-blue-600 dark:text-blue-300"
                   variant="light"
                 />
                 <LeaderboardStatBlock
                   label="Pitch Types"
                   value={String(currentStuffHero?.pitchTypeCount ?? 0)}
                   detail="graded shapes in the mix"
-                  emphasisClassName="text-slate-900"
+                  emphasisClassName="text-slate-900 dark:text-zinc-50"
                   variant="light"
                 />
                 <LeaderboardStatBlock
@@ -684,7 +684,7 @@ export default function PlayerProfileTabs({
                       ? `latest ${formatDateLabel(latestTrackmanSession.date)}`
                       : "no Trackman sessions yet"
                   }
-                  emphasisClassName="text-slate-900"
+                  emphasisClassName="text-slate-900 dark:text-zinc-50"
                   variant="light"
                 />
               </div>
@@ -693,10 +693,10 @@ export default function PlayerProfileTabs({
             <section className="space-y-5">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500">
+                  <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-zinc-400">
                     Sessions
                   </h2>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
                     Recent Trackman work for this player.
                   </p>
                 </div>
@@ -707,7 +707,7 @@ export default function PlayerProfileTabs({
 
               <LeaderboardPanel className="overflow-hidden p-2 sm:p-3" variant="light">
                 {sortedSessions.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500 dark:border-zinc-700 dark:bg-zinc-900/75 dark:text-zinc-400">
                     No sessions yet.
                   </div>
                 ) : (
@@ -716,17 +716,17 @@ export default function PlayerProfileTabs({
                       <li key={`${s.dateSlug}-${s.sessionLabel}`}>
                         <Link
                           href={`/trackman/session/${playerSlug}/${s.dateSlug}?from=profile&slug=${playerSlug}`}
-                          className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-surface px-4 py-4 transition-smooth hover:border-blue-200 hover:bg-slate-50"
+                          className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-surface px-4 py-4 transition-smooth hover:border-blue-200 hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/75 dark:hover:border-blue-500/35 dark:hover:bg-zinc-900"
                         >
                           <div>
-                            <div className="text-sm font-bold text-slate-900 transition-smooth">
+                            <div className="text-sm font-bold text-slate-900 transition-smooth dark:text-zinc-50">
                               {formatDateLabel(s.date)}
                             </div>
-                            <div className="mt-1 text-[11px] text-slate-500">
+                            <div className="mt-1 text-[11px] text-slate-500 dark:text-zinc-400">
                               {s.sessionLabel}
                             </div>
                           </div>
-                          <ArrowRight className="h-4 w-4 text-slate-400 opacity-70 transition-smooth group-hover:opacity-100 group-hover:text-blue-600" />
+                          <ArrowRight className="h-4 w-4 text-slate-400 opacity-70 transition-smooth group-hover:opacity-100 group-hover:text-blue-600 dark:text-zinc-500 dark:group-hover:text-blue-300" />
                         </Link>
                       </li>
                     ))}
@@ -768,7 +768,7 @@ export default function PlayerProfileTabs({
                       ? `live baseline in ${currentCommandHero.season}`
                       : "not qualified yet"
                   }
-                  emphasisClassName="text-orange-600"
+                  emphasisClassName="text-orange-600 dark:text-orange-300"
                   variant="light"
                 />
                 <LeaderboardStatBlock
@@ -779,14 +779,14 @@ export default function PlayerProfileTabs({
                       ? `latest ${formatDateLabel(latestCommandOuting.dateId)}`
                       : "no command outings yet"
                   }
-                  emphasisClassName="text-slate-900"
+                  emphasisClassName="text-slate-900 dark:text-zinc-50"
                   variant="light"
                 />
                 <LeaderboardStatBlock
                   label="Tracked Pitches"
                   value={String(currentCommandHero?.pitchCount ?? 0)}
                   detail="live command sample size"
-                  emphasisClassName="text-slate-900"
+                  emphasisClassName="text-slate-900 dark:text-zinc-50"
                   variant="light"
                 />
               </div>
@@ -795,10 +795,10 @@ export default function PlayerProfileTabs({
             <section className="space-y-7">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500">
+                  <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-zinc-400">
                     Outings
                   </h2>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
                     Command reports tied to this player profile.
                   </p>
                 </div>
@@ -823,7 +823,7 @@ export default function PlayerProfileTabs({
 
               <LeaderboardPanel className="overflow-hidden p-2 sm:p-3" variant="light">
                 {filteredCommandOutings.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500 dark:border-zinc-700 dark:bg-zinc-900/75 dark:text-zinc-400">
                     No outings yet.
                   </div>
                 ) : (
@@ -834,17 +834,17 @@ export default function PlayerProfileTabs({
                           href={`/player/${o.playerId}?outingId=${encodeURIComponent(
                             o.outingId,
                           )}&from=profile&slug=${playerSlug}`}
-                          className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-surface px-4 py-4 transition-smooth hover:border-orange-200 hover:bg-slate-50"
+                          className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-surface px-4 py-4 transition-smooth hover:border-orange-200 hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/75 dark:hover:border-orange-500/35 dark:hover:bg-zinc-900"
                         >
                           <div>
-                            <div className="text-sm font-bold text-slate-900 transition-smooth">
+                            <div className="text-sm font-bold text-slate-900 transition-smooth dark:text-zinc-50">
                               {formatDateLabel(o.dateId)}
                             </div>
-                            <div className="mt-1 text-[11px] text-slate-500">
+                            <div className="mt-1 text-[11px] text-slate-500 dark:text-zinc-400">
                               {o.label}
                             </div>
                           </div>
-                          <ArrowRight className="h-4 w-4 text-slate-400 opacity-70 transition-smooth group-hover:opacity-100 group-hover:text-orange-600" />
+                          <ArrowRight className="h-4 w-4 text-slate-400 opacity-70 transition-smooth group-hover:opacity-100 group-hover:text-orange-600 dark:text-zinc-500 dark:group-hover:text-orange-300" />
                         </Link>
                       </li>
                     ))}
@@ -878,7 +878,7 @@ export default function PlayerProfileTabs({
                   label="Sessions"
                   value={String(mechanicsEntry?.sessions.length ?? 0)}
                   detail="mechanics sessions on file"
-                  emphasisClassName="text-slate-900"
+                  emphasisClassName="text-slate-900 dark:text-zinc-50"
                   variant="light"
                 />
                 <LeaderboardStatBlock
@@ -893,7 +893,7 @@ export default function PlayerProfileTabs({
                       ? `${latestMechanicsSession.pass_count} pass / ${latestMechanicsSession.fail_count} fail`
                       : "no mechanics session yet"
                   }
-                  emphasisClassName="text-violet-600"
+                  emphasisClassName="text-violet-600 dark:text-violet-300"
                   variant="light"
                 />
                 <LeaderboardStatBlock
@@ -908,7 +908,7 @@ export default function PlayerProfileTabs({
                       ? latestMechanicsSession.view_mode.replace(/_/g, " ")
                       : "waiting on first upload"
                   }
-                  emphasisClassName="text-slate-900"
+                  emphasisClassName="text-slate-900 dark:text-zinc-50"
                   variant="light"
                 />
               </div>
@@ -916,10 +916,10 @@ export default function PlayerProfileTabs({
 
             <section className="space-y-4">
               <div>
-                <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500">
+                <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-zinc-400">
                   Sessions
                 </h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
                   Delivery review and recent mechanics access.
                 </p>
               </div>

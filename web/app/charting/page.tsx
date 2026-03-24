@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import {
-  BookOpen,
   CheckCircle2,
   ChevronRight,
   ClipboardList,
@@ -9,7 +8,6 @@ import {
   FilePenLine,
   Plus,
   Search,
-  Trophy,
 } from "lucide-react";
 import { count, desc } from "drizzle-orm";
 import { db } from "@/db";
@@ -140,13 +138,13 @@ export default async function ChartingHubPage(props: {
               <div className="grid w-full grid-cols-2 gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
                 <HubActionCard
                   href="/charting/faq"
-                  icon={BookOpen}
+                  iconName="bookOpen"
                   sectionTitle="Dictionary"
                   buttonLabel="Metrics Glossary"
                 />
                 <HubActionCard
                   href="/charting/leaderboard"
-                  icon={Trophy}
+                  iconName="trophy"
                   sectionTitle="Leaderboards"
                   buttonLabel="Open Rankings"
                 />

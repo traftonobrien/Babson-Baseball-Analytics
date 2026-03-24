@@ -87,10 +87,10 @@ function pitchAccent(pitchType: string): PitchAccent {
       };
     default:
       return {
-        text: "text-slate-700",
+        text: "text-slate-700 dark:text-zinc-300",
         bar: "bg-slate-400",
-        border: "border-slate-200",
-        bg: "bg-slate-100",
+        border: "border-slate-200 dark:border-zinc-700",
+        bg: "bg-slate-100 dark:bg-zinc-800",
       };
   }
 }
@@ -295,10 +295,10 @@ function SessionList({
     <section className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h3 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500">
+          <h3 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-zinc-400">
             {title}
           </h3>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
             Recent charted Charting sessions for this player.
           </p>
         </div>
@@ -309,7 +309,7 @@ function SessionList({
 
       <LeaderboardPanel className="overflow-hidden p-2 sm:p-3" variant="light">
         {sessions.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500 dark:border-zinc-700 dark:bg-zinc-900/75 dark:text-zinc-400">
             No Charting sessions yet.
           </div>
         ) : (
@@ -318,17 +318,17 @@ function SessionList({
               <li key={`${session.gameId}-${title}`}>
                 <Link
                   href={`/charting/games/${session.gameId}`}
-                  className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-surface px-4 py-4 transition-smooth hover:border-emerald-200 hover:bg-slate-50"
+                  className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-surface px-4 py-4 transition-smooth hover:border-emerald-200 hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/75 dark:hover:border-emerald-500/35 dark:hover:bg-zinc-900"
                 >
                   <div>
-                    <div className="text-sm font-bold text-slate-900 transition-smooth">
+                    <div className="text-sm font-bold text-slate-900 transition-smooth dark:text-zinc-50">
                       {formatDateLabel(session.gameDate)}
                     </div>
-                    <div className="mt-1 text-[11px] text-slate-500">
+                    <div className="mt-1 text-[11px] text-slate-500 dark:text-zinc-400">
                       {session.opponent || "Charting"}
                     </div>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-slate-400 opacity-70 transition-smooth group-hover:text-emerald-600 group-hover:opacity-100" />
+                  <ArrowRight className="h-4 w-4 text-slate-400 opacity-70 transition-smooth group-hover:text-emerald-600 group-hover:opacity-100 dark:text-zinc-500 dark:group-hover:text-emerald-300" />
                 </Link>
               </li>
             ))}
@@ -351,16 +351,16 @@ function PitchMixBar({ stats }: { stats: PitchTypeStats[] }) {
             <div className={`w-20 shrink-0 text-xs font-semibold ${accent.text}`}>
               {item.pitchType}
             </div>
-            <div className="relative h-2.5 flex-1 overflow-hidden rounded-full bg-slate-200">
+            <div className="relative h-2.5 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-zinc-800">
               <div
                 className={`absolute inset-y-0 left-0 rounded-full ${accent.bar} opacity-80`}
                 style={{ width: `${Math.min(100, item.pct)}%` }}
               />
             </div>
-            <div className="w-10 shrink-0 text-right text-xs font-bold text-slate-700">
+            <div className="w-10 shrink-0 text-right text-xs font-bold text-slate-700 dark:text-zinc-300">
               {item.pct.toFixed(0)}%
             </div>
-            <div className="w-10 shrink-0 text-right text-[11px] text-slate-500">
+            <div className="w-10 shrink-0 text-right text-[11px] text-slate-500 dark:text-zinc-500">
               ({item.count})
             </div>
           </div>
@@ -394,7 +394,7 @@ function PitchZoneMaps({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500">
+        <h3 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-zinc-400">
           Zone Maps by Pitch Type
         </h3>
         {/* Result filter buttons */}
@@ -406,8 +406,8 @@ function PitchZoneMaps({
               onClick={() => onResultFilterChange(opt.value)}
               className={
                 resultFilter === opt.value
-                  ? "rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700"
-                  : "rounded-xl border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                  ? "rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:border-emerald-500/35 dark:bg-emerald-950/45 dark:text-emerald-200"
+                  : "rounded-xl border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-50"
               }
             >
               {opt.label}
@@ -421,7 +421,7 @@ function PitchZoneMaps({
           return (
             <div
               key={item.pitchType}
-              className={`rounded-[1.7rem] border ${accent.border} bg-surface/95 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)]`}
+              className={`rounded-[1.7rem] border ${accent.border} bg-surface/95 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)] dark:bg-zinc-950/78 dark:shadow-[0_18px_40px_rgba(0,0,0,0.35)]`}
             >
               {/* Header */}
               <div className="mb-3 flex items-center justify-between gap-2">
@@ -431,7 +431,7 @@ function PitchZoneMaps({
                   >
                     {item.pitchType}
                   </span>
-                  <span className="ml-2 text-[11px] text-slate-500">
+                  <span className="ml-2 text-[11px] text-slate-500 dark:text-zinc-400">
                     {item.count} pitch{item.count === 1 ? "" : "es"}
                   </span>
                 </div>
@@ -442,24 +442,24 @@ function PitchZoneMaps({
 
               {/* Per-type outcome summary */}
               <div className="mt-3 grid grid-cols-3 gap-2">
-                <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-2 py-2 text-center">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-2 py-2 text-center dark:border-zinc-700 dark:bg-zinc-900/75">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
                     Strike%
                   </div>
                   <div className={`mt-0.5 text-sm font-bold ${accent.text}`}>
                     {item.strikePct !== null ? `${item.strikePct.toFixed(1)}%` : "--"}
                   </div>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-2 py-2 text-center">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-2 py-2 text-center dark:border-zinc-700 dark:bg-zinc-900/75">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
                     Whiff%
                   </div>
                   <div className={`mt-0.5 text-sm font-bold ${accent.text}`}>
                     {item.whiffPct !== null ? `${item.whiffPct.toFixed(1)}%` : "--"}
                   </div>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-2 py-2 text-center">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-2 py-2 text-center dark:border-zinc-700 dark:bg-zinc-900/75">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
                     Zone%
                   </div>
                   <div className={`mt-0.5 text-sm font-bold ${accent.text}`}>
@@ -496,7 +496,7 @@ export default function LiveAbProfilePanel({
 
   if (!pitcher && !hitter) {
     return (
-      <LeaderboardPanel className="p-5 text-sm text-slate-500" variant="light">
+      <LeaderboardPanel className="p-5 text-sm text-slate-500 dark:text-zinc-400" variant="light">
         No charting data has been recorded for this player yet.
       </LeaderboardPanel>
     );
@@ -518,20 +518,20 @@ export default function LiveAbProfilePanel({
     <div className="space-y-8">
       <section className="space-y-5">
         <Link href="/charting/leaderboard">
-          <div className="group rounded-[1.7rem] border border-emerald-200 bg-surface/95 p-5 shadow-[0_20px_44px_rgba(15,23,42,0.06)] transition-smooth hover:-translate-y-0.5 hover:border-emerald-300">
+          <div className="group rounded-[1.7rem] border border-emerald-200 bg-surface/95 p-5 shadow-[0_20px_44px_rgba(15,23,42,0.06)] transition-smooth hover:-translate-y-0.5 hover:border-emerald-300 dark:border-emerald-500/30 dark:bg-zinc-950/78 dark:shadow-[0_20px_44px_rgba(0,0,0,0.38)] dark:hover:border-emerald-400/45">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/35 dark:bg-emerald-950/45 dark:text-emerald-200">
                   <ClipboardList className="h-4 w-4" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-slate-900">Charting Leaderboard</div>
-                  <p className="mt-1 text-[11px] leading-5 text-slate-500">
+                  <div className="text-sm font-semibold text-slate-900 dark:text-zinc-50">Charting Leaderboard</div>
+                  <p className="mt-1 text-[11px] leading-5 text-slate-500 dark:text-zinc-400">
                     Open the full charting leaderboard and cross-session rankings.
                   </p>
                 </div>
               </div>
-              <ArrowRight className="h-4 w-4 shrink-0 text-emerald-600 opacity-70 transition-smooth group-hover:opacity-100" />
+              <ArrowRight className="h-4 w-4 shrink-0 text-emerald-600 opacity-70 transition-smooth group-hover:opacity-100 dark:text-emerald-300" />
             </div>
           </div>
         </Link>
@@ -542,10 +542,10 @@ export default function LiveAbProfilePanel({
           {/* Section header with session type toggle */}
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500">
+              <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-zinc-400">
                 Pitching Charting
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
                 Charted workload and pitch-quality context from Charting sessions.
               </p>
             </div>
@@ -557,8 +557,8 @@ export default function LiveAbProfilePanel({
                   onClick={() => setSessionFilter("game")}
                   className={
                     sessionFilter === "game"
-                      ? "rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700"
-                      : "rounded-xl border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                      ? "rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:border-emerald-500/35 dark:bg-emerald-950/45 dark:text-emerald-200"
+                      : "rounded-xl border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-50"
                   }
                 >
                   Game
@@ -568,8 +568,8 @@ export default function LiveAbProfilePanel({
                   onClick={() => setSessionFilter("live")}
                   className={
                     sessionFilter === "live"
-                      ? "rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700"
-                      : "rounded-xl border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                      ? "rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:border-emerald-500/35 dark:bg-emerald-950/45 dark:text-emerald-200"
+                      : "rounded-xl border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-50"
                   }
                 >
                   Live
@@ -592,7 +592,7 @@ export default function LiveAbProfilePanel({
                     label={stat.label}
                     value={stat.value}
                     detail="2026 season"
-                    emphasisClassName="text-slate-900"
+                    emphasisClassName="text-slate-900 dark:text-zinc-50"
                     variant="light"
                   />
                 ))}
@@ -604,7 +604,7 @@ export default function LiveAbProfilePanel({
                     label={stat.label}
                     value={stat.value}
                     detail="2026 season"
-                    emphasisClassName="text-emerald-600"
+                    emphasisClassName="text-emerald-600 dark:text-emerald-300"
                     variant="light"
                   />
                 ))}
@@ -616,7 +616,7 @@ export default function LiveAbProfilePanel({
                 label="Sessions"
                 value={formatNumber(pitcher.stats?.sessions ?? pitcher.sessions.length)}
                 detail="charted game sessions"
-                emphasisClassName="text-slate-900"
+                emphasisClassName="text-slate-900 dark:text-zinc-50"
                 variant="light"
               />
             </div>
@@ -627,28 +627,28 @@ export default function LiveAbProfilePanel({
                   label="Sessions"
                   value={formatNumber(pitcher.stats?.sessions ?? pitcher.sessions.length)}
                   detail="charted sessions"
-                  emphasisClassName="text-slate-900"
+                  emphasisClassName="text-slate-900 dark:text-zinc-50"
                   variant="light"
                 />
                 <LeaderboardStatBlock
                   label="Pitches"
                   value={formatNumber(pitcher.stats?.totalPitches ?? null)}
                   detail="total charted pitches"
-                  emphasisClassName="text-slate-900"
+                  emphasisClassName="text-slate-900 dark:text-zinc-50"
                   variant="light"
                 />
                 <LeaderboardStatBlock
                   label="TBF"
                   value={formatNumber(pitcher.stats?.totalPAs ?? null)}
                   detail="total batters faced"
-                  emphasisClassName="text-slate-900"
+                  emphasisClassName="text-slate-900 dark:text-zinc-50"
                   variant="light"
                 />
                 <LeaderboardStatBlock
                   label="Strike%"
                   value={formatPct(pitcher.stats?.strikePct ?? null)}
                   detail="all charted pitches"
-                  emphasisClassName="text-emerald-600"
+                  emphasisClassName="text-emerald-600 dark:text-emerald-300"
                   variant="light"
                 />
               </div>
@@ -657,28 +657,28 @@ export default function LiveAbProfilePanel({
                   label="Zone%"
                   value={formatPct(pitcher.stats?.zonePct ?? null)}
                   detail="located pitches in zone"
-                  emphasisClassName="text-slate-900"
+                  emphasisClassName="text-slate-900 dark:text-zinc-50"
                   variant="light"
                 />
                 <LeaderboardStatBlock
                   label="Whiff%"
                   value={formatPct(pitcher.stats?.whiffPct ?? null)}
                   detail="swinging strikes per swing"
-                  emphasisClassName="text-slate-900"
+                  emphasisClassName="text-slate-900 dark:text-zinc-50"
                   variant="light"
                 />
                 <LeaderboardStatBlock
                   label="K%"
                   value={formatPct(pitcher.stats?.kPct ?? null)}
                   detail="completed plate appearances"
-                  emphasisClassName="text-slate-900"
+                  emphasisClassName="text-slate-900 dark:text-zinc-50"
                   variant="light"
                 />
                 <LeaderboardStatBlock
                   label="BB%"
                   value={formatPct(pitcher.stats?.bbPct ?? null)}
                   detail="completed plate appearances"
-                  emphasisClassName="text-slate-900"
+                  emphasisClassName="text-slate-900 dark:text-zinc-50"
                   variant="light"
                 />
               </div>
@@ -688,7 +688,7 @@ export default function LiveAbProfilePanel({
           {/* Pitch mix section */}
           {pitchTypeStats.length > 0 ? (
             <LeaderboardPanel className="p-5" variant="light">
-              <h3 className="mb-4 text-[11px] font-black uppercase tracking-[0.25em] text-slate-500">
+              <h3 className="mb-4 text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-zinc-400">
                 Pitch Mix
               </h3>
               <PitchMixBar stats={pitchTypeStats} />
@@ -700,10 +700,10 @@ export default function LiveAbProfilePanel({
             const takeaways = derivePitchingSynthesis(pitchTypeStats);
             if (takeaways.length === 0) return null;
             return (
-              <div className="rounded-[1.7rem] border border-slate-200 bg-slate-50/80 px-5 py-4">
+              <div className="rounded-[1.7rem] border border-slate-200 bg-slate-50/80 px-5 py-4 dark:border-zinc-700 dark:bg-zinc-900/75">
                 <ul className="space-y-1.5">
                   {takeaways.map((t) => (
-                    <li key={t} className="text-sm leading-relaxed text-slate-600">
+                    <li key={t} className="text-sm leading-relaxed text-slate-600 dark:text-zinc-300">
                       {t}
                     </li>
                   ))}
@@ -730,10 +730,10 @@ export default function LiveAbProfilePanel({
         <section className="space-y-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500">
+              <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-zinc-400">
                 Hitting Charting
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
                 Charted approach and production from Charting plate appearances.
               </p>
             </div>
@@ -755,28 +755,28 @@ export default function LiveAbProfilePanel({
               label="PAs"
               value={formatNumber(hitter.stats?.totalPAs ?? null)}
               detail="charted plate appearances"
-              emphasisClassName="text-slate-900"
+              emphasisClassName="text-slate-900 dark:text-zinc-50"
               variant="light"
             />
             <LeaderboardStatBlock
               label="AVG"
               value={formatRate(hitter.stats?.avg ?? null)}
               detail="charted outcomes only"
-              emphasisClassName="text-slate-900"
+              emphasisClassName="text-slate-900 dark:text-zinc-50"
               variant="light"
             />
             <LeaderboardStatBlock
               label="OPS"
               value={formatRate(hitter.stats?.ops ?? null)}
               detail="OBP + SLG"
-              emphasisClassName="text-emerald-600"
+              emphasisClassName="text-emerald-600 dark:text-emerald-300"
               variant="light"
             />
             <LeaderboardStatBlock
               label="Contact%"
               value={formatPct(hitter.stats?.contactPct ?? null)}
               detail="any contact per swing"
-              emphasisClassName="text-slate-900"
+              emphasisClassName="text-slate-900 dark:text-zinc-50"
               variant="light"
             />
           </div>
@@ -786,28 +786,28 @@ export default function LiveAbProfilePanel({
               label="Chase%"
               value={formatPct(hitter.stats?.chasePct ?? null)}
               detail="swings outside zone"
-              emphasisClassName="text-slate-900"
+              emphasisClassName="text-slate-900 dark:text-zinc-50"
               variant="light"
             />
             <LeaderboardStatBlock
               label="Z-Swing%"
               value={formatPct(hitter.stats?.zoneSwingPct ?? null)}
               detail="swings in zone"
-              emphasisClassName="text-slate-900"
+              emphasisClassName="text-slate-900 dark:text-zinc-50"
               variant="light"
             />
             <LeaderboardStatBlock
               label="K%"
               value={formatPct(hitter.stats?.kPct ?? null)}
               detail="completed plate appearances"
-              emphasisClassName="text-slate-900"
+              emphasisClassName="text-slate-900 dark:text-zinc-50"
               variant="light"
             />
             <LeaderboardStatBlock
               label="BB%"
               value={formatPct(hitter.stats?.bbPct ?? null)}
               detail="completed plate appearances"
-              emphasisClassName="text-slate-900"
+              emphasisClassName="text-slate-900 dark:text-zinc-50"
               variant="light"
             />
           </div>
@@ -817,10 +817,10 @@ export default function LiveAbProfilePanel({
             const takeaways = deriveHittingSynthesis(hitter.stats);
             if (takeaways.length === 0) return null;
             return (
-              <div className="rounded-[1.7rem] border border-slate-200 bg-slate-50/80 px-5 py-4">
+              <div className="rounded-[1.7rem] border border-slate-200 bg-slate-50/80 px-5 py-4 dark:border-zinc-700 dark:bg-zinc-900/75">
                 <ul className="space-y-1.5">
                   {takeaways.map((t) => (
-                    <li key={t} className="text-sm leading-relaxed text-slate-600">
+                    <li key={t} className="text-sm leading-relaxed text-slate-600 dark:text-zinc-300">
                       {t}
                     </li>
                   ))}
@@ -834,7 +834,7 @@ export default function LiveAbProfilePanel({
       ) : null}
 
       {profile.availableRoles.length > 1 ? (
-        <div className="flex items-center gap-2 text-xs text-slate-500">
+        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-zinc-400">
           <BarChart3 className="h-4 w-4" />
           This player has both pitcher and hitter Charting data in the charting system.
         </div>

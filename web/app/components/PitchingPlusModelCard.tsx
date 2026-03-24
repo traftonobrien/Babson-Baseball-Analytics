@@ -30,36 +30,36 @@ export default function PitchingPlusModelCard({
     .join(", ");
 
   return (
-    <section className="rounded-[2rem] border border-amber-200 bg-[radial-gradient(circle_at_top_left,rgba(253,230,138,0.28),transparent_26%),linear-gradient(135deg,#fffbeb_0%,#ffffff_62%,#fffaf2_100%)] p-6 shadow-[0_22px_52px_rgba(15,23,42,0.07)]">
+    <section className="rounded-[2rem] border border-amber-200 bg-[radial-gradient(circle_at_top_left,rgba(253,230,138,0.28),transparent_26%),linear-gradient(135deg,#fffbeb_0%,#ffffff_62%,#fffaf2_100%)] p-6 shadow-[0_22px_52px_rgba(15,23,42,0.07)] dark:border-amber-500/30 dark:bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.2),transparent_28%),linear-gradient(135deg,rgba(66,32,6,0.76)_0%,rgba(24,24,27,0.92)_56%,rgba(9,9,11,0.98)_100%)] dark:shadow-[0_22px_52px_rgba(0,0,0,0.4)]">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-700">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-700 dark:text-amber-200">
               Pitching+ Model
             </p>
             {season != null ? (
-              <span className="rounded-full border border-amber-200 bg-surface px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-amber-700 shadow-[0_8px_18px_rgba(245,158,11,0.10)]">
+              <span className="rounded-full border border-amber-200 bg-surface px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-amber-700 shadow-[0_8px_18px_rgba(245,158,11,0.10)] dark:border-amber-500/35 dark:bg-amber-950/45 dark:text-amber-200 dark:shadow-[0_8px_18px_rgba(0,0,0,0.26)]">
                 {season} Live Season
               </span>
             ) : null}
           </div>
-          <h3 className="mt-2 text-xl font-black tracking-tight text-slate-950">
+          <h3 className="mt-2 text-xl font-black tracking-tight text-slate-950 dark:text-zinc-50">
             The complete live blend behind the profile grade.
           </h3>
-          <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
+          <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600 dark:text-zinc-400">
             Pitching+ combines team-centered Stuff+ with live Command+, then rolls
             the matched arsenal up with a hybrid weighting model.
           </p>
-          <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-500">
-            <span className="font-mono text-slate-700">Command Core</span> only
+          <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-500 dark:text-zinc-400">
+            <span className="font-mono text-slate-700 dark:text-zinc-200">Command Core</span> only
             reflects command scores from pitch types that also have a clean
             Stuff+ match inside Pitching+.
           </p>
-          <p className="mt-3 text-[11px] leading-6 text-slate-500">{note}</p>
+          <p className="mt-3 text-[11px] leading-6 text-slate-500 dark:text-zinc-400">{note}</p>
         </div>
 
         {loading ? (
-          <div className="inline-flex min-w-[7.5rem] items-center justify-center rounded-2xl border border-amber-200 bg-surface px-4 py-3 font-mono text-sm font-black uppercase tracking-[0.18em] text-slate-500">
+          <div className="inline-flex min-w-[7.5rem] items-center justify-center rounded-2xl border border-amber-200 bg-surface px-4 py-3 font-mono text-sm font-black uppercase tracking-[0.18em] text-slate-500 dark:border-amber-500/35 dark:bg-zinc-900/80 dark:text-zinc-300">
             Loading
           </div>
         ) : ready ? (
@@ -70,13 +70,13 @@ export default function PitchingPlusModelCard({
             {result?.overall?.toFixed(0)}
           </div>
         ) : (
-          <div className="inline-flex min-w-[8rem] items-center justify-center rounded-2xl border border-amber-200 bg-surface px-4 py-3 font-mono text-sm font-black uppercase tracking-[0.18em] text-slate-500">
+          <div className="inline-flex min-w-[8rem] items-center justify-center rounded-2xl border border-amber-200 bg-surface px-4 py-3 font-mono text-sm font-black uppercase tracking-[0.18em] text-slate-500 dark:border-amber-500/35 dark:bg-zinc-900/80 dark:text-zinc-300">
             Not Ready
           </div>
         )}
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-medium text-slate-500">
+      <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-medium text-slate-500 dark:text-zinc-400">
         <span>60% Stuff / 40% Command</span>
         <span>50% Pure Mix / 50% Live Usage</span>
         <Link
@@ -88,35 +88,35 @@ export default function PitchingPlusModelCard({
       </div>
 
       <div className="mt-6 grid gap-3 md:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 bg-surface px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
+        <div className="rounded-2xl border border-slate-200 bg-surface px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)] dark:border-zinc-700 dark:bg-zinc-900/75 dark:shadow-[0_12px_28px_rgba(0,0,0,0.3)]">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
             Stuff Core
           </p>
-          <p className="mt-2 font-mono text-3xl font-black tracking-tight text-slate-950">
+          <p className="mt-2 font-mono text-3xl font-black tracking-tight text-slate-950 dark:text-zinc-50">
             {ready && result?.stuffComponent != null ? result.stuffComponent.toFixed(1) : "--"}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-surface px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
+        <div className="rounded-2xl border border-slate-200 bg-surface px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)] dark:border-zinc-700 dark:bg-zinc-900/75 dark:shadow-[0_12px_28px_rgba(0,0,0,0.3)]">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
             Command Core
           </p>
-          <p className="mt-2 font-mono text-3xl font-black tracking-tight text-slate-950">
+          <p className="mt-2 font-mono text-3xl font-black tracking-tight text-slate-950 dark:text-zinc-50">
             {ready && result?.commandComponent != null ? result.commandComponent.toFixed(1) : "--"}
           </p>
-          <p className="mt-1 text-[11px] text-slate-500">
+          <p className="mt-1 text-[11px] text-slate-500 dark:text-zinc-400">
             Pitching+-only command average across the matched overlap set
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-surface px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
+        <div className="rounded-2xl border border-slate-200 bg-surface px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)] dark:border-zinc-700 dark:bg-zinc-900/75 dark:shadow-[0_12px_28px_rgba(0,0,0,0.3)]">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
             Live Overlap
           </p>
-          <p className="mt-2 font-mono text-3xl font-black tracking-tight text-slate-950">
+          <p className="mt-2 font-mono text-3xl font-black tracking-tight text-slate-950 dark:text-zinc-50">
             {ready && result ? result.overlapPitchTypeCount : "--"}
           </p>
-          <p className="mt-1 text-[11px] text-slate-500">
+          <p className="mt-1 text-[11px] text-slate-500 dark:text-zinc-400">
             {ready && result
               ? `${result.overlapPitchCount} matched live pitches`
               : "Needs live command + Stuff overlap"}
@@ -125,9 +125,9 @@ export default function PitchingPlusModelCard({
       </div>
 
       {ready && excludedRows.length > 0 ? (
-        <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-[12px] leading-6 text-slate-600">
-          Standalone <span className="font-mono text-slate-700">Command+</span>
-          {" "}can read differently than <span className="font-mono text-slate-700">Command Core</span>
+        <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-[12px] leading-6 text-slate-600 dark:border-amber-500/35 dark:bg-amber-950/35 dark:text-zinc-300">
+          Standalone <span className="font-mono text-slate-700 dark:text-zinc-200">Command+</span>
+          {" "}can read differently than <span className="font-mono text-slate-700 dark:text-zinc-200">Command Core</span>
           {" "}because Command Core excludes pitch types without a clean Stuff+ match.
           {" "}
           {excludedLivePitchCount} live pitch{excludedLivePitchCount === 1 ? "" : "es"}
@@ -142,8 +142,8 @@ export default function PitchingPlusModelCard({
               key={row.commandPitchType}
               className={`min-w-[174px] rounded-2xl border px-3 py-3 ${
                 row.included
-                  ? "border-slate-200 bg-surface"
-                  : "border-slate-200 bg-slate-50/70 opacity-75"
+                  ? "border-slate-200 bg-surface dark:border-zinc-700 dark:bg-zinc-900/75"
+                  : "border-slate-200 bg-slate-50/70 opacity-75 dark:border-zinc-700 dark:bg-zinc-900/55"
               }`}
               title={
                 row.stuffPitchTypes.length > 0
@@ -161,12 +161,12 @@ export default function PitchingPlusModelCard({
                         : "#94a3b8",
                     }}
                   />
-                  <span className="font-mono text-[12px] font-bold text-slate-900">
+                  <span className="font-mono text-[12px] font-bold text-slate-900 dark:text-zinc-50">
                     {pitchDisplayName(row.commandPitchType)}
                   </span>
                 </div>
                 {row.pitchingPlus == null ? (
-                  <span className="font-mono text-sm font-black text-slate-400">--</span>
+                  <span className="font-mono text-sm font-black text-slate-400 dark:text-zinc-500">--</span>
                 ) : (
                   <span
                     className="inline-flex min-w-[50px] items-center justify-center rounded-md px-2 py-0.5 font-mono text-sm font-black tracking-tight shadow-[0_10px_18px_rgba(251,191,36,0.16)]"
@@ -177,12 +177,12 @@ export default function PitchingPlusModelCard({
                 )}
               </div>
               {row.included ? (
-                <p className="mt-2 text-[11px] text-slate-500">
+                <p className="mt-2 text-[11px] text-slate-500 dark:text-zinc-400">
                   S {row.stuffPlus?.toFixed(1)} · C {row.commandPlus?.toFixed(0)} · W{" "}
                   {(row.hybridWeight * 100).toFixed(0)}%
                 </p>
               ) : (
-                <p className="mt-2 text-[11px] text-slate-500">
+                <p className="mt-2 text-[11px] text-slate-500 dark:text-zinc-400">
                   {row.reason === "ambiguous_stuff_match"
                     ? "Ambiguous Stuff+ match"
                     : "Missing Stuff+ match"}
@@ -191,7 +191,7 @@ export default function PitchingPlusModelCard({
             </div>
           ))
         ) : (
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-sm text-slate-500">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-sm text-slate-500 dark:border-zinc-700 dark:bg-zinc-900/55 dark:text-zinc-400">
             No Pitching+ breakdown yet. The score appears once live command and Stuff+
             overlap on at least one pitch type.
           </div>
