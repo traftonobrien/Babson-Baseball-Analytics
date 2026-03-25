@@ -172,6 +172,70 @@ export function recordPitchInSnapshot(
   return nextSnapshot;
 }
 
+/**
+ * Immediately creates a new pitcher segment for `newPitcher` and closes the
+ * current active segment for the same pitching side.  Unlike
+ * `recordPitchInSnapshot`, this does NOT require a pitch to be recorded first,
+ * so the segment is persisted as soon as the caller queues a save.
+ *
+ * Returns the same snapshot (reference-equal) if:
+ *   - There is an open plate appearance (must be closed first).
+ *   - `newPitcher.name` is empty.
+ *   - The active segment already belongs to `newPitcher`.
+ */
+export function switchPitcherInSnapshot(
+  snapshot: ChartingGameSnapshot,
+  newPitcher: { playerId: string; name: string },
+  gameStateOverride?: GameStateOverride | null,
+): ChartingGameSnapshot {
+  const liveState = deriveChartingLiveState(
+    snapshot.segments,
+    snapshot.plateAppearances,
+    snapshot.pitches,
+    gameStateOverride,
+  );
+
+  if (liveState.openPAId) return snapshot;
+
+  const pitchingSide = pitchingSideForMatchup(snapshot.game, liveState.isTopInning);
+  const trimmedId = newPitcher.playerId.trim();
+  const trimmedName = newPitcher.name.trim();
+
+  if (!trimmedName) return snapshot;
+
+  const lastSegment =
+    [...snapshot.segments].reverse().find((s) => s.teamSide === pitchingSide) ?? null;
+
+  if (lastSegment && pitcherSegmentMatches(lastSegment, trimmedId, trimmedName, pitchingSide)) {
+    return snapshot;
+  }
+
+  const nextSnapshot = cloneSnapshot(snapshot);
+
+  // Close the current active segment at the current inning.
+  const currentSeg = lastSegment
+    ? nextSnapshot.segments.find((s) => s.id === lastSegment.id) ?? null
+    : null;
+  if (currentSeg && currentSeg.exitedInning === null) {
+    currentSeg.exitedInning = liveState.inning;
+  }
+
+  nextSnapshot.segments.push({
+    id: crypto.randomUUID(),
+    gameId: nextSnapshot.game.id,
+    playerId: trimmedId,
+    displayName: trimmedName,
+    teamSide: pitchingSide,
+    segmentOrder: nextSegmentOrder(nextSnapshot.segments),
+    enteredInning: liveState.inning,
+    exitedInning: null,
+    runsOverride: null,
+    earnedRunsOverride: null,
+  });
+
+  return nextSnapshot;
+}
+
 export function closeCurrentPlateAppearance(
   snapshot: ChartingGameSnapshot,
   result: PAResultType,

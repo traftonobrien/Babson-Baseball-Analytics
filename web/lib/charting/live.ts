@@ -53,6 +53,7 @@ export {
 
 export {
   recordPitchInSnapshot,
+  switchPitcherInSnapshot,
   closeCurrentPlateAppearance,
   undoSnapshotAction,
   syncHitterToSnapshot,

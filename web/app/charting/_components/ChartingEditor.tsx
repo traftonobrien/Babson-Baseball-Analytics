@@ -19,6 +19,7 @@ import {
   paResultOutsRecorded,
   pitchingSideForMatchup,
   recordPitchInSnapshot,
+  switchPitcherInSnapshot,
   syncHitterToSnapshot,
   undoSnapshotAction,
   updatePitchVelocityInSnapshot,
@@ -53,11 +54,14 @@ import {
 import { ChartingEditorHistoryEditModal } from "./charting-editor/history-edit-modal";
 import { ChartingEditorInPlayModal } from "./charting-editor/in-play-modal";
 import { ChartingEditorLineupModal } from "./charting-editor/lineup-editor-modal";
+import { EndInningModal } from "./charting-editor/end-inning-modal";
+import { SwitchPitcherModal } from "./charting-editor/switch-pitcher-modal";
 import {
   buildHitterSuggestions,
   buildSelectedPitcherOption,
   deriveMatchupSelection,
   derivePitcherSelection,
+  manualPitcherId,
 } from "./charting-editor/matchup";
 import {
   countPresetFromInitialCount,
@@ -118,6 +122,8 @@ export function ChartingEditor({
   const [hitterName, setHitterName] = useState(initialMatchup.hitterName);
   const [showHistory, setShowHistory] = useState(false);
   const [showLineupEditor, setShowLineupEditor] = useState(false);
+  const [showSwitchPitcherModal, setShowSwitchPitcherModal] = useState(false);
+  const [endInningDismissed, setEndInningDismissed] = useState(false);
   const [lineupDrafts, setLineupDrafts] = useState<LineupDrafts>(() => {
     try {
       const stored = sessionStorage.getItem(lineupDraftStorageKey);
@@ -232,6 +238,13 @@ export function ChartingEditor({
       // Ignore quota or permission errors.
     }
   }, [lineupDraftStorageKey, lineupDrafts]);
+  // Reset the end-inning dismissal whenever we leave the between-innings state
+  // (i.e., a new PA has started in the next half).
+  useEffect(() => {
+    if (!liveState.isBetweenInnings) {
+      setEndInningDismissed(false);
+    }
+  }, [liveState.isBetweenInnings]);
   const selectedPitcher = buildSelectedPitcherOption(
     snapshot,
     pitchers,
@@ -297,6 +310,36 @@ export function ChartingEditor({
     setSelectedPitchResult(null);
     setPendingVelocity("");
   };
+  // Derive end-of-inning display labels from liveState.
+  // When isBetweenInnings is true, liveState already reflects the NEXT half,
+  // so we back-compute what just ended.
+  const endInningNextHalfLabel = liveState.isTopInning
+    ? `Top ${liveState.inning}`
+    : `Bot ${liveState.inning}`;
+  const endInningCompletedLabel = liveState.isTopInning
+    ? `Bot ${liveState.inning - 1}`
+    : `Top ${liveState.inning}`;
+  const showEndInningPrompt =
+    snapshot.game.sessionType === "game" &&
+    liveState.isBetweenInnings &&
+    !endInningDismissed;
+  const handleEndInning = () => {
+    clearPitchDraft();
+    // liveState.inning / isTopInning already reflect the NEXT half when
+    // isBetweenInnings is true. Build an explicit override anchored at the
+    // last PA so the inning selector, Top/Bot toggle, outs pips, and pitcher
+    // input all snap to the new half immediately.
+    const nextOverride = createGameStateOverride(snapshot, {
+      inning: liveState.inning,
+      isTopInning: liveState.isTopInning,
+      outs: 0,
+    });
+    startTransition(() => {
+      setGameStateOverride(nextOverride);
+      syncMatchupInputs(snapshot, nextOverride);
+    });
+    setEndInningDismissed(true);
+  };
   const handleOpenLineupEditor = () => {
     setLineupDrafts(buildLineupDrafts(snapshot.lineup));
     setShowLineupEditor(true);
@@ -341,6 +384,35 @@ export function ChartingEditor({
       startTransition(() => setSnapshot(nextSnapshot));
       queueSnapshotSave(nextSnapshot, "Hitter saved");
     }
+  };
+  const handleSwitchPitcher = () => {
+    setShowSwitchPitcherModal(true);
+  };
+  const handleConfirmSwitchPitcher = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const rostered =
+      activePitchingSide === "our"
+        ? pitchers.find((p) => p.name.toLowerCase() === trimmed.toLowerCase())
+        : null;
+    const newPitcher = {
+      playerId: rostered?.playerId ?? manualPitcherId(trimmed, activePitchingSide),
+      name: trimmed,
+    };
+    const nextSnapshot = switchPitcherInSnapshot(snapshot, newPitcher, gameStateOverride);
+    if (nextSnapshot !== snapshot) {
+      applyOptimisticSnapshot(nextSnapshot, gameStateOverride, `Switched to ${trimmed}`);
+    }
+    setShowSwitchPitcherModal(false);
+  };
+  const handleBaserunnerDraftChange = (
+    field: keyof ChartingBaserunnerState,
+    value: string,
+  ) => {
+    setBaserunnerDraft((current) => ({
+      ...current,
+      [field]: value,
+    }));
   };
   const commitBaserunnerDraft = (
     nextDraft: Partial<ChartingBaserunnerState> | null | undefined,
@@ -829,6 +901,8 @@ export function ChartingEditor({
             onOverrideChange={handleOverrideChange}
             onCommitBaserunnerDraft={commitBaserunnerDraft}
             onCountPresetChange={setCountPreset}
+            canSwitchPitcher={!currentPitcherLocked}
+            onSwitchPitcher={handleSwitchPitcher}
           />
         ) : null}
         <ChartingEditorWorkspace
@@ -917,6 +991,28 @@ export function ChartingEditor({
             onStepChange={setInPlayStep}
             onOutTypeChange={setInPlayOutType}
             paResultOutsRecorded={paResultOutsRecorded}
+          />
+        ) : null}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showEndInningPrompt ? (
+          <EndInningModal
+            completedHalfLabel={endInningCompletedLabel}
+            nextHalfLabel={endInningNextHalfLabel}
+            onConfirm={handleEndInning}
+            onDismiss={() => setEndInningDismissed(true)}
+          />
+        ) : null}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showSwitchPitcherModal ? (
+          <SwitchPitcherModal
+            activePitchingSide={activePitchingSide}
+            ourTeamLabel={ourTeamLabel}
+            opponentTeamLabel={opponentTeamLabel}
+            pitchers={pitchers}
+            onConfirm={handleConfirmSwitchPitcher}
+            onClose={() => setShowSwitchPitcherModal(false)}
           />
         ) : null}
       </AnimatePresence>
