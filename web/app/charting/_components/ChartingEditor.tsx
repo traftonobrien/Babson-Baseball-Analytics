@@ -54,11 +54,13 @@ import {
 import { ChartingEditorHistoryEditModal } from "./charting-editor/history-edit-modal";
 import { ChartingEditorInPlayModal } from "./charting-editor/in-play-modal";
 import { ChartingEditorLineupModal } from "./charting-editor/lineup-editor-modal";
+import { SwitchPitcherModal } from "./charting-editor/switch-pitcher-modal";
 import {
   buildHitterSuggestions,
   buildSelectedPitcherOption,
   deriveMatchupSelection,
   derivePitcherSelection,
+  manualPitcherId,
 } from "./charting-editor/matchup";
 import {
   countPresetFromInitialCount,
@@ -119,6 +121,7 @@ export function ChartingEditor({
   const [hitterName, setHitterName] = useState(initialMatchup.hitterName);
   const [showHistory, setShowHistory] = useState(false);
   const [showLineupEditor, setShowLineupEditor] = useState(false);
+  const [showSwitchPitcherModal, setShowSwitchPitcherModal] = useState(false);
   const [lineupDrafts, setLineupDrafts] = useState<LineupDrafts>(() => {
     try {
       const stored = sessionStorage.getItem(lineupDraftStorageKey);
@@ -344,14 +347,24 @@ export function ChartingEditor({
     }
   };
   const handleSwitchPitcher = () => {
-    if (!selectedPitcher) return;
-    const nextSnapshot = switchPitcherInSnapshot(
-      snapshot,
-      { playerId: selectedPitcher.playerId, name: selectedPitcher.name },
-      gameStateOverride,
-    );
-    if (nextSnapshot === snapshot) return;
-    applyOptimisticSnapshot(nextSnapshot, gameStateOverride, "Pitcher switched");
+    setShowSwitchPitcherModal(true);
+  };
+  const handleConfirmSwitchPitcher = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const rostered =
+      activePitchingSide === "our"
+        ? pitchers.find((p) => p.name.toLowerCase() === trimmed.toLowerCase())
+        : null;
+    const newPitcher = {
+      playerId: rostered?.playerId ?? manualPitcherId(trimmed, activePitchingSide),
+      name: trimmed,
+    };
+    const nextSnapshot = switchPitcherInSnapshot(snapshot, newPitcher, gameStateOverride);
+    if (nextSnapshot !== snapshot) {
+      applyOptimisticSnapshot(nextSnapshot, gameStateOverride, `Switched to ${trimmed}`);
+    }
+    setShowSwitchPitcherModal(false);
   };
   const handleBaserunnerDraftChange = (
     field: keyof ChartingBaserunnerState,
@@ -858,7 +871,7 @@ export function ChartingEditor({
             onBaserunnerDraftBlur={handleBaserunnerDraftBlur}
             onCommitBaserunnerDraft={commitBaserunnerDraft}
             onCountPresetChange={setCountPreset}
-            canSwitchPitcher={!currentPitcherLocked && Boolean(selectedPitcher?.name.trim())}
+            canSwitchPitcher={!currentPitcherLocked}
             onSwitchPitcher={handleSwitchPitcher}
           />
         ) : null}
@@ -948,6 +961,18 @@ export function ChartingEditor({
             onStepChange={setInPlayStep}
             onOutTypeChange={setInPlayOutType}
             paResultOutsRecorded={paResultOutsRecorded}
+          />
+        ) : null}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showSwitchPitcherModal ? (
+          <SwitchPitcherModal
+            activePitchingSide={activePitchingSide}
+            ourTeamLabel={ourTeamLabel}
+            opponentTeamLabel={opponentTeamLabel}
+            pitchers={pitchers}
+            onConfirm={handleConfirmSwitchPitcher}
+            onClose={() => setShowSwitchPitcherModal(false)}
           />
         ) : null}
       </AnimatePresence>
