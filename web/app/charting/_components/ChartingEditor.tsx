@@ -54,6 +54,7 @@ import {
 import { ChartingEditorHistoryEditModal } from "./charting-editor/history-edit-modal";
 import { ChartingEditorInPlayModal } from "./charting-editor/in-play-modal";
 import { ChartingEditorLineupModal } from "./charting-editor/lineup-editor-modal";
+import { EndInningModal } from "./charting-editor/end-inning-modal";
 import { SwitchPitcherModal } from "./charting-editor/switch-pitcher-modal";
 import {
   buildHitterSuggestions,
@@ -122,6 +123,7 @@ export function ChartingEditor({
   const [showHistory, setShowHistory] = useState(false);
   const [showLineupEditor, setShowLineupEditor] = useState(false);
   const [showSwitchPitcherModal, setShowSwitchPitcherModal] = useState(false);
+  const [endInningDismissed, setEndInningDismissed] = useState(false);
   const [lineupDrafts, setLineupDrafts] = useState<LineupDrafts>(() => {
     try {
       const stored = sessionStorage.getItem(lineupDraftStorageKey);
@@ -236,6 +238,13 @@ export function ChartingEditor({
       // Ignore quota or permission errors.
     }
   }, [lineupDraftStorageKey, lineupDrafts]);
+  // Reset the end-inning dismissal whenever we leave the between-innings state
+  // (i.e., a new PA has started in the next half).
+  useEffect(() => {
+    if (!liveState.isBetweenInnings) {
+      setEndInningDismissed(false);
+    }
+  }, [liveState.isBetweenInnings]);
   const selectedPitcher = buildSelectedPitcherOption(
     snapshot,
     pitchers,
@@ -300,6 +309,26 @@ export function ChartingEditor({
     setSelectedLocation(null);
     setSelectedPitchResult(null);
     setPendingVelocity("");
+  };
+  // Derive end-of-inning display labels from liveState.
+  // When isBetweenInnings is true, liveState already reflects the NEXT half,
+  // so we back-compute what just ended.
+  const endInningNextHalfLabel = liveState.isTopInning
+    ? `Top ${liveState.inning}`
+    : `Bot ${liveState.inning}`;
+  const endInningCompletedLabel = liveState.isTopInning
+    ? `Bot ${liveState.inning - 1}`
+    : `Top ${liveState.inning}`;
+  const showEndInningPrompt =
+    snapshot.game.sessionType === "game" &&
+    liveState.isBetweenInnings &&
+    !endInningDismissed;
+  const handleEndInning = () => {
+    clearPitchDraft();
+    setHitterName("");
+    setGameStateOverride(null);
+    startTransition(() => syncMatchupInputs(snapshot, null));
+    setEndInningDismissed(true);
   };
   const handleOpenLineupEditor = () => {
     setLineupDrafts(buildLineupDrafts(snapshot.lineup));
@@ -961,6 +990,16 @@ export function ChartingEditor({
             onStepChange={setInPlayStep}
             onOutTypeChange={setInPlayOutType}
             paResultOutsRecorded={paResultOutsRecorded}
+          />
+        ) : null}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showEndInningPrompt ? (
+          <EndInningModal
+            completedHalfLabel={endInningCompletedLabel}
+            nextHalfLabel={endInningNextHalfLabel}
+            onConfirm={handleEndInning}
+            onDismiss={() => setEndInningDismissed(true)}
           />
         ) : null}
       </AnimatePresence>
