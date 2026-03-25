@@ -325,9 +325,19 @@ export function ChartingEditor({
     !endInningDismissed;
   const handleEndInning = () => {
     clearPitchDraft();
-    setHitterName("");
-    setGameStateOverride(null);
-    startTransition(() => syncMatchupInputs(snapshot, null));
+    // liveState.inning / isTopInning already reflect the NEXT half when
+    // isBetweenInnings is true. Build an explicit override anchored at the
+    // last PA so the inning selector, Top/Bot toggle, outs pips, and pitcher
+    // input all snap to the new half immediately.
+    const nextOverride = createGameStateOverride(snapshot, {
+      inning: liveState.inning,
+      isTopInning: liveState.isTopInning,
+      outs: 0,
+    });
+    startTransition(() => {
+      setGameStateOverride(nextOverride);
+      syncMatchupInputs(snapshot, nextOverride);
+    });
     setEndInningDismissed(true);
   };
   const handleOpenLineupEditor = () => {
