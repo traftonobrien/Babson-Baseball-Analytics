@@ -19,6 +19,7 @@ import {
   paResultOutsRecorded,
   pitchingSideForMatchup,
   recordPitchInSnapshot,
+  switchPitcherInSnapshot,
   syncHitterToSnapshot,
   undoSnapshotAction,
   updatePitchVelocityInSnapshot,
@@ -341,6 +342,16 @@ export function ChartingEditor({
       startTransition(() => setSnapshot(nextSnapshot));
       queueSnapshotSave(nextSnapshot, "Hitter saved");
     }
+  };
+  const handleSwitchPitcher = () => {
+    if (!selectedPitcher) return;
+    const nextSnapshot = switchPitcherInSnapshot(
+      snapshot,
+      { playerId: selectedPitcher.playerId, name: selectedPitcher.name },
+      gameStateOverride,
+    );
+    if (nextSnapshot === snapshot) return;
+    applyOptimisticSnapshot(nextSnapshot, gameStateOverride, "Pitcher switched");
   };
   const handleBaserunnerDraftChange = (
     field: keyof ChartingBaserunnerState,
@@ -847,6 +858,8 @@ export function ChartingEditor({
             onBaserunnerDraftBlur={handleBaserunnerDraftBlur}
             onCommitBaserunnerDraft={commitBaserunnerDraft}
             onCountPresetChange={setCountPreset}
+            canSwitchPitcher={!currentPitcherLocked && Boolean(selectedPitcher?.name.trim())}
+            onSwitchPitcher={handleSwitchPitcher}
           />
         ) : null}
         <ChartingEditorWorkspace

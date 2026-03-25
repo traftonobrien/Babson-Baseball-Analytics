@@ -62,6 +62,8 @@ interface ChartingEditorTopBarProps {
     successNote: string,
   ) => void;
   onCountPresetChange: (preset: LiveABCountPreset) => void;
+  canSwitchPitcher: boolean;
+  onSwitchPitcher: () => void;
 }
 
 export const ChartingEditorTopBar = ({
@@ -103,6 +105,8 @@ export const ChartingEditorTopBar = ({
   onBaserunnerDraftBlur,
   onCommitBaserunnerDraft,
   onCountPresetChange,
+  canSwitchPitcher,
+  onSwitchPitcher,
 }: ChartingEditorTopBarProps) => {
   const battingTeamLabel = activeBattingSide === "our" ? ourTeamLabel : opponentTeamLabel;
   const pitchingTeamLabel = activePitchingSide === "our" ? ourTeamLabel : opponentTeamLabel;
@@ -153,6 +157,16 @@ export const ChartingEditorTopBar = ({
                     ))
                   : null}
               </datalist>
+              {sessionType === "game" ? (
+                <button
+                  type="button"
+                  disabled={!canSwitchPitcher}
+                  onClick={onSwitchPitcher}
+                  className="mt-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-[rgba(var(--babson-green-rgb),0.65)] transition-colors hover:text-[var(--babson-green)] disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  Switch Pitcher →
+                </button>
+              ) : null}
             </label>
             <div className="hidden items-end pb-[11px] sm:flex">
               <span className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-600">vs</span>
