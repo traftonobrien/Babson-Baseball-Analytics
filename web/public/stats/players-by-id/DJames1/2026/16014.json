@@ -1,0 +1,39 @@
+{
+  "batting": {
+    "ab": 0,
+    "avg": null,
+    "bb": 0,
+    "h": 0,
+    "hbp": null,
+    "hr": null,
+    "name": "Dillon James",
+    "pos": "p",
+    "r": 0,
+    "rbi": 0,
+    "sb": null,
+    "so": 0
+  },
+  "gameId": "16014",
+  "pitching": {
+    "bb": 0,
+    "bf": 13,
+    "er": 1,
+    "era": null,
+    "h": 2,
+    "hr": null,
+    "ip": "2.2",
+    "name": "Dillon James",
+    "pitches": 37,
+    "r": 2,
+    "so": 1,
+    "strikes": null
+  },
+  "playerDisplay": "Dillon James",
+  "playerId": "DJames1",
+  "season": 2026,
+  "source": {
+    "importedAt": "2026-03-26T02:18:15Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2026/wheaton/boxscore/16014"
+  },
+  "team": "babson"
+}
