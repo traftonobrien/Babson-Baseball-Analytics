@@ -1,6 +1,7 @@
 """Calibration tool: compute pixels-per-inch from home plate width."""
 
 import argparse
+import json
 import os
 import cv2
 import numpy as np
@@ -10,6 +11,27 @@ import yaml
 def load_config(path="config.yaml"):
     with open(path) as f:
         return yaml.safe_load(f)
+
+
+def _load_frame(config, frame_idx=0, video_path=None):
+    """Load a calibration/ROI frame from video or standalone frames_dir."""
+    if video_path:
+        cap = cv2.VideoCapture(video_path)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+        ret, frame_img = cap.read()
+        cap.release()
+        if not ret:
+            raise RuntimeError(f"Cannot read frame {frame_idx} from video: {video_path}")
+        return frame_img
+
+    frames_dir = config["paths"]["frames_dir"]
+    frame_files = sorted(f for f in os.listdir(frames_dir) if f.endswith(".jpg"))
+    if frame_idx >= len(frame_files):
+        raise RuntimeError(f"Frame index {frame_idx} out of range for {frames_dir}")
+    frame_img = cv2.imread(os.path.join(frames_dir, frame_files[frame_idx]))
+    if frame_img is None:
+        raise RuntimeError(f"Cannot read frame {frame_idx} from {frames_dir}")
+    return frame_img
 
 
 _points = []
@@ -143,6 +165,26 @@ def save_roi(x, y, w, h, config_path="config.yaml"):
     print(f"Saved detection_roi: x={x}, y={y}, w={w}, h={h} to {config_path}")
 
 
+def save_outing_roi(x, y, w, h, outing_dir, pitch_log_path=None):
+    """Save ROI to <outing_dir>/roi.json and optionally update pitch_log.json."""
+    os.makedirs(outing_dir, exist_ok=True)
+    roi = {"x": x, "y": y, "width": w, "height": h}
+
+    roi_path = os.path.join(outing_dir, "roi.json")
+    with open(roi_path, "w") as f:
+        json.dump(roi, f, indent=2)
+    print(f"Saved ROI to {roi_path}")
+
+    if pitch_log_path and os.path.exists(pitch_log_path):
+        with open(pitch_log_path) as f:
+            log_data = json.load(f)
+        if isinstance(log_data, dict):
+            log_data["roi"] = roi
+            with open(pitch_log_path, "w") as f:
+                json.dump(log_data, f, indent=2)
+            print(f"Updated ROI in {pitch_log_path}")
+
+
 def save_calibration(ppi, plate_center_x=None, config_path="config.yaml"):
     with open(config_path) as f:
         raw = f.read()
@@ -168,41 +210,88 @@ def save_calibration(ppi, plate_center_x=None, config_path="config.yaml"):
         print(f"Saved plate_center_x: {plate_center_x:.1f} to {config_path}")
 
 
+def save_outing_calibration(ppi, plate_center_x=None, plate_width_inches=None,
+                            outing_dir=None, pitch_log_path=None):
+    """Save calibration to <outing_dir>/calibration.json and optionally pitch_log."""
+    if outing_dir is None:
+        raise RuntimeError("outing_dir is required for save_outing_calibration")
+
+    os.makedirs(outing_dir, exist_ok=True)
+    calibration = {
+        "pixels_per_inch": round(float(ppi), 4),
+    }
+    if plate_center_x is not None:
+        calibration["plate_center_x"] = round(float(plate_center_x), 1)
+    if plate_width_inches is not None:
+        calibration["plate_width_inches"] = float(plate_width_inches)
+
+    calibration_path = os.path.join(outing_dir, "calibration.json")
+    with open(calibration_path, "w") as f:
+        json.dump(calibration, f, indent=2)
+    print(f"Saved calibration to {calibration_path}")
+
+    if pitch_log_path and os.path.exists(pitch_log_path):
+        with open(pitch_log_path) as f:
+            log_data = json.load(f)
+        if isinstance(log_data, dict):
+            log_data["calibration"] = calibration
+            with open(pitch_log_path, "w") as f:
+                json.dump(log_data, f, indent=2)
+            print(f"Updated calibration in {pitch_log_path}")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Calibrate pixels per inch / set detection ROI")
     parser.add_argument("--ppi", type=float, help="Set pixels_per_inch directly (skip interactive)")
+    parser.add_argument("--plate-center-x", type=float,
+                        help="Set plate_center_x directly when using --ppi")
+    parser.add_argument("--plate-width-inches", type=float, default=None,
+                        help="Override plate width inches used for calibration metadata")
     parser.add_argument("--frame", type=int, default=0, help="Frame index to use for calibration")
     parser.add_argument("--set-roi", action="store_true",
                         help="Interactively set the detection ROI")
+    parser.add_argument("--outing-dir", type=str, default=None,
+                        help="Save ROI/calibration to <outing_dir> instead of config.yaml")
+    parser.add_argument("--pitch-log", type=str, default=None,
+                        help="Optional pitch_log.json path to update with outing ROI/calibration")
     parser.add_argument("--video", type=str, default=None,
-                        help="Video file to grab a frame from (for --set-roi)")
+                        help="Video file to grab a frame from (for calibration or --set-roi)")
     args = parser.parse_args()
 
     config = load_config()
+    plate_width = args.plate_width_inches or config["calibration"]["plate_width_inches"]
+    pitch_log_path = args.pitch_log
+    if pitch_log_path is None and args.outing_dir:
+        pitch_log_path = os.path.join(args.outing_dir, "pitch_log.json")
 
     if args.set_roi:
-        # Get a frame to display
-        if args.video:
-            cap = cv2.VideoCapture(args.video)
-            cap.set(cv2.CAP_PROP_POS_FRAMES, args.frame)
-            ret, frame_img = cap.read()
-            cap.release()
-            if not ret:
-                print("Cannot read frame from video")
-                exit(1)
-        else:
-            frames_dir = config["paths"]["frames_dir"]
-            frame_files = sorted(f for f in os.listdir(frames_dir) if f.endswith(".jpg"))
-            frame_img = cv2.imread(os.path.join(frames_dir, frame_files[args.frame]))
-
+        frame_img = _load_frame(config, args.frame, args.video)
         x, y, w, h = interactive_set_roi(frame_img)
-        save_roi(x, y, w, h)
+        if args.outing_dir:
+            save_outing_roi(x, y, w, h, args.outing_dir, pitch_log_path)
+        else:
+            save_roi(x, y, w, h)
     elif args.ppi is not None:
-        save_calibration(args.ppi)
+        if args.outing_dir:
+            save_outing_calibration(
+                args.ppi,
+                plate_center_x=args.plate_center_x,
+                plate_width_inches=plate_width,
+                outing_dir=args.outing_dir,
+                pitch_log_path=pitch_log_path,
+            )
+        else:
+            save_calibration(args.ppi, args.plate_center_x)
     else:
-        frames_dir = config["paths"]["frames_dir"]
-        frame_files = sorted(f for f in os.listdir(frames_dir) if f.endswith(".jpg"))
-        frame_img = cv2.imread(os.path.join(frames_dir, frame_files[args.frame]))
-        plate_width = config["calibration"]["plate_width_inches"]
+        frame_img = _load_frame(config, args.frame, args.video)
         ppi, center_x = interactive_calibrate(frame_img, plate_width)
-        save_calibration(ppi, center_x)
+        if args.outing_dir:
+            save_outing_calibration(
+                ppi,
+                plate_center_x=center_x,
+                plate_width_inches=plate_width,
+                outing_dir=args.outing_dir,
+                pitch_log_path=pitch_log_path,
+            )
+        else:
+            save_calibration(ppi, center_x)

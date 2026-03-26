@@ -315,6 +315,133 @@ def _resolve_roi(args, clips, outing_dir, pitch_log_path):
     return roi
 
 
+def _parse_calibration_dict(d):
+    """Extract calibration fields from a dict with tolerant key names."""
+    if not isinstance(d, dict):
+        return None
+
+    calibration = {}
+
+    ppi = d.get("pixels_per_inch", d.get("ppi"))
+    if ppi is not None:
+        calibration["pixels_per_inch"] = float(ppi)
+
+    plate_center_x = d.get("plate_center_x", d.get("center_x"))
+    if plate_center_x is not None:
+        calibration["plate_center_x"] = float(plate_center_x)
+
+    plate_width = d.get("plate_width_inches")
+    if plate_width is not None:
+        calibration["plate_width_inches"] = float(plate_width)
+
+    return calibration or None
+
+
+def _format_calibration(calibration):
+    """Return a compact calibration summary string for logs."""
+    parts = []
+    if calibration.get("pixels_per_inch") is not None:
+        parts.append(f"ppi={calibration['pixels_per_inch']:.4f}")
+    if calibration.get("plate_center_x") is not None:
+        parts.append(f"plate_center_x={calibration['plate_center_x']:.1f}")
+    if calibration.get("plate_width_inches") is not None:
+        parts.append(f"plate_width_inches={calibration['plate_width_inches']:.1f}")
+    return ", ".join(parts) if parts else "no calibration values"
+
+
+def _persist_calibration(calibration, outing_dir, pitch_log_path=None):
+    """Save calibration to <outing_dir>/calibration.json and pitch_log metadata."""
+    parsed = _parse_calibration_dict(calibration)
+    if not parsed:
+        return
+
+    calibration_json_path = os.path.join(outing_dir, "calibration.json")
+    with open(calibration_json_path, "w") as f:
+        json.dump(parsed, f, indent=2)
+    print(f"  Saved calibration to {calibration_json_path}")
+
+    if pitch_log_path and os.path.exists(pitch_log_path):
+        with open(pitch_log_path) as f:
+            log_data = json.load(f)
+        if isinstance(log_data, dict):
+            log_data["calibration"] = parsed
+            with open(pitch_log_path, "w") as f:
+                json.dump(log_data, f, indent=2)
+            print(f"  Updated calibration in {pitch_log_path}")
+
+
+def _resolve_calibration(args, outing_dir, pitch_log_path, base_config):
+    """Resolve calibration in priority order, keeping config.yaml as fallback.
+
+    Priority:
+    1. global config.yaml calibration (fallback base)
+    2. pitch_log.json top-level "calibration"
+    3. <outing_dir>/calibration.json
+    4. --calibration-file
+    5. CLI overrides (--ppi / --plate-center-x / --plate-width-inches)
+    """
+    resolved = {}
+    base_calibration = base_config.get("calibration") or {}
+    for key in ("plate_width_inches", "pixels_per_inch", "plate_center_x"):
+        value = base_calibration.get(key)
+        if value is not None:
+            resolved[key] = float(value)
+
+    source = "Calibration loaded from config.yaml"
+    should_persist = False
+
+    if pitch_log_path and os.path.exists(pitch_log_path):
+        with open(pitch_log_path) as f:
+            log_data = json.load(f)
+        if isinstance(log_data, dict) and "calibration" in log_data:
+            log_calibration = _parse_calibration_dict(log_data["calibration"])
+            if log_calibration:
+                resolved.update(log_calibration)
+                source = "Calibration loaded from pitch_log.json"
+
+    calibration_json = os.path.join(outing_dir, "calibration.json")
+    if os.path.exists(calibration_json):
+        with open(calibration_json) as f:
+            outing_calibration = _parse_calibration_dict(json.load(f))
+        if outing_calibration:
+            resolved.update(outing_calibration)
+            source = "Calibration loaded from outing calibration.json"
+
+    if args.calibration_file:
+        if not os.path.exists(args.calibration_file):
+            print(f"ERROR: --calibration-file not found: {args.calibration_file}")
+            return None
+        with open(args.calibration_file) as f:
+            file_calibration = _parse_calibration_dict(json.load(f))
+        if file_calibration is None:
+            print("ERROR: --calibration-file missing calibration fields "
+                  f"(pixels_per_inch/ppi, optional plate_center_x): {args.calibration_file}")
+            return None
+        resolved.update(file_calibration)
+        source = "Calibration provided via --calibration-file"
+        should_persist = True
+
+    cli_calibration = {}
+    if args.ppi is not None:
+        cli_calibration["pixels_per_inch"] = float(args.ppi)
+    if args.plate_center_x is not None:
+        cli_calibration["plate_center_x"] = float(args.plate_center_x)
+    if args.plate_width_inches is not None:
+        cli_calibration["plate_width_inches"] = float(args.plate_width_inches)
+    if cli_calibration:
+        resolved.update(cli_calibration)
+        source = "Calibration provided via CLI"
+        should_persist = True
+
+    print(f"  {source}")
+    print(f"  Using calibration: {_format_calibration(resolved)}")
+
+    if should_persist:
+        _persist_calibration(resolved, outing_dir, pitch_log_path)
+
+    return resolved
+
+
 def _catcher_roi(frame_h, frame_w, detection_roi=None):
     """Return (x1, y1, x2, y2) for the catcher-only sub-region."""
     if detection_roi is not None:
@@ -1953,6 +2080,14 @@ def main():
                         help="Require ROI before processing (default: True)")
     parser.add_argument("--no-require-roi", action="store_true",
                         help="Allow processing without ROI (skip interactive prompt)")
+    parser.add_argument("--calibration-file", type=str, default=None,
+                        help="Path to JSON file with pixels_per_inch and optional plate_center_x")
+    parser.add_argument("--ppi", type=float, default=None,
+                        help="Override pixels_per_inch for this outing/run")
+    parser.add_argument("--plate-center-x", type=float, default=None,
+                        help="Override plate_center_x for this outing/run")
+    parser.add_argument("--plate-width-inches", type=float, default=None,
+                        help="Override plate_width_inches for this outing/run")
     args = parser.parse_args()
 
     # Apply focus-terminal setting to module-level flag
@@ -2124,6 +2259,16 @@ def main():
         if require:
             print("ERROR: ROI is required but could not be resolved. Aborting.")
             return
+
+    resolved_calibration = _resolve_calibration(
+        args,
+        outing_dir,
+        pitch_log_path if os.path.exists(pitch_log_path) else None,
+        base_config,
+    )
+    if resolved_calibration is None:
+        return
+    base_config["calibration"] = resolved_calibration
 
     results_dir = os.path.join(parent_dir, "results")
 
