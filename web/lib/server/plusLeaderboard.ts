@@ -23,6 +23,7 @@ import {
 import { computeTotalStuffPlus } from "@/lib/stuffPlusUtils";
 import { parsePitchCsvText } from "@/lib/pitchCsv";
 import { seasonFromDateId } from "@/lib/season";
+import { loadStuffPlusData } from "@/lib/stuffPlusJson";
 import { getStuffPlusDisplayPitchType } from "@/lib/stuffPlusPitchOverrides";
 import {
   getCanonicalName,
@@ -37,6 +38,10 @@ import type {
   PlusSeasonFilter,
   PlusSessionRow,
 } from "@/lib/plusLeaderboardTypes";
+import {
+  buildOneOffStuffFallbackRows,
+  type LeaderboardStuffRow,
+} from "@/lib/server/plusLeaderboardStuffFallback";
 
 interface ArsenalRecord {
   playerId: string;
@@ -56,15 +61,7 @@ interface LoadedOutingTask {
   commandResult: CommandPlusResult;
 }
 
-interface StuffRow {
-  playerId: string;
-  playerName: string | null;
-  throws: "R" | "L" | null;
-  dateId: string;
-  season: number;
-  pitchType: string;
-  stuffPlus: number;
-}
+type StuffRow = LeaderboardStuffRow;
 
 interface StuffAggregateValue {
   sum: number;
@@ -423,10 +420,18 @@ export async function loadPlusLeaderboard(
 ): Promise<PlusLeaderboardPayload> {
   const seasons = selectedSeasons(seasonFilter);
   const arsenals = await loadArsenals();
-  const [commandTasks, rawStuffRows] = await Promise.all([
+  const [commandTasks, queriedStuffRows, stuffPlusData] = await Promise.all([
     loadCommandOutings(seasons, arsenals),
     loadStuffRows(seasons),
+    loadStuffPlusData(),
   ]);
+  const rawStuffRows = queriedStuffRows.concat(
+    buildOneOffStuffFallbackRows({
+      seasons,
+      existingRows: queriedStuffRows,
+      outings: stuffPlusData.outings,
+    }),
+  );
 
   const playerNames = new Map<string, string>();
   const playerThrows = new Map<string, "R" | "L" | null>();
