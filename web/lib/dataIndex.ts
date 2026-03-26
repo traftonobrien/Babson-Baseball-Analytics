@@ -23,6 +23,7 @@ const OPPONENTS_BY_DATE_ID: Record<string, string> = {
   "2026_02_27": "#1/6 Trinity (Texas)",
   "2026_02_28": "#1/6 Trinity (Texas)",
   "2026_03_01": "#1/6 Trinity (Texas)",
+  "2026_04_24": "Wheaton",
 };
 
 export const players: Player[] = [
