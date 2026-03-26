@@ -393,13 +393,6 @@ export const BATTING_SNAPSHOT_METRICS: MetricDefinition[] = [
     format: (value) => formatPercent(value, 1),
     valueKeys: BATTING_KEYS.bb_pct,
   },
-  {
-    id: "war",
-    label: "WAR",
-    higherBetter: true,
-    format: (value) => formatNumber(value, 2),
-    valueKeys: BATTING_KEYS.war,
-  },
 ];
 
 export const BATTING_PERCENTILE_METRICS: MetricDefinition[] = [

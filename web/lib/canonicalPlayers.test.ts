@@ -36,6 +36,16 @@ describe("canonicalPlayers", () => {
     expect(getCanonicalName("smith_cooper")).toBe("Cooper Smith");
   });
 
+  it("supports Bobby Christensen as canonical while preserving Robert aliases", () => {
+    expect(getCanonicalPlayerId("christensen_bobby")).toBe("RChristensen1");
+    expect(getCanonicalPlayerId("christensen_robert")).toBe("RChristensen1");
+    expect(getCanonicalPlayerId("Bobby Christensen")).toBe("RChristensen1");
+    expect(getCanonicalPlayerId("Robert Christensen")).toBe("RChristensen1");
+    expect(getCanonicalPlayerId("bobby")).toBe("BBurk1");
+    expect(getSlugForPlayerId("RChristensen1")).toBe("christensen_bobby");
+    expect(getCanonicalName("christensen_robert")).toBe("Bobby Christensen");
+  });
+
   it("skips ambiguous short aliases", () => {
     expect(getCanonicalPlayerId("James")).toBeNull();
   });

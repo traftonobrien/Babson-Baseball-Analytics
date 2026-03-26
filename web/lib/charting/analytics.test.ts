@@ -1,14 +1,65 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { chartingPlateAppearances, chartingPitches } from "@/db/schema";
+import {
+  aggregateHitterStats,
+  computeHitterAggregation,
+  computeHitterStats_pure,
+} from "./analytics-hitter";
 import {
   computePitcherAggregation,
   computeSegmentStats_pure,
 } from "./analytics-pitcher";
-import {
-  computeHitterAggregation,
-  computeHitterStats_pure,
-} from "./analytics-hitter";
 import { fixtureAnalyticsSnapshot as fx } from "./analytics-fixtures";
+import { legacyChartingPlateAppearances } from "./plateAppearanceStorage";
 import type { ChartingPitch, ChartingPlateAppearance } from "./types";
+
+function createMockDb({
+  currentPasRows = [],
+  legacyPasRows = [],
+  pitchRows = [],
+  currentPasError = null,
+}: {
+  currentPasRows?: Array<typeof chartingPlateAppearances.$inferSelect>;
+  legacyPasRows?: Array<typeof legacyChartingPlateAppearances.$inferSelect>;
+  pitchRows?: Array<typeof chartingPitches.$inferSelect>;
+  currentPasError?: Error | null;
+}) {
+  return {
+    select: vi.fn(() => ({
+      from(table: unknown) {
+        const query = {
+          where: () => query,
+          orderBy: () => {
+            if (table === chartingPlateAppearances) {
+              if (currentPasError) {
+                return Promise.reject(currentPasError);
+              }
+
+              return Promise.resolve(currentPasRows);
+            }
+
+            if (table === legacyChartingPlateAppearances) {
+              return Promise.resolve(legacyPasRows);
+            }
+
+            if (table === chartingPitches) {
+              return Promise.resolve(pitchRows);
+            }
+
+            throw new Error("Unexpected table in analytics test");
+          },
+        };
+
+        return query;
+      },
+    })),
+  };
+}
+
+afterEach(() => {
+  vi.doUnmock("@/db");
+  vi.resetModules();
+});
 
 function duplicateSmithSession(suffix: string) {
   const pas = fx.pasForSmith.map((pa) => ({
@@ -157,6 +208,12 @@ describe("computeHitterStats_pure", () => {
     expect(stats?.chasePct).toBeCloseTo(100.0, 1);
   });
 
+  it("computes Swing% for a hitter from fixture pitches and PAs", () => {
+    const stats = computeHitterStats_pure(fx.pitchesForSmith, fx.pasForSmith);
+
+    expect(stats?.swingPct).toBeCloseTo(83.3, 1);
+  });
+
   it("computes Contact% correctly", () => {
     const stats = computeHitterStats_pure(fx.pitchesForSmith, fx.pasForSmith);
 
@@ -188,6 +245,30 @@ describe("computeHitterStats_pure", () => {
     const stats = computeHitterStats_pure(fx.pitchesForSmith, fx.pasForSmith);
 
     expect(stats?.woba).toBeCloseTo(0.445, 3);
+  });
+
+  it("computes RISP AVG and OPS from plate appearances that start with a runner in scoring position", () => {
+    const rispPas = fx.pasForSmith.map((pa, index) =>
+      index === 0
+        ? { ...pa, runnerOnSecond: "Runner 2" }
+        : index === 1
+          ? { ...pa, runnerOnThird: "Runner 3" }
+          : pa
+    );
+
+    const stats = computeHitterStats_pure(fx.pitchesForSmith, rispPas);
+
+    expect(stats?.rispPAs).toBe(2);
+    expect(stats?.rispAvg).toBeCloseTo(0.5, 4);
+    expect(stats?.rispOps).toBeCloseTo(1.0, 4);
+  });
+
+  it("returns null RISP line values when no PA starts with runners in scoring position", () => {
+    const stats = computeHitterStats_pure(fx.pitchesForSmith, fx.pasForSmith);
+
+    expect(stats?.rispPAs).toBe(0);
+    expect(stats?.rispAvg).toBeNull();
+    expect(stats?.rispOps).toBeNull();
   });
 
   it("builds a zoneFrequency map with counts per non-null cell", () => {
@@ -276,6 +357,29 @@ describe("computePitcherAggregation", () => {
 describe("computeHitterAggregation", () => {
   it("returns null when no data is provided", () => {
     expect(computeHitterAggregation([], [], 0)).toBeNull();
+  });
+
+  it("uses current-schema plate appearance baserunner context for aggregate RISP stats", async () => {
+    const mockDb = createMockDb({
+      currentPasRows: fx.pasForSmith.map((pa, index) => ({
+        ...pa,
+        teamId: "babson",
+        initialCount: "0-0",
+        runnerOnSecond: index === 0 ? "Runner 2" : null,
+        runnerOnThird: index === 1 ? "Runner 3" : null,
+      })),
+      pitchRows: fx.pitchesForSmith.map((pitch) => ({
+        ...pitch,
+        teamId: "babson",
+      })),
+    });
+    vi.doMock("@/db", () => ({ db: mockDb }));
+
+    const stats = await aggregateHitterStats("Smith");
+
+    expect(stats?.rispPAs).toBe(2);
+    expect(stats?.rispAvg).toBeCloseTo(0.5, 4);
+    expect(stats?.rispOps).toBeCloseTo(1.0, 4);
   });
 
   it("aggregates hitter stats across two PA sets", () => {

@@ -29,10 +29,6 @@ function formatPct(value: number | null): string {
   return value !== null ? `${value.toFixed(1)}%` : "--";
 }
 
-function formatRate(value: number | null): string {
-  return value !== null ? value.toFixed(3).replace(/^0\./, ".") : "--";
-}
-
 function formatNumber(value: number | null): string {
   return value !== null ? String(value) : "--";
 }
@@ -690,7 +686,7 @@ export default function LiveAbProfilePanel({
                 Hitting Charting
               </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
-                Charted approach and production from Charting plate appearances.
+                Swing decisions and contact quality from charted games.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -715,17 +711,34 @@ export default function LiveAbProfilePanel({
               variant="light"
             />
             <LeaderboardStatBlock
-              label="AVG"
-              value={formatRate(hitter.stats?.avg ?? null)}
-              detail="charted outcomes only"
+              label="Pitches"
+              value={formatNumber(hitter.stats?.totalPitches ?? null)}
+              detail="charted pitches seen"
               emphasisClassName="text-slate-900 dark:text-zinc-50"
               variant="light"
             />
             <LeaderboardStatBlock
-              label="OPS"
-              value={formatRate(hitter.stats?.ops ?? null)}
-              detail="OBP + SLG"
+              label="Swing%"
+              value={formatPct(hitter.stats?.swingPct ?? null)}
+              detail="swings per pitch seen"
               emphasisClassName="text-emerald-600 dark:text-emerald-300"
+              variant="light"
+            />
+            <LeaderboardStatBlock
+              label="O-Swing%"
+              value={formatPct(hitter.stats?.chasePct ?? null)}
+              detail="chase rate outside zone"
+              emphasisClassName="text-slate-900 dark:text-zinc-50"
+              variant="light"
+            />
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-4">
+            <LeaderboardStatBlock
+              label="Z-Swing%"
+              value={formatPct(hitter.stats?.zoneSwingPct ?? null)}
+              detail="swings at in-zone pitches"
+              emphasisClassName="text-slate-900 dark:text-zinc-50"
               variant="light"
             />
             <LeaderboardStatBlock
@@ -735,34 +748,17 @@ export default function LiveAbProfilePanel({
               emphasisClassName="text-slate-900 dark:text-zinc-50"
               variant="light"
             />
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-4">
             <LeaderboardStatBlock
-              label="Chase%"
-              value={formatPct(hitter.stats?.chasePct ?? null)}
-              detail="swings outside zone"
+              label="Whiff%"
+              value={formatPct(hitter.stats?.whiffPct ?? null)}
+              detail="swinging strikes per swing"
               emphasisClassName="text-slate-900 dark:text-zinc-50"
               variant="light"
             />
             <LeaderboardStatBlock
-              label="Z-Swing%"
-              value={formatPct(hitter.stats?.zoneSwingPct ?? null)}
-              detail="swings in zone"
-              emphasisClassName="text-slate-900 dark:text-zinc-50"
-              variant="light"
-            />
-            <LeaderboardStatBlock
-              label="K%"
-              value={formatPct(hitter.stats?.kPct ?? null)}
-              detail="completed plate appearances"
-              emphasisClassName="text-slate-900 dark:text-zinc-50"
-              variant="light"
-            />
-            <LeaderboardStatBlock
-              label="BB%"
-              value={formatPct(hitter.stats?.bbPct ?? null)}
-              detail="completed plate appearances"
+              label="Z-Whiff%"
+              value={formatPct(hitter.stats?.zoneWfPct ?? null)}
+              detail="whiffs on swings in zone"
               emphasisClassName="text-slate-900 dark:text-zinc-50"
               variant="light"
             />

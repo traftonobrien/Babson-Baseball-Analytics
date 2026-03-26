@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import path from "path";
 import { promises as fs } from "fs";
@@ -9,7 +9,11 @@ import rosterData from "@/data/roster.json";
 import { db } from "@/db";
 import { stuffPlusArsenal } from "@/db/schema";
 import { fetchBattingLeaderboard, fetchNcaaStatsMeta, fetchPitchingLeaderboard } from "@/lib/collegeStats";
-import { getHand } from "@/lib/canonicalPlayers";
+import {
+  getCanonicalPlayerId,
+  getHand,
+  getSlugForPlayerId,
+} from "@/lib/canonicalPlayers";
 import {
   buildCommandPlusBaselines,
   computeCommandPlus,
@@ -236,14 +240,44 @@ function findLeaderboardRow(
     }
   }
 
+  const playerCanonicalId = getCanonicalPlayerId(player.slug) ?? getCanonicalPlayerId(player.name);
   const normalizedName = normalizePlayerName(player.name);
   return (
     leaderboardRows.find((row) => {
       const rowName = normalizePlayerName(String(row.player_name ?? row.name ?? ""));
       const rowTeam = normalizePlayerName(String(row.team_name ?? row.team ?? ""));
-      return rowName === normalizedName && (!rowTeam || rowTeam === "babson");
+      if (rowTeam && rowTeam !== "babson") {
+        return false;
+      }
+
+      const rowCanonicalId = getCanonicalPlayerId(String(row.player_name ?? row.name ?? ""));
+      if (playerCanonicalId && rowCanonicalId) {
+        return rowCanonicalId === playerCanonicalId;
+      }
+
+      return rowName === normalizedName;
     }) ?? null
   );
+}
+
+function buildRedirectQueryString(
+  searchParams: Record<string, string | string[] | undefined>,
+): string {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (typeof value === "string") {
+      params.set(key, value);
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach((entry) => params.append(key, entry));
+    }
+  }
+
+  const query = params.toString();
+  return query ? `?${query}` : "";
 }
 
 export default async function PlayerProfilePage({
@@ -255,8 +289,13 @@ export default async function PlayerProfilePage({
 }) {
   const { slug } = await params;
   const sp = await searchParams;
+  const canonicalPlayerId = getCanonicalPlayerId(slug);
+  const canonicalSlug = canonicalPlayerId ? getSlugForPlayerId(canonicalPlayerId) : null;
+  if (canonicalSlug && canonicalSlug !== slug) {
+    redirect(`/players/${canonicalSlug}${buildRedirectQueryString(sp)}`);
+  }
   const initialTab = typeof sp.tab === "string" ? sp.tab : undefined;
-  const player = getPlayerBySlug(slug);
+  const player = getPlayerBySlug(canonicalSlug ?? slug);
 
   if (!player) {
     notFound();

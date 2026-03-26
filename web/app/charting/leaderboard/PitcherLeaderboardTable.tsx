@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { type AggregatedPitcherStats } from "@/lib/charting/analytics";
+import { getCanonicalPlayerId, getSlugForPlayerId } from "@/lib/canonicalPlayers";
 
 export interface PitcherLeaderboardRow extends AggregatedPitcherStats {
     playerId: string | null;
@@ -50,6 +52,16 @@ function rankColor(i: number): string {
     if (i === 1) return `text-slate-400 ${glow} dark:text-zinc-400`;
     if (i === 2) return `text-amber-700 ${glow} dark:text-amber-500`;
     return "text-slate-500 dark:text-zinc-400";
+}
+
+function pitcherProfileHref(playerId: string | null, displayName: string): string | null {
+    const canonicalId = playerId ?? getCanonicalPlayerId(displayName);
+    if (!canonicalId) {
+        return null;
+    }
+
+    const playerSlug = getSlugForPlayerId(canonicalId);
+    return playerSlug ? `/players/${playerSlug}?tab=charting` : null;
 }
 
 export function PitcherLeaderboardTable({
@@ -144,7 +156,25 @@ export function PitcherLeaderboardTable({
                             {index + 1}
                         </td>
                         <td className="px-4 py-3">
-                            <span className="font-medium text-slate-900 dark:text-zinc-100">{pitcher.displayName}</span>
+                            {(() => {
+                                const href = pitcherProfileHref(pitcher.playerId, pitcher.displayName);
+                                if (!href) {
+                                    return (
+                                        <span className="font-medium text-slate-900 dark:text-zinc-100">
+                                            {pitcher.displayName}
+                                        </span>
+                                    );
+                                }
+
+                                return (
+                                    <Link
+                                        href={href}
+                                        className="font-medium text-slate-900 transition-smooth hover:text-emerald-700 dark:text-zinc-100 dark:hover:text-emerald-400"
+                                    >
+                                        {pitcher.displayName}
+                                    </Link>
+                                );
+                            })()}
                         </td>
                         {visibleSortKeys.map(({ key, format }) => {
                             const val = pitcher[key] as number | null;

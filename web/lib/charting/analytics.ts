@@ -2,10 +2,13 @@ import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
 import {
   chartingGames,
   chartingPitcherSegments,
+  chartingPlateAppearances,
   chartingPitches,
 } from "@/db/schema";
 import { countPitcherInnings } from "./innings";
 import {
+  isMissingBattingSideColumnError,
+  isMissingPlateAppearanceContextColumnError,
   legacyChartingPlateAppearances,
   mapLegacyPlateAppearanceRow,
 } from "./plateAppearanceStorage";
@@ -81,11 +84,15 @@ export interface PitchGroupStats {
 export interface HitterStats {
   totalPitches: number;
   totalPAs: number;
+  rispPAs: number;
   avg: number | null;
   obp: number | null;
   slg: number | null;
   ops: number | null;
+  rispAvg: number | null;
+  rispOps: number | null;
   woba: number | null;
+  swingPct: number | null;
   chasePct: number | null;
   contactPct: number | null;
   whiffPct: number | null;
@@ -132,6 +139,10 @@ function isClosedPa(
   return pa.resultCode !== null;
 }
 
+function hasRisp(pa: Pick<ChartingPlateAppearance, "runnerOnSecond" | "runnerOnThird">): boolean {
+  return Boolean(pa.runnerOnSecond || pa.runnerOnThird);
+}
+
 function isStrikeout(resultCode: string | null): boolean {
   return resultCode === "K" || resultCode === "KL";
 }
@@ -153,6 +164,41 @@ function wobaWeightForResult(resultCode: string | null): number {
     default:
       return 0;
   }
+}
+
+function computeClosedPaBattingLine(
+  pas: Array<ChartingPlateAppearance & { resultCode: string }>
+) {
+  const walkCount = pas.filter((pa) => pa.resultCode === "BB").length;
+  const hbpCount = pas.filter((pa) => pa.resultCode === "HBP").length;
+  const singles = pas.filter((pa) => pa.resultCode === "1B").length;
+  const doubles = pas.filter((pa) => pa.resultCode === "2B").length;
+  const triples = pas.filter((pa) => pa.resultCode === "3B").length;
+  const homeRuns = pas.filter((pa) => pa.resultCode === "HR").length;
+
+  const hits = singles + doubles + triples + homeRuns;
+  const totalBases = singles + 2 * doubles + 3 * triples + 4 * homeRuns;
+  const atBats = pas.length - walkCount - hbpCount;
+  const avg = atBats > 0 ? hits / atBats : null;
+  const obp = pas.length > 0 ? (hits + walkCount + hbpCount) / pas.length : null;
+  const slg = atBats > 0 ? totalBases / atBats : null;
+  const ops = obp !== null ? obp + (slg ?? 0) : null;
+
+  return {
+    walkCount,
+    hbpCount,
+    singles,
+    doubles,
+    triples,
+    homeRuns,
+    hits,
+    totalBases,
+    atBats,
+    avg,
+    obp,
+    slg,
+    ops,
+  };
 }
 
 function toDateKey(date: Date): string {
@@ -240,10 +286,53 @@ function mapPitchRows(rows: typeof chartingPitches.$inferSelect[]): ChartingPitc
   );
 }
 
+function normalizeMatchupSide(
+  value: string | null | undefined
+): ChartingPlateAppearance["teamSide"] {
+  return value === "our" ? "our" : "opponent";
+}
+
 function mapPlateAppearanceRows(
+  rows: typeof chartingPlateAppearances.$inferSelect[]
+): ChartingPlateAppearance[] {
+  return rows.map((plateAppearance) => ({
+    ...plateAppearance,
+    isTopInning: plateAppearance.isTopInning ?? true,
+    teamSide: normalizeMatchupSide(plateAppearance.teamSide),
+    initialCount:
+      (plateAppearance.initialCount as ChartingPlateAppearance["initialCount"]) ?? "0-0",
+    runnerOnFirst: plateAppearance.runnerOnFirst ?? null,
+    runnerOnSecond: plateAppearance.runnerOnSecond ?? null,
+    runnerOnThird: plateAppearance.runnerOnThird ?? null,
+  }));
+}
+
+function mapLegacyPlateAppearanceRows(
   rows: typeof legacyChartingPlateAppearances.$inferSelect[]
 ): ChartingPlateAppearance[] {
   return rows.map(mapLegacyPlateAppearanceRow);
+}
+
+function isLegacyPlateAppearanceSchemaError(error: unknown): boolean {
+  return (
+    isMissingPlateAppearanceContextColumnError(error) ||
+    isMissingBattingSideColumnError(error)
+  );
+}
+
+async function loadPlateAppearancesWithFallback(
+  loadCurrentRows: () => Promise<typeof chartingPlateAppearances.$inferSelect[]>,
+  loadLegacyRows: () => Promise<typeof legacyChartingPlateAppearances.$inferSelect[]>
+): Promise<ChartingPlateAppearance[]> {
+  try {
+    return mapPlateAppearanceRows(await loadCurrentRows());
+  } catch (error) {
+    if (!isLegacyPlateAppearanceSchemaError(error)) {
+      throw error;
+    }
+
+    return mapLegacyPlateAppearanceRows(await loadLegacyRows());
+  }
 }
 
 function computePitchGroup(
@@ -361,12 +450,19 @@ export async function computeSegmentStats(
   segmentId: string
 ): Promise<SegmentStats | null> {
   const db = await getDb();
-  const pas = mapPlateAppearanceRows(
-    await db
-      .select()
-      .from(legacyChartingPlateAppearances)
-      .where(eq(legacyChartingPlateAppearances.segmentId, segmentId))
-      .orderBy(asc(legacyChartingPlateAppearances.paOrder))
+  const pas = await loadPlateAppearancesWithFallback(
+    () =>
+      db
+        .select()
+        .from(chartingPlateAppearances)
+        .where(eq(chartingPlateAppearances.segmentId, segmentId))
+        .orderBy(asc(chartingPlateAppearances.paOrder)),
+    () =>
+      db
+        .select()
+        .from(legacyChartingPlateAppearances)
+        .where(eq(legacyChartingPlateAppearances.segmentId, segmentId))
+        .orderBy(asc(legacyChartingPlateAppearances.paOrder))
   );
 
   if (pas.length === 0) {
@@ -447,12 +543,19 @@ export async function aggregatePitcherStats(
     return null;
   }
 
-  const pas = mapPlateAppearanceRows(
-    await db
-      .select()
-      .from(legacyChartingPlateAppearances)
-      .where(inArray(legacyChartingPlateAppearances.segmentId, segmentIds))
-      .orderBy(asc(legacyChartingPlateAppearances.paOrder))
+  const pas = await loadPlateAppearancesWithFallback(
+    () =>
+      db
+        .select()
+        .from(chartingPlateAppearances)
+        .where(inArray(chartingPlateAppearances.segmentId, segmentIds))
+        .orderBy(asc(chartingPlateAppearances.paOrder)),
+    () =>
+      db
+        .select()
+        .from(legacyChartingPlateAppearances)
+        .where(inArray(legacyChartingPlateAppearances.segmentId, segmentIds))
+        .orderBy(asc(legacyChartingPlateAppearances.paOrder))
   );
 
   if (pas.length === 0) {
@@ -512,30 +615,17 @@ export function computeHitterStats_pure(
   ).length;
   const swings = contacts + whiffs;
   const closedPas = pas.filter(isClosedPa);
+  const rispPas = pas.filter(hasRisp);
+  const battingLine = computeClosedPaBattingLine(closedPas);
+  const rispLine = computeClosedPaBattingLine(closedPas.filter(hasRisp));
   const strikeoutCount = closedPas.filter((pa) =>
     isStrikeout(pa.resultCode)
   ).length;
-  const walkCount = closedPas.filter((pa) => pa.resultCode === "BB").length;
-  const hbpCount = closedPas.filter((pa) => pa.resultCode === "HBP").length;
-
-  const singles = closedPas.filter((pa) => pa.resultCode === "1B").length;
-  const doubles = closedPas.filter((pa) => pa.resultCode === "2B").length;
-  const triples = closedPas.filter((pa) => pa.resultCode === "3B").length;
-  const homeRuns = closedPas.filter((pa) => pa.resultCode === "HR").length;
-
-  const hits = singles + doubles + triples + homeRuns;
-  const totalBases = singles + 2 * doubles + 3 * triples + 4 * homeRuns;
-  const atBats = closedPas.length - walkCount - hbpCount;
-
-  const avg = atBats > 0 ? hits / atBats : null;
-  const obp =
-    closedPas.length > 0
-      ? (hits + walkCount + hbpCount) / closedPas.length
+  const iso =
+    battingLine.slg !== null && battingLine.avg !== null
+      ? battingLine.slg - battingLine.avg
       : null;
-  const slg = atBats > 0 ? totalBases / atBats : null;
-  const ops = obp !== null ? obp + (slg ?? 0) : null;
-  const iso = slg !== null && avg !== null ? slg - avg : null;
-  const wobaDenominator = atBats + walkCount + hbpCount;
+  const wobaDenominator = battingLine.atBats + battingLine.walkCount + battingLine.hbpCount;
   const wobaNumerator = closedPas.reduce(
     (sum, pa) => sum + wobaWeightForResult(pa.resultCode),
     0
@@ -545,8 +635,11 @@ export function computeHitterStats_pure(
   // BABIP Calculation: (H - HR) / (AB - K - HR + SF)
   // Re-deriving in-play at bats. We don't currently track SF distinctively in charting, 
   // so (AB - K - HR) is the closest approximation with current data structure.
-  const babipDenominator = atBats - strikeoutCount - homeRuns;
-  const babip = babipDenominator > 0 ? (hits - homeRuns) / babipDenominator : null;
+  const babipDenominator = battingLine.atBats - strikeoutCount - battingLine.homeRuns;
+  const babip =
+    babipDenominator > 0
+      ? (battingLine.hits - battingLine.homeRuns) / babipDenominator
+      : null;
 
   const zoneFrequency = locatedPitches.reduce<Partial<Record<number, number>>>(
     (frequency, pitch) => {
@@ -559,18 +652,22 @@ export function computeHitterStats_pure(
   return {
     totalPitches: pitches.length,
     totalPAs: pas.length,
-    avg,
-    obp,
-    slg,
-    ops,
+    rispPAs: rispPas.length,
+    avg: battingLine.avg,
+    obp: battingLine.obp,
+    slg: battingLine.slg,
+    ops: battingLine.ops,
+    rispAvg: rispLine.avg,
+    rispOps: rispLine.ops,
     woba,
+    swingPct: pct(swings, pitches.length),
     chasePct: pct(outOfZoneSwings, outOfZoneLocatedPitches.length),
     contactPct: pct(contacts, contacts + whiffs),
     whiffPct: pct(whiffs, swings),
     zoneWfPct: pct(inZoneWhiffs, inZoneSwings),
     zoneSwingPct: pct(inZoneSwings, inZoneLocatedPitches.length),
     kPct: pct(strikeoutCount, closedPas.length),
-    bbPct: pct(walkCount, closedPas.length),
+    bbPct: pct(battingLine.walkCount, closedPas.length),
     babip,
     iso,
     zoneFrequency,
@@ -585,15 +682,22 @@ export async function computeHitterStats(
   gameId: string
 ): Promise<HitterStats | null> {
   const db = await getDb();
-  const pas = mapPlateAppearanceRows(
-    (
-      await db
-        .select()
-        .from(legacyChartingPlateAppearances)
-        .where(eq(legacyChartingPlateAppearances.gameId, gameId))
-        .orderBy(asc(legacyChartingPlateAppearances.paOrder))
-    ).filter((pa) => pa.hitterName === hitterName)
-  );
+  const pas = (
+    await loadPlateAppearancesWithFallback(
+      () =>
+        db
+          .select()
+          .from(chartingPlateAppearances)
+          .where(eq(chartingPlateAppearances.gameId, gameId))
+          .orderBy(asc(chartingPlateAppearances.paOrder)),
+      () =>
+        db
+          .select()
+          .from(legacyChartingPlateAppearances)
+          .where(eq(legacyChartingPlateAppearances.gameId, gameId))
+          .orderBy(asc(legacyChartingPlateAppearances.paOrder))
+    )
+  ).filter((pa) => pa.hitterName === hitterName);
 
   if (pas.length === 0) {
     return null;
@@ -642,23 +746,43 @@ export async function aggregateHitterStats(
   }
 
   // Fetch-all is acceptable for this internal dataset size; revisit if volume grows materially.
-  const pas = mapPlateAppearanceRows(
-    filteredGameIds === null
-      ? await db
-        .select()
-        .from(legacyChartingPlateAppearances)
-        .orderBy(
-          asc(legacyChartingPlateAppearances.gameId),
-          asc(legacyChartingPlateAppearances.paOrder)
-        )
-      : await db
-        .select()
-        .from(legacyChartingPlateAppearances)
-        .where(inArray(legacyChartingPlateAppearances.gameId, filteredGameIds))
-        .orderBy(
-          asc(legacyChartingPlateAppearances.gameId),
-          asc(legacyChartingPlateAppearances.paOrder)
-        )
+  const pas = (
+    await loadPlateAppearancesWithFallback(
+      () =>
+        filteredGameIds === null
+          ? db
+            .select()
+            .from(chartingPlateAppearances)
+            .orderBy(
+              asc(chartingPlateAppearances.gameId),
+              asc(chartingPlateAppearances.paOrder)
+            )
+          : db
+            .select()
+            .from(chartingPlateAppearances)
+            .where(inArray(chartingPlateAppearances.gameId, filteredGameIds))
+            .orderBy(
+              asc(chartingPlateAppearances.gameId),
+              asc(chartingPlateAppearances.paOrder)
+            ),
+      () =>
+        filteredGameIds === null
+          ? db
+            .select()
+            .from(legacyChartingPlateAppearances)
+            .orderBy(
+              asc(legacyChartingPlateAppearances.gameId),
+              asc(legacyChartingPlateAppearances.paOrder)
+            )
+          : db
+            .select()
+            .from(legacyChartingPlateAppearances)
+            .where(inArray(legacyChartingPlateAppearances.gameId, filteredGameIds))
+            .orderBy(
+              asc(legacyChartingPlateAppearances.gameId),
+              asc(legacyChartingPlateAppearances.paOrder)
+            )
+    )
   ).filter((pa) => pa.hitterName === hitterName);
 
   if (pas.length === 0) {

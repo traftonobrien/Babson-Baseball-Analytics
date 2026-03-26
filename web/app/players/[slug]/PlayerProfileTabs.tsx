@@ -208,11 +208,6 @@ export default function PlayerProfileTabs({
     activeOverviewMode === "pitching"
       ? pitchingPercentileAudienceLabel
       : hittingPercentileAudienceLabel;
-  const seasonStatMap = useMemo(
-    () => new Map(seasonStats.map((stat) => [stat.label, stat.value])),
-    [seasonStats],
-  );
-
   const sortedSessions = useMemo(() => {
     return [...trackmanSessions].sort((a, b) => b.date.localeCompare(a.date));
   }, [trackmanSessions]);
@@ -400,63 +395,7 @@ export default function PlayerProfileTabs({
               </section>
             )}
 
-            {profileMode === "hitter" || activeOverviewMode === "hitting" ? (
-              <section className="space-y-5">
-                <div>
-                  <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-zinc-400">
-                    Hitting Snapshot
-                  </h2>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
-                    Season production and plate-discipline context for this hitter profile.
-                  </p>
-                </div>
-
-                <div className="grid gap-3 md:grid-cols-4 xl:grid-cols-6">
-                  <LeaderboardStatBlock
-                    label="AVG"
-                    value={seasonStatMap.get("AVG") ?? "--"}
-                    detail="batting average"
-                    emphasisClassName="text-emerald-600 dark:text-emerald-300"
-                    variant="light"
-                  />
-                  <LeaderboardStatBlock
-                    label="OPS"
-                    value={seasonStatMap.get("OPS") ?? "--"}
-                    detail="on-base plus slugging"
-                    emphasisClassName="text-slate-900 dark:text-zinc-50"
-                    variant="light"
-                  />
-                  <LeaderboardStatBlock
-                    label="HR"
-                    value={seasonStatMap.get("HR") ?? "--"}
-                    detail="home runs"
-                    emphasisClassName="text-slate-900 dark:text-zinc-50"
-                    variant="light"
-                  />
-                  <LeaderboardStatBlock
-                    label="RBI"
-                    value={seasonStatMap.get("RBI") ?? "--"}
-                    detail="runs batted in"
-                    emphasisClassName="text-slate-900 dark:text-zinc-50"
-                    variant="light"
-                  />
-                  <LeaderboardStatBlock
-                    label="BB%"
-                    value={seasonStatMap.get("BB%") ?? "--"}
-                    detail="walk rate"
-                    emphasisClassName="text-slate-900 dark:text-zinc-50"
-                    variant="light"
-                  />
-                  <LeaderboardStatBlock
-                    label="K%"
-                    value={seasonStatMap.get("K%") ?? "--"}
-                    detail="strikeout rate"
-                    emphasisClassName="text-slate-900 dark:text-zinc-50"
-                    variant="light"
-                  />
-                </div>
-              </section>
-            ) : (
+            {profileMode !== "hitter" && activeOverviewMode !== "hitting" && (
               <section className="space-y-7">
                 <div className="space-y-3">
                   <ProfileHeroTile

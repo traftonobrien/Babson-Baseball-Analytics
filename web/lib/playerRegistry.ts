@@ -1,5 +1,6 @@
 import pitcherPlayers from "@/data/players.json";
 import chartingRoster from "@/data/chartingRoster.json";
+import { getCanonicalPlayerId, getSlugForPlayerId } from "@/lib/canonicalPlayers";
 import { TEAM_NAME } from "@/lib/teamConfig";
 
 type RawPitcherPlayer = {
@@ -120,5 +121,20 @@ export const playerRegistry: PlayerRegistryEntry[] = (chartingRoster as RawChart
   .sort((left, right) => left.name.localeCompare(right.name));
 
 export function getPlayerBySlug(slug: string): PlayerRegistryEntry | null {
-  return playerRegistry.find((player) => player.slug === slug) ?? null;
+  const exactMatch = playerRegistry.find((player) => player.slug === slug);
+  if (exactMatch) {
+    return exactMatch;
+  }
+
+  const playerId = getCanonicalPlayerId(slug);
+  if (!playerId) {
+    return null;
+  }
+
+  const canonicalSlug = getSlugForPlayerId(playerId);
+  if (!canonicalSlug) {
+    return null;
+  }
+
+  return playerRegistry.find((player) => player.slug === canonicalSlug) ?? null;
 }

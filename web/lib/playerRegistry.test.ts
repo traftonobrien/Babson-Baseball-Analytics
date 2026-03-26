@@ -49,4 +49,14 @@ describe("playerRegistry", () => {
     expect(sean?.isTwoWay).toBe(true);
     expect(sean?.role).toBe("Two-Way");
   });
+
+  it("resolves Bobby Christensen from both current and legacy slugs", () => {
+    const canonical = getPlayerBySlug("christensen_bobby");
+    const legacy = getPlayerBySlug("christensen_robert");
+
+    expect(canonical?.name).toBe("Bobby Christensen");
+    expect(canonical?.slug).toBe("christensen_bobby");
+    expect(legacy?.name).toBe("Bobby Christensen");
+    expect(legacy?.slug).toBe("christensen_bobby");
+  });
 });

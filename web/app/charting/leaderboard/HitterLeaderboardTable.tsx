@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { type AggregatedHitterStats } from "@/lib/charting/analytics";
+import { getCanonicalPlayerId, getSlugForPlayerId } from "@/lib/canonicalPlayers";
 
 export interface HitterLeaderboardRow extends AggregatedHitterStats {
     hitterName: string;
@@ -10,6 +12,10 @@ export interface HitterLeaderboardRow extends AggregatedHitterStats {
 type SortKey =
     | "sessions"
     | "totalPAs"
+    | "rispPAs"
+    | "rispAvg"
+    | "rispOps"
+    | "swingPct"
     | "avg"
     | "obp"
     | "slg"
@@ -31,6 +37,10 @@ type SortKey =
 const SORT_KEYS: { key: SortKey; label: string; lowerBetter?: boolean; format?: (val: number | null) => string; getValue: (row: HitterLeaderboardRow) => number | null }[] = [
     { key: "sessions", label: "Sessions", lowerBetter: false, getValue: (row) => row.sessions, format: (v) => v?.toString() ?? "—" },
     { key: "totalPAs", label: "PAs", lowerBetter: false, getValue: (row) => row.totalPAs, format: (v) => v?.toString() ?? "—" },
+    { key: "rispPAs", label: "RISP PAs", lowerBetter: false, getValue: (row) => row.rispPAs, format: (v) => v?.toString() ?? "—" },
+    { key: "rispAvg", label: "RISP AVG", lowerBetter: false, getValue: (row) => row.rispAvg, format: (v) => v !== null ? v.toFixed(3).replace(/^0\./, ".") : "—" },
+    { key: "rispOps", label: "RISP OPS", lowerBetter: false, getValue: (row) => row.rispOps, format: (v) => v !== null ? v.toFixed(3).replace(/^0\./, ".") : "—" },
+    { key: "swingPct", label: "Swing%", lowerBetter: false, getValue: (row) => row.swingPct, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
     { key: "avg", label: "AVG", lowerBetter: false, getValue: (row) => row.avg, format: (v) => v !== null ? v.toFixed(3).replace(/^0\./, ".") : "—" },
     { key: "obp", label: "OBP", lowerBetter: false, getValue: (row) => row.obp, format: (v) => v !== null ? v.toFixed(3).replace(/^0\./, ".") : "—" },
     { key: "slg", label: "SLG", lowerBetter: false, getValue: (row) => row.slg, format: (v) => v !== null ? v.toFixed(3).replace(/^0\./, ".") : "—" },
@@ -53,6 +63,10 @@ const SORT_KEYS: { key: SortKey; label: string; lowerBetter?: boolean; format?: 
 const BASIC_KEYS: SortKey[] = [
     "sessions",
     "totalPAs",
+    "rispPAs",
+    "rispAvg",
+    "rispOps",
+    "swingPct",
     "chasePct",
     "zoneSwingPct",
     "contactPct",
@@ -61,6 +75,9 @@ const BASIC_KEYS: SortKey[] = [
 const ADVANCED_KEYS: SortKey[] = [
     "sessions",
     "totalPAs",
+    "rispPAs",
+    "rispAvg",
+    "rispOps",
     "fbWhiff",
     "brkWhiff",
     "offWhiff",
@@ -74,6 +91,16 @@ function rankColor(i: number): string {
     if (i === 1) return `text-slate-400 ${glow} dark:text-zinc-400`;
     if (i === 2) return `text-amber-700 ${glow} dark:text-amber-500`;
     return "text-slate-500 dark:text-zinc-400";
+}
+
+function hitterProfileHref(hitterName: string): string | null {
+    const playerId = getCanonicalPlayerId(hitterName);
+    if (!playerId) {
+        return null;
+    }
+
+    const playerSlug = getSlugForPlayerId(playerId);
+    return playerSlug ? `/players/${playerSlug}?tab=charting` : null;
 }
 
 export type StatGroup = "basic" | "advanced";
@@ -170,7 +197,25 @@ export function HitterLeaderboardTable({
                             {index + 1}
                         </td>
                         <td className="px-4 py-3">
-                            <span className="font-medium text-slate-900 dark:text-zinc-100">{hitter.hitterName}</span>
+                            {(() => {
+                                const href = hitterProfileHref(hitter.hitterName);
+                                if (!href) {
+                                    return (
+                                        <span className="font-medium text-slate-900 dark:text-zinc-100">
+                                            {hitter.hitterName}
+                                        </span>
+                                    );
+                                }
+
+                                return (
+                                    <Link
+                                        href={href}
+                                        className="font-medium text-slate-900 transition-smooth hover:text-emerald-700 dark:text-zinc-100 dark:hover:text-emerald-400"
+                                    >
+                                        {hitter.hitterName}
+                                    </Link>
+                                );
+                            })()}
                         </td>
                         {visibleColumns.map(({ key, getValue, format }) => {
                             const val = getValue(hitter);

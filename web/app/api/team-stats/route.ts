@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import players from "@/data/players.json";
 import { fetchBattingLeaderboard, fetchNcaaStatsMeta, fetchPitchingLeaderboard } from "@/lib/collegeStats";
 import {
+  getCanonicalName,
+  getCanonicalPlayerId,
+  getSlugForPlayerId,
+} from "@/lib/canonicalPlayers";
+import {
   computeQualifiedAggregate,
   filterBabsonPitchers,
   type BabsonPitcherRow,
@@ -201,10 +206,17 @@ export async function GET(request: Request) {
       const data = await fetchBattingLeaderboard(year, 3);
       const rows = extractRows<BattingLeaderboardRow>(data);
       const hitters = filterBabsonHitters(rows);
-      const enriched = hitters.map((hitter) => ({
-        ...hitter,
-        slug: idMap.get(hitter.playerId) ?? nameMap.get(normalizeName(hitter.playerName)) ?? undefined,
-      }));
+      const enriched = hitters.map((hitter) => {
+        const canonicalPlayerId = getCanonicalPlayerId(hitter.playerName);
+        return {
+          ...hitter,
+          playerName: getCanonicalName(hitter.playerName),
+          slug:
+            idMap.get(hitter.playerId) ??
+            nameMap.get(normalizeName(hitter.playerName)) ??
+            (canonicalPlayerId ? getSlugForPlayerId(canonicalPlayerId) ?? undefined : undefined),
+        };
+      });
 
       return NextResponse.json({ year, statType, hitters: enriched, meta });
     }
@@ -212,10 +224,17 @@ export async function GET(request: Request) {
     const data = await fetchPitchingLeaderboard(year, 3);
     const rows = extractRows<PitchingLeaderboardRow>(data);
     const pitchers = filterBabsonPitchers(rows);
-    const enriched: (BabsonPitcherRow & { slug?: string })[] = pitchers.map((p) => ({
-      ...p,
-      slug: idMap.get(p.playerId) ?? nameMap.get(normalizeName(p.playerName)) ?? undefined,
-    }));
+    const enriched: (BabsonPitcherRow & { slug?: string })[] = pitchers.map((pitcher) => {
+      const canonicalPlayerId = getCanonicalPlayerId(pitcher.playerName);
+      return {
+        ...pitcher,
+        playerName: getCanonicalName(pitcher.playerName),
+        slug:
+          idMap.get(pitcher.playerId) ??
+          nameMap.get(normalizeName(pitcher.playerName)) ??
+          (canonicalPlayerId ? getSlugForPlayerId(canonicalPlayerId) ?? undefined : undefined),
+      };
+    });
     const qualified = computeQualifiedAggregate(pitchers, minIp);
 
     return NextResponse.json({ year, statType, minIp, pitchers: enriched, qualified, meta });

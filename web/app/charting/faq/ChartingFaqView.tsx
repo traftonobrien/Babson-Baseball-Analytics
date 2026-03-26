@@ -57,6 +57,18 @@ const HITTER_STATS = [
     definition: "Total charted plate appearances for the hitter in the current scope.",
   },
   {
+    stat: "RISP PAs",
+    definition: "Charted plate appearances that began with a runner on second or third, used as the sample count behind the RISP split columns.",
+  },
+  {
+    stat: "RISP AVG / RISP OPS",
+    definition: "Batting average and OPS only for completed plate appearances that started with runners in scoring position.",
+  },
+  {
+    stat: "Swing%",
+    definition: "Swings divided by total charted pitches seen in the current scope.",
+  },
+  {
     stat: "Chase%",
     definition: "Swings at located pitches outside the zone divided by all located pitches outside the zone.",
   },
@@ -229,7 +241,7 @@ export default function ChartingFaqView() {
         tone="emerald"
         icon={BarChart3}
         title="Hitter Leaderboard Metrics"
-        description="The hitter tabs blend outcome stats with swing-decision and contact indicators."
+        description="The hitter tabs focus on charting-specific swing-decision, zone, and contact indicators."
       >
         <div className="space-y-6">
           <DictionaryTableShell>
