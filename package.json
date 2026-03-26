@@ -2,6 +2,9 @@
   "name": "pitch-tracker-root",
   "description": "Root tooling package for workspace-level Tailwind and PostCSS resolution.",
   "private": true,
+  "scripts": {
+    "dev:clean": "rm -rf web/.next && npm --prefix web run dev"
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.1",
     "tailwindcss": "^4.2.1"

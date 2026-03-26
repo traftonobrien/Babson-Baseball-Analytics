@@ -1,0 +1,5 @@
+export const TEAM_STATS_MIN_PITCHER_IP = 5;
+export const TEAM_STATS_MIN_HITTER_PA = 15;
+
+export const TEAM_STATS_PITCHER_QUALIFICATION_OPTIONS = [5, 10, 15, 20, 25, 30] as const;
+export const TEAM_STATS_HITTER_QUALIFICATION_OPTIONS = [15, 20, 30, 40, 50] as const;

@@ -12,6 +12,7 @@ import {
   type BabsonPitcherRow,
   type PitchingLeaderboardRow,
 } from "@/lib/college-stats/babsonPitchers";
+import { TEAM_STATS_MIN_PITCHER_IP } from "@/lib/teamStatsQualifications";
 
 type BattingLeaderboardRow = Record<string, unknown>;
 
@@ -198,7 +199,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const year = searchParams.get("year") ?? "2026";
     const statType = searchParams.get("statType") === "batting" ? "batting" : "pitching";
-    const minIp = Math.max(1, parseInt(searchParams.get("minIp") ?? "1", 10) || 1);
+    const minIp = Math.max(
+      TEAM_STATS_MIN_PITCHER_IP,
+      parseInt(searchParams.get("minIp") ?? String(TEAM_STATS_MIN_PITCHER_IP), 10) ||
+        TEAM_STATS_MIN_PITCHER_IP,
+    );
 
     const { idMap, nameMap } = buildPlayerLookups();
     const meta = await fetchNcaaStatsMeta();

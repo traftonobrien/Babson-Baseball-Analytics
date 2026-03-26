@@ -1,3 +1,5 @@
+import { TEAM_STATS_MIN_PITCHER_IP } from "@/lib/teamStatsQualifications";
+
 /**
  * Filter the NCAA pitching leaderboard to Babson pitchers only.
  */
@@ -101,8 +103,8 @@ export interface QualifiedAggregate {
   kMinusBbPct: number;
 }
 
-/** Default minimum IP to qualify for team aggregate (college standard). */
-export const DEFAULT_MIN_IP_QUALIFIED = 15;
+/** Default minimum IP to qualify on the team stats leaderboard. */
+export const DEFAULT_MIN_IP_QUALIFIED = TEAM_STATS_MIN_PITCHER_IP;
 
 /**
  * Compute SIERA (Skill-Interactive ERA) from available counting stats.

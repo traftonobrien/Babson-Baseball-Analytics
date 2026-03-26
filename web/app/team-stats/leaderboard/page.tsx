@@ -5,6 +5,12 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { BarChart3, BookOpen, CircleHelp, Search, ChevronDown, ChevronUp, Trophy } from "lucide-react";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
 import { playerRegistry } from "@/lib/playerRegistry";
+import {
+  TEAM_STATS_HITTER_QUALIFICATION_OPTIONS,
+  TEAM_STATS_MIN_HITTER_PA,
+  TEAM_STATS_MIN_PITCHER_IP,
+  TEAM_STATS_PITCHER_QUALIFICATION_OPTIONS,
+} from "@/lib/teamStatsQualifications";
 import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
 
 type StatMode = "pitching" | "batting";
@@ -305,8 +311,8 @@ function rankColor(i: number): string {
   return "text-slate-400 dark:text-zinc-500";
 }
 
-const DEFAULT_MIN_IP = 1;
-const DEFAULT_MIN_PA = 1;
+const DEFAULT_MIN_IP = TEAM_STATS_MIN_PITCHER_IP;
+const DEFAULT_MIN_PA = TEAM_STATS_MIN_HITTER_PA;
 
 export default function TeamStatsPage() {
   const [statMode, setStatMode] = useState<StatMode>("pitching");
@@ -333,7 +339,7 @@ export default function TeamStatsPage() {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch(`/api/team-stats?statType=${statMode}&minIp=1`)
+    fetch(`/api/team-stats?statType=${statMode}&minIp=${TEAM_STATS_MIN_PITCHER_IP}`)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
@@ -519,7 +525,7 @@ export default function TeamStatsPage() {
                     onChange={(e) => setMinIp(Number(e.target.value))}
                     className="w-full rounded-xl border border-slate-200 dark:border-zinc-700 bg-surface px-3 py-2.5 text-sm font-semibold text-slate-900 outline-none dark:border-zinc-700 dark:text-zinc-50"
                   >
-                    {[1, 5, 10, 15, 20, 25, 30].map((n) => (
+                    {TEAM_STATS_PITCHER_QUALIFICATION_OPTIONS.map((n) => (
                       <option key={n} value={n}>{n} IP</option>
                     ))}
                   </select>
@@ -529,7 +535,7 @@ export default function TeamStatsPage() {
                     onChange={(e) => setMinPa(Number(e.target.value))}
                     className="w-full rounded-xl border border-slate-200 dark:border-zinc-700 bg-surface px-3 py-2.5 text-sm font-semibold text-slate-900 outline-none dark:border-zinc-700 dark:text-zinc-50"
                   >
-                    {[1, 10, 20, 30, 40, 50].map((n) => (
+                    {TEAM_STATS_HITTER_QUALIFICATION_OPTIONS.map((n) => (
                       <option key={n} value={n}>{n} PA</option>
                     ))}
                   </select>
