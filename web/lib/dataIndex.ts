@@ -215,6 +215,11 @@ export const players: Player[] = [
         label: "Feb 28, 2026 – Camardi (20 pitches)",
         ...buildDataPaths("MCamardi1", "2026_02_28"),
       },
+      {
+        id: "MCamardi1/2026_04_24",
+        label: "Apr 24, 2026 – Camardi (17 pitches)",
+        ...buildDataPaths("MCamardi1", "2026_04_24"),
+      },
     ],
   },
 ];
