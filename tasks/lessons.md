@@ -15,3 +15,6 @@
 
 ## 2026-03-23
 - In Next.js App Router, do not pass Lucide icon components directly from a server component into a client component. Use a serializable key/enum and resolve the icon inside the client component, or keep the whole boundary on one side.
+
+## 2026-03-25
+- The Babson home-field AWRE download calibration default is `pixels_per_inch: 3.8831` and `plate_center_x: 624.3`; do not apply that default to Trinity outings or other field/camera setups. Use per-outing calibration for those instead.
