@@ -18,17 +18,9 @@ import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
 export const revalidate = 0;
 
 type HubStatusFilter = "all" | "active" | "final" | "draft";
-type HubTypeFilter = "all" | "live_ab" | "game";
 
 function normalizeStatusFilter(value: string | string[] | undefined): HubStatusFilter {
   if (value === "active" || value === "final" || value === "draft") {
-    return value;
-  }
-  return "all";
-}
-
-function normalizeTypeFilter(value: string | string[] | undefined): HubTypeFilter {
-  if (value === "live_ab" || value === "game" || value === "all") {
     return value;
   }
   return "all";
@@ -53,7 +45,7 @@ function matchesQuery(
     game.gameDate,
     format(parseISO(game.gameDate), "MMMM d yyyy"),
     game.status,
-    game.sessionType === "game" ? "game" : "practice",
+    "game",
   ]
     .join(" ")
     .toLowerCase();
@@ -77,22 +69,15 @@ function statusPillClass(status: string): string {
   return "border-[#FDE68A] bg-[#FFFBEB] text-[#D97706] dark:border-amber-500/35 dark:bg-amber-950/40 dark:text-amber-300";
 }
 
-function typePillClass(sessionType: string | null): string {
-  if (sessionType === "game") {
-    return "border-[#DBEAFE] bg-[#EFF6FF] text-[#0EA5E9] dark:border-sky-500/35 dark:bg-sky-950/40 dark:text-sky-300";
-  }
-  return "border-[#F3E8FF] bg-[#FAF5FF] text-[#8B5CF6] dark:border-violet-500/35 dark:bg-violet-950/40 dark:text-violet-300";
-}
-
 export default async function ChartingHubPage(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const searchParams = await props.searchParams;
   const searchQuery = typeof searchParams.q === "string" ? searchParams.q : "";
   const statusFilter = normalizeStatusFilter(searchParams.status);
-  const typeFilter = normalizeTypeFilter(searchParams.type);
 
-  const games = await db.select().from(chartingGames).orderBy(desc(chartingGames.gameDate));
+  const allGames = await db.select().from(chartingGames).orderBy(desc(chartingGames.gameDate));
+  const games = allGames.filter((game) => game.sessionType === "game");
 
   const paCounts = await db
     .select({ gameId: chartingPlateAppearances.gameId, paCount: count() })
@@ -104,16 +89,13 @@ export default async function ChartingHubPage(props: {
   const activeGames = games.filter((game) => game.status === "active").length;
   const finalGames = games.filter((game) => game.status === "final").length;
   const draftGames = games.filter((game) => game.status === "draft").length;
-  const liveAbGames = games.filter((game) => game.sessionType === "live_ab").length;
-  const gameGames = games.filter((game) => game.sessionType === "game").length;
 
   const filteredGames = games.filter((game) => {
     const matchesStatus = statusFilter === "all" ? true : game.status === statusFilter;
-    const matchesType = typeFilter === "all" ? true : game.sessionType === typeFilter;
-    return matchesStatus && matchesType && matchesQuery(game, searchQuery);
+    return matchesStatus && matchesQuery(game, searchQuery);
   });
 
-  const hasFilters = statusFilter !== "all" || typeFilter !== "all" || searchQuery.trim().length > 0;
+  const hasFilters = statusFilter !== "all" || searchQuery.trim().length > 0;
 
   const quickActionClass =
     "flex w-full min-h-[44px] items-center justify-center gap-2 rounded-2xl border border-border bg-background px-4 py-2.5 text-[13px] font-semibold text-slate-900 transition-colors hover:border-[var(--brand-primary-border)] hover:bg-surface hover:text-[var(--brand-primary-subtle-text)] dark:border-zinc-700 dark:bg-zinc-900/85 dark:text-zinc-100 dark:hover:border-[rgba(var(--brand-primary-rgb),0.35)] dark:hover:bg-zinc-900 dark:hover:text-[var(--brand-primary-spotlight)]";
@@ -145,17 +127,17 @@ export default async function ChartingHubPage(props: {
                 <HubActionCard
                   href="/charting/leaderboard"
                   iconName="trophy"
-                  sectionTitle="Leaderboards"
-                  buttonLabel="Open Rankings"
+                  sectionTitle="Process Board"
+                  buttonLabel="Open Leaderboard"
                 />
               </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <HubStatCard
-                label="Total sessions"
+                label="Total games"
                 value={String(totalGames)}
-                detail="All charting records in the hub."
+                detail="All charted games in the hub."
                 tone="indigo"
               />
               <HubStatCard
@@ -171,9 +153,9 @@ export default async function ChartingHubPage(props: {
                 tone="sky"
               />
               <HubStatCard
-                label="Draft / Live AB"
-                value={`${draftGames} / ${liveAbGames}`}
-                detail={`${gameGames} game sessions tracked.`}
+                label="Draft"
+                value={String(draftGames)}
+                detail="Game sessions still in progress."
                 tone="violet"
               />
             </div>
@@ -181,11 +163,11 @@ export default async function ChartingHubPage(props: {
             <div className="grid grid-cols-1 gap-3 border-t border-[#EEF2F7] pt-5 dark:border-zinc-800 sm:grid-cols-2">
               <Link href="/charting/insights" className={quickActionClass}>
                 <Eye className={quickActionIconClass} aria-hidden />
-                Player Insights
+                Player Visuals
               </Link>
               <Link href="/charting/new" className={quickActionClass}>
                 <Plus className={quickActionIconClass} aria-hidden />
-                New Session
+                New Game
               </Link>
             </div>
           </div>
@@ -196,9 +178,9 @@ export default async function ChartingHubPage(props: {
             <div className="border-b border-[#EEF2F7] px-5 py-4 dark:border-zinc-800 sm:px-6">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-50">Session Queue</h2>
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-50">Game Queue</h2>
                   <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
-                    Search, filter, and jump into any charting session.
+                    Search, filter, and jump into any charted game.
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -209,7 +191,7 @@ export default async function ChartingHubPage(props: {
               </div>
             </div>
 
-            <form action="/charting" className="grid gap-4 border-b border-[#EEF2F7] px-5 py-5 dark:border-zinc-800 sm:px-6 lg:grid-cols-[minmax(11rem,13rem)_minmax(10rem,12rem)_minmax(0,1fr)_auto] lg:items-end">
+            <form action="/charting" className="grid gap-4 border-b border-[#EEF2F7] px-5 py-5 dark:border-zinc-800 sm:px-6 lg:grid-cols-[minmax(11rem,13rem)_minmax(0,1fr)_auto] lg:items-end">
               <Field label="Status">
                 <select
                   name="status"
@@ -220,18 +202,6 @@ export default async function ChartingHubPage(props: {
                   <option value="active">Active</option>
                   <option value="final">Final</option>
                   <option value="draft">Draft</option>
-                </select>
-              </Field>
-
-              <Field label="Type">
-                <select
-                  name="type"
-                  defaultValue={typeFilter}
-                  className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition-colors focus:border-[#C7D2FE] focus:bg-surface dark:border-zinc-700 dark:bg-zinc-900/85 dark:text-zinc-100 dark:focus:border-indigo-400/35 dark:focus:bg-zinc-900"
-                >
-                  <option value="all">All types</option>
-                  <option value="game">Games</option>
-                  <option value="live_ab">Live AB</option>
                 </select>
               </Field>
 
@@ -316,9 +286,6 @@ export default async function ChartingHubPage(props: {
                             <div className="flex flex-wrap items-center gap-2">
                               <Pill tone="status" className={statusPillClass(game.status)}>
                                 {formatUpdatedBadge(game.status)}
-                              </Pill>
-                              <Pill tone="status" className={typePillClass(game.sessionType)}>
-                                {game.sessionType === "game" ? "Game" : "Live AB"}
                               </Pill>
                               {pa > 0 ? <Pill tone="neutral">{pa} PA{pa !== 1 ? "s" : ""}</Pill> : null}
                             </div>

@@ -55,6 +55,7 @@ export interface GameStateOverride {
   inning: number;
   isTopInning: boolean;
   outs: number;
+  batterSlot: number;
   anchorPAOrder: number;
 }
 
@@ -423,7 +424,7 @@ export function deriveChartingLiveState(
     outs: gameStateOverride ? clamp(gameStateOverride.outs, 0, 2) : 0,
     balls: 0,
     strikes: 0,
-    batterSlot: 1,
+    batterSlot: gameStateOverride ? clamp(gameStateOverride.batterSlot, 1, 9) : 1,
     openPAId: null,
     activeSegmentId: orderedSegments.at(-1)?.id ?? null,
     closureState: "none",
@@ -499,8 +500,15 @@ export function deriveChartingLiveState(
 
 export function createGameStateOverride(
   snapshot: ChartingGameSnapshot,
-  nextState: Pick<GameStateOverride, "inning" | "isTopInning" | "outs">,
+  nextState: Pick<GameStateOverride, "inning" | "isTopInning" | "outs"> & {
+    batterSlot?: number;
+  },
 ): GameStateOverride {
+  const liveState = deriveChartingLiveState(
+    snapshot.segments,
+    snapshot.plateAppearances,
+    snapshot.pitches,
+  );
   const anchorPAOrder = snapshot.plateAppearances.reduce(
     (max, pa) => Math.max(max, pa.paOrder),
     -1,
@@ -510,6 +518,7 @@ export function createGameStateOverride(
     inning: Math.max(1, nextState.inning),
     isTopInning: nextState.isTopInning,
     outs: clamp(nextState.outs, 0, 2),
+    batterSlot: clamp(nextState.batterSlot ?? liveState.batterSlot, 1, 9),
     anchorPAOrder,
   };
 }

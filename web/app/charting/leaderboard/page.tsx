@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { format, parseISO, subDays } from "date-fns";
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { chartingGames, chartingPitcherSegments, chartingPlateAppearances } from "@/db/schema";
 import {
@@ -25,7 +25,7 @@ function buildScopeLabel(
     if (session !== "all") {
         const activeGame = games.find((game) => game.id === session);
         if (!activeGame) {
-            return "Single Session";
+            return "Single Game";
         }
         return `${activeGame.opponent || "Unnamed Game"} • ${format(parseISO(activeGame.gameDate), "M/d/yy")}`;
     }
@@ -36,7 +36,7 @@ function buildScopeLabel(
     if (range === "30d") {
         return "Last 30 Days";
     }
-    return "All Sessions";
+    return "All Games";
 }
 
 function getScopedGameCount(
@@ -70,35 +70,26 @@ export default async function ChartingLeaderboardPage(props: {
             typeof statGroupParam === "string" && statGroupParam === "advanced"
                 ? "advanced"
                 : "basic";
-        const sessionTypeParam = typeof searchParams.sessionType === "string" ? searchParams.sessionType : "game";
-        const sessionTypeFilter: "live_ab" | "game" | "all" =
-            sessionTypeParam === "live_ab" ? "live_ab" : sessionTypeParam === "all" ? "all" : "game";
 
         const validTabs = ["pitchers", "hitters"];
         if (!validTabs.includes(tab)) {
             redirect("/charting/leaderboard?tab=pitchers");
         }
 
-        // Fetch games for the session dropdown
-        const allGames = await db
+        const games = await db
             .select({
                 id: chartingGames.id,
                 gameDate: chartingGames.gameDate,
                 opponent: chartingGames.opponent,
-                sessionType: chartingGames.sessionType,
             })
             .from(chartingGames)
+            .where(eq(chartingGames.sessionType, "game"))
             .orderBy(desc(chartingGames.gameDate));
-
-        const games = sessionTypeFilter === "all"
-            ? allGames
-            : allGames.filter((g) => g.sessionType === sessionTypeFilter);
 
         const scopeLabel = buildScopeLabel(range, session, games);
         const scopeGameCount = getScopedGameCount(range, session, games);
 
-        // Determine aggregate options
-        let options: AggregateOptions = {};
+        const options: AggregateOptions = { sessionType: "game" };
         if (session !== "all" && session !== "") {
             options.gameIds = [session];
         } else if (range === "7d") {
@@ -106,11 +97,7 @@ export default async function ChartingLeaderboardPage(props: {
         } else if (range === "30d") {
             options.from = subDays(new Date(), 30);
         }
-        if (sessionTypeFilter !== "all") {
-            options.sessionType = sessionTypeFilter;
-        }
 
-        // Pre-fetch unique players
         let pitcherRows: PitcherLeaderboardRow[] = [];
         let hitterRows: HitterLeaderboardRow[] = [];
 
@@ -120,7 +107,8 @@ export default async function ChartingLeaderboardPage(props: {
                     playerId: chartingPitcherSegments.playerId,
                     displayName: chartingPitcherSegments.displayName,
                 })
-                .from(chartingPitcherSegments);
+                .from(chartingPitcherSegments)
+                .where(eq(chartingPitcherSegments.teamSide, "our"));
 
             const pitcherMap = new Map<string, string>();
             for (const s of segments) {
@@ -128,33 +116,46 @@ export default async function ChartingLeaderboardPage(props: {
                     pitcherMap.set(s.playerId, s.displayName);
                 }
             }
-            const pitcherIds = Array.from(pitcherMap.keys());
-
-            const pitcherPromises = pitcherIds.map(async (id) => {
+            const pitcherPromises: Array<Promise<PitcherLeaderboardRow | null>> = Array.from(
+                pitcherMap.keys(),
+            ).map(async (id) => {
                 const stats = await aggregatePitcherStats(id, options);
-                if (!stats) return null;
+                if (!stats) {
+                    return null;
+                }
                 return {
                     ...stats,
                     playerId: id,
                     displayName: pitcherMap.get(id) ?? "Unknown",
-                };
+                } satisfies PitcherLeaderboardRow;
             });
-            pitcherRows = (await Promise.all(pitcherPromises)).filter(Boolean) as PitcherLeaderboardRow[];
+            const resolvedPitchers = await Promise.all(pitcherPromises);
+            pitcherRows = resolvedPitchers.filter(
+                (row): row is PitcherLeaderboardRow => row !== null,
+            );
         } else {
             const pas = await db
                 .select({ hitterName: chartingPlateAppearances.hitterName })
-                .from(chartingPlateAppearances);
-            const uniqueHitters = Array.from(new Set(pas.map((p) => p.hitterName).filter((n) => n.trim() !== "")));
+                .from(chartingPlateAppearances)
+                .where(eq(chartingPlateAppearances.teamSide, "our"));
+            const uniqueHitters = Array.from(
+                new Set(pas.map((p) => p.hitterName.trim()).filter((n) => n.length > 0)),
+            );
 
-            const hitterPromises = uniqueHitters.map(async (name) => {
+            const hitterPromises: Array<Promise<HitterLeaderboardRow | null>> = uniqueHitters.map(async (name) => {
                 const stats = await aggregateHitterStats(name, options);
-                if (!stats) return null;
+                if (!stats) {
+                    return null;
+                }
                 return {
                     ...stats,
                     hitterName: name,
-                };
+                } satisfies HitterLeaderboardRow;
             });
-            hitterRows = (await Promise.all(hitterPromises)).filter(Boolean) as HitterLeaderboardRow[];
+            const resolvedHitters = await Promise.all(hitterPromises);
+            hitterRows = resolvedHitters.filter(
+                (row): row is HitterLeaderboardRow => row !== null,
+            );
         }
 
         return (
@@ -170,7 +171,6 @@ export default async function ChartingLeaderboardPage(props: {
                         games={games}
                         scopeLabel={scopeLabel}
                         scopeGameCount={scopeGameCount}
-                        sessionType={sessionTypeFilter}
                     />
                 ) : (
                     <HitterStatGroupWrapper
@@ -183,7 +183,6 @@ export default async function ChartingLeaderboardPage(props: {
                         games={games}
                         scopeLabel={scopeLabel}
                         scopeGameCount={scopeGameCount}
-                        sessionType={sessionTypeFilter}
                     />
                 )}
             </LeaderboardPageFrame>

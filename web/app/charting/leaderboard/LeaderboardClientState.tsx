@@ -35,7 +35,6 @@ export function LeaderboardClientState({
     onStatGroupChange,
     scopeLabel,
     scopeGameCount,
-    sessionType = "game",
 }: {
     tab: string;
     range: string;
@@ -46,7 +45,6 @@ export function LeaderboardClientState({
     onStatGroupChange: (value: StatGroup) => void;
     scopeLabel: string;
     scopeGameCount: number;
-    sessionType?: "live_ab" | "game" | "all";
 }) {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -111,8 +109,7 @@ export function LeaderboardClientState({
         searchInput.trim().length > 0 ||
         range !== "all" ||
         session !== "all" ||
-        statGroup !== "basic" ||
-        sessionType !== "game";
+        statGroup !== "basic";
 
     return (
         <div className="font-display flex flex-col gap-6">
@@ -136,7 +133,7 @@ export function LeaderboardClientState({
                             Charting Leaderboard
                         </h1>
                         <p className="mt-2 text-sm text-slate-600 dark:text-zinc-400">
-                            {scopeLabel} · {scopeGameCount} session{scopeGameCount === 1 ? "" : "s"} in scope
+                            Game-only charting process board · {scopeLabel} · {scopeGameCount} game{scopeGameCount === 1 ? "" : "s"} in scope
                         </p>
                     </div>
 
@@ -159,38 +156,7 @@ export function LeaderboardClientState({
 
             <LeaderboardToolbar variant="light">
                 <div className="flex min-w-0 flex-col gap-5">
-                    <div className="grid grid-cols-1 gap-4 min-[700px]:grid-cols-2 xl:grid-cols-3">
-                        <div className="min-w-0 space-y-2">
-                            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-zinc-400">
-                                Session Type
-                            </div>
-                            <div className="rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1">
-                                <div className="grid grid-cols-3 gap-1">
-                                    <button
-                                        type="button"
-                                        onClick={() => updateQuery({ sessionType: "game", session: "all" })}
-                                        className={lightPill(sessionType === "game")}
-                                    >
-                                        Games
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => updateQuery({ sessionType: "live_ab", session: "all" })}
-                                        className={lightPill(sessionType === "live_ab")}
-                                    >
-                                        Live AB
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => updateQuery({ sessionType: "all", session: "all" })}
-                                        className={lightPill(sessionType === "all")}
-                                    >
-                                        All
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
+                    <div className="grid grid-cols-1 gap-4 min-[700px]:grid-cols-2">
                         <div className="min-w-0 space-y-2">
                             <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-zinc-400">
                                 Leaderboard View
@@ -229,7 +195,7 @@ export function LeaderboardClientState({
                                         }}
                                         className={lightPill(statGroup === "basic")}
                                     >
-                                        Basic
+                                        {tab === "pitchers" ? "Attack" : "Decisions"}
                                     </button>
                                     <button
                                         type="button"
@@ -239,7 +205,7 @@ export function LeaderboardClientState({
                                         }}
                                         className={lightPill(statGroup === "advanced")}
                                     >
-                                        Advanced
+                                        {tab === "pitchers" ? "Miss / Chase" : "Pitch-Type Miss"}
                                     </button>
                                 </div>
                             </div>
@@ -267,7 +233,7 @@ export function LeaderboardClientState({
 
                         <div className="min-w-0 space-y-2">
                             <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-zinc-400">
-                                Session
+                                Game
                             </div>
                             <div className="rounded-full border border-slate-100 dark:border-zinc-800 bg-background p-1">
                                 <select
@@ -275,7 +241,7 @@ export function LeaderboardClientState({
                                     onChange={(event) => updateQuery({ session: event.target.value })}
                                     className="h-11 w-full max-w-full rounded-full border border-slate-200 dark:border-zinc-700 bg-surface px-4 text-sm font-semibold text-slate-900 dark:text-zinc-50 outline-none"
                                 >
-                                    <option value="all">All Sessions</option>
+                                    <option value="all">All Games</option>
                                     {games.map((game) => (
                                         <option key={game.id} value={game.id}>
                                             {game.opponent || "Unnamed Game"} — {format(parseISO(game.gameDate), "M/d/yy")}
@@ -315,7 +281,6 @@ export function LeaderboardClientState({
                                     params.delete("session");
                                     params.delete("q");
                                     params.delete("statGroup");
-                                    params.set("sessionType", "game");
                                     pushParams(params);
                                 }}
                                 className="h-11 shrink-0 rounded-full border border-slate-200 bg-surface px-5 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600 shadow-sm transition-smooth hover:border-slate-300 hover:text-slate-900 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:text-zinc-50"

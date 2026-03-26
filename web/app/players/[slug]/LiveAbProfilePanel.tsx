@@ -299,18 +299,18 @@ function SessionList({
             {title}
           </h3>
           <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
-            Recent charted Charting sessions for this player.
+            Recent charted games for this player.
           </p>
         </div>
         <LeaderboardPill tone="emerald" variant="light">
-          {sessions.length} Session{sessions.length === 1 ? "" : "s"}
+          {sessions.length} Game{sessions.length === 1 ? "" : "s"}
         </LeaderboardPill>
       </div>
 
       <LeaderboardPanel className="overflow-hidden p-2 sm:p-3" variant="light">
         {sessions.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500 dark:border-zinc-700 dark:bg-zinc-900/75 dark:text-zinc-400">
-            No Charting sessions yet.
+            No charted games yet.
           </div>
         ) : (
           <ul className="space-y-2">
@@ -488,10 +488,8 @@ export default function LiveAbProfilePanel({
 }) {
   const pitcher = profile.pitcher;
   const hitter = profile.hitter;
-
-  // Session type toggle: "game" shows game sessions; "live" shows live_ab sessions
-  const [sessionFilter, setSessionFilter] = useState<"game" | "live">("game");
-  // Result filter for zone maps
+  const insightsView = profile.defaultRole === "pitcher" ? "pitchers" : "hitters";
+  const insightsHref = `/charting/insights?view=${insightsView}&player=${profile.playerSlug}`;
   const [resultFilter, setResultFilter] = useState<ResultFilter>("all");
 
   if (!pitcher && !hitter) {
@@ -502,12 +500,7 @@ export default function LiveAbProfilePanel({
     );
   }
 
-  // Filter pitch records by session type
-  const filteredRecords = pitcher
-    ? pitcher.pitchRecords.filter(r =>
-        sessionFilter === "game" ? r.sessionType === "game" : r.sessionType === "live_ab"
-      )
-    : [];
+  const filteredRecords = pitcher ? pitcher.pitchRecords : [];
 
   const pitchTypeStats =
     filteredRecords.length > 0
@@ -517,7 +510,7 @@ export default function LiveAbProfilePanel({
   return (
     <div className="space-y-8">
       <section className="space-y-5">
-        <Link href="/charting/leaderboard">
+        <Link href={insightsHref}>
           <div className="group rounded-[1.7rem] border border-emerald-200 bg-surface/95 p-5 shadow-[0_20px_44px_rgba(15,23,42,0.06)] transition-smooth hover:-translate-y-0.5 hover:border-emerald-300 dark:border-emerald-500/30 dark:bg-zinc-950/78 dark:shadow-[0_20px_44px_rgba(0,0,0,0.38)] dark:hover:border-emerald-400/45">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -525,9 +518,9 @@ export default function LiveAbProfilePanel({
                   <ClipboardList className="h-4 w-4" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-slate-900 dark:text-zinc-50">Charting Leaderboard</div>
+                  <div className="text-sm font-semibold text-slate-900 dark:text-zinc-50">Charting Visuals</div>
                   <p className="mt-1 text-[11px] leading-5 text-slate-500 dark:text-zinc-400">
-                    Open the full charting leaderboard and cross-session rankings.
+                    Open the game-only charting visuals for this player.
                   </p>
                 </div>
               </div>
@@ -539,51 +532,24 @@ export default function LiveAbProfilePanel({
 
       {pitcher ? (
         <section className="space-y-6">
-          {/* Section header with session type toggle */}
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-zinc-400">
                 Pitching Charting
               </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
-                Charted workload and pitch-quality context from Charting sessions.
+                Charted workload and pitch-quality context from charted games.
               </p>
             </div>
             <div className="flex items-center gap-2">
-              {/* Session type toggle */}
-              <div className="flex gap-1">
-                <button
-                  type="button"
-                  onClick={() => setSessionFilter("game")}
-                  className={
-                    sessionFilter === "game"
-                      ? "rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:border-emerald-500/35 dark:bg-emerald-950/45 dark:text-emerald-200"
-                      : "rounded-xl border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-50"
-                  }
-                >
-                  Game
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSessionFilter("live")}
-                  className={
-                    sessionFilter === "live"
-                      ? "rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:border-emerald-500/35 dark:bg-emerald-950/45 dark:text-emerald-200"
-                      : "rounded-xl border border-transparent px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-50"
-                  }
-                >
-                  Live
-                </button>
-              </div>
               <LeaderboardPill tone="emerald" variant="light">
-                {pitcher.stats?.sessions ?? pitcher.sessions.length} Session
+                {pitcher.stats?.sessions ?? pitcher.sessions.length} Game
                 {(pitcher.stats?.sessions ?? pitcher.sessions.length) === 1 ? "" : "s"}
               </LeaderboardPill>
             </div>
           </div>
 
-          {/* 8 stat blocks — different data depending on session tab */}
-          {sessionFilter === "game" && seasonStats && seasonStats.length > 0 ? (
+          {seasonStats && seasonStats.length > 0 ? (
             <>
               <div className="grid gap-3 sm:grid-cols-4">
                 {seasonStats.slice(0, 4).map((stat) => (
@@ -610,23 +576,13 @@ export default function LiveAbProfilePanel({
                 ))}
               </div>
             </>
-          ) : sessionFilter === "game" ? (
-            <div className="grid gap-3 sm:grid-cols-4">
-              <LeaderboardStatBlock
-                label="Sessions"
-                value={formatNumber(pitcher.stats?.sessions ?? pitcher.sessions.length)}
-                detail="charted game sessions"
-                emphasisClassName="text-slate-900 dark:text-zinc-50"
-                variant="light"
-              />
-            </div>
           ) : (
             <>
               <div className="grid gap-3 sm:grid-cols-4">
                 <LeaderboardStatBlock
-                  label="Sessions"
+                  label="Games"
                   value={formatNumber(pitcher.stats?.sessions ?? pitcher.sessions.length)}
-                  detail="charted sessions"
+                  detail="charted game logs"
                   emphasisClassName="text-slate-900 dark:text-zinc-50"
                   variant="light"
                 />
@@ -722,7 +678,7 @@ export default function LiveAbProfilePanel({
           ) : null}
 
           {/* Sessions list */}
-          <SessionList title="Pitching Sessions" sessions={pitcher.sessions} />
+          <SessionList title="Pitching Games" sessions={pitcher.sessions} />
         </section>
       ) : null}
 
@@ -739,7 +695,7 @@ export default function LiveAbProfilePanel({
             </div>
             <div className="flex flex-wrap gap-2">
               <LeaderboardPill tone="emerald" variant="light">
-                {hitter.stats?.sessions ?? hitter.sessions.length} Session
+                {hitter.stats?.sessions ?? hitter.sessions.length} Game
                 {(hitter.stats?.sessions ?? hitter.sessions.length) === 1 ? "" : "s"}
               </LeaderboardPill>
               {hitter.matchedHitterNames.length > 1 ? (
@@ -829,7 +785,7 @@ export default function LiveAbProfilePanel({
             );
           })()}
 
-          <SessionList title="Hitting Sessions" sessions={hitter.sessions} />
+          <SessionList title="Hitting Games" sessions={hitter.sessions} />
         </section>
       ) : null}
 

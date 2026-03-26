@@ -45,6 +45,8 @@ export interface ChartingProfileGame {
   sessionType: "live_ab" | "game";
 }
 
+export type ChartingProfileSessionFilter = ChartingProfileGame["sessionType"] | "all";
+
 export interface LiveAbPitcherSession {
   gameId: string;
   gameDate: string;
@@ -197,6 +199,17 @@ function matchesHitterName(
 
 function sortGamesDescending<T extends { gameDate: string }>(rows: T[]): T[] {
   return [...rows].sort((a, b) => b.gameDate.localeCompare(a.gameDate));
+}
+
+function filterGamesBySessionType(
+  games: ChartingProfileGame[],
+  sessionType: ChartingProfileSessionFilter = "all",
+): ChartingProfileGame[] {
+  if (sessionType === "all") {
+    return games;
+  }
+
+  return games.filter((game) => game.sessionType === sessionType);
 }
 
 function mapPitchRows(rows: typeof chartingPitches.$inferSelect[]): ChartingPitch[] {
@@ -435,7 +448,10 @@ async function getDb() {
 
 export async function loadChartingPlayerProfile(
   playerSlug: string,
-  options?: { batterHand?: BatterHand }
+  options?: {
+    batterHand?: BatterHand;
+    sessionType?: ChartingProfileSessionFilter;
+  }
 ): Promise<ChartingPlayerProfile> {
   const playerId = getCanonicalPlayerId(playerSlug);
   const displayName = getCanonicalName(playerSlug);
@@ -496,10 +512,33 @@ export async function loadChartingPlayerProfile(
     opponent: g.opponent,
     sessionType: g.sessionType === "game" ? "game" : "live_ab",
   }));
+  const filteredGames = filterGamesBySessionType(
+    games,
+    options?.sessionType ?? "all",
+  );
+  if (filteredGames.length === 0) {
+    return buildChartingPlayerProfile({
+      playerSlug,
+      batterHand: options?.batterHand ?? null,
+      games: [],
+      segments: [],
+      plateAppearances: [],
+      pitches: [],
+    });
+  }
+  const allowedGameIds = new Set(filteredGames.map((game) => game.id));
+  const filteredPitcherSegments = pitcherSegments.filter((segment) =>
+    allowedGameIds.has(segment.gameId),
+  );
 
-  const relevantSegmentIds = new Set(pitcherSegments.map((segment) => segment.id));
+  const relevantSegmentIds = new Set(
+    filteredPitcherSegments.map((segment) => segment.id),
+  );
   const relevantPas = allPas.filter(
-    (pa) => relevantSegmentIds.has(pa.segmentId) || matchesHitterName(pa.hitterName, playerId, displayName, playerSlug)
+    (pa) =>
+      allowedGameIds.has(pa.gameId) &&
+      (relevantSegmentIds.has(pa.segmentId) ||
+        matchesHitterName(pa.hitterName, playerId, displayName, playerSlug))
   );
   const relevantSegments: ChartingPitcherSegment[] =
     relevantPas.length > 0
@@ -528,7 +567,7 @@ export async function loadChartingPlayerProfile(
   return buildChartingPlayerProfile({
     playerSlug,
     batterHand: options?.batterHand ?? null,
-    games,
+    games: filteredGames,
     segments: relevantSegments,
     plateAppearances: relevantPas,
     pitches,
@@ -536,7 +575,8 @@ export async function loadChartingPlayerProfile(
 }
 
 export async function loadChartingHitterInsightsDirectory(
-  players: ChartingHitterInsightsDirectorySource[]
+  players: ChartingHitterInsightsDirectorySource[],
+  options?: { sessionType?: ChartingProfileSessionFilter },
 ): Promise<ChartingHitterInsightsDirectoryEntry[]> {
   const db = await getDb();
   const rawGamesForDir = await db
@@ -554,6 +594,11 @@ export async function loadChartingHitterInsightsDirectory(
     opponent: g.opponent,
     sessionType: g.sessionType === "game" ? "game" : "live_ab",
   }));
+  const filteredGames = filterGamesBySessionType(
+    games,
+    options?.sessionType ?? "all",
+  );
+  const allowedGameIds = new Set(filteredGames.map((game) => game.id));
 
   const plateAppearances = (
     await db
@@ -563,7 +608,9 @@ export async function loadChartingHitterInsightsDirectory(
         desc(legacyChartingPlateAppearances.gameId),
         desc(legacyChartingPlateAppearances.paOrder)
       )
-  ).map(mapLegacyPlateAppearanceRow);
+  )
+    .map(mapLegacyPlateAppearanceRow)
+    .filter((plateAppearance) => allowedGameIds.has(plateAppearance.gameId));
 
   if (plateAppearances.length === 0) {
     return [];
@@ -572,7 +619,12 @@ export async function loadChartingHitterInsightsDirectory(
   const segments: ChartingPitcherSegment[] = (await db
     .select()
     .from(chartingPitcherSegments)
-    .orderBy(desc(chartingPitcherSegments.gameId), desc(chartingPitcherSegments.segmentOrder))).map(mapSegmentRow);
+    .orderBy(
+      desc(chartingPitcherSegments.gameId),
+      desc(chartingPitcherSegments.segmentOrder),
+    ))
+    .map(mapSegmentRow)
+    .filter((segment) => allowedGameIds.has(segment.gameId));
 
   const paIds = [...new Set(plateAppearances.map((plateAppearance) => plateAppearance.id))];
   const pitches =
@@ -588,7 +640,7 @@ export async function loadChartingHitterInsightsDirectory(
 
   return buildChartingHitterInsightsDirectory({
     players,
-    games,
+    games: filteredGames,
     segments,
     plateAppearances,
     pitches,

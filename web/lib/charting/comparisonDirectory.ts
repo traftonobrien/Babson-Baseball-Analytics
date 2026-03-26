@@ -61,7 +61,9 @@ export async function loadChartingHitterComparisonDirectory(): Promise<
     }));
 
   return buildChartingPlayerComparisonDirectory(
-    await loadChartingHitterInsightsDirectory(hitterSources)
+    await loadChartingHitterInsightsDirectory(hitterSources, {
+      sessionType: "game",
+    })
   );
 }
 
@@ -74,16 +76,21 @@ export async function loadChartingPitcherComparisonDirectory(): Promise<
       id: chartingGames.id,
       gameDate: chartingGames.gameDate,
       opponent: chartingGames.opponent,
+      sessionType: chartingGames.sessionType,
     })
     .from(chartingGames)
     .orderBy(desc(chartingGames.gameDate));
+  const gameSessions = games
+    .filter((game) => game.sessionType === "game")
+    .map(({ sessionType: _sessionType, ...game }) => game);
+  const allowedGameIds = new Set(gameSessions.map((game) => game.id));
 
   const segments = mapSegmentRows(
     await db
       .select()
       .from(chartingPitcherSegments)
       .orderBy(desc(chartingPitcherSegments.gameId), desc(chartingPitcherSegments.segmentOrder))
-  );
+  ).filter((segment) => allowedGameIds.has(segment.gameId));
 
   if (segments.length === 0) {
     return [];
@@ -131,7 +138,7 @@ export async function loadChartingPitcherComparisonDirectory(): Promise<
 
   return buildPitcherComparisonDirectory({
     players: pitcherSources,
-    games,
+    games: gameSessions,
     segments,
     plateAppearances,
     pitches,

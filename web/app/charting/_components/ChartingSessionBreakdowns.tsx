@@ -403,7 +403,7 @@ export function PitcherBreakdownSection({
       <SectionIntro
         icon={UserRound}
         title="Pitcher Breakdown"
-        description="Every pitcher who appeared in the session, with unified true outcomes, performance metrics, and their primary zone-by-zone pitch distribution."
+        description="Babson pitchers from the charted game, with unified true outcomes, performance metrics, and their primary zone-by-zone pitch distribution."
       />
       {models.length === 0 ? (
         <EmptySection message="No pitcher outings are available for this game yet." />
@@ -428,7 +428,7 @@ export function HitterBreakdownSection({
       <SectionIntro
         icon={UsersRound as any}
         title="Hitter Breakdown"
-        description="Aggregated approach data and true outcomes for the opponent's lineup."
+        description="Aggregated approach data and true outcomes for Babson hitters from the charted game."
       />
       {models.length === 0 ? (
         <EmptySection message="No hitter plate appearances are available for this game yet." />

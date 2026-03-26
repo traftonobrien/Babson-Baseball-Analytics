@@ -420,7 +420,7 @@ export default function HomeContent() {
     },
     {
       title: "Session Hub",
-      detail: "Game logs, drafts, and live session work.",
+      detail: "Charted games, Babson visuals, and the charting process board.",
       href: "/charting",
       icon: ClipboardList,
     },

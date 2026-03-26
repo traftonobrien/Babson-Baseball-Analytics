@@ -17,6 +17,7 @@ type SortKey =
     | "woba"
     | "chasePct"
     | "contactPct"
+    | "whiffPct"
     | "kPct"
     | "bbPct"
     | "fbWhiff"
@@ -37,6 +38,7 @@ const SORT_KEYS: { key: SortKey; label: string; lowerBetter?: boolean; format?: 
     { key: "woba", label: "wOBA", lowerBetter: false, getValue: (row) => row.woba, format: (v) => v !== null ? v.toFixed(3).replace(/^0\./, ".") : "—" },
     { key: "chasePct", label: "Chase%", lowerBetter: true, getValue: (row) => row.chasePct, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
     { key: "contactPct", label: "Contact%", lowerBetter: false, getValue: (row) => row.contactPct, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
+    { key: "whiffPct", label: "Whiff%", lowerBetter: true, getValue: (row) => row.whiffPct, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
     { key: "kPct", label: "K%", lowerBetter: true, getValue: (row) => row.kPct, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
     { key: "bbPct", label: "BB%", lowerBetter: false, getValue: (row) => row.bbPct, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
     { key: "fbWhiff", label: "FB Whiff%", lowerBetter: true, getValue: (row) => row.vsFastball.whiffPct, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
@@ -48,8 +50,23 @@ const SORT_KEYS: { key: SortKey; label: string; lowerBetter?: boolean; format?: 
     { key: "iso", label: "ISO", lowerBetter: false, getValue: (row) => row.iso, format: (v) => v !== null ? v.toFixed(3).replace(/^0\./, ".") : "—" },
 ];
 
-const BASIC_KEYS: SortKey[] = ["sessions", "totalPAs", "avg", "obp", "slg", "ops", "woba", "chasePct", "contactPct", "kPct", "bbPct"];
-const ADVANCED_KEYS: SortKey[] = ["sessions", "totalPAs", "fbWhiff", "brkWhiff", "offWhiff", "zoneSwingPct", "zoneWfPct", "babip", "iso"];
+const BASIC_KEYS: SortKey[] = [
+    "sessions",
+    "totalPAs",
+    "chasePct",
+    "zoneSwingPct",
+    "contactPct",
+    "whiffPct",
+];
+const ADVANCED_KEYS: SortKey[] = [
+    "sessions",
+    "totalPAs",
+    "fbWhiff",
+    "brkWhiff",
+    "offWhiff",
+    "zoneWfPct",
+    "whiffPct",
+];
 
 function rankColor(i: number): string {
     const glow = "[text-shadow:0_0_6px_rgba(234,179,8,0.35)]";
@@ -70,7 +87,7 @@ export function HitterLeaderboardTable({
     searchQuery: string;
     statGroup: StatGroup;
 }) {
-    const [sortKey, setSortKey] = useState<SortKey>("avg");
+    const [sortKey, setSortKey] = useState<SortKey>("chasePct");
     const [sortDesc, setSortDesc] = useState(true);
 
     const visibleKeys = statGroup === "basic" ? BASIC_KEYS : ADVANCED_KEYS;
