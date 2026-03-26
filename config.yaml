@@ -26,8 +26,8 @@ ball_detection:
 
 calibration:
   plate_width_inches: 17
-  pixels_per_inch: 5.8247
-  plate_center_x: 936.5
+  pixels_per_inch: 3.8831
+  plate_center_x: 624.3
 
 detection_roi:
   x: 374

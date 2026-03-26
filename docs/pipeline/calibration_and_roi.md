@@ -17,7 +17,7 @@ This opens an OpenCV window showing a frame from the `frames/` directory (standa
 To skip the interactive UI and set a known value directly:
 
 ```bash
-python3 src/calibrate.py --ppi 5.8247
+python3 src/calibrate.py --ppi 3.8831
 ```
 
 #### Per-Outing Calibration
@@ -63,6 +63,8 @@ The batch pipeline now resolves calibration in this order:
 5. CLI overrides like `--ppi` and `--plate-center-x`
 
 This means a single bad global calibration no longer has to apply to every outing.
+
+The `config.yaml` default should match the standard Babson home-field AWRE export. For Trinity or any other field/camera setup, do not reuse the home-field default blindly; save a per-outing calibration instead.
 
 ### Detection ROI
 
@@ -145,8 +147,8 @@ video:
 
 calibration:
   plate_width_inches: 17          # Standard home plate width
-  pixels_per_inch: 5.8247         # From calibrate.py
-  plate_center_x: 936.5           # Horizontal center of plate in pixels
+  pixels_per_inch: 3.8831         # AWRE home-field default
+  plate_center_x: 624.3           # AWRE home-field plate center in pixels
 
 detection_roi:                    # Crop region for mini-clips
   x: 374

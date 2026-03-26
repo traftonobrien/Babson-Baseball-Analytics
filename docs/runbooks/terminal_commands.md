@@ -172,7 +172,7 @@ python3 src/calibrate.py --set-roi --video sourcevideo/inning.mov
 Set pixels-per-inch:
 
 ```bash
-python3 src/calibrate.py --ppi 5.8247
+python3 src/calibrate.py --ppi 3.8831
 ```
 
 ---
