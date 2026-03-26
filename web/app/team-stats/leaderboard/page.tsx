@@ -12,6 +12,12 @@ import {
   LeaderboardToolbar,
 } from "@/app/components/leaderboards/LeaderboardChrome";
 import { useSelectedPlayer } from "@/lib/selectedPlayer";
+import {
+  TEAM_STATS_HITTER_QUALIFICATION_OPTIONS,
+  TEAM_STATS_MIN_HITTER_PA,
+  TEAM_STATS_MIN_PITCHER_IP,
+  TEAM_STATS_PITCHER_QUALIFICATION_OPTIONS,
+} from "@/lib/teamStatsQualifications";
 
 type StatMode = "pitching" | "batting";
 type StatSection = "standard" | "advanced";
@@ -517,7 +523,7 @@ export default function TeamStatsPage() {
                   onChange={(e) => setMinIp(Number(e.target.value))}
                   className="w-full rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2.5 text-sm font-semibold text-zinc-100 outline-none"
                 >
-                  {[1, 5, 10, 15, 20, 25, 30].map((n) => (
+                  {TEAM_STATS_PITCHER_QUALIFICATION_OPTIONS.map((n) => (
                     <option key={n} value={n}>{n} IP</option>
                   ))}
                 </select>
@@ -527,7 +533,7 @@ export default function TeamStatsPage() {
                   onChange={(e) => setMinPa(Number(e.target.value))}
                   className="w-full rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2.5 text-sm font-semibold text-zinc-100 outline-none"
                 >
-                  {[1, 10, 20, 30, 40, 50].map((n) => (
+                  {TEAM_STATS_HITTER_QUALIFICATION_OPTIONS.map((n) => (
                     <option key={n} value={n}>{n} PA</option>
                   ))}
                 </select>
