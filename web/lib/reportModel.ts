@@ -8,7 +8,7 @@ const MIN_SAMPLE = 5;
 export const ON_TARGET_THRESHOLD_IN = 8;
 
 /** Pitches with total_miss_inches above this are considered outliers. */
-export const OUTLIER_MISS_THRESHOLD_IN = 20;
+export const OUTLIER_MISS_THRESHOLD_IN = 25;
 
 export function isOutlier(p: Pitch): boolean {
   if (p.is_outlier !== undefined) return p.is_outlier === 1;
