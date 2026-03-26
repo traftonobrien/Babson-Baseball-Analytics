@@ -342,6 +342,31 @@ jobs:
             git push
           fi
 
+      - name: Mirror NCAA cache to ui-overhaul
+        run: |
+          set -euo pipefail
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          SNAPSHOT_DIR="$(mktemp -d)"
+          cp -R web/public/college-stats/. "$SNAPSHOT_DIR/"
+
+          git fetch origin ui-overhaul
+          git switch -C ui-overhaul-sync origin/ui-overhaul
+
+          rm -rf web/public/college-stats
+          mkdir -p web/public/college-stats
+          cp -R "$SNAPSHOT_DIR"/. web/public/college-stats/
+
+          if git diff --quiet web/public/college-stats/; then
+            echo "ui-overhaul NCAA cache already current"
+          else
+            git add web/public/college-stats/
+            git commit -m "chore: sync NCAA leaderboards $(date -u +%Y-%m-%d)"
+            git push origin HEAD:ui-overhaul
+          fi
+
       - name: Fail if both legs degraded
         if: steps.dl-pitching.outcome == 'failure' && steps.dl-batting.outcome == 'failure'
         run: |
