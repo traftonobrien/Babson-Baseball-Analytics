@@ -59,6 +59,11 @@ export const players: Player[] = [
         label: "Apr 14, 2025 – Finkelstein (91 pitches)",
         ...buildDataPaths("JFinkelstein1", "2025_04_14"),
       },
+      {
+        id: "JFinkelstein1/2026_04_24",
+        label: "Apr 24, 2026 – Finkelstein (70 pitches)",
+        ...buildDataPaths("JFinkelstein1", "2026_04_24"),
+      },
     ],
   },
  {
