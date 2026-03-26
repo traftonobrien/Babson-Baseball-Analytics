@@ -1,0 +1,39 @@
+{
+  "batting": {
+    "ab": 0,
+    "avg": null,
+    "bb": 0,
+    "h": 0,
+    "hbp": null,
+    "hr": null,
+    "name": "Jason Finkelstein",
+    "pos": "p",
+    "r": 0,
+    "rbi": 0,
+    "sb": null,
+    "so": 0
+  },
+  "gameId": "16014",
+  "pitching": {
+    "bb": 3,
+    "bf": 21,
+    "er": 5,
+    "era": null,
+    "h": 3,
+    "hr": null,
+    "ip": "3.1",
+    "name": "Jason Finkelstein",
+    "pitches": 71,
+    "r": 6,
+    "so": 2,
+    "strikes": null
+  },
+  "playerDisplay": "Jason Finkelstein",
+  "playerId": "JFinkelstein1",
+  "season": 2026,
+  "source": {
+    "importedAt": "2026-03-26T13:58:12Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2026/wheaton/boxscore/16014"
+  },
+  "team": "babson"
+}
