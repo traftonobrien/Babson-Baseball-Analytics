@@ -233,6 +233,18 @@ export const players: Player[] = [
       },
     ],
   },
+  {
+    id: "BBurk1",
+    name: "Bobby Burk",
+    throws: "R",
+    outings: [
+      {
+        id: "BBurk1/2026_04_24",
+        label: "Apr 24, 2026 – Burk (45 pitches)",
+        ...buildDataPaths("BBurk1", "2026_04_24"),
+      },
+    ],
+  },
 ];
 
 export function getPlayer(id: string): Player | undefined {
