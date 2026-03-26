@@ -30,5 +30,15 @@
       "ZTeator1"
     ],
     "url": "https://babsonathletics.com/sports/baseball/stats/2026/-1-6-trinity-texas-/boxscore/16013"
+  },
+  {
+    "date": "2026-03-24",
+    "gameId": "16014",
+    "importedAt": "2026-03-26T01:21:05Z",
+    "opponent": "Wheaton",
+    "playerIdsIncluded": [
+      "MCamardi1"
+    ],
+    "url": "https://babsonathletics.com/sports/baseball/stats/2026/wheaton/boxscore/16014"
   }
 ]
