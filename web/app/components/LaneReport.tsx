@@ -8,6 +8,7 @@ import { pitchDisplayName } from "@/lib/pitchNames";
 import { brandSoftActiveRingClasses } from "@/lib/brandSurfaces";
 import { sortPitchTypes } from "@/lib/pitchTypeOrder";
 import { cn } from "@/lib/utils";
+import { gridColsClass } from "./PitchTypeSummaryCards";
 
 export type { Lane } from "@/lib/handedness";
 
@@ -207,10 +208,7 @@ export default function LaneReport({ pitches, throwsHand, activeLane, onSelectLa
     1,
   );
 
-  const cols =
-    groups.length <= 2 ? "grid-cols-1 sm:grid-cols-2" :
-    groups.length === 3 ? "grid-cols-1 sm:grid-cols-3" :
-    "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+  const cols = gridColsClass(groups.length);
 
   return (
     <div className="rounded-[28px] border border-border bg-surface p-5 shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
