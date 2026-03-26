@@ -318,6 +318,7 @@ export default async function PlayerProfilePage({
       resolvedPlayer.bats === "R" || resolvedPlayer.bats === "L" || resolvedPlayer.bats === "S"
         ? resolvedPlayer.bats
         : null,
+    sessionType: "game",
   });
 
   const mechanicsIndex = await readMechanicsIndex();

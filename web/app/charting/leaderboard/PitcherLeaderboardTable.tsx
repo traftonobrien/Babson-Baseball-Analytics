@@ -17,19 +17,32 @@ const SORT_KEYS: { key: SortKey; label: string; lowerBetter?: boolean; format?: 
     { key: "innings", label: "Innings", lowerBetter: false, format: (v) => v?.toString() ?? "—" },
     { key: "totalPitches", label: "Pitches", lowerBetter: false, format: (v) => v?.toString() ?? "—" },
     { key: "totalPAs", label: "TBF", lowerBetter: false, format: (v) => v?.toString() ?? "—" },
-    { key: "baa", label: "BAA", lowerBetter: true, format: (v) => v !== null ? v.toFixed(3).replace(/^0\./, ".") : "—" },
-    { key: "babip", label: "BABIP", lowerBetter: true, format: (v) => v !== null ? v.toFixed(3).replace(/^0\./, ".") : "—" },
     { key: "strikePct", label: "Strike%", lowerBetter: false, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
     { key: "zonePct", label: "Zone%", lowerBetter: false, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
     { key: "whiffPct", label: "Whiff%", lowerBetter: false, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
     { key: "chasePct", label: "Chase%", lowerBetter: false, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
     { key: "fpsPct", label: "FPS%", lowerBetter: false, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
-    { key: "kPct", label: "K%", lowerBetter: false, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
-    { key: "bbPct", label: "BB%", lowerBetter: true, format: (v) => v !== null ? `${v.toFixed(1)}%` : "—" },
 ];
 
-const BASIC_KEYS: SortKey[] = ["sessions", "innings", "totalPitches", "totalPAs", "baa", "strikePct", "kPct", "bbPct"];
-const ADVANCED_KEYS: SortKey[] = ["sessions", "innings", "totalPitches", "totalPAs", "babip", "zonePct", "whiffPct", "chasePct", "fpsPct"];
+const BASIC_KEYS: SortKey[] = [
+    "sessions",
+    "innings",
+    "totalPitches",
+    "totalPAs",
+    "strikePct",
+    "zonePct",
+    "fpsPct",
+];
+const ADVANCED_KEYS: SortKey[] = [
+    "sessions",
+    "innings",
+    "totalPitches",
+    "totalPAs",
+    "whiffPct",
+    "chasePct",
+    "strikePct",
+    "zonePct",
+];
 
 function rankColor(i: number): string {
     const glow = "[text-shadow:0_0_8px_currentColor]";
@@ -48,7 +61,7 @@ export function PitcherLeaderboardTable({
     searchQuery: string;
     statGroup: StatGroup;
 }) {
-    const [sortKey, setSortKey] = useState<SortKey>("innings");
+    const [sortKey, setSortKey] = useState<SortKey>("strikePct");
     const [sortDesc, setSortDesc] = useState(true);
 
     const visibleColumns = statGroup === "basic" ? BASIC_KEYS : ADVANCED_KEYS;

@@ -356,8 +356,8 @@ export default function HomeContent() {
             icon={ClipboardList}
             eyebrow="Tracking"
             title="Charting Portal"
-            description="Open charted game sessions, synced game logs, and the charting leaderboard for pitchers and hitters."
-            details={["Sessions", "Leaderboard", "Game Review"]}
+            description="Open charted game sessions, Babson player visuals, and the game-only charting process leaderboard."
+            details={["Sessions", "Visuals", "Process Board"]}
             className="lg:col-span-4"
           />
         </div>

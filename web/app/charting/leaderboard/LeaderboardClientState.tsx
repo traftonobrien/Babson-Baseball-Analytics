@@ -30,7 +30,6 @@ export function LeaderboardClientState({
     rowCount,
     scopeLabel,
     scopeGameCount,
-    sessionType = "game",
 }: {
     tab: string;
     range: string;
@@ -42,7 +41,6 @@ export function LeaderboardClientState({
     rowCount: number;
     scopeLabel: string;
     scopeGameCount: number;
-    sessionType?: "live_ab" | "game" | "all";
 }) {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -107,8 +105,7 @@ export function LeaderboardClientState({
         searchInput.trim().length > 0 ||
         range !== "all" ||
         session !== "all" ||
-        statGroup !== "basic" ||
-        sessionType !== "game";
+        statGroup !== "basic";
 
     return (
         <>
@@ -124,6 +121,7 @@ export function LeaderboardClientState({
                     icon={BarChart3}
                     eyebrow="Charting"
                     title={<>Charting Leaderboard</>}
+                    description="Game-only charting process board for swing decisions, zone behavior, and pitch-execution metrics that do not belong on the standard statistics leaderboard."
                     meta={(
                         <>
                             <LeaderboardPill tone="emerald">
@@ -131,7 +129,7 @@ export function LeaderboardClientState({
                             </LeaderboardPill>
                             <LeaderboardPill tone="neutral">{scopeLabel}</LeaderboardPill>
                             <LeaderboardPill tone="neutral">
-                                {scopeGameCount} session{scopeGameCount === 1 ? "" : "s"} in scope
+                                {scopeGameCount} game{scopeGameCount === 1 ? "" : "s"} in scope
                             </LeaderboardPill>
                             <LeaderboardPill tone="neutral">
                                 {rowCount} {tab === "pitchers" ? "pitcher" : "hitter"}{rowCount === 1 ? "" : "s"}
@@ -165,47 +163,7 @@ export function LeaderboardClientState({
             </LeaderboardIntro>
 
             <LeaderboardToolbar>
-                <div className="grid gap-4 xl:grid-cols-[minmax(11rem,13rem)_minmax(13rem,15rem)_minmax(13rem,15rem)_minmax(12rem,14rem)_minmax(14rem,18rem)_minmax(0,1fr)_auto] xl:items-end">
-                    <div className="space-y-2">
-                        <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-                            Session Type
-                        </div>
-                        <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
-                            <div className="grid grid-cols-3 gap-1">
-                                <button
-                                    type="button"
-                                    onClick={() => updateQuery({ sessionType: "game", session: "all" })}
-                                    className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-smooth ${sessionType === "game"
-                                        ? "border border-sky-500/25 bg-sky-500/10 text-sky-300"
-                                        : "border border-transparent text-zinc-400 hover:text-zinc-100"
-                                        }`}
-                                >
-                                    Games
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => updateQuery({ sessionType: "live_ab", session: "all" })}
-                                    className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-smooth ${sessionType === "live_ab"
-                                        ? "border border-emerald-500/25 bg-emerald-500/10 text-emerald-300"
-                                        : "border border-transparent text-zinc-400 hover:text-zinc-100"
-                                        }`}
-                                >
-                                    Live AB
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => updateQuery({ sessionType: "all", session: "all" })}
-                                    className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-smooth ${sessionType === "all"
-                                        ? "border border-zinc-600/50 bg-zinc-800/50 text-zinc-200"
-                                        : "border border-transparent text-zinc-400 hover:text-zinc-100"
-                                        }`}
-                                >
-                                    All
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
+                <div className="grid gap-4 xl:grid-cols-[minmax(13rem,15rem)_minmax(13rem,15rem)_minmax(12rem,14rem)_minmax(14rem,18rem)_minmax(0,1fr)_auto] xl:items-end">
                     <div className="space-y-2">
                         <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
                             Leaderboard View
@@ -253,7 +211,7 @@ export function LeaderboardClientState({
                                         : "border border-transparent text-zinc-400 hover:text-zinc-100"
                                         }`}
                                 >
-                                    Basic
+                                    {tab === "pitchers" ? "Attack" : "Decisions"}
                                 </button>
                                 <button
                                     type="button"
@@ -266,7 +224,7 @@ export function LeaderboardClientState({
                                         : "border border-transparent text-zinc-400 hover:text-zinc-100"
                                         }`}
                                 >
-                                    Advanced
+                                    {tab === "pitchers" ? "Miss / Chase" : "Pitch-Type Miss"}
                                 </button>
                             </div>
                         </div>
@@ -292,7 +250,7 @@ export function LeaderboardClientState({
 
                     <div className="space-y-2">
                         <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-                            Session
+                            Game
                         </div>
                         <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
                             <select
@@ -300,7 +258,7 @@ export function LeaderboardClientState({
                                 onChange={(event) => updateQuery({ session: event.target.value })}
                                 className="w-full rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2.5 text-sm font-semibold text-zinc-100 outline-none"
                             >
-                                <option value="all">All Sessions</option>
+                                <option value="all">All Games</option>
                                 {games.map((game) => (
                                     <option key={game.id} value={game.id}>
                                         {game.opponent || "Unnamed Game"} — {format(parseISO(game.gameDate), "M/d/yy")}
@@ -340,7 +298,6 @@ export function LeaderboardClientState({
                                     params.delete("session");
                                     params.delete("q");
                                     params.delete("statGroup");
-                                    params.set("sessionType", "game");
                                     pushParams(params);
                                 }}
                                 className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-smooth hover:border-zinc-700 hover:text-zinc-100"

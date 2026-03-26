@@ -69,10 +69,16 @@ export default async function ChartingGamePage({
         plateAppearances,
         pitches
     );
+    const babsonPitcherOverviewModels = pitcherOverviewModels.filter(
+        (model) => model.teamSide === "our"
+    );
     const hitterOverviewModels = buildHitterOverviewModels(
         plateAppearances,
         pitches,
         lineupEntries
+    );
+    const babsonHitterOverviewModels = hitterOverviewModels.filter(
+        (model) => model.teamSide === "our"
     );
     const paById = new Map(plateAppearances.map((pa) => [pa.id, pa]));
     const pitchesByPaId = new Map<string, typeof pitches>();
@@ -140,14 +146,14 @@ export default async function ChartingGamePage({
                 <aside className="sticky top-6">
                     <GameDetailsSidebar
                         game={game}
-                        pitcherOverviewModels={pitcherOverviewModels}
-                        hitterOverviewModels={hitterOverviewModels}
+                        pitcherOverviewModels={babsonPitcherOverviewModels}
+                        hitterOverviewModels={babsonHitterOverviewModels}
                     />
                 </aside>
 
                 <div className="flex flex-col min-w-0">
-                    <PitcherBreakdownSection models={pitcherOverviewModels} />
-                    <HitterBreakdownSection models={hitterOverviewModels} />
+                    <PitcherBreakdownSection models={babsonPitcherOverviewModels} />
+                    <HitterBreakdownSection models={babsonHitterOverviewModels} />
 
                     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-hidden mt-2">
                         <div className="border-b border-zinc-800/60 bg-zinc-900/80 px-5 py-4 flex items-center gap-2">

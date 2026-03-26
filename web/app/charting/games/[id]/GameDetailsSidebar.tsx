@@ -20,7 +20,7 @@ export function GameDetailsSidebar({
                     <UserCircle className="h-3.5 w-3.5" /> Pitchers
                 </div>
                 {pitcherOverviewModels.length === 0 ? (
-                    <p className="text-xs text-zinc-600 italic">No pitchers mapped yet.</p>
+                    <p className="text-xs text-zinc-600 italic">No Babson pitchers mapped yet.</p>
                 ) : (
                     <ul className="space-y-2">
                         {pitcherOverviewModels.map((pitcher, idx) => (
@@ -41,7 +41,7 @@ export function GameDetailsSidebar({
                     <Users className="h-3.5 w-3.5" /> Hitters
                 </div>
                 {hitterOverviewModels.length === 0 ? (
-                    <p className="text-xs text-zinc-600 italic">No hitters mapped yet.</p>
+                    <p className="text-xs text-zinc-600 italic">No Babson hitters mapped yet.</p>
                 ) : (
                     <ul className="space-y-2 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
                         {hitterOverviewModels.map((hitter, idx) => (

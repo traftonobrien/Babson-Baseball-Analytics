@@ -23,15 +23,7 @@ const PITCHER_STATS = [
   },
   {
     stat: "TBF",
-    definition: "Total batters faced. This replaces WHIP on the charting leaderboard because game innings are often non-standard.",
-  },
-  {
-    stat: "BAA",
-    definition: "Batting average against using charted outcomes only. Walks and hit-by-pitch are removed from the denominator.",
-  },
-  {
-    stat: "BABIP",
-    definition: "Batting average on balls in play. Home runs and strikeouts are removed; sacrifice flies are not tracked separately in this charting model.",
+    definition: "Total batters faced. This stays on the board as sample context for the process metrics.",
   },
   {
     stat: "Strike%",
@@ -53,10 +45,6 @@ const PITCHER_STATS = [
     stat: "FPS%",
     definition: "First-pitch strike rate. Only pitches thrown in a 0-0 count are included.",
   },
-  {
-    stat: "K% / BB%",
-    definition: "Strikeouts or walks divided by completed plate appearances.",
-  },
 ];
 
 const HITTER_STATS = [
@@ -67,14 +55,6 @@ const HITTER_STATS = [
   {
     stat: "PAs",
     definition: "Total charted plate appearances for the hitter in the current scope.",
-  },
-  {
-    stat: "AVG / OBP / SLG / OPS",
-    definition: "Traditional slash-line stats built from charted plate-appearance outcomes.",
-  },
-  {
-    stat: "wOBA",
-    definition: "Weighted on-base average using these outcome weights: BB 0.69, HBP 0.72, 1B 0.89, 2B 1.27, 3B 1.62, HR 2.10.",
   },
   {
     stat: "Chase%",
@@ -89,10 +69,6 @@ const HITTER_STATS = [
     definition: "Swinging strikes divided by all swings.",
   },
   {
-    stat: "K% / BB%",
-    definition: "Strikeouts or walks divided by completed plate appearances.",
-  },
-  {
     stat: "FB / BRK / OFF Whiff%",
     definition: "Whiff rate against fastballs, breaking balls, or offspeed pitches using the charting pitch groups below.",
   },
@@ -103,14 +79,6 @@ const HITTER_STATS = [
   {
     stat: "Z-Whiff%",
     definition: "Swinging strikes on pitches in the tracked zone divided by all swings at pitches in the zone.",
-  },
-  {
-    stat: "BABIP",
-    definition: "Balls-in-play average from charted outcomes, with the same no-sac-fly caveat as the pitcher view.",
-  },
-  {
-    stat: "ISO",
-    definition: "Isolated power, calculated as slugging minus batting average.",
   },
 ];
 

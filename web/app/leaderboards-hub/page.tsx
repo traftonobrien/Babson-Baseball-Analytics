@@ -42,7 +42,7 @@ const LEADERBOARD_ITEMS = [
   {
     href: "/charting/leaderboard",
     label: "Charting",
-    description: "Pitcher and hitter rankings from charted game sessions",
+    description: "Game-only swing, zone, and pitch-execution leaderboards from charted sessions",
     icon: ClipboardList,
     color: "emerald",
   },

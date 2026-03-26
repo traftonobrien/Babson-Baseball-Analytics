@@ -250,6 +250,47 @@ describe("snapshot mutations", () => {
     expect(state.inning).toBe(4);
     expect(state.isTopInning).toBe(false);
     expect(state.outs).toBe(2);
+    expect(state.batterSlot).toBe(1);
+  });
+
+  it("preserves the next lineup slot when advancing between halves", () => {
+    let snapshot = baseSnapshot;
+
+    for (let slot = 1; slot <= 3; slot += 1) {
+      snapshot = recordPitchInSnapshot(snapshot, {
+        pitchType: "Fastball",
+        pitchResult: "in_play",
+        locationCell: 5,
+        velocity: null,
+        pitcher: { playerId: "DJames1", name: "D. James" },
+        hitterName: `Hitter ${slot}`,
+        lineupSlot: slot,
+      });
+      snapshot = closeCurrentPlateAppearance(snapshot, "6-3");
+    }
+
+    const nextHalf = deriveChartingLiveState(
+      snapshot.segments,
+      snapshot.plateAppearances,
+      snapshot.pitches,
+    );
+    const override = createGameStateOverride(snapshot, {
+      inning: nextHalf.inning,
+      isTopInning: nextHalf.isTopInning,
+      outs: 0,
+      batterSlot: nextHalf.batterSlot,
+    });
+    const overrideState = deriveChartingLiveState(
+      snapshot.segments,
+      snapshot.plateAppearances,
+      snapshot.pitches,
+      override,
+    );
+
+    expect(overrideState.inning).toBe(1);
+    expect(overrideState.isTopInning).toBe(false);
+    expect(overrideState.outs).toBe(0);
+    expect(overrideState.batterSlot).toBe(4);
   });
 
   it("surfaces a seeded count before the first pitch of a new PA", () => {

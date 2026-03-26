@@ -15,7 +15,6 @@ interface HitsProps {
     games: any;
     scopeLabel: string;
     scopeGameCount: number;
-    sessionType?: "live_ab" | "game" | "all";
 }
 
 export function HitterStatGroupWrapper({
@@ -28,7 +27,6 @@ export function HitterStatGroupWrapper({
     games,
     scopeLabel,
     scopeGameCount,
-    sessionType = "game",
 }: HitsProps) {
     const [statGroup, setStatGroup] = useState<StatGroup>(initialStatGroup);
 
@@ -49,7 +47,6 @@ export function HitterStatGroupWrapper({
                 rowCount={hitters.length}
                 scopeLabel={scopeLabel}
                 scopeGameCount={scopeGameCount}
-                sessionType={sessionType}
             />
 
             <LeaderboardPanel className="mt-6 overflow-hidden">

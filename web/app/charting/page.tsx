@@ -26,17 +26,9 @@ import { EditableChartingGameNameInList } from "@/app/charting/_components/Edita
 export const revalidate = 0;
 
 type HubStatusFilter = "all" | "active" | "final" | "draft";
-type HubTypeFilter = "all" | "live_ab" | "game";
 
 function normalizeStatusFilter(value: string | string[] | undefined): HubStatusFilter {
     if (value === "active" || value === "final" || value === "draft") {
-        return value;
-    }
-    return "all";
-}
-
-function normalizeTypeFilter(value: string | string[] | undefined): HubTypeFilter {
-    if (value === "live_ab" || value === "game" || value === "all") {
         return value;
     }
     return "all";
@@ -61,7 +53,7 @@ function matchesQuery(
         game.gameDate,
         format(parseISO(game.gameDate), "MMMM d yyyy"),
         game.status,
-        game.sessionType === "game" ? "game" : "practice",
+        "game",
     ]
         .join(" ")
         .toLowerCase();
@@ -92,12 +84,12 @@ export default async function ChartingHubPage(props: {
     const searchParams = await props.searchParams;
     const searchQuery = typeof searchParams.q === "string" ? searchParams.q : "";
     const statusFilter = normalizeStatusFilter(searchParams.status);
-    const typeFilter = normalizeTypeFilter(searchParams.type);
 
-    const games = await db
+    const allGames = await db
         .select()
         .from(chartingGames)
         .orderBy(desc(chartingGames.gameDate));
+    const games = allGames.filter((game) => game.sessionType === "game");
 
     const paCounts = await db
         .select({ gameId: chartingPlateAppearances.gameId, paCount: count() })
@@ -112,11 +104,10 @@ export default async function ChartingHubPage(props: {
 
     const filteredGames = games.filter((game) => {
         const matchesStatus = statusFilter === "all" ? true : game.status === statusFilter;
-        const matchesType = typeFilter === "all" ? true : game.sessionType === typeFilter;
-        return matchesStatus && matchesType && matchesQuery(game, searchQuery);
+        return matchesStatus && matchesQuery(game, searchQuery);
     });
 
-    const hasFilters = statusFilter !== "all" || typeFilter !== "all" || searchQuery.trim().length > 0;
+    const hasFilters = statusFilter !== "all" || searchQuery.trim().length > 0;
 
     return (
         <LeaderboardPageFrame maxWidth="max-w-6xl">
@@ -136,7 +127,7 @@ export default async function ChartingHubPage(props: {
                                     Charting Hub
                                 </h1>
                                 <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-400 sm:text-[14px]">
-                                    Run the live charting workflow, reopen active games, and move straight into leaderboard review.
+                                    Reopen charted games, keep the in-game workflow moving, and jump between player visuals and the charting process leaderboard.
                                 </p>
                                 <div className="mt-4 flex flex-wrap items-center gap-2">
                                     <LeaderboardPill tone="emerald">
@@ -163,7 +154,7 @@ export default async function ChartingHubPage(props: {
                                                     Analysis
                                                 </div>
                                                 <div className="mt-1 text-sm font-semibold text-zinc-100">
-                                                    Open Leaderboards
+                                                    Open Leaderboard
                                                 </div>
                                             </div>
                                         </div>
@@ -239,7 +230,7 @@ export default async function ChartingHubPage(props: {
             </div>
 
             <LeaderboardToolbar className="mt-6">
-                <form action="/charting" className="grid gap-4 xl:grid-cols-[minmax(12rem,14rem)_minmax(10rem,12rem)_minmax(0,1fr)_auto] xl:items-end">
+                <form action="/charting" className="grid gap-4 xl:grid-cols-[minmax(12rem,14rem)_minmax(0,1fr)_auto] xl:items-end">
                     <div className="space-y-2">
                         <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
                             Status
@@ -254,23 +245,6 @@ export default async function ChartingHubPage(props: {
                                 <option value="active">Active</option>
                                 <option value="final">Final</option>
                                 <option value="draft">Draft</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-                            Type
-                        </div>
-                        <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-1.5">
-                            <select
-                                name="type"
-                                defaultValue={typeFilter}
-                                className="w-full rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2.5 text-sm font-semibold text-zinc-100 outline-none"
-                            >
-                                <option value="all">All types</option>
-                                <option value="game">Games</option>
-                                <option value="live_ab">Live ABs</option>
                             </select>
                         </div>
                     </div>

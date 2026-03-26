@@ -294,10 +294,10 @@ export const countNounForView = (view: ComparisonView): string => {
 
 export const heroDescriptionForView = (view: ComparisonView): string => {
   if (isPitcherView(view)) {
-    return `A ${TEAM_NAME} take on the Savant player-visuals workflow, rebuilt for charted pitchers: player search, season scope, pitch-speed filters, command/result event slices, the same rough zone map, and a one-line summary table.`;
+    return `A ${TEAM_NAME} take on the Savant player-visuals workflow, rebuilt for charted game pitchers: player search, season scope, pitch-speed filters, command/result event slices, the same rough zone map, and a one-line summary table.`;
   }
 
-  return `A ${TEAM_NAME} take on the Savant player-visuals workflow, rebuilt around the charting fields we actually capture today: player search, pitcher-hand filters, season scope, pitch-speed filters, rough zone buckets, and a one-line season table.`;
+  return `A ${TEAM_NAME} take on the Savant player-visuals workflow, rebuilt around the charted game fields we actually capture today: player search, pitcher-hand filters, season scope, pitch-speed filters, rough zone buckets, and a one-line season table.`;
 };
 
 export const eventLabelForView = (

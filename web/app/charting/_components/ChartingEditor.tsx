@@ -333,6 +333,7 @@ export function ChartingEditor({
       inning: liveState.inning,
       isTopInning: liveState.isTopInning,
       outs: 0,
+      batterSlot: liveState.batterSlot,
     });
     startTransition(() => {
       setGameStateOverride(nextOverride);
@@ -785,6 +786,7 @@ export function ChartingEditor({
       isTopInning:
         field === "isTopInning" ? Boolean(value) : overrideBase.isTopInning,
       outs: field === "outs" ? Number(value) : overrideBase.outs,
+      batterSlot: liveState.batterSlot,
     });
     startTransition(() => {
       setGameStateOverride(nextOverride);
