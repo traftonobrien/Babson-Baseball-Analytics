@@ -20,12 +20,49 @@ To skip the interactive UI and set a known value directly:
 python3 src/calibrate.py --ppi 5.8247
 ```
 
+#### Per-Outing Calibration
+
+For command outings, calibration can now be stored per outing instead of only in `config.yaml`.
+
+```bash
+python3 src/calibrate.py \
+  --video outings/<playerId>/<dateId>/inning1.mp4 \
+  --frame 0 \
+  --outing-dir outings/<playerId>/<dateId>
+```
+
+This writes:
+
+- `<outing_dir>/calibration.json`
+- `pitch_log.json` top-level `"calibration"` key when that file exists
+
+You can also write a known value directly to an outing:
+
+```bash
+python3 src/calibrate.py \
+  --ppi 6.42 \
+  --plate-center-x 938.0 \
+  --outing-dir outings/<playerId>/<dateId>
+```
+
 #### What Gets Saved
 
 - `calibration.pixels_per_inch` -- The computed PPI value.
 - `calibration.plate_center_x` -- The horizontal midpoint of the two clicked plate edges, in pixels.
 
 All inch-based miss measurements depend on this value. If calibration is wrong, inch values are wrong. Pixel values remain correct regardless.
+
+#### Calibration Resolution in batch_process.py
+
+The batch pipeline now resolves calibration in this order:
+
+1. `config.yaml` `calibration` block (fallback base)
+2. `pitch_log.json` top-level `"calibration"` key
+3. `<outing_dir>/calibration.json`
+4. `--calibration-file`
+5. CLI overrides like `--ppi` and `--plate-center-x`
+
+This means a single bad global calibration no longer has to apply to every outing.
 
 ### Detection ROI
 
@@ -40,6 +77,17 @@ python3 src/calibrate.py --set-roi --video sourcevideo/inning.mov
 This opens a frame from the video and lets you draw a rectangle. The right 40% of the rectangle is labeled "CATCHER" and the rest is labeled "PITCHER" as a visual guide. Press Enter to confirm.
 
 The ROI is saved to `config.yaml` under `detection_roi` with keys `x`, `y`, `width`, `height`.
+
+For outing-specific processing, you can save the ROI directly into the outing instead:
+
+```bash
+python3 src/calibrate.py \
+  --set-roi \
+  --video outings/<playerId>/<dateId>/inning1.mp4 \
+  --outing-dir outings/<playerId>/<dateId>
+```
+
+That writes `<outing_dir>/roi.json` and updates `pitch_log.json` top-level `"roi"` when available.
 
 Without `--video`, the script uses frames from the `frames/` directory (standalone workflow).
 
@@ -136,10 +184,14 @@ This section is used only by `track_ball.py` in the standalone (legacy) workflow
 ### calibrate.py CLI Arguments
 
 ```
---ppi FLOAT       Set pixels_per_inch directly (skip interactive click)
---frame N         Frame index to use for calibration display (default: 0)
---set-roi         Interactively set the detection ROI (draw rectangle)
---video FILE      Video file to grab a frame from (for --set-roi)
+--ppi FLOAT               Set pixels_per_inch directly (skip interactive click)
+--plate-center-x FLOAT   Set plate_center_x directly with --ppi
+--plate-width-inches F   Override plate width inches for calibration metadata
+--frame N                Frame index to use for calibration display (default: 0)
+--set-roi                Interactively set the detection ROI (draw rectangle)
+--outing-dir DIR         Save ROI/calibration to the outing instead of config.yaml
+--pitch-log FILE         Optional pitch_log.json path to update with outing metadata
+--video FILE             Video file to grab a frame from (for calibration or --set-roi)
 ```
 
 ### calibrate.py Functions
