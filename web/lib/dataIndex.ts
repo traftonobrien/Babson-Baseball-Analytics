@@ -127,6 +127,11 @@ export const players: Player[] = [
         label: "Mar 26, 2025 – James (54 pitches)",
         ...buildDataPaths("DJames1", "2025_03_26"),
       },
+      {
+        id: "DJames1/2026_04_24",
+        label: "Apr 24, 2026 – James (33 pitches)",
+        ...buildDataPaths("DJames1", "2026_04_24"),
+      },
     ],
   },
   {
