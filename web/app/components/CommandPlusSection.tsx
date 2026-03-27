@@ -29,19 +29,22 @@ interface PitchPlus {
 
 export default function CommandPlusSection({ pitches, outingId }: Props) {
     const season = seasonFromDateId(outingId.split("/")[1]) ?? null;
-    const [baselinesLoaded, setBaselinesLoaded] = useState(false);
+    const [loadedSeason, setLoadedSeason] = useState<SeasonFilter | null>(null);
 
     useEffect(() => {
-        if (!season) {
-            setBaselinesLoaded(true);
+        if (!season || globalCommandPlusBaselines[season] || loadedSeason === season) {
             return;
         }
-        if (globalCommandPlusBaselines[season]) {
-            setBaselinesLoaded(true);
-        } else {
-            loadAllOutingData({ seasonFilter: season as SeasonFilter }).then(() => setBaselinesLoaded(true));
-        }
-    }, [season]);
+        let active = true;
+        loadAllOutingData({ seasonFilter: season as SeasonFilter }).then(() => {
+            if (!active) return;
+            setLoadedSeason(season as SeasonFilter);
+        });
+        return () => {
+            active = false;
+        };
+    }, [loadedSeason, season]);
+    const baselinesLoaded = !season || Boolean(globalCommandPlusBaselines[season]) || loadedSeason === season;
 
     const data = useMemo(() => {
         if (!season || !baselinesLoaded || pitches.length === 0) return null;

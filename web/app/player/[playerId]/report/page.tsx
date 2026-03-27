@@ -28,6 +28,15 @@ import { globalCommandPlusBaselines, loadAllOutingData } from "@/lib/leaderboard
 import { seasonFromDateId } from "@/lib/season";
 import type { SeasonFilter } from "@/lib/leaderboards/types";
 import { TEAM_NAME } from "@/lib/teamConfig";
+import { useKeyedState } from "@/app/hooks/useKeyedState";
+
+function readExcludeOutliers(lsKey: string): boolean {
+  try {
+    return localStorage.getItem(lsKey) === "true";
+  } catch {
+    return false;
+  }
+}
 
 /* ================================================================== */
 /*  Inner component                                                    */
@@ -48,26 +57,18 @@ function ReportInner() {
     : player?.outings[0];
 
   // Determine which CSVs to load
-  const csvPaths = useMemo(() => {
-    if (!player) return [];
-    if (scope === "overall") {
-      return player.outings.map((o) => o.csvPath);
-    }
-    return outing ? [outing.csvPath] : [];
-  }, [player, outing, scope]);
+  const csvPaths = scope === "overall"
+    ? (player?.outings.map((o) => o.csvPath) ?? [])
+    : outing ? [outing.csvPath] : [];
 
   const { pitches, pitcherHand, loading, error } = useAllPitchData(csvPaths, playerId);
 
   /* ---- Exclude outliers toggle (persisted per player+scope) ---- */
   const lsKey = `reportExcludeOutliers:${playerId}:${scope}`;
-  const [excludeOutliers, setExcludeOutliers] = useState(false);
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(lsKey);
-      if (stored === "true") setExcludeOutliers(true);
-      else if (stored === "false") setExcludeOutliers(false);
-    } catch { /* localStorage unavailable */ }
-  }, [lsKey]);
+  const [excludeOutliers, setExcludeOutliers] = useKeyedState(
+    lsKey,
+    () => readExcludeOutliers(lsKey),
+  );
   const toggleExcludeOutliers = () => {
     setExcludeOutliers((prev) => {
       const next = !prev;
@@ -78,43 +79,50 @@ function ReportInner() {
 
   /* ---- Load baselines for Command+ ---- */
   const season = outingId ? seasonFromDateId(outingId.split("/")[1]) : null;
-  const [baselinesLoaded, setBaselinesLoaded] = useState(false);
+  const [loadedBaselineSeason, setLoadedBaselineSeason] = useState<SeasonFilter | null>(null);
 
   useEffect(() => {
-    if (!season) {
-      setBaselinesLoaded(true);
+    if (!season || globalCommandPlusBaselines[season] || loadedBaselineSeason === season) {
       return;
     }
-    if (globalCommandPlusBaselines[season]) {
-      setBaselinesLoaded(true);
-    } else {
-      // Fetch baselines if navigating directly to a report page
-      loadAllOutingData({ seasonFilter: season as SeasonFilter }).then(() => setBaselinesLoaded(true));
-    }
-  }, [season]);
+    let active = true;
+    loadAllOutingData({ seasonFilter: season as SeasonFilter }).then(() => {
+      if (!active) return;
+      setLoadedBaselineSeason(season as SeasonFilter);
+    });
+    return () => {
+      active = false;
+    };
+  }, [loadedBaselineSeason, season]);
+  const baselinesLoaded =
+    !season ||
+    Boolean(globalCommandPlusBaselines[season]) ||
+    loadedBaselineSeason === season;
+  const playerName = player?.name ?? "";
+  const outingCount = player?.outings.length ?? 0;
+  const reportLabel =
+    scope === "overall"
+      ? `Overall (${outingCount || 1} outing${(outingCount || 1) > 1 ? "s" : ""})`
+      : outing?.label ?? "";
 
   const report = useMemo(() => {
     if (pitches.length === 0) return null;
-    const label =
-      scope === "overall"
-        ? `Overall (${player?.outings.length ?? 1} outing${(player?.outings.length ?? 1) > 1 ? "s" : ""})`
-        : outing?.label ?? "";
     return buildReport(
       pitches,
-      player?.name ?? "",
-      label,
+      playerName,
+      reportLabel,
       pitcherHand,
       scope,
       { excludeOutliers },
     );
-  }, [pitches, player, outing, scope, excludeOutliers, pitcherHand]);
+  }, [excludeOutliers, pitches, pitcherHand, playerName, reportLabel, scope]);
 
-  const commandPlus = useMemo(() => {
-    if (!report || !season || !baselinesLoaded || scope === "overall") return null;
+  const commandPlus = (() => {
+    if (!season || !baselinesLoaded || scope === "overall" || pitches.length === 0) return null;
     const seasonBaselines = globalCommandPlusBaselines[season];
     if (!seasonBaselines) return null;
     return computeCommandPlus(pitches, seasonBaselines).overall;
-  }, [report, pitches, season, baselinesLoaded, scope]);
+  })();
 
   if (!player || (!outing && scope === "outing")) return <Msg text="Player or outing not found." error />;
   if (loading) return <Msg text="Loading pitch data..." />;

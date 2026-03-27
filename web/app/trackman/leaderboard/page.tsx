@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/neon-button";
 import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
+import { useKeyedState } from "@/app/hooks/useKeyedState";
 import {
   LeaderboardHero,
   LeaderboardIntro,
@@ -90,6 +91,15 @@ const STUFF_PLUS_PITCH_ORDER = [
   "Slider", "Curveball", "Sweeper",
   "Changeup", "Splitter",
 ];
+
+const BASE_CATEGORIES = [
+  "stuff_plus",
+  "max_fb_velo",
+  "avg_fb_velo",
+  "avg_fb_spin",
+  "avg_bb_spin",
+  "avg_extension",
+] as const;
 
 function fmt(v: number, cat: string): string {
   if (cat.includes("spin")) return v.toFixed(0);
@@ -213,10 +223,8 @@ export default function TrackmanLeaderboardsPage() {
   const [data, setData] = useState<Leaderboards | null>(null);
   const [stuffPlusRows, setStuffPlusRows] = useState<StuffPlusRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState("");
   const [stuffPlusPitchFilter, setStuffPlusPitchFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
-  const [categoryPitchFilter, setCategoryPitchFilter] = useState<string>("all");
   const { slug: selectedSlug } = useSelectedPlayer();
 
   useEffect(() => {
@@ -239,8 +247,6 @@ export default function TrackmanLeaderboardsPage() {
     });
   }, []);
 
-  const BASE_CATEGORIES = ["stuff_plus", "max_fb_velo", "avg_fb_velo", "avg_fb_spin", "avg_bb_spin", "avg_extension"];
-
   const categories = useMemo(() => {
     const cats: string[] = [];
     if (stuffPlusRows.length > 0) cats.push("stuff_plus");
@@ -250,8 +256,8 @@ export default function TrackmanLeaderboardsPage() {
       }
     }
     return cats.sort((a, b) => {
-      const ia = BASE_CATEGORIES.indexOf(a);
-      const ib = BASE_CATEGORIES.indexOf(b);
+      const ia = (BASE_CATEGORIES as readonly string[]).indexOf(a);
+      const ib = (BASE_CATEGORIES as readonly string[]).indexOf(b);
       if (ia >= 0 && ib >= 0) return ia - ib;
       if (ia >= 0) return -1;
       if (ib >= 0) return 1;
@@ -259,18 +265,18 @@ export default function TrackmanLeaderboardsPage() {
     });
   }, [data, stuffPlusRows]);
 
-  // Default to first category when loaded
-  useEffect(() => {
-    if (categories.length > 0 && !categories.includes(activeCategory)) {
-      setActiveCategory(categories[0]);
-      setCategoryPitchFilter("all");
-    }
-  }, [categories]);
-
-  // Reset pitch filter when switching categories
-  useEffect(() => {
-    setCategoryPitchFilter("all");
-  }, [activeCategory]);
+  const [activeCategoryState, setActiveCategory] = useKeyedState(
+    categories.join("|"),
+    () => categories[0] ?? "",
+  );
+  const activeCategory =
+    activeCategoryState && categories.includes(activeCategoryState)
+      ? activeCategoryState
+      : (categories[0] ?? "");
+  const [categoryPitchFilter, setCategoryPitchFilter] = useKeyedState(
+    activeCategory,
+    () => "all",
+  );
 
   const categoryPitchOptions = useMemo(() => {
     if (activeCategory === "stuff_plus") return [];
