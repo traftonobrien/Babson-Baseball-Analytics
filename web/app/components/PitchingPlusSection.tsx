@@ -67,8 +67,10 @@ export default function PitchingPlusSection({
     loading: otherSeasonLoading,
     error: otherSeasonError,
   } = useAllPitchData(otherSeasonCsvPaths, playerId);
-  const [baselinesLoaded, setBaselinesLoaded] = useState(false);
-  const [commandLoadError, setCommandLoadError] = useState<string | null>(null);
+  const [baselineLoadState, setBaselineLoadState] = useState<{
+    season: SeasonFilter | null;
+    error: string | null;
+  }>({ season: null, error: null });
   const [stuffState, setStuffState] = useState<StuffState>({
     loading: true,
     error: null,
@@ -79,40 +81,29 @@ export default function PitchingPlusSection({
   useEffect(() => {
     let active = true;
 
-    if (!season) {
-      setBaselinesLoaded(true);
-      setCommandLoadError(null);
+    if (!season || globalCommandPlusBaselines[season] || baselineLoadState.season === season) {
       return () => {
         active = false;
       };
     }
-
-    if (globalCommandPlusBaselines[season]) {
-      setBaselinesLoaded(true);
-      setCommandLoadError(null);
-      return () => {
-        active = false;
-      };
-    }
-
-    setBaselinesLoaded(false);
-    setCommandLoadError(null);
 
     loadAllOutingData({ seasonFilter: season as SeasonFilter })
       .then(() => {
         if (!active) return;
-        setBaselinesLoaded(true);
+        setBaselineLoadState({ season: season as SeasonFilter, error: null });
       })
       .catch((err) => {
         if (!active) return;
-        setBaselinesLoaded(true);
-        setCommandLoadError(err instanceof Error ? err.message : "command_load_error");
+        setBaselineLoadState({
+          season: season as SeasonFilter,
+          error: err instanceof Error ? err.message : "command_load_error",
+        });
       });
 
     return () => {
       active = false;
     };
-  }, [season]);
+  }, [baselineLoadState.season, season]);
 
   useEffect(() => {
     let active = true;
@@ -152,6 +143,12 @@ export default function PitchingPlusSection({
     [otherSeasonPitches, currentOutingPitches],
   );
 
+  const baselinesLoaded =
+    !season ||
+    Boolean(globalCommandPlusBaselines[season]) ||
+    baselineLoadState.season === season;
+  const commandLoadError =
+    baselineLoadState.season === season ? baselineLoadState.error : null;
   const loading = !season || !baselinesLoaded || otherSeasonLoading || stuffState.loading;
 
   const baselines = season ? globalCommandPlusBaselines[season] ?? null : null;

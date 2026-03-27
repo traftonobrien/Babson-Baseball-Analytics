@@ -23,6 +23,7 @@ const OPPONENTS_BY_DATE_ID: Record<string, string> = {
   "2026_02_27": "#1/6 Trinity (Texas)",
   "2026_02_28": "#1/6 Trinity (Texas)",
   "2026_03_01": "#1/6 Trinity (Texas)",
+  "2026_03_25": "Suffolk",
   "2026_04_24": "Wheaton",
 };
 
@@ -85,6 +86,11 @@ export const players: Player[] = [
         id: "JClark1/2025_04_27",
         label: "Apr 27, 2025 – Clark (13 pitches)",
         ...buildDataPaths("JClark1", "2025_04_27"),
+      },
+  {
+        id: "JClark1/2026_03_25",
+        label: "Mar 25, 2026 – Clark (46 pitches)",
+        ...buildDataPaths("JClark1", "2026_03_25"),
       },
  ],
 },
@@ -190,6 +196,11 @@ export const players: Player[] = [
         label: "Feb 27, 2026 – Pearl (45 pitches)",
         ...buildDataPaths("TPearl1", "2026_02_27"),
       },
+      {
+        id: "TPearl1/2026_03_25",
+        label: "Mar 25, 2026 – Pearl (50 pitches)",
+        ...buildDataPaths("TPearl1", "2026_03_25"),
+      },
     ],
   },
   {
@@ -242,6 +253,18 @@ export const players: Player[] = [
         id: "BBurk1/2026_04_24",
         label: "Apr 24, 2026 – Burk (45 pitches)",
         ...buildDataPaths("BBurk1", "2026_04_24"),
+      },
+    ],
+  },
+  {
+    id: "BShapiro1",
+    name: "Brennan Shapiro",
+    throws: "R",
+    outings: [
+      {
+        id: "BShapiro1/2026_03_25",
+        label: "Mar 25, 2026 – Shapiro (14 pitches)",
+        ...buildDataPaths("BShapiro1", "2026_03_25"),
       },
     ],
   },

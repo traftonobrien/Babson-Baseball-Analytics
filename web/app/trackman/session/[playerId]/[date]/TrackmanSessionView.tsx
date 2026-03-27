@@ -224,47 +224,62 @@ export default function TrackmanSessionView({
     from === "profile" ? "Back to profile" :
     from === "player" ? "Back to overview" :
     "Back to sessions";
-  const [pitches, setPitches] = useState<TrackmanPitch[]>([]);
-  const [pitchTypes, setPitchTypes] = useState<TrackmanPitchTypeSummary[]>([]);
-  const [summary, setSummary] = useState<TrackmanSessionSummary | null>(null);
-  const [meta, setMeta] = useState<Record<string, unknown> | null>(null);
-  const [viewMode, setViewMode] = useState<"pitch" | "aggregate" | null>(null);
   const [sessionStuffPlus, setSessionStuffPlus] = useState<Map<string, number>>(new Map());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [sessionState, setSessionState] = useState<{
+    key: string;
+    pitches: TrackmanPitch[];
+    pitchTypes: TrackmanPitchTypeSummary[];
+    summary: TrackmanSessionSummary | null;
+    meta: Record<string, unknown> | null;
+    viewMode: "pitch" | "aggregate" | null;
+    error: string | null;
+  } | null>(null);
+  const sessionKey = `${playerId}:${date}:${profileSlug ?? ""}`;
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
-    setError(null);
 
     fetchSessionData(playerId, date, profileSlug)
       .then((data) => {
         if (!active) return;
         if (data.format === "pitch") {
           const normalized = data.rows.map((row, i) => normalizePitch(row, i));
-          setPitches(normalized);
-          setPitchTypes([]);
-          setSummary(null);
-          setMeta(data.meta ?? null);
-          setViewMode("pitch");
+          setSessionState({
+            key: sessionKey,
+            pitches: normalized,
+            pitchTypes: [],
+            summary: null,
+            meta: data.meta ?? null,
+            viewMode: "pitch",
+            error: null,
+          });
         } else {
           const normalized = data.pitchTypes
             .filter((row) => (row as Record<string, unknown>)?.is_valid !== false)
             .map((row) => normalizePitchTypeRow(row))
             .filter((row) => row.pitchType !== "Other");
-          setPitchTypes(normalized);
-          setSummary(normalizeSessionSummary(data.summary ?? null));
-          setPitches([]);
-          setMeta(data.meta ?? null);
-          setViewMode("aggregate");
+          setSessionState({
+            key: sessionKey,
+            pitches: [],
+            pitchTypes: normalized,
+            summary: normalizeSessionSummary(data.summary ?? null),
+            meta: data.meta ?? null,
+            viewMode: "aggregate",
+            error: null,
+          });
         }
-        setLoading(false);
       })
       .catch((err) => {
         if (!active) return;
-        setError(err instanceof Error ? err.message : "Unknown error");
-        setLoading(false);
+        setSessionState({
+          key: sessionKey,
+          pitches: [],
+          pitchTypes: [],
+          summary: null,
+          meta: null,
+          viewMode: null,
+          error: err instanceof Error ? err.message : "Unknown error",
+        });
       });
 
     // Fetch Stuff+ for this specific session
@@ -285,7 +300,16 @@ export default function TrackmanSessionView({
     return () => {
       active = false;
     };
-  }, [playerId, date]);
+  }, [date, playerId, profileSlug, sessionKey]);
+
+  const isCurrentSession = sessionState?.key === sessionKey;
+  const pitches = isCurrentSession ? sessionState.pitches : [];
+  const pitchTypes = isCurrentSession ? sessionState.pitchTypes : [];
+  const summary = isCurrentSession ? sessionState.summary : null;
+  const meta = isCurrentSession ? sessionState.meta : null;
+  const viewMode = isCurrentSession ? sessionState.viewMode : null;
+  const loading = !isCurrentSession;
+  const error = isCurrentSession ? sessionState.error : null;
 
   // Header info
   const playerName = getCanonicalName(
