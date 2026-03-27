@@ -160,6 +160,14 @@
     "ncaa_player_id": null
   },
   {
+    "slug": "reid_bourke",
+    "name": "Bourke Reid",
+    "team": "Babson",
+    "role": "Pitcher",
+    "d3_player_id": null,
+    "ncaa_player_id": null
+  },
+  {
     "slug": "rhodes_pat",
     "name": "Pat Rhodes",
     "team": "Babson",
