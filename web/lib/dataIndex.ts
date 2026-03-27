@@ -24,7 +24,7 @@ const OPPONENTS_BY_DATE_ID: Record<string, string> = {
   "2026_02_28": "#1/6 Trinity (Texas)",
   "2026_03_01": "#1/6 Trinity (Texas)",
   "2026_03_25": "Suffolk",
-  "2026_04_24": "Wheaton",
+  "2026_03_24": "Wheaton",
 };
 
 export const players: Player[] = [
@@ -61,9 +61,9 @@ export const players: Player[] = [
         ...buildDataPaths("JFinkelstein1", "2025_04_14"),
       },
       {
-        id: "JFinkelstein1/2026_04_24",
-        label: "Apr 24, 2026 – Finkelstein (70 pitches)",
-        ...buildDataPaths("JFinkelstein1", "2026_04_24"),
+        id: "JFinkelstein1/2026_03_24",
+        label: "Mar 24, 2026 – Finkelstein (70 pitches)",
+        ...buildDataPaths("JFinkelstein1", "2026_03_24"),
       },
     ],
   },
@@ -139,9 +139,9 @@ export const players: Player[] = [
         ...buildDataPaths("DJames1", "2025_03_26"),
       },
       {
-        id: "DJames1/2026_04_24",
-        label: "Apr 24, 2026 – James (33 pitches)",
-        ...buildDataPaths("DJames1", "2026_04_24"),
+        id: "DJames1/2026_03_24",
+        label: "Mar 24, 2026 – James (33 pitches)",
+        ...buildDataPaths("DJames1", "2026_03_24"),
       },
     ],
   },
@@ -238,9 +238,9 @@ export const players: Player[] = [
         ...buildDataPaths("MCamardi1", "2026_02_28"),
       },
       {
-        id: "MCamardi1/2026_04_24",
-        label: "Apr 24, 2026 – Camardi (17 pitches)",
-        ...buildDataPaths("MCamardi1", "2026_04_24"),
+        id: "MCamardi1/2026_03_24",
+        label: "Mar 24, 2026 – Camardi (17 pitches)",
+        ...buildDataPaths("MCamardi1", "2026_03_24"),
       },
     ],
   },
@@ -250,9 +250,9 @@ export const players: Player[] = [
     throws: "R",
     outings: [
       {
-        id: "BBurk1/2026_04_24",
-        label: "Apr 24, 2026 – Burk (45 pitches)",
-        ...buildDataPaths("BBurk1", "2026_04_24"),
+        id: "BBurk1/2026_03_24",
+        label: "Mar 24, 2026 – Burk (45 pitches)",
+        ...buildDataPaths("BBurk1", "2026_03_24"),
       },
     ],
   },
