@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { desc } from "drizzle-orm";
-import { db } from "@/db";
+import { chartingDb as db } from "@/db";
 import { chartingGames } from "@/db/schema";
 import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
 import { logApiError } from "@/lib/server/logger";

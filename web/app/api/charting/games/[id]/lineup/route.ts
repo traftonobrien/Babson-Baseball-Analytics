@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { and, asc, eq } from "drizzle-orm";
-import { db } from "@/db";
+import { chartingDb as db } from "@/db";
 import { chartingGames, chartingLineupEntries } from "@/db/schema";
 import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
 import { isValidLineupSlot } from "@/lib/charting/domain";

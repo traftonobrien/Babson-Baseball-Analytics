@@ -10,7 +10,7 @@ import {
   Search,
 } from "lucide-react";
 import { count, desc } from "drizzle-orm";
-import { db } from "@/db";
+import { chartingDb as db } from "@/db";
 import { chartingGames, chartingPlateAppearances } from "@/db/schema";
 import { EditableChartingGameNameInList } from "@/app/charting/_components/EditableChartingGameNameInList";
 import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";

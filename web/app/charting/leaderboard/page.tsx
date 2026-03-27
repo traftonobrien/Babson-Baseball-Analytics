@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { format, parseISO, subDays } from "date-fns";
 import { desc, eq } from "drizzle-orm";
-import { db } from "@/db";
+import { chartingDb as db } from "@/db";
 import { chartingGames, chartingPitcherSegments, chartingPlateAppearances } from "@/db/schema";
 import {
     AggregateOptions,
