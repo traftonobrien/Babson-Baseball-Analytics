@@ -39,6 +39,7 @@ export {
   baserunnerStateFromPlateAppearance,
   battingSideForMatchup,
   pitchingSideForMatchup,
+  deriveNextLineupSlot,
   availablePAResultsForClosure,
   guidanceTextForClosure,
   paResultFamily,

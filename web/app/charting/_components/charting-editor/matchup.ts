@@ -1,6 +1,7 @@
 import {
   battingSideForMatchup,
   deriveChartingLiveState,
+  deriveNextLineupSlot,
   lineupNameForSlot,
   pitchingSideForMatchup,
 } from "@/lib/charting/live";
@@ -36,11 +37,10 @@ export const deriveMatchupSelection = (
   const openPlateAppearance =
     snapshot.plateAppearances.find((plateAppearance) => plateAppearance.id === liveState.openPAId) ??
     null;
-  const battingSide = battingSideForMatchup(
-    snapshot.game,
-    gameStateOverride?.isTopInning ?? liveState.isTopInning,
-  );
-  const slot = openPlateAppearance?.lineupSlot ?? liveState.batterSlot;
+  const battingSide = battingSideForMatchup(snapshot.game, liveState.isTopInning);
+  const slot =
+    openPlateAppearance?.lineupSlot ??
+    deriveNextLineupSlot(snapshot, battingSide, gameStateOverride);
   const hitterName =
     openPlateAppearance?.hitterName ??
     lineupNameForSlot(snapshot.lineup, slot, battingSide) ??
@@ -83,10 +83,7 @@ export const derivePitcherSelection = (
     snapshot.pitches,
     gameStateOverride,
   );
-  const pitchingSide = pitchingSideForMatchup(
-    snapshot.game,
-    gameStateOverride?.isTopInning ?? liveState.isTopInning,
-  );
+  const pitchingSide = pitchingSideForMatchup(snapshot.game, liveState.isTopInning);
   const matchingSegments = snapshot.segments.filter(
     (segment) => segment.teamSide === pitchingSide,
   );

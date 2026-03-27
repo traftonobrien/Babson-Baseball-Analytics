@@ -214,6 +214,43 @@ export function pitchingSideForMatchup(
     : "our";
 }
 
+export function deriveNextLineupSlot(
+  snapshot: Pick<ChartingGameSnapshot, "game" | "plateAppearances">,
+  battingSide: ChartingMatchupSide,
+  gameStateOverride?: GameStateOverride | null,
+): number {
+  const orderedPlateAppearances = [...snapshot.plateAppearances].sort((left, right) => {
+    if (left.paOrder === right.paOrder) {
+      return left.id.localeCompare(right.id);
+    }
+    return left.paOrder - right.paOrder;
+  });
+  const lastSidePlateAppearanceAfterAnchor = gameStateOverride
+    ? findLastPlateAppearance(
+        orderedPlateAppearances,
+        (plateAppearance) =>
+          plateAppearance.paOrder > gameStateOverride.anchorPAOrder &&
+          plateAppearance.teamSide === battingSide,
+      )
+    : null;
+  if (lastSidePlateAppearanceAfterAnchor) {
+    return nextLineupSlot(lastSidePlateAppearanceAfterAnchor.lineupSlot);
+  }
+
+  if (
+    gameStateOverride &&
+    battingSideForMatchup(snapshot.game, gameStateOverride.isTopInning) === battingSide
+  ) {
+    return gameStateOverride.batterSlot;
+  }
+
+  const lastSidePlateAppearance = findLastPlateAppearance(
+    orderedPlateAppearances,
+    (plateAppearance) => plateAppearance.teamSide === battingSide,
+  );
+  return lastSidePlateAppearance ? nextLineupSlot(lastSidePlateAppearance.lineupSlot) : 1;
+}
+
 // ---------------------------------------------------------------------------
 // PA result helpers
 // ---------------------------------------------------------------------------
@@ -609,6 +646,23 @@ function applyPitchResult(progress: PAPitchProgress, result: PitchResult) {
       progress.closureState = "hit_by_pitch";
       break;
   }
+}
+
+function findLastPlateAppearance(
+  plateAppearances: ChartingPlateAppearance[],
+  predicate: (plateAppearance: ChartingPlateAppearance) => boolean,
+) {
+  for (let index = plateAppearances.length - 1; index >= 0; index -= 1) {
+    const plateAppearance = plateAppearances[index];
+    if (plateAppearance && predicate(plateAppearance)) {
+      return plateAppearance;
+    }
+  }
+  return null;
+}
+
+function nextLineupSlot(slot: number): number {
+  return (slot % 9) + 1;
 }
 
 function isFlyOut(
