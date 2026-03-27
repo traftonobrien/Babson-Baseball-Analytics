@@ -869,7 +869,7 @@ export function ChartingEditor({
         isTopBarOpen={isTopBarOpen}
         saveState={saveState}
         saveStatusLabel={saveStatusLabel}
-        showManualSave={saveState === "error"}
+        showManualSave
         showReauthenticate={showReauthenticateAction}
         onOpenLineupEditor={handleOpenLineupEditor}
         onManualSave={handleManualSave}

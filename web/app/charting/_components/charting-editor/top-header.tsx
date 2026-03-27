@@ -144,7 +144,8 @@ export const ChartingEditorTopHeader = ({
             <button
               type="button"
               onClick={onManualSave}
-              className={toolbarButtonClass}
+              disabled={saveState === "saving"}
+              className={`${toolbarButtonClass} disabled:cursor-not-allowed disabled:opacity-50`}
             >
               <Save className="h-4 w-4" />
               <span>Save Now</span>
