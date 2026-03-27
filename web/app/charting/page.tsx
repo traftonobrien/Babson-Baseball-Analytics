@@ -11,7 +11,7 @@ import {
     Target,
 } from "lucide-react";
 import { count, desc } from "drizzle-orm";
-import { db } from "@/db";
+import { chartingDb as db } from "@/db";
 import { chartingGames, chartingPlateAppearances } from "@/db/schema";
 import {
     LeaderboardIntro,

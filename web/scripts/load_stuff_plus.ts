@@ -1,5 +1,5 @@
 /**
- * Load Stuff+ CSVs into Neon PostgreSQL.
+ * Load Stuff+ CSVs into the configured Postgres database.
  * Run from web/: npm run load:stuff-plus
  *
  * Expects CSVs at: ../output/stuff_plus/

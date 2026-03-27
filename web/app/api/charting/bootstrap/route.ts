@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { desc } from "drizzle-orm";
-import { db } from "@/db";
+import { chartingDb as db } from "@/db";
 import { chartingGames } from "@/db/schema";
 import { buildBootstrapPitchers } from "@/lib/charting/bootstrapPitchers";
 import { buildBootstrapRosterPlayers } from "@/lib/charting/bootstrapRoster";

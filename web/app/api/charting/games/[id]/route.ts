@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
-import { db } from "@/db";
+import { chartingDb as db } from "@/db";
 
 const FIELD_LIMITS: Record<string, number> = {
   opponent: 100,

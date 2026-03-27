@@ -1,5 +1,5 @@
 import { asc, eq } from "drizzle-orm";
-import { db } from "@/db";
+import { chartingDb as db } from "@/db";
 import {
   chartingGames,
   chartingLineupEntries,
