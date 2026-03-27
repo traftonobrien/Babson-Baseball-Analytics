@@ -49,6 +49,8 @@ const PUBLIC_PREFIXES = [
   AUTH_GATES.mechanics.apiLoginPath,
 ] as const;
 
+const DEVICE_LOGIN_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365; // 1 year
+
 type CookieCarrier = {
   cookies: {
     get(name: string): { value: string } | undefined;
@@ -74,7 +76,7 @@ function gateCookieOptions() {
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict" as const,
     path: "/",
-    maxAge: 7200, // 2 hours
+    maxAge: DEVICE_LOGIN_COOKIE_MAX_AGE_SECONDS,
   };
 }
 

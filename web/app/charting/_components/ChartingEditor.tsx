@@ -69,6 +69,7 @@ import {
   deriveEditorCountPresetFromPA,
   detailTextForClosure,
   getSaveStatusLabel,
+  isUnauthorizedSaveError,
   initialCountFromPreset,
   parseVelocity,
   safeReadText,
@@ -286,6 +287,8 @@ export function ChartingEditor({
   );
   const currentPitcherLocked = liveState.openPAId !== null;
   const saveStatusLabel = getSaveStatusLabel(saveState, statusMessage, errorMessage);
+  const showReauthenticateAction =
+    saveState === "error" && isUnauthorizedSaveError(errorMessage);
   const liveSummary = `${liveState.isTopInning ? "Top" : "Bot"} ${liveState.inning} • ${liveState.outs} Outs`;
   const guidanceText = guidanceTextForClosure(
     liveState.closureState,
@@ -552,14 +555,20 @@ export function ChartingEditor({
         if (queuedEpoch !== saveEpochRef.current) {
           return;
         }
-        const message =
+        const rawMessage =
           error instanceof Error ? error.message : "Could not save charting changes.";
+        const message = isUnauthorizedSaveError(rawMessage)
+          ? "Unauthorized issues - sign in again in another tab, then tap Save Now."
+          : rawMessage;
         startTransition(() => {
           setSaveState("error");
           setStatusMessage(null);
           setErrorMessage(message);
         });
       });
+  };
+  const handleManualSave = () => {
+    queueSnapshotSave(snapshot, "Manual save complete");
   };
   const applyOptimisticSnapshot = (
     nextSnapshot: ChartingGameSnapshot,
@@ -867,7 +876,10 @@ export function ChartingEditor({
         isTopBarOpen={isTopBarOpen}
         saveState={saveState}
         saveStatusLabel={saveStatusLabel}
+        showManualSave
+        showReauthenticate={showReauthenticateAction}
         onOpenLineupEditor={handleOpenLineupEditor}
+        onManualSave={handleManualSave}
         onToggleTopBar={() => setIsTopBarOpen((current) => !current)}
         onStatusChange={handleStatusChange}
       />

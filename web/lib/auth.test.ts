@@ -4,6 +4,7 @@ import {
   MECHANICS_GATE_CHAIN,
   SITE_GATE_CHAIN,
   buildAuthMisconfiguredMessage,
+  buildGateLoginSuccessResponse,
   getRequiredGatesForPath,
   hasGateCookie,
   isPublicPath,
@@ -64,5 +65,10 @@ describe("auth helpers", () => {
     expect(buildAuthMisconfiguredMessage("mechanics")).toBe(
       "Server auth misconfigured: missing MECHANICS_PASSWORD",
     );
+  });
+
+  it("keeps successful logins on device until explicit logout", () => {
+    const response = buildGateLoginSuccessResponse("site");
+    expect(response.headers.get("set-cookie")).toContain("Max-Age=31536000");
   });
 });

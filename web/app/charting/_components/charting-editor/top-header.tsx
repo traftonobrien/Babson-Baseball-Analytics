@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronLeft,
   LoaderCircle,
+  LogIn,
   Save,
   ShieldAlert,
   Timer,
@@ -25,7 +26,10 @@ interface ChartingEditorTopHeaderProps {
   isTopBarOpen: boolean;
   saveState: SaveState;
   saveStatusLabel: string;
+  showManualSave: boolean;
+  showReauthenticate: boolean;
   onOpenLineupEditor: () => void;
+  onManualSave: () => void;
   onToggleTopBar: () => void;
   onStatusChange: (status: ChartingGameStatus) => void;
 }
@@ -40,10 +44,18 @@ export const ChartingEditorTopHeader = ({
   isTopBarOpen,
   saveState,
   saveStatusLabel,
+  showManualSave,
+  showReauthenticate,
   onOpenLineupEditor,
+  onManualSave,
   onToggleTopBar,
   onStatusChange,
 }: ChartingEditorTopHeaderProps) => {
+  const toolbarButtonClass =
+    "flex items-center gap-2 rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.1),rgba(var(--babson-grey-rgb),0.08)_58%,rgba(9,9,11,0.92)_100%)] px-3 py-1.5 text-xs font-bold text-[rgb(212,220,218)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(var(--babson-green-rgb),0.05)] transition-colors hover:border-[rgba(var(--babson-grey-rgb),0.32)]";
+  const reauthenticateHref = `/login?returnTo=${encodeURIComponent(
+    `/charting/games/${gameId}/edit`,
+  )}`;
   return (
     <>
       <header className="flex items-center justify-between border-b border-[rgba(var(--babson-grey-rgb),0.18)] bg-zinc-950/90 px-6 py-4 lg:px-8">
@@ -108,6 +120,28 @@ export const ChartingEditorTopHeader = ({
             )}
             <span>{saveStatusLabel}</span>
           </div>
+          {showReauthenticate ? (
+            <Link
+              href={reauthenticateHref}
+              target="_blank"
+              rel="noreferrer"
+              className={toolbarButtonClass}
+            >
+              <LogIn className="h-4 w-4" />
+              <span>Sign In</span>
+            </Link>
+          ) : null}
+          {showManualSave ? (
+            <button
+              type="button"
+              onClick={onManualSave}
+              disabled={saveState === "saving"}
+              className={`${toolbarButtonClass} disabled:cursor-not-allowed disabled:opacity-50`}
+            >
+              <Save className="h-4 w-4" />
+              <span>Save Now</span>
+            </button>
+          ) : null}
 
           <select
             value={status}
