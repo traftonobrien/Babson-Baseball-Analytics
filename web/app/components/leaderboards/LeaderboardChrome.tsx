@@ -3,7 +3,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import Breadcrumbs, { type BreadcrumbItem } from "@/app/components/Breadcrumbs";
-import { useSiteAppearance } from "@/app/components/SiteAppearanceContext";
+import { useHydratedSiteAppearance } from "@/app/components/SiteAppearanceContext";
 
 type LeaderboardTone =
   | "amber"
@@ -215,7 +215,7 @@ export function LeaderboardPill({
   className?: string;
   variant?: SurfaceVariant;
 }) {
-  const siteAppearance = useSiteAppearance();
+  const siteAppearance = useHydratedSiteAppearance();
   const lightOnDarkSite = variant === "light" && siteAppearance === "dark";
 
   const pillStyle =
@@ -260,7 +260,7 @@ export function LeaderboardStatBlock({
   emphasisClassName?: string;
   variant?: SurfaceVariant;
 }) {
-  const siteAppearance = useSiteAppearance();
+  const siteAppearance = useHydratedSiteAppearance();
   const lightOnDarkSite = variant === "light" && siteAppearance === "dark";
 
   const emphasisClass =
@@ -333,7 +333,7 @@ export function LeaderboardHero({
   side?: ReactNode;
   variant?: SurfaceVariant;
 }) {
-  const siteAppearance = useSiteAppearance();
+  const siteAppearance = useHydratedSiteAppearance();
   const lightOnDarkSite = variant === "light" && siteAppearance === "dark";
 
   const toneClasses = HERO_TONES[tone];
@@ -499,7 +499,7 @@ export function LeaderboardPanel({
   className?: string;
   variant?: SurfaceVariant;
 }) {
-  const siteAppearance = useSiteAppearance();
+  const siteAppearance = useHydratedSiteAppearance();
   const lightOnDarkSite = variant === "light" && siteAppearance === "dark";
 
   return (

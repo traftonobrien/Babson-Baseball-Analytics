@@ -22,7 +22,6 @@ import {
   X
 } from "lucide-react";
 import { TEAM_NAME } from "@/lib/teamConfig";
-import { useSiteAppearance } from "./SiteAppearanceContext";
 import SiteAppearanceToggle from "./SiteAppearanceToggle";
 
 function isDictionaryRoute(pathname: string): boolean {
@@ -158,7 +157,6 @@ function shouldHideSidebar(pathname: string | null): boolean {
 export default function Sidebar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const isDark = useSiteAppearance() === "dark";
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -182,13 +180,7 @@ export default function Sidebar() {
 
   const renderNavLinks = () => (
     <nav className="flex flex-1 flex-col gap-1.5 overflow-y-auto px-4 py-3">
-      <div
-        className={
-          isDark
-            ? "mt-4 px-3 text-[11px] font-bold uppercase tracking-[0.15em] text-zinc-500"
-            : "mt-4 px-3 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-400 dark:text-zinc-500"
-        }
-      >
+      <div className="mt-4 px-3 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-400 dark:text-zinc-500">
         Main Menu
       </div>
       {NAV_ITEMS.map((item, index) => {
@@ -201,25 +193,21 @@ export default function Sidebar() {
         return (
           <div key={item.name} className="flex flex-col gap-1.5">
             {startsNewSection && (
-              <div className={isDark ? "my-2 w-full h-px bg-zinc-800" : "my-2 w-full h-px bg-slate-100 dark:bg-zinc-800"} />
+              <div className="my-2 h-px w-full bg-slate-100 dark:bg-zinc-800" />
             )}
             <Link
               href={item.url}
               className={
                 isActive
                   ? "flex items-center gap-3 rounded-full bg-[var(--brand-primary-soft)] px-3 py-2.5 text-[13px] font-bold text-[var(--brand-primary-subtle-text)] transition-colors dark:border dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-[var(--brand-primary-spotlight)] dark:shadow-[0_10px_28px_rgba(0,0,0,0.35)]"
-                  : isDark
-                    ? "group flex items-center gap-3 rounded-full px-3 py-2.5 text-[13px] font-semibold text-zinc-400 transition-colors hover:bg-zinc-900/80 hover:text-zinc-100"
-                    : "group flex items-center gap-3 rounded-full px-3 py-2.5 text-[13px] font-semibold text-slate-500 dark:text-zinc-400 transition-colors hover:bg-background hover:text-slate-900 dark:hover:text-zinc-50"
+                  : "group flex items-center gap-3 rounded-full px-3 py-2.5 text-[13px] font-semibold text-slate-500 transition-colors hover:bg-background hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-900/80 dark:hover:text-zinc-100"
               }
             >
               <Icon
                 className={
                   isActive
                     ? "h-5 w-5 text-[var(--brand-primary-subtle-text)] dark:text-[var(--brand-primary-spotlight)]"
-                    : isDark
-                      ? "w-5 h-5 text-zinc-500 group-hover:text-zinc-400 transition-colors"
-                      : "w-5 h-5 text-slate-400 dark:text-zinc-500 group-hover:text-slate-500 dark:hover:text-zinc-400 transition-colors"
+                    : "h-5 w-5 text-slate-400 transition-colors group-hover:text-slate-500 dark:text-zinc-500 dark:group-hover:text-zinc-400"
                 }
               />
               {item.name}
@@ -232,71 +220,33 @@ export default function Sidebar() {
 
   return (
     <>
-      <div
-        className={
-          isDark
-            ? "font-display sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-950 px-4 py-4 xl:hidden"
-            : "font-display sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-slate-100 dark:border-zinc-800 bg-surface px-4 py-4 xl:hidden"
-        }
-      >
+      <div className="font-display sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-slate-100 bg-surface px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950 xl:hidden">
         <Link href="/" className="flex items-center gap-3">
           <div>
-            <span
-              className={
-                isDark ? "block text-lg font-bold tracking-tight text-zinc-100" : "block text-lg font-bold tracking-tight text-slate-900 dark:text-zinc-50"
-              }
-            >
+            <span className="block text-lg font-bold tracking-tight text-slate-900 dark:text-zinc-100">
               {TEAM_NAME} Baseball
             </span>
-            <span
-              className={
-                isDark
-                  ? "block text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500"
-                  : "block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-zinc-500"
-              }
-            >
+            <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-zinc-500">
               Analytics Portal
             </span>
           </div>
         </Link>
         <button
           onClick={() => setIsMobileMenuOpen(true)}
-          className={
-            isDark
-              ? "rounded-xl p-2 text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-zinc-100"
-              : "rounded-xl p-2 text-slate-500 dark:text-zinc-400 transition-colors hover:bg-background hover:text-slate-900 dark:hover:text-zinc-50"
-          }
+          className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-background hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
         >
           <Menu className="w-5 h-5" />
         </button>
       </div>
 
-      <aside
-        className={
-          isDark
-            ? "font-display hidden h-screen w-[240px] shrink-0 border-r border-zinc-800 bg-zinc-950 xl:sticky xl:top-0 xl:flex xl:flex-col"
-            : "font-display hidden h-screen w-[240px] shrink-0 border-r border-slate-100 dark:border-zinc-800 bg-surface xl:sticky xl:top-0 xl:flex xl:flex-col"
-        }
-      >
+      <aside className="font-display hidden h-screen w-[240px] shrink-0 border-r border-slate-100 bg-surface dark:border-zinc-800 dark:bg-zinc-950 xl:sticky xl:top-0 xl:flex xl:flex-col">
         <div className="px-6 pb-4 pt-6">
           <Link href="/" className="flex items-center gap-3">
             <div>
-              <h1
-                className={
-                  isDark
-                    ? "text-[17px] font-extrabold leading-tight tracking-tight text-zinc-100"
-                    : "text-[17px] font-extrabold leading-tight tracking-tight text-slate-900 dark:text-zinc-50"
-                }
-              >
+              <h1 className="text-[17px] font-extrabold leading-tight tracking-tight text-slate-900 dark:text-zinc-100">
                 {TEAM_NAME} Baseball
               </h1>
-              <p
-                className={
-                  isDark
-                    ? "text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500"
-                    : "text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-zinc-400"
-                }
-              >
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-zinc-400">
                 Analytics Portal
               </p>
             </div>
@@ -305,7 +255,7 @@ export default function Sidebar() {
 
         {renderNavLinks()}
 
-        <div className={isDark ? "border-t border-zinc-800 p-4" : "border-t border-slate-100 dark:border-zinc-800 p-4"}>
+        <div className="border-t border-slate-100 p-4 dark:border-zinc-800">
           <div className="mb-3">
             <SiteAppearanceToggle />
           </div>
@@ -335,36 +285,16 @@ export default function Sidebar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className={
-                isDark
-                  ? "font-display fixed inset-y-0 right-0 z-[70] flex w-[85vw] max-w-sm flex-col border-l border-zinc-800 bg-zinc-950 shadow-2xl xl:hidden"
-                  : "font-display fixed inset-y-0 right-0 z-[70] flex w-[85vw] max-w-sm flex-col border-l border-slate-100 dark:border-zinc-800 bg-surface shadow-2xl xl:hidden"
-              }
+              className="font-display fixed inset-y-0 right-0 z-[70] flex w-[85vw] max-w-sm flex-col border-l border-slate-100 bg-surface shadow-2xl dark:border-zinc-800 dark:bg-zinc-950 xl:hidden"
             >
-              <div
-                className={
-                  isDark
-                    ? "flex items-center justify-between border-b border-zinc-800 p-5"
-                    : "flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 p-5"
-                }
-              >
-                <div
-                  className={
-                    isDark
-                      ? "text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500"
-                      : "text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500"
-                  }
-                >
+              <div className="flex items-center justify-between border-b border-slate-100 p-5 dark:border-zinc-800">
+                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500">
                   Navigation
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={
-                    isDark
-                      ? "flex h-8 w-8 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
-                      : "flex h-8 w-8 items-center justify-center rounded-full bg-background border border-slate-100 dark:border-zinc-800 text-slate-500 dark:text-zinc-400 transition-colors hover:bg-slate-100 dark:bg-zinc-800 hover:text-slate-900 dark:hover:text-zinc-50"
-                  }
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-100 bg-background text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -372,7 +302,7 @@ export default function Sidebar() {
               <div className="flex-1 overflow-y-auto">
                 {renderNavLinks()}
               </div>
-              <div className={isDark ? "border-t border-zinc-800 p-4" : "border-t border-slate-100 dark:border-zinc-800 p-4"}>
+              <div className="border-t border-slate-100 p-4 dark:border-zinc-800">
                 <div className="mb-3">
                   <SiteAppearanceToggle />
                 </div>

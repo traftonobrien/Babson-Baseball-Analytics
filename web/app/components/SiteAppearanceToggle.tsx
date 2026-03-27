@@ -1,13 +1,17 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
-import { useSiteAppearanceControls } from "./SiteAppearanceContext";
+import {
+  useHydratedSiteAppearance,
+  useSiteAppearanceControls,
+} from "./SiteAppearanceContext";
 
 export default function SiteAppearanceToggle() {
   const ctx = useSiteAppearanceControls();
   if (!ctx) return null;
 
-  const { appearance, setAppearance } = ctx;
+  const { setAppearance } = ctx;
+  const appearance = useHydratedSiteAppearance();
   const isLight = appearance === "light";
 
   return (

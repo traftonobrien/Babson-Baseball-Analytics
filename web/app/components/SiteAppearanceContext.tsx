@@ -104,3 +104,14 @@ export function useSiteAppearance(): SiteAppearance {
 export function useSiteAppearanceControls(): Ctx | null {
   return useContext(SiteAppearanceContext);
 }
+
+export function useHydratedSiteAppearance(): SiteAppearance {
+  const appearance = useSiteAppearance();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  return mounted ? appearance : "light";
+}

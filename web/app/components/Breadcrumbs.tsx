@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSiteAppearance } from "@/app/components/SiteAppearanceContext";
 
 export interface BreadcrumbItem {
   label: string;
@@ -21,14 +20,12 @@ export default function Breadcrumbs({ items, className, variant = "dark" }: Prop
   if (items.length === 0) return null;
 
   const isLight = variant === "light";
-  const siteDark = useSiteAppearance() === "dark";
-  const lightOnDark = isLight && siteDark;
 
   return (
     <nav
       className={cn(
         "mb-4 hidden items-center gap-1.5 text-sm md:flex",
-        lightOnDark ? "text-slate-500 dark:text-zinc-400" : isLight ? "text-slate-500" : "text-zinc-500",
+        isLight ? "text-slate-500 dark:text-zinc-400" : "text-zinc-500",
         className,
       )}
     >
@@ -38,7 +35,7 @@ export default function Breadcrumbs({ items, className, variant = "dark" }: Prop
             <ChevronRight
               className={cn(
                 "h-3.5 w-3.5",
-                lightOnDark ? "text-zinc-600" : isLight ? "text-slate-400" : "text-zinc-600",
+                isLight ? "text-slate-400 dark:text-zinc-600" : "text-zinc-600",
               )}
             />
           )}
@@ -47,13 +44,13 @@ export default function Breadcrumbs({ items, className, variant = "dark" }: Prop
               href={item.href}
               className={cn(
                 "transition-smooth",
-                lightOnDark ? "hover:text-slate-900 dark:hover:text-zinc-50" : isLight ? "hover:text-slate-900" : "hover:text-zinc-300",
+                isLight ? "hover:text-slate-900 dark:hover:text-zinc-50" : "hover:text-zinc-300",
               )}
             >
               {item.label}
             </Link>
           ) : (
-            <span className={lightOnDark ? "text-slate-900 dark:text-zinc-50" : isLight ? "text-slate-700" : "text-zinc-300"}>
+            <span className={isLight ? "text-slate-700 dark:text-zinc-50" : "text-zinc-300"}>
               {item.label}
             </span>
           )}
