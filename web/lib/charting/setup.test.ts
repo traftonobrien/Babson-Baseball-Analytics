@@ -168,4 +168,14 @@ describe("bootstrap pitcher roster", () => {
     expect(rosterNames.has("Wyatt Miller")).toBe(true);
     expect(rosterNames.has("Dylan Drazka")).toBe(true);
   });
+
+  it("maps Bourke Reid into the charting pitcher bootstrap from the arsenal source of truth", () => {
+    const bourkePitcher = pitchers.find((pitcher) => pitcher.playerId === "BReid1");
+    const bourkeRosterPlayer = rosterPlayers.find((player) => player.slug === "reid_bourke");
+
+    expect(bourkePitcher?.name).toBe("Bourke Reid");
+    expect(bourkePitcher?.throws).toBe("R");
+    expect(bourkePitcher?.arsenalPitchTypes).toEqual(["Fastball", "Slider", "Split/Cut"]);
+    expect(bourkeRosterPlayer?.playerId).toBe("BReid1");
+  });
 });
