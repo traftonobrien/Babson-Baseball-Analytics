@@ -8,6 +8,13 @@ import {
 } from "@/app/components/leaderboards/LeaderboardChrome";
 import { TEAM_NAME } from "@/lib/teamConfig";
 
+function resolveReturnToPath(rawPath: string | null): string {
+  if (!rawPath || !rawPath.startsWith("/") || rawPath.startsWith("//")) {
+    return "/";
+  }
+  return rawPath;
+}
+
 export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -26,7 +33,13 @@ export default function LoginPage() {
       });
 
       if (response.ok) {
-        window.location.assign("/");
+        const returnTo =
+          typeof window === "undefined"
+            ? "/"
+            : resolveReturnToPath(
+                new URLSearchParams(window.location.search).get("returnTo"),
+              );
+        window.location.assign(returnTo);
         return;
       }
 

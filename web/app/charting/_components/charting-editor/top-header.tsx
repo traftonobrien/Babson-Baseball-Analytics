@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronLeft,
   LoaderCircle,
+  LogIn,
   Save,
   ShieldAlert,
   Timer,
@@ -30,7 +31,10 @@ interface ChartingEditorTopHeaderProps {
   isTopBarOpen: boolean;
   saveState: SaveState;
   saveStatusLabel: string;
+  showManualSave: boolean;
+  showReauthenticate: boolean;
   onOpenLineupEditor: () => void;
+  onManualSave: () => void;
   onToggleTopBar: () => void;
   onStatusChange: (status: ChartingGameStatus) => void;
 }
@@ -45,11 +49,17 @@ export const ChartingEditorTopHeader = ({
   isTopBarOpen,
   saveState,
   saveStatusLabel,
+  showManualSave,
+  showReauthenticate,
   onOpenLineupEditor,
+  onManualSave,
   onToggleTopBar,
   onStatusChange,
 }: ChartingEditorTopHeaderProps) => {
   const toolbarButtonClass = `${EDITOR_GHOST_BUTTON_CLASS} h-9 rounded-full px-3 py-1.5 text-xs font-bold`;
+  const reauthenticateHref = `/login?returnTo=${encodeURIComponent(
+    `/charting/games/${gameId}/edit`,
+  )}`;
 
   return (
     <>
@@ -119,6 +129,27 @@ export const ChartingEditorTopHeader = ({
             )}
             <span>{saveStatusLabel}</span>
           </div>
+          {showReauthenticate ? (
+            <Link
+              href={reauthenticateHref}
+              target="_blank"
+              rel="noreferrer"
+              className={toolbarButtonClass}
+            >
+              <LogIn className="h-4 w-4" />
+              <span>Sign In</span>
+            </Link>
+          ) : null}
+          {showManualSave ? (
+            <button
+              type="button"
+              onClick={onManualSave}
+              className={toolbarButtonClass}
+            >
+              <Save className="h-4 w-4" />
+              <span>Save Now</span>
+            </button>
+          ) : null}
 
           <select
             value={status}

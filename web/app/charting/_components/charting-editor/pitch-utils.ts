@@ -172,6 +172,10 @@ export const safeReadText = async (response: Response): Promise<string | null> =
   }
 };
 
+export const isUnauthorizedSaveError = (
+  errorMessage: string | null,
+): boolean => errorMessage?.toLowerCase().includes("unauthorized") ?? false;
+
 export const getSaveStatusLabel = (
   saveState: SaveState,
   statusMessage: string | null,
@@ -184,6 +188,9 @@ export const getSaveStatusLabel = (
     return statusMessage ?? "All changes synced";
   }
   if (saveState === "error") {
+    if (isUnauthorizedSaveError(errorMessage)) {
+      return "Unauthorized issues - sign in again, then tap Save Now";
+    }
     return errorMessage ?? "Save failed";
   }
   return "Ready";
