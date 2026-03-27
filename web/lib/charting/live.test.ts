@@ -6,6 +6,7 @@ import {
   countPitcherPitches,
   closeCurrentPlateAppearance,
   createGameStateOverride,
+  deriveNextLineupSlot,
   deriveChartingLiveState,
   derivePAPitchProgress,
   recordPitchInSnapshot,
@@ -395,6 +396,61 @@ describe("snapshot mutations", () => {
     });
     expect(snapshot.lineup[0]?.teamSide).toBe("our");
     expect(snapshot.lineup[0]?.hitterName).toBe("Babson Lead-Off");
+  });
+
+  it("tracks the next lineup slot independently for each side in game mode", () => {
+    let snapshot: ChartingGameSnapshot = {
+      ...baseSnapshot,
+      game: {
+        ...baseSnapshot.game,
+        sessionType: "game",
+        babsonVenueSide: "home",
+        babsonStartingPitcher: "Babson Starter",
+        opponentStartingPitcher: "MIT Starter",
+        ourTeamLabel: "Babson",
+        opponentTeamLabel: "MIT",
+      },
+    };
+
+    for (let slot = 1; slot <= 5; slot += 1) {
+      snapshot = recordPitchInSnapshot(snapshot, {
+        pitchType: "Fastball",
+        pitchResult: "in_play",
+        locationCell: 5,
+        velocity: null,
+        pitcher: { playerId: "DJames1", name: "Babson Starter" },
+        hitterName: `MIT ${slot}`,
+        lineupSlot: slot,
+      });
+      snapshot = closeCurrentPlateAppearance(snapshot, slot <= 2 ? "1B" : "6-3");
+    }
+
+    const bottomHalfOverride = createGameStateOverride(snapshot, {
+      inning: 1,
+      isTopInning: false,
+      outs: 0,
+      batterSlot: 1,
+    });
+
+    for (let slot = 1; slot <= 3; slot += 1) {
+      snapshot = recordPitchInSnapshot(
+        snapshot,
+        {
+          pitchType: "Fastball",
+          pitchResult: "in_play",
+          locationCell: 5,
+          velocity: null,
+          pitcher: { playerId: "manual:opponent:starter", name: "MIT Starter" },
+          hitterName: `Babson ${slot}`,
+          lineupSlot: slot,
+        },
+        bottomHalfOverride,
+      );
+      snapshot = closeCurrentPlateAppearance(snapshot, "6-3", bottomHalfOverride);
+    }
+
+    expect(deriveNextLineupSlot(snapshot, "opponent", bottomHalfOverride)).toBe(6);
+    expect(deriveNextLineupSlot(snapshot, "our", bottomHalfOverride)).toBe(4);
   });
 
   it("reuses a legacy blank-id opponent segment when the same manual pitcher continues", () => {

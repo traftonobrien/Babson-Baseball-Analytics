@@ -11,6 +11,7 @@ import {
   countPitcherPitches,
   createGameStateOverride,
   deriveChartingLiveState,
+  deriveNextLineupSlot,
   detailTextForPAResult,
   guidanceTextForClosure,
   GAME_PITCH_RESULTS,
@@ -173,13 +174,8 @@ export function ChartingEditor({
   const activeCountPreset = openPlateAppearance
     ? deriveEditorCountPresetFromPA(snapshot, openPlateAppearance.id)
     : countPreset;
-  const overrideBase = {
-    inning: gameStateOverride?.inning ?? liveState.inning,
-    isTopInning: gameStateOverride?.isTopInning ?? liveState.isTopInning,
-    outs: gameStateOverride?.outs ?? liveState.outs,
-  };
-  const activeBattingSide = battingSideForMatchup(snapshot.game, overrideBase.isTopInning);
-  const activePitchingSide = pitchingSideForMatchup(snapshot.game, overrideBase.isTopInning);
+  const activeBattingSide = battingSideForMatchup(snapshot.game, liveState.isTopInning);
+  const activePitchingSide = pitchingSideForMatchup(snapshot.game, liveState.isTopInning);
   const ourTeamLabel = snapshot.game.ourTeamLabel?.trim() || TEAM_NAME;
   const opponentTeamLabel =
     snapshot.game.opponentTeamLabel?.trim() || snapshot.game.opponent;
@@ -196,7 +192,8 @@ export function ChartingEditor({
     : Boolean(selectedPresetSeed.buntMode);
   const activeMatchupSlot =
     snapshot.game.sessionType === "game"
-      ? openPlateAppearance?.lineupSlot ?? liveState.batterSlot
+      ? openPlateAppearance?.lineupSlot ??
+        deriveNextLineupSlot(snapshot, activeBattingSide, gameStateOverride)
       : openPlateAppearance?.lineupSlot ?? 1;
   const availablePitchResults: readonly PitchResult[] = effectiveBuntMode
     ? BUNT_MODE_PITCH_RESULTS
@@ -298,7 +295,7 @@ export function ChartingEditor({
   const inningPitches = countPitcherInningPitches(
     snapshot,
     selectedPitcher?.playerId ?? "",
-    overrideBase.inning,
+    liveState.inning,
   );
   const canSaveHistoryEdit =
     historyEditDraft !== null &&
@@ -336,7 +333,11 @@ export function ChartingEditor({
       inning: liveState.inning,
       isTopInning: liveState.isTopInning,
       outs: 0,
-      batterSlot: liveState.batterSlot,
+      batterSlot: deriveNextLineupSlot(
+        snapshot,
+        battingSideForMatchup(snapshot.game, liveState.isTopInning),
+        gameStateOverride,
+      ),
     });
     startTransition(() => {
       setGameStateOverride(nextOverride);
@@ -787,12 +788,17 @@ export function ChartingEditor({
     field: "inning" | "isTopInning" | "outs",
     value: number | boolean,
   ) => {
+    const nextIsTopInning =
+      field === "isTopInning" ? Boolean(value) : liveState.isTopInning;
     const nextOverride = createGameStateOverride(snapshot, {
-      inning: field === "inning" ? Number(value) : overrideBase.inning,
-      isTopInning:
-        field === "isTopInning" ? Boolean(value) : overrideBase.isTopInning,
-      outs: field === "outs" ? Number(value) : overrideBase.outs,
-      batterSlot: liveState.batterSlot,
+      inning: field === "inning" ? Number(value) : liveState.inning,
+      isTopInning: nextIsTopInning,
+      outs: field === "outs" ? Number(value) : liveState.outs,
+      batterSlot: deriveNextLineupSlot(
+        snapshot,
+        battingSideForMatchup(snapshot.game, nextIsTopInning),
+        gameStateOverride,
+      ),
     });
     startTransition(() => {
       setGameStateOverride(nextOverride);
@@ -892,9 +898,9 @@ export function ChartingEditor({
             pitchers={pitchers}
             hitterName={hitterName}
             hitterSuggestions={hitterSuggestions}
-            overrideInning={overrideBase.inning}
-            overrideIsTopInning={overrideBase.isTopInning}
-            overrideOuts={overrideBase.outs}
+            overrideInning={liveState.inning}
+            overrideIsTopInning={liveState.isTopInning}
+            overrideOuts={liveState.outs}
             topBattingTeam={topBattingTeam}
             botBattingTeam={botBattingTeam}
             baserunnerDraft={baserunnerDraft}
