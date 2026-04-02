@@ -83,7 +83,7 @@ const TEAM_BRAND_DIRECTORY: TeamBrandEntry[] = [
   {
     name: "Roger Williams",
     aliases: ["roger williams", "roger williams university"],
-    accent: "#FEB71C",
+    accent: "#9BC9EA",
     secondary: "#01295F",
     source: "teamcolorcodes",
   },
