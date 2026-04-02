@@ -40,5 +40,19 @@
       "BBurk1"
     ],
     "url": "https://babsonathletics.com/sports/baseball/stats/2026/wheaton/boxscore/16014"
+  },
+  {
+    "date": "2026-03-26",
+    "gameId": "16016",
+    "importedAt": "2026-04-02T23:35:38Z",
+    "opponent": "Roger Williams",
+    "playerIdsIncluded": [
+      "BReid1",
+      "CDoan1",
+      "GVyse1",
+      "MCamardi1",
+      "SNoone1"
+    ],
+    "url": "https://babsonathletics.com/sports/baseball/stats/2026/roger-williams/boxscore/16016"
   }
 ]

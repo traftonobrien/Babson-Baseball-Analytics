@@ -1,0 +1,16 @@
+pitch_number,pitcher_name,pitcher_hand,pitch_type,target_frame,arrival_frame,target_x,target_y,ball_x,ball_y,total_miss_px,total_miss_inches,h_miss_px,h_miss_inches,h_direction,h_miss_signed,v_miss_px,v_miss_inches,v_direction,v_miss_signed,target_quadrant,result_quadrant,target_zone,timestamp,is_outlier
+1,MCamardi1,L,SI,10,41,708.5,485.7,545.4,467.4,164.1,24.99,163.1,42.01,arm-side,-42.01,18.4,4.73,high,-4.73,DM,,inside,1.367,1
+2,MCamardi1,L,SI,10,78,722.5,490.2,736.9,488.3,14.5,3.72,14.3,3.69,glove-side,3.69,1.9,0.49,high,-0.49,DM,MI,inside,2.600,0
+3,MCamardi1,L,SI,10,52,722.9,492.9,697.4,498.2,26.1,6.71,25.5,6.57,arm-side,-6.57,5.4,1.38,low,1.38,DM,DA,inside,1.733,0
+4,MCamardi1,L,SI,10,60,727.0,486.7,648.8,440.7,90.7,23.37,78.2,20.13,arm-side,-20.13,46.1,11.87,high,-11.87,DM,,inside,2.000,0
+5,MCamardi1,L,SI,10,78,726.2,488.6,705.0,437.6,55.2,14.22,21.2,5.47,arm-side,-5.47,51.0,13.13,high,-13.13,DM,UA,inside,2.600,0
+6,MCamardi1,L,SL,10,71,720.8,489.0,696.3,490.8,24.6,6.32,24.5,6.31,arm-side,-6.31,1.8,0.46,low,0.46,DM,DA,inside,2.367,0
+7,MCamardi1,L,SI,10,65,717.0,490.0,658.3,458.6,66.5,17.12,58.6,15.10,arm-side,-15.10,31.3,8.07,high,-8.07,DM,,inside,2.167,0
+8,MCamardi1,L,SI,10,57,722.4,488.2,624.2,418.5,120.4,24.99,98.3,25.30,arm-side,-25.30,69.6,17.93,high,-17.93,DM,,inside,1.900,1
+9,MCamardi1,L,SI,10,74,722.4,487.4,711.1,458.0,31.5,8.12,11.3,2.91,arm-side,-2.91,29.4,7.58,high,-7.58,DM,MM,inside,2.467,0
+10,MCamardi1,L,SI,10,49,718.1,488.2,678.3,479.7,40.6,10.47,39.7,10.23,arm-side,-10.23,8.5,2.19,high,-2.19,DM,,inside,1.633,0
+11,MCamardi1,L,SL,10,46,693.9,484.6,756.5,553.2,92.9,23.92,62.6,16.13,glove-side,16.13,68.6,17.66,low,17.66,DM,,inside,1.533,0
+12,MCamardi1,L,SI,10,76,720.9,485.1,770.9,521.9,62.1,15.99,50.0,12.88,glove-side,12.88,36.8,9.49,low,9.49,DM,,inside,2.533,0
+13,MCamardi1,L,SI,10,34,695.9,493.8,667.0,490.5,29.1,7.49,28.9,7.44,arm-side,-7.44,3.3,0.84,high,-0.84,DM,MA,inside,1.133,0
+14,MCamardi1,L,SI,10,64,693.5,478.6,591.4,487.6,102.5,24.99,102.1,26.30,arm-side,-26.30,9.0,2.31,low,2.31,DM,,inside,2.133,1
+15,MCamardi1,L,SI,10,69,710.7,486.3,713.7,432.5,54.0,13.90,3.0,0.78,glove-side,0.78,53.9,13.88,high,-13.88,DM,UM,inside,2.300,0

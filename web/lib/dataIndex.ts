@@ -25,6 +25,7 @@ const OPPONENTS_BY_DATE_ID: Record<string, string> = {
   "2026_03_01": "#1/6 Trinity (Texas)",
   "2026_03_25": "Suffolk",
   "2026_03_24": "Wheaton",
+  "2026_03_26": "Roger Williams",
 };
 
 export const players: Player[] = [
@@ -125,6 +126,11 @@ export const players: Player[] = [
         id: "CDoan1/2026_02_28",
         label: "Feb 28, 2026 – Doan (23 pitches)",
         ...buildDataPaths("CDoan1", "2026_02_28"),
+      },
+      {
+        id: "CDoan1/2026_03_26",
+        label: "Mar 26, 2026 – Doan (66 pitches)",
+        ...buildDataPaths("CDoan1", "2026_03_26"),
       },
     ],
   },
@@ -242,6 +248,11 @@ export const players: Player[] = [
         label: "Mar 24, 2026 – Camardi (17 pitches)",
         ...buildDataPaths("MCamardi1", "2026_03_24"),
       },
+      {
+        id: "MCamardi1/2026_03_26",
+        label: "Mar 26, 2026 – Camardi (15 pitches)",
+        ...buildDataPaths("MCamardi1", "2026_03_26"),
+      },
     ],
   },
   {
@@ -265,6 +276,42 @@ export const players: Player[] = [
         id: "BShapiro1/2026_03_25",
         label: "Mar 25, 2026 – Shapiro (14 pitches)",
         ...buildDataPaths("BShapiro1", "2026_03_25"),
+      },
+    ],
+  },
+  {
+    id: "BReid1",
+    name: "Bourke Reid",
+    throws: "R",
+    outings: [
+      {
+        id: "BReid1/2026_03_26",
+        label: "Mar 26, 2026 – Reid (40 pitches)",
+        ...buildDataPaths("BReid1", "2026_03_26"),
+      },
+    ],
+  },
+  {
+    id: "SNoone1",
+    name: "Sean Noone",
+    throws: "R",
+    outings: [
+      {
+        id: "SNoone1/2026_03_26",
+        label: "Mar 26, 2026 – Noone (4 pitches)",
+        ...buildDataPaths("SNoone1", "2026_03_26"),
+      },
+    ],
+  },
+  {
+    id: "GVyse1",
+    name: "Graydon Vyse",
+    throws: "R",
+    outings: [
+      {
+        id: "GVyse1/2026_03_26",
+        label: "Mar 26, 2026 – Vyse (5 pitches)",
+        ...buildDataPaths("GVyse1", "2026_03_26"),
       },
     ],
   },

@@ -1,0 +1,5 @@
+pitch_number,pitcher_name,pitcher_hand,pitch_type,target_frame,arrival_frame,target_x,target_y,ball_x,ball_y,total_miss_px,total_miss_inches,h_miss_px,h_miss_inches,h_direction,h_miss_signed,v_miss_px,v_miss_inches,v_direction,v_miss_signed,target_quadrant,result_quadrant,target_zone,timestamp,is_outlier
+1,SNoone1,R,FF,10,72,709.2,501.1,633.7,530.3,80.9,20.84,75.5,19.44,glove-side,19.44,29.2,7.51,low,7.51,DM,,outside,2.400,0
+2,SNoone1,R,FF,10,78,707.4,504.9,724.3,426.3,80.4,20.71,16.9,4.36,arm-side,-4.36,78.6,20.24,high,-20.24,DM,,outside,2.600,0
+3,SNoone1,R,CU,10,92,701.4,480.4,647.3,497.3,56.6,14.58,54.1,13.92,glove-side,13.92,16.8,4.34,low,4.34,DM,,outside,3.067,0
+4,SNoone1,R,CU,10,62,692.6,474.3,698.1,461.8,13.7,3.52,5.5,1.43,arm-side,-1.43,12.5,3.22,high,-3.22,DM,MM,outside,2.067,0
