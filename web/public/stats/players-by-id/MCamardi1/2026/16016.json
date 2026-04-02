@@ -1,0 +1,39 @@
+{
+  "batting": {
+    "ab": 0,
+    "avg": null,
+    "bb": 0,
+    "h": 0,
+    "hbp": null,
+    "hr": null,
+    "name": "Michael Camardi",
+    "pos": "p",
+    "r": 0,
+    "rbi": 0,
+    "sb": null,
+    "so": 0
+  },
+  "gameId": "16016",
+  "pitching": {
+    "bb": 0,
+    "bf": 4,
+    "er": 1,
+    "era": null,
+    "h": 1,
+    "hr": null,
+    "ip": "1.0",
+    "name": "Michael Camardi",
+    "pitches": 11,
+    "r": 1,
+    "so": 2,
+    "strikes": null
+  },
+  "playerDisplay": "Michael Camardi",
+  "playerId": "MCamardi1",
+  "season": 2026,
+  "source": {
+    "importedAt": "2026-04-02T23:35:38Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2026/roger-williams/boxscore/16016"
+  },
+  "team": "babson"
+}

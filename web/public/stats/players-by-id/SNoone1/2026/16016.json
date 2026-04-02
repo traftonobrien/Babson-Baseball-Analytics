@@ -1,0 +1,39 @@
+{
+  "batting": {
+    "ab": 0,
+    "avg": null,
+    "bb": 0,
+    "h": 0,
+    "hbp": null,
+    "hr": null,
+    "name": "Sean Noone",
+    "pos": "p",
+    "r": 0,
+    "rbi": 0,
+    "sb": null,
+    "so": 0
+  },
+  "gameId": "16016",
+  "pitching": {
+    "bb": 0,
+    "bf": 1,
+    "er": 0,
+    "era": null,
+    "h": 0,
+    "hr": null,
+    "ip": "0.1",
+    "name": "Sean Noone",
+    "pitches": 4,
+    "r": 0,
+    "so": 0,
+    "strikes": null
+  },
+  "playerDisplay": "Sean Noone",
+  "playerId": "SNoone1",
+  "season": 2026,
+  "source": {
+    "importedAt": "2026-04-02T23:35:38Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2026/roger-williams/boxscore/16016"
+  },
+  "team": "babson"
+}
