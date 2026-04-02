@@ -1,0 +1,39 @@
+{
+  "batting": {
+    "ab": 0,
+    "avg": null,
+    "bb": 0,
+    "h": 0,
+    "hbp": null,
+    "hr": null,
+    "name": "Bourke Reid",
+    "pos": "p",
+    "r": 0,
+    "rbi": 0,
+    "sb": null,
+    "so": 0
+  },
+  "gameId": "16016",
+  "pitching": {
+    "bb": 1,
+    "bf": 11,
+    "er": 0,
+    "era": null,
+    "h": 2,
+    "hr": null,
+    "ip": "2.2",
+    "name": "Bourke Reid",
+    "pitches": 45,
+    "r": 0,
+    "so": 2,
+    "strikes": null
+  },
+  "playerDisplay": "Bourke Reid",
+  "playerId": "BReid1",
+  "season": 2026,
+  "source": {
+    "importedAt": "2026-04-02T23:35:38Z",
+    "url": "https://babsonathletics.com/sports/baseball/stats/2026/roger-williams/boxscore/16016"
+  },
+  "team": "babson"
+}
