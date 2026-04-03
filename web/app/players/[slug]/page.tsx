@@ -46,6 +46,11 @@ import {
   buildSeasonStats,
   buildSeasonPercentiles,
 } from "./_lib/metrics";
+import {
+  computePitcherLuckIndex,
+  computeHitterLuckIndex,
+  type LuckIndexResult,
+} from "@/lib/charting/luckIndex";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -92,6 +97,7 @@ type OverviewStats = {
   percentileAudienceLabel: string;
   statsUnavailable: boolean;
   hasRow: boolean;
+  luckIndex: LuckIndexResult | null;
 };
 
 const TARGET_YEAR = 2026;
@@ -341,12 +347,19 @@ export default async function PlayerProfilePage({
 
     console.log("[PlayerProfile]", resolvedPlayer.name, mode, debugInfo);
 
+    const luckIndex = playerRow
+      ? mode === "pitching"
+        ? computePitcherLuckIndex(playerRow)
+        : computeHitterLuckIndex(playerRow)
+      : null;
+
     return {
       seasonStats,
       seasonPercentiles,
       percentileAudienceLabel: mode === "pitching" ? "pitchers" : "hitters",
       statsUnavailable: !playerRow && fetchError != null,
       hasRow: Boolean(playerRow),
+      luckIndex,
     };
   }
 
@@ -667,6 +680,8 @@ export default async function PlayerProfilePage({
                     initialTab={initialTab}
                     mechanicsEntry={mechanicsEntry ?? null}
                     liveAbProfile={liveAbProfile}
+                    pitchingLuckIndex={pitchingOverview.luckIndex}
+                    hittingLuckIndex={hittingOverview.luckIndex}
                   />
                 </div>
               </section>

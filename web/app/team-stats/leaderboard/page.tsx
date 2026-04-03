@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { BarChart3, BookOpen, CircleHelp, Search, ChevronDown, ChevronUp, Trophy } from "lucide-react";
@@ -12,6 +13,7 @@ import {
   TEAM_STATS_PITCHER_QUALIFICATION_OPTIONS,
 } from "@/lib/teamStatsQualifications";
 import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
+import { computePitcherLuckIndex, luckBadgeClasses } from "@/lib/charting/luckIndex";
 
 type StatMode = "pitching" | "batting";
 type StatSection = "standard" | "advanced";
@@ -61,6 +63,7 @@ interface BabsonPitcherRow {
   bbPct: number;
   kMinusBbPct: number;
   war: number;
+  luckScore: number;
 }
 
 interface BabsonHitterRow {
@@ -109,6 +112,7 @@ interface PitcherCol {
   lowerBetter?: boolean;
   tooltip?: string;
   fmt: (p: BabsonPitcherRow) => string;
+  render?: (p: BabsonPitcherRow) => ReactNode;
 }
 
 interface HitterCol {
@@ -165,6 +169,22 @@ const PITCHER_STANDARD: PitcherCol[] = [
 const PITCHER_ADVANCED: PitcherCol[] = [
   { key: "ip",          label: "IP",     fmt: p => fmtDec1(p.ip) },
   { key: "era",         label: "ERA",    lowerBetter: true, fmt: p => p.era.toFixed(2) },
+  {
+    key: "luckScore",
+    label: "Luck",
+    tooltip: "Luck Index — a 100-scale score that separates process from results. Above 100 means results are better than process predicts (likely to regress). Below 100 means process is better than results show (likely to improve). Computed from ERA vs FIP spread and BABIP. Requires 5+ IP.",
+    fmt: p => p.luckScore > -999 ? p.luckScore.toFixed(0) : "—",
+    render: (p) => {
+      const result = computePitcherLuckIndex(p as unknown as Record<string, unknown>);
+      if (!result) return <span className="font-mono text-slate-300 dark:text-zinc-600">—</span>;
+      const classes = luckBadgeClasses(result, "pitcher");
+      return (
+        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-bold leading-none ${classes}`}>
+          {result.score.toFixed(0)}
+        </span>
+      );
+    },
+  },
   {
     key: "fip", label: "FIP", lowerBetter: true,
     tooltip: "Fielding Independent Pitching — strips out defense and luck by focusing only on outcomes the pitcher controls: strikeouts, walks, hit batters, and home runs. Scaled to look like ERA. Lower is better.",
@@ -345,7 +365,13 @@ export default function TeamStatsPage() {
         return r.json();
       })
       .then((data) => {
-        setPitchers(data.pitchers ?? []);
+        setPitchers(
+          (data.pitchers ?? []).map((p: BabsonPitcherRow) => ({
+            ...p,
+            luckScore:
+              computePitcherLuckIndex(p as unknown as Record<string, unknown>)?.score ?? -999,
+          }))
+        );
         setHitters(data.hitters ?? []);
         setSeasonYear(typeof data.year === "string" ? data.year : null);
         if (data.meta?.synced_at) {
@@ -685,7 +711,7 @@ export default function TeamStatsPage() {
                             </td>
                             {activePitcherCols.map((col) => (
                               <td key={col.key} className={`px-4 py-3 text-right font-mono ${!isQualified ? "text-slate-400 dark:text-zinc-500" : "text-slate-900 dark:text-zinc-50"}`}>
-                                {col.fmt(p)}
+                                {col.render ? col.render(p) : col.fmt(p)}
                               </td>
                             ))}
                           </tr>

@@ -57,6 +57,8 @@ export interface SegmentStats {
   fpsPct: number | null;
   kPct: number | null;
   bbPct: number | null;
+  /** Strand rate with RISP: closed RISP PAs not ending in H/BB/HBP divided by total closed RISP PAs. null when no RISP data. */
+  lobPct: number | null;
   pitchMix: Record<PitchType, number>;
   pitchMixPct: Record<PitchType, number>;
 }
@@ -429,6 +431,13 @@ export function computeSegmentStats_pure(
     emptyPitchMix()
   );
 
+  const rispPas = closedPas.filter(hasRisp);
+  const HIT_CODES_RISP = new Set(["1B", "2B", "3B", "HR"]);
+  const strandedRispPas = rispPas.filter(
+    (pa) => !HIT_CODES_RISP.has(pa.resultCode) && pa.resultCode !== "BB" && pa.resultCode !== "HBP"
+  );
+  const lobPct = rispPas.length > 0 ? strandedRispPas.length / rispPas.length : null;
+
   return {
     totalPitches: pitches.length,
     strikePct: pct(strikeCount, pitches.length),
@@ -441,6 +450,7 @@ export function computeSegmentStats_pure(
     fpsPct: pct(firstPitchStrikes, firstPitches.length),
     kPct: pct(strikeoutCount, closedPas.length),
     bbPct: pct(walkCount, closedPas.length),
+    lobPct,
     pitchMix,
     pitchMixPct,
   };

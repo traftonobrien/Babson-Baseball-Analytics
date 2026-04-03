@@ -14,6 +14,10 @@ import {
   type HitterPerformanceInsightsData,
   type PitcherHand,
 } from "./hitterInsights";
+import {
+  buildPitcherPerformanceInsightsData,
+  type PitcherPerformanceInsightsData,
+} from "./pitcherInsights";
 import { countPitcherInnings } from "./innings";
 import {
   legacyChartingPlateAppearances,
@@ -79,6 +83,7 @@ export interface LiveAbPitcherProfile {
   stats: AggregatedPitcherStats | null;
   sessions: LiveAbPitcherSession[];
   pitchRecords: PitcherRawPitchRecord[];
+  insights: PitcherPerformanceInsightsData | null;
 }
 
 export interface LiveAbHitterProfile {
@@ -315,6 +320,13 @@ export function buildChartingPlayerProfile({
             strikesBefore: pitch.strikesBefore,
             sessionType: paIdToSessionType.get(pitch.paId) ?? "live_ab",
           })),
+          insights: buildPitcherPerformanceInsightsData({
+            pitcherId: playerId,
+            pitcherName: displayName,
+            games: games.map((g) => ({ id: g.id, gameDate: g.gameDate, opponent: g.opponent })),
+            plateAppearances: pitcherPas,
+            pitches: pitcherPitches,
+          }),
         } satisfies LiveAbPitcherProfile
       : null;
 

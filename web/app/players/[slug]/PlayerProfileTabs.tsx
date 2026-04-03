@@ -1,13 +1,15 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Activity, ArrowRight, Target, ScanLine } from "lucide-react";
+import { Activity, ArrowRight, ChevronDown, ChevronUp, Target, ScanLine } from "lucide-react";
 import { ProfileHeroTile, type HeroTileConfig } from "./_components/ProfileHeroTile";
 import { ProfileHubLink } from "./_components/ProfileHubLink";
 import SavantPercentileBar from "./SavantPercentileBar";
 import LiveAbProfilePanel from "./LiveAbProfilePanel";
+import PitcherPerformanceInsights from "./PitcherPerformanceInsights";
 import MechanicsProfileCard from "@/app/components/mechanics/MechanicsProfileCard";
 import {
   LeaderboardPanel,
@@ -25,6 +27,7 @@ import type { CommandPlusResult } from "@/lib/commandPlus";
 import type { PitchingPlusResult } from "@/lib/pitchingPlus";
 import type { HubPlayerEntry } from "@/lib/mechanics/hub";
 import type { ChartingPlayerProfile } from "@/lib/charting/playerProfile";
+import type { LuckIndexResult } from "@/lib/charting/luckIndex";
 
 const ALL_TABS = ["Overview", "Charting", "Trackman", "Command", "Mechanics"] as const;
 const HITTER_TABS = ["Overview", "Charting"] as const;
@@ -110,6 +113,8 @@ interface Props {
   initialTab?: string;
   mechanicsEntry?: HubPlayerEntry | null;
   liveAbProfile: ChartingPlayerProfile;
+  pitchingLuckIndex?: LuckIndexResult | null;
+  hittingLuckIndex?: LuckIndexResult | null;
 }
 
 function formatDateLabel(raw: string): string {
@@ -163,6 +168,147 @@ function buildStuffHeroState(
   };
 }
 
+function luckTileScoreStyle(result: LuckIndexResult, playerType: "pitcher" | "hitter"): CSSProperties {
+  const isGreen =
+    (playerType === "pitcher" && result.direction === "unlucky") ||
+    (playerType === "hitter" && result.direction === "lucky");
+  const isAmber =
+    (playerType === "pitcher" && result.direction === "lucky") ||
+    (playerType === "hitter" && result.direction === "unlucky");
+  const bg = isGreen ? "#059669" : isAmber ? "#d97706" : "#94a3b8";
+  const bgAlt = isGreen ? "#047857" : isAmber ? "#b45309" : "#64748b";
+  return {
+    color: "#ffffff",
+    background: `linear-gradient(180deg, ${bg} 0%, ${bgAlt} 100%)`,
+    border: `1px solid ${bg}99`,
+    boxShadow: [
+      "inset 0 1px 0 rgba(255,255,255,0.18)",
+      `0 0 0 1px ${bg}1F`,
+      `0 0 16px ${bg}40`,
+      `0 0 28px ${bg}20`,
+    ].join(", "),
+    textShadow: "0 1px 1px rgba(0,0,0,0.28)",
+  };
+}
+
+function LuckIndexTile({
+  result,
+  playerType,
+}: {
+  result: LuckIndexResult;
+  playerType: "pitcher" | "hitter";
+}) {
+  const [open, setOpen] = useState(false);
+
+  const isGreen =
+    (playerType === "pitcher" && result.direction === "unlucky") ||
+    (playerType === "hitter" && result.direction === "lucky");
+  const isAmber =
+    (playerType === "pitcher" && result.direction === "lucky") ||
+    (playerType === "hitter" && result.direction === "unlucky");
+
+  const borderClass = isGreen
+    ? "border-emerald-200 hover:border-emerald-300 dark:border-emerald-500/30 dark:hover:border-emerald-400/45"
+    : isAmber
+      ? "border-amber-200 hover:border-amber-300 dark:border-amber-500/30 dark:hover:border-amber-400/45"
+      : "border-slate-200 hover:border-slate-300 dark:border-zinc-700/40 dark:hover:border-zinc-600/60";
+  const surfaceClass = isGreen
+    ? "from-emerald-50 via-white to-slate-50 dark:from-emerald-950/45 dark:via-zinc-950 dark:to-zinc-900"
+    : isAmber
+      ? "from-amber-50 via-white to-slate-50 dark:from-amber-950/45 dark:via-zinc-950 dark:to-zinc-900"
+      : "from-slate-50 via-white to-white dark:from-zinc-900/60 dark:via-zinc-950 dark:to-zinc-900";
+  const railClass = isGreen
+    ? "bg-emerald-400"
+    : isAmber
+      ? "bg-amber-400"
+      : "bg-slate-300 dark:bg-zinc-600";
+  const glowClass = isGreen
+    ? "bg-emerald-200/80 dark:bg-emerald-500/25"
+    : isAmber
+      ? "bg-amber-200/80 dark:bg-amber-500/25"
+      : "bg-slate-200/80 dark:bg-zinc-700/25";
+  const labelClass = isGreen
+    ? "text-emerald-700 dark:text-emerald-200"
+    : isAmber
+      ? "text-amber-700 dark:text-amber-200"
+      : "text-slate-500 dark:text-zinc-400";
+
+  const CONFIDENCE_NOTE: Record<string, string> = {
+    low: "Small sample",
+    medium: "Moderate sample",
+    high: "Large sample",
+  };
+  const noteText = `${CONFIDENCE_NOTE[result.confidence]} • 100 = neutral`;
+
+  return (
+    <div className="space-y-2">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={`group relative w-full overflow-hidden rounded-[1.75rem] border ${borderClass} bg-gradient-to-br ${surfaceClass} p-4 text-left opacity-0 shadow-[0_18px_44px_rgba(15,23,42,0.06)] transition-smooth dark:shadow-[0_18px_44px_rgba(0,0,0,0.38)]`}
+        style={{ animation: "savantFadeIn 0.4s ease-out 0ms forwards" }}
+        aria-expanded={open}
+        aria-label="Luck Index breakdown"
+      >
+        <div className={`absolute inset-y-4 left-0 w-[3px] rounded-full ${railClass}`} />
+        <div className={`pointer-events-none absolute -right-6 -top-8 h-24 w-24 rounded-full blur-3xl ${glowClass}`} />
+
+        <div className="relative z-10 flex items-start justify-between gap-3">
+          <p className={`pl-4 text-[10px] font-black uppercase tracking-[0.18em] ${labelClass}`}>
+            Luck Index
+          </p>
+          <span className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-surface text-slate-500 dark:border-zinc-700 dark:bg-zinc-900/85 dark:text-zinc-300">
+            {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </span>
+        </div>
+
+        <div className="relative z-10 mt-4 pl-4">
+          <span
+            className="inline-flex items-center justify-center rounded-2xl font-mono font-black tracking-tight min-h-[3rem] min-w-[5.5rem] px-4 py-2 text-[30px]"
+            style={luckTileScoreStyle(result, playerType)}
+          >
+            {result.score.toFixed(0)}
+          </span>
+        </div>
+
+        <p className="relative z-10 mt-3 pl-4 text-[11px] text-slate-500 dark:text-zinc-400">
+          {result.label} • {noteText}
+        </p>
+      </button>
+
+      {open && (
+        <div className="space-y-1.5 rounded-[1.4rem] border border-slate-200 bg-surface p-4 shadow-sm dark:border-zinc-700/80 dark:bg-zinc-900">
+          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500">
+            Luck Breakdown
+          </p>
+          {result.components.map((c) => {
+            const contrib = c.raw * c.weight * 25;
+            return (
+              <div key={c.id} className="flex items-center justify-between gap-3">
+                <span className="text-[11px] text-slate-600 dark:text-zinc-300">{c.label}</span>
+                <span
+                  className={`text-[11px] font-mono font-bold ${
+                    contrib > 0
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : contrib < 0
+                        ? "text-red-600 dark:text-red-400"
+                        : "text-slate-400 dark:text-zinc-500"
+                  }`}
+                >
+                  {contrib >= 0 ? "+" : ""}{contrib.toFixed(1)} pts
+                </span>
+              </div>
+            );
+          })}
+          <p className="mt-2 text-[10px] text-slate-400 dark:text-zinc-500">
+            {CONFIDENCE_NOTE[result.confidence]} • 100 = neutral
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PlayerProfileTabs({
   profileMode,
   defaultOverviewMode,
@@ -186,6 +332,8 @@ export default function PlayerProfileTabs({
   initialTab,
   mechanicsEntry,
   liveAbProfile,
+  pitchingLuckIndex,
+  hittingLuckIndex,
 }: Props) {
   const { setSelectedPlayer } = useSelectedPlayer();
 
@@ -200,6 +348,7 @@ export default function PlayerProfileTabs({
   const [activeTab, setActiveTab] = useState<Tab>(resolveInitialTab(initialTab, availableTabs));
   const [activeOverviewMode, setActiveOverviewMode] = useState<OverviewMode>(defaultOverviewMode);
   const [commandSeasonFilter, setCommandSeasonFilter] = useState<string>("2026");
+  const [chartingSubTab, setChartingSubTab] = useState<"sessions" | "insights">("sessions");
   const [expandedMetric, setExpandedMetric] = useState<"pitching" | "command" | "stuff" | null>(null);
   const seasonStats = activeOverviewMode === "pitching" ? pitchingSeasonStats : hittingSeasonStats;
   const seasonPercentiles =
@@ -208,6 +357,12 @@ export default function PlayerProfileTabs({
     activeOverviewMode === "pitching"
       ? pitchingPercentileAudienceLabel
       : hittingPercentileAudienceLabel;
+  const activeLuckIndex =
+    activeOverviewMode === "pitching"
+      ? (pitchingLuckIndex ?? null)
+      : (hittingLuckIndex ?? null);
+  const activeLuckPlayerType: "pitcher" | "hitter" =
+    activeOverviewMode === "pitching" ? "pitcher" : "hitter";
   const sortedSessions = useMemo(() => {
     return [...trackmanSessions].sort((a, b) => b.date.localeCompare(a.date));
   }, [trackmanSessions]);
@@ -502,19 +657,23 @@ export default function PlayerProfileTabs({
               <>
                 <section className="space-y-4">
                   <div className="flex flex-wrap items-end justify-between gap-3">
-                    <div>
-                      <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-zinc-400">
-                        Season Stats
-                      </h2>
+                    <h2 className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-zinc-400">
+                      Season Stats
+                    </h2>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {seasonNote ? <LeaderboardPill tone="neutral" variant="light">{seasonNote}</LeaderboardPill> : null}
+                      {ncaaProvenance ? (
+                        <>
+                          <LeaderboardPill tone={ncaaProvenance.tone} variant="light">{ncaaProvenance.label}</LeaderboardPill>
+                          <LeaderboardPill tone="neutral" variant="light">NCAA D3</LeaderboardPill>
+                        </>
+                      ) : null}
                     </div>
-                    {seasonNote ? <LeaderboardPill tone="neutral" variant="light">{seasonNote}</LeaderboardPill> : null}
-                    {ncaaProvenance ? (
-                      <>
-                        <LeaderboardPill tone={ncaaProvenance.tone} variant="light">{ncaaProvenance.label}</LeaderboardPill>
-                        <LeaderboardPill tone="neutral" variant="light">NCAA D3</LeaderboardPill>
-                      </>
-                    ) : null}
                   </div>
+
+                  {activeLuckIndex && (
+                    <LuckIndexTile result={activeLuckIndex} playerType={activeLuckPlayerType} />
+                  )}
 
                   <LeaderboardPanel className="p-4 sm:p-6" variant="light">
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -879,7 +1038,29 @@ export default function PlayerProfileTabs({
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
             className="space-y-6"
           >
-            <LiveAbProfilePanel profile={liveAbProfile} seasonStats={pitchingSeasonStats} />
+            {profileMode !== "hitter" && liveAbProfile.pitcher?.insights && (
+              <div className="flex gap-1 rounded-[1.1rem] border border-slate-200/80 bg-surface/95 p-1 shadow-sm dark:border-zinc-700/80 dark:bg-zinc-950/70">
+                {(["sessions", "insights"] as const).map((sub) => (
+                  <button
+                    key={sub}
+                    type="button"
+                    onClick={() => setChartingSubTab(sub)}
+                    className={`flex-1 rounded-[0.8rem] px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] transition-smooth ${
+                      chartingSubTab === sub
+                        ? "border border-[var(--brand-primary-border)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary-subtle-text)] dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-[var(--brand-primary-spotlight)]"
+                        : "text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+                    }`}
+                  >
+                    {sub === "sessions" ? "Sessions" : "Insights"}
+                  </button>
+                ))}
+              </div>
+            )}
+            {chartingSubTab === "insights" && liveAbProfile.pitcher?.insights ? (
+              <PitcherPerformanceInsights data={liveAbProfile.pitcher.insights} />
+            ) : (
+              <LiveAbProfilePanel profile={liveAbProfile} seasonStats={pitchingSeasonStats} />
+            )}
           </motion.div>
         )}
       </AnimatePresence>
