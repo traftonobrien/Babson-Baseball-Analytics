@@ -47,8 +47,8 @@ export function HitterStatGroupWrapper({
                 scopeGameCount={scopeGameCount}
             />
 
-            <div className="mt-6 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-surface shadow-sm dark:border-zinc-700 dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
-                <div className="max-h-[70vh] overflow-auto">
+            <div className="leaderboard-print-panel mt-6 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-surface shadow-sm dark:border-zinc-700 dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+                <div className="leaderboard-print-table-shell max-h-[70vh] overflow-auto">
                     <HitterLeaderboardTable
                         hitters={hitters}
                         searchQuery={searchQuery}

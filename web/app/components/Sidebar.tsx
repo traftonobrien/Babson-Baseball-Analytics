@@ -220,7 +220,7 @@ export default function Sidebar() {
 
   return (
     <>
-      <div className="font-display sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-slate-100 bg-surface px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950 xl:hidden">
+      <div className="font-display sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-slate-100 bg-surface px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950 print:hidden xl:hidden">
         <Link href="/" className="flex items-center gap-3">
           <div>
             <span className="block text-lg font-bold tracking-tight text-slate-900 dark:text-zinc-100">
@@ -239,7 +239,7 @@ export default function Sidebar() {
         </button>
       </div>
 
-      <aside className="font-display hidden h-screen w-[240px] shrink-0 border-r border-slate-100 bg-surface dark:border-zinc-800 dark:bg-zinc-950 xl:sticky xl:top-0 xl:flex xl:flex-col">
+      <aside className="font-display hidden h-screen w-[240px] shrink-0 border-r border-slate-100 bg-surface dark:border-zinc-800 dark:bg-zinc-950 print:hidden xl:sticky xl:top-0 xl:flex xl:flex-col">
         <div className="px-6 pb-4 pt-6">
           <Link href="/" className="flex items-center gap-3">
             <div>

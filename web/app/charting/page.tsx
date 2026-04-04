@@ -14,6 +14,11 @@ import { chartingDb as db } from "@/db";
 import { chartingGames, chartingPlateAppearances } from "@/db/schema";
 import { EditableChartingGameNameInList } from "@/app/charting/_components/EditableChartingGameNameInList";
 import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
+import {
+  isMissingChartingGameMetadataColumnError,
+  legacyChartingGames,
+  mapLegacyGameRow,
+} from "@/lib/charting/gameStorage";
 
 export const revalidate = 0;
 
@@ -76,7 +81,33 @@ export default async function ChartingHubPage(props: {
   const searchQuery = typeof searchParams.q === "string" ? searchParams.q : "";
   const statusFilter = normalizeStatusFilter(searchParams.status);
 
-  const allGames = await db.select().from(chartingGames).orderBy(desc(chartingGames.gameDate));
+  const allGames = await (async () => {
+    try {
+      return await db
+        .select({
+          id: chartingGames.id,
+          opponent: chartingGames.opponent,
+          gameDate: chartingGames.gameDate,
+          status: chartingGames.status,
+          sessionType: chartingGames.sessionType,
+          revision: chartingGames.revision,
+          updatedAt: chartingGames.updatedAt,
+        })
+        .from(chartingGames)
+        .orderBy(desc(chartingGames.gameDate));
+    } catch (error) {
+      if (!isMissingChartingGameMetadataColumnError(error)) {
+        throw error;
+      }
+
+      const legacyRows = await db
+        .select()
+        .from(legacyChartingGames)
+        .orderBy(desc(legacyChartingGames.gameDate));
+
+      return legacyRows.map((row) => mapLegacyGameRow(row));
+    }
+  })();
   const games = allGames.filter((game) => game.sessionType === "game");
 
   const paCounts = await db

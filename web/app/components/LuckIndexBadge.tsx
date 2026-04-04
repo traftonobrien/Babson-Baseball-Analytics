@@ -40,7 +40,7 @@ export default function LuckIndexBadge({
       <button
         type="button"
         onClick={() => showBreakdown && setOpen((v) => !v)}
-        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-bold leading-none transition-smooth ${badgeClasses} ${showBreakdown ? "cursor-pointer hover:opacity-80" : "cursor-default"}`}
+        className={`inline-flex items-center gap-2 rounded-full border px-3 py-[0.45rem] text-[11px] font-bold leading-none transition-smooth ${badgeClasses} ${showBreakdown ? "cursor-pointer hover:opacity-90" : "cursor-default"}`}
         aria-expanded={showBreakdown ? open : undefined}
       >
         <span className="font-mono tracking-tight">{result.score.toFixed(0)}</span>

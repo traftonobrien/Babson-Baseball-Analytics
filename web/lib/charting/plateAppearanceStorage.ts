@@ -15,9 +15,6 @@ export const legacyChartingPlateAppearances = pgTable(
     paOrder: integer("pa_order").notNull(),
     inning: integer("inning").notNull(),
     hitterName: text("hitter_name").notNull(),
-    lineupSlot: integer("lineup_slot").notNull(),
-    resultCode: text("result_code"),
-    buntContext: boolean("bunt_context").notNull(),
   },
 );
 
@@ -32,6 +29,14 @@ function isMissingColumnError(
     error instanceof Error &&
     error.message.includes("charting_plate_appearances") &&
     error.message.includes(columnName)
+  );
+}
+
+export function isLegacyPlateAppearanceReadError(error: unknown) {
+  return (
+    error instanceof Error &&
+    error.message.includes("charting_plate_appearances") &&
+    error.message.includes("Failed query")
   );
 }
 
@@ -64,6 +69,9 @@ export function mapLegacyPlateAppearanceRow(
 ): ChartingPlateAppearance {
   return {
     ...plateAppearance,
+    lineupSlot: 1,
+    resultCode: null,
+    buntContext: false,
     isTopInning: true,
     teamSide: "opponent",
     initialCount: null,

@@ -19,6 +19,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { SegmentedRail, type SegmentedItem } from "@/app/components/leaderboards/SegmentedRail";
+import { LeaderboardExportPdfButton } from "@/app/components/leaderboards/LeaderboardExportPdfButton";
 import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
 import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
 import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
@@ -194,9 +195,9 @@ function PlayerTable({
   getRowTransitionProps: (index: number) => RowTransitionProps;
 }) {
   return (
-    <div className="overflow-x-auto overflow-y-visible rounded-[1.75rem] border border-slate-200 bg-surface shadow-sm dark:border-zinc-700 dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
-      <table className="min-w-full text-sm">
-        <thead className="border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
+    <div className="leaderboard-print-panel leaderboard-print-table-shell overflow-x-auto overflow-y-visible rounded-[1.75rem] border border-slate-200 bg-surface shadow-sm dark:border-zinc-700 dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+      <table className="leaderboard-print-table min-w-full text-sm">
+        <thead className="leaderboard-print-sticky-head border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
           <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
             <th className="px-5 py-3.5">Rank</th>
             <th className="px-5 py-3.5">Pitcher</th>
@@ -275,9 +276,9 @@ function PitchTypeTable({
   getRowTransitionProps: (index: number) => RowTransitionProps;
 }) {
   return (
-    <div className="overflow-x-auto rounded-[1.75rem] border border-slate-200 bg-surface shadow-sm dark:border-zinc-700 dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
-      <table className="min-w-full text-sm">
-        <thead className="border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
+    <div className="leaderboard-print-panel leaderboard-print-table-shell overflow-x-auto rounded-[1.75rem] border border-slate-200 bg-surface shadow-sm dark:border-zinc-700 dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+      <table className="leaderboard-print-table min-w-full text-sm">
+        <thead className="leaderboard-print-sticky-head border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
           <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
             <th className="px-5 py-3.5">Rank</th>
             <th className="px-5 py-3.5">Pitcher</th>
@@ -452,9 +453,9 @@ export default function PlusLeaderboardsPage() {
       ? "Try a broader player, pitch, or date search. The search box checks names, player IDs, and pitch labels where they apply."
       : `Loosen the ${sampleLabel(view).toLowerCase()} or switch handedness back to all.`;
   return (
-    <div className="font-display min-h-full bg-background text-slate-900 dark:text-zinc-50">
+    <div className="leaderboard-print-root font-display min-h-full bg-background text-slate-900 dark:text-zinc-50">
       <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
-        <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+        <header className="leaderboard-print-panel rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
           <div className="flex flex-col gap-6 p-5 sm:p-7">
             <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
               <div className="min-w-0 flex-1">
@@ -467,23 +468,29 @@ export default function PlusLeaderboardsPage() {
                 </h1>
               </div>
 
-              <div className="grid w-full grid-cols-2 gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
-                <HubActionCard
-                  href="/pitching-plus"
-                  icon={Sparkles}
-                  sectionTitle="Methodology"
-                  buttonLabel="Full Methodology"
+              <div className="flex w-full flex-col gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
+                <LeaderboardExportPdfButton
+                  fileStem={`pitching_plus_leaderboard_${view}_${handFilter}_${activeMinSample}`}
+                  className="w-full sm:ml-auto sm:w-auto"
                 />
-                <HubActionCard
-                  href="/dictionary"
-                  icon={BookOpen}
-                  sectionTitle="Dictionary"
-                  buttonLabel="Metrics Glossary"
-                />
+                <div className="leaderboard-print-hide grid grid-cols-2 gap-3">
+                  <HubActionCard
+                    href="/pitching-plus"
+                    icon={Sparkles}
+                    sectionTitle="Methodology"
+                    buttonLabel="Full Methodology"
+                  />
+                  <HubActionCard
+                    href="/dictionary"
+                    icon={BookOpen}
+                    sectionTitle="Dictionary"
+                    buttonLabel="Metrics Glossary"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="leaderboard-print-hide grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               <HubStatCard
                 label="Player rows"
                 value={headerStats ? String(headerStats.playerRows) : "—"}
@@ -506,7 +513,7 @@ export default function PlusLeaderboardsPage() {
           </div>
         </header>
 
-        <section className="rounded-[28px] border border-border bg-surface p-4 shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)] sm:p-5">
+        <section className="leaderboard-print-hide rounded-[28px] border border-border bg-surface p-4 shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)] sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <SegmentedRail
               label="View"

@@ -591,6 +591,74 @@ export async function aggregatePitcherStats(
   return computePitcherAggregation(pitches, pas, sessions, innings);
 }
 
+export async function aggregatePitcherStatsBySegmentIds(
+  segmentIds: string[],
+  options?: AggregateOptions
+): Promise<AggregatedPitcherStats | null> {
+  const uniqueSegmentIds = [...new Set(segmentIds.map((segmentId) => segmentId.trim()).filter(Boolean))];
+  if (uniqueSegmentIds.length === 0) {
+    return null;
+  }
+
+  const db = await getDb();
+  const filteredGameIds = await resolveFilteredGameIds(options);
+  if (filteredGameIds !== null && filteredGameIds.length === 0) {
+    return null;
+  }
+
+  const segmentFilter =
+    filteredGameIds === null
+      ? inArray(chartingPitcherSegments.id, uniqueSegmentIds)
+      : and(
+          inArray(chartingPitcherSegments.id, uniqueSegmentIds),
+          inArray(chartingPitcherSegments.gameId, filteredGameIds)
+        );
+
+  const segments = await db
+    .select()
+    .from(chartingPitcherSegments)
+    .where(segmentFilter)
+    .orderBy(asc(chartingPitcherSegments.segmentOrder));
+
+  if (segments.length === 0) {
+    return null;
+  }
+
+  const filteredSegmentIds = segments.map((segment) => segment.id);
+  const pas = await loadPlateAppearancesWithFallback(
+    () =>
+      db
+        .select()
+        .from(chartingPlateAppearances)
+        .where(inArray(chartingPlateAppearances.segmentId, filteredSegmentIds))
+        .orderBy(asc(chartingPlateAppearances.paOrder)),
+    () =>
+      db
+        .select()
+        .from(legacyChartingPlateAppearances)
+        .where(inArray(legacyChartingPlateAppearances.segmentId, filteredSegmentIds))
+        .orderBy(asc(legacyChartingPlateAppearances.paOrder))
+  );
+
+  if (pas.length === 0) {
+    return null;
+  }
+
+  const paIds = pas.map((pa) => pa.id);
+  const pitches = mapPitchRows(
+    await db
+      .select()
+      .from(chartingPitches)
+      .where(inArray(chartingPitches.paId, paIds))
+      .orderBy(asc(chartingPitches.pitchOrder))
+  );
+
+  const sessions = new Set(segments.map((segment) => segment.gameId)).size;
+  const innings = countPitcherInnings(segments, pas);
+
+  return computePitcherAggregation(pitches, pas, sessions, innings);
+}
+
 export function computeHitterStats_pure(
   pitches: ChartingPitch[],
   pas: ChartingPlateAppearance[]
@@ -804,6 +872,77 @@ export async function aggregateHitterStats(
     return null;
   }
 
+  const pitches = mapPitchRows(
+    await db
+      .select()
+      .from(chartingPitches)
+      .where(inArray(chartingPitches.paId, paIds))
+      .orderBy(asc(chartingPitches.pitchOrder))
+  );
+  const sessions = new Set(pas.map((pa) => pa.gameId)).size;
+
+  return computeHitterAggregation(pitches, pas, sessions);
+}
+
+export async function aggregateHitterStatsByNames(
+  hitterNames: string[],
+  options?: AggregateOptions
+): Promise<AggregatedHitterStats | null> {
+  const nameSet = new Set(hitterNames.map((name) => name.trim()).filter(Boolean));
+  if (nameSet.size === 0) {
+    return null;
+  }
+
+  const db = await getDb();
+  const filteredGameIds = await resolveFilteredGameIds(options);
+  if (filteredGameIds !== null && filteredGameIds.length === 0) {
+    return null;
+  }
+
+  const pas = (
+    await loadPlateAppearancesWithFallback(
+      () =>
+        filteredGameIds === null
+          ? db
+              .select()
+              .from(chartingPlateAppearances)
+              .orderBy(
+                asc(chartingPlateAppearances.gameId),
+                asc(chartingPlateAppearances.paOrder)
+              )
+          : db
+              .select()
+              .from(chartingPlateAppearances)
+              .where(inArray(chartingPlateAppearances.gameId, filteredGameIds))
+              .orderBy(
+                asc(chartingPlateAppearances.gameId),
+                asc(chartingPlateAppearances.paOrder)
+              ),
+      () =>
+        filteredGameIds === null
+          ? db
+              .select()
+              .from(legacyChartingPlateAppearances)
+              .orderBy(
+                asc(legacyChartingPlateAppearances.gameId),
+                asc(legacyChartingPlateAppearances.paOrder)
+              )
+          : db
+              .select()
+              .from(legacyChartingPlateAppearances)
+              .where(inArray(legacyChartingPlateAppearances.gameId, filteredGameIds))
+              .orderBy(
+                asc(legacyChartingPlateAppearances.gameId),
+                asc(legacyChartingPlateAppearances.paOrder)
+              )
+    )
+  ).filter((pa) => nameSet.has(pa.hitterName.trim()));
+
+  if (pas.length === 0) {
+    return null;
+  }
+
+  const paIds = pas.map((pa) => pa.id);
   const pitches = mapPitchRows(
     await db
       .select()

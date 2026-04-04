@@ -4,10 +4,15 @@ import { desc, eq } from "drizzle-orm";
 import { chartingDb as db } from "@/db";
 import { chartingGames, chartingPitcherSegments, chartingPlateAppearances } from "@/db/schema";
 import {
-    AggregateOptions,
-    aggregateHitterStats,
-    aggregatePitcherStats,
+  AggregateOptions,
+  aggregateHitterStatsByNames,
+  aggregatePitcherStatsBySegmentIds,
 } from "@/lib/charting/analytics";
+import {
+  isMissingChartingGameMetadataColumnError,
+  legacyChartingGames,
+} from "@/lib/charting/gameStorage";
+import { buildHitterLeaderboardIdentities, buildPitcherLeaderboardIdentities } from "./leaderboardIdentity";
 import { PitcherStatGroupWrapper } from "./PitcherStatGroupWrapper";
 import { type PitcherLeaderboardRow } from "./PitcherLeaderboardTable";
 import { HitterStatGroupWrapper } from "./HitterStatGroupWrapper";
@@ -76,27 +81,47 @@ export default async function ChartingLeaderboardPage(props: {
             redirect("/charting/leaderboard?tab=pitchers");
         }
 
-        const games = await db
-            .select({
-                id: chartingGames.id,
-                gameDate: chartingGames.gameDate,
-                opponent: chartingGames.opponent,
-            })
-            .from(chartingGames)
-            .where(eq(chartingGames.sessionType, "game"))
-            .orderBy(desc(chartingGames.gameDate));
+        let games: Array<{ id: string; gameDate: string; opponent: string | null }>;
+        try {
+            games = await db
+                .select({
+                    id: chartingGames.id,
+                    gameDate: chartingGames.gameDate,
+                    opponent: chartingGames.opponent,
+                })
+                .from(chartingGames)
+                .where(eq(chartingGames.sessionType, "game"))
+                .orderBy(desc(chartingGames.gameDate));
+        } catch (gamesErr) {
+            if (!isMissingChartingGameMetadataColumnError(gamesErr)) {
+                throw gamesErr;
+            }
+            // Legacy schema: session_type column absent — load all games (no live_ab filter).
+            const legacyRows = await db
+                .select({ id: legacyChartingGames.id, gameDate: legacyChartingGames.gameDate, opponent: legacyChartingGames.opponent })
+                .from(legacyChartingGames)
+                .orderBy(desc(legacyChartingGames.gameDate));
+            games = legacyRows;
+        }
 
         const scopeLabel = buildScopeLabel(range, session, games);
         const scopeGameCount = getScopedGameCount(range, session, games);
 
-        const options: AggregateOptions = { sessionType: "game" };
+        // Build game ID scope from the already-fetched games list (already filtered to sessionType="game").
+        // Passing gameIds directly avoids N concurrent DB round-trips inside resolveFilteredGameIds.
+        let scopedGameIds: string[];
         if (session !== "all" && session !== "") {
-            options.gameIds = [session];
+            scopedGameIds = games.some((g) => g.id === session) ? [session] : [];
         } else if (range === "7d") {
-            options.from = subDays(new Date(), 7);
+            const windowStart = subDays(new Date(), 7);
+            scopedGameIds = games.filter((g) => parseISO(g.gameDate) >= windowStart).map((g) => g.id);
         } else if (range === "30d") {
-            options.from = subDays(new Date(), 30);
+            const windowStart = subDays(new Date(), 30);
+            scopedGameIds = games.filter((g) => parseISO(g.gameDate) >= windowStart).map((g) => g.id);
+        } else {
+            scopedGameIds = games.map((g) => g.id);
         }
+        const options: AggregateOptions = { gameIds: scopedGameIds };
 
         let pitcherRows: PitcherLeaderboardRow[] = [];
         let hitterRows: HitterLeaderboardRow[] = [];
@@ -104,29 +129,23 @@ export default async function ChartingLeaderboardPage(props: {
         if (tab === "pitchers") {
             const segments = await db
                 .select({
+                    id: chartingPitcherSegments.id,
                     playerId: chartingPitcherSegments.playerId,
                     displayName: chartingPitcherSegments.displayName,
                 })
                 .from(chartingPitcherSegments)
                 .where(eq(chartingPitcherSegments.teamSide, "our"));
 
-            const pitcherMap = new Map<string, string>();
-            for (const s of segments) {
-                if (s.playerId && s.playerId.trim() !== "") {
-                    pitcherMap.set(s.playerId, s.displayName);
-                }
-            }
-            const pitcherPromises: Array<Promise<PitcherLeaderboardRow | null>> = Array.from(
-                pitcherMap.keys(),
-            ).map(async (id) => {
-                const stats = await aggregatePitcherStats(id, options);
+            const pitcherIdentities = buildPitcherLeaderboardIdentities(segments);
+            const pitcherPromises: Array<Promise<PitcherLeaderboardRow | null>> = pitcherIdentities.map(async (identity) => {
+                const stats = await aggregatePitcherStatsBySegmentIds(identity.segmentIds, options);
                 if (!stats) {
                     return null;
                 }
                 return {
                     ...stats,
-                    playerId: id,
-                    displayName: pitcherMap.get(id) ?? "Unknown",
+                    playerId: identity.playerId,
+                    displayName: identity.displayName,
                 } satisfies PitcherLeaderboardRow;
             });
             const resolvedPitchers = await Promise.all(pitcherPromises);
@@ -138,18 +157,16 @@ export default async function ChartingLeaderboardPage(props: {
                 .select({ hitterName: chartingPlateAppearances.hitterName })
                 .from(chartingPlateAppearances)
                 .where(eq(chartingPlateAppearances.teamSide, "our"));
-            const uniqueHitters = Array.from(
-                new Set(pas.map((p) => p.hitterName.trim()).filter((n) => n.length > 0)),
-            );
+            const hitterIdentities = buildHitterLeaderboardIdentities(pas);
 
-            const hitterPromises: Array<Promise<HitterLeaderboardRow | null>> = uniqueHitters.map(async (name) => {
-                const stats = await aggregateHitterStats(name, options);
+            const hitterPromises: Array<Promise<HitterLeaderboardRow | null>> = hitterIdentities.map(async (identity) => {
+                const stats = await aggregateHitterStatsByNames(identity.hitterNames, options);
                 if (!stats) {
                     return null;
                 }
                 return {
                     ...stats,
-                    hitterName: name,
+                    hitterName: identity.displayName,
                 } satisfies HitterLeaderboardRow;
             });
             const resolvedHitters = await Promise.all(hitterPromises);

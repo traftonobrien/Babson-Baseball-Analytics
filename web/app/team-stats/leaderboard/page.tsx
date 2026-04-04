@@ -13,6 +13,7 @@ import {
   TEAM_STATS_PITCHER_QUALIFICATION_OPTIONS,
 } from "@/lib/teamStatsQualifications";
 import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
+import { LeaderboardExportPdfButton } from "@/app/components/leaderboards/LeaderboardExportPdfButton";
 import { computePitcherLuckIndex, luckBadgeClasses } from "@/lib/charting/luckIndex";
 
 type StatMode = "pitching" | "batting";
@@ -172,14 +173,16 @@ const PITCHER_ADVANCED: PitcherCol[] = [
   {
     key: "luckScore",
     label: "Luck",
-    tooltip: "Luck Index — a 100-scale score that separates process from results. Above 100 means results are better than process predicts (likely to regress). Below 100 means process is better than results show (likely to improve). Computed from ERA vs FIP spread and BABIP. Requires 5+ IP.",
+    tooltip: "Luck Index — a 100-scale score that separates process from results. Above 100 means run prevention has outperformed the underlying indicators; below 100 means process is better than the results show. Uses every available pitcher luck signal in this dataset: ERA vs FIP, xFIP, and SIERA plus BABIP, strand rate, and HR/FB variance. Requires 5+ IP.",
     fmt: p => p.luckScore > -999 ? p.luckScore.toFixed(0) : "—",
     render: (p) => {
       const result = computePitcherLuckIndex(p as unknown as Record<string, unknown>);
       if (!result) return <span className="font-mono text-slate-300 dark:text-zinc-600">—</span>;
       const classes = luckBadgeClasses(result, "pitcher");
-      return (
-        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-bold leading-none ${classes}`}>
+        return (
+          <span
+          className={`inline-flex items-center rounded-full border px-3 py-[0.4rem] text-[11px] font-bold leading-none transition-all ${classes}`}
+        >
           {result.score.toFixed(0)}
         </span>
       );
@@ -450,9 +453,9 @@ export default function TeamStatsPage() {
   const registryHitterCount = playerRegistry.filter((player) => player.isHitter).length;
 
   return (
-    <main className="font-display min-h-screen bg-background text-slate-900 dark:text-zinc-50">
+    <main className="leaderboard-print-root font-display min-h-screen bg-background text-slate-900 dark:text-zinc-50">
       <div className="mx-auto max-w-[1440px] px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
-        <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+        <header className="leaderboard-print-panel rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
           <div className="flex flex-col gap-6 p-5 sm:p-7">
             <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
               <div className="min-w-0 flex-1">
@@ -465,23 +468,29 @@ export default function TeamStatsPage() {
                 </h1>
               </div>
 
-              <div className="grid w-full grid-cols-2 gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
-                <HubActionCard
-                  href="/leaderboards-hub"
-                  icon={Trophy}
-                  sectionTitle="Leaderboards"
-                  buttonLabel="All Boards"
+              <div className="flex w-full flex-col gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
+                <LeaderboardExportPdfButton
+                  fileStem={`team_stats_leaderboard_${statMode}_${statSection}`}
+                  className="w-full sm:ml-auto sm:w-auto"
                 />
-                <HubActionCard
-                  href="/team-stats/faq"
-                  icon={BookOpen}
-                  sectionTitle="Dictionary"
-                  buttonLabel="Metrics FAQ"
-                />
+                <div className="leaderboard-print-hide grid grid-cols-2 gap-3">
+                  <HubActionCard
+                    href="/leaderboards-hub"
+                    icon={Trophy}
+                    sectionTitle="Leaderboards"
+                    buttonLabel="All Boards"
+                  />
+                  <HubActionCard
+                    href="/team-stats/faq"
+                    icon={BookOpen}
+                    sectionTitle="Dictionary"
+                    buttonLabel="Metrics FAQ"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="leaderboard-print-hide grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               <HubStatCard
                 label="Directory"
                 value={String(playerRegistry.length)}
@@ -504,7 +513,7 @@ export default function TeamStatsPage() {
           </div>
         </header>
 
-        <section className="mt-6 rounded-[28px] border border-border bg-surface p-4 shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)] sm:p-5">
+        <section className="leaderboard-print-hide mt-6 rounded-[28px] border border-border bg-surface p-4 shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)] sm:p-5">
           <div className="grid gap-4 xl:grid-cols-[minmax(13rem,16rem)_minmax(13rem,16rem)_minmax(12rem,14rem)_minmax(0,1fr)_auto] xl:items-end">
             <div className="space-y-2">
               <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-zinc-500 dark:text-zinc-500">View</div>
@@ -597,7 +606,7 @@ export default function TeamStatsPage() {
           </div>
         </section>
 
-        <section className="mt-6 overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+        <section className="leaderboard-print-panel mt-6 overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
           <div className="flex flex-col gap-3 border-b border-slate-100 dark:border-zinc-800 px-5 py-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-zinc-50">
@@ -624,9 +633,9 @@ export default function TeamStatsPage() {
               {error}
             </div>
           ) : (
-            <div className="overflow-auto">
-              <table className="min-w-[1200px] w-full border-separate border-spacing-0 text-[13px]">
-                <thead className="sticky top-0 z-10 bg-surface dark:bg-zinc-900/85">
+            <div className="leaderboard-print-table-shell overflow-auto">
+              <table className="leaderboard-print-table min-w-[1200px] w-full border-separate border-spacing-0 text-[13px]">
+                <thead className="leaderboard-print-sticky-head sticky top-0 z-10 bg-surface dark:bg-zinc-900/85">
                   <tr>
                     <th className="border-b border-slate-100 dark:border-zinc-800 bg-surface px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500 dark:border-zinc-800 dark:text-zinc-400 w-14">
                       #

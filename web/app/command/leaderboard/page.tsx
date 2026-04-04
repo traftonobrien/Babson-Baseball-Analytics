@@ -15,6 +15,7 @@ import {
   LeaderboardStatBlock,
   LeaderboardToolbar,
 } from "@/app/components/leaderboards/LeaderboardChrome";
+import { LeaderboardExportPdfButton } from "@/app/components/leaderboards/LeaderboardExportPdfButton";
 import {
   loadAllOutingData,
   computeLeaderboardRows,
@@ -456,7 +457,7 @@ export default function LeaderboardsPage() {
 
   return (
     <LeaderboardPageFrame variant="light" maxWidth="max-w-[1440px]">
-      <div className="font-display flex min-h-full flex-col gap-6">
+      <div className="leaderboard-print-root font-display flex min-h-full flex-col gap-6">
         <LeaderboardIntro
           surface="light"
           breadcrumbs={[
@@ -464,6 +465,11 @@ export default function LeaderboardsPage() {
             { label: "Leaderboards", href: "/leaderboards-hub" },
             { label: "Command" },
           ]}
+          actions={
+            <LeaderboardExportPdfButton
+              fileStem={`command_leaderboard_${mode}_${seasonFilter}_${handFilter}_${pitchGroup}`}
+            />
+          }
         >
           <LeaderboardHero
             tone="amber"
@@ -478,7 +484,7 @@ export default function LeaderboardsPage() {
               </>
             }
             side={
-              <div className="grid w-full gap-3 sm:grid-cols-2 xl:w-[26rem]">
+              <div className="leaderboard-print-hide grid w-full gap-3 sm:grid-cols-2 xl:w-[26rem]">
                 <LeaderboardActionCard
                   href="/command"
                   icon={Target}
@@ -497,7 +503,7 @@ export default function LeaderboardsPage() {
           />
         </LeaderboardIntro>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="leaderboard-print-hide grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <LeaderboardStatBlock
             label="Table rows"
             value={loading ? "—" : String(rowCount)}
@@ -518,7 +524,7 @@ export default function LeaderboardsPage() {
           />
         </div>
 
-        <LeaderboardToolbar variant="light">
+        <LeaderboardToolbar variant="light" className="leaderboard-print-hide">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <SegmentedRail
               label="Mode"
@@ -595,10 +601,10 @@ export default function LeaderboardsPage() {
         </LeaderboardToolbar>
 
         <div className={contentTransitionClassName}>
-          <LeaderboardPanel variant="light" className="overflow-hidden shadow-sm">
-            <div className="max-h-[70vh] overflow-auto">
-              <table className="w-full text-sm">
-                <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
+          <LeaderboardPanel variant="light" className="leaderboard-print-panel overflow-hidden shadow-sm">
+            <div className="leaderboard-print-table-shell max-h-[70vh] overflow-auto">
+              <table className="leaderboard-print-table w-full text-sm">
+                <thead className="leaderboard-print-sticky-head sticky top-0 z-10 border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
                   <tr>
                     <th className="w-12 px-2 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                       #

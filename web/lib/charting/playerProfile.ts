@@ -20,9 +20,15 @@ import {
 } from "./pitcherInsights";
 import { countPitcherInnings } from "./innings";
 import {
+  isLegacyPlateAppearanceReadError,
   legacyChartingPlateAppearances,
   mapLegacyPlateAppearanceRow,
 } from "./plateAppearanceStorage";
+import {
+  isMissingChartingGameMetadataColumnError,
+  legacyChartingGames,
+  mapLegacyGameRow,
+} from "./gameStorage";
 import type {
   ChartingMatchupSide,
   ChartingPitch,
@@ -215,6 +221,75 @@ function filterGamesBySessionType(
   }
 
   return games.filter((game) => game.sessionType === sessionType);
+}
+
+async function loadChartingProfileGames(
+  db: Awaited<ReturnType<typeof getDb>>,
+  gameIds?: string[],
+): Promise<ChartingProfileGame[]> {
+  const uniqueGameIds = gameIds ? [...new Set(gameIds)] : null;
+
+  try {
+    const rawGames = await db
+      .select({
+        id: chartingGames.id,
+        gameDate: chartingGames.gameDate,
+        opponent: chartingGames.opponent,
+        sessionType: chartingGames.sessionType,
+      })
+      .from(chartingGames)
+      .where(uniqueGameIds ? inArray(chartingGames.id, uniqueGameIds) : undefined)
+      .orderBy(desc(chartingGames.gameDate));
+
+    return rawGames.map((game) => ({
+      id: game.id,
+      gameDate: game.gameDate,
+      opponent: game.opponent,
+      sessionType: game.sessionType === "game" ? "game" : "live_ab",
+    }));
+  } catch (error) {
+    if (!isMissingChartingGameMetadataColumnError(error)) {
+      throw error;
+    }
+
+    const legacyRows = await db
+      .select()
+      .from(legacyChartingGames)
+      .where(uniqueGameIds ? inArray(legacyChartingGames.id, uniqueGameIds) : undefined)
+      .orderBy(desc(legacyChartingGames.gameDate));
+
+    return legacyRows.map((row) => {
+      const game = mapLegacyGameRow(row);
+      return {
+        id: game.id,
+        gameDate: game.gameDate,
+        opponent: game.opponent,
+        sessionType: game.sessionType,
+      } satisfies ChartingProfileGame;
+    });
+  }
+}
+
+async function loadProfilePlateAppearances(
+  db: Awaited<ReturnType<typeof getDb>>,
+): Promise<ChartingPlateAppearance[]> {
+  try {
+    return (
+      await db
+        .select()
+        .from(legacyChartingPlateAppearances)
+        .orderBy(
+          desc(legacyChartingPlateAppearances.gameId),
+          desc(legacyChartingPlateAppearances.paOrder)
+        )
+    ).map(mapLegacyPlateAppearanceRow);
+  } catch (error) {
+    if (!isLegacyPlateAppearanceReadError(error)) {
+      throw error;
+    }
+
+    return [];
+  }
 }
 
 function mapPitchRows(rows: typeof chartingPitches.$inferSelect[]): ChartingPitch[] {
@@ -469,15 +544,7 @@ export async function loadChartingPlayerProfile(
   const displayName = getCanonicalName(playerSlug);
   const db = await getDb();
 
-  const allPas = (
-    await db
-      .select()
-      .from(legacyChartingPlateAppearances)
-      .orderBy(
-        desc(legacyChartingPlateAppearances.gameId),
-        desc(legacyChartingPlateAppearances.paOrder)
-      )
-  ).map(mapLegacyPlateAppearanceRow);
+  const allPas = await loadProfilePlateAppearances(db);
 
   const pitcherSegments: ChartingPitcherSegment[] = playerId
     ? (await db
@@ -508,22 +575,7 @@ export async function loadChartingPlayerProfile(
     });
   }
 
-  const rawGames = await db
-    .select({
-      id: chartingGames.id,
-      gameDate: chartingGames.gameDate,
-      opponent: chartingGames.opponent,
-      sessionType: chartingGames.sessionType,
-    })
-    .from(chartingGames)
-    .where(inArray(chartingGames.id, relevantGameIds))
-    .orderBy(desc(chartingGames.gameDate));
-  const games: ChartingProfileGame[] = rawGames.map((g) => ({
-    id: g.id,
-    gameDate: g.gameDate,
-    opponent: g.opponent,
-    sessionType: g.sessionType === "game" ? "game" : "live_ab",
-  }));
+  const games = await loadChartingProfileGames(db, relevantGameIds);
   const filteredGames = filterGamesBySessionType(
     games,
     options?.sessionType ?? "all",
@@ -591,21 +643,7 @@ export async function loadChartingHitterInsightsDirectory(
   options?: { sessionType?: ChartingProfileSessionFilter },
 ): Promise<ChartingHitterInsightsDirectoryEntry[]> {
   const db = await getDb();
-  const rawGamesForDir = await db
-    .select({
-      id: chartingGames.id,
-      gameDate: chartingGames.gameDate,
-      opponent: chartingGames.opponent,
-      sessionType: chartingGames.sessionType,
-    })
-    .from(chartingGames)
-    .orderBy(desc(chartingGames.gameDate));
-  const games: ChartingProfileGame[] = rawGamesForDir.map((g) => ({
-    id: g.id,
-    gameDate: g.gameDate,
-    opponent: g.opponent,
-    sessionType: g.sessionType === "game" ? "game" : "live_ab",
-  }));
+  const games = await loadChartingProfileGames(db);
   const filteredGames = filterGamesBySessionType(
     games,
     options?.sessionType ?? "all",
@@ -613,15 +651,8 @@ export async function loadChartingHitterInsightsDirectory(
   const allowedGameIds = new Set(filteredGames.map((game) => game.id));
 
   const plateAppearances = (
-    await db
-      .select()
-      .from(legacyChartingPlateAppearances)
-      .orderBy(
-        desc(legacyChartingPlateAppearances.gameId),
-        desc(legacyChartingPlateAppearances.paOrder)
-      )
+    await loadProfilePlateAppearances(db)
   )
-    .map(mapLegacyPlateAppearanceRow)
     .filter((plateAppearance) => allowedGameIds.has(plateAppearance.gameId));
 
   if (plateAppearances.length === 0) {

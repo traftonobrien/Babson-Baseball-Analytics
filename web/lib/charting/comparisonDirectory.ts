@@ -16,6 +16,11 @@ import {
   legacyChartingPlateAppearances,
   mapLegacyPlateAppearanceRow,
 } from "./plateAppearanceStorage";
+import {
+  isMissingChartingGameMetadataColumnError,
+  legacyChartingGames,
+  mapLegacyGameRow,
+} from "./gameStorage";
 import type { ChartingMatchupSide, ChartingPitch, ChartingPitcherSegment } from "./types";
 
 async function getDb() {
@@ -71,15 +76,30 @@ export async function loadChartingPitcherComparisonDirectory(): Promise<
   PitcherComparisonDirectoryEntry[]
 > {
   const db = await getDb();
-  const games = await db
-    .select({
-      id: chartingGames.id,
-      gameDate: chartingGames.gameDate,
-      opponent: chartingGames.opponent,
-      sessionType: chartingGames.sessionType,
-    })
-    .from(chartingGames)
-    .orderBy(desc(chartingGames.gameDate));
+  const games = await (async () => {
+    try {
+      return await db
+        .select({
+          id: chartingGames.id,
+          gameDate: chartingGames.gameDate,
+          opponent: chartingGames.opponent,
+          sessionType: chartingGames.sessionType,
+        })
+        .from(chartingGames)
+        .orderBy(desc(chartingGames.gameDate));
+    } catch (error) {
+      if (!isMissingChartingGameMetadataColumnError(error)) {
+        throw error;
+      }
+
+      const legacyRows = await db
+        .select()
+        .from(legacyChartingGames)
+        .orderBy(desc(legacyChartingGames.gameDate));
+
+      return legacyRows.map((row) => mapLegacyGameRow(row));
+    }
+  })();
   const gameSessions = games
     .filter((game) => game.sessionType === "game")
     .map(({ sessionType: _sessionType, ...game }) => game);

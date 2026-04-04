@@ -184,4 +184,43 @@ html[data-site-appearance="dark"] .app-shell-surface {
     break-inside: avoid;
     break-after: avoid;
   }
+
+  .leaderboard-print-hide {
+    display: none !important;
+  }
+
+  .leaderboard-print-root {
+    background: white !important;
+    color: black !important;
+  }
+
+  .leaderboard-print-root a {
+    color: black !important;
+  }
+
+  .leaderboard-print-root .leaderboard-print-panel,
+  .leaderboard-print-root .leaderboard-print-table-shell {
+    border: 0 !important;
+    background: white !important;
+    box-shadow: none !important;
+  }
+
+  .leaderboard-print-root .leaderboard-print-panel {
+    border-radius: 0 !important;
+  }
+
+  .leaderboard-print-root .leaderboard-print-table-shell {
+    border-radius: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .leaderboard-print-root .leaderboard-print-table {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .leaderboard-print-root .leaderboard-print-sticky-head {
+    position: static !important;
+  }
 }

@@ -6,6 +6,7 @@ import { Trophy, Search, BookOpen, ChevronDown, Check, Activity } from "lucide-r
 import { motion, AnimatePresence } from "framer-motion";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import { HubActionCard, HubStatCard } from "@/app/components/hub/HubHeader";
+import { LeaderboardExportPdfButton } from "@/app/components/leaderboards/LeaderboardExportPdfButton";
 import { PitchTypeChip } from "@/components/ui/pitch-type-chip";
 import { useSmoothFilterTransition } from "@/app/components/leaderboards/useSmoothFilterTransition";
 import { useKeyedState } from "@/app/hooks/useKeyedState";
@@ -397,8 +398,9 @@ export default function TrackmanLeaderboardsPage() {
 
   return (
     <LeaderboardPageFrame variant="light" maxWidth="max-w-[1440px]">
-      <div className="font-display flex min-h-full flex-col gap-6">
+      <div className="leaderboard-print-root font-display flex min-h-full flex-col gap-6">
         <Breadcrumbs
+          className="leaderboard-print-hide"
           variant="light"
           items={[
             { label: "Home", href: "/" },
@@ -407,7 +409,7 @@ export default function TrackmanLeaderboardsPage() {
           ]}
         />
 
-        <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+        <header className="leaderboard-print-panel rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
           <div className="flex flex-col gap-6 p-5 sm:p-7">
             <div className="flex flex-col gap-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6">
               <div className="min-w-0 flex-1">
@@ -426,23 +428,29 @@ export default function TrackmanLeaderboardsPage() {
                 </p>
               </div>
 
-              <div className="grid w-full grid-cols-2 gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
-                <HubActionCard
-                  href="/trackman"
-                  icon={Trophy}
-                  sectionTitle="Trackman hub"
-                  buttonLabel="View Hub"
+              <div className="flex w-full flex-col gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
+                <LeaderboardExportPdfButton
+                  fileStem={`trackman_leaderboard_${activeCategory}_${stuffPlusPitchFilter}`}
+                  className="w-full sm:ml-auto sm:w-auto"
                 />
-                <HubActionCard
-                  href="/trackman/faq"
-                  icon={BookOpen}
-                  sectionTitle="Dictionary"
-                  buttonLabel="Metrics FAQ"
-                />
+                <div className="leaderboard-print-hide grid grid-cols-2 gap-3">
+                  <HubActionCard
+                    href="/trackman"
+                    icon={Trophy}
+                    sectionTitle="Trackman hub"
+                    buttonLabel="View Hub"
+                  />
+                  <HubActionCard
+                    href="/trackman/faq"
+                    icon={BookOpen}
+                    sectionTitle="Dictionary"
+                    buttonLabel="Metrics FAQ"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="leaderboard-print-hide grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               <HubStatCard
                 label="Sessions"
                 value={loading ? "—" : String(data?.session_count ?? 0)}
@@ -481,7 +489,7 @@ export default function TrackmanLeaderboardsPage() {
         </div>
       ) : (
         <>
-          <LeaderboardToolbar variant="light">
+          <LeaderboardToolbar variant="light" className="leaderboard-print-hide">
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)] xl:items-end">
               <div className="xl:hidden">
                 <DropdownFilter<string>
@@ -625,10 +633,10 @@ export default function TrackmanLeaderboardsPage() {
                     ))}
                   </div>
                 </div>
-                <div className="mt-4 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-surface shadow-sm dark:border-zinc-700 dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
-                  <div className="max-h-[70vh] overflow-auto">
-                  <table className="w-full text-sm">
-                    <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
+                <div className="leaderboard-print-panel mt-4 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-surface shadow-sm dark:border-zinc-700 dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+                  <div className="leaderboard-print-table-shell max-h-[70vh] overflow-auto">
+                  <table className="leaderboard-print-table w-full text-sm">
+                    <thead className="leaderboard-print-sticky-head sticky top-0 z-10 border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
                       <tr>
                         <th className="w-12 px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">#</th>
                         <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Player</th>
@@ -712,10 +720,10 @@ export default function TrackmanLeaderboardsPage() {
             ) : activeCategory ? (
               <>
                 {/* Trackman leaderboard table */}
-                <div className="mt-4 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-surface shadow-sm dark:border-zinc-700 dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
-                  <div className="max-h-[70vh] overflow-auto">
-                  <table className="w-full text-sm">
-                    <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
+                <div className="leaderboard-print-panel mt-4 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-surface shadow-sm dark:border-zinc-700 dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+                  <div className="leaderboard-print-table-shell max-h-[70vh] overflow-auto">
+                  <table className="leaderboard-print-table w-full text-sm">
+                    <thead className="leaderboard-print-sticky-head sticky top-0 z-10 border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
                       <tr>
                         <th className="w-12 px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">#</th>
                         <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Player</th>

@@ -153,8 +153,8 @@ export function HitterLeaderboardTable({
     }, [sortKey]);
 
     return (
-        <table className="w-full text-sm">
-            <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
+        <table className="leaderboard-print-table w-full text-sm">
+            <thead className="leaderboard-print-sticky-head sticky top-0 z-10 border-b border-slate-200 bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900/85">
                 <tr>
                     <th className="w-12 px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                         #

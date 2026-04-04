@@ -6,6 +6,7 @@ import { format, parseISO } from "date-fns";
 import { BarChart3, BookOpen, ClipboardList, Search } from "lucide-react";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import { HubActionCard } from "@/app/components/hub/HubHeader";
+import { LeaderboardExportPdfButton } from "@/app/components/leaderboards/LeaderboardExportPdfButton";
 import { LeaderboardToolbar } from "@/app/components/leaderboards/LeaderboardChrome";
 import { cn } from "@/lib/utils";
 import type { StatGroup } from "./types";
@@ -112,8 +113,9 @@ export function LeaderboardClientState({
         statGroup !== "basic";
 
     return (
-        <div className="font-display flex flex-col gap-6">
+        <div className="leaderboard-print-root font-display flex flex-col gap-6">
             <Breadcrumbs
+                className="leaderboard-print-hide"
                 variant="light"
                 items={[
                     { label: "Home", href: "/" },
@@ -122,7 +124,7 @@ export function LeaderboardClientState({
                 ]}
             />
 
-            <header className="rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+            <header className="leaderboard-print-panel rounded-[28px] border border-border bg-surface shadow-[0_16px_40px_rgba(15,23,42,0.04)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
                 <div className="flex flex-col gap-5 p-5 sm:flex-row sm:flex-nowrap sm:items-start sm:justify-between sm:gap-6 sm:p-7">
                     <div className="min-w-0 flex-1">
                         <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-800">
@@ -137,24 +139,30 @@ export function LeaderboardClientState({
                         </p>
                     </div>
 
-                    <div className="grid w-full grid-cols-2 gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
-                        <HubActionCard
-                            href="/charting"
-                            icon={ClipboardList}
-                            sectionTitle="Charting hub"
-                            buttonLabel="Open Hub"
+                    <div className="flex w-full flex-col gap-3 sm:w-auto sm:max-w-[46rem] sm:shrink-0">
+                        <LeaderboardExportPdfButton
+                            fileStem={`charting_leaderboard_${tab}_${statGroup}_${session !== "all" ? "game" : range}`}
+                            className="w-full sm:ml-auto sm:w-auto"
                         />
-                        <HubActionCard
-                            href="/charting/faq"
-                            icon={BookOpen}
-                            sectionTitle="Dictionary"
-                            buttonLabel="Metrics FAQ"
-                        />
+                        <div className="leaderboard-print-hide grid grid-cols-2 gap-3">
+                            <HubActionCard
+                                href="/charting"
+                                icon={ClipboardList}
+                                sectionTitle="Charting hub"
+                                buttonLabel="Open Hub"
+                            />
+                            <HubActionCard
+                                href="/charting/faq"
+                                icon={BookOpen}
+                                sectionTitle="Dictionary"
+                                buttonLabel="Metrics FAQ"
+                            />
+                        </div>
                     </div>
                 </div>
             </header>
 
-            <LeaderboardToolbar variant="light">
+            <LeaderboardToolbar variant="light" className="leaderboard-print-hide">
                 <div className="flex min-w-0 flex-col gap-5">
                     <div className="grid grid-cols-1 gap-4 min-[700px]:grid-cols-2">
                         <div className="min-w-0 space-y-2">
