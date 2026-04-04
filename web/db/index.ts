@@ -9,18 +9,27 @@ function getRequiredUrl(name: string): string {
   return value;
 }
 
-// Vercel serverless functions each create a new connection pool.
-// Keep max=1 on Vercel so concurrent invocations don't exhaust the
-// Supabase session pooler limit (~20 connections on free tier).
-// prepare:false is required for the transaction pooler (port 6543) and
-// is safe for the session pooler as well.
-const isVercel = Boolean(process.env.VERCEL);
+// Supabase session pooler (port 5432) holds a server-side session per
+// connection. On Vercel serverless each invocation may create its own pool,
+// quickly exhausting the ~20-connection free-tier limit.
+//
+// Switch to the Supabase transaction pooler (port 6543) on Vercel: it
+// allocates a backend connection only for the duration of a single
+// transaction, then releases it, supporting far more concurrent invocations.
+// `prepare: false` is required because the transaction pooler does not
+// persist prepared statements across transactions.
+function resolveUrl(url: string): string {
+  if (process.env.VERCEL && url.includes(".pooler.supabase.com:5432/")) {
+    return url.replace(".pooler.supabase.com:5432/", ".pooler.supabase.com:6543/");
+  }
+  return url;
+}
 
 function createDatabase(url: string) {
   return drizzle(
-    postgres(url, {
-      max: isVercel ? 1 : 10,
-      idle_timeout: isVercel ? 20 : undefined,
+    postgres(resolveUrl(url), {
+      max: process.env.VERCEL ? 3 : 10,
+      idle_timeout: process.env.VERCEL ? 20 : undefined,
       prepare: false,
     }),
   );
