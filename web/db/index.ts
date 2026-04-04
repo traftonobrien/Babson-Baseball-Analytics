@@ -9,8 +9,21 @@ function getRequiredUrl(name: string): string {
   return value;
 }
 
+// Vercel serverless functions each create a new connection pool.
+// Keep max=1 on Vercel so concurrent invocations don't exhaust the
+// Supabase session pooler limit (~20 connections on free tier).
+// prepare:false is required for the transaction pooler (port 6543) and
+// is safe for the session pooler as well.
+const isVercel = Boolean(process.env.VERCEL);
+
 function createDatabase(url: string) {
-  return drizzle(postgres(url));
+  return drizzle(
+    postgres(url, {
+      max: isVercel ? 1 : 10,
+      idle_timeout: isVercel ? 20 : undefined,
+      prepare: false,
+    }),
+  );
 }
 
 // Use a global singleton in dev mode to survive Next.js HMR reloads.
