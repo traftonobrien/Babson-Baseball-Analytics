@@ -63,6 +63,7 @@ interface ChartingEditorTopBarProps {
     nextDraft: Partial<ChartingBaserunnerState> | null | undefined,
     successNote: string,
   ) => void;
+  onBaserunnerOut: (field: keyof ChartingBaserunnerState, kind: "pickoff" | "cs") => void;
   onCountPresetChange: (preset: LiveABCountPreset) => void;
   canSwitchPitcher: boolean;
   onSwitchPitcher: () => void;
@@ -104,6 +105,7 @@ export const ChartingEditorTopBar = ({
   onResetOverride,
   onOverrideChange,
   onCommitBaserunnerDraft,
+  onBaserunnerOut,
   onCountPresetChange,
   canSwitchPitcher,
   onSwitchPitcher,
@@ -303,6 +305,7 @@ export const ChartingEditorTopBar = ({
           <OnBasePanel
             baserunnerDraft={baserunnerDraft}
             onCommitBaserunnerDraft={onCommitBaserunnerDraft}
+            onBaserunnerOut={onBaserunnerOut}
           />
         ) : null}
 

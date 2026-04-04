@@ -81,7 +81,7 @@ export const ChartingEditorInPlayModal = ({
                   Ball in Play
                 </h2>
                 <p className="mt-0.5 text-xs text-zinc-500">
-                  {step === "hit_or_out" ? "Hit or out?" : null}
+                  {step === "hit_or_out" ? "Hit, out, or reached base?" : null}
                   {step === "hit_type" ? "Single, double, triple, or home run?" : null}
                   {step === "out_type" ? "What kind of out?" : null}
                   {step === "out_scoring" && outType
@@ -141,6 +141,26 @@ const InPlayWizardContent = ({
           className={WIZARD_BTN}
         >
           Out
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            onOutTypeChange("error");
+            onStepChange("out_scoring");
+          }}
+          className={WIZARD_BTN}
+        >
+          Error
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            onOutTypeChange("fc");
+            onStepChange("out_scoring");
+          }}
+          className={WIZARD_BTN}
+        >
+          Fielder&apos;s Choice
         </button>
       </div>
     );

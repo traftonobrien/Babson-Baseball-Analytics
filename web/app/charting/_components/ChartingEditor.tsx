@@ -15,6 +15,7 @@ import {
   detailTextForPAResult,
   guidanceTextForClosure,
   GAME_PITCH_RESULTS,
+  emptyBaserunnerState,
   normalizeBaserunnerState,
   nextPASeedFromInitialCount,
   paResultOutsRecorded,
@@ -88,6 +89,46 @@ import type {
 } from "./charting-editor/types";
 import { ChartingEditorWorkspace } from "./charting-editor/workspace";
 import { TEAM_NAME } from "@/lib/teamConfig";
+
+// After a PA closes, auto-advance the on-base panel to reflect the result.
+// For walks/singles: apply the force-chain rule. For doubles/triples: place batter.
+// For HR: clear all. For errors/FC: batter to 1B. For outs: no change.
+function autoAdvanceBaserunners(
+  current: ChartingBaserunnerState,
+  result: PAResultType,
+): ChartingBaserunnerState {
+  if (result === "HR") {
+    return { runnerOnFirst: null, runnerOnSecond: null, runnerOnThird: null };
+  }
+  if (result === "BB" || result === "HBP" || result === "1B") {
+    // Force-advance chain: 1B→2B, 2B→3B, 3B scores (cleared)
+    const next = { ...current };
+    if (next.runnerOnFirst) {
+      if (next.runnerOnSecond) {
+        if (next.runnerOnThird) {
+          next.runnerOnThird = null; // scores
+        }
+        next.runnerOnThird = next.runnerOnSecond;
+      }
+      next.runnerOnSecond = next.runnerOnFirst;
+    }
+    next.runnerOnFirst = "runner";
+    return next;
+  }
+  if (result === "2B") {
+    return { ...current, runnerOnSecond: "runner" };
+  }
+  if (result === "3B") {
+    return { ...current, runnerOnThird: "runner" };
+  }
+  // Errors and FC: batter reaches 1B. All other 0-out results (misc family) handled here.
+  if (paResultOutsRecorded(result) === 0) {
+    return { ...current, runnerOnFirst: "runner" };
+  }
+  // Out — no change to baserunners
+  return current;
+}
+
 interface ChartingEditorProps {
   initialSnapshot: ChartingGameSnapshot;
   pitchers: ChartingBootstrapPitcher[];
@@ -757,6 +798,53 @@ export function ChartingEditor({
       gameStateOverride,
       `Plate appearance closed as ${detailTextForPAResult(result)}`,
     );
+    setBaserunnerDraft(autoAdvanceBaserunners(baserunnerDraft, result));
+  };
+  const handleBaserunnerOut = (
+    field: keyof ChartingBaserunnerState,
+    kind: "pickoff" | "cs",
+  ) => {
+    if (liveState.openPAId) return; // don't allow during a live PA
+    const label = kind === "pickoff" ? "Pickoff out" : "Caught stealing";
+    const newOuts = liveState.outs + 1;
+    if (newOuts >= 3) {
+      // 3rd out — flip the inning and clear all bases
+      const nextIsTopInning = !liveState.isTopInning;
+      const nextInning = liveState.isTopInning ? liveState.inning : liveState.inning + 1;
+      const nextOverride = createGameStateOverride(snapshot, {
+        inning: nextInning,
+        isTopInning: nextIsTopInning,
+        outs: 0,
+        batterSlot: deriveNextLineupSlot(
+          snapshot,
+          battingSideForMatchup(snapshot.game, nextIsTopInning),
+          gameStateOverride,
+        ),
+      });
+      startTransition(() => {
+        setBaserunnerDraft(emptyBaserunnerState());
+        setGameStateOverride(nextOverride);
+        syncMatchupInputs(snapshot, nextOverride);
+        setStatusMessage(`${label} — inning over`);
+        setErrorMessage(null);
+      });
+    } else {
+      const nextOverride = createGameStateOverride(snapshot, {
+        inning: liveState.inning,
+        isTopInning: liveState.isTopInning,
+        outs: newOuts,
+        batterSlot: liveState.batterSlot,
+      });
+      startTransition(() => {
+        setBaserunnerDraft((current) =>
+          normalizeBaserunnerState({ ...current, [field]: null }),
+        );
+        setGameStateOverride(nextOverride);
+        syncMatchupInputs(snapshot, nextOverride);
+        setStatusMessage(`${label} — ${newOuts} out${newOuts !== 1 ? "s" : ""}`);
+        setErrorMessage(null);
+      });
+    }
   };
   const handleUndo = () => {
     const nextSnapshot = undoSnapshotAction(snapshot);
@@ -920,6 +1008,7 @@ export function ChartingEditor({
             onResetOverride={handleResetOverride}
             onOverrideChange={handleOverrideChange}
             onCommitBaserunnerDraft={commitBaserunnerDraft}
+            onBaserunnerOut={handleBaserunnerOut}
             onCountPresetChange={setCountPreset}
             canSwitchPitcher={!currentPitcherLocked}
             onSwitchPitcher={handleSwitchPitcher}
