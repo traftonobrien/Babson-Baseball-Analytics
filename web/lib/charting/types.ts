@@ -103,6 +103,7 @@ export interface ChartingPitcherSegment {
   segmentOrder: number;
   enteredInning: number | null;
   exitedInning: number | null;
+  pitcherHand?: "R" | "L" | string | null;
 
   /** Manual override set before export */
   runsOverride: number | null;
@@ -117,6 +118,7 @@ export interface ChartingPlateAppearance {
   inning: number;
   isTopInning: boolean;
   hitterName: string;
+  hitterHand?: "R" | "L" | "S" | string | null;
 
   /** 1-9 */
   lineupSlot: number;

@@ -4,37 +4,27 @@
     "type": "split",
     "children": [
       {
-        "id": "1d63e7cbd25b6a53",
+        "id": "c3051ffd6b219db9",
         "type": "tabs",
         "children": [
           {
-            "id": "488897467faaa125",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Welcome.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Welcome"
-            }
-          }
-        ]
-      },
-      {
-        "id": "87693449a94a6ebf",
-        "type": "tabs",
-        "children": [
-          {
-            "id": "5e92ff69d3017928",
+            "id": "c6c8da00cdc1f8e7",
             "type": "leaf",
             "state": {
               "type": "graph",
               "state": {},
               "icon": "lucide-git-fork",
               "title": "Graph view"
+            }
+          },
+          {
+            "id": "6ecea2cfbe4ce6ee",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
             }
           }
         ]
@@ -199,8 +189,44 @@
       "bases:Create new base": false
     }
   },
-  "active": "488897467faaa125",
+  "active": "c6c8da00cdc1f8e7",
   "lastOpenFiles": [
-    "Welcome.md"
+    "03 Wiki/Obsidian for Pitch Tracker.md",
+    "06 Canonical/Docs/CODEX_BRAIN.md",
+    "06 Canonical/Docs/STYLE_GUIDE.md",
+    "02 Maps of Content/Project Operating System.md",
+    "Untitled.canvas",
+    "Welcome.md",
+    "06 Canonical/Docs/legacy/web/README.md",
+    "06 Canonical/Docs/legacy/skills/publish-outing.md",
+    "06 Canonical/Docs/legacy/plans/outing-comparison-mvp.md",
+    "06 Canonical/Docs/legacy/plans/full_migration_to_new_folder_format.plan.md",
+    "06 Canonical/Docs/legacy/plans/docs_and_agent_context_refactor_cc005e0b_scripts.plan.md",
+    "06 Canonical/Docs/legacy/plans/docs_and_agent_context_refactor_cc005e0b.plan.md",
+    "06 Canonical/Docs/legacy/plans/approval_gate_corrected_plan.md",
+    "06 Canonical/Docs/legacy/Usage_Guides/User_Commands_Template.md",
+    "06 Canonical/Docs/legacy/Usage_Guides/PitchTracker_UserGuide.md",
+    "06 Canonical/Docs/web/video_player.md",
+    "06 Canonical/Docs/web/trackman_session_ui.md",
+    "06 Canonical/Docs/web/reports_kpis_outliers.md",
+    "06 Canonical/Docs/web/release_viz.md",
+    "06 Canonical/Docs/web/release_viz_v2.md",
+    "06 Canonical/Docs/web/leaderboards.md",
+    "06 Canonical/Docs/web/plus_leaderboards.md",
+    "06 Canonical/Docs/web/data_indexing.md",
+    "06 Canonical/Docs/troubleshooting/common_failures.md",
+    "06 Canonical/Docs/runbooks/update_arsenals_csv.md",
+    "06 Canonical/Docs/runbooks/terminal_commands.md",
+    "06 Canonical/Docs/runbooks/sync_collegebaseball_leaderboard.md",
+    "06 Canonical/Docs/mechanics/arm_action_variant_registry.json",
+    "06 Canonical/Docs/legacy/web",
+    "06 Canonical/Docs/legacy/skills",
+    "06 Canonical/Docs/legacy/plans",
+    "06 Canonical/Docs/legacy/Usage_Guides",
+    "06 Canonical/Docs/web",
+    "06 Canonical/Docs/troubleshooting",
+    "06 Canonical/Docs/runbooks",
+    "06 Canonical/Docs/pipeline",
+    "06 Canonical/Docs/mechanics"
   ]
 }

@@ -236,6 +236,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
         segmentOrder: s.segmentOrder,
         enteredInning: s.enteredInning ?? null,
         exitedInning: s.exitedInning ?? null,
+        pitcherHand: s.pitcherHand ?? null,
         runsOverride: s.runsOverride ?? null,
         earnedRunsOverride: s.earnedRunsOverride ?? null,
       }));
@@ -257,6 +258,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
         isTopInning: pa.isTopInning ?? true,
         teamSide: pa.teamSide ?? "opponent",
         hitterName: pa.hitterName,
+        hitterHand: pa.hitterHand ?? null,
         lineupSlot: pa.lineupSlot,
         resultCode: pa.resultCode ?? null,
         initialCount: pa.initialCount ?? "0-0",

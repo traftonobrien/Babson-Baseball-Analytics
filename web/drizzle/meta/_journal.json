@@ -57,6 +57,13 @@
       "when": 1774042270481,
       "tag": "0007_strange_rafael_vega",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1775412716622,
+      "tag": "0008_confused_medusa",
+      "breakpoints": true
     }
   ]
 }

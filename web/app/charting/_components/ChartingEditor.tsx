@@ -41,6 +41,7 @@ import type {
   PitchResult,
   PitchType,
 } from "@/lib/charting/types";
+import type { ChartingOpponentPlayer } from "@/lib/charting/bootstrapOpponents";
 import { ChartingEditorBottomBar } from "./charting-editor/bottom-bar";
 import { BUNT_MODE_PITCH_RESULTS } from "./charting-editor/constants";
 import {
@@ -133,11 +134,13 @@ interface ChartingEditorProps {
   initialSnapshot: ChartingGameSnapshot;
   pitchers: ChartingBootstrapPitcher[];
   rosterPlayers: ChartingBootstrapRosterPlayer[];
+  opponentRoster?: ChartingOpponentPlayer[];
 }
 export function ChartingEditor({
   initialSnapshot,
   pitchers,
   rosterPlayers,
+  opponentRoster = [],
 }: ChartingEditorProps) {
   const initialMatchup = deriveMatchupSelection(initialSnapshot, null);
   const initialPitcherSelection = derivePitcherSelection(
@@ -420,10 +423,19 @@ export function ChartingEditor({
     if (!hitterName.trim()) {
       return;
     }
+    // Find hitter hand from either our roster or opponent roster
+    let hitterHand: string | null = null;
+    if (activeBattingSide === "our") {
+      hitterHand = rosterPlayers.find((p) => p.name.toLowerCase() === hitterName.trim().toLowerCase())?.bats ?? null;
+    } else {
+      hitterHand = opponentRoster.find((p) => p.name.toLowerCase() === hitterName.trim().toLowerCase())?.bats ?? null;
+    }
+
     const nextSnapshot = syncHitterToSnapshot(
       snapshot,
       hitterName.trim(),
       activeMatchupSlot,
+      hitterHand,
       gameStateOverride,
     );
     if (nextSnapshot !== snapshot) {
@@ -441,9 +453,16 @@ export function ChartingEditor({
       activePitchingSide === "our"
         ? pitchers.find((p) => p.name.toLowerCase() === trimmed.toLowerCase())
         : null;
+    
+    let opponentHand: string | null = null;
+    if (activePitchingSide === "opponent") {
+      opponentHand = opponentRoster.find((p) => p.name.toLowerCase() === trimmed.toLowerCase())?.throws ?? null;
+    }
+
     const newPitcher = {
       playerId: rostered?.playerId ?? manualPitcherId(trimmed, activePitchingSide),
       name: trimmed,
+      pitcherHand: rostered?.throws ?? opponentHand ?? null,
     };
     const nextSnapshot = switchPitcherInSnapshot(snapshot, newPitcher, gameStateOverride);
     if (nextSnapshot !== snapshot) {
@@ -746,6 +765,21 @@ export function ChartingEditor({
       return;
     }
     const isStartingNewPA = liveState.openPAId === null;
+    // Resolve handedness
+    let hitterHand: string | null = null;
+    if (activeBattingSide === "our") {
+      hitterHand = rosterPlayers.find((p) => p.name.toLowerCase() === hitterName.trim().toLowerCase())?.bats ?? null;
+    } else {
+      hitterHand = opponentRoster.find((p) => p.name.toLowerCase() === hitterName.trim().toLowerCase())?.bats ?? null;
+    }
+    
+    let pitcherHand: string | null = null;
+    if (activePitchingSide === "our") {
+      pitcherHand = pitchers.find((p) => p.playerId === selectedPitcher.playerId)?.throws ?? null;
+    } else {
+      pitcherHand = opponentRoster.find((p) => p.name.toLowerCase() === selectedPitcher.name.toLowerCase())?.throws ?? null;
+    }
+
     const nextSnapshot = recordPitchInSnapshot(
       snapshot,
       {
@@ -756,8 +790,10 @@ export function ChartingEditor({
         pitcher: {
           playerId: selectedPitcher.playerId ?? "",
           name: selectedPitcher.name,
+          pitcherHand,
         },
         hitterName: hitterName.trim(),
+        hitterHand,
         lineupSlot: activeMatchupSlot,
       },
       gameStateOverride,

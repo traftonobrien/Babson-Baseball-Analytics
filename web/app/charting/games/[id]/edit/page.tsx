@@ -3,6 +3,7 @@ import { LeaderboardPageFrame } from "@/app/components/leaderboards/LeaderboardC
 import { ChartingEditor } from "@/app/charting/_components/ChartingEditor";
 import { buildBootstrapPitchers } from "@/lib/charting/bootstrapPitchers";
 import { buildBootstrapRosterPlayers } from "@/lib/charting/bootstrapRoster";
+import { getOpponentRoster } from "@/lib/charting/bootstrapOpponents";
 import { loadChartingGameSnapshot } from "@/lib/charting/snapshot";
 
 export const revalidate = 0;
@@ -24,6 +25,7 @@ export default async function ChartingGameEditorPage({
   }
 
   const rosterPlayers = buildBootstrapRosterPlayers();
+  const opponentRoster = getOpponentRoster(snapshot.game.opponent);
 
   return (
     <LeaderboardPageFrame maxWidth="max-w-[96rem]">
@@ -31,6 +33,7 @@ export default async function ChartingGameEditorPage({
         initialSnapshot={snapshot}
         pitchers={pitchers}
         rosterPlayers={rosterPlayers}
+        opponentRoster={opponentRoster}
       />
     </LeaderboardPageFrame>
   );

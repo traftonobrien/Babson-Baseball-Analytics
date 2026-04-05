@@ -130,6 +130,8 @@ export const chartingPitcherSegments = pgTable("charting_pitcher_segments", {
   segmentOrder: integer("segment_order").notNull(),
   enteredInning: integer("entered_inning"),
   exitedInning: integer("exited_inning"),
+  /** L | R */
+  pitcherHand: text("pitcher_hand"),
   /** Manual R/ER overrides applied before export */
   runsOverride: integer("runs_override"),
   earnedRunsOverride: integer("earned_runs_override"),
@@ -152,6 +154,8 @@ export const chartingPlateAppearances = pgTable("charting_plate_appearances", {
   isTopInning: boolean("is_top_inning").notNull().default(true),
   teamSide: text("team_side").notNull().default("opponent"),
   hitterName: text("hitter_name").notNull(),
+  /** L | R | S */
+  hitterHand: text("hitter_hand"),
   /** 1-9 lineup slot */
   lineupSlot: integer("lineup_slot").notNull(),
   /** e.g. "K", "BB", "HBP", "1B", "F8", "6-3"; null while PA is open */

@@ -107,6 +107,7 @@ export function recordPitchInSnapshot(
       segmentOrder: nextSegmentOrder(nextSnapshot.segments),
       enteredInning: liveState.inning,
       exitedInning: null,
+      pitcherHand: input.pitcher.pitcherHand ?? null,
       runsOverride: null,
       earnedRunsOverride: null,
     };
@@ -131,6 +132,7 @@ export function recordPitchInSnapshot(
       inning: liveState.inning,
       isTopInning: liveState.isTopInning,
       hitterName: input.hitterName.trim(),
+      hitterHand: input.hitterHand ?? null,
       lineupSlot: clamp(input.lineupSlot, 1, 9),
       teamSide: battingSide,
       resultCode: null,
@@ -185,7 +187,7 @@ export function recordPitchInSnapshot(
  */
 export function switchPitcherInSnapshot(
   snapshot: ChartingGameSnapshot,
-  newPitcher: { playerId: string; name: string },
+  newPitcher: { playerId: string; name: string; pitcherHand?: string | null },
   gameStateOverride?: GameStateOverride | null,
 ): ChartingGameSnapshot {
   const liveState = deriveChartingLiveState(
@@ -229,6 +231,7 @@ export function switchPitcherInSnapshot(
     segmentOrder: nextSegmentOrder(nextSnapshot.segments),
     enteredInning: liveState.inning,
     exitedInning: null,
+    pitcherHand: newPitcher.pitcherHand ?? null,
     runsOverride: null,
     earnedRunsOverride: null,
   });
@@ -308,6 +311,7 @@ export function syncHitterToSnapshot(
   snapshot: ChartingGameSnapshot,
   hitterName: string,
   lineupSlot: number,
+  hitterHand?: string | null,
   gameStateOverride?: GameStateOverride | null,
 ): ChartingGameSnapshot {
   const trimmed = hitterName.trim();
@@ -334,6 +338,7 @@ export function syncHitterToSnapshot(
   );
   if (openPA) {
     openPA.hitterName = trimmed;
+    if (hitterHand !== undefined) openPA.hitterHand = hitterHand;
     openPA.lineupSlot = clamp(lineupSlot, 1, 9);
   }
 

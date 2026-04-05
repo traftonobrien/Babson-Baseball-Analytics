@@ -1,5 +1,12 @@
-This is your new *vault*.
+# Babson Analytics Vault
 
-Make a note of something, [[create a link]], or try [the Importer](https://help.obsidian.md/Plugins/Importer)!
+Start with [[00 Home/Start Here]].
 
-When you're ready, delete this note and make the vault your own.
+This vault is the Obsidian front-end for the Pitch Tracker project. It is meant to help with capture, synthesis, graphing, and retrieval.
+
+Canonical repo truth still lives in:
+
+- [[06 Canonical/AGENTS]]
+- [[06 Canonical/Repo Memory]]
+- [[06 Canonical/Lessons]]
+- [[06 Canonical/Docs/INDEX]]

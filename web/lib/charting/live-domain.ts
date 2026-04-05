@@ -78,8 +78,10 @@ export interface RecordPitchInput {
   pitcher: {
     playerId: string;
     name: string;
+    pitcherHand?: string | null;
   };
   hitterName: string;
+  hitterHand?: string | null;
   lineupSlot: number;
 }
 
