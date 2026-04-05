@@ -58,7 +58,10 @@ function formatCount(value: number): string {
 function formatMetric(metric: PitcherInsightMetricId, value: number | null): string {
   switch (metric) {
     case "baa":
+    case "woba":
       return formatRate(value);
+    case "pitchCount":
+      return formatCount(value ?? 0);
     default:
       return formatPct(value, 0);
   }
@@ -72,8 +75,11 @@ function deltaText(
   if (value === null || baseline === null) return "—";
   const delta = value - baseline;
   const prefix = delta > 0 ? "+" : "";
-  if (metric === "baa") {
+  if (metric === "baa" || metric === "woba") {
     return `${prefix}${delta.toFixed(3).replace(/^0(?=\.)/, "")}`;
+  }
+  if (metric === "pitchCount") {
+    return `${prefix}${Math.round(delta)}`;
   }
   return `${prefix}${delta.toFixed(1)} pts`;
 }
@@ -142,6 +148,23 @@ function metricHeatStyle({
       ? `inset 0 1px 0 rgba(255,255,255,0.08), 0 0 ${cool + 10}px rgba(${accent}, ${glow + 0.12})`
       : `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 ${cool}px rgba(${accent}, ${glow})`,
   };
+}
+
+function getMetricBounds(metricId: PitcherInsightMetricId): { min: number; max: number } | null {
+  switch (metricId) {
+    case "baa":
+      return { min: 0.150, max: 0.350 };
+    case "woba":
+      return { min: 0.250, max: 0.450 };
+    case "strikePct":
+      return { min: 50, max: 70 };
+    case "whiffPct":
+      return { min: 10, max: 40 };
+    case "chasePct":
+      return { min: 15, max: 35 };
+    default:
+      return null;
+  }
 }
 
 function FilterChip({
@@ -364,10 +387,24 @@ export default function PitcherPerformanceInsights({
     return cells.map((cell) => {
       let heat = 0;
       if (cell.metricValue !== null) {
-        const raw = max === min ? 0.58 : (cell.metricValue - min) / (max - min);
-        const normalized = metricMeta.lowerBetter ? 1 - raw : raw;
-        const sampleWeight = 0.35 + 0.65 * (cell.aggregate.pitches / maxSample);
-        heat = Math.max(0.08, normalized * sampleWeight);
+        if (metric === "pitchCount") {
+          const mMax = max > 0 ? max : 1;
+          heat = Math.max(0.08, cell.metricValue / mMax);
+        } else {
+          const bounds = getMetricBounds(metric);
+          if (bounds) {
+            const clamped = Math.max(bounds.min, Math.min(bounds.max, cell.metricValue));
+            const raw = (clamped - bounds.min) / (bounds.max - bounds.min);
+            const normalized = metricMeta.lowerBetter ? 1 - raw : raw;
+            const sampleWeight = 0.35 + 0.65 * (cell.aggregate.pitches / maxSample);
+            heat = Math.max(0.08, normalized * sampleWeight);
+          } else {
+            const raw = max === min ? 0.58 : (cell.metricValue - min) / (max - min);
+            const normalized = metricMeta.lowerBetter ? 1 - raw : raw;
+            const sampleWeight = 0.35 + 0.65 * (cell.aggregate.pitches / maxSample);
+            heat = Math.max(0.08, normalized * sampleWeight);
+          }
+        }
       }
       return { ...cell, heat };
     });

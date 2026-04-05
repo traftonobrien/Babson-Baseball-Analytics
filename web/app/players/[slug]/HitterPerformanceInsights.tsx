@@ -63,6 +63,8 @@ function formatMetric(metric: HitterInsightMetricId, value: number | null): stri
     case "woba":
     case "xwoba":
       return formatRate(value);
+    case "pitchCount":
+      return formatCount(value ?? 0);
     case "swingPct":
     case "whiffPct":
     case "contactPct":
@@ -82,6 +84,8 @@ function deltaText(metric: HitterInsightMetricId, value: number | null, baseline
     case "woba":
     case "xwoba":
       return `${prefix}${delta.toFixed(3).replace(/^0(?=\.)/, "")}`;
+    case "pitchCount":
+      return `${prefix}${Math.round(delta)}`;
     default:
       return `${prefix}${delta.toFixed(1)} pts`;
   }
@@ -146,6 +150,28 @@ function metricHeatStyle({
       ? `inset 0 1px 0 rgba(255,255,255,0.08), 0 0 ${cool + 10}px rgba(${accent}, ${glow + 0.12})`
       : `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 ${cool}px rgba(${accent}, ${glow})`,
   };
+}
+
+function getMetricBounds(metricId: HitterInsightMetricId): { min: number; max: number } | null {
+  switch (metricId) {
+    case "avg":
+      return { min: 0.150, max: 0.350 };
+    case "slg":
+      return { min: 0.250, max: 0.550 };
+    case "woba":
+    case "xwoba":
+      return { min: 0.250, max: 0.450 };
+    case "swingPct":
+      return { min: 35, max: 60 };
+    case "whiffPct":
+      return { min: 10, max: 40 };
+    case "contactPct":
+      return { min: 60, max: 90 };
+    case "chasePct":
+      return { min: 15, max: 35 };
+    default:
+      return null;
+  }
 }
 
 function FilterChip({
@@ -387,10 +413,24 @@ export default function HitterPerformanceInsights({
     return cells.map((cell) => {
       let heat = 0;
       if (cell.metricValue !== null) {
-        const raw = max === min ? 0.58 : (cell.metricValue - min) / (max - min);
-        const normalized = metricMeta.lowerBetter ? 1 - raw : raw;
-        const sampleWeight = 0.35 + 0.65 * (cell.aggregate.pitches / maxSample);
-        heat = Math.max(0.08, normalized * sampleWeight);
+        if (metric === "pitchCount") {
+          const mMax = max > 0 ? max : 1;
+          heat = Math.max(0.08, cell.metricValue / mMax);
+        } else {
+          const bounds = getMetricBounds(metric);
+          if (bounds) {
+            const clamped = Math.max(bounds.min, Math.min(bounds.max, cell.metricValue));
+            const raw = (clamped - bounds.min) / (bounds.max - bounds.min);
+            const normalized = metricMeta.lowerBetter ? 1 - raw : raw;
+            const sampleWeight = 0.35 + 0.65 * (cell.aggregate.pitches / maxSample);
+            heat = Math.max(0.08, normalized * sampleWeight);
+          } else {
+            const raw = max === min ? 0.58 : (cell.metricValue - min) / (max - min);
+            const normalized = metricMeta.lowerBetter ? 1 - raw : raw;
+            const sampleWeight = 0.35 + 0.65 * (cell.aggregate.pitches / maxSample);
+            heat = Math.max(0.08, normalized * sampleWeight);
+          }
+        }
       }
 
       return {

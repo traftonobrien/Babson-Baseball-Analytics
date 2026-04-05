@@ -17,7 +17,7 @@ import type {
   PitchResult,
 } from "./types";
 
-export type PitcherComparisonMetricId = "strikePct" | "whiffPct" | "chasePct" | "baa";
+export type PitcherComparisonMetricId = "strikePct" | "whiffPct" | "chasePct" | "baa" | "woba" | "pitchCount";
 export type PitcherComparisonEventId =
   | "all"
   | "calledStrikes"
@@ -71,6 +71,7 @@ export interface PitcherComparisonPitchRecord {
   terminalStrikeout: boolean;
   terminalWalk: boolean;
   terminalHitByPitch: boolean;
+  wobaWeight: number;
 }
 
 export interface PitcherComparisonSummary {
@@ -86,6 +87,7 @@ export interface PitcherComparisonSummary {
   whiffPct: number | null;
   chasePct: number | null;
   baa: number | null;
+  woba: number | null;
   kPct: number | null;
   bbPct: number | null;
 }
@@ -178,6 +180,18 @@ export const PITCHER_COMPARISON_METRICS: PitcherComparisonMetricOption[] = [
     id: "baa",
     label: "BAA",
     description: "Batting average against on terminal at-bats in the selected bucket.",
+    lowerBetter: true,
+  },
+  {
+    id: "pitchCount",
+    label: "Pitches",
+    description: "Total number of pitches located in the selected bucket.",
+    lowerBetter: false,
+  },
+  {
+    id: "woba",
+    label: "wOBA",
+    description: "Weighted on-base average against on terminal at-bats in the selected bucket.",
     lowerBetter: true,
   },
 ];
@@ -313,6 +327,8 @@ function metricValue(
   metricId: PitcherComparisonMetricId
 ): number | null {
   switch (metricId) {
+    case "pitchCount":
+      return summary.totalPitches;
     case "strikePct":
       return summary.strikePct;
     case "whiffPct":
@@ -321,6 +337,8 @@ function metricValue(
       return summary.chasePct;
     case "baa":
       return summary.baa;
+    case "woba":
+      return summary.woba;
   }
 }
 
@@ -368,7 +386,20 @@ function buildPitcherComparisonPitchRecord({
     terminalStrikeout: isTerminalPitch && isStrikeout(resultCode),
     terminalWalk: isTerminalPitch && resultCode === "BB",
     terminalHitByPitch: isTerminalPitch && resultCode === "HBP",
+    wobaWeight: isTerminalPitch ? wobaWeightForResult(resultCode) : 0,
   };
+}
+
+function wobaWeightForResult(resultCode: string | null): number {
+  switch (resultCode) {
+    case "BB": return 0.69;
+    case "HBP": return 0.72;
+    case "1B": return 0.89;
+    case "2B": return 1.27;
+    case "3B": return 1.62;
+    case "HR": return 2.1;
+    default: return 0;
+  }
 }
 
 export function summarizePitcherComparisonPitches(
@@ -387,6 +418,11 @@ export function summarizePitcherComparisonPitches(
   const chaseSwings = chasePitches.filter((pitch) => pitch.isSwing);
   const strikes = pitches.filter((pitch) => pitch.isStrike);
 
+  const wobaDenominator = terminalPitches.filter(
+    (pitch) => pitch.terminalAtBat || pitch.terminalWalk || pitch.terminalHitByPitch
+  );
+  const wobaNumerator = terminalPitches.reduce((sum, pitch) => sum + pitch.wobaWeight, 0);
+
   return {
     totalPitches: pitches.length,
     plateAppearances: terminalPitches.length,
@@ -403,6 +439,7 @@ export function summarizePitcherComparisonPitches(
     whiffPct: pct(whiffs.length, swings.length),
     chasePct: pct(chaseSwings.length, chasePitches.length),
     baa: atBats.length > 0 ? hits.length / atBats.length : null,
+    woba: wobaDenominator.length > 0 ? wobaNumerator / wobaDenominator.length : null,
     kPct: pct(strikeouts.length, terminalPitches.length),
     bbPct: pct(walks.length, terminalPitches.length),
   };

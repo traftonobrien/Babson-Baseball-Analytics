@@ -3,6 +3,7 @@ import type { ChartingPitch, ChartingPlateAppearance, PitchResult, PitchType } f
 export type BatterHand = "R" | "L" | "S" | null;
 export type PitcherHand = "R" | "L" | null;
 export type HitterInsightMetricId =
+  | "pitchCount"
   | "avg"
   | "slg"
   | "woba"
@@ -185,6 +186,13 @@ export const DEFAULT_HITTER_INSIGHT_FILTERS: HitterInsightsFilters = {
   zoneScope: "all",
 };
 export const HITTER_INSIGHT_METRICS: HitterInsightMetricOption[] = [
+  {
+    id: "pitchCount",
+    label: "Pitches",
+    description: "Raw pitch location density and count.",
+    lowerBetter: false,
+    available: true,
+  },
   {
     id: "avg",
     label: "AVG",
@@ -664,6 +672,8 @@ export function metricValueForAggregate(
   metricId: HitterInsightMetricId
 ): number | null {
   switch (metricId) {
+    case "pitchCount":
+      return aggregate.pitches;
     case "avg":
       return aggregate.avg;
     case "slg":

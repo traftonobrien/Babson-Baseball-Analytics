@@ -19,7 +19,8 @@ export type ChartingPlayerComparisonMetricId =
   | "avg"
   | "woba"
   | "swingPct"
-  | "whiffPct";
+  | "whiffPct"
+  | "pitchCount";
 export type ChartingPlayerComparisonEventId =
   | "all"
   | "hits"
@@ -182,6 +183,12 @@ export const CHARTING_PLAYER_COMPARISON_METRICS: ChartingPlayerComparisonMetricO
     description: "Swing-and-miss rate on swings inside the selected bucket.",
     lowerBetter: true,
   },
+  {
+    id: "pitchCount",
+    label: "Pitches",
+    description: "Total number of pitches located in the selected bucket.",
+    lowerBetter: false,
+  },
 ];
 
 export const CHARTING_PLAYER_COMPARISON_EVENTS: ChartingPlayerComparisonEventOption[] = [
@@ -265,6 +272,8 @@ function metricValue(
   metricId: ChartingPlayerComparisonMetricId
 ): number | null {
   switch (metricId) {
+    case "pitchCount":
+      return summary.totalPitches;
     case "avg":
       return summary.battingAverage;
     case "woba":

@@ -4,10 +4,12 @@ import type { BatterHand } from "./hitterInsights";
 export type { BatterHand };
 
 export type PitcherInsightMetricId =
+  | "pitchCount"
   | "strikePct"
   | "whiffPct"
   | "chasePct"
   | "baa"
+  | "woba"
   | "kPct"
   | "bbPct"
   | "fpsPct";
@@ -81,6 +83,7 @@ export interface PitcherInsightPitchRecord {
   terminalHit: boolean;
   terminalHitByPitch: boolean;
   terminalPAs: number;
+  wobaWeight: number;
 }
 
 export interface PitcherInsightAggregate {
@@ -105,6 +108,7 @@ export interface PitcherInsightAggregate {
   whiffPct: number | null;
   chasePct: number | null;
   baa: number | null;
+  woba: number | null;
   kPct: number | null;
   bbPct: number | null;
   fpsPct: number | null;
@@ -123,6 +127,7 @@ export interface PitcherPerformanceInsightsData {
     kPct: number | null;
     bbPct: number | null;
     baa: number | null;
+    woba: number | null;
   };
   capabilities: {
     batterHand: boolean;
@@ -168,6 +173,13 @@ export const DEFAULT_PITCHER_INSIGHT_FILTERS: PitcherInsightsFilters = {
 
 export const PITCHER_INSIGHT_METRICS: PitcherInsightMetricOption[] = [
   {
+    id: "pitchCount",
+    label: "Pitches",
+    description: "Raw pitch location density and count.",
+    lowerBetter: false,
+    available: true,
+  },
+  {
     id: "strikePct",
     label: "Strike%",
     description: "Strikes thrown (called, swinging, foul, in-play) as a percentage of pitches.",
@@ -192,6 +204,13 @@ export const PITCHER_INSIGHT_METRICS: PitcherInsightMetricOption[] = [
     id: "baa",
     label: "BAA",
     description: "Batting average against — hits allowed per at-bat with terminal pitch in this zone.",
+    lowerBetter: true,
+    available: true,
+  },
+  {
+    id: "woba",
+    label: "wOBA",
+    description: "Weighted on-base average against.",
     lowerBetter: true,
     available: true,
   },
@@ -284,6 +303,18 @@ function mapPitchesByPaId(pitches: ChartingPitch[]): Map<string, ChartingPitch[]
   return map;
 }
 
+function wobaWeightForResult(resultCode: string | null): number {
+  switch (resultCode) {
+    case "BB": return 0.69;
+    case "HBP": return 0.72;
+    case "1B": return 0.89;
+    case "2B": return 1.27;
+    case "3B": return 1.62;
+    case "HR": return 2.1;
+    default: return 0;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Builder
 // ---------------------------------------------------------------------------
@@ -362,6 +393,7 @@ export function buildPitcherPerformanceInsightsData({
         terminalHit: isTerminalPitch && isHit,
         terminalHitByPitch: isTerminalPitch && isHbp,
         terminalPAs: isTerminalPitch ? terminalPAs : 0,
+        wobaWeight: isTerminalPitch ? wobaWeightForResult(pa.resultCode) : 0,
       });
     }
   }
@@ -383,6 +415,7 @@ export function buildPitcherPerformanceInsightsData({
       kPct: summary.kPct,
       bbPct: summary.bbPct,
       baa: summary.baa,
+      woba: summary.woba,
     },
     capabilities: {
       batterHand: false,
@@ -476,6 +509,11 @@ export function summarizePitcherInsightPitches(
   );
   const firstPitchStrikes = firstPitchPitches.filter((p) => p.isStrike).length;
 
+  const wobaDenominator = terminalPitches.filter(
+    (p) => p.terminalAtBat || p.terminalWalk || p.terminalHitByPitch
+  ).length;
+  const wobaNumerator = terminalPitches.reduce((sum, p) => sum + p.wobaWeight, 0);
+
   return {
     pitches: pitches.length,
     locatedPitches: locatedPitches.length,
@@ -498,6 +536,7 @@ export function summarizePitcherInsightPitches(
     whiffPct: pct(whiffs, swings),
     chasePct: pct(outOfZoneSwings, outOfZonePitches.length),
     baa: atBats > 0 ? hits / atBats : null,
+    woba: wobaDenominator > 0 ? wobaNumerator / wobaDenominator : null,
     kPct: pct(strikeouts, totalPAs),
     bbPct: pct(walks, totalPAs),
     fpsPct: pct(firstPitchStrikes, firstPitchPitches.length),
@@ -509,6 +548,8 @@ export function metricValueForAggregate(
   metricId: PitcherInsightMetricId
 ): number | null {
   switch (metricId) {
+    case "pitchCount":
+      return aggregate.pitches;
     case "strikePct":
       return aggregate.strikePct;
     case "whiffPct":
@@ -517,6 +558,8 @@ export function metricValueForAggregate(
       return aggregate.chasePct;
     case "baa":
       return aggregate.baa;
+    case "woba":
+      return aggregate.woba;
     case "kPct":
       return aggregate.kPct;
     case "bbPct":

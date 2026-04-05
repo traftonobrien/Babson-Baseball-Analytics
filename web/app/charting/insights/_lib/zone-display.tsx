@@ -174,6 +174,26 @@ export const ZONE_SECTION_GRID_ITEMS: Array<{
 export const ZONE_ROW_LABELS = ["High", "Mid", "Low"] as const;
 export const ZONE_COL_LABELS = ["L", "Ctr", "R"] as const;
 
+export const getMetricBounds = (metricId: ComparisonMetricId): { min: number; max: number } => {
+  switch (metricId) {
+    case "avg":
+    case "baa":
+      return { min: 0.150, max: 0.350 };
+    case "woba":
+      return { min: 0.250, max: 0.450 };
+    case "strikePct":
+      return { min: 50, max: 70 };
+    case "whiffPct":
+      return { min: 10, max: 40 };
+    case "chasePct":
+      return { min: 15, max: 35 };
+    case "swingPct":
+      return { min: 35, max: 60 };
+    default:
+      return { min: 0, max: 100 };
+  }
+};
+
 export const bucketHeat = (
   view: ComparisonView,
   buckets: ExplorerZoneBucket[],
@@ -181,22 +201,16 @@ export const bucketHeat = (
   metricId: ComparisonMetricId,
 ): number => {
   const option = metricOptionsForView(view).find((metric) => metric.id === metricId);
-  const values = buckets
-    .map((candidate) => metricValueForSummary(view, candidate.summary, metricId))
-    .filter((value): value is number => value !== null);
   const currentValue = metricValueForSummary(view, bucket.summary, metricId);
 
-  if (!option || currentValue === null || values.length === 0) {
+  if (!option || currentValue === null) {
     return 0;
   }
 
-  const minimum = Math.min(...values);
-  const maximum = Math.max(...values);
-  if (minimum === maximum) {
-    return 0.55;
-  }
+  const { min, max } = getMetricBounds(metricId);
+  const clampedValue = Math.max(min, Math.min(max, currentValue));
+  const normalized = (clampedValue - min) / (max - min);
 
-  const normalized = (currentValue - minimum) / (maximum - minimum);
   return option.lowerBetter ? 1 - normalized : normalized;
 };
 
@@ -207,26 +221,17 @@ export const cellHeat = (
   metricId: ComparisonMetricId,
 ): number => {
   const option = metricOptionsForView(view).find((metric) => metric.id === metricId);
-  const values = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    .map((id) => {
-      const summary = cellSummaries.get(id);
-      return summary ? metricValueForSummary(view, summary, metricId) : null;
-    })
-    .filter((value): value is number => value !== null);
   const summary = cellSummaries.get(cellId);
   const currentValue = summary ? metricValueForSummary(view, summary, metricId) : null;
 
-  if (!option || currentValue === null || values.length === 0) {
+  if (!option || currentValue === null) {
     return 0;
   }
 
-  const minimum = Math.min(...values);
-  const maximum = Math.max(...values);
-  if (minimum === maximum) {
-    return 0.55;
-  }
+  const { min, max } = getMetricBounds(metricId);
+  const clampedValue = Math.max(min, Math.min(max, currentValue));
+  const normalized = (clampedValue - min) / (max - min);
 
-  const normalized = (currentValue - minimum) / (maximum - minimum);
   return option.lowerBetter ? 1 - normalized : normalized;
 };
 
