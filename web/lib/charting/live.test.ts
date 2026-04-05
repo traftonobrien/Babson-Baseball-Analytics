@@ -503,6 +503,58 @@ describe("snapshot mutations", () => {
     expect(snapshot.segments[0]?.playerId).toBe("manual:opponent:mit-starter");
   });
 
+  it("updates an existing segment's pitcher hand from live matchup input", () => {
+    const gameSnapshot: ChartingGameSnapshot = {
+      ...baseSnapshot,
+      game: {
+        ...baseSnapshot.game,
+        sessionType: "game",
+      },
+      segments: [
+        {
+          id: "seg-1",
+          gameId: "game-1",
+          playerId: "manual:opponent:starter",
+          displayName: "MIT Starter",
+          teamSide: "opponent",
+          segmentOrder: 0,
+          enteredInning: 1,
+          exitedInning: null,
+          pitcherHand: null,
+          runsOverride: null,
+          earnedRunsOverride: null,
+        },
+      ],
+    };
+    const override = createGameStateOverride(gameSnapshot, {
+      inning: 1,
+      isTopInning: false,
+      outs: 0,
+    });
+
+    const snapshot = recordPitchInSnapshot(
+      gameSnapshot,
+      {
+        pitchType: "Fastball",
+        pitchResult: "called_strike",
+        locationCell: 5,
+        velocity: null,
+        pitcher: {
+          playerId: "manual:opponent:starter",
+          name: "MIT Starter",
+          pitcherHand: "L",
+        },
+        hitterName: "Babson Lead-Off",
+        hitterHand: "R",
+        lineupSlot: 1,
+      },
+      override,
+    );
+
+    expect(snapshot.segments[0]?.pitcherHand).toBe("L");
+    expect(snapshot.plateAppearances[0]?.hitterHand).toBe("R");
+  });
+
   it("normalizes bunt-mode fouls and marks the plate appearance as a bunt rep", () => {
     const snapshot = recordPitchInSnapshot(
       baseSnapshot,

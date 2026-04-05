@@ -1,4 +1,5 @@
 import { boolean, integer, pgTable, text } from "drizzle-orm/pg-core";
+import { chartingPlateAppearances } from "@/db/schema";
 import type { ChartingPlateAppearance } from "./types";
 
 /**
@@ -46,6 +47,9 @@ export function isMissingInitialCountColumnError(error: unknown) {
 
 export function isMissingPlateAppearanceContextColumnError(error: unknown) {
   return [
+    "result_code",
+    "hitter_hand",
+    "lineup_slot",
     "initial_count",
     "is_top_inning",
     "runner_on_first",
@@ -62,6 +66,52 @@ export function isMissingPlateAppearanceContextColumnError(error: unknown) {
  */
 export function isMissingBattingSideColumnError(error: unknown) {
   return isMissingColumnError(error, "team_side");
+}
+
+function normalizeMatchupSide(
+  value: string | null | undefined,
+): ChartingPlateAppearance["teamSide"] {
+  return value === "our" ? "our" : "opponent";
+}
+
+export function mapPlateAppearanceRow(
+  plateAppearance: typeof chartingPlateAppearances.$inferSelect,
+): ChartingPlateAppearance {
+  return {
+    ...plateAppearance,
+    isTopInning: plateAppearance.isTopInning ?? true,
+    teamSide: normalizeMatchupSide(plateAppearance.teamSide),
+    initialCount:
+      (plateAppearance.initialCount as ChartingPlateAppearance["initialCount"]) ?? "0-0",
+    runnerOnFirst: plateAppearance.runnerOnFirst ?? null,
+    runnerOnSecond: plateAppearance.runnerOnSecond ?? null,
+    runnerOnThird: plateAppearance.runnerOnThird ?? null,
+  };
+}
+
+export function isLegacyPlateAppearanceSchemaError(error: unknown): boolean {
+  return (
+    isMissingPlateAppearanceContextColumnError(error) ||
+    isMissingBattingSideColumnError(error)
+  );
+}
+
+export async function loadPlateAppearancesWithFallback({
+  loadCurrentRows,
+  loadLegacyRows,
+}: {
+  loadCurrentRows: () => Promise<typeof chartingPlateAppearances.$inferSelect[]>;
+  loadLegacyRows: () => Promise<typeof legacyChartingPlateAppearances.$inferSelect[]>;
+}): Promise<ChartingPlateAppearance[]> {
+  try {
+    return (await loadCurrentRows()).map(mapPlateAppearanceRow);
+  } catch (error) {
+    if (!isLegacyPlateAppearanceSchemaError(error)) {
+      throw error;
+    }
+
+    return (await loadLegacyRows()).map(mapLegacyPlateAppearanceRow);
+  }
 }
 
 export function mapLegacyPlateAppearanceRow(

@@ -1,5 +1,10 @@
 import { desc, inArray } from "drizzle-orm";
-import { chartingGames, chartingPitcherSegments, chartingPitches } from "@/db/schema";
+import {
+  chartingGames,
+  chartingPitcherSegments,
+  chartingPitches,
+  chartingPlateAppearances,
+} from "@/db/schema";
 import { playerRegistry } from "@/lib/playerRegistry";
 import {
   buildChartingPlayerComparisonDirectory,
@@ -14,6 +19,7 @@ import {
 import type { BatterHand } from "./hitterInsights";
 import {
   legacyChartingPlateAppearances,
+  loadPlateAppearancesWithFallback,
   mapLegacyPlateAppearanceRow,
 } from "./plateAppearanceStorage";
 import {
@@ -116,21 +122,36 @@ export async function loadChartingPitcherComparisonDirectory(): Promise<
     return [];
   }
 
-  const plateAppearances = (
-    await db
-      .select()
-      .from(legacyChartingPlateAppearances)
-      .where(
-        inArray(
-          legacyChartingPlateAppearances.segmentId,
-          segments.map((segment) => segment.id)
+  const plateAppearances = await loadPlateAppearancesWithFallback({
+    loadCurrentRows: () =>
+      db
+        .select()
+        .from(chartingPlateAppearances)
+        .where(
+          inArray(
+            chartingPlateAppearances.segmentId,
+            segments.map((segment) => segment.id),
+          ),
         )
-      )
-      .orderBy(
-        desc(legacyChartingPlateAppearances.gameId),
-        desc(legacyChartingPlateAppearances.paOrder)
-      )
-  ).map(mapLegacyPlateAppearanceRow);
+        .orderBy(
+          desc(chartingPlateAppearances.gameId),
+          desc(chartingPlateAppearances.paOrder),
+        ),
+    loadLegacyRows: () =>
+      db
+        .select()
+        .from(legacyChartingPlateAppearances)
+        .where(
+          inArray(
+            legacyChartingPlateAppearances.segmentId,
+            segments.map((segment) => segment.id),
+          ),
+        )
+        .orderBy(
+          desc(legacyChartingPlateAppearances.gameId),
+          desc(legacyChartingPlateAppearances.paOrder),
+        ),
+  });
 
   if (plateAppearances.length === 0) {
     return [];

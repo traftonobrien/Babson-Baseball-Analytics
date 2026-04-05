@@ -2,7 +2,6 @@ import type { ChangeEvent } from "react";
 
 import type {
   ChartingBaserunnerState,
-  ChartingBootstrapPitcher,
   ChartingGameSnapshot,
   ChartingMatchupSide,
 } from "@/lib/charting/types";
@@ -30,11 +29,12 @@ interface ChartingEditorTopBarProps {
   pitcherDatalistId: string;
   datalistId: string;
   pitcherNameInput: string;
-  selectedPitcherId: string;
+  pitcherSuggestions: string[];
+  pitcherHand: "R" | "L" | null;
   currentPitcherLocked: boolean;
-  pitchers: ChartingBootstrapPitcher[];
   hitterName: string;
   hitterSuggestions: string[];
+  hitterHand: "R" | "L" | "S" | null;
   overrideInning: number;
   overrideIsTopInning: boolean;
   overrideOuts: number;
@@ -51,8 +51,10 @@ interface ChartingEditorTopBarProps {
   hasGameStateOverride: boolean;
   babsonVenueSide: "home" | "away";
   onPitcherInputChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onPitcherHandChange: (hand: "R" | "L") => void;
   onHitterChange: (value: string) => void;
   onHitterBlur: () => void;
+  onHitterHandChange: (hand: "R" | "L" | "S") => void;
   onVenueSideChange: (side: "home" | "away") => void;
   onResetOverride: () => void;
   onOverrideChange: (
@@ -78,11 +80,12 @@ export const ChartingEditorTopBar = ({
   pitcherDatalistId,
   datalistId,
   pitcherNameInput,
-  selectedPitcherId,
+  pitcherSuggestions,
+  pitcherHand,
   currentPitcherLocked,
-  pitchers,
   hitterName,
   hitterSuggestions,
+  hitterHand,
   overrideInning,
   overrideIsTopInning,
   overrideOuts,
@@ -99,8 +102,10 @@ export const ChartingEditorTopBar = ({
   hasGameStateOverride,
   babsonVenueSide,
   onPitcherInputChange,
+  onPitcherHandChange,
   onHitterChange,
   onHitterBlur,
+  onHitterHandChange,
   onVenueSideChange,
   onResetOverride,
   onOverrideChange,
@@ -128,6 +133,13 @@ export const ChartingEditorTopBar = ({
     }`;
   const compactMetricPillClass =
     "flex items-center gap-1.5 rounded-full border border-border bg-background px-2 py-0.5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/82";
+  const handSegmentClass = `${EDITOR_PANEL_MUTED_CLASS} mt-1.5 inline-flex items-center gap-0.5 rounded-lg p-0.5`;
+  const handButtonClass = (active: boolean) =>
+    `rounded-md px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] transition-colors ${
+      active
+        ? "bg-surface text-foreground shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
+        : "text-muted hover:text-foreground dark:text-zinc-400 dark:hover:text-zinc-100"
+    }`;
 
   return (
     <section
@@ -165,12 +177,25 @@ export const ChartingEditorTopBar = ({
                 className={`${EDITOR_INPUT_CLASS} h-9 px-3 text-xs font-bold placeholder:font-normal disabled:cursor-not-allowed disabled:opacity-60`}
               />
               <datalist id={pitcherDatalistId}>
-                {activePitchingSide === "our"
-                  ? pitchers.map((pitcher) => (
-                      <option key={pitcher.playerId} value={pitcher.name} />
-                    ))
-                  : null}
+                {pitcherSuggestions.map((pitcherName) => (
+                  <option key={pitcherName} value={pitcherName} />
+                ))}
               </datalist>
+              <div className={handSegmentClass}>
+                <span className="px-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-muted">
+                  Throws
+                </span>
+                {(["R", "L"] as const).map((hand) => (
+                  <button
+                    key={hand}
+                    type="button"
+                    onClick={() => onPitcherHandChange(hand)}
+                    className={handButtonClass(pitcherHand === hand)}
+                  >
+                    {hand}
+                  </button>
+                ))}
+              </div>
               {sessionType === "game" ? (
                 <button
                   type="button"
@@ -204,6 +229,21 @@ export const ChartingEditorTopBar = ({
                   <option key={name} value={name} />
                 ))}
               </datalist>
+              <div className={handSegmentClass}>
+                <span className="px-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-muted">
+                  Bats
+                </span>
+                {(["R", "L", "S"] as const).map((hand) => (
+                  <button
+                    key={hand}
+                    type="button"
+                    onClick={() => onHitterHandChange(hand)}
+                    className={handButtonClass(hitterHand === hand)}
+                  >
+                    {hand}
+                  </button>
+                ))}
+              </div>
             </label>
           </div>
         </div>

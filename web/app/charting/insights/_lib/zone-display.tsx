@@ -207,6 +207,11 @@ export const bucketHeat = (
     return 0;
   }
 
+  if (metricId === "pitchCount") {
+    const maxCount = Math.max(...buckets.map(b => metricValueForSummary(view, b.summary, "pitchCount") ?? 0), 1);
+    return currentValue / maxCount;
+  }
+
   const { min, max } = getMetricBounds(metricId);
   const clampedValue = Math.max(min, Math.min(max, currentValue));
   const normalized = (clampedValue - min) / (max - min);
@@ -226,6 +231,11 @@ export const cellHeat = (
 
   if (!option || currentValue === null) {
     return 0;
+  }
+
+  if (metricId === "pitchCount") {
+    const maxCount = Math.max(...Array.from(cellSummaries.values()).map(s => metricValueForSummary(view, s, "pitchCount") ?? 0), 1);
+    return currentValue / maxCount;
   }
 
   const { min, max } = getMetricBounds(metricId);

@@ -1,5 +1,10 @@
 import { desc, eq, inArray } from "drizzle-orm";
-import { chartingGames, chartingPitcherSegments, chartingPitches } from "@/db/schema";
+import {
+  chartingGames,
+  chartingPitcherSegments,
+  chartingPitches,
+  chartingPlateAppearances,
+} from "@/db/schema";
 import { getCanonicalName, getCanonicalPlayerId } from "@/lib/canonicalPlayers";
 import { playerRegistry } from "@/lib/playerRegistry";
 import {
@@ -20,8 +25,8 @@ import {
 } from "./pitcherInsights";
 import { countPitcherInnings } from "./innings";
 import {
-  isLegacyPlateAppearanceReadError,
   legacyChartingPlateAppearances,
+  loadPlateAppearancesWithFallback,
   mapLegacyPlateAppearanceRow,
 } from "./plateAppearanceStorage";
 import {
@@ -273,23 +278,24 @@ async function loadChartingProfileGames(
 async function loadProfilePlateAppearances(
   db: Awaited<ReturnType<typeof getDb>>,
 ): Promise<ChartingPlateAppearance[]> {
-  try {
-    return (
-      await db
+  return loadPlateAppearancesWithFallback({
+    loadCurrentRows: () =>
+      db
+        .select()
+        .from(chartingPlateAppearances)
+        .orderBy(
+          desc(chartingPlateAppearances.gameId),
+          desc(chartingPlateAppearances.paOrder),
+        ),
+    loadLegacyRows: () =>
+      db
         .select()
         .from(legacyChartingPlateAppearances)
         .orderBy(
           desc(legacyChartingPlateAppearances.gameId),
-          desc(legacyChartingPlateAppearances.paOrder)
-        )
-    ).map(mapLegacyPlateAppearanceRow);
-  } catch (error) {
-    if (!isLegacyPlateAppearanceReadError(error)) {
-      throw error;
-    }
-
-    return [];
-  }
+          desc(legacyChartingPlateAppearances.paOrder),
+        ),
+  });
 }
 
 function mapPitchRows(rows: typeof chartingPitches.$inferSelect[]): ChartingPitch[] {

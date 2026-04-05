@@ -6,6 +6,7 @@ import {
   pitchingSideForMatchup,
 } from "@/lib/charting/live";
 import { PITCH_TYPES } from "@/lib/charting/domain";
+import type { ChartingOpponentPlayer } from "@/lib/charting/bootstrapOpponents";
 import type {
   ChartingBootstrapPitcher,
   ChartingBootstrapRosterPlayer,
@@ -53,11 +54,12 @@ export const buildHitterSuggestions = (
   snapshot: ChartingGameSnapshot,
   rosterPlayers: ChartingBootstrapRosterPlayer[],
   teamSide: ChartingMatchupSide,
+  opponentRoster: ChartingOpponentPlayer[] = [],
 ): string[] => {
   const rosterSuggestions =
     teamSide === "our"
       ? rosterPlayers.filter((player) => player.isHitter).map((player) => player.name)
-      : [];
+      : opponentRoster.map((player) => player.name);
 
   return Array.from(
     new Set([
@@ -71,6 +73,16 @@ export const buildHitterSuggestions = (
     ]),
   ).sort((left, right) => left.localeCompare(right));
 };
+
+export const buildPitcherSuggestions = (
+  pitchers: ChartingBootstrapPitcher[],
+  teamSide: ChartingMatchupSide,
+  opponentRoster: ChartingOpponentPlayer[] = [],
+): string[] =>
+  (teamSide === "our"
+    ? pitchers.map((pitcher) => pitcher.name)
+    : opponentRoster.map((player) => player.name)
+  ).sort((left, right) => left.localeCompare(right));
 
 export const derivePitcherSelection = (
   snapshot: ChartingGameSnapshot,

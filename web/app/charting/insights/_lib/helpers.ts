@@ -140,24 +140,15 @@ export const formatMetricValue = (
     return "—";
   }
 
-  if (isPitcherView(view)) {
-    if (metricId === "baa") {
-      return formatRate(value);
-    }
-
-    return formatPct(value, 0);
+  if (metricId === "pitchCount") {
+    return formatCount(value);
   }
 
-  switch (metricId) {
-    case "avg":
-    case "woba":
-      return formatRate(value);
-    case "swingPct":
-    case "whiffPct":
-      return formatPct(value, 0);
-    default:
-      return formatPct(value, 0);
+  if (metricId === "baa" || metricId === "avg" || metricId === "woba") {
+    return formatRate(value);
   }
+
+  return formatPct(value, 0);
 };
 
 export const metricValueForSummary = (

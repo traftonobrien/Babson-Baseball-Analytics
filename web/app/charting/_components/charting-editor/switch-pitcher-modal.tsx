@@ -1,15 +1,16 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
-import type { ChartingBootstrapPitcher, ChartingMatchupSide } from "@/lib/charting/types";
+import type { ChartingMatchupSide } from "@/lib/charting/types";
 import { TEAM_NAME } from "@/lib/teamConfig";
 
 interface SwitchPitcherModalProps {
   activePitchingSide: ChartingMatchupSide;
   ourTeamLabel: string;
   opponentTeamLabel: string | null;
-  pitchers: ChartingBootstrapPitcher[];
-  onConfirm: (name: string) => void;
+  pitcherSuggestions: string[];
+  initialPitcherHand: "R" | "L" | null;
+  onConfirm: (selection: { name: string; pitcherHand: "R" | "L" | null }) => void;
   onClose: () => void;
 }
 
@@ -17,11 +18,15 @@ export const SwitchPitcherModal = ({
   activePitchingSide,
   ourTeamLabel,
   opponentTeamLabel,
-  pitchers,
+  pitcherSuggestions,
+  initialPitcherHand,
   onConfirm,
   onClose,
 }: SwitchPitcherModalProps) => {
   const [name, setName] = useState("");
+  const [pitcherHand, setPitcherHand] = useState<"R" | "L" | null>(
+    initialPitcherHand,
+  );
   const inputRef = useRef<HTMLInputElement>(null);
   const datalistId = useId();
 
@@ -33,7 +38,7 @@ export const SwitchPitcherModal = ({
     event.preventDefault();
     const trimmed = name.trim();
     if (!trimmed) return;
-    onConfirm(trimmed);
+    onConfirm({ name: trimmed, pitcherHand });
   };
 
   const pitchingTeamLabel =
@@ -86,11 +91,32 @@ export const SwitchPitcherModal = ({
               className="h-10 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-sm font-bold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] focus:shadow-[0_0_0_1px_rgba(var(--babson-green-rgb),0.12)] placeholder:font-normal placeholder:text-zinc-600"
             />
             <datalist id={datalistId}>
-              {activePitchingSide === "our"
-                ? pitchers.map((p) => <option key={p.playerId} value={p.name} />)
-                : null}
+              {pitcherSuggestions.map((pitcherName) => (
+                <option key={pitcherName} value={pitcherName} />
+              ))}
             </datalist>
           </label>
+          <div className="mt-3">
+            <span className="mb-1.5 block text-[9px] font-semibold uppercase tracking-[0.18em] text-[rgba(var(--babson-green-rgb),0.7)]">
+              Throws
+            </span>
+            <div className="inline-flex rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-black/15 p-0.5">
+              {(["R", "L"] as const).map((hand) => (
+                <button
+                  key={hand}
+                  type="button"
+                  onClick={() => setPitcherHand(hand)}
+                  className={`rounded-lg px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors ${
+                    pitcherHand === hand
+                      ? "bg-[rgba(var(--babson-green-rgb),0.16)] text-[var(--babson-green)]"
+                      : "text-zinc-400 hover:text-zinc-100"
+                  }`}
+                >
+                  {hand}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center justify-end gap-2 border-t border-[rgba(var(--babson-grey-rgb),0.18)] px-5 py-3">

@@ -87,6 +87,7 @@ export function recordPitchInSnapshot(
       activeSegment,
       input.pitcher.playerId,
       input.pitcher.name,
+      input.pitcher.pitcherHand,
     );
   }
   if (
@@ -825,11 +826,15 @@ function syncSegmentPitcherIdentity(
   segment: ChartingPitcherSegment,
   pitcherId: string,
   pitcherName: string,
+  pitcherHand?: string | null,
 ) {
   if (!segment.playerId?.trim() && pitcherId.trim()) {
     segment.playerId = pitcherId;
   }
   segment.displayName = pitcherName;
+  if (pitcherHand !== undefined) {
+    segment.pitcherHand = pitcherHand;
+  }
 }
 
 function ensureSegmentForPlateAppearance(
