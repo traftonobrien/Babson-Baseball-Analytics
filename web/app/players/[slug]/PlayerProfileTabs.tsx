@@ -26,9 +26,11 @@ import type { CommandPlusResult } from "@/lib/commandPlus";
 import type { PitchingPlusResult } from "@/lib/pitchingPlus";
 import type { HubPlayerEntry } from "@/lib/mechanics/hub";
 import type { ChartingPlayerProfile } from "@/lib/charting/playerProfile";
+import type { PlayerSprayProfile } from "@/lib/spraychart/types";
+import SprayChart from "./_components/SprayChart";
 
-const ALL_TABS = ["Overview", "Charting", "Trackman", "Command", "Mechanics"] as const;
-const HITTER_TABS = ["Overview", "Charting"] as const;
+const ALL_TABS = ["Overview", "Spray Chart", "Charting", "Trackman", "Command", "Mechanics"] as const;
+const HITTER_TABS = ["Overview", "Spray Chart", "Charting"] as const;
 type Tab = (typeof ALL_TABS)[number];
 type ProfileMode = "pitcher" | "hitter" | "two-way";
 type OverviewMode = "pitching" | "hitting";
@@ -111,6 +113,7 @@ interface Props {
   initialTab?: string;
   mechanicsEntry?: HubPlayerEntry | null;
   liveAbProfile: ChartingPlayerProfile;
+  sprayProfile: PlayerSprayProfile | null;
 }
 
 function formatDateLabel(raw: string): string {
@@ -135,7 +138,9 @@ function resolveInitialTab(raw: string | undefined, tabs: readonly Tab[]): Tab {
           ? "Mechanics"
           : lower === "live-ab" || lower === "liveab" || lower === "charting"
             ? "Charting"
-            : "Overview";
+            : lower === "spray" || lower === "spray-chart" || lower === "spraychart"
+              ? "Spray Chart"
+              : "Overview";
 
   return tabs.includes(resolved) ? resolved : tabs[0] ?? "Overview";
 }
@@ -187,6 +192,7 @@ export default function PlayerProfileTabs({
   initialTab,
   mechanicsEntry,
   liveAbProfile,
+  sprayProfile,
 }: Props) {
   const { setSelectedPlayer } = useSelectedPlayer();
 
@@ -868,6 +874,25 @@ export default function PlayerProfileTabs({
                 <MechanicsProfileCard entry={mechanicsEntry ?? null} profileSlug={playerSlug} />
               </LeaderboardPanel>
             </section>
+          </motion.div>
+        )}
+
+        {activeTab === "Spray Chart" && (
+          <motion.div
+            key="SprayChart"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+          >
+            {sprayProfile ? (
+              <SprayChart profile={sprayProfile} />
+            ) : (
+              <LeaderboardPanel variant="light" className="p-8 text-center">
+                <Target className="mx-auto h-8 w-8 text-slate-300 dark:text-zinc-600 mb-3" />
+                <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">No batted balls charted yet.</p>
+              </LeaderboardPanel>
+            )}
           </motion.div>
         )}
 

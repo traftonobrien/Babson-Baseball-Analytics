@@ -6,6 +6,8 @@ import path from "path";
 import { promises as fs } from "fs";
 import { and, eq, ne } from "drizzle-orm";
 import rosterData from "@/data/roster.json";
+import type { SprayChartData } from "@/lib/spraychart/types";
+import { aggregatePlayerProfile } from "@/lib/spraychart/aggregate";
 import { db } from "@/db";
 import { stuffPlusArsenal } from "@/db/schema";
 import { fetchBattingLeaderboard, fetchNcaaStatsMeta, fetchPitchingLeaderboard } from "@/lib/collegeStats";
@@ -505,6 +507,26 @@ export default async function PlayerProfilePage({
     }
   }
 
+  let sprayProfile: ReturnType<typeof aggregatePlayerProfile> | null = null;
+  if (profileMode !== "pitcher") {
+    try {
+      const sprayFilePath = path.join(process.cwd(), "public", "data", "spray-charts.json");
+      const sprayRaw = await fs.readFile(sprayFilePath, "utf-8");
+      const sprayData = JSON.parse(sprayRaw) as SprayChartData;
+      const allEvents = sprayData.games.flatMap((g) => g.events);
+
+      const lastToken = (name: string) => name.toLowerCase().split(/\s+/).pop() || "";
+      const profileLast = lastToken(resolvedPlayer.name);
+
+      const playerEvents = allEvents.filter((e) => lastToken(e.batter) === profileLast);
+      if (playerEvents.length > 0) {
+        sprayProfile = aggregatePlayerProfile(resolvedPlayer.name, playerEvents);
+      }
+    } catch (err) {
+      console.error("[PlayerProfile] Failed to load spray chart data:", err);
+    }
+  }
+
   const profileInitials = getInitials(resolvedPlayer.name);
   const profilePhoto = rosterInfo?.photo?.trim() || null;
   const classYear = rosterInfo?.class ?? resolvedPlayer.academicYear ?? "Unknown";
@@ -666,6 +688,7 @@ export default async function PlayerProfilePage({
                     initialTab={initialTab}
                     mechanicsEntry={mechanicsEntry ?? null}
                     liveAbProfile={liveAbProfile}
+                    sprayProfile={sprayProfile}
                   />
                 </div>
               </section>
