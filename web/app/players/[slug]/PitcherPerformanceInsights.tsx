@@ -157,11 +157,17 @@ function getMetricBounds(metricId: PitcherInsightMetricId): { min: number; max: 
     case "woba":
       return { min: 0.250, max: 0.450 };
     case "strikePct":
-      return { min: 50, max: 70 };
+      return { min: 50, max: 72 };
     case "whiffPct":
       return { min: 10, max: 40 };
     case "chasePct":
       return { min: 15, max: 35 };
+    case "kPct":
+      return { min: 10, max: 35 };
+    case "bbPct":
+      return { min: 3, max: 18 };
+    case "fpsPct":
+      return { min: 50, max: 72 };
     default:
       return null;
   }

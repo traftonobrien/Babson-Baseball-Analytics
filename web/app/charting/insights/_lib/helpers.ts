@@ -350,5 +350,9 @@ export const buildExplorerHref = ({
         }),
   );
 
+  if (isPitcherView(view)) {
+    params.set("view", "pitchers");
+  }
+
   return params.size > 0 ? `${pathname}?${params.toString()}` : pathname;
 };
