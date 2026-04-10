@@ -44,6 +44,10 @@ type OhTwoExecutionCategory =
   | "otherMiss"
   | "untracked";
 
+// ---------------------------------------------------------------------------
+// Core event types
+// ---------------------------------------------------------------------------
+
 export interface OhTwoNextPitch {
   pitchType: ChartingPitch["pitchType"];
   pitchResult: ChartingPitch["pitchResult"];
@@ -83,6 +87,10 @@ export interface OhTwoEvent {
   nextPitch: OhTwoNextPitch | null;
 }
 
+// ---------------------------------------------------------------------------
+// Execution summary
+// ---------------------------------------------------------------------------
+
 export interface OhTwoExecutionSummary {
   locatedPitches: number;
   untrackedPitches: number;
@@ -98,6 +106,10 @@ export interface OhTwoExecutionSummary {
   inZoneMissRate: number | null;
   inZoneMissBattingAverageAgainst: number | null;
 }
+
+// ---------------------------------------------------------------------------
+// Next pitch summary
+// ---------------------------------------------------------------------------
 
 export interface OhTwoNextPitchTypeSummary {
   pitchType: ChartingPitch["pitchType"];
@@ -119,19 +131,153 @@ export interface OhTwoNextPitchSummary {
   pitchTypeBreakdown: OhTwoNextPitchTypeSummary[];
 }
 
+// ---------------------------------------------------------------------------
+// PA Outcomes — full plate-appearance result when we reach 0-2 on a fastball
+// ---------------------------------------------------------------------------
+
+export interface OhTwoPaOutcomes {
+  /** Total qualifying PAs (= events.length) */
+  total: number;
+  /** PAs with a resolved resultCode */
+  closedTotal: number;
+  strikeouts: number;
+  walks: number;
+  hbp: number;
+  singles: number;
+  doubles: number;
+  triples: number;
+  homeRuns: number;
+  /** In-play outs that are not strikeouts */
+  contactOuts: number;
+  /** PAs still open (no resultCode) */
+  openPAs: number;
+  /** K / closedTotal */
+  strikeoutRate: number | null;
+  /** BB / closedTotal */
+  walkRate: number | null;
+  /** hits / atBats */
+  battingAverage: number | null;
+  /** total bases / atBats */
+  slugging: number | null;
+  /** (hits + BB + HBP) / (atBats + BB + HBP) */
+  obp: number | null;
+  /** obp + slugging */
+  ops: number | null;
+  totalBases: number;
+  /** K% − BB% in percentage points */
+  kMinusBB: number | null;
+}
+
+// ---------------------------------------------------------------------------
+// 0-2 Fastball pitch-result breakdown (what happened on the pitch itself)
+// ---------------------------------------------------------------------------
+
+export interface OhTwoPitchResultBreakdown {
+  total: number;
+  calledStrike: number;
+  swingingStrike: number;
+  foul: number;
+  /** Ball — hitter took and lived on */
+  ball: number;
+  inPlay: number;
+  hitByPitch: number;
+  calledStrikeRate: number | null;
+  /** Whiff rate */
+  swingingStrikeRate: number | null;
+  foulRate: number | null;
+  /** "Escape rate" — pitcher threw ball, count goes to 1-2 */
+  ballRate: number | null;
+  inPlayRate: number | null;
+  /** called + swinging + foul + in_play */
+  strikeRate: number | null;
+}
+
+// ---------------------------------------------------------------------------
+// Velocity analysis for the 0-2 fastball
+// ---------------------------------------------------------------------------
+
+export interface OhTwoVelocityStats {
+  avg: number | null;
+  max: number | null;
+  min: number | null;
+  /** Pitches with a gun reading */
+  tracked: number;
+  untracked: number;
+}
+
+// ---------------------------------------------------------------------------
+// Per-pitcher breakdown
+// ---------------------------------------------------------------------------
+
+export interface OhTwoPitcherEntry {
+  pitcherId: string | null;
+  pitcherName: string;
+  /** Total qualifying 0-2 fastballs thrown */
+  count: number;
+  executionRate: number | null;
+  /** K / closed PAs */
+  strikeoutRate: number | null;
+  /** BB / closed PAs */
+  walkRate: number | null;
+  battingAverageAgainst: number | null;
+  avgVelocity: number | null;
+}
+
+// ---------------------------------------------------------------------------
+// Per-opponent breakdown
+// ---------------------------------------------------------------------------
+
+export interface OhTwoOpponentEntry {
+  opponent: string;
+  count: number;
+  strikeoutRate: number | null;
+  battingAverageAgainst: number | null;
+}
+
+// ---------------------------------------------------------------------------
+// Inning distribution
+// ---------------------------------------------------------------------------
+
+export interface OhTwoInningEntry {
+  inning: number;
+  count: number;
+  share: number | null;
+}
+
+// ---------------------------------------------------------------------------
+// Full report shape
+// ---------------------------------------------------------------------------
+
 export interface OhTwoReport {
   summary: {
     qualifyingPitches: number;
     locatedPitches: number;
     plateAppearancesEnded: number;
     continuedPlateAppearances: number;
+    /** BAA only on 0-2 FBs that ended the at-bat */
     battingAverageAgainst: number | null;
   };
   locationCounts: Partial<Record<number, number>>;
   execution: OhTwoExecutionSummary;
   nextPitch: OhTwoNextPitchSummary;
+  /** Full PA outcomes for every qualifying PA */
+  paOutcomes: OhTwoPaOutcomes;
+  /** Pitch-level result breakdown for the 0-2 fastball itself */
+  pitchResults: OhTwoPitchResultBreakdown;
+  /** Velocity stats for the qualifying 0-2 fastballs */
+  velocity: OhTwoVelocityStats;
+  /** Sorted descending by count */
+  byPitcher: OhTwoPitcherEntry[];
+  /** Sorted descending by count */
+  byOpponent: OhTwoOpponentEntry[];
+  /** Sorted ascending by inning */
+  inningDistribution: OhTwoInningEntry[];
   events: OhTwoEvent[];
 }
+
+// ---------------------------------------------------------------------------
+// Helper functions
+// ---------------------------------------------------------------------------
 
 async function getDb() {
   const { chartingDb } = await import("../../db");
@@ -178,6 +324,19 @@ function normalizePitch(
 
 function isAtBatResult(resultCode: string | null): boolean {
   return resultCode !== null && resultCode !== "BB" && resultCode !== "HBP";
+}
+
+function isStrikeout(resultCode: string | null): boolean {
+  if (!resultCode) return false;
+  return resultCode.toUpperCase().startsWith("K");
+}
+
+function isWalk(resultCode: string | null): boolean {
+  return resultCode === "BB";
+}
+
+function isHbp(resultCode: string | null): boolean {
+  return resultCode === "HBP";
 }
 
 function countLabel(pitch: ChartingPitch): string {
@@ -229,6 +388,14 @@ function classifyExecution(
 function isFastballFamily(pitchType: ChartingPitch["pitchType"]): boolean {
   return pitchType === "Fastball";
 }
+
+function avgFromNumbers(values: number[]): number | null {
+  return values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : null;
+}
+
+// ---------------------------------------------------------------------------
+// Core builder — takes pre-fetched data, returns the full report
+// ---------------------------------------------------------------------------
 
 export function buildOhTwoReport(params: {
   games: Pick<ChartingGame, "id" | "gameDate" | "opponent" | "sessionType">[];
@@ -376,6 +543,10 @@ export function buildOhTwoReport(params: {
     return right.pitchOrder - left.pitchOrder;
   });
 
+  // -------------------------------------------------------------------------
+  // Existing aggregates (execution + summary + next pitch)
+  // -------------------------------------------------------------------------
+
   const endedAtBats = events.filter((event) => event.endedAtBat);
   const hitsOnEndingPitch = endedAtBats.filter((event) => event.endedHit).length;
   const locatedEvents = events.filter((event) => event.locationCell !== null);
@@ -409,6 +580,176 @@ export function buildOhTwoReport(params: {
   const outsWithinTwoPitches =
     events.filter((event) => event.recordedOutOnPitch).length +
     nextPitchRecords.filter((pitch) => pitch.recordedOut).length;
+
+  // -------------------------------------------------------------------------
+  // PA Outcomes — full PA result for every qualifying PA
+  // -------------------------------------------------------------------------
+
+  const closedEvents = events.filter((e) => e.resultCode !== null);
+  const paStrikeouts = closedEvents.filter((e) => isStrikeout(e.resultCode));
+  const paWalks = closedEvents.filter((e) => isWalk(e.resultCode));
+  const paHbp = closedEvents.filter((e) => isHbp(e.resultCode));
+  const paSingles = closedEvents.filter((e) => e.resultCode === "1B");
+  const paDoubles = closedEvents.filter((e) => e.resultCode === "2B");
+  const paTriples = closedEvents.filter((e) => e.resultCode === "3B");
+  const paHRs = closedEvents.filter((e) => e.resultCode === "HR");
+  const paHits = closedEvents.filter((e) => HIT_RESULT_CODES.has(e.resultCode ?? ""));
+  const paAtBats = closedEvents.filter((e) => isAtBatResult(e.resultCode));
+  const paContactOuts = paAtBats.filter(
+    (e) => !HIT_RESULT_CODES.has(e.resultCode ?? "") && !isStrikeout(e.resultCode),
+  );
+  const paTotalBases =
+    paSingles.length +
+    2 * paDoubles.length +
+    3 * paTriples.length +
+    4 * paHRs.length;
+
+  const paBA = paAtBats.length > 0 ? paHits.length / paAtBats.length : null;
+  const paSLG = paAtBats.length > 0 ? paTotalBases / paAtBats.length : null;
+  const paOBPDenom = paAtBats.length + paWalks.length + paHbp.length;
+  const paOBP =
+    paOBPDenom > 0
+      ? (paHits.length + paWalks.length + paHbp.length) / paOBPDenom
+      : null;
+  const paOPS = paOBP !== null && paSLG !== null ? paOBP + paSLG : null;
+  const paKRate = pct(paStrikeouts.length, closedEvents.length);
+  const paBBRate = pct(paWalks.length, closedEvents.length);
+
+  // -------------------------------------------------------------------------
+  // Pitch-level result breakdown (on the 0-2 fastball itself)
+  // -------------------------------------------------------------------------
+
+  const prCalledStrike = events.filter((e) => e.pitchResult === "called_strike").length;
+  const prSwingingStrike = events.filter((e) => e.pitchResult === "swinging_strike").length;
+  const prFoul = events.filter((e) => e.pitchResult === "foul" || e.pitchResult === "bunt_foul").length;
+  const prBall = events.filter((e) => e.pitchResult === "ball").length;
+  const prInPlay = events.filter((e) => e.pitchResult === "in_play").length;
+  const prHbp = events.filter((e) => e.pitchResult === "hit_by_pitch").length;
+  const prTotal = events.length;
+  const prTotalStrikes = prCalledStrike + prSwingingStrike + prFoul + prInPlay;
+
+  // -------------------------------------------------------------------------
+  // Velocity
+  // -------------------------------------------------------------------------
+
+  const veloTracked = events.filter((e) => e.velocity !== null);
+  const velocities = veloTracked.map((e) => e.velocity as number);
+
+  // -------------------------------------------------------------------------
+  // By Pitcher
+  // -------------------------------------------------------------------------
+
+  const pitcherMap = new Map<string, OhTwoEvent[]>();
+  for (const event of events) {
+    const key = `${event.pitcherId ?? ""}__${event.pitcherName}`;
+    const existing = pitcherMap.get(key) ?? [];
+    existing.push(event);
+    pitcherMap.set(key, existing);
+  }
+
+  const byPitcher: OhTwoPitcherEntry[] = [...pitcherMap.values()]
+    .map((pitcherEvents) => {
+      const locatedPitcherEvents = pitcherEvents.filter((e) => e.locationCell !== null);
+      const executedPitcherEvents = locatedPitcherEvents.filter(
+        (e) => e.executionCategory === "executedBall" || e.executionCategory === "executedStrike",
+      );
+      const closedPitcherEvents = pitcherEvents.filter((e) => e.resultCode !== null);
+      const atBatPitcherEvents = closedPitcherEvents.filter((e) => isAtBatResult(e.resultCode));
+      const hitPitcherEvents = atBatPitcherEvents.filter((e) =>
+        HIT_RESULT_CODES.has(e.resultCode ?? ""),
+      );
+      const pitcherVelos = pitcherEvents
+        .filter((e) => e.velocity !== null)
+        .map((e) => e.velocity as number);
+      const first = pitcherEvents[0]!;
+
+      return {
+        pitcherId: first.pitcherId,
+        pitcherName: first.pitcherName,
+        count: pitcherEvents.length,
+        executionRate:
+          locatedPitcherEvents.length > 0
+            ? pct(executedPitcherEvents.length, locatedPitcherEvents.length)
+            : null,
+        strikeoutRate:
+          closedPitcherEvents.length > 0
+            ? pct(
+                closedPitcherEvents.filter((e) => isStrikeout(e.resultCode)).length,
+                closedPitcherEvents.length,
+              )
+            : null,
+        walkRate:
+          closedPitcherEvents.length > 0
+            ? pct(
+                closedPitcherEvents.filter((e) => isWalk(e.resultCode)).length,
+                closedPitcherEvents.length,
+              )
+            : null,
+        battingAverageAgainst:
+          atBatPitcherEvents.length > 0
+            ? hitPitcherEvents.length / atBatPitcherEvents.length
+            : null,
+        avgVelocity: avgFromNumbers(pitcherVelos),
+      };
+    })
+    .sort((a, b) => b.count - a.count);
+
+  // -------------------------------------------------------------------------
+  // By Opponent
+  // -------------------------------------------------------------------------
+
+  const opponentMap = new Map<string, OhTwoEvent[]>();
+  for (const event of events) {
+    const existing = opponentMap.get(event.opponent) ?? [];
+    existing.push(event);
+    opponentMap.set(event.opponent, existing);
+  }
+
+  const byOpponent: OhTwoOpponentEntry[] = [...opponentMap.values()]
+    .map((oppEvents) => {
+      const closedOppEvents = oppEvents.filter((e) => e.resultCode !== null);
+      const atBatOppEvents = closedOppEvents.filter((e) => isAtBatResult(e.resultCode));
+      const hitOppEvents = atBatOppEvents.filter((e) =>
+        HIT_RESULT_CODES.has(e.resultCode ?? ""),
+      );
+      const first = oppEvents[0]!;
+
+      return {
+        opponent: first.opponent,
+        count: oppEvents.length,
+        strikeoutRate:
+          closedOppEvents.length > 0
+            ? pct(
+                closedOppEvents.filter((e) => isStrikeout(e.resultCode)).length,
+                closedOppEvents.length,
+              )
+            : null,
+        battingAverageAgainst:
+          atBatOppEvents.length > 0 ? hitOppEvents.length / atBatOppEvents.length : null,
+      };
+    })
+    .sort((a, b) => b.count - a.count);
+
+  // -------------------------------------------------------------------------
+  // Inning Distribution
+  // -------------------------------------------------------------------------
+
+  const inningMap = new Map<number, number>();
+  for (const event of events) {
+    inningMap.set(event.inning, (inningMap.get(event.inning) ?? 0) + 1);
+  }
+
+  const inningDistribution: OhTwoInningEntry[] = [...inningMap.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([inning, count]) => ({
+      inning,
+      count,
+      share: pct(count, events.length),
+    }));
+
+  // -------------------------------------------------------------------------
+  // Assemble report
+  // -------------------------------------------------------------------------
 
   return {
     summary: {
@@ -466,9 +807,60 @@ export function buildOhTwoReport(params: {
       twoPitchOutConversionRate: pct(outsWithinTwoPitches, events.length),
       pitchTypeBreakdown: nextPitchTypeBreakdown,
     },
+    paOutcomes: {
+      total: events.length,
+      closedTotal: closedEvents.length,
+      strikeouts: paStrikeouts.length,
+      walks: paWalks.length,
+      hbp: paHbp.length,
+      singles: paSingles.length,
+      doubles: paDoubles.length,
+      triples: paTriples.length,
+      homeRuns: paHRs.length,
+      contactOuts: paContactOuts.length,
+      openPAs: events.length - closedEvents.length,
+      strikeoutRate: paKRate,
+      walkRate: paBBRate,
+      battingAverage: paBA,
+      slugging: paSLG,
+      obp: paOBP,
+      ops: paOPS,
+      totalBases: paTotalBases,
+      kMinusBB:
+        paKRate !== null && paBBRate !== null ? paKRate - paBBRate : null,
+    },
+    pitchResults: {
+      total: prTotal,
+      calledStrike: prCalledStrike,
+      swingingStrike: prSwingingStrike,
+      foul: prFoul,
+      ball: prBall,
+      inPlay: prInPlay,
+      hitByPitch: prHbp,
+      calledStrikeRate: pct(prCalledStrike, prTotal),
+      swingingStrikeRate: pct(prSwingingStrike, prTotal),
+      foulRate: pct(prFoul, prTotal),
+      ballRate: pct(prBall, prTotal),
+      inPlayRate: pct(prInPlay, prTotal),
+      strikeRate: pct(prTotalStrikes, prTotal),
+    },
+    velocity: {
+      avg: avgFromNumbers(velocities),
+      max: velocities.length > 0 ? Math.max(...velocities) : null,
+      min: velocities.length > 0 ? Math.min(...velocities) : null,
+      tracked: veloTracked.length,
+      untracked: events.length - veloTracked.length,
+    },
+    byPitcher,
+    byOpponent,
+    inningDistribution,
     events,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Data loader — fetches everything from Supabase and calls buildOhTwoReport
+// ---------------------------------------------------------------------------
 
 export async function loadChartingOhTwoReport(): Promise<OhTwoReport> {
   const db = await getDb();
