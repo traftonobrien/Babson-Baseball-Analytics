@@ -2,10 +2,13 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { LeaderboardPageFrame } from "@/app/components/leaderboards/LeaderboardChrome";
 import { ChartingCreateForm } from "@/app/charting/_components/ChartingCreateForm";
+import { getAvailableOpponentTeams } from "@/lib/charting/bootstrapOpponents";
 
 export const revalidate = 0;
 
 export default function ChartingNewGamePage() {
+  const opponentTeams = getAvailableOpponentTeams();
+
   return (
     <LeaderboardPageFrame maxWidth="max-w-7xl">
       <div className="mb-6">
@@ -17,7 +20,7 @@ export default function ChartingNewGamePage() {
           Back To Charting Hub
         </Link>
       </div>
-      <ChartingCreateForm />
+      <ChartingCreateForm opponentTeams={opponentTeams} />
     </LeaderboardPageFrame>
   );
 }

@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { motion } from "framer-motion";
 import { ChevronRight, Save } from "lucide-react";
 
@@ -9,9 +10,14 @@ import { TEAM_NAME } from "@/lib/teamConfig";
 interface ChartingEditorLineupModalProps {
   ourTeamLabel: string;
   opponentTeamLabel: string | null;
+  opponentTeams: string[];
+  selectedOpponentTeam: string | null;
   lineupDrafts: LineupDrafts;
+  ourHitterSuggestions: string[];
+  opponentHitterSuggestions: string[];
   onClose: () => void;
   onSave: () => void;
+  onOpponentTeamChange: (value: string) => void;
   onLineupDraftChange: (
     side: ChartingMatchupSide,
     slot: number,
@@ -22,11 +28,19 @@ interface ChartingEditorLineupModalProps {
 export const ChartingEditorLineupModal = ({
   ourTeamLabel,
   opponentTeamLabel,
+  opponentTeams,
+  selectedOpponentTeam,
   lineupDrafts,
+  ourHitterSuggestions,
+  opponentHitterSuggestions,
   onClose,
   onSave,
+  onOpponentTeamChange,
   onLineupDraftChange,
 }: ChartingEditorLineupModalProps) => {
+  const ourDatalistId = useId();
+  const opponentDatalistId = useId();
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -71,9 +85,15 @@ export const ChartingEditorLineupModal = ({
 
         <div className="grid gap-5 px-5 py-5 lg:grid-cols-2">
           {([
-            ["our", ourTeamLabel, `${TEAM_NAME} hitter`],
-            ["opponent", opponentTeamLabel, "Opponent hitter"],
-          ] as const).map(([side, label, placeholder]) => (
+            ["our", ourTeamLabel, `${TEAM_NAME} hitter`, ourHitterSuggestions, ourDatalistId],
+            [
+              "opponent",
+              opponentTeamLabel,
+              "Opponent hitter",
+              opponentHitterSuggestions,
+              opponentDatalistId,
+            ],
+          ] as const).map(([side, label, placeholder, suggestions, datalistId]) => (
             <div
               key={side}
               className="rounded-2xl border border-[rgba(var(--babson-grey-rgb),0.18)] bg-zinc-950/60 p-4"
@@ -90,6 +110,26 @@ export const ChartingEditorLineupModal = ({
                 </span>
               </div>
 
+              {side === "opponent" ? (
+                <label className="mb-3 block">
+                  <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                    Opponent Roster Source
+                  </span>
+                  <input
+                    list="charting-opponent-team-options"
+                    value={selectedOpponentTeam ?? ""}
+                    onChange={(event) => onOpponentTeamChange(event.target.value)}
+                    placeholder="Select opponent roster"
+                    className="h-10 w-full rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-4 text-sm font-semibold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] placeholder:text-zinc-600"
+                  />
+                  <datalist id="charting-opponent-team-options">
+                    {opponentTeams.map((team) => (
+                      <option key={team} value={team} />
+                    ))}
+                  </datalist>
+                </label>
+              ) : null}
+
               <div className="grid gap-2">
                 {Array.from({ length: 9 }, (_, index) => index + 1).map((slot) => (
                   <label
@@ -100,6 +140,7 @@ export const ChartingEditorLineupModal = ({
                       {slot}
                     </span>
                     <input
+                      list={datalistId}
                       value={lineupDrafts[side][slot] ?? ""}
                       onChange={(event) =>
                         onLineupDraftChange(side, slot, event.target.value)
@@ -110,6 +151,11 @@ export const ChartingEditorLineupModal = ({
                   </label>
                 ))}
               </div>
+              <datalist id={datalistId}>
+                {suggestions.map((name) => (
+                  <option key={name} value={name} />
+                ))}
+              </datalist>
             </div>
           ))}
         </div>

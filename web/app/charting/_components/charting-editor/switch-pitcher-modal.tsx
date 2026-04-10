@@ -8,8 +8,11 @@ interface SwitchPitcherModalProps {
   activePitchingSide: ChartingMatchupSide;
   ourTeamLabel: string;
   opponentTeamLabel: string | null;
+  opponentTeams: string[];
+  selectedOpponentTeam: string | null;
   pitcherSuggestions: string[];
   initialPitcherHand: "R" | "L" | null;
+  onOpponentTeamChange: (value: string) => void;
   onConfirm: (selection: { name: string; pitcherHand: "R" | "L" | null }) => void;
   onClose: () => void;
 }
@@ -18,8 +21,11 @@ export const SwitchPitcherModal = ({
   activePitchingSide,
   ourTeamLabel,
   opponentTeamLabel,
+  opponentTeams,
+  selectedOpponentTeam,
   pitcherSuggestions,
   initialPitcherHand,
+  onOpponentTeamChange,
   onConfirm,
   onClose,
 }: SwitchPitcherModalProps) => {
@@ -76,6 +82,26 @@ export const SwitchPitcherModal = ({
         </div>
 
         <div className="px-5 py-4">
+          {activePitchingSide === "opponent" ? (
+            <label className="mb-3 block">
+              <span className="mb-1.5 block text-[9px] font-semibold uppercase tracking-[0.18em] text-[rgba(var(--babson-green-rgb),0.7)]">
+                Opponent Roster Source
+              </span>
+              <input
+                list={`${datalistId}-teams`}
+                value={selectedOpponentTeam ?? ""}
+                onChange={(e) => onOpponentTeamChange(e.target.value)}
+                placeholder="Select opponent roster"
+                className="h-10 w-full min-w-0 rounded-xl border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[linear-gradient(135deg,rgba(var(--babson-green-rgb),0.08),rgba(var(--babson-grey-rgb),0.06)_58%,rgba(9,9,11,0.92)_100%)] px-3 text-sm font-bold text-zinc-100 outline-none transition-colors focus:border-[rgba(var(--babson-green-rgb),0.45)] focus:shadow-[0_0_0_1px_rgba(var(--babson-green-rgb),0.12)] placeholder:font-normal placeholder:text-zinc-600"
+              />
+              <datalist id={`${datalistId}-teams`}>
+                {opponentTeams.map((team) => (
+                  <option key={team} value={team} />
+                ))}
+              </datalist>
+            </label>
+          ) : null}
+
           <label className="block">
             <span className="mb-1.5 block text-[9px] font-semibold uppercase tracking-[0.18em] text-[rgba(var(--babson-green-rgb),0.7)]">
               {activePitchingSide === "our" ? `${TEAM_NAME} pitcher` : "Opponent pitcher"}

@@ -135,6 +135,7 @@ export const buildSelectedPitcherOption = (
   selectedPitcherId: string,
   pitcherNameInput: string,
   activePitchingSide: ChartingMatchupSide,
+  opponentRoster: ChartingOpponentPlayer[] = [],
 ): ChartingBootstrapPitcher | null => {
   const rosterPitcher =
     activePitchingSide === "our"
@@ -149,13 +150,21 @@ export const buildSelectedPitcherOption = (
     return null;
   }
 
+  const matchedOpponentPitcher =
+    activePitchingSide === "opponent"
+      ? opponentRoster.find(
+          (pitcher) =>
+            pitcher.name.trim().toLowerCase() === manualName.toLowerCase(),
+        ) ?? null
+      : null;
+
   const syntheticId =
     selectedPitcherId.trim() || manualPitcherId(manualName, activePitchingSide);
 
   return {
     playerId: syntheticId,
-    name: manualName,
-    throws: "R",
+    name: matchedOpponentPitcher?.name ?? manualName,
+    throws: matchedOpponentPitcher?.throws === "L" ? "L" : "R",
     arsenalPitchTypes: [...PITCH_TYPES],
   };
 };

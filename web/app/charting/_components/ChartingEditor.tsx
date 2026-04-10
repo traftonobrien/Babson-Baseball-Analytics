@@ -42,9 +42,12 @@ import type {
   PitchType,
 } from "@/lib/charting/types";
 import {
+  getOpponentRoster,
   findOpponentRosterPlayer,
+  resolveOpponentRosterTeamName,
   type ChartingOpponentPlayer,
 } from "@/lib/charting/bootstrapOpponents";
+import { findRosterPlayerByIdentity } from "@/lib/charting/rosterIdentity";
 import { ChartingEditorBottomBar } from "./charting-editor/bottom-bar";
 import { BUNT_MODE_PITCH_RESULTS } from "./charting-editor/constants";
 import {
@@ -154,16 +157,7 @@ function findRosterPlayerByName(
   rosterPlayers: ChartingBootstrapRosterPlayer[],
   playerName: string,
 ): ChartingBootstrapRosterPlayer | null {
-  const target = normalizeComparableName(playerName);
-  if (!target) {
-    return null;
-  }
-
-  return (
-    rosterPlayers.find(
-      (player) => normalizeComparableName(player.name) === target,
-    ) ?? null
-  );
+  return findRosterPlayerByIdentity(rosterPlayers, playerName);
 }
 
 function resolveHitterHand(
@@ -211,12 +205,14 @@ interface ChartingEditorProps {
   pitchers: ChartingBootstrapPitcher[];
   rosterPlayers: ChartingBootstrapRosterPlayer[];
   opponentRoster?: ChartingOpponentPlayer[];
+  opponentTeams?: string[];
 }
 export function ChartingEditor({
   initialSnapshot,
   pitchers,
   rosterPlayers,
   opponentRoster = [],
+  opponentTeams = [],
 }: ChartingEditorProps) {
   const initialMatchup = deriveMatchupSelection(initialSnapshot, null);
   const initialLiveState = deriveChartingLiveState(
@@ -233,6 +229,12 @@ export function ChartingEditor({
   const historyPitcherDatalistId = useId();
   const pitcherDatalistId = useId();
   const lineupDraftStorageKey = `charting-lineup-${initialSnapshot.game.id}`;
+  const [selectedOpponentTeam, setSelectedOpponentTeam] = useState<string | null>(
+    () =>
+      resolveOpponentRosterTeamName(
+        initialSnapshot.game.opponentTeamLabel?.trim() || initialSnapshot.game.opponent,
+      ) ?? initialSnapshot.game.opponentTeamLabel?.trim() ?? null,
+  );
   const [snapshot, setSnapshot] = useState(initialSnapshot);
   const [selectedPitcherId, setSelectedPitcherId] = useState(
     initialPitcherSelection.playerId,
@@ -327,6 +329,9 @@ export function ChartingEditor({
   const ourTeamLabel = snapshot.game.ourTeamLabel?.trim() || TEAM_NAME;
   const opponentTeamLabel =
     snapshot.game.opponentTeamLabel?.trim() || snapshot.game.opponent;
+  const activeOpponentTeam = selectedOpponentTeam?.trim() || opponentTeamLabel;
+  const activeOpponentRoster =
+    activeOpponentTeam ? getOpponentRoster(activeOpponentTeam) : opponentRoster;
   const topBattingTeam =
     battingSideForMatchup(snapshot.game, true) === "our"
       ? ourTeamLabel
@@ -346,6 +351,47 @@ export function ChartingEditor({
   const availablePitchResults: readonly PitchResult[] = effectiveBuntMode
     ? BUNT_MODE_PITCH_RESULTS
     : GAME_PITCH_RESULTS;
+  const ourLineupSuggestions = buildHitterSuggestions(
+    snapshot,
+    rosterPlayers,
+    "our",
+    activeOpponentRoster,
+  );
+  const opponentLineupSuggestions = buildHitterSuggestions(
+    snapshot,
+    rosterPlayers,
+    "opponent",
+    activeOpponentRoster,
+  );
+  const canonicalizeHitterNameForSide = (
+    side: ChartingMatchupSide,
+    rawValue: string,
+  ) => {
+    const trimmed = rawValue.trim();
+    if (!trimmed) {
+      return "";
+    }
+
+    if (side === "our") {
+      return findRosterPlayerByName(rosterPlayers, trimmed)?.name ?? trimmed;
+    }
+
+    return findOpponentRosterPlayer(activeOpponentRoster, trimmed)?.name ?? trimmed;
+  };
+  const normalizeLineupDrafts = (drafts: LineupDrafts): LineupDrafts => ({
+    our: Object.fromEntries(
+      Object.entries(drafts.our).map(([slot, value]) => [
+        Number(slot),
+        canonicalizeHitterNameForSide("our", value),
+      ]),
+    ),
+    opponent: Object.fromEntries(
+      Object.entries(drafts.opponent).map(([slot, value]) => [
+        Number(slot),
+        canonicalizeHitterNameForSide("opponent", value),
+      ]),
+    ),
+  });
   const canEditCountPreset = liveState.openPAId === null;
   const needsPAClosure =
     liveState.openPAId !== null && liveState.closureState !== "none";
@@ -371,7 +417,7 @@ export function ChartingEditor({
       activeBattingSide,
       hitterName,
       rosterPlayers,
-      opponentRoster,
+      activeOpponentRoster,
     );
 
     if (hitterContextRef.current !== contextKey) {
@@ -385,8 +431,8 @@ export function ChartingEditor({
     }
   }, [
     activeBattingSide,
+    activeOpponentRoster,
     hitterName,
-    opponentRoster,
     rosterPlayers,
     selectedHitterHand,
   ]);
@@ -399,7 +445,7 @@ export function ChartingEditor({
       selectedPitcherId,
       pitcherNameInput,
       pitchers,
-      opponentRoster,
+      activeOpponentRoster,
     );
 
     if (pitcherContextRef.current !== contextKey) {
@@ -413,7 +459,7 @@ export function ChartingEditor({
     }
   }, [
     activePitchingSide,
-    opponentRoster,
+    activeOpponentRoster,
     pitcherNameInput,
     pitchers,
     selectedPitcherHand,
@@ -438,6 +484,13 @@ export function ChartingEditor({
       // Ignore quota or permission errors.
     }
   }, [lineupDraftStorageKey, lineupDrafts]);
+  useEffect(() => {
+    setSelectedOpponentTeam(
+      resolveOpponentRosterTeamName(
+        snapshot.game.opponentTeamLabel?.trim() || snapshot.game.opponent,
+      ) ?? snapshot.game.opponentTeamLabel?.trim() ?? null,
+    );
+  }, [snapshot.game.opponent, snapshot.game.opponentTeamLabel]);
   // Reset the end-inning dismissal whenever we leave the between-innings state
   // (i.e., a new PA has started in the next half).
   useEffect(() => {
@@ -451,6 +504,7 @@ export function ChartingEditor({
     selectedPitcherId,
     pitcherNameInput,
     activePitchingSide,
+    activeOpponentRoster,
   );
   const historyPitcherOptions = buildHistoryPitcherOptions(snapshot, pitchers);
   const availablePitchTypes =
@@ -471,16 +525,14 @@ export function ChartingEditor({
     !needsPAClosure &&
     Boolean(selectedPitcher) &&
     Boolean(hitterName.trim());
-  const hitterSuggestions = buildHitterSuggestions(
-    snapshot,
-    rosterPlayers,
-    activeBattingSide,
-    opponentRoster,
-  );
+  const hitterSuggestions =
+    activeBattingSide === "our"
+      ? ourLineupSuggestions
+      : opponentLineupSuggestions;
   const pitcherSuggestions = buildPitcherSuggestions(
     pitchers,
     activePitchingSide,
-    opponentRoster,
+    activeOpponentRoster,
   );
   const recentPAGroups = buildRecentPAGroups(snapshot).reverse();
   const editingHistoryGroup = historyEditDraft
@@ -557,6 +609,29 @@ export function ChartingEditor({
     setLineupDrafts(buildLineupDrafts(snapshot.lineup));
     setShowLineupEditor(true);
   };
+  const handleOpponentTeamChange = (value: string) => {
+    const trimmed = value.trim();
+    const resolvedTeam =
+      resolveOpponentRosterTeamName(trimmed) ?? (trimmed || null);
+    setSelectedOpponentTeam(resolvedTeam);
+
+    if ((resolvedTeam ?? null) === (snapshot.game.opponentTeamLabel ?? null)) {
+      return;
+    }
+
+    const nextSnapshot: ChartingGameSnapshot = {
+      ...snapshot,
+      game: {
+        ...snapshot.game,
+        opponentTeamLabel: resolvedTeam,
+      },
+    };
+    applyOptimisticSnapshot(
+      nextSnapshot,
+      gameStateOverride,
+      resolvedTeam ? `Opponent roster set to ${resolvedTeam}` : "Opponent roster cleared",
+    );
+  };
   const handleLineupDraftChange = (
     side: ChartingMatchupSide,
     slot: number,
@@ -571,10 +646,12 @@ export function ChartingEditor({
     }));
   };
   const handleSaveLineups = () => {
+    const normalizedDrafts = normalizeLineupDrafts(lineupDrafts);
     const nextSnapshot: ChartingGameSnapshot = {
       ...snapshot,
-      lineup: buildSnapshotLineup(snapshot, lineupDrafts),
+      lineup: buildSnapshotLineup(snapshot, normalizedDrafts),
     };
+    setLineupDrafts(normalizedDrafts);
     applyOptimisticSnapshot(nextSnapshot, gameStateOverride, "Lineups updated");
     try {
       sessionStorage.removeItem(lineupDraftStorageKey);
@@ -584,12 +661,19 @@ export function ChartingEditor({
     setShowLineupEditor(false);
   };
   const handleHitterBlur = () => {
-    if (!hitterName.trim()) {
+    const canonicalHitterName = canonicalizeHitterNameForSide(
+      activeBattingSide,
+      hitterName,
+    );
+    if (!canonicalHitterName) {
       return;
+    }
+    if (canonicalHitterName !== hitterName) {
+      setHitterName(canonicalHitterName);
     }
     const nextSnapshot = syncHitterToSnapshot(
       snapshot,
-      hitterName.trim(),
+      canonicalHitterName,
       activeMatchupSlot,
       selectedHitterHand,
       gameStateOverride,
@@ -602,13 +686,17 @@ export function ChartingEditor({
   const handleHitterHandChange = (hand: "R" | "L" | "S") => {
     setSelectedHitterHand(hand);
 
-    if (!openPlateAppearance || !hitterName.trim()) {
+    const canonicalHitterName = canonicalizeHitterNameForSide(
+      activeBattingSide,
+      hitterName,
+    );
+    if (!openPlateAppearance || !canonicalHitterName) {
       return;
     }
 
     const nextSnapshot = syncHitterToSnapshot(
       snapshot,
-      hitterName.trim(),
+      canonicalHitterName,
       activeMatchupSlot,
       hand,
       gameStateOverride,
@@ -634,15 +722,34 @@ export function ChartingEditor({
               normalizeComparableName(trimmed),
           )
         : null;
+    const canonicalPitcherName =
+      activePitchingSide === "our"
+        ? rostered?.name ?? trimmed
+        : (findOpponentRosterPlayer(activeOpponentRoster, trimmed)?.name ?? trimmed);
 
     const newPitcher = {
-      playerId: rostered?.playerId ?? manualPitcherId(trimmed, activePitchingSide),
-      name: trimmed,
-      pitcherHand: rostered?.throws ?? selection.pitcherHand,
+      playerId:
+        rostered?.playerId ??
+        manualPitcherId(canonicalPitcherName, activePitchingSide),
+      name: canonicalPitcherName,
+      pitcherHand:
+        rostered?.throws ??
+        resolvePitcherHand(
+          activePitchingSide,
+          rostered?.playerId ?? "",
+          canonicalPitcherName,
+          pitchers,
+          activeOpponentRoster,
+        ) ??
+        selection.pitcherHand,
     };
     const nextSnapshot = switchPitcherInSnapshot(snapshot, newPitcher, gameStateOverride);
     if (nextSnapshot !== snapshot) {
-      applyOptimisticSnapshot(nextSnapshot, gameStateOverride, `Switched to ${trimmed}`);
+      applyOptimisticSnapshot(
+        nextSnapshot,
+        gameStateOverride,
+        `Switched to ${canonicalPitcherName}`,
+      );
     }
     setSelectedPitcherHand(newPitcher.pitcherHand ?? null);
     setShowSwitchPitcherModal(false);
@@ -924,13 +1031,18 @@ export function ChartingEditor({
       setErrorMessage("Select a valid pitcher before saving the at-bat edit.");
       return;
     }
+    const historyTeamSide = editingHistoryGroup?.teamSide ?? "opponent";
+    const canonicalHitterName = canonicalizeHitterNameForSide(
+      historyTeamSide,
+      historyEditDraft.hitterName,
+    );
     const nextSnapshot = updatePlateAppearanceDetailsInSnapshot(snapshot, {
       paId: historyEditDraft.paId,
       pitcher: {
         playerId: selectedHistoryPitcher.playerId,
         name: selectedHistoryPitcher.name,
       },
-      hitterName: historyEditDraft.hitterName,
+      hitterName: canonicalHitterName,
       initialCount: initialCountFromPreset(historyEditDraft.initialCount),
       resultCode: historyEditDraft.resultCode || null,
     });
@@ -946,6 +1058,10 @@ export function ChartingEditor({
       return;
     }
     const isStartingNewPA = liveState.openPAId === null;
+    const canonicalHitterName = canonicalizeHitterNameForSide(
+      activeBattingSide,
+      hitterName,
+    );
 
     const nextSnapshot = recordPitchInSnapshot(
       snapshot,
@@ -959,7 +1075,7 @@ export function ChartingEditor({
           name: selectedPitcher.name,
           pitcherHand: selectedPitcherHand,
         },
-        hitterName: hitterName.trim(),
+        hitterName: canonicalHitterName,
         hitterHand: selectedHitterHand,
         lineupSlot: activeMatchupSlot,
       },
@@ -974,6 +1090,9 @@ export function ChartingEditor({
           : "Charting context is incomplete. Set a pitcher and hitter before recording the pitch.",
       );
       return;
+    }
+    if (canonicalHitterName && canonicalHitterName !== hitterName) {
+      setHitterName(canonicalHitterName);
     }
     clearPitchDraft();
     if (isStartingNewPA) {
@@ -1274,9 +1393,14 @@ export function ChartingEditor({
           <ChartingEditorLineupModal
             ourTeamLabel={ourTeamLabel}
             opponentTeamLabel={opponentTeamLabel}
+            opponentTeams={opponentTeams}
+            selectedOpponentTeam={selectedOpponentTeam}
             lineupDrafts={lineupDrafts}
+            ourHitterSuggestions={ourLineupSuggestions}
+            opponentHitterSuggestions={opponentLineupSuggestions}
             onClose={() => setShowLineupEditor(false)}
             onSave={handleSaveLineups}
+            onOpponentTeamChange={handleOpponentTeamChange}
             onLineupDraftChange={handleLineupDraftChange}
           />
         ) : null}
@@ -1302,6 +1426,7 @@ export function ChartingEditor({
           <ChartingEditorInPlayModal
             step={inPlayStep}
             outType={inPlayOutType}
+            onClose={handleUndo}
             onSelect={handleClosePlateAppearance}
             onStepChange={setInPlayStep}
             onOutTypeChange={setInPlayOutType}
@@ -1325,8 +1450,11 @@ export function ChartingEditor({
             activePitchingSide={activePitchingSide}
             ourTeamLabel={ourTeamLabel}
             opponentTeamLabel={opponentTeamLabel}
+            opponentTeams={opponentTeams}
+            selectedOpponentTeam={selectedOpponentTeam}
             pitcherSuggestions={pitcherSuggestions}
             initialPitcherHand={selectedPitcherHand}
+            onOpponentTeamChange={handleOpponentTeamChange}
             onConfirm={handleConfirmSwitchPitcher}
             onClose={() => setShowSwitchPitcherModal(false)}
           />

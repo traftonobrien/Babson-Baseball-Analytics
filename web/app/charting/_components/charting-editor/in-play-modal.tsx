@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, X } from "lucide-react";
 
 import { HIT_OPTIONS, type PAResultType } from "@/lib/charting/live";
 
@@ -15,6 +15,7 @@ import type { InPlayOutType, InPlayStep } from "./types";
 interface ChartingEditorInPlayModalProps {
   step: InPlayStep;
   outType: InPlayOutType | null;
+  onClose: () => void;
   onSelect: (result: PAResultType) => void;
   onStepChange: (step: InPlayStep) => void;
   onOutTypeChange: (type: InPlayOutType | null) => void;
@@ -24,6 +25,7 @@ interface ChartingEditorInPlayModalProps {
 export const ChartingEditorInPlayModal = ({
   step,
   outType,
+  onClose,
   onSelect,
   onStepChange,
   onOutTypeChange,
@@ -90,6 +92,14 @@ export const ChartingEditorInPlayModal = ({
                 </p>
               </div>
             </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(var(--babson-grey-rgb),0.22)] bg-[rgba(var(--babson-grey-rgb),0.08)] text-zinc-400 transition-colors hover:border-[rgba(var(--babson-grey-rgb),0.38)] hover:text-zinc-100"
+              aria-label="Undo ball in play"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
         </div>
 

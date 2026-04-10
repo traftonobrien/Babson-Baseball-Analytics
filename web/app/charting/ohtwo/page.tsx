@@ -23,6 +23,7 @@ export const metadata: Metadata = {
 };
 
 export const revalidate = 0;
+export const dynamic = "force-dynamic";
 
 function formatAvg(value: number | null): string {
   if (value === null) {

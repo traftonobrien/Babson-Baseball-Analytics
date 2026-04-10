@@ -73,6 +73,7 @@ export const buildRecentPAGroups = (
         paId: plateAppearance.id,
         inning: plateAppearance.inning,
         isTopInning: plateAppearance.isTopInning,
+        teamSide: plateAppearance.teamSide,
         hitterName: plateAppearance.hitterName,
         pitcherId: segment?.playerId ?? "",
         pitcherName: segment?.displayName ?? "Unknown Pitcher",

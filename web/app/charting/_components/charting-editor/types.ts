@@ -52,6 +52,7 @@ export type RecentPAGroup = {
   paId: string;
   inning: number;
   isTopInning: boolean;
+  teamSide: ChartingMatchupSide;
   hitterName: string;
   pitcherId: string;
   pitcherName: string;

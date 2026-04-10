@@ -216,4 +216,60 @@ describe("buildHitterOverviewModels", () => {
       results: [],
     });
   });
+
+  it("merges Babson hitter aliases into one overview row", () => {
+    const babsonPas: ChartingPlateAppearance[] = [
+      {
+        ...fx.pasForSegA[0],
+        id: "our-pa-1",
+        gameId: "game-1",
+        segmentId: fx.segments[0].id,
+        paOrder: 1,
+        teamSide: "our",
+        hitterName: "Michael McCarthy",
+        lineupSlot: 6,
+        resultCode: "6-3",
+      },
+      {
+        ...fx.pasForSegA[1],
+        id: "our-pa-2",
+        gameId: "game-1",
+        segmentId: fx.segments[0].id,
+        paOrder: 2,
+        teamSide: "our",
+        hitterName: "Mike McCarthy",
+        lineupSlot: 6,
+        resultCode: "1B",
+      },
+    ];
+    const babsonPitches: ChartingPitch[] = [
+      {
+        ...fx.pitchesForSegA[0],
+        id: "our-pitch-1",
+        gameId: "game-1",
+        paId: "our-pa-1",
+        pitchOrder: 1,
+      },
+      {
+        ...fx.pitchesForSegA[1],
+        id: "our-pitch-2",
+        gameId: "game-1",
+        paId: "our-pa-2",
+        pitchOrder: 2,
+      },
+    ];
+
+    const models = buildHitterOverviewModels(babsonPas, babsonPitches, [
+      {
+        hitterName: "Mike McCarthy",
+        lineupSlot: 6,
+        teamSide: "our",
+      },
+    ]);
+
+    expect(models).toHaveLength(1);
+    expect(models[0]?.hitterName).toBe("Mike McCarthy");
+    expect(models[0]?.lineupSlot).toBe(6);
+    expect(models[0]?.plateAppearances).toHaveLength(2);
+  });
 });

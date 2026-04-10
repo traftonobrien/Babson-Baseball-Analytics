@@ -1,8 +1,9 @@
 "use client";
 
-import { startTransition, useState } from "react";
+import { startTransition, useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, CalendarDays, ClipboardPenLine } from "lucide-react";
+import { resolveOpponentRosterTeamName } from "@/lib/charting/bootstrapOpponents";
 
 function localDateInputValue(date: Date): string {
   const year = date.getFullYear();
@@ -11,8 +12,13 @@ function localDateInputValue(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-export function ChartingCreateForm() {
+export function ChartingCreateForm({
+  opponentTeams,
+}: {
+  opponentTeams: string[];
+}) {
   const router = useRouter();
+  const opponentDatalistId = useId();
   const [opponent, setOpponent] = useState("");
   const [gameDate, setGameDate] = useState(() => localDateInputValue(new Date()));
   const [charter, setCharter] = useState("");
@@ -36,6 +42,8 @@ export function ChartingCreateForm() {
         },
         body: JSON.stringify({
           opponent,
+          opponentTeamLabel:
+            resolveOpponentRosterTeamName(opponent) ?? opponent.trim(),
           gameDate,
           sessionType: "game",
           babsonVenueSide,
@@ -146,12 +154,18 @@ export function ChartingCreateForm() {
               Opponent
             </span>
             <input
+              list={opponentDatalistId}
               value={opponent}
               onChange={(event) => setOpponent(event.target.value)}
               placeholder="Enter opponent name"
               required
               className="h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/85 px-4 text-sm font-medium text-zinc-100 placeholder:text-zinc-600 outline-none transition-colors hover:border-zinc-700 focus:border-emerald-400/35"
             />
+            <datalist id={opponentDatalistId}>
+              {opponentTeams.map((team) => (
+                <option key={team} value={team} />
+              ))}
+            </datalist>
           </label>
 
           <div className="grid gap-4 lg:grid-cols-2">

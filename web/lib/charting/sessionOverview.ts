@@ -4,6 +4,7 @@ import {
   type HitterStats,
   type SegmentStats,
 } from "./analytics";
+import { getCanonicalName, getCanonicalPlayerId } from "@/lib/canonicalPlayers";
 import type {
   ChartingMatchupSide,
   ChartingPitch,
@@ -245,8 +246,19 @@ export function buildHitterOverviewModels(
     { hitterName: string; teamSide: ChartingMatchupSide }
   >();
 
-  const hitterKeyFor = (hitterName: string, teamSide: ChartingMatchupSide) =>
-    `${teamSide}:${hitterName.trim().toLowerCase()}`;
+  const hitterKeyFor = (
+    hitterName: string,
+    teamSide: ChartingMatchupSide,
+  ) => {
+    if (teamSide === "our") {
+      const canonicalPlayerId = getCanonicalPlayerId(hitterName);
+      if (canonicalPlayerId) {
+        return `${teamSide}:player:${canonicalPlayerId}`;
+      }
+    }
+
+    return `${teamSide}:name:${hitterName.trim().toLowerCase()}`;
+  };
 
   if (lineupEntries) {
     for (const entry of lineupEntries) {
@@ -257,7 +269,13 @@ export function buildHitterOverviewModels(
         lineupSlots.set(hitterKey, entry.lineupSlot);
         firstSeenOrder.set(hitterKey, entry.lineupSlot);
         plateAppearancesByHitter.set(hitterKey, []);
-        hitterMeta.set(hitterKey, { hitterName, teamSide });
+        hitterMeta.set(hitterKey, {
+          hitterName:
+            teamSide === "our"
+              ? getCanonicalName(hitterName)
+              : hitterName,
+          teamSide,
+        });
       }
     }
   }
@@ -276,7 +294,10 @@ export function buildHitterOverviewModels(
       );
     }
     hitterMeta.set(hitterKey, {
-      hitterName: plateAppearance.hitterName,
+      hitterName:
+        plateAppearance.teamSide === "our"
+          ? getCanonicalName(plateAppearance.hitterName)
+          : plateAppearance.hitterName,
       teamSide: plateAppearance.teamSide,
     });
 

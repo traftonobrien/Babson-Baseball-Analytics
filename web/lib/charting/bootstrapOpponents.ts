@@ -62,7 +62,9 @@ function normalizeOpponentPlayerName(playerName: string): string {
     .trim();
 }
 
-function findOpponentTeamName(opponentTeamName: string): string | null {
+export function resolveOpponentRosterTeamName(
+  opponentTeamName: string,
+): string | null {
   const target = normalizeOpponentTeamName(opponentTeamName);
   if (!target) {
     return null;
@@ -78,7 +80,7 @@ function findOpponentTeamName(opponentTeamName: string): string | null {
 export function getOpponentRoster(
   opponentTeamName: string,
 ): ChartingOpponentPlayer[] {
-  const matchedTeam = findOpponentTeamName(opponentTeamName);
+  const matchedTeam = resolveOpponentRosterTeamName(opponentTeamName);
   if (!matchedTeam) {
     return [];
   }
@@ -95,6 +97,10 @@ export function getOpponentRoster(
       throws: data.throws,
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export function getAvailableOpponentTeams(): string[] {
+  return Object.keys(teamMap).sort((left, right) => left.localeCompare(right));
 }
 
 export function findOpponentRosterPlayer(
