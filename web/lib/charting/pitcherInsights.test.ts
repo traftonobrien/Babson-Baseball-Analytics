@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   buildPitcherPerformanceInsightsData,
   filterPitcherInsightPitches,
+  selectPitcherInsightPitches,
   summarizePitcherInsightPitches,
+  metricValueForAggregate,
   DEFAULT_PITCHER_INSIGHT_FILTERS,
   type PitcherInsightGameContext,
   type PitcherInsightPitchRecord,
+  type PitcherInsightAggregate,
 } from "./pitcherInsights";
 import type { ChartingPitch, ChartingPlateAppearance } from "./types";
 
@@ -639,5 +642,161 @@ describe("filterPitcherInsightPitches", () => {
     });
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe("p1");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// selectPitcherInsightPitches
+// ---------------------------------------------------------------------------
+
+describe("selectPitcherInsightPitches", () => {
+  function makeRecord(
+    overrides: Partial<PitcherInsightPitchRecord> & { id: string }
+  ): PitcherInsightPitchRecord {
+    return {
+      gameId: "game-1",
+      gameDate: "2026-03-10",
+      opponent: "MIT",
+      batterHand: null,
+      inning: 1,
+      lineupSlot: 1,
+      paId: "pa-1",
+      pitchOrder: 0,
+      pitchType: "Fastball",
+      pitchResult: "called_strike",
+      locationCell: 5,
+      zoneRow: 1,
+      zoneColumn: 1,
+      isInZone: true,
+      ballsBefore: 0,
+      strikesBefore: 0,
+      countLabel: "0-0",
+      countCategory: "even",
+      velocity: null,
+      velocityBand: "untracked",
+      isStrike: true,
+      isCalledStrike: true,
+      isSwing: false,
+      isWhiff: false,
+      isContact: false,
+      isBall: false,
+      isBallInPlay: false,
+      isTerminalPitch: false,
+      terminalAtBat: false,
+      terminalStrikeout: false,
+      terminalWalk: false,
+      terminalHit: false,
+      terminalHitByPitch: false,
+      terminalPAs: 0,
+      wobaWeight: 0,
+      ...overrides,
+    };
+  }
+
+  const pitches = [
+    makeRecord({ id: "cell5-a",  locationCell: 5,  zoneRow: 1, zoneColumn: 1, isInZone: true }),
+    makeRecord({ id: "cell5-b",  locationCell: 5,  zoneRow: 1, zoneColumn: 1, isInZone: true }),
+    makeRecord({ id: "cell7",    locationCell: 7,  zoneRow: 2, zoneColumn: 0, isInZone: true }),
+    makeRecord({ id: "cell14",   locationCell: 14, zoneRow: null, zoneColumn: null, isInZone: false }),
+    makeRecord({ id: "cell11",   locationCell: 11, zoneRow: null, zoneColumn: null, isInZone: false }),
+    makeRecord({ id: "no-cell",  locationCell: null, zoneRow: null, zoneColumn: null, isInZone: null }),
+  ];
+
+  it('kind="all" returns all pitches', () => {
+    expect(selectPitcherInsightPitches(pitches, { kind: "all" })).toHaveLength(6);
+  });
+
+  it('kind="cell" returns only pitches with that exact cell', () => {
+    const result = selectPitcherInsightPitches(pitches, { kind: "cell", cell: 5 });
+    expect(result).toHaveLength(2);
+    expect(result.every((p) => p.locationCell === 5)).toBe(true);
+  });
+
+  it('kind="row" returns pitches in that zone row', () => {
+    // row 2 = cells 7,8,9
+    const result = selectPitcherInsightPitches(pitches, { kind: "row", row: 2 });
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("cell7");
+  });
+
+  it('kind="column" returns pitches in that zone column', () => {
+    // column 1 = cells 2,5,8
+    const result = selectPitcherInsightPitches(pitches, { kind: "column", column: 1 });
+    expect(result).toHaveLength(2);
+    expect(result.every((p) => p.zoneColumn === 1)).toBe(true);
+  });
+
+  it('kind="inZone" returns only in-zone pitches', () => {
+    const result = selectPitcherInsightPitches(pitches, { kind: "inZone" });
+    expect(result).toHaveLength(3);
+    expect(result.every((p) => p.isInZone === true)).toBe(true);
+  });
+
+  it('kind="outOfZone" returns only out-of-zone pitches', () => {
+    const result = selectPitcherInsightPitches(pitches, { kind: "outOfZone" });
+    expect(result).toHaveLength(2);
+    expect(result.every((p) => p.isInZone === false)).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// metricValueForAggregate
+// ---------------------------------------------------------------------------
+
+describe("metricValueForAggregate", () => {
+  const agg: PitcherInsightAggregate = {
+    pitches: 42,
+    locatedPitches: 38,
+    strikes: 25,
+    swings: 15,
+    whiffs: 5,
+    contacts: 10,
+    fouls: 4,
+    ballsInPlay: 6,
+    calledStrikes: 10,
+    balls: 17,
+    hits: 3,
+    strikeouts: 4,
+    walks: 2,
+    hitByPitch: 0,
+    outs: 5,
+    atBats: 8,
+    plateAppearances: 10,
+    strikePct: 59.5,
+    whiffPct: 33.3,
+    chasePct: 25.0,
+    baa: 0.375,
+    woba: 0.310,
+    kPct: 40.0,
+    bbPct: 20.0,
+    fpsPct: 62.5,
+  };
+
+  it("pitchCount returns raw pitch count", () => {
+    expect(metricValueForAggregate(agg, "pitchCount")).toBe(42);
+  });
+  it("strikePct returns strikePct", () => {
+    expect(metricValueForAggregate(agg, "strikePct")).toBe(59.5);
+  });
+  it("whiffPct returns whiffPct", () => {
+    expect(metricValueForAggregate(agg, "whiffPct")).toBe(33.3);
+  });
+  it("chasePct returns chasePct", () => {
+    expect(metricValueForAggregate(agg, "chasePct")).toBe(25.0);
+  });
+  it("baa returns baa", () => {
+    expect(metricValueForAggregate(agg, "baa")).toBe(0.375);
+  });
+  it("woba returns woba", () => {
+    expect(metricValueForAggregate(agg, "woba")).toBe(0.310);
+  });
+  it("kPct returns kPct", () => {
+    expect(metricValueForAggregate(agg, "kPct")).toBe(40.0);
+  });
+  it("bbPct returns bbPct", () => {
+    expect(metricValueForAggregate(agg, "bbPct")).toBe(20.0);
+  });
+  it("fpsPct returns fpsPct", () => {
+    expect(metricValueForAggregate(agg, "fpsPct")).toBe(62.5);
   });
 });

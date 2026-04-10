@@ -59,7 +59,7 @@
   - Pass `pitcherInsightsData` down into `PlayerProfileTabs` props
 
 ### Tests to Add
-- [ ] `web/lib/charting/pitcherInsights.test.ts`
+- [x] `web/lib/charting/pitcherInsights.test.ts`
   - Unit tests for `buildPitcherPerformanceInsightsData`, `filterPitcherInsightPitches`, `summarizePitcherInsightPitches`
 
 ---
