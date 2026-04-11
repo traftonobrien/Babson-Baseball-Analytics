@@ -1,87 +1,74 @@
-# Requirements: Pitch Tracker Market-Ready Platform
+# Requirements: Run Expectancy Intelligence
 
-**Defined:** 2026-03-20
-**Milestone:** v3.0
-**Core Value:** Any D3 baseball program can deploy the platform, chart games on an iPad, and review pitcher and hitter analytics in a portal — with zero Babson-specific configuration required.
-
----
-
-## v3.0 Requirements
-
-### Completion — Finish In-Flight Work
-
-- [x] **DONE-01**: Phase 12.1-03 is complete — mixed-role Live AB player profile polish and final validation pass
-- [x] **DONE-02**: Charting UAT passes — codex/game-charting-structure branch is manually browser-tested and merged to main
-
-### Ops — Reliability and Observability
-
-- [x] **OPS-01**: Next.js middleware is actually running — proxy.ts logic is deployed as middleware.ts protecting all page routes
-- [x] **OPS-02**: Error boundaries exist on all major page surfaces — uncaught render errors show a recoverable UI instead of a blank screen
-- [x] **OPS-03**: Vercel environment variables (PT_PASSWORD, MECHANICS_PASSWORD, DATABASE_URL) are confirmed correct on the live deployment
-- [x] **OPS-04**: Structured error logging is in place — server errors are captured with enough context to diagnose production failures
-
-### Code Health — Decompose Mega-Files
-
-- [x] **CODE-01**: ChartingEditor.tsx is broken into modules under 500 lines each — logic, hooks, and sub-components extracted
-- [x] **CODE-02**: LiveAbInsightsExplorer.tsx is broken into modules under 500 lines each — pitcher/hitter panels, filter logic, and synthesis helpers extracted
-- [ ] **CODE-03**: No single file in web/ exceeds 1000 lines after decomposition passes
-
-### Multi-Tenancy — Team Parameterization
-
-- [x] **TEAM-01**: All hardcoded "Babson" strings in the product UI are replaced with a configurable team name from environment or DB config
-- [x] **TEAM-02**: The DB schema includes a team_id concept — charting games and related records are scoped to a team
-- [ ] **TEAM-03**: A new team can configure their team name, logo, and colors through an admin settings surface
-- [ ] **TEAM-04**: Player identity (roster, slugs, playerIds) is team-scoped — no cross-team data leakage
-- [ ] **TEAM-05**: The login/auth flow is team-aware — a team's credentials authenticate only their data
-
-### UX — Polish and Mobile
-
-- [ ] **UX-01**: Core pages (player list, charting hub, leaderboards, player profile) are usable on mobile screens (320-768px)
-- [ ] **UX-02**: Data-loading states show skeleton placeholders instead of blank content flashes
-- [ ] **UX-03**: Interactive elements (buttons, filters, dropdowns) meet minimum 44px touch target sizes
-- [ ] **UX-04**: Tab navigation and keyboard accessibility work on all modal and panel surfaces
-
-### Demo — Marketing and Sales Enablement
-
-- [ ] **DEMO-01**: A public demo mode exists — a read-only version of the portal is accessible without credentials, seeded with realistic sample data
-- [ ] **DEMO-02**: The demo is stable — it cannot be modified by visitors and resets automatically if seeded data is altered
-- [ ] **DEMO-03**: A landing/marketing page exists at the root for unauthenticated visitors, explaining the product and linking to the demo
+**Defined:** 2026-04-11
+**Milestone:** v4.0
+**Core Value:** Babson coaching staff can quantify the run-value and out-probability cost of every 0-2 fastball decision using a live, self-updating run expectancy model built entirely from their own game data.
 
 ---
 
-## v4.0 Requirements (Deferred)
+## v4.0 Requirements
 
-### Advanced Multi-Tenancy
+### PBP Parser — Extended Game State Machine
 
-- **TEAM-ADV-01**: Per-user accounts within a team (role-based access — admin vs scorer vs read-only)
-- **TEAM-ADV-02**: Self-serve team sign-up flow with email verification
-- **TEAM-ADV-03**: Billing integration (Stripe) for SaaS subscription management
+- [ ] **PBP-01**: The PBP parser captures ALL plate appearances from a Sidearm box score — both teams, all PA outcomes including walks, strikeouts, HBP, and balls in play (not just Babson BIP events)
+- [ ] **PBP-02**: The parser reconstructs base state (which of 8 combinations of 1B/2B/3B are occupied) sequentially across each half-inning by processing semicolon-separated sub-events within each play line (e.g., "doubled; Cushner advanced to third; Grace scored")
+- [ ] **PBP-03**: The parser tracks outs per half-inning (0–2) and resets base state + outs on half-inning boundaries
+- [ ] **PBP-04**: The parser walks the pitch sequence string (e.g., `BKFB`) letter by letter to derive the count state at each pitch step — enabling per-pitch (count, base_state, outs) snapshots without Supabase
+- [ ] **PBP-05**: Deduplication uses `(inning, half_inning, play_text)` as the key — not plain `play_text` — so identical play descriptions in different innings are not silently dropped
+- [ ] **PBP-06**: Each half-inning's parsed run total is validated against the box score `r` column; innings that fail validation are excluded from matrix computation and logged, not silently included
+- [ ] **PBP-07**: A `re_game_map.json` file maps Sidearm gameIds to internal game metadata (date, opponent, home/away, doubleheader suffix) and is maintained alongside the scraper for disambiguation
 
-### Feature Expansion
+### RE Matrix Builder
 
-- **FEAT-01**: Opponent lineup import from Sidearm/D3 boxscore (replace manual hitter entry)
-- **FEAT-02**: Baserunner carry-forward engine (automatic baserunner state between PAs)
-- **FEAT-03**: iPad app distribution via App Store (public listing, not TestFlight-only)
-- **FEAT-04**: Video sync — link charted pitches to video clips from a center-field camera
+- [ ] **MAT-01**: A TypeScript build script (`web/scripts/build_re_matrix.ts`) scrapes all Sidearm box scores for the current season and computes both an RE24 matrix (8 base states × 3 out states = 24 cells) and an RE288 matrix (12 counts × 8 base states × 3 out states = 288 cells)
+- [ ] **MAT-02**: Each matrix cell stores both the mean expected runs value AND the observation count `n`; cells with n < 5 are stored as `null` rather than a point estimate
+- [ ] **MAT-03**: The matrices are written to `web/public/data/run-expectancy/re-matrix-2026.json` following the existing static JSON pipeline pattern
+- [ ] **MAT-04**: A separate Out Probability matrix (same 288-cell structure) stores the probability of recording an out on any pitch in that state, derived from the same PBP corpus
+- [ ] **MAT-05**: Running `npm run re:rebuild` re-scrapes all games and regenerates both matrix files; the command is defined in `web/package.json`
 
-### Phase 9 (TestFlight)
+### Delta-RE + PA Join
 
-- **OPS-ADV-01**: TestFlight internal pilot packaging and distribution
-- **OPS-ADV-02**: Pilot diagnostics, error surfacing, and retry guidance
-- **OPS-ADV-03**: Operator runbook and scoring quick reference
+- [ ] **RV-01**: For each logged 0-2 fastball PA in Supabase charting data, the system looks up the pre-pitch RE value from the RE288 matrix using `(count_before, base_state, outs)` and the post-pitch RE value using the outcome state
+- [ ] **RV-02**: A `game-base-states-2026.json` index is built by the re:rebuild script, keyed by `(gameDate, opponent, inning, halfInning, paOrder)`, providing base state and outs context for each charted PA
+- [ ] **RV-03**: Delta-RE per PA is computed as: `RE(post_state) - RE(pre_state) + runs_scored_on_play`; sign convention is documented with hand-verified test cases for K, ball, walk, single, and out outcomes
+- [ ] **RV-04**: At least 80% of charted 0-2 fastball PAs from games with available Sidearm PBP are matched to a base-state context before the dashboard integration is considered complete
+
+### 0-2 Dashboard Integration
+
+- [ ] **DASH-01**: The `/charting/ohtwo` page displays the aggregate run value cost or save of the 0-2 fastball strategy — the sum of delta-RE across all qualifying pitches expressed as "X expected runs given up / saved"
+- [ ] **DASH-02**: The dashboard includes a counterfactual simulator: given that Y% of the logged 0-2 balls had instead been strikeouts, the run value change is displayed (computed as: `(Y% × n_balls) × (delta_RE_K − delta_RE_ball)`)
+- [ ] **DASH-03**: The dashboard displays a count-progression RE tree showing the expected runs at each branch after a 0-2 pitch: K outcome, ball (→ 1-2) outcome, and in-play outcome — using RE288 values
+- [ ] **DASH-04**: Alongside run value, the dashboard shows out probability delta: how each 0-2 pitch outcome changed the probability of recording an out, derived from the Out Probability matrix
+- [ ] **DASH-05**: Cells with insufficient sample (n < 5) display a "limited sample" indicator rather than a numeric value on the dashboard
 
 ---
 
-## Out of Scope (v3.0)
+## v4.x Requirements (deferred)
+
+### RE Leaderboard Extension
+
+- **EXT-01**: Per-pitcher RE summary across all charted appearances — who gives up the most run value above/below expectation?
+- **EXT-02**: RE matrix visible as a standalone reference page (`/charting/run-expectancy`) for coaching review
+
+### Automated Refresh
+
+- **OPS-01**: GitHub Actions nightly re:rebuild after each game day (parallel to NCAA stats sync)
+- **OPS-02**: Incremental scrape mode — only fetch box scores for games added since last run
+
+### D3-Wide Baseline Comparison
+
+- **D3-01**: Side-by-side comparison of Babson RE24 vs. D3-wide baseline once sufficient cross-team data is accessible
+
+---
+
+## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Role-based auth (admin/scorer/viewer) | Password-gate model sufficient for single-team internal use; multi-user auth is v4.0 |
-| App Store distribution | TestFlight-only for current user base; App Store review overhead not worth it yet |
-| Billing/subscriptions | No paying customers yet; add after first 2-3 paid teams sign on |
-| Baserunner engine | Already in existing out-of-scope; adds scoring complexity |
-| Real-time multi-scorer collaboration | Single scorer per game is the established constraint |
-| Full player story hero block | Explicitly excluded in product-audit-followup.md |
+| Win Expectancy (WE) | D3 corpus too sparse for reliable WE curves; defer until multi-season data exists |
+| Live in-game RE updates | Requires real-time base-state feed; charting system is post-game oriented |
+| Opponent-specific RE matrices per team | Sample size per opponent is too small; use aggregate opponent matrix only |
+| Supabase as RE matrix storage | Static JSON is faster, zero latency, consistent with all other derived data in this repo |
 
 ---
 
@@ -89,33 +76,33 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DONE-01 | Phase 14 | Complete |
-| DONE-02 | Phase 14 | Complete |
-| OPS-01 | Phase 15 | Complete |
-| OPS-02 | Phase 15 | Complete |
-| OPS-03 | Phase 15 | Complete |
-| OPS-04 | Phase 15 | Complete |
-| CODE-01 | Phase 16 | Complete |
-| CODE-02 | Phase 16 | Complete |
-| CODE-03 | Phase 16 | Pending |
-| TEAM-01 | Phase 17 | Complete |
-| TEAM-02 | Phase 17 | Complete |
-| TEAM-03 | Phase 18 | Pending |
-| TEAM-04 | Phase 18 | Pending |
-| TEAM-05 | Phase 18 | Pending |
-| UX-01 | Phase 19 | Pending |
-| UX-02 | Phase 19 | Pending |
-| UX-03 | Phase 19 | Pending |
-| UX-04 | Phase 19 | Pending |
-| DEMO-01 | Phase 20 | Pending |
-| DEMO-02 | Phase 20 | Pending |
-| DEMO-03 | Phase 20 | Pending |
+| PBP-01 | Phase 21 | Pending |
+| PBP-02 | Phase 21 | Pending |
+| PBP-03 | Phase 21 | Pending |
+| PBP-04 | Phase 21 | Pending |
+| PBP-05 | Phase 21 | Pending |
+| PBP-06 | Phase 21 | Pending |
+| PBP-07 | Phase 21 | Pending |
+| MAT-01 | Phase 22 | Pending |
+| MAT-02 | Phase 22 | Pending |
+| MAT-03 | Phase 22 | Pending |
+| MAT-04 | Phase 22 | Pending |
+| MAT-05 | Phase 22 | Pending |
+| RV-01 | Phase 23 | Pending |
+| RV-02 | Phase 23 | Pending |
+| RV-03 | Phase 23 | Pending |
+| RV-04 | Phase 23 | Pending |
+| DASH-01 | Phase 24 | Pending |
+| DASH-02 | Phase 24 | Pending |
+| DASH-03 | Phase 24 | Pending |
+| DASH-04 | Phase 24 | Pending |
+| DASH-05 | Phase 24 | Pending |
 
 **Coverage:**
-- v3.0 requirements: 21 total
+- v4.0 requirements: 21 total
 - Mapped to phases: 21
 - Unmapped: 0 ✓
 
 ---
-*Requirements defined: 2026-03-20*
-*Last updated: 2026-03-22 — Phase 17 complete; TEAM-01 and TEAM-02 verified and confirmed via Vercel deployment*
+*Requirements defined: 2026-04-11*
+*Last updated: 2026-04-11 after initial milestone scoping*
