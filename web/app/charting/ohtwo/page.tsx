@@ -19,6 +19,7 @@ import { ChartingZoneHeatmap } from "@/app/charting/_components/ChartingZoneHeat
 import { TEAM_NAME } from "@/lib/teamConfig";
 import { loadChartingOhTwoReport } from "@/lib/charting/ohtwo";
 import type {
+  OhTwoReport,
   OhTwoPaOutcomes,
   OhTwoPitchResultBreakdown,
   OhTwoVelocityStats,
@@ -881,7 +882,7 @@ function PDivider() {
   return <hr className="border-gray-300" />;
 }
 
-function PrintLayout({ report }: { report: Awaited<ReturnType<typeof import("@/lib/charting/ohtwo").loadChartingOhTwoReport>> }) {
+function PrintLayout({ report }: { report: OhTwoReport }) {
   const { summary, execution, nextPitch, paOutcomes, pitchResults, velocity, byPitcher, byOpponent, inningDistribution } = report;
   const generatedOn = new Date().toLocaleDateString("en-US", {
     month: "long",
@@ -1631,5 +1632,7 @@ export default async function OhTwoPage() {
         </section>
       </div>
     </div>
+    <PrintLayout report={report} />
+    </>
   );
 }
