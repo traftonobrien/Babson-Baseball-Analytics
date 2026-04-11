@@ -1,34 +1,34 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: Live AB Analytics
+milestone: v4.0
+milestone_name: Run Expectancy Intelligence
 status: planning
-stopped_at: Completed 17-03-PLAN.md — Phase 17 Multi-Tenancy Part 1 complete
-last_updated: "2026-03-22T19:05:33.987Z"
-last_activity: 2026-03-22
+stopped_at: Milestone v4.0 started — requirements and roadmap being defined
+last_updated: "2026-04-11T00:00:00.000Z"
+last_activity: 2026-04-11
 progress:
-  total_phases: 23
-  completed_phases: 16
-  total_plans: 41
-  completed_plans: 38
-  percent: 90
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-20)
+See: .planning/PROJECT.md (updated 2026-04-11)
 
-**Core value:** One coach can chart an entire outing on one iPad and trust that the result survives offline use, syncs cleanly, and exports well enough to replace the current paper workflow — now extensible to any D3 team.
-**Current focus:** Milestone v3.0 — Phase 17 complete; next: Phase 17.5 (Supabase Migration) or Phase 18 (Multi-Tenancy Part 2)
+**Core value:** Coaches can quantify the run-value impact of every pitching decision using a live, game-data-backed run expectancy model.
+**Current focus:** Milestone v4.0 — Phase 21 onwards (Run Expectancy Intelligence)
 
 ## Current Position
 
-**Phase:** 17 of 20 (Multi-Tenancy Part 1) — COMPLETE
-**Plan:** 17-03 of 3 — COMPLETE
-**Status:** Ready to plan
-**Last Activity:** 2026-03-22
+**Phase:** Not started (defining requirements)
+**Plan:** —
+**Status:** Defining requirements
+**Last Activity:** 2026-04-11
 
 Progress: [█████████░] 90% (v3.0)
 

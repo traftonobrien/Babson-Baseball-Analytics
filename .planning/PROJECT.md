@@ -89,30 +89,33 @@ The current paper workflow is represented by [Charting Example.pdf](/Users/traft
 
 | Milestone v2.0: Live AB Analytics | Staff want cross-session pitcher and hitter insight from charted live ABs | Analytics foundation → session enhancements → leaderboard → player profile integration |
 
-## Current Milestone: v3.0 Market-Ready Platform
+## Prior Milestone: v3.0 Market-Ready Platform (phases 14–20, partially complete)
 
 **Goal:** Bring every aspect of the platform to production quality for commercialization as a D3 baseball analytics SaaS — multi-tenancy, code health, UX polish, ops reliability, and demo capability.
 
-**Target features:**
-- Multi-tenancy: parameterize team identity, remove all Babson hardcoding, team_id in DB schema, self-serve onboarding flow
-- Code decomposition: break down ChartingEditor.tsx (2913 lines) and LiveAbInsightsExplorer.tsx (2863 lines)
-- Ops reliability: fix middleware deployment (proxy.ts not running), error boundaries, Vercel env verification, observability
-- UX/mobile: responsive pass, loading states, accessibility improvements
-- Feature completion: charting UAT merge (codex/game-charting-structure), finish Phase 12.1-03
-- Demo/marketing: public-facing demo mode with seeded data, player onboarding flow, export/sharing improvements
-
-### Active (v3.0)
-
-- [ ] Multi-tenancy: team_id in DB, parameterized team identity, no hardcoded "Babson" in product UI
-- [ ] Team onboarding: a new team can self-configure and start using the platform
-- [ ] Middleware fix: proxy.ts deployed as actual Next.js middleware protecting all routes
-- [ ] File decomposition: ChartingEditor.tsx and LiveAbInsightsExplorer.tsx broken into <500 line modules
-- [ ] UX pass: mobile-responsive layout, skeleton loading states, accessible interactive elements
-- [ ] Demo mode: seeded read-only demo accessible without credentials for sales/marketing use
-- [ ] Charting UAT: codex/game-charting-structure browser-tested and merged
-- [ ] Phase 12.1-03: mixed-role polish and final validation complete
-- [ ] Error boundaries on all major page surfaces
-- [ ] Observability: structured error logging, basic uptime signal
+Phases 14–17 complete. Phases 17.5, 18, 19, 20 remain planned but deferred while v4.0 is built.
 
 ---
-*Last updated: 2026-03-20 after starting milestone v3.0 Market-Ready Platform*
+
+## Current Milestone: v4.0 Run Expectancy Intelligence
+
+**Goal:** Build a RE288 run expectancy matrix from Sidearm play-by-play data and integrate it into the 0-2 fastball coaching dashboard to quantify the run-value cost and counterfactual impact of Babson's 0-2 fastball strategy.
+
+**Target features:**
+- Extended PBP parser: parse ALL plays from Sidearm box scores (both teams), reconstruct base state and outs sequentially
+- RE288 matrix builder: 12 counts × 8 base states × 3 out states, stored as refreshable JSON, separate matrices for Babson-as-offense and opponent-as-offense
+- Run value calculator: delta-RE per PA outcome, aggregated over all charted 0-2 fastballs
+- 0-2 dashboard integration: total run value cost of strategy, counterfactual simulator ("if X% became strikeouts"), count-progression RE tree (0-2 → ball vs 0-2 → K vs 0-2 → in-play)
+
+### Active (v4.0)
+
+- [ ] RE-01: Sidearm PBP extended parser captures all PA events with sequential base-state + outs reconstruction
+- [ ] RE-02: RE288 matrices built and stored as refreshable JSON (Babson offense, opponent offense)
+- [ ] RE-03: Run value (delta-RE) calculated for each logged 0-2 fastball PA
+- [ ] RE-04: 0-2 dashboard shows total run value cost/save of the strategy
+- [ ] RE-05: 0-2 dashboard shows counterfactual: "if X% of balls became strikeouts, run value changes by Y"
+- [ ] RE-06: 0-2 dashboard shows count-progression RE tree (0-2 → K / ball / in-play consequences)
+- [ ] RE-07: RE matrices are refreshable via a script as new games are played
+
+---
+*Last updated: 2026-04-11 after starting milestone v4.0 Run Expectancy Intelligence*
