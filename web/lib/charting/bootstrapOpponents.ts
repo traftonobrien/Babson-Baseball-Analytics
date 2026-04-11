@@ -24,6 +24,7 @@ const TEAM_ALIAS_MAP: Record<string, string> = {
 
 function normalizeOpponentTeamName(teamName: string): string {
   const expanded = teamName
+    .replace(/\s*\(G\d\)\s*$/i, "")
     .toLowerCase()
     .replace(/#\d+(?:\/\d+)?/g, " ")
     .replace(/\bu\.\b/g, " university ")

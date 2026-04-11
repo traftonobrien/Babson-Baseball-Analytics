@@ -12,6 +12,13 @@ describe("bootstrapOpponents", () => {
     expect(getOpponentRoster("#1/6 Trinity (Texas)").length).toBeGreaterThan(0);
   });
 
+  it("strips doubleheader suffixes before roster lookup", () => {
+    expect(getOpponentRoster("MIT (G1)").length).toBeGreaterThan(0);
+    expect(getOpponentRoster("MIT (G2)").length).toBeGreaterThan(0);
+    expect(getOpponentRoster("UMass Boston (G1)").length).toBeGreaterThan(0);
+    expect(getOpponentRoster("UMass Boston (G2)").length).toBeGreaterThan(0);
+  });
+
   it("finds opponent players with normalized name matching", () => {
     const roster = getOpponentRoster("MIT");
     const samplePlayer = roster[0];
