@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Run Expectancy Intelligence
 status: planning
-stopped_at: Milestone v4.0 started — requirements and roadmap being defined
+stopped_at: Milestone v4.0 roadmap created — Phase 21 ready to plan
 last_updated: "2026-04-11T00:00:00.000Z"
 last_activity: 2026-04-11
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
-  total_plans: 0
+  total_plans: 12
   completed_plans: 0
   percent: 0
 ---
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-11)
 
 **Core value:** Coaches can quantify the run-value impact of every pitching decision using a live, game-data-backed run expectancy model.
-**Current focus:** Milestone v4.0 — Phase 21 onwards (Run Expectancy Intelligence)
+**Current focus:** Milestone v4.0 — Phase 21 (PBP Parser Foundation)
 
 ## Current Position
 
-**Phase:** Not started (defining requirements)
-**Plan:** —
-**Status:** Defining requirements
+**Phase:** 21 — PBP Parser Foundation
+**Plan:** Not started
+**Status:** Roadmap complete, ready to plan Phase 21
 **Last Activity:** 2026-04-11
 
-Progress: [█████████░] 90% (v3.0)
+Progress: [░░░░░░░░░░] 0% (v4.0)
 
 ## Performance Metrics
 
@@ -41,6 +41,16 @@ Progress: [█████████░] 90% (v3.0)
 **Prior milestone (v2.0):** 38 plans completed across 13 phases
 
 ## Accumulated Context
+
+### Key Decisions Entering v4.0
+
+- RE matrix stored as static JSON (`web/public/data/run-expectancy/re-matrix-2026.json`) — consistent with all other derived data in this repo; zero latency, no Supabase reads at request time
+- Phase numbering starts at 21 — phases 1-20 belong to prior milestones
+- 4 phases derive directly from the natural dependency chain: parser → matrix → join → dashboard
+- Null rule: cells with n < 5 stored as null, displayed with "limited sample" indicator — prevents false precision on sparse D3 data
+- Delta-RE sign convention: `RE(post) - RE(pre) + runs_scored`; positive = pitcher hurt, negative = pitcher helped (to be hand-verified in Phase 23-03)
+- Match rate gate: Phase 23 is complete only when >= 80% of charted 0-2 fastball PAs from games with Sidearm PBP are matched
+- `npm run re:rebuild` is the single command to re-scrape all games and regenerate both matrix files
 
 ### Key Decisions Entering v3.0
 
@@ -101,6 +111,6 @@ None.
 
 ## Session Continuity
 
-**Last Date:** 2026-03-22T18:53:43.033Z
-**Stopped At:** Completed 17-03-PLAN.md — Phase 17 Multi-Tenancy Part 1 complete
+**Last Date:** 2026-04-11
+**Stopped At:** Roadmap created for v4.0 — 4 phases defined (21-24), 21 requirements mapped, ready to run /gsd:plan-phase 21
 **Resume File:** None
