@@ -5,6 +5,7 @@ import {
 import { extractCountAndSequence } from "../spraychart/zoneMapper";
 import reGameMapEntries from "../../public/data/run-expectancy/re_game_map.json";
 import type {
+  BuildSeasonRunExpectancyCorpusOptions,
   HalfInningSide,
   PitchCountSnapshot,
   PitchCountState,
@@ -92,10 +93,21 @@ export function parseParsedPbpGame(rawGame: RawPbpGame): ParsedPbpGame {
 
 export async function buildSeasonRunExpectancyCorpus(
   urls: string[],
+  options: BuildSeasonRunExpectancyCorpusOptions = {},
 ): Promise<SeasonRunExpectancyCorpus> {
+  const scopeGameIds = options.scopeGameIds === undefined
+    ? [...RE_GAME_MAP.keys()]
+    : options.scopeGameIds;
+  const scopedGameIds = scopeGameIds ? new Set(scopeGameIds) : null;
+  const passingUsableRatio = options.passingUsableRatio ?? GAME_PASSING_USABLE_RATIO;
+
   const scopedUrls = urls.filter((url) => {
+    if (!scopedGameIds) {
+      return true;
+    }
+
     const gameId = parseGameIdFromUrl(url);
-    return Boolean(gameId && RE_GAME_MAP.has(gameId));
+    return Boolean(gameId && scopedGameIds.has(gameId));
   });
   const games: SeasonRunExpectancyGameResult[] = [];
   const failureReasons = new Map<string, number>();
@@ -108,7 +120,7 @@ export async function buildSeasonRunExpectancyCorpus(
       const usableHalfInnings = parsedGame.usableHalfInnings.length;
       const failedHalfInnings = parsedGame.failedHalfInnings.length;
       const usableRatio = calculateUsableRatio(usableHalfInnings, failedHalfInnings);
-      const passed = usableRatio >= GAME_PASSING_USABLE_RATIO;
+      const passed = usableRatio >= passingUsableRatio;
       const gameFailureReasons = parsedGame.failedHalfInnings
         .map((halfInning) => halfInning.validation.reason)
         .filter((reason): reason is string => Boolean(reason));

@@ -121,6 +121,11 @@ export interface SeasonRunExpectancyCorpus {
   failureReasons: Record<string, number>;
 }
 
+export interface BuildSeasonRunExpectancyCorpusOptions {
+  scopeGameIds?: string[] | null;
+  passingUsableRatio?: number;
+}
+
 // ---------------------------------------------------------------------------
 // RE Matrix types (Phase 22)
 // ---------------------------------------------------------------------------
@@ -188,6 +193,8 @@ export interface CountProgressionBranchSummary {
   preRe: number | null;
   postRe: number | null;
   reDelta: number | null;
+  deltaRangeMin: number | null;
+  deltaRangeMax: number | null;
   preOutProb: number | null;
   postOutProb: number | null;
   outProbDelta: number | null;
@@ -224,6 +231,11 @@ export interface CountProgressionSummary {
 export interface ReMatrixFile {
   generatedAt: string;
   season: number;
+  corpusLabel?: string;
+  sourcePrograms?: string[];
+  totalGamesInCorpus?: number;
+  passingGamesInCorpus?: number;
+  failedGamesInCorpus?: number;
   totalObservationsRe24: number;
   totalObservationsRe288: number;
   minObservations: number;
@@ -232,6 +244,28 @@ export interface ReMatrixFile {
   countProgression?: {
     ohTwo: CountProgressionSummary | null;
   };
+}
+
+export interface OhTwoBallComparisonStateRow {
+  baseState: BaseStateCode;
+  outs: OutsCount;
+  babsonN: number;
+  babsonPreRe: number | null;
+  babsonPostRe: number | null;
+  babsonDelta: number | null;
+  newmacPreRe: number | null;
+  newmacPostRe: number | null;
+  newmacDelta: number | null;
+}
+
+export interface OhTwoBallComparisonFile {
+  generatedAt: string;
+  season: number;
+  totalBabsonBalls: number;
+  babsonWeightedDelta: number | null;
+  newmacWeightedDeltaOnBabsonStates: number | null;
+  newmacValuePerConversionOnBabsonStates: number | null;
+  states: OhTwoBallComparisonStateRow[];
 }
 
 // ---------------------------------------------------------------------------

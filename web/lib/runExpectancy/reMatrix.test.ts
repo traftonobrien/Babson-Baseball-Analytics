@@ -6,9 +6,11 @@ import {
   isValidCount,
   isValidOuts,
   aggregateHalfInnings,
+  buildOhTwoBallStateMix,
   buildOhTwoCountProgressionSummary,
   buildRe24Cells,
   buildRe288Cells,
+  evaluateOhTwoBallStateMix,
   ALL_BASE_STATES,
   ALL_OUTS,
   ALL_COUNTS,
@@ -515,14 +517,20 @@ describe("buildOhTwoCountProgressionSummary", () => {
     expect(strikeout?.n).toBe(1);
     expect(strikeout?.preRe).toBeCloseTo(0.4);
     expect(strikeout?.postRe).toBeCloseTo(0.2);
+    expect(strikeout?.deltaRangeMin).toBeCloseTo(-0.2);
+    expect(strikeout?.deltaRangeMax).toBeCloseTo(-0.2);
 
     expect(ball?.preRe).toBeCloseTo(1.6);
     expect(ball?.postRe).toBeCloseTo(1.4);
     expect(ball?.postOutProb).toBeCloseTo(0.7);
     expect(ball?.n).toBe(1);
+    expect(ball?.deltaRangeMin).toBeCloseTo(-0.2);
+    expect(ball?.deltaRangeMax).toBeCloseTo(-0.2);
     expect(inPlay?.preRe).toBeCloseTo(0.2);
     expect(inPlay?.postRe).toBe(0);
     expect(inPlay?.n).toBe(1);
+    expect(inPlay?.deltaRangeMin).toBeCloseTo(-0.2);
+    expect(inPlay?.deltaRangeMax).toBeCloseTo(-0.2);
 
     expect(summary?.counterfactual.totalBalls).toBe(1);
     expect(summary?.counterfactual.valuePerConversion).toBeCloseTo(1.4 - 1.1);
@@ -579,6 +587,57 @@ describe("buildOhTwoCountProgressionSummary", () => {
     expect(inPlay?.n).toBe(1);
     expect(inPlay?.preRe).toBeCloseTo(0.9);
     expect(inPlay?.postRe).toBeCloseTo(0.5);
+  });
+});
+
+describe("buildOhTwoBallStateMix / evaluateOhTwoBallStateMix", () => {
+  it("summarizes Babson 0-2 ball states and can revalue them against another matrix", () => {
+    const halfInning = makeHalfInning([
+      makePlay({
+        baseStateBefore: { first: false, second: false, third: false },
+        countSnapshots: [
+          {
+            pitchNumber: 1,
+            pitchCode: "B",
+            countBefore: { balls: 0, strikes: 2, label: "0-2" },
+            countAfter: { balls: 1, strikes: 2, label: "1-2" },
+          },
+        ],
+      }),
+      makePlay({
+        baseStateBefore: { first: true, second: false, third: false },
+        outsBefore: 1,
+        outsAfter: 1,
+        countSnapshots: [
+          {
+            pitchNumber: 1,
+            pitchCode: "B",
+            countBefore: { balls: 0, strikes: 2, label: "0-2" },
+            countAfter: { balls: 1, strikes: 2, label: "1-2" },
+          },
+        ],
+      }),
+    ]);
+
+    const stateMix = buildOhTwoBallStateMix([halfInning]);
+    expect(stateMix).toEqual([
+      { baseState: "000", outs: 0, n: 1, share: 0.5 },
+      { baseState: "100", outs: 1, n: 1, share: 0.5 },
+    ]);
+
+    const re24Map = new Map();
+    const re288Map = new Map([
+      ["0-2|000|0", { n: 10, sumRe: 2, sumOutOccurred: 8 }],
+      ["1-2|000|0", { n: 10, sumRe: 3, sumOutOccurred: 7 }],
+      ["0-2|100|1", { n: 10, sumRe: 4, sumOutOccurred: 6 }],
+      ["1-2|100|1", { n: 10, sumRe: 5, sumOutOccurred: 5 }],
+    ]);
+
+    const summary = evaluateOhTwoBallStateMix(stateMix, re24Map, re288Map);
+    expect(summary.totalObserved).toBe(2);
+    expect(summary.preRe).toBeCloseTo(0.3);
+    expect(summary.postRe).toBeCloseTo(0.4);
+    expect(summary.reDelta).toBeCloseTo(0.1);
   });
 });
 

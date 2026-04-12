@@ -1,0 +1,102 @@
+[
+  {
+    "id": "babson",
+    "school": "Babson College",
+    "nickname": "Beavers",
+    "aliases": ["Babson", "Babson College"],
+    "conference": "NEWMAC",
+    "provider": "sidearm",
+    "baseUrl": "https://babsonathletics.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "clark",
+    "school": "Clark University",
+    "nickname": "Cougars",
+    "aliases": ["Clark", "Clark University"],
+    "conference": "NEWMAC",
+    "provider": "sidearm",
+    "baseUrl": "https://clarkathletics.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "coast-guard",
+    "school": "United States Coast Guard Academy",
+    "nickname": "Bears",
+    "aliases": [
+      "Coast Guard",
+      "Coast Guard Academy",
+      "United States Coast Guard Academy",
+      "USCGA"
+    ],
+    "conference": "NEWMAC",
+    "provider": "sidearm",
+    "baseUrl": "https://coastguardathletics.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "emerson",
+    "school": "Emerson College",
+    "nickname": "Lions",
+    "aliases": ["Emerson", "Emerson College"],
+    "conference": "NEWMAC",
+    "provider": "sidearm",
+    "baseUrl": "https://emersonlions.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "mit",
+    "school": "Massachusetts Institute of Technology",
+    "nickname": "Engineers",
+    "aliases": ["MIT", "Massachusetts Institute of Technology"],
+    "conference": "NEWMAC",
+    "provider": "sidearm",
+    "baseUrl": "https://mitathletics.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "salve-regina",
+    "school": "Salve Regina University",
+    "nickname": "Seahawks",
+    "aliases": ["Salve Regina", "Salve Regina University"],
+    "conference": "NEWMAC",
+    "provider": "sidearm",
+    "baseUrl": "https://salveathletics.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "springfield",
+    "school": "Springfield College",
+    "nickname": "Pride",
+    "aliases": ["Springfield", "Springfield College"],
+    "conference": "NEWMAC",
+    "provider": "sidearm",
+    "baseUrl": "https://springfieldcollegepride.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "wheaton",
+    "school": "Wheaton College (Mass.)",
+    "nickname": "Lyons",
+    "aliases": [
+      "Wheaton",
+      "Wheaton College",
+      "Wheaton (Mass.)",
+      "Wheaton College (Mass.)"
+    ],
+    "conference": "NEWMAC",
+    "provider": "sidearm",
+    "baseUrl": "https://wheatoncollegelyons.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "wpi",
+    "school": "Worcester Polytechnic Institute",
+    "nickname": "Engineers",
+    "aliases": ["WPI", "Worcester Polytechnic Institute"],
+    "conference": "NEWMAC",
+    "provider": "sidearm",
+    "baseUrl": "https://athletics.wpi.edu",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  }
+]

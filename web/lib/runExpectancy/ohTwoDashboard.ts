@@ -15,6 +15,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type {
   CountProgressionSummary,
+  OhTwoBallComparisonFile,
   ReMatrixFile,
 } from "./types";
 
@@ -23,7 +24,8 @@ import type {
 // ---------------------------------------------------------------------------
 
 const DATA_DIR = join(process.cwd(), "public/data/run-expectancy");
-const MATRIX_PATH = join(DATA_DIR, "re-matrix-2026.json");
+const MATRIX_PATH = join(DATA_DIR, "re-matrix-newmac-2026.json");
+const BALL_COMPARISON_PATH = join(DATA_DIR, "ohtwo-ball-comparison-2026.json");
 
 // ---------------------------------------------------------------------------
 // RE tree output types
@@ -34,6 +36,7 @@ export type OhTwoBranch = "strikeout" | "ball" | "inPlay";
 export interface OhTwoReBranch {
   branch: OhTwoBranch;
   label: string;
+  n: number;
   /** State label shown in the tree node (e.g., "Outs +1, same bases") */
   nextStateLabel: string;
   /** RE288 value at the state before this outcome (the 0-2 pre-state) */
@@ -42,6 +45,8 @@ export interface OhTwoReBranch {
   postRe: number | null;
   /** postRe - preRe (negative = pitcher helped) */
   reDelta: number | null;
+  deltaRangeMin: number | null;
+  deltaRangeMax: number | null;
   /** Out probability at the 0-2 state */
   preOutProb: number | null;
   /** Out probability after this outcome (null for in-play — no clean post-state) */
@@ -76,13 +81,14 @@ export interface OhTwoCounterfactualScenario {
 }
 
 export interface OhTwoCounterfactual {
-  /** Number of 0-2 balls observed in the PBP corpus */
+  /** Number of Babson 0-2 balls being graded by the reference matrix */
   totalBalls: number;
   /** RE delta for the strikeout branch */
   deltaReK: number | null;
   /** RE delta for the ball branch */
   deltaReBall: number | null;
   valuePerConversion: number | null;
+  referenceDeltaOnBabsonStates: number | null;
   scenarios: OhTwoCounterfactualScenario[];
 }
 
@@ -110,6 +116,15 @@ function loadMatrixSafe(): ReMatrixFile | null {
   }
 }
 
+function loadBallComparisonSafe(): OhTwoBallComparisonFile | null {
+  try {
+    const raw = readFileSync(BALL_COMPARISON_PATH, "utf-8");
+    return JSON.parse(raw) as OhTwoBallComparisonFile;
+  } catch {
+    return null;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Summary adapter
 // ---------------------------------------------------------------------------
@@ -124,10 +139,13 @@ function adaptTree(summary: CountProgressionSummary): OhTwoReTree {
     branches: summary.branches.map((branch) => ({
       branch: branch.branch,
       label: branch.label,
+      n: branch.n,
       nextStateLabel: branch.nextStateLabel,
       preRe: branch.preRe,
       postRe: branch.postRe,
       reDelta: branch.reDelta,
+      deltaRangeMin: branch.deltaRangeMin,
+      deltaRangeMax: branch.deltaRangeMax,
       preOutProb: branch.preOutProb,
       postOutProb: branch.postOutProb,
       outProbDelta: branch.outProbDelta,
@@ -144,6 +162,7 @@ function adaptCounterfactual(summary: CountProgressionSummary): OhTwoCounterfact
     deltaReK: kBranch?.reDelta ?? null,
     deltaReBall: ballBranch?.reDelta ?? null,
     valuePerConversion: summary.counterfactual.valuePerConversion,
+    referenceDeltaOnBabsonStates: null,
     scenarios: summary.counterfactual.scenarios.map((scenario) => ({
       ...scenario,
       limitedSample: summary.counterfactual.totalBalls < 5,
@@ -161,14 +180,30 @@ function adaptCounterfactual(summary: CountProgressionSummary): OhTwoCounterfact
  */
 export function loadOhTwoReModel(): OhTwoReModelData {
   const matrix = loadMatrixSafe();
+  const comparison = loadBallComparisonSafe();
   const summary = matrix?.countProgression?.ohTwo;
 
-  if (!matrix || !summary) {
+  if (!matrix || !summary || !comparison) {
     return { available: false, tree: null, counterfactual: null };
   }
 
   const tree = adaptTree(summary);
-  const counterfactual = adaptCounterfactual(summary);
+  const counterfactual = {
+    ...adaptCounterfactual(summary),
+    totalBalls: comparison.totalBabsonBalls,
+    valuePerConversion: comparison.newmacValuePerConversionOnBabsonStates,
+    referenceDeltaOnBabsonStates: comparison.newmacWeightedDeltaOnBabsonStates,
+    scenarios: adaptCounterfactual(summary).scenarios.map((scenario) => ({
+      ...scenario,
+      ballsConverted: Math.round((scenario.conversionPct / 100) * comparison.totalBabsonBalls),
+      runsImprovement:
+        comparison.newmacValuePerConversionOnBabsonStates !== null
+          ? comparison.newmacValuePerConversionOnBabsonStates *
+            Math.round((scenario.conversionPct / 100) * comparison.totalBabsonBalls)
+          : null,
+      limitedSample: comparison.totalBabsonBalls < 5,
+    })),
+  };
 
   return { available: true, tree, counterfactual };
 }

@@ -7,6 +7,7 @@
  */
 
 import type { SprayChartEvent, SprayChartGame } from "./types";
+import newmacBaseballPrograms from "../../config/data_sources/newmac_baseball_programs.json";
 import {
   classifyBattedBallType,
   classifyHitResult,
@@ -16,6 +17,34 @@ import {
   extractRbi,
   extractCountAndSequence,
 } from "./zoneMapper";
+
+export interface SidearmBaseballProgram {
+  id: string;
+  school: string;
+  nickname: string;
+  aliases: string[];
+  conference: string;
+  provider: "sidearm";
+  baseUrl: string;
+  schedulePathTemplate: string;
+}
+
+export interface SidearmScheduleGame {
+  programId: string;
+  programSchool: string;
+  url: string;
+  opponent: string | null;
+  date: string | null;
+  timeLabel: string | null;
+  homeTeam: string | null;
+  awayTeam: string | null;
+  dedupKey: string;
+}
+
+export const NEWMAC_BASEBALL_PROGRAMS = newmacBaseballPrograms as SidearmBaseballProgram[];
+export const BABSON_BASEBALL_PROGRAM =
+  NEWMAC_BASEBALL_PROGRAMS.find((program) => program.id === "babson")
+  ?? NEWMAC_BASEBALL_PROGRAMS[0]!;
 
 // ── HTML fetch + PBP extraction ───────────────────────────────────────
 
@@ -305,12 +334,120 @@ function isBabsonPlayer(pbpName: string, roster: Set<string>): boolean {
 
 // ── Schedule URL discovery ────────────────────────────────────────────
 
+export function buildScheduleUrl(
+  program: SidearmBaseballProgram,
+  season: number,
+): string {
+  return `${program.baseUrl.replace(/\/$/, "")}${program.schedulePathTemplate.replace(
+    "{season}",
+    String(season),
+  )}`;
+}
+
+export function extractBoxScoreUrlsFromScheduleHtml(
+  html: string,
+  baseUrl: string,
+): string[] {
+  const normalizedBaseUrl = baseUrl.replace(/\/$/, "");
+  const escapedBaseUrl = escapeRegExp(normalizedBaseUrl);
+  const urls = new Set<string>();
+
+  const absolutePattern = new RegExp(
+    `${escapedBaseUrl}\\/sports\\/baseball\\/stats\\/\\d{4}\\/[^"'\\s)]+\\/boxscore\\/\\d+`,
+    "g",
+  );
+  for (const match of html.matchAll(absolutePattern)) {
+    urls.add(match[0]);
+  }
+
+  const relativePattern = /\/sports\/baseball\/stats\/\d{4}\/[^"'\s)]+\/boxscore\/\d+/g;
+  for (const match of html.matchAll(relativePattern)) {
+    urls.add(`${normalizedBaseUrl}${match[0]}`);
+  }
+
+  const hrefPattern = /href="([^"]*boxscore\/\d+(?:\?[^"]*)?)"/g;
+  for (const match of html.matchAll(hrefPattern)) {
+    const href = match[1]!;
+    const cleanedHref = href.replace(/\?.*$/, "");
+    urls.add(cleanedHref.startsWith("http") ? cleanedHref : `${normalizedBaseUrl}${cleanedHref}`);
+  }
+
+  return [...urls].sort();
+}
+
+export function extractScheduleGamesFromHtml(
+  html: string,
+  program: SidearmBaseballProgram,
+): SidearmScheduleGame[] {
+  const normalizedBaseUrl = program.baseUrl.replace(/\/$/, "");
+  const games = new Map<string, SidearmScheduleGame>();
+  const linkPattern = /<a\b[^>]*href="([^"]*boxscore\/\d+(?:\?[^"]*)?)"[^>]*aria-label="([^"]+)"[^>]*>/gi;
+
+  for (const match of html.matchAll(linkPattern)) {
+    const href = match[1] ?? "";
+    const ariaLabel = stripHtml(match[2] ?? "");
+    const cleanedHref = href.replace(/\?.*$/, "");
+    const url = cleanedHref.startsWith("http")
+      ? cleanedHref
+      : `${normalizedBaseUrl}${cleanedHref}`;
+    const parsed = parseScheduleAriaLabel(ariaLabel, program);
+
+    const game: SidearmScheduleGame = {
+      programId: program.id,
+      programSchool: program.school,
+      url,
+      opponent: parsed?.opponent ?? null,
+      date: parsed?.date ?? null,
+      timeLabel: parsed?.timeLabel ?? null,
+      homeTeam: parsed?.homeTeam ?? null,
+      awayTeam: parsed?.awayTeam ?? null,
+      dedupKey: parsed?.dedupKey ?? `url:${url}`,
+    };
+
+    games.set(game.url, game);
+  }
+
+  if (games.size > 0) {
+    return [...games.values()].sort((left, right) => left.url.localeCompare(right.url));
+  }
+
+  return extractBoxScoreUrlsFromScheduleHtml(html, normalizedBaseUrl).map((url) => ({
+    programId: program.id,
+    programSchool: program.school,
+    url,
+    opponent: null,
+    date: null,
+    timeLabel: null,
+    homeTeam: null,
+    awayTeam: null,
+    dedupKey: `url:${url}`,
+  }));
+}
+
 /**
  * Fetches the Babson baseball schedule page and extracts all box score URLs.
  */
 export async function discoverGameUrls(season: number = 2026): Promise<string[]> {
-  const BASE = "https://babsonathletics.com";
-  const scheduleUrl = `${BASE}/sports/baseball/schedule/${season}`;
+  const urls = await discoverProgramGameUrls(BABSON_BASEBALL_PROGRAM, season);
+  if (urls.length > 0) {
+    return urls;
+  }
+
+  return KNOWN_2026_GAME_URLS;
+}
+
+export async function discoverProgramGameUrls(
+  program: SidearmBaseballProgram,
+  season: number = 2026,
+): Promise<string[]> {
+  return (await discoverProgramScheduleGames(program, season)).map((game) => game.url);
+}
+
+export async function discoverProgramScheduleGames(
+  program: SidearmBaseballProgram,
+  season: number = 2026,
+): Promise<SidearmScheduleGame[]> {
+  const scheduleUrl = buildScheduleUrl(program, season);
 
   try {
     const response = await fetch(scheduleUrl, {
@@ -318,31 +455,124 @@ export async function discoverGameUrls(season: number = 2026): Promise<string[]>
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const html = await response.text();
-
-    const urls = new Set<string>();
-
-    // Match both absolute and relative boxscore URLs
-    const absPattern = /https:\/\/babsonathletics\.com\/sports\/baseball\/stats\/\d{4}\/[^"'\s)]+\/boxscore\/\d+/g;
-    for (const match of html.matchAll(absPattern)) urls.add(match[0]);
-
-    // Relative paths: /sports/baseball/stats/YYYY/slug/boxscore/ID  
-    const relPattern = /\/sports\/baseball\/stats\/\d{4}\/[^"'\s)]+\/boxscore\/\d+/g;
-    for (const match of html.matchAll(relPattern)) urls.add(`${BASE}${match[0]}`);
-
-    // href="...boxscore/ID" variants
-    const hrefPattern = /href="([^"]*boxscore\/\d+)"/g;
-    for (const match of html.matchAll(hrefPattern)) {
-      const href = match[1]!;
-      urls.add(href.startsWith("http") ? href : `${BASE}${href}`);
-    }
-
-    if (urls.size > 0) return [...urls].sort();
+    const games = extractScheduleGamesFromHtml(html, program);
+    if (games.length > 0) return games;
   } catch (err) {
-    console.warn("  ⚠️  Schedule fetch failed, using known game list:", err);
+    console.warn(`  ⚠️  Schedule fetch failed for ${program.school}:`, err);
   }
 
-  // Fallback: known 2026 game URLs
-  return KNOWN_2026_GAME_URLS;
+  return [];
+}
+
+export async function discoverConferenceGameUrls(
+  programs: SidearmBaseballProgram[],
+  season: number = 2026,
+): Promise<string[]> {
+  return (await discoverConferenceScheduleGames(programs, season)).map((game) => game.url);
+}
+
+export async function discoverConferenceScheduleGames(
+  programs: SidearmBaseballProgram[],
+  season: number = 2026,
+): Promise<SidearmScheduleGame[]> {
+  const gamesByKey = new Map<string, SidearmScheduleGame>();
+
+  for (const program of programs) {
+    const scheduleGames = await discoverProgramScheduleGames(program, season);
+    for (const game of scheduleGames) {
+      const existing = gamesByKey.get(game.dedupKey);
+      if (!existing || game.url < existing.url) {
+        gamesByKey.set(game.dedupKey, game);
+      }
+    }
+  }
+
+  return [...gamesByKey.values()].sort((left, right) => left.dedupKey.localeCompare(right.dedupKey));
+}
+
+export async function discoverNewmacGameUrls(season: number = 2026): Promise<string[]> {
+  return discoverConferenceGameUrls(NEWMAC_BASEBALL_PROGRAMS, season);
+}
+
+export async function discoverNewmacScheduleGames(
+  season: number = 2026,
+): Promise<SidearmScheduleGame[]> {
+  return discoverConferenceScheduleGames(NEWMAC_BASEBALL_PROGRAMS, season);
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function parseScheduleAriaLabel(
+  ariaLabel: string,
+  program: SidearmBaseballProgram,
+): {
+  opponent: string;
+  date: string;
+  timeLabel: string | null;
+  homeTeam: string;
+  awayTeam: string;
+  dedupKey: string;
+} | null {
+  const normalizedLabel = ariaLabel.trim();
+  const match = normalizedLabel.match(
+    /^Box score of Baseball\s+(at|vs\.?)\s+(.+?)\s+on\s+([A-Za-z]+\s+\d{1,2},\s+\d{4})(?:\s+at\s+(.+))?$/i,
+  );
+  if (!match) {
+    return null;
+  }
+
+  const locationWord = match[1]!.toLowerCase();
+  const opponent = canonicalizeTeamLabel(match[2]!.trim());
+  const date = parseScheduleDate(match[3]!.trim());
+  const timeLabel = match[4]?.trim() ?? null;
+  const isAway = locationWord === "at";
+  const homeTeam = canonicalizeTeamLabel(isAway ? opponent : program.school);
+  const awayTeam = canonicalizeTeamLabel(isAway ? program.school : opponent);
+
+  return {
+    opponent,
+    date,
+    timeLabel,
+    homeTeam,
+    awayTeam,
+    dedupKey: `${date}|${normalizeTeamKey(homeTeam)}|${normalizeTeamKey(awayTeam)}|${normalizeTimeKey(timeLabel)}`,
+  };
+}
+
+function parseScheduleDate(rawDate: string): string {
+  const parsed = new Date(rawDate);
+  if (Number.isNaN(parsed.getTime())) {
+    return rawDate;
+  }
+
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const day = String(parsed.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function canonicalizeTeamLabel(label: string): string {
+  const normalized = normalizeTeamKey(label);
+  const matchedProgram = NEWMAC_BASEBALL_PROGRAMS.find((program) =>
+    [program.school, ...program.aliases].some((alias) => normalizeTeamKey(alias) === normalized),
+  );
+  return matchedProgram?.school ?? label.replace(/\s+/g, " ").trim();
+}
+
+function normalizeTeamKey(label: string): string {
+  return label
+    .toLowerCase()
+    .replace(/\(.*?\)/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function normalizeTimeKey(timeLabel: string | null): string {
+  return timeLabel
+    ? timeLabel.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()
+    : "notime";
 }
 
 /** Hardcoded list of known 2026 box score URLs, discovered via schedule page scrape. */

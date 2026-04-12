@@ -8,6 +8,7 @@
 import type {
   BaseStateCode,
   CountProgressionBranchSummary,
+  CountProgressionStateMixEntry,
   CountProgressionSummary,
   CountLabel,
   MatrixCellAccumulator,
@@ -349,8 +350,25 @@ function weightedAverage(
   return count > 0 ? sum / count : null;
 }
 
+function collectValues<T>(
+  observations: T[],
+  valueForObservation: (observation: T) => number | null,
+): number[] {
+  const values: number[] = [];
+
+  for (const observation of observations) {
+    const value = valueForObservation(observation);
+    if (value !== null) {
+      values.push(value);
+    }
+  }
+
+  return values;
+}
+
 function buildStateMix(
   observations: PitchStateObservation[],
+  limit = 6,
 ): CountProgressionSummary["stateMix"] {
   const totals = new Map<string, number>();
 
@@ -370,7 +388,7 @@ function buildStateMix(
       };
     })
     .sort((left, right) => right.n - left.n)
-    .slice(0, 6);
+    .slice(0, limit);
 }
 
 export function buildOhTwoCountProgressionSummary(
@@ -383,6 +401,7 @@ export function buildOhTwoCountProgressionSummary(
   const strikeoutStates: PitchStateObservation[] = [];
   const inPlayStates: PitchStateObservation[] = [];
   const inPlayPostRes: number[] = [];
+  const inPlayDeltas: number[] = [];
   let inPlayCount = 0;
 
   for (const halfInning of halfInnings) {
@@ -424,6 +443,13 @@ export function buildOhTwoCountProgressionSummary(
                 );
           if (postRe !== null) {
             inPlayPostRes.push(postRe);
+            const preRe = meanFromAccumulator(
+              re288Map,
+              re288Key("0-2", state.baseState, state.outs),
+            );
+            if (preRe !== null) {
+              inPlayDeltas.push(postRe - preRe);
+            }
           }
           inPlayCount++;
         }
@@ -456,6 +482,14 @@ export function buildOhTwoCountProgressionSummary(
   const strikeoutPostRe = weightedAverage(strikeoutStates, (state) =>
     strikeoutPostReForState(re24Map, state),
   );
+  const strikeoutDeltas = collectValues(strikeoutStates, (state) => {
+    const pre = meanFromAccumulator(
+      re288Map,
+      re288Key("0-2", state.baseState, state.outs),
+    );
+    const post = strikeoutPostReForState(re24Map, state);
+    return pre !== null && post !== null ? post - pre : null;
+  });
   const ballPreRe = branchPreRe(ballStates);
   const ballPreOutProb = branchPreOutProb(ballStates);
   const ballPostRe = weightedAverage(ballStates, (state) =>
@@ -464,6 +498,17 @@ export function buildOhTwoCountProgressionSummary(
   const ballPostOutProb = weightedAverage(ballStates, (state) =>
     outProbFromAccumulator(re288Map, re288Key("1-2", state.baseState, state.outs)),
   );
+  const ballDeltas = collectValues(ballStates, (state) => {
+    const pre = meanFromAccumulator(
+      re288Map,
+      re288Key("0-2", state.baseState, state.outs),
+    );
+    const post = meanFromAccumulator(
+      re288Map,
+      re288Key("1-2", state.baseState, state.outs),
+    );
+    return pre !== null && post !== null ? post - pre : null;
+  });
   const inPlayPreRe = branchPreRe(inPlayStates);
   const inPlayPreOutProb = branchPreOutProb(inPlayStates);
   const inPlayPostRe =
@@ -478,6 +523,7 @@ export function buildOhTwoCountProgressionSummary(
     n: number,
     preRe: number | null,
     postRe: number | null,
+    deltas: number[],
     preOutProb: number | null,
     postOutProb: number | null,
   ): CountProgressionBranchSummary => ({
@@ -489,6 +535,8 @@ export function buildOhTwoCountProgressionSummary(
     postRe,
     reDelta:
       preRe !== null && postRe !== null ? postRe - preRe : null,
+    deltaRangeMin: deltas.length > 0 ? Math.min(...deltas) : null,
+    deltaRangeMax: deltas.length > 0 ? Math.max(...deltas) : null,
     preOutProb,
     postOutProb,
     outProbDelta:
@@ -513,7 +561,7 @@ export function buildOhTwoCountProgressionSummary(
     totalObserved: allOhTwoStates.length,
     baselineRe,
     baselineOutProb,
-    stateMix: buildStateMix(allOhTwoStates),
+    stateMix: buildStateMix(allOhTwoStates, 6),
     branches: [
       makeBranch(
         "strikeout",
@@ -522,6 +570,7 @@ export function buildOhTwoCountProgressionSummary(
         strikeoutStates.length,
         strikeoutPreRe,
         strikeoutPostRe,
+        strikeoutDeltas,
         strikeoutPreOutProb,
         null,
       ),
@@ -532,6 +581,7 @@ export function buildOhTwoCountProgressionSummary(
         ballStates.length,
         ballPreRe,
         ballPostRe,
+        ballDeltas,
         ballPreOutProb,
         ballPostOutProb,
       ),
@@ -542,6 +592,7 @@ export function buildOhTwoCountProgressionSummary(
         inPlayCount,
         inPlayPreRe,
         inPlayPostRe,
+        inPlayDeltas,
         inPlayPreOutProb,
         null,
       ),
@@ -561,6 +612,70 @@ export function buildOhTwoCountProgressionSummary(
         };
       }),
     },
+  };
+}
+
+export function buildOhTwoBallStateMix(
+  halfInnings: ParsedPbpHalfInning[],
+): CountProgressionStateMixEntry[] {
+  const ballStates: PitchStateObservation[] = [];
+
+  for (const halfInning of halfInnings) {
+    const plays = halfInning.plays.filter((play) => !play.ignored);
+
+    for (const play of plays) {
+      const state = stateObservationFromPlay(play);
+      if (!state) {
+        continue;
+      }
+
+      for (const [snapshotIndex, snapshot] of play.countSnapshots.entries()) {
+        if (snapshot.countBefore.label !== "0-2") {
+          continue;
+        }
+
+        if (classifyOhTwoPitchOutcome(play, snapshotIndex) === "ball") {
+          ballStates.push(state);
+        }
+      }
+    }
+  }
+
+  return buildStateMix(ballStates, Number.POSITIVE_INFINITY);
+}
+
+export function evaluateOhTwoBallStateMix(
+  stateMix: CountProgressionStateMixEntry[],
+  re24Map: Map<string, MatrixCellAccumulator>,
+  re288Map: Map<string, MatrixCellAccumulator>,
+): {
+  totalObserved: number;
+  preRe: number | null;
+  postRe: number | null;
+  reDelta: number | null;
+} {
+  const observations: PitchStateObservation[] = stateMix.flatMap((entry) =>
+    Array.from({ length: entry.n }, () => ({
+      baseState: entry.baseState,
+      outs: entry.outs,
+    })),
+  );
+
+  const preRe = weightedAverage(observations, (state) =>
+    meanFromAccumulator(re288Map, re288Key("0-2", state.baseState, state.outs)),
+  );
+  const postRe = weightedAverage(observations, (state) =>
+    meanFromAccumulator(re288Map, re288Key("1-2", state.baseState, state.outs)),
+  );
+
+  return {
+    totalObserved: observations.length,
+    preRe,
+    postRe,
+    reDelta:
+      preRe !== null && postRe !== null
+        ? postRe - preRe
+        : null,
   };
 }
 

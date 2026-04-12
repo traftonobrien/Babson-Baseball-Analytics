@@ -1,153 +1,168 @@
 {
-  "generatedAt": "2026-04-12T19:54:54.040Z",
+  "generatedAt": "2026-04-12T20:15:00.354Z",
   "season": 2026,
-  "totalObservationsRe24": 1221,
-  "totalObservationsRe288": 3148,
+  "corpusLabel": "newmac",
+  "sourcePrograms": [
+    "babson",
+    "clark",
+    "coast-guard",
+    "emerson",
+    "mit",
+    "salve-regina",
+    "springfield",
+    "wheaton",
+    "wpi"
+  ],
+  "totalGamesInCorpus": 190,
+  "passingGamesInCorpus": 148,
+  "failedGamesInCorpus": 42,
+  "totalObservationsRe24": 11502,
+  "totalObservationsRe288": 28559,
   "minObservations": 5,
   "re24": [
     {
       "baseState": "000",
       "outs": 0,
-      "n": 288,
-      "meanRe": 0.4166666666666667
+      "n": 2665,
+      "meanRe": 0.3872420262664165
     },
     {
       "baseState": "000",
       "outs": 1,
-      "n": 199,
-      "meanRe": 0.17587939698492464
+      "n": 1801,
+      "meanRe": 0.21099389228206553
     },
     {
       "baseState": "000",
       "outs": 2,
-      "n": 114,
-      "meanRe": 0.10526315789473684
+      "n": 1154,
+      "meanRe": 0.09185441941074524
     },
     {
       "baseState": "100",
       "outs": 0,
-      "n": 105,
-      "meanRe": 0.6571428571428571
+      "n": 834,
+      "meanRe": 0.605515587529976
     },
     {
       "baseState": "100",
       "outs": 1,
-      "n": 103,
-      "meanRe": 0.2815533980582524
+      "n": 963,
+      "meanRe": 0.3395638629283489
     },
     {
       "baseState": "100",
       "outs": 2,
-      "n": 87,
-      "meanRe": 0.09195402298850575
+      "n": 788,
+      "meanRe": 0.17385786802030456
     },
     {
       "baseState": "010",
       "outs": 0,
-      "n": 18,
-      "meanRe": 1.2222222222222223
+      "n": 252,
+      "meanRe": 1.003968253968254
     },
     {
       "baseState": "010",
       "outs": 1,
-      "n": 47,
-      "meanRe": 0.6170212765957447
+      "n": 470,
+      "meanRe": 0.5127659574468085
     },
     {
       "baseState": "010",
       "outs": 2,
-      "n": 38,
-      "meanRe": 0.3157894736842105
+      "n": 444,
+      "meanRe": 0.26576576576576577
     },
     {
       "baseState": "001",
       "outs": 0,
-      "n": 4,
-      "meanRe": null
+      "n": 61,
+      "meanRe": 1.2131147540983607
     },
     {
       "baseState": "001",
       "outs": 1,
-      "n": 8,
-      "meanRe": 1.125
+      "n": 145,
+      "meanRe": 1.0620689655172413
     },
     {
       "baseState": "001",
       "outs": 2,
-      "n": 17,
-      "meanRe": 0.5294117647058824
+      "n": 156,
+      "meanRe": 0.41025641025641024
     },
     {
       "baseState": "110",
+      "outs": 0,
+      "n": 183,
+      "meanRe": 0.9508196721311475
+    },
+    {
+      "baseState": "110",
+      "outs": 1,
+      "n": 303,
+      "meanRe": 0.5313531353135313
+    },
+    {
+      "baseState": "110",
+      "outs": 2,
+      "n": 289,
+      "meanRe": 0.2179930795847751
+    },
+    {
+      "baseState": "101",
+      "outs": 0,
+      "n": 82,
+      "meanRe": 1.2439024390243902
+    },
+    {
+      "baseState": "101",
+      "outs": 1,
+      "n": 207,
+      "meanRe": 0.7198067632850241
+    },
+    {
+      "baseState": "101",
+      "outs": 2,
+      "n": 237,
+      "meanRe": 0.3881856540084388
+    },
+    {
+      "baseState": "011",
       "outs": 0,
       "n": 31,
       "meanRe": 0.967741935483871
     },
     {
-      "baseState": "110",
-      "outs": 1,
-      "n": 35,
-      "meanRe": 0.6285714285714286
-    },
-    {
-      "baseState": "110",
-      "outs": 2,
-      "n": 30,
-      "meanRe": 0.1
-    },
-    {
-      "baseState": "101",
-      "outs": 0,
-      "n": 6,
-      "meanRe": 1
-    },
-    {
-      "baseState": "101",
-      "outs": 1,
-      "n": 25,
-      "meanRe": 0.76
-    },
-    {
-      "baseState": "101",
-      "outs": 2,
-      "n": 19,
-      "meanRe": 0.21052631578947367
-    },
-    {
-      "baseState": "011",
-      "outs": 0,
-      "n": 7,
-      "meanRe": 1.1428571428571428
-    },
-    {
       "baseState": "011",
       "outs": 1,
-      "n": 11,
-      "meanRe": 1.1818181818181819
+      "n": 94,
+      "meanRe": 0.9148936170212766
     },
     {
       "baseState": "011",
       "outs": 2,
-      "n": 8,
-      "meanRe": 0.5
+      "n": 113,
+      "meanRe": 0.49557522123893805
     },
     {
       "baseState": "111",
       "outs": 0,
-      "n": 2,
-      "meanRe": null
+      "n": 41,
+      "meanRe": 0.8536585365853658
     },
     {
       "baseState": "111",
       "outs": 1,
-      "n": 10,
-      "meanRe": 1.1
+      "n": 87,
+      "meanRe": 0.896551724137931
     },
     {
       "baseState": "111",
       "outs": 2,
-      "n": 9,
-      "meanRe": 0.2222222222222222
+      "n": 102,
+      "meanRe": 0.5588235294117647
     }
   ],
   "re288": [
@@ -155,1687 +170,1687 @@
       "count": "0-0",
       "baseState": "000",
       "outs": 0,
-      "n": 288,
-      "meanRe": 0.4166666666666667,
-      "outProb": 0.5833333333333334
+      "n": 2462,
+      "meanRe": 0.39195775792038995,
+      "outProb": 0.6076360682372055
     },
     {
       "count": "0-0",
       "baseState": "000",
       "outs": 1,
-      "n": 199,
-      "meanRe": 0.17587939698492464,
-      "outProb": 0.5628140703517588
+      "n": 1664,
+      "meanRe": 0.21213942307692307,
+      "outProb": 0.5895432692307693
     },
     {
       "count": "0-0",
       "baseState": "000",
       "outs": 2,
-      "n": 114,
-      "meanRe": 0.10526315789473684,
-      "outProb": 0.5614035087719298
+      "n": 1061,
+      "meanRe": 0.0942507068803016,
+      "outProb": 0.5560791705937794
     },
     {
       "count": "0-0",
       "baseState": "100",
       "outs": 0,
-      "n": 87,
-      "meanRe": 0.6781609195402298,
-      "outProb": 0.5287356321839081
+      "n": 629,
+      "meanRe": 0.5627980922098569,
+      "outProb": 0.6550079491255962
     },
     {
       "count": "0-0",
       "baseState": "100",
       "outs": 1,
-      "n": 84,
-      "meanRe": 0.2261904761904762,
-      "outProb": 0.6666666666666666
+      "n": 681,
+      "meanRe": 0.3274596182085169,
+      "outProb": 0.6240822320117474
     },
     {
       "count": "0-0",
       "baseState": "100",
       "outs": 2,
-      "n": 70,
-      "meanRe": 0.04285714285714286,
-      "outProb": 0.5571428571428572
+      "n": 562,
+      "meanRe": 0.1619217081850534,
+      "outProb": 0.599644128113879
     },
     {
       "count": "0-0",
       "baseState": "010",
       "outs": 0,
-      "n": 18,
-      "meanRe": 1.2222222222222223,
-      "outProb": 0.6111111111111112
+      "n": 209,
+      "meanRe": 0.9904306220095693,
+      "outProb": 0.6124401913875598
     },
     {
       "count": "0-0",
       "baseState": "010",
       "outs": 1,
-      "n": 42,
-      "meanRe": 0.5952380952380952,
-      "outProb": 0.5952380952380952
+      "n": 392,
+      "meanRe": 0.461734693877551,
+      "outProb": 0.6071428571428571
     },
     {
       "count": "0-0",
       "baseState": "010",
       "outs": 2,
-      "n": 37,
-      "meanRe": 0.2702702702702703,
-      "outProb": 0.6216216216216216
+      "n": 381,
+      "meanRe": 0.2572178477690289,
+      "outProb": 0.5879265091863517
     },
     {
       "count": "0-0",
       "baseState": "001",
       "outs": 0,
-      "n": 4,
-      "meanRe": null,
-      "outProb": null
+      "n": 58,
+      "meanRe": 1.2241379310344827,
+      "outProb": 0.5689655172413793
     },
     {
       "count": "0-0",
       "baseState": "001",
       "outs": 1,
-      "n": 8,
-      "meanRe": 1.125,
-      "outProb": 0.5
+      "n": 127,
+      "meanRe": 1.047244094488189,
+      "outProb": 0.5039370078740157
     },
     {
       "count": "0-0",
       "baseState": "001",
       "outs": 2,
-      "n": 17,
-      "meanRe": 0.5294117647058824,
-      "outProb": 0.47058823529411764
+      "n": 143,
+      "meanRe": 0.3916083916083916,
+      "outProb": 0.5104895104895105
     },
     {
       "count": "0-0",
       "baseState": "110",
       "outs": 0,
-      "n": 27,
-      "meanRe": 0.8888888888888888,
-      "outProb": 0.8148148148148148
+      "n": 153,
+      "meanRe": 0.9281045751633987,
+      "outProb": 0.7777777777777778
     },
     {
       "count": "0-0",
       "baseState": "110",
       "outs": 1,
-      "n": 33,
-      "meanRe": 0.6363636363636364,
-      "outProb": 0.6363636363636364
+      "n": 266,
+      "meanRe": 0.5225563909774437,
+      "outProb": 0.7105263157894737
     },
     {
       "count": "0-0",
       "baseState": "110",
       "outs": 2,
+      "n": 249,
+      "meanRe": 0.1566265060240964,
+      "outProb": 0.7349397590361446
+    },
+    {
+      "count": "0-0",
+      "baseState": "101",
+      "outs": 0,
+      "n": 59,
+      "meanRe": 1.271186440677966,
+      "outProb": 0.7457627118644068
+    },
+    {
+      "count": "0-0",
+      "baseState": "101",
+      "outs": 1,
+      "n": 155,
+      "meanRe": 0.6774193548387096,
+      "outProb": 0.6774193548387096
+    },
+    {
+      "count": "0-0",
+      "baseState": "101",
+      "outs": 2,
+      "n": 182,
+      "meanRe": 0.37362637362637363,
+      "outProb": 0.6703296703296703
+    },
+    {
+      "count": "0-0",
+      "baseState": "011",
+      "outs": 0,
       "n": 30,
-      "meanRe": 0.1,
-      "outProb": 0.8666666666666667
+      "meanRe": 0.9666666666666667,
+      "outProb": 0.6333333333333333
     },
     {
       "count": "0-0",
-      "baseState": "101",
-      "outs": 0,
-      "n": 4,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-0",
-      "baseState": "101",
+      "baseState": "011",
       "outs": 1,
-      "n": 21,
-      "meanRe": 0.7619047619047619,
-      "outProb": 0.6666666666666666
-    },
-    {
-      "count": "0-0",
-      "baseState": "101",
-      "outs": 2,
-      "n": 18,
-      "meanRe": 0.2222222222222222,
+      "n": 81,
+      "meanRe": 0.8888888888888888,
       "outProb": 0.6666666666666666
     },
     {
       "count": "0-0",
       "baseState": "011",
+      "outs": 2,
+      "n": 106,
+      "meanRe": 0.49056603773584906,
+      "outProb": 0.6320754716981132
+    },
+    {
+      "count": "0-0",
+      "baseState": "111",
+      "outs": 0,
+      "n": 38,
+      "meanRe": 0.868421052631579,
+      "outProb": 0.5789473684210527
+    },
+    {
+      "count": "0-0",
+      "baseState": "111",
+      "outs": 1,
+      "n": 79,
+      "meanRe": 0.8860759493670886,
+      "outProb": 0.7721518987341772
+    },
+    {
+      "count": "0-0",
+      "baseState": "111",
+      "outs": 2,
+      "n": 87,
+      "meanRe": 0.47126436781609193,
+      "outProb": 0.7241379310344828
+    },
+    {
+      "count": "0-1",
+      "baseState": "000",
+      "outs": 0,
+      "n": 862,
+      "meanRe": 0.30162412993039445,
+      "outProb": 0.7146171693735499
+    },
+    {
+      "count": "0-1",
+      "baseState": "000",
+      "outs": 1,
+      "n": 601,
+      "meanRe": 0.16971713810316139,
+      "outProb": 0.6688851913477537
+    },
+    {
+      "count": "0-1",
+      "baseState": "000",
+      "outs": 2,
+      "n": 351,
+      "meanRe": 0.07407407407407407,
+      "outProb": 0.6524216524216524
+    },
+    {
+      "count": "0-1",
+      "baseState": "100",
+      "outs": 0,
+      "n": 170,
+      "meanRe": 0.38235294117647056,
+      "outProb": 0.7470588235294118
+    },
+    {
+      "count": "0-1",
+      "baseState": "100",
+      "outs": 1,
+      "n": 212,
+      "meanRe": 0.2688679245283019,
+      "outProb": 0.7452830188679245
+    },
+    {
+      "count": "0-1",
+      "baseState": "100",
+      "outs": 2,
+      "n": 170,
+      "meanRe": 0.1,
+      "outProb": 0.6941176470588235
+    },
+    {
+      "count": "0-1",
+      "baseState": "010",
+      "outs": 0,
+      "n": 74,
+      "meanRe": 1,
+      "outProb": 0.7432432432432432
+    },
+    {
+      "count": "0-1",
+      "baseState": "010",
+      "outs": 1,
+      "n": 124,
+      "meanRe": 0.4838709677419355,
+      "outProb": 0.6774193548387096
+    },
+    {
+      "count": "0-1",
+      "baseState": "010",
+      "outs": 2,
+      "n": 136,
+      "meanRe": 0.19117647058823528,
+      "outProb": 0.6691176470588235
+    },
+    {
+      "count": "0-1",
+      "baseState": "001",
+      "outs": 0,
+      "n": 19,
+      "meanRe": 1.1578947368421053,
+      "outProb": 0.631578947368421
+    },
+    {
+      "count": "0-1",
+      "baseState": "001",
+      "outs": 1,
+      "n": 35,
+      "meanRe": 0.8,
+      "outProb": 0.6857142857142857
+    },
+    {
+      "count": "0-1",
+      "baseState": "001",
+      "outs": 2,
+      "n": 51,
+      "meanRe": 0.3333333333333333,
+      "outProb": 0.5882352941176471
+    },
+    {
+      "count": "0-1",
+      "baseState": "110",
+      "outs": 0,
+      "n": 55,
+      "meanRe": 0.8545454545454545,
+      "outProb": 0.8181818181818182
+    },
+    {
+      "count": "0-1",
+      "baseState": "110",
+      "outs": 1,
+      "n": 95,
+      "meanRe": 0.4631578947368421,
+      "outProb": 0.7894736842105263
+    },
+    {
+      "count": "0-1",
+      "baseState": "110",
+      "outs": 2,
+      "n": 82,
+      "meanRe": 0.10975609756097561,
+      "outProb": 0.8048780487804879
+    },
+    {
+      "count": "0-1",
+      "baseState": "101",
+      "outs": 0,
+      "n": 16,
+      "meanRe": 1.625,
+      "outProb": 0.75
+    },
+    {
+      "count": "0-1",
+      "baseState": "101",
+      "outs": 1,
+      "n": 45,
+      "meanRe": 0.7555555555555555,
+      "outProb": 0.7555555555555555
+    },
+    {
+      "count": "0-1",
+      "baseState": "101",
+      "outs": 2,
+      "n": 57,
+      "meanRe": 0.21052631578947367,
+      "outProb": 0.7894736842105263
+    },
+    {
+      "count": "0-1",
+      "baseState": "011",
+      "outs": 0,
+      "n": 7,
+      "meanRe": 1.2857142857142858,
+      "outProb": 0.42857142857142855
+    },
+    {
+      "count": "0-1",
+      "baseState": "011",
+      "outs": 1,
+      "n": 34,
+      "meanRe": 0.7352941176470589,
+      "outProb": 0.7647058823529411
+    },
+    {
+      "count": "0-1",
+      "baseState": "011",
+      "outs": 2,
+      "n": 49,
+      "meanRe": 0.5714285714285714,
+      "outProb": 0.6530612244897959
+    },
+    {
+      "count": "0-1",
+      "baseState": "111",
+      "outs": 0,
+      "n": 8,
+      "meanRe": 0.875,
+      "outProb": 0.625
+    },
+    {
+      "count": "0-1",
+      "baseState": "111",
+      "outs": 1,
+      "n": 21,
+      "meanRe": 0.19047619047619047,
+      "outProb": 0.9047619047619048
+    },
+    {
+      "count": "0-1",
+      "baseState": "111",
+      "outs": 2,
+      "n": 33,
+      "meanRe": 0.2727272727272727,
+      "outProb": 0.8484848484848485
+    },
+    {
+      "count": "0-2",
+      "baseState": "000",
+      "outs": 0,
+      "n": 386,
+      "meanRe": 0.23056994818652848,
+      "outProb": 0.8238341968911918
+    },
+    {
+      "count": "0-2",
+      "baseState": "000",
+      "outs": 1,
+      "n": 287,
+      "meanRe": 0.13588850174216027,
+      "outProb": 0.7804878048780488
+    },
+    {
+      "count": "0-2",
+      "baseState": "000",
+      "outs": 2,
+      "n": 154,
+      "meanRe": 0.045454545454545456,
+      "outProb": 0.6948051948051948
+    },
+    {
+      "count": "0-2",
+      "baseState": "100",
+      "outs": 0,
+      "n": 86,
+      "meanRe": 0.23255813953488372,
+      "outProb": 0.8837209302325582
+    },
+    {
+      "count": "0-2",
+      "baseState": "100",
+      "outs": 1,
+      "n": 86,
+      "meanRe": 0.1744186046511628,
+      "outProb": 0.9069767441860465
+    },
+    {
+      "count": "0-2",
+      "baseState": "100",
+      "outs": 2,
+      "n": 95,
+      "meanRe": 0.10526315789473684,
+      "outProb": 0.7894736842105263
+    },
+    {
+      "count": "0-2",
+      "baseState": "010",
+      "outs": 0,
+      "n": 26,
+      "meanRe": 0.8076923076923077,
+      "outProb": 0.7692307692307693
+    },
+    {
+      "count": "0-2",
+      "baseState": "010",
+      "outs": 1,
+      "n": 52,
+      "meanRe": 0.28846153846153844,
+      "outProb": 0.7884615384615384
+    },
+    {
+      "count": "0-2",
+      "baseState": "010",
+      "outs": 2,
+      "n": 54,
+      "meanRe": 0.07407407407407407,
+      "outProb": 0.7037037037037037
+    },
+    {
+      "count": "0-2",
+      "baseState": "001",
+      "outs": 0,
+      "n": 10,
+      "meanRe": 1.1,
+      "outProb": 0.8
+    },
+    {
+      "count": "0-2",
+      "baseState": "001",
+      "outs": 1,
+      "n": 19,
+      "meanRe": 0.47368421052631576,
+      "outProb": 0.6842105263157895
+    },
+    {
+      "count": "0-2",
+      "baseState": "001",
+      "outs": 2,
+      "n": 23,
+      "meanRe": 0.043478260869565216,
+      "outProb": 0.7391304347826086
+    },
+    {
+      "count": "0-2",
+      "baseState": "110",
+      "outs": 0,
+      "n": 25,
+      "meanRe": 0.8,
+      "outProb": 0.76
+    },
+    {
+      "count": "0-2",
+      "baseState": "110",
+      "outs": 1,
+      "n": 44,
+      "meanRe": 0.29545454545454547,
+      "outProb": 0.8636363636363636
+    },
+    {
+      "count": "0-2",
+      "baseState": "110",
+      "outs": 2,
+      "n": 37,
+      "meanRe": 0.2702702702702703,
+      "outProb": 0.7567567567567568
+    },
+    {
+      "count": "0-2",
+      "baseState": "101",
+      "outs": 0,
+      "n": 14,
+      "meanRe": 1.1428571428571428,
+      "outProb": 0.9285714285714286
+    },
+    {
+      "count": "0-2",
+      "baseState": "101",
+      "outs": 1,
+      "n": 26,
+      "meanRe": 0.5,
+      "outProb": 0.8846153846153846
+    },
+    {
+      "count": "0-2",
+      "baseState": "101",
+      "outs": 2,
+      "n": 21,
+      "meanRe": 0.23809523809523808,
+      "outProb": 0.7142857142857143
+    },
+    {
+      "count": "0-2",
+      "baseState": "011",
+      "outs": 0,
+      "n": 5,
+      "meanRe": 0.6,
+      "outProb": 0.6
+    },
+    {
+      "count": "0-2",
+      "baseState": "011",
+      "outs": 1,
+      "n": 20,
+      "meanRe": 0.9,
+      "outProb": 0.95
+    },
+    {
+      "count": "0-2",
+      "baseState": "011",
+      "outs": 2,
+      "n": 16,
+      "meanRe": 0.3125,
+      "outProb": 0.875
+    },
+    {
+      "count": "0-2",
+      "baseState": "111",
+      "outs": 0,
+      "n": 2,
+      "meanRe": null,
+      "outProb": null
+    },
+    {
+      "count": "0-2",
+      "baseState": "111",
+      "outs": 1,
+      "n": 9,
+      "meanRe": 0.2222222222222222,
+      "outProb": 0.8888888888888888
+    },
+    {
+      "count": "0-2",
+      "baseState": "111",
+      "outs": 2,
+      "n": 24,
+      "meanRe": 0,
+      "outProb": 1
+    },
+    {
+      "count": "1-0",
+      "baseState": "000",
+      "outs": 0,
+      "n": 703,
+      "meanRe": 0.4480796586059744,
+      "outProb": 0.5135135135135135
+    },
+    {
+      "count": "1-0",
+      "baseState": "000",
+      "outs": 1,
+      "n": 462,
+      "meanRe": 0.20562770562770563,
+      "outProb": 0.5108225108225108
+    },
+    {
+      "count": "1-0",
+      "baseState": "000",
+      "outs": 2,
+      "n": 337,
+      "meanRe": 0.09198813056379822,
+      "outProb": 0.5014836795252225
+    },
+    {
+      "count": "1-0",
+      "baseState": "100",
+      "outs": 0,
+      "n": 189,
+      "meanRe": 0.544973544973545,
+      "outProb": 0.5925925925925926
+    },
+    {
+      "count": "1-0",
+      "baseState": "100",
+      "outs": 1,
+      "n": 190,
+      "meanRe": 0.3894736842105263,
+      "outProb": 0.5157894736842106
+    },
+    {
+      "count": "1-0",
+      "baseState": "100",
+      "outs": 2,
+      "n": 142,
+      "meanRe": 0.21830985915492956,
+      "outProb": 0.44366197183098594
+    },
+    {
+      "count": "1-0",
+      "baseState": "010",
+      "outs": 0,
+      "n": 61,
+      "meanRe": 0.9180327868852459,
+      "outProb": 0.5409836065573771
+    },
+    {
+      "count": "1-0",
+      "baseState": "010",
+      "outs": 1,
+      "n": 152,
+      "meanRe": 0.40131578947368424,
+      "outProb": 0.5986842105263158
+    },
+    {
+      "count": "1-0",
+      "baseState": "010",
+      "outs": 2,
+      "n": 139,
+      "meanRe": 0.20863309352517986,
+      "outProb": 0.5251798561151079
+    },
+    {
+      "count": "1-0",
+      "baseState": "001",
+      "outs": 0,
+      "n": 18,
+      "meanRe": 1.6666666666666667,
+      "outProb": 0.6111111111111112
+    },
+    {
+      "count": "1-0",
+      "baseState": "001",
+      "outs": 1,
+      "n": 52,
+      "meanRe": 1.1923076923076923,
+      "outProb": 0.34615384615384615
+    },
+    {
+      "count": "1-0",
+      "baseState": "001",
+      "outs": 2,
+      "n": 45,
+      "meanRe": 0.4666666666666667,
+      "outProb": 0.4
+    },
+    {
+      "count": "1-0",
+      "baseState": "110",
+      "outs": 0,
+      "n": 41,
+      "meanRe": 0.7804878048780488,
+      "outProb": 0.7804878048780488
+    },
+    {
+      "count": "1-0",
+      "baseState": "110",
+      "outs": 1,
+      "n": 83,
+      "meanRe": 0.3373493975903614,
+      "outProb": 0.5903614457831325
+    },
+    {
+      "count": "1-0",
+      "baseState": "110",
+      "outs": 2,
+      "n": 81,
+      "meanRe": 0.2222222222222222,
+      "outProb": 0.5802469135802469
+    },
+    {
+      "count": "1-0",
+      "baseState": "101",
+      "outs": 0,
+      "n": 16,
+      "meanRe": 1,
+      "outProb": 0.6875
+    },
+    {
+      "count": "1-0",
+      "baseState": "101",
+      "outs": 1,
+      "n": 51,
+      "meanRe": 0.5686274509803921,
+      "outProb": 0.6666666666666666
+    },
+    {
+      "count": "1-0",
+      "baseState": "101",
+      "outs": 2,
+      "n": 56,
+      "meanRe": 0.5,
+      "outProb": 0.5357142857142857
+    },
+    {
+      "count": "1-0",
+      "baseState": "011",
+      "outs": 0,
+      "n": 15,
+      "meanRe": 0.9333333333333333,
+      "outProb": 0.6
+    },
+    {
+      "count": "1-0",
+      "baseState": "011",
+      "outs": 1,
+      "n": 22,
+      "meanRe": 0.6363636363636364,
+      "outProb": 0.6363636363636364
+    },
+    {
+      "count": "1-0",
+      "baseState": "011",
+      "outs": 2,
+      "n": 32,
+      "meanRe": 0.40625,
+      "outProb": 0.625
+    },
+    {
+      "count": "1-0",
+      "baseState": "111",
+      "outs": 0,
+      "n": 17,
+      "meanRe": 0.6470588235294118,
+      "outProb": 0.6470588235294118
+    },
+    {
+      "count": "1-0",
+      "baseState": "111",
+      "outs": 1,
+      "n": 26,
+      "meanRe": 1.3461538461538463,
+      "outProb": 0.6538461538461539
+    },
+    {
+      "count": "1-0",
+      "baseState": "111",
+      "outs": 2,
+      "n": 32,
+      "meanRe": 0.71875,
+      "outProb": 0.65625
+    },
+    {
+      "count": "1-1",
+      "baseState": "000",
+      "outs": 0,
+      "n": 635,
+      "meanRe": 0.352755905511811,
+      "outProb": 0.6236220472440945
+    },
+    {
+      "count": "1-1",
+      "baseState": "000",
+      "outs": 1,
+      "n": 433,
+      "meanRe": 0.16859122401847576,
+      "outProb": 0.6027713625866051
+    },
+    {
+      "count": "1-1",
+      "baseState": "000",
+      "outs": 2,
+      "n": 316,
+      "meanRe": 0.0759493670886076,
+      "outProb": 0.6012658227848101
+    },
+    {
+      "count": "1-1",
+      "baseState": "100",
+      "outs": 0,
+      "n": 133,
+      "meanRe": 0.5714285714285714,
+      "outProb": 0.5939849624060151
+    },
+    {
+      "count": "1-1",
+      "baseState": "100",
+      "outs": 1,
+      "n": 143,
+      "meanRe": 0.32167832167832167,
+      "outProb": 0.6783216783216783
+    },
+    {
+      "count": "1-1",
+      "baseState": "100",
+      "outs": 2,
+      "n": 118,
+      "meanRe": 0.07627118644067797,
+      "outProb": 0.6186440677966102
+    },
+    {
+      "count": "1-1",
+      "baseState": "010",
+      "outs": 0,
+      "n": 71,
+      "meanRe": 0.9154929577464789,
+      "outProb": 0.6901408450704225
+    },
+    {
+      "count": "1-1",
+      "baseState": "010",
+      "outs": 1,
+      "n": 124,
+      "meanRe": 0.4838709677419355,
+      "outProb": 0.6854838709677419
+    },
+    {
+      "count": "1-1",
+      "baseState": "010",
+      "outs": 2,
+      "n": 137,
+      "meanRe": 0.1897810218978102,
+      "outProb": 0.6058394160583942
+    },
+    {
+      "count": "1-1",
+      "baseState": "001",
+      "outs": 0,
+      "n": 14,
+      "meanRe": 1.5714285714285714,
+      "outProb": 0.42857142857142855
+    },
+    {
+      "count": "1-1",
+      "baseState": "001",
+      "outs": 1,
+      "n": 40,
+      "meanRe": 1.1,
+      "outProb": 0.475
+    },
+    {
+      "count": "1-1",
+      "baseState": "001",
+      "outs": 2,
+      "n": 47,
+      "meanRe": 0.3617021276595745,
+      "outProb": 0.46808510638297873
+    },
+    {
+      "count": "1-1",
+      "baseState": "110",
+      "outs": 0,
+      "n": 41,
+      "meanRe": 0.6585365853658537,
+      "outProb": 0.975609756097561
+    },
+    {
+      "count": "1-1",
+      "baseState": "110",
+      "outs": 1,
+      "n": 73,
+      "meanRe": 0.3287671232876712,
+      "outProb": 0.7534246575342466
+    },
+    {
+      "count": "1-1",
+      "baseState": "110",
+      "outs": 2,
+      "n": 70,
+      "meanRe": 0.15714285714285714,
+      "outProb": 0.8
+    },
+    {
+      "count": "1-1",
+      "baseState": "101",
+      "outs": 0,
+      "n": 11,
+      "meanRe": 0.8181818181818182,
+      "outProb": 0.6363636363636364
+    },
+    {
+      "count": "1-1",
+      "baseState": "101",
+      "outs": 1,
+      "n": 42,
+      "meanRe": 0.6428571428571429,
+      "outProb": 0.7142857142857143
+    },
+    {
+      "count": "1-1",
+      "baseState": "101",
+      "outs": 2,
+      "n": 45,
+      "meanRe": 0.4444444444444444,
+      "outProb": 0.7111111111111111
+    },
+    {
+      "count": "1-1",
+      "baseState": "011",
+      "outs": 0,
+      "n": 14,
+      "meanRe": 1.2857142857142858,
+      "outProb": 0.42857142857142855
+    },
+    {
+      "count": "1-1",
+      "baseState": "011",
+      "outs": 1,
+      "n": 19,
+      "meanRe": 0.42105263157894735,
+      "outProb": 0.7894736842105263
+    },
+    {
+      "count": "1-1",
+      "baseState": "011",
+      "outs": 2,
+      "n": 42,
+      "meanRe": 0.30952380952380953,
+      "outProb": 0.6904761904761905
+    },
+    {
+      "count": "1-1",
+      "baseState": "111",
+      "outs": 0,
+      "n": 13,
+      "meanRe": 0.7692307692307693,
+      "outProb": 0.5384615384615384
+    },
+    {
+      "count": "1-1",
+      "baseState": "111",
+      "outs": 1,
+      "n": 22,
+      "meanRe": 0.45454545454545453,
+      "outProb": 0.8636363636363636
+    },
+    {
+      "count": "1-1",
+      "baseState": "111",
+      "outs": 2,
+      "n": 23,
+      "meanRe": 0.43478260869565216,
+      "outProb": 0.7391304347826086
+    },
+    {
+      "count": "1-2",
+      "baseState": "000",
+      "outs": 0,
+      "n": 518,
+      "meanRe": 0.26640926640926643,
+      "outProb": 0.8108108108108109
+    },
+    {
+      "count": "1-2",
+      "baseState": "000",
+      "outs": 1,
+      "n": 373,
+      "meanRe": 0.1260053619302949,
+      "outProb": 0.7453083109919572
+    },
+    {
+      "count": "1-2",
+      "baseState": "000",
+      "outs": 2,
+      "n": 245,
+      "meanRe": 0.09795918367346938,
+      "outProb": 0.6938775510204082
+    },
+    {
+      "count": "1-2",
+      "baseState": "100",
+      "outs": 0,
+      "n": 88,
+      "meanRe": 0.38636363636363635,
+      "outProb": 0.6704545454545454
+    },
+    {
+      "count": "1-2",
+      "baseState": "100",
+      "outs": 1,
+      "n": 106,
+      "meanRe": 0.19811320754716982,
+      "outProb": 0.8490566037735849
+    },
+    {
+      "count": "1-2",
+      "baseState": "100",
+      "outs": 2,
+      "n": 93,
+      "meanRe": 0.03225806451612903,
+      "outProb": 0.7311827956989247
+    },
+    {
+      "count": "1-2",
+      "baseState": "010",
+      "outs": 0,
+      "n": 52,
+      "meanRe": 0.9038461538461539,
+      "outProb": 0.7115384615384616
+    },
+    {
+      "count": "1-2",
+      "baseState": "010",
+      "outs": 1,
+      "n": 90,
+      "meanRe": 0.3333333333333333,
+      "outProb": 0.7777777777777778
+    },
+    {
+      "count": "1-2",
+      "baseState": "010",
+      "outs": 2,
+      "n": 89,
+      "meanRe": 0.15730337078651685,
+      "outProb": 0.797752808988764
+    },
+    {
+      "count": "1-2",
+      "baseState": "001",
+      "outs": 0,
+      "n": 15,
+      "meanRe": 1.7333333333333334,
+      "outProb": 0.4666666666666667
+    },
+    {
+      "count": "1-2",
+      "baseState": "001",
+      "outs": 1,
+      "n": 27,
+      "meanRe": 0.9259259259259259,
+      "outProb": 0.5185185185185185
+    },
+    {
+      "count": "1-2",
+      "baseState": "001",
+      "outs": 2,
+      "n": 30,
+      "meanRe": 0,
+      "outProb": 0.8333333333333334
+    },
+    {
+      "count": "1-2",
+      "baseState": "110",
+      "outs": 0,
+      "n": 40,
+      "meanRe": 0.6,
+      "outProb": 0.925
+    },
+    {
+      "count": "1-2",
+      "baseState": "110",
+      "outs": 1,
+      "n": 54,
+      "meanRe": 0.2777777777777778,
+      "outProb": 0.8333333333333334
+    },
+    {
+      "count": "1-2",
+      "baseState": "110",
+      "outs": 2,
+      "n": 50,
+      "meanRe": 0.06,
+      "outProb": 0.86
+    },
+    {
+      "count": "1-2",
+      "baseState": "101",
+      "outs": 0,
+      "n": 9,
+      "meanRe": 1.2222222222222223,
+      "outProb": 0.6666666666666666
+    },
+    {
+      "count": "1-2",
+      "baseState": "101",
+      "outs": 1,
+      "n": 28,
+      "meanRe": 0.5357142857142857,
+      "outProb": 0.8928571428571429
+    },
+    {
+      "count": "1-2",
+      "baseState": "101",
+      "outs": 2,
+      "n": 22,
+      "meanRe": 0,
+      "outProb": 0.9090909090909091
+    },
+    {
+      "count": "1-2",
+      "baseState": "011",
+      "outs": 0,
+      "n": 12,
+      "meanRe": 0.5833333333333334,
+      "outProb": 0.4166666666666667
+    },
+    {
+      "count": "1-2",
+      "baseState": "011",
+      "outs": 1,
+      "n": 15,
+      "meanRe": 0.8,
+      "outProb": 0.9333333333333333
+    },
+    {
+      "count": "1-2",
+      "baseState": "011",
+      "outs": 2,
+      "n": 37,
+      "meanRe": 0.24324324324324326,
+      "outProb": 0.7837837837837838
+    },
+    {
+      "count": "1-2",
+      "baseState": "111",
+      "outs": 0,
+      "n": 11,
+      "meanRe": 0.8181818181818182,
+      "outProb": 0.7272727272727273
+    },
+    {
+      "count": "1-2",
+      "baseState": "111",
+      "outs": 1,
+      "n": 18,
+      "meanRe": 0.4444444444444444,
+      "outProb": 0.8333333333333334
+    },
+    {
+      "count": "1-2",
+      "baseState": "111",
+      "outs": 2,
+      "n": 14,
+      "meanRe": 0.35714285714285715,
+      "outProb": 0.9285714285714286
+    },
+    {
+      "count": "2-0",
+      "baseState": "000",
+      "outs": 0,
+      "n": 249,
+      "meanRe": 0.4979919678714859,
+      "outProb": 0.39357429718875503
+    },
+    {
+      "count": "2-0",
+      "baseState": "000",
+      "outs": 1,
+      "n": 178,
+      "meanRe": 0.2247191011235955,
+      "outProb": 0.37640449438202245
+    },
+    {
+      "count": "2-0",
+      "baseState": "000",
+      "outs": 2,
+      "n": 116,
+      "meanRe": 0.11206896551724138,
+      "outProb": 0.3620689655172414
+    },
+    {
+      "count": "2-0",
+      "baseState": "100",
+      "outs": 0,
+      "n": 59,
+      "meanRe": 0.5084745762711864,
+      "outProb": 0.5254237288135594
+    },
+    {
+      "count": "2-0",
+      "baseState": "100",
+      "outs": 1,
+      "n": 80,
+      "meanRe": 0.425,
+      "outProb": 0.375
+    },
+    {
+      "count": "2-0",
+      "baseState": "100",
+      "outs": 2,
+      "n": 48,
+      "meanRe": 0.375,
+      "outProb": 0.3333333333333333
+    },
+    {
+      "count": "2-0",
+      "baseState": "010",
+      "outs": 0,
+      "n": 17,
+      "meanRe": 0.7647058823529411,
+      "outProb": 0.35294117647058826
+    },
+    {
+      "count": "2-0",
+      "baseState": "010",
+      "outs": 1,
+      "n": 57,
+      "meanRe": 0.45614035087719296,
+      "outProb": 0.40350877192982454
+    },
+    {
+      "count": "2-0",
+      "baseState": "010",
+      "outs": 2,
+      "n": 52,
+      "meanRe": 0.2692307692307692,
+      "outProb": 0.38461538461538464
+    },
+    {
+      "count": "2-0",
+      "baseState": "001",
+      "outs": 0,
+      "n": 11,
+      "meanRe": 1.5454545454545454,
+      "outProb": 0.7272727272727273
+    },
+    {
+      "count": "2-0",
+      "baseState": "001",
+      "outs": 1,
+      "n": 15,
+      "meanRe": 1.3333333333333333,
+      "outProb": 0.13333333333333333
+    },
+    {
+      "count": "2-0",
+      "baseState": "001",
+      "outs": 2,
+      "n": 18,
+      "meanRe": 0.4444444444444444,
+      "outProb": 0.4444444444444444
+    },
+    {
+      "count": "2-0",
+      "baseState": "110",
+      "outs": 0,
+      "n": 9,
+      "meanRe": 0.8888888888888888,
+      "outProb": 0.5555555555555556
+    },
+    {
+      "count": "2-0",
+      "baseState": "110",
+      "outs": 1,
+      "n": 25,
+      "meanRe": 0.32,
+      "outProb": 0.52
+    },
+    {
+      "count": "2-0",
+      "baseState": "110",
+      "outs": 2,
+      "n": 31,
+      "meanRe": 0.1935483870967742,
+      "outProb": 0.2903225806451613
+    },
+    {
+      "count": "2-0",
+      "baseState": "101",
       "outs": 0,
       "n": 7,
       "meanRe": 1.1428571428571428,
       "outProb": 0.42857142857142855
     },
     {
-      "count": "0-0",
-      "baseState": "011",
-      "outs": 1,
-      "n": 11,
-      "meanRe": 1.1818181818181819,
-      "outProb": 0.6363636363636364
-    },
-    {
-      "count": "0-0",
-      "baseState": "011",
-      "outs": 2,
-      "n": 8,
-      "meanRe": 0.5,
-      "outProb": 0.625
-    },
-    {
-      "count": "0-0",
-      "baseState": "111",
-      "outs": 0,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-0",
-      "baseState": "111",
-      "outs": 1,
-      "n": 10,
-      "meanRe": 1.1,
-      "outProb": 0.7
-    },
-    {
-      "count": "0-0",
-      "baseState": "111",
-      "outs": 2,
-      "n": 9,
-      "meanRe": 0.2222222222222222,
-      "outProb": 0.6666666666666666
-    },
-    {
-      "count": "0-1",
-      "baseState": "000",
-      "outs": 0,
-      "n": 88,
-      "meanRe": 0.3068181818181818,
-      "outProb": 0.7954545454545454
-    },
-    {
-      "count": "0-1",
-      "baseState": "000",
-      "outs": 1,
-      "n": 67,
-      "meanRe": 0.07462686567164178,
-      "outProb": 0.7014925373134329
-    },
-    {
-      "count": "0-1",
-      "baseState": "000",
-      "outs": 2,
-      "n": 35,
-      "meanRe": 0.11428571428571428,
-      "outProb": 0.6857142857142857
-    },
-    {
-      "count": "0-1",
-      "baseState": "100",
-      "outs": 0,
-      "n": 21,
-      "meanRe": 0.5238095238095238,
-      "outProb": 0.5714285714285714
-    },
-    {
-      "count": "0-1",
-      "baseState": "100",
-      "outs": 1,
-      "n": 21,
-      "meanRe": 0.047619047619047616,
-      "outProb": 0.9047619047619048
-    },
-    {
-      "count": "0-1",
-      "baseState": "100",
-      "outs": 2,
-      "n": 17,
-      "meanRe": 0,
-      "outProb": 0.5294117647058824
-    },
-    {
-      "count": "0-1",
-      "baseState": "010",
-      "outs": 0,
-      "n": 5,
-      "meanRe": 0.8,
-      "outProb": 0.8
-    },
-    {
-      "count": "0-1",
-      "baseState": "010",
-      "outs": 1,
-      "n": 10,
-      "meanRe": 0.6,
-      "outProb": 0.6
-    },
-    {
-      "count": "0-1",
-      "baseState": "010",
-      "outs": 2,
-      "n": 16,
-      "meanRe": 0.25,
-      "outProb": 0.625
-    },
-    {
-      "count": "0-1",
-      "baseState": "001",
-      "outs": 0,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-1",
-      "baseState": "001",
-      "outs": 1,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-1",
-      "baseState": "001",
-      "outs": 2,
-      "n": 5,
-      "meanRe": 0.2,
-      "outProb": 0.4
-    },
-    {
-      "count": "0-1",
-      "baseState": "110",
-      "outs": 0,
-      "n": 13,
-      "meanRe": 0.6923076923076923,
-      "outProb": 0.7692307692307693
-    },
-    {
-      "count": "0-1",
-      "baseState": "110",
-      "outs": 1,
-      "n": 9,
-      "meanRe": 0.3333333333333333,
-      "outProb": 0.6666666666666666
-    },
-    {
-      "count": "0-1",
-      "baseState": "110",
-      "outs": 2,
-      "n": 9,
-      "meanRe": 0.1111111111111111,
-      "outProb": 0.8888888888888888
-    },
-    {
-      "count": "0-1",
+      "count": "2-0",
       "baseState": "101",
-      "outs": 0,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-1",
-      "baseState": "101",
-      "outs": 1,
-      "n": 7,
-      "meanRe": 1,
-      "outProb": 0.7142857142857143
-    },
-    {
-      "count": "0-1",
-      "baseState": "101",
-      "outs": 2,
-      "n": 6,
-      "meanRe": 0.3333333333333333,
-      "outProb": 0.6666666666666666
-    },
-    {
-      "count": "0-1",
-      "baseState": "011",
-      "outs": 0,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-1",
-      "baseState": "011",
-      "outs": 1,
-      "n": 5,
-      "meanRe": 1,
-      "outProb": 0.8
-    },
-    {
-      "count": "0-1",
-      "baseState": "011",
-      "outs": 2,
-      "n": 5,
-      "meanRe": 0.8,
-      "outProb": 0.4
-    },
-    {
-      "count": "0-1",
-      "baseState": "111",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-1",
-      "baseState": "111",
-      "outs": 1,
-      "n": 3,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-1",
-      "baseState": "111",
-      "outs": 2,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-2",
-      "baseState": "000",
-      "outs": 0,
-      "n": 39,
-      "meanRe": 0.15384615384615385,
-      "outProb": 0.9230769230769231
-    },
-    {
-      "count": "0-2",
-      "baseState": "000",
-      "outs": 1,
-      "n": 25,
-      "meanRe": 0.08,
-      "outProb": 0.8
-    },
-    {
-      "count": "0-2",
-      "baseState": "000",
-      "outs": 2,
-      "n": 18,
-      "meanRe": 0.05555555555555555,
-      "outProb": 0.6111111111111112
-    },
-    {
-      "count": "0-2",
-      "baseState": "100",
-      "outs": 0,
-      "n": 9,
-      "meanRe": 0.4444444444444444,
-      "outProb": 0.6666666666666666
-    },
-    {
-      "count": "0-2",
-      "baseState": "100",
-      "outs": 1,
-      "n": 8,
-      "meanRe": 0.125,
-      "outProb": 0.875
-    },
-    {
-      "count": "0-2",
-      "baseState": "100",
-      "outs": 2,
-      "n": 13,
-      "meanRe": 0,
-      "outProb": 0.6923076923076923
-    },
-    {
-      "count": "0-2",
-      "baseState": "010",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-2",
-      "baseState": "010",
-      "outs": 1,
-      "n": 4,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-2",
-      "baseState": "010",
-      "outs": 2,
-      "n": 12,
-      "meanRe": 0.08333333333333333,
-      "outProb": 0.75
-    },
-    {
-      "count": "0-2",
-      "baseState": "001",
-      "outs": 0,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-2",
-      "baseState": "001",
-      "outs": 1,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-2",
-      "baseState": "001",
-      "outs": 2,
-      "n": 3,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-2",
-      "baseState": "110",
-      "outs": 0,
-      "n": 6,
-      "meanRe": 0.16666666666666666,
-      "outProb": 0.5
-    },
-    {
-      "count": "0-2",
-      "baseState": "110",
-      "outs": 1,
-      "n": 3,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-2",
-      "baseState": "110",
-      "outs": 2,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-2",
-      "baseState": "101",
-      "outs": 0,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-2",
-      "baseState": "101",
-      "outs": 1,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-2",
-      "baseState": "101",
-      "outs": 2,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-2",
-      "baseState": "011",
-      "outs": 0,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-2",
-      "baseState": "011",
-      "outs": 1,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-2",
-      "baseState": "011",
-      "outs": 2,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-2",
-      "baseState": "111",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-2",
-      "baseState": "111",
-      "outs": 1,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "0-2",
-      "baseState": "111",
-      "outs": 2,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-0",
-      "baseState": "000",
-      "outs": 0,
-      "n": 81,
-      "meanRe": 0.43209876543209874,
-      "outProb": 0.5061728395061729
-    },
-    {
-      "count": "1-0",
-      "baseState": "000",
-      "outs": 1,
-      "n": 48,
-      "meanRe": 0.20833333333333334,
-      "outProb": 0.4166666666666667
-    },
-    {
-      "count": "1-0",
-      "baseState": "000",
-      "outs": 2,
-      "n": 33,
-      "meanRe": 0,
-      "outProb": 0.5151515151515151
-    },
-    {
-      "count": "1-0",
-      "baseState": "100",
-      "outs": 0,
-      "n": 28,
-      "meanRe": 0.7857142857142857,
-      "outProb": 0.4642857142857143
-    },
-    {
-      "count": "1-0",
-      "baseState": "100",
       "outs": 1,
       "n": 19,
-      "meanRe": 0.05263157894736842,
-      "outProb": 0.631578947368421
-    },
-    {
-      "count": "1-0",
-      "baseState": "100",
-      "outs": 2,
-      "n": 13,
-      "meanRe": 0.07692307692307693,
-      "outProb": 0.46153846153846156
-    },
-    {
-      "count": "1-0",
-      "baseState": "010",
-      "outs": 0,
-      "n": 6,
-      "meanRe": 1.3333333333333333,
-      "outProb": 0.5
-    },
-    {
-      "count": "1-0",
-      "baseState": "010",
-      "outs": 1,
-      "n": 16,
-      "meanRe": 0.375,
-      "outProb": 0.625
-    },
-    {
-      "count": "1-0",
-      "baseState": "010",
-      "outs": 2,
-      "n": 11,
-      "meanRe": 0.09090909090909091,
-      "outProb": 0.7272727272727273
-    },
-    {
-      "count": "1-0",
-      "baseState": "001",
-      "outs": 0,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-0",
-      "baseState": "001",
-      "outs": 1,
-      "n": 4,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-0",
-      "baseState": "001",
-      "outs": 2,
-      "n": 5,
-      "meanRe": 1,
-      "outProb": 0.2
-    },
-    {
-      "count": "1-0",
-      "baseState": "110",
-      "outs": 0,
-      "n": 4,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-0",
-      "baseState": "110",
-      "outs": 1,
-      "n": 12,
-      "meanRe": 0.25,
-      "outProb": 0.75
-    },
-    {
-      "count": "1-0",
-      "baseState": "110",
-      "outs": 2,
-      "n": 8,
-      "meanRe": 0.25,
-      "outProb": 0.625
-    },
-    {
-      "count": "1-0",
-      "baseState": "101",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-0",
-      "baseState": "101",
-      "outs": 1,
-      "n": 9,
-      "meanRe": 0.7777777777777778,
-      "outProb": 0.6666666666666666
-    },
-    {
-      "count": "1-0",
-      "baseState": "101",
-      "outs": 2,
-      "n": 4,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-0",
-      "baseState": "011",
-      "outs": 0,
-      "n": 3,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-0",
-      "baseState": "011",
-      "outs": 1,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-0",
-      "baseState": "011",
-      "outs": 2,
-      "n": 3,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-0",
-      "baseState": "111",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-0",
-      "baseState": "111",
-      "outs": 1,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-0",
-      "baseState": "111",
-      "outs": 2,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-1",
-      "baseState": "000",
-      "outs": 0,
-      "n": 70,
-      "meanRe": 0.38571428571428573,
-      "outProb": 0.6571428571428571
-    },
-    {
-      "count": "1-1",
-      "baseState": "000",
-      "outs": 1,
-      "n": 55,
-      "meanRe": 0.05454545454545454,
-      "outProb": 0.6545454545454545
-    },
-    {
-      "count": "1-1",
-      "baseState": "000",
-      "outs": 2,
-      "n": 34,
-      "meanRe": 0.08823529411764706,
-      "outProb": 0.6764705882352942
-    },
-    {
-      "count": "1-1",
-      "baseState": "100",
-      "outs": 0,
-      "n": 23,
-      "meanRe": 0.5652173913043478,
-      "outProb": 0.4782608695652174
-    },
-    {
-      "count": "1-1",
-      "baseState": "100",
-      "outs": 1,
-      "n": 16,
-      "meanRe": 0.0625,
-      "outProb": 0.8125
-    },
-    {
-      "count": "1-1",
-      "baseState": "100",
-      "outs": 2,
-      "n": 9,
-      "meanRe": 0,
-      "outProb": 0.3333333333333333
-    },
-    {
-      "count": "1-1",
-      "baseState": "010",
-      "outs": 0,
-      "n": 7,
-      "meanRe": 1,
-      "outProb": 0.8571428571428571
-    },
-    {
-      "count": "1-1",
-      "baseState": "010",
-      "outs": 1,
-      "n": 11,
-      "meanRe": 0.2727272727272727,
-      "outProb": 0.8181818181818182
-    },
-    {
-      "count": "1-1",
-      "baseState": "010",
-      "outs": 2,
-      "n": 7,
-      "meanRe": 0.2857142857142857,
-      "outProb": 0.7142857142857143
-    },
-    {
-      "count": "1-1",
-      "baseState": "001",
-      "outs": 0,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-1",
-      "baseState": "001",
-      "outs": 1,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-1",
-      "baseState": "001",
-      "outs": 2,
-      "n": 5,
-      "meanRe": 0.4,
-      "outProb": 0.4
-    },
-    {
-      "count": "1-1",
-      "baseState": "110",
-      "outs": 0,
-      "n": 8,
-      "meanRe": 0.5,
-      "outProb": 1
-    },
-    {
-      "count": "1-1",
-      "baseState": "110",
-      "outs": 1,
-      "n": 12,
-      "meanRe": 0.25,
-      "outProb": 0.6666666666666666
-    },
-    {
-      "count": "1-1",
-      "baseState": "110",
-      "outs": 2,
-      "n": 8,
-      "meanRe": 0.125,
-      "outProb": 0.875
-    },
-    {
-      "count": "1-1",
-      "baseState": "101",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-1",
-      "baseState": "101",
-      "outs": 1,
-      "n": 5,
-      "meanRe": 0.6,
-      "outProb": 0.8
-    },
-    {
-      "count": "1-1",
-      "baseState": "101",
-      "outs": 2,
-      "n": 5,
-      "meanRe": 0.2,
-      "outProb": 0.6
-    },
-    {
-      "count": "1-1",
-      "baseState": "011",
-      "outs": 0,
-      "n": 4,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-1",
-      "baseState": "011",
-      "outs": 1,
-      "n": 5,
-      "meanRe": 0.6,
-      "outProb": 0.8
-    },
-    {
-      "count": "1-1",
-      "baseState": "011",
-      "outs": 2,
-      "n": 5,
-      "meanRe": 0.4,
-      "outProb": 0.6
-    },
-    {
-      "count": "1-1",
-      "baseState": "111",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-1",
-      "baseState": "111",
-      "outs": 1,
-      "n": 3,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-1",
-      "baseState": "111",
-      "outs": 2,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-2",
-      "baseState": "000",
-      "outs": 0,
-      "n": 47,
-      "meanRe": 0.14893617021276595,
-      "outProb": 0.8723404255319149
-    },
-    {
-      "count": "1-2",
-      "baseState": "000",
-      "outs": 1,
-      "n": 37,
-      "meanRe": 0.08108108108108109,
-      "outProb": 0.8108108108108109
-    },
-    {
-      "count": "1-2",
-      "baseState": "000",
-      "outs": 2,
-      "n": 25,
-      "meanRe": 0.12,
-      "outProb": 0.84
-    },
-    {
-      "count": "1-2",
-      "baseState": "100",
-      "outs": 0,
-      "n": 14,
-      "meanRe": 0.6428571428571429,
-      "outProb": 0.42857142857142855
-    },
-    {
-      "count": "1-2",
-      "baseState": "100",
-      "outs": 1,
-      "n": 15,
-      "meanRe": 0.06666666666666667,
-      "outProb": 0.8666666666666667
-    },
-    {
-      "count": "1-2",
-      "baseState": "100",
-      "outs": 2,
-      "n": 11,
-      "meanRe": 0,
-      "outProb": 0.5454545454545454
-    },
-    {
-      "count": "1-2",
-      "baseState": "010",
-      "outs": 0,
-      "n": 5,
-      "meanRe": 1.4,
-      "outProb": 0.8
-    },
-    {
-      "count": "1-2",
-      "baseState": "010",
-      "outs": 1,
-      "n": 6,
-      "meanRe": 0.3333333333333333,
-      "outProb": 0.8333333333333334
-    },
-    {
-      "count": "1-2",
-      "baseState": "010",
-      "outs": 2,
-      "n": 12,
-      "meanRe": 0.16666666666666666,
-      "outProb": 0.75
-    },
-    {
-      "count": "1-2",
-      "baseState": "001",
-      "outs": 0,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-2",
-      "baseState": "001",
-      "outs": 1,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-2",
-      "baseState": "001",
-      "outs": 2,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-2",
-      "baseState": "110",
-      "outs": 0,
-      "n": 9,
-      "meanRe": 0.4444444444444444,
-      "outProb": 0.7777777777777778
-    },
-    {
-      "count": "1-2",
-      "baseState": "110",
-      "outs": 1,
-      "n": 6,
-      "meanRe": 0.3333333333333333,
-      "outProb": 0.8333333333333334
-    },
-    {
-      "count": "1-2",
-      "baseState": "110",
-      "outs": 2,
-      "n": 5,
-      "meanRe": 0,
-      "outProb": 1
-    },
-    {
-      "count": "1-2",
-      "baseState": "101",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-2",
-      "baseState": "101",
-      "outs": 1,
-      "n": 4,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-2",
-      "baseState": "101",
-      "outs": 2,
-      "n": 3,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-2",
-      "baseState": "011",
-      "outs": 0,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-2",
-      "baseState": "011",
-      "outs": 1,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-2",
-      "baseState": "011",
-      "outs": 2,
-      "n": 4,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-2",
-      "baseState": "111",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-2",
-      "baseState": "111",
-      "outs": 1,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "1-2",
-      "baseState": "111",
-      "outs": 2,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-0",
-      "baseState": "000",
-      "outs": 0,
-      "n": 27,
-      "meanRe": 0.5185185185185185,
-      "outProb": 0.37037037037037035
-    },
-    {
-      "count": "2-0",
-      "baseState": "000",
-      "outs": 1,
-      "n": 17,
-      "meanRe": 0.35294117647058826,
-      "outProb": 0.058823529411764705
-    },
-    {
-      "count": "2-0",
-      "baseState": "000",
-      "outs": 2,
-      "n": 10,
-      "meanRe": 0,
-      "outProb": 0.2
-    },
-    {
-      "count": "2-0",
-      "baseState": "100",
-      "outs": 0,
-      "n": 8,
-      "meanRe": 0.75,
-      "outProb": 0.25
-    },
-    {
-      "count": "2-0",
-      "baseState": "100",
-      "outs": 1,
-      "n": 7,
-      "meanRe": 0,
-      "outProb": 0.7142857142857143
-    },
-    {
-      "count": "2-0",
-      "baseState": "100",
-      "outs": 2,
-      "n": 5,
-      "meanRe": 0,
-      "outProb": 0.8
-    },
-    {
-      "count": "2-0",
-      "baseState": "010",
-      "outs": 0,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-0",
-      "baseState": "010",
-      "outs": 1,
-      "n": 6,
-      "meanRe": 0.6666666666666666,
-      "outProb": 0.3333333333333333
-    },
-    {
-      "count": "2-0",
-      "baseState": "010",
-      "outs": 2,
-      "n": 5,
-      "meanRe": 0,
-      "outProb": 0.6
-    },
-    {
-      "count": "2-0",
-      "baseState": "001",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-0",
-      "baseState": "001",
-      "outs": 1,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-0",
-      "baseState": "001",
-      "outs": 2,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-0",
-      "baseState": "110",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-0",
-      "baseState": "110",
-      "outs": 1,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-0",
-      "baseState": "110",
-      "outs": 2,
-      "n": 3,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-0",
-      "baseState": "101",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-0",
-      "baseState": "101",
-      "outs": 1,
-      "n": 4,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-0",
-      "baseState": "101",
-      "outs": 2,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-0",
-      "baseState": "011",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-0",
-      "baseState": "011",
-      "outs": 1,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-0",
-      "baseState": "011",
-      "outs": 2,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-0",
-      "baseState": "111",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-0",
-      "baseState": "111",
-      "outs": 1,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-0",
-      "baseState": "111",
-      "outs": 2,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-1",
-      "baseState": "000",
-      "outs": 0,
-      "n": 40,
-      "meanRe": 0.575,
-      "outProb": 0.55
-    },
-    {
-      "count": "2-1",
-      "baseState": "000",
-      "outs": 1,
-      "n": 27,
-      "meanRe": 0.037037037037037035,
-      "outProb": 0.4444444444444444
-    },
-    {
-      "count": "2-1",
-      "baseState": "000",
-      "outs": 2,
-      "n": 19,
-      "meanRe": 0,
+      "meanRe": 0.47368421052631576,
       "outProb": 0.47368421052631576
     },
     {
-      "count": "2-1",
-      "baseState": "100",
-      "outs": 0,
-      "n": 12,
-      "meanRe": 0.16666666666666666,
-      "outProb": 0.4166666666666667
-    },
-    {
-      "count": "2-1",
-      "baseState": "100",
-      "outs": 1,
-      "n": 11,
-      "meanRe": 0.09090909090909091,
-      "outProb": 0.6363636363636364
-    },
-    {
-      "count": "2-1",
-      "baseState": "100",
-      "outs": 2,
-      "n": 5,
-      "meanRe": 0,
-      "outProb": 0.6
-    },
-    {
-      "count": "2-1",
-      "baseState": "010",
-      "outs": 0,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-1",
-      "baseState": "010",
-      "outs": 1,
-      "n": 9,
-      "meanRe": 0.6666666666666666,
-      "outProb": 0.6666666666666666
-    },
-    {
-      "count": "2-1",
-      "baseState": "010",
-      "outs": 2,
-      "n": 4,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-1",
-      "baseState": "001",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-1",
-      "baseState": "001",
-      "outs": 1,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-1",
-      "baseState": "001",
-      "outs": 2,
-      "n": 4,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-1",
-      "baseState": "110",
-      "outs": 0,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-1",
-      "baseState": "110",
-      "outs": 1,
-      "n": 5,
-      "meanRe": 0.2,
-      "outProb": 0.8
-    },
-    {
-      "count": "2-1",
-      "baseState": "110",
-      "outs": 2,
-      "n": 4,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-1",
-      "baseState": "101",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-1",
-      "baseState": "101",
-      "outs": 1,
-      "n": 5,
-      "meanRe": 0.4,
-      "outProb": 0.8
-    },
-    {
-      "count": "2-1",
+      "count": "2-0",
       "baseState": "101",
       "outs": 2,
+      "n": 18,
+      "meanRe": 0.5,
+      "outProb": 0.3888888888888889
+    },
+    {
+      "count": "2-0",
+      "baseState": "011",
+      "outs": 0,
       "n": 2,
       "meanRe": null,
       "outProb": null
     },
     {
-      "count": "2-1",
-      "baseState": "011",
-      "outs": 0,
-      "n": 4,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-1",
+      "count": "2-0",
       "baseState": "011",
       "outs": 1,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
+      "n": 13,
+      "meanRe": 0.6153846153846154,
+      "outProb": 0.6153846153846154
     },
     {
-      "count": "2-1",
+      "count": "2-0",
       "baseState": "011",
-      "outs": 2,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-1",
-      "baseState": "111",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-1",
-      "baseState": "111",
-      "outs": 1,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-1",
-      "baseState": "111",
-      "outs": 2,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-2",
-      "baseState": "000",
-      "outs": 0,
-      "n": 61,
-      "meanRe": 0.36065573770491804,
-      "outProb": 0.5737704918032787
-    },
-    {
-      "count": "2-2",
-      "baseState": "000",
-      "outs": 1,
-      "n": 31,
-      "meanRe": 0,
-      "outProb": 0.6451612903225806
-    },
-    {
-      "count": "2-2",
-      "baseState": "000",
-      "outs": 2,
-      "n": 25,
-      "meanRe": 0.04,
-      "outProb": 0.76
-    },
-    {
-      "count": "2-2",
-      "baseState": "100",
-      "outs": 0,
-      "n": 9,
-      "meanRe": 0.1111111111111111,
-      "outProb": 0.4444444444444444
-    },
-    {
-      "count": "2-2",
-      "baseState": "100",
-      "outs": 1,
-      "n": 14,
-      "meanRe": 0.07142857142857142,
-      "outProb": 0.7857142857142857
-    },
-    {
-      "count": "2-2",
-      "baseState": "100",
       "outs": 2,
       "n": 7,
       "meanRe": 0,
       "outProb": 0.42857142857142855
     },
     {
-      "count": "2-2",
-      "baseState": "010",
+      "count": "2-0",
+      "baseState": "111",
       "outs": 0,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-2",
-      "baseState": "010",
-      "outs": 1,
-      "n": 3,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-2",
-      "baseState": "010",
-      "outs": 2,
       "n": 5,
-      "meanRe": 0.2,
-      "outProb": 0
+      "meanRe": 1,
+      "outProb": 0.4
     },
     {
-      "count": "2-2",
+      "count": "2-0",
+      "baseState": "111",
+      "outs": 1,
+      "n": 11,
+      "meanRe": 2.272727272727273,
+      "outProb": 0.45454545454545453
+    },
+    {
+      "count": "2-0",
+      "baseState": "111",
+      "outs": 2,
+      "n": 14,
+      "meanRe": 1.5714285714285714,
+      "outProb": 0.35714285714285715
+    },
+    {
+      "count": "2-1",
+      "baseState": "000",
+      "outs": 0,
+      "n": 343,
+      "meanRe": 0.4139941690962099,
+      "outProb": 0.5189504373177842
+    },
+    {
+      "count": "2-1",
+      "baseState": "000",
+      "outs": 1,
+      "n": 223,
+      "meanRe": 0.20179372197309417,
+      "outProb": 0.4349775784753363
+    },
+    {
+      "count": "2-1",
+      "baseState": "000",
+      "outs": 2,
+      "n": 179,
+      "meanRe": 0.05027932960893855,
+      "outProb": 0.46368715083798884
+    },
+    {
+      "count": "2-1",
+      "baseState": "100",
+      "outs": 0,
+      "n": 73,
+      "meanRe": 0.589041095890411,
+      "outProb": 0.5753424657534246
+    },
+    {
+      "count": "2-1",
+      "baseState": "100",
+      "outs": 1,
+      "n": 79,
+      "meanRe": 0.22784810126582278,
+      "outProb": 0.5443037974683544
+    },
+    {
+      "count": "2-1",
+      "baseState": "100",
+      "outs": 2,
+      "n": 50,
+      "meanRe": 0.22,
+      "outProb": 0.44
+    },
+    {
+      "count": "2-1",
+      "baseState": "010",
+      "outs": 0,
+      "n": 31,
+      "meanRe": 0.8387096774193549,
+      "outProb": 0.6129032258064516
+    },
+    {
+      "count": "2-1",
+      "baseState": "010",
+      "outs": 1,
+      "n": 73,
+      "meanRe": 0.6027397260273972,
+      "outProb": 0.4931506849315068
+    },
+    {
+      "count": "2-1",
+      "baseState": "010",
+      "outs": 2,
+      "n": 62,
+      "meanRe": 0.14516129032258066,
+      "outProb": 0.43548387096774194
+    },
+    {
+      "count": "2-1",
       "baseState": "001",
       "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
+      "n": 7,
+      "meanRe": 1.4285714285714286,
+      "outProb": 0.5714285714285714
     },
     {
-      "count": "2-2",
+      "count": "2-1",
       "baseState": "001",
       "outs": 1,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
+      "n": 23,
+      "meanRe": 0.9130434782608695,
+      "outProb": 0.34782608695652173
     },
     {
-      "count": "2-2",
+      "count": "2-1",
       "baseState": "001",
       "outs": 2,
-      "n": 3,
-      "meanRe": null,
-      "outProb": null
+      "n": 40,
+      "meanRe": 0.5,
+      "outProb": 0.4
     },
     {
-      "count": "2-2",
+      "count": "2-1",
       "baseState": "110",
       "outs": 0,
-      "n": 3,
-      "meanRe": null,
-      "outProb": null
+      "n": 17,
+      "meanRe": 0.8823529411764706,
+      "outProb": 0.8235294117647058
     },
     {
-      "count": "2-2",
+      "count": "2-1",
       "baseState": "110",
       "outs": 1,
-      "n": 8,
-      "meanRe": 0.375,
-      "outProb": 0.875
+      "n": 28,
+      "meanRe": 0.07142857142857142,
+      "outProb": 0.8214285714285714
     },
     {
-      "count": "2-2",
+      "count": "2-1",
       "baseState": "110",
       "outs": 2,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
+      "n": 33,
+      "meanRe": 0.24242424242424243,
+      "outProb": 0.5454545454545454
     },
     {
-      "count": "2-2",
+      "count": "2-1",
       "baseState": "101",
       "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "2-2",
-      "baseState": "101",
-      "outs": 1,
       "n": 6,
-      "meanRe": 0.8333333333333334,
+      "meanRe": 0.5,
       "outProb": 0.6666666666666666
     },
     {
+      "count": "2-1",
+      "baseState": "101",
+      "outs": 1,
+      "n": 29,
+      "meanRe": 0.6551724137931034,
+      "outProb": 0.5172413793103449
+    },
+    {
+      "count": "2-1",
+      "baseState": "101",
+      "outs": 2,
+      "n": 27,
+      "meanRe": 0.5185185185185185,
+      "outProb": 0.5185185185185185
+    },
+    {
+      "count": "2-1",
+      "baseState": "011",
+      "outs": 0,
+      "n": 7,
+      "meanRe": 1.5714285714285714,
+      "outProb": 0.2857142857142857
+    },
+    {
+      "count": "2-1",
+      "baseState": "011",
+      "outs": 1,
+      "n": 16,
+      "meanRe": 0.375,
+      "outProb": 0.625
+    },
+    {
+      "count": "2-1",
+      "baseState": "011",
+      "outs": 2,
+      "n": 17,
+      "meanRe": 0.11764705882352941,
+      "outProb": 0.6470588235294118
+    },
+    {
+      "count": "2-1",
+      "baseState": "111",
+      "outs": 0,
+      "n": 6,
+      "meanRe": 1.1666666666666667,
+      "outProb": 0.5
+    },
+    {
+      "count": "2-1",
+      "baseState": "111",
+      "outs": 1,
+      "n": 9,
+      "meanRe": 1.4444444444444444,
+      "outProb": 0.7777777777777778
+    },
+    {
+      "count": "2-1",
+      "baseState": "111",
+      "outs": 2,
+      "n": 19,
+      "meanRe": 0.7894736842105263,
+      "outProb": 0.5789473684210527
+    },
+    {
+      "count": "2-2",
+      "baseState": "000",
+      "outs": 0,
+      "n": 421,
+      "meanRe": 0.3254156769596199,
+      "outProb": 0.6912114014251781
+    },
+    {
+      "count": "2-2",
+      "baseState": "000",
+      "outs": 1,
+      "n": 292,
+      "meanRe": 0.1404109589041096,
+      "outProb": 0.678082191780822
+    },
+    {
+      "count": "2-2",
+      "baseState": "000",
+      "outs": 2,
+      "n": 187,
+      "meanRe": 0.06951871657754011,
+      "outProb": 0.6524064171122995
+    },
+    {
+      "count": "2-2",
+      "baseState": "100",
+      "outs": 0,
+      "n": 66,
+      "meanRe": 0.5151515151515151,
+      "outProb": 0.6818181818181818
+    },
+    {
+      "count": "2-2",
+      "baseState": "100",
+      "outs": 1,
+      "n": 80,
+      "meanRe": 0.225,
+      "outProb": 0.7375
+    },
+    {
+      "count": "2-2",
+      "baseState": "100",
+      "outs": 2,
+      "n": 68,
+      "meanRe": 0.058823529411764705,
+      "outProb": 0.6911764705882353
+    },
+    {
+      "count": "2-2",
+      "baseState": "010",
+      "outs": 0,
+      "n": 40,
+      "meanRe": 0.8,
+      "outProb": 0.575
+    },
+    {
+      "count": "2-2",
+      "baseState": "010",
+      "outs": 1,
+      "n": 83,
+      "meanRe": 0.5662650602409639,
+      "outProb": 0.7108433734939759
+    },
+    {
+      "count": "2-2",
+      "baseState": "010",
+      "outs": 2,
+      "n": 71,
+      "meanRe": 0.2112676056338028,
+      "outProb": 0.5211267605633803
+    },
+    {
+      "count": "2-2",
+      "baseState": "001",
+      "outs": 0,
+      "n": 10,
+      "meanRe": 1.6,
+      "outProb": 0.5
+    },
+    {
+      "count": "2-2",
+      "baseState": "001",
+      "outs": 1,
+      "n": 27,
+      "meanRe": 1,
+      "outProb": 0.5185185185185185
+    },
+    {
+      "count": "2-2",
+      "baseState": "001",
+      "outs": 2,
+      "n": 27,
+      "meanRe": 0.07407407407407407,
+      "outProb": 0.7037037037037037
+    },
+    {
+      "count": "2-2",
+      "baseState": "110",
+      "outs": 0,
+      "n": 27,
+      "meanRe": 0.25925925925925924,
+      "outProb": 1
+    },
+    {
+      "count": "2-2",
+      "baseState": "110",
+      "outs": 1,
+      "n": 48,
+      "meanRe": 0.20833333333333334,
+      "outProb": 0.7708333333333334
+    },
+    {
+      "count": "2-2",
+      "baseState": "110",
+      "outs": 2,
+      "n": 39,
+      "meanRe": 0.1794871794871795,
+      "outProb": 0.5384615384615384
+    },
+    {
+      "count": "2-2",
+      "baseState": "101",
+      "outs": 0,
+      "n": 10,
+      "meanRe": 1,
+      "outProb": 0.7
+    },
+    {
+      "count": "2-2",
+      "baseState": "101",
+      "outs": 1,
+      "n": 36,
+      "meanRe": 0.5833333333333334,
+      "outProb": 0.8055555555555556
+    },
+    {
       "count": "2-2",
       "baseState": "101",
       "outs": 2,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
+      "n": 21,
+      "meanRe": 0,
+      "outProb": 0.8571428571428571
     },
     {
       "count": "2-2",
       "baseState": "011",
       "outs": 0,
-      "n": 0,
+      "n": 4,
       "meanRe": null,
       "outProb": null
     },
@@ -1843,23 +1858,23 @@
       "count": "2-2",
       "baseState": "011",
       "outs": 1,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
+      "n": 18,
+      "meanRe": 0.5555555555555556,
+      "outProb": 0.8333333333333334
     },
     {
       "count": "2-2",
       "baseState": "011",
       "outs": 2,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
+      "n": 31,
+      "meanRe": 0,
+      "outProb": 0.8387096774193549
     },
     {
       "count": "2-2",
       "baseState": "111",
       "outs": 0,
-      "n": 0,
+      "n": 3,
       "meanRe": null,
       "outProb": null
     },
@@ -1867,37 +1882,181 @@
       "count": "2-2",
       "baseState": "111",
       "outs": 1,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
+      "n": 7,
+      "meanRe": 0.42857142857142855,
+      "outProb": 1
     },
     {
       "count": "2-2",
       "baseState": "111",
       "outs": 2,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
+      "n": 16,
+      "meanRe": 0.8125,
+      "outProb": 0.75
     },
     {
       "count": "3-0",
       "baseState": "000",
       "outs": 0,
-      "n": 11,
-      "meanRe": 0.36363636363636365,
-      "outProb": 0.18181818181818182
+      "n": 106,
+      "meanRe": 0.5377358490566038,
+      "outProb": 0.2641509433962264
     },
     {
       "count": "3-0",
       "baseState": "000",
       "outs": 1,
-      "n": 11,
+      "n": 64,
+      "meanRe": 0.328125,
+      "outProb": 0.28125
+    },
+    {
+      "count": "3-0",
+      "baseState": "000",
+      "outs": 2,
+      "n": 54,
+      "meanRe": 0.16666666666666666,
+      "outProb": 0.24074074074074073
+    },
+    {
+      "count": "3-0",
+      "baseState": "100",
+      "outs": 0,
+      "n": 22,
       "meanRe": 0.5454545454545454,
+      "outProb": 0.3181818181818182
+    },
+    {
+      "count": "3-0",
+      "baseState": "100",
+      "outs": 1,
+      "n": 29,
+      "meanRe": 0.7241379310344828,
+      "outProb": 0.10344827586206896
+    },
+    {
+      "count": "3-0",
+      "baseState": "100",
+      "outs": 2,
+      "n": 24,
+      "meanRe": 0.4583333333333333,
+      "outProb": 0.20833333333333334
+    },
+    {
+      "count": "3-0",
+      "baseState": "010",
+      "outs": 0,
+      "n": 6,
+      "meanRe": 0.8333333333333334,
+      "outProb": 0.16666666666666666
+    },
+    {
+      "count": "3-0",
+      "baseState": "010",
+      "outs": 1,
+      "n": 23,
+      "meanRe": 0.391304347826087,
+      "outProb": 0.30434782608695654
+    },
+    {
+      "count": "3-0",
+      "baseState": "010",
+      "outs": 2,
+      "n": 26,
+      "meanRe": 0.34615384615384615,
+      "outProb": 0.11538461538461539
+    },
+    {
+      "count": "3-0",
+      "baseState": "001",
+      "outs": 0,
+      "n": 4,
+      "meanRe": null,
+      "outProb": null
+    },
+    {
+      "count": "3-0",
+      "baseState": "001",
+      "outs": 1,
+      "n": 6,
+      "meanRe": 1.8333333333333333,
       "outProb": 0
     },
     {
       "count": "3-0",
-      "baseState": "000",
+      "baseState": "001",
+      "outs": 2,
+      "n": 5,
+      "meanRe": 0.6,
+      "outProb": 0
+    },
+    {
+      "count": "3-0",
+      "baseState": "110",
+      "outs": 0,
+      "n": 1,
+      "meanRe": null,
+      "outProb": null
+    },
+    {
+      "count": "3-0",
+      "baseState": "110",
+      "outs": 1,
+      "n": 10,
+      "meanRe": 0.7,
+      "outProb": 0.1
+    },
+    {
+      "count": "3-0",
+      "baseState": "110",
+      "outs": 2,
+      "n": 18,
+      "meanRe": 0.2222222222222222,
+      "outProb": 0.2222222222222222
+    },
+    {
+      "count": "3-0",
+      "baseState": "101",
+      "outs": 0,
+      "n": 1,
+      "meanRe": null,
+      "outProb": null
+    },
+    {
+      "count": "3-0",
+      "baseState": "101",
+      "outs": 1,
+      "n": 3,
+      "meanRe": null,
+      "outProb": null
+    },
+    {
+      "count": "3-0",
+      "baseState": "101",
+      "outs": 2,
+      "n": 6,
+      "meanRe": 1.1666666666666667,
+      "outProb": 0.16666666666666666
+    },
+    {
+      "count": "3-0",
+      "baseState": "011",
+      "outs": 0,
+      "n": 1,
+      "meanRe": null,
+      "outProb": null
+    },
+    {
+      "count": "3-0",
+      "baseState": "011",
+      "outs": 1,
+      "n": 5,
+      "meanRe": 0.6,
+      "outProb": 0.8
+    },
+    {
+      "count": "3-0",
+      "baseState": "011",
       "outs": 2,
       "n": 4,
       "meanRe": null,
@@ -1905,153 +2064,9 @@
     },
     {
       "count": "3-0",
-      "baseState": "100",
-      "outs": 0,
-      "n": 3,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
-      "baseState": "100",
-      "outs": 1,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
-      "baseState": "100",
-      "outs": 2,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
-      "baseState": "010",
-      "outs": 0,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
-      "baseState": "010",
-      "outs": 1,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
-      "baseState": "010",
-      "outs": 2,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
-      "baseState": "001",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
-      "baseState": "001",
-      "outs": 1,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
-      "baseState": "001",
-      "outs": 2,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
-      "baseState": "110",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
-      "baseState": "110",
-      "outs": 1,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
-      "baseState": "110",
-      "outs": 2,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
-      "baseState": "101",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
-      "baseState": "101",
-      "outs": 1,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
-      "baseState": "101",
-      "outs": 2,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
-      "baseState": "011",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
-      "baseState": "011",
-      "outs": 1,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
-      "baseState": "011",
-      "outs": 2,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-0",
       "baseState": "111",
       "outs": 0,
-      "n": 0,
+      "n": 4,
       "meanRe": null,
       "outProb": null
     },
@@ -2059,15 +2074,15 @@
       "count": "3-0",
       "baseState": "111",
       "outs": 1,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
+      "n": 6,
+      "meanRe": 1.8333333333333333,
+      "outProb": 0.3333333333333333
     },
     {
       "count": "3-0",
       "baseState": "111",
       "outs": 2,
-      "n": 0,
+      "n": 4,
       "meanRe": null,
       "outProb": null
     },
@@ -2075,118 +2090,126 @@
       "count": "3-1",
       "baseState": "000",
       "outs": 0,
-      "n": 14,
-      "meanRe": 0.7857142857142857,
-      "outProb": 0.21428571428571427
+      "n": 175,
+      "meanRe": 0.49714285714285716,
+      "outProb": 0.35428571428571426
     },
     {
       "count": "3-1",
       "baseState": "000",
       "outs": 1,
-      "n": 16,
-      "meanRe": 0.125,
-      "outProb": 0.125
+      "n": 110,
+      "meanRe": 0.14545454545454545,
+      "outProb": 0.20909090909090908
     },
     {
       "count": "3-1",
       "baseState": "000",
       "outs": 2,
-      "n": 9,
-      "meanRe": 0,
+      "n": 87,
+      "meanRe": 0.11494252873563218,
+      "outProb": 0.28735632183908044
+    },
+    {
+      "count": "3-1",
+      "baseState": "100",
+      "outs": 0,
+      "n": 37,
+      "meanRe": 0.8648648648648649,
+      "outProb": 0.35135135135135137
+    },
+    {
+      "count": "3-1",
+      "baseState": "100",
+      "outs": 1,
+      "n": 39,
+      "meanRe": 0.5384615384615384,
+      "outProb": 0.20512820512820512
+    },
+    {
+      "count": "3-1",
+      "baseState": "100",
+      "outs": 2,
+      "n": 24,
+      "meanRe": 0.5833333333333334,
+      "outProb": 0.2916666666666667
+    },
+    {
+      "count": "3-1",
+      "baseState": "010",
+      "outs": 0,
+      "n": 17,
+      "meanRe": 1.0588235294117647,
+      "outProb": 0.23529411764705882
+    },
+    {
+      "count": "3-1",
+      "baseState": "010",
+      "outs": 1,
+      "n": 37,
+      "meanRe": 0.5405405405405406,
+      "outProb": 0.1891891891891892
+    },
+    {
+      "count": "3-1",
+      "baseState": "010",
+      "outs": 2,
+      "n": 34,
+      "meanRe": 0.17647058823529413,
+      "outProb": 0.14705882352941177
+    },
+    {
+      "count": "3-1",
+      "baseState": "001",
+      "outs": 0,
+      "n": 4,
+      "meanRe": null,
+      "outProb": null
+    },
+    {
+      "count": "3-1",
+      "baseState": "001",
+      "outs": 1,
+      "n": 7,
+      "meanRe": 1,
+      "outProb": 0.14285714285714285
+    },
+    {
+      "count": "3-1",
+      "baseState": "001",
+      "outs": 2,
+      "n": 18,
+      "meanRe": 0.5555555555555556,
       "outProb": 0.2222222222222222
     },
     {
       "count": "3-1",
-      "baseState": "100",
-      "outs": 0,
-      "n": 4,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-1",
-      "baseState": "100",
-      "outs": 1,
-      "n": 4,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-1",
-      "baseState": "100",
-      "outs": 2,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-1",
-      "baseState": "010",
-      "outs": 0,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-1",
-      "baseState": "010",
-      "outs": 1,
-      "n": 3,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-1",
-      "baseState": "010",
-      "outs": 2,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-1",
-      "baseState": "001",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-1",
-      "baseState": "001",
-      "outs": 1,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-1",
-      "baseState": "001",
-      "outs": 2,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-1",
       "baseState": "110",
       "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
+      "n": 5,
+      "meanRe": 1.6,
+      "outProb": 0.6
     },
     {
       "count": "3-1",
       "baseState": "110",
       "outs": 1,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
+      "n": 10,
+      "meanRe": 0,
+      "outProb": 0.6
     },
     {
       "count": "3-1",
       "baseState": "110",
       "outs": 2,
+      "n": 21,
+      "meanRe": 0.19047619047619047,
+      "outProb": 0.2857142857142857
+    },
+    {
+      "count": "3-1",
+      "baseState": "101",
+      "outs": 0,
       "n": 3,
       "meanRe": null,
       "outProb": null
@@ -2194,310 +2217,302 @@
     {
       "count": "3-1",
       "baseState": "101",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-1",
-      "baseState": "101",
       "outs": 1,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-1",
-      "baseState": "101",
-      "outs": 2,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-1",
-      "baseState": "011",
-      "outs": 0,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-1",
-      "baseState": "011",
-      "outs": 1,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-1",
-      "baseState": "011",
-      "outs": 2,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-1",
-      "baseState": "111",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-1",
-      "baseState": "111",
-      "outs": 1,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-1",
-      "baseState": "111",
-      "outs": 2,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-2",
-      "baseState": "000",
-      "outs": 0,
-      "n": 30,
+      "n": 10,
       "meanRe": 0.4,
-      "outProb": 0.43333333333333335
+      "outProb": 0.3
+    },
+    {
+      "count": "3-1",
+      "baseState": "101",
+      "outs": 2,
+      "n": 15,
+      "meanRe": 0.9333333333333333,
+      "outProb": 0.26666666666666666
+    },
+    {
+      "count": "3-1",
+      "baseState": "011",
+      "outs": 0,
+      "n": 3,
+      "meanRe": null,
+      "outProb": null
+    },
+    {
+      "count": "3-1",
+      "baseState": "011",
+      "outs": 1,
+      "n": 10,
+      "meanRe": 0.3,
+      "outProb": 0.7
+    },
+    {
+      "count": "3-1",
+      "baseState": "011",
+      "outs": 2,
+      "n": 7,
+      "meanRe": 0,
+      "outProb": 0.42857142857142855
+    },
+    {
+      "count": "3-1",
+      "baseState": "111",
+      "outs": 0,
+      "n": 6,
+      "meanRe": 0.8333333333333334,
+      "outProb": 0.3333333333333333
+    },
+    {
+      "count": "3-1",
+      "baseState": "111",
+      "outs": 1,
+      "n": 7,
+      "meanRe": 1.7142857142857142,
+      "outProb": 0.2857142857142857
+    },
+    {
+      "count": "3-1",
+      "baseState": "111",
+      "outs": 2,
+      "n": 8,
+      "meanRe": 1.375,
+      "outProb": 0.25
+    },
+    {
+      "count": "3-2",
+      "baseState": "000",
+      "outs": 0,
+      "n": 269,
+      "meanRe": 0.3940520446096654,
+      "outProb": 0.5018587360594795
     },
     {
       "count": "3-2",
       "baseState": "000",
       "outs": 1,
-      "n": 25,
-      "meanRe": 0.04,
-      "outProb": 0.44
+      "n": 174,
+      "meanRe": 0.16091954022988506,
+      "outProb": 0.3793103448275862
     },
     {
       "count": "3-2",
       "baseState": "000",
+      "outs": 2,
+      "n": 141,
+      "meanRe": 0.09219858156028368,
+      "outProb": 0.44680851063829785
+    },
+    {
+      "count": "3-2",
+      "baseState": "100",
+      "outs": 0,
+      "n": 52,
+      "meanRe": 0.2692307692307692,
+      "outProb": 0.4423076923076923
+    },
+    {
+      "count": "3-2",
+      "baseState": "100",
+      "outs": 1,
+      "n": 58,
+      "meanRe": 0.1896551724137931,
+      "outProb": 0.5
+    },
+    {
+      "count": "3-2",
+      "baseState": "100",
+      "outs": 2,
+      "n": 43,
+      "meanRe": 0.09302325581395349,
+      "outProb": 0.5116279069767442
+    },
+    {
+      "count": "3-2",
+      "baseState": "010",
+      "outs": 0,
+      "n": 17,
+      "meanRe": 0.8235294117647058,
+      "outProb": 0.35294117647058826
+    },
+    {
+      "count": "3-2",
+      "baseState": "010",
+      "outs": 1,
+      "n": 44,
+      "meanRe": 0.38636363636363635,
+      "outProb": 0.45454545454545453
+    },
+    {
+      "count": "3-2",
+      "baseState": "010",
+      "outs": 2,
+      "n": 46,
+      "meanRe": 0.2826086956521739,
+      "outProb": 0.2608695652173913
+    },
+    {
+      "count": "3-2",
+      "baseState": "001",
+      "outs": 0,
+      "n": 9,
+      "meanRe": 2.4444444444444446,
+      "outProb": 0.2222222222222222
+    },
+    {
+      "count": "3-2",
+      "baseState": "001",
+      "outs": 1,
+      "n": 15,
+      "meanRe": 1.2666666666666666,
+      "outProb": 0.3333333333333333
+    },
+    {
+      "count": "3-2",
+      "baseState": "001",
+      "outs": 2,
+      "n": 31,
+      "meanRe": 0.6451612903225806,
+      "outProb": 0.3548387096774194
+    },
+    {
+      "count": "3-2",
+      "baseState": "110",
+      "outs": 0,
+      "n": 7,
+      "meanRe": 0.8571428571428571,
+      "outProb": 1
+    },
+    {
+      "count": "3-2",
+      "baseState": "110",
+      "outs": 1,
+      "n": 22,
+      "meanRe": 0.5,
+      "outProb": 0.5454545454545454
+    },
+    {
+      "count": "3-2",
+      "baseState": "110",
+      "outs": 2,
+      "n": 19,
+      "meanRe": 0.10526315789473684,
+      "outProb": 0.3684210526315789
+    },
+    {
+      "count": "3-2",
+      "baseState": "101",
+      "outs": 0,
+      "n": 10,
+      "meanRe": 1.2,
+      "outProb": 0.3
+    },
+    {
+      "count": "3-2",
+      "baseState": "101",
+      "outs": 1,
+      "n": 13,
+      "meanRe": 0.46153846153846156,
+      "outProb": 0.6153846153846154
+    },
+    {
+      "count": "3-2",
+      "baseState": "101",
+      "outs": 2,
+      "n": 15,
+      "meanRe": 0,
+      "outProb": 0.8
+    },
+    {
+      "count": "3-2",
+      "baseState": "011",
+      "outs": 0,
+      "n": 3,
+      "meanRe": null,
+      "outProb": null
+    },
+    {
+      "count": "3-2",
+      "baseState": "011",
+      "outs": 1,
+      "n": 17,
+      "meanRe": 0.29411764705882354,
+      "outProb": 0.8823529411764706
+    },
+    {
+      "count": "3-2",
+      "baseState": "011",
       "outs": 2,
       "n": 13,
       "meanRe": 0,
-      "outProb": 0.38461538461538464
+      "outProb": 0.5384615384615384
     },
     {
       "count": "3-2",
-      "baseState": "100",
+      "baseState": "111",
       "outs": 0,
-      "n": 12,
-      "meanRe": 0.08333333333333333,
-      "outProb": 0.16666666666666666
-    },
-    {
-      "count": "3-2",
-      "baseState": "100",
-      "outs": 1,
-      "n": 8,
-      "meanRe": 0,
-      "outProb": 0.875
-    },
-    {
-      "count": "3-2",
-      "baseState": "100",
-      "outs": 2,
-      "n": 5,
-      "meanRe": 0,
-      "outProb": 0.2
-    },
-    {
-      "count": "3-2",
-      "baseState": "010",
-      "outs": 0,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-2",
-      "baseState": "010",
-      "outs": 1,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-2",
-      "baseState": "010",
-      "outs": 2,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-2",
-      "baseState": "001",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-2",
-      "baseState": "001",
-      "outs": 1,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-2",
-      "baseState": "001",
-      "outs": 2,
-      "n": 5,
-      "meanRe": 1,
-      "outProb": 0
-    },
-    {
-      "count": "3-2",
-      "baseState": "110",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-2",
-      "baseState": "110",
-      "outs": 1,
       "n": 3,
       "meanRe": null,
       "outProb": null
     },
     {
       "count": "3-2",
-      "baseState": "110",
-      "outs": 2,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-2",
-      "baseState": "101",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-2",
-      "baseState": "101",
-      "outs": 1,
-      "n": 3,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-2",
-      "baseState": "101",
-      "outs": 2,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-2",
-      "baseState": "011",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-2",
-      "baseState": "011",
-      "outs": 1,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-2",
-      "baseState": "011",
-      "outs": 2,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-2",
-      "baseState": "111",
-      "outs": 0,
-      "n": 0,
-      "meanRe": null,
-      "outProb": null
-    },
-    {
-      "count": "3-2",
       "baseState": "111",
       "outs": 1,
-      "n": 1,
-      "meanRe": null,
-      "outProb": null
+      "n": 9,
+      "meanRe": 1.2222222222222223,
+      "outProb": 0.4444444444444444
     },
     {
       "count": "3-2",
       "baseState": "111",
       "outs": 2,
-      "n": 2,
-      "meanRe": null,
-      "outProb": null
+      "n": 7,
+      "meanRe": 0.7142857142857143,
+      "outProb": 0.42857142857142855
     }
   ],
   "countProgression": {
     "ohTwo": {
       "count": "0-2",
-      "totalObserved": 153,
-      "baselineRe": 0.22875816993464043,
-      "baselineOutProb": 0.771241830065359,
+      "totalObserved": 1521,
+      "baselineRe": 0.22813938198553851,
+      "baselineOutProb": 0.8027613412228755,
       "stateMix": [
         {
           "baseState": "000",
           "outs": 0,
-          "n": 39,
-          "share": 0.2549019607843137
+          "n": 386,
+          "share": 0.25378040762656146
         },
         {
           "baseState": "000",
           "outs": 1,
-          "n": 25,
-          "share": 0.16339869281045752
+          "n": 287,
+          "share": 0.18869165023011178
         },
         {
           "baseState": "000",
           "outs": 2,
-          "n": 18,
-          "share": 0.11764705882352941
+          "n": 154,
+          "share": 0.1012491781722551
         },
         {
           "baseState": "100",
           "outs": 2,
-          "n": 13,
-          "share": 0.08496732026143791
-        },
-        {
-          "baseState": "010",
-          "outs": 2,
-          "n": 12,
-          "share": 0.0784313725490196
+          "n": 95,
+          "share": 0.062458908612754764
         },
         {
           "baseState": "100",
           "outs": 0,
-          "n": 9,
-          "share": 0.058823529411764705
+          "n": 86,
+          "share": 0.05654174884944116
+        },
+        {
+          "baseState": "100",
+          "outs": 1,
+          "n": 86,
+          "share": 0.05654174884944116
         }
       ],
       "branches": [
@@ -2505,13 +2520,13 @@
           "branch": "strikeout",
           "label": "Strikeout",
           "nextStateLabel": "Next PA after strikeout",
-          "n": 34,
-          "preRe": 0.2868715434891906,
-          "postRe": 0.1827915982251188,
-          "reDelta": -0.10407994526407177,
-          "deltaRangeMin": -1.24,
-          "deltaRangeMax": 0.46190476190476193,
-          "preOutProb": 0.7807629462041229,
+          "n": 365,
+          "preRe": 0.22853640300964878,
+          "postRe": 0.1781050677037814,
+          "reDelta": -0.05043133530586738,
+          "deltaRangeMin": -0.42305037957211866,
+          "deltaRangeMax": 0.39655172413793105,
+          "preOutProb": 0.8139463499988159,
           "postOutProb": null,
           "outProbDelta": null
         },
@@ -2519,49 +2534,49 @@
           "branch": "ball",
           "label": "Ball (→ 1-2)",
           "nextStateLabel": "Count 1-2, same bases/outs",
-          "n": 95,
-          "preRe": 0.2209001349527665,
-          "postRe": 0.22125911962194153,
-          "reDelta": 0.0003589846691750276,
-          "deltaRangeMin": -1.75,
-          "deltaRangeMax": 0.2777777777777778,
-          "preOutProb": 0.7650854700854699,
-          "postOutProb": 0.7794537297292062,
-          "outProbDelta": 0.014368259643736336
+          "n": 836,
+          "preRe": 0.22439849822285865,
+          "postRe": 0.2511249158617671,
+          "reDelta": 0.026726417638908456,
+          "deltaRangeMin": -0.23809523809523808,
+          "deltaRangeMax": 0.6333333333333333,
+          "preOutProb": 0.7994015209278328,
+          "postOutProb": 0.7727759715802369,
+          "outProbDelta": -0.026625549347595867
         },
         {
           "branch": "inPlay",
           "label": "In Play (actual outcomes)",
           "nextStateLabel": "Actual contact outcomes from 0-2",
-          "n": 6,
-          "preRe": 0.13045584045584044,
-          "postRe": 0.23141409373209743,
-          "reDelta": 0.10095825327625699,
-          "deltaRangeMin": 0.02203324313877078,
-          "deltaRangeMax": 0.29523809523809524,
-          "preOutProb": 0.7668091168091168,
+          "n": 67,
+          "preRe": 0.25098356128466115,
+          "postRe": 0.2725102867002182,
+          "reDelta": 0.021526725415557058,
+          "deltaRangeMin": -0.7326007326007326,
+          "deltaRangeMax": 0.8876503608660785,
+          "preOutProb": 0.7911477255491727,
           "postOutProb": null,
           "outProbDelta": null
         }
       ],
       "counterfactual": {
-        "totalBalls": 95,
-        "valuePerConversion": 0.0702984948952873,
+        "totalBalls": 836,
+        "valuePerConversion": 0.08205105947734809,
         "scenarios": [
           {
             "conversionPct": 25,
-            "ballsConverted": 24,
-            "runsImprovement": 1.6871638774868953
+            "ballsConverted": 209,
+            "runsImprovement": 17.14867143076575
           },
           {
             "conversionPct": 50,
-            "ballsConverted": 48,
-            "runsImprovement": 3.3743277549737907
+            "ballsConverted": 418,
+            "runsImprovement": 34.2973428615315
           },
           {
             "conversionPct": 75,
-            "ballsConverted": 71,
-            "runsImprovement": 4.991193137565399
+            "ballsConverted": 627,
+            "runsImprovement": 51.44601429229725
           }
         ]
       }

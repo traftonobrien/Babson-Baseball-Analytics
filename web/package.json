@@ -19,7 +19,9 @@
     "fetch:roster": "python3 ../scripts/fetch_babson_roster.py",
     "generate:charting-roster": "python3 ../scripts/generate_charting_roster.py",
     "re:rebuild": "npx tsx scripts/build_re_matrix.ts",
-    "re:base-states": "npx tsx scripts/build_game_base_states.ts"
+    "re:base-states": "npx tsx scripts/build_game_base_states.ts",
+    "re:rebuild:newmac": "npx tsx scripts/build_newmac_re_matrix.ts",
+    "re:compare:ohtwo-ball": "npx tsx scripts/build_ohtwo_ball_comparison.ts"
   },
   "dependencies": {
     "@vercel/analytics": "^1.6.1",

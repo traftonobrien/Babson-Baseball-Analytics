@@ -1318,8 +1318,15 @@ function fmtRe(value: number | null): string {
 
 function fmtReDelta(value: number | null): string {
   if (value === null) return "—";
+  if (value > 0 && value < 0.001) return "+<0.001";
+  if (value < 0 && value > -0.001) return "-<0.001";
   const sign = value >= 0 ? "+" : "";
   return `${sign}${value.toFixed(3)}`;
+}
+
+function fmtRange(min: number | null, max: number | null): string {
+  if (min === null || max === null) return "—";
+  return `${fmtReDelta(min)} to ${fmtReDelta(max)}`;
 }
 
 function fmtOutProb(value: number | null): string {
@@ -1331,6 +1338,18 @@ function branchBgClass(branch: OhTwoReBranch["branch"]): string {
   if (branch === "strikeout") return "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800";
   if (branch === "ball") return "bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-800";
   return "bg-surface border-border";
+}
+
+function branchSampleToneClass(n: number): string {
+  if (n < 10) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
+  if (n < 25) return "bg-background text-muted border border-border";
+  return "bg-background text-foreground border border-border";
+}
+
+function branchSampleNote(n: number): string {
+  if (n < 10) return "Very small sample";
+  if (n < 25) return "Moderate sample";
+  return "Stable sample";
 }
 
 function deltaBadgeClass(delta: number | null): string {
@@ -1348,12 +1367,19 @@ function ReBranchCard({ b }: { b: OhTwoReBranch }) {
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">{b.label}</p>
           <p className="mt-0.5 text-xs text-muted">{b.nextStateLabel}</p>
         </div>
-        {b.limitedSample && (
-          <span className="shrink-0 rounded-full bg-yellow-100 px-2 py-0.5 text-[10px] font-semibold text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-            Limited sample
+        <div className="flex flex-col items-end gap-1">
+          <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${branchSampleToneClass(b.n)}`}>
+            n = {b.n}
           </span>
-        )}
+          <span className="text-[10px] text-muted">{branchSampleNote(b.n)}</span>
+        </div>
       </div>
+
+      {b.limitedSample && (
+        <p className="mt-3 text-[11px] font-medium leading-5 text-yellow-700 dark:text-yellow-400">
+          Treat this branch as directional only until the sample grows.
+        </p>
+      )}
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
         <div>
@@ -1369,6 +1395,22 @@ function ReBranchCard({ b }: { b: OhTwoReBranch }) {
           <p className={`mt-1 text-base font-black ${deltaBadgeClass(b.reDelta)}`}>
             {fmtReDelta(b.reDelta)}
           </p>
+          {b.reDelta !== null && Math.abs(b.reDelta) < 0.001 && (
+            <p className="mt-1 text-[11px] font-medium text-muted">No material average change</p>
+          )}
+        </div>
+        {(b.deltaRangeMin !== null || b.deltaRangeMax !== null) && (
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">State Delta Range</p>
+            <p className="mt-1 text-sm font-medium text-foreground">
+              {fmtRange(b.deltaRangeMin, b.deltaRangeMax)}
+            </p>
+            <p className="mt-1 text-[10px] text-muted">Spread across observed base/out states</p>
+          </div>
+        )}
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">Sample</p>
+          <p className="mt-1 text-base font-bold text-foreground">{b.n}</p>
         </div>
         {b.outProbDelta !== null && (
           <div className="col-span-2 sm:col-span-3">
@@ -1397,8 +1439,10 @@ function ReModelSection({ reModel }: { reModel: OhTwoReModelData }) {
         <div className="rounded-[22px] border border-dashed border-border bg-background p-6 text-center">
           <p className="text-sm font-semibold text-foreground">RE matrix not generated yet</p>
           <p className="mt-2 text-xs leading-6 text-muted">
-            Run <code className="rounded bg-surface px-1.5 py-0.5 text-[11px] font-mono">npm --prefix web run re:rebuild</code> to build the
-            2026 run expectancy matrix from the Sidearm PBP corpus, then restart the server.
+            Run <code className="rounded bg-surface px-1.5 py-0.5 text-[11px] font-mono">npm --prefix web run re:rebuild:newmac</code>{" "}
+            and{" "}
+            <code className="rounded bg-surface px-1.5 py-0.5 text-[11px] font-mono">npm --prefix web run re:compare:ohtwo-ball</code>{" "}
+            to build the conference RE reference and Babson comparison files, then restart the server.
           </p>
         </div>
       </section>
@@ -1413,7 +1457,7 @@ function ReModelSection({ reModel }: { reModel: OhTwoReModelData }) {
       <SectionHeader
         icon={Sigma}
         title="Run Expectancy Model"
-        detail={`State-weighted RE tree for all observed 0-2 pitches in the 2026 Babson PBP corpus. Values are aggregated across the actual base/out situations from every mapped game; RE delta < 0 means the pitcher helped, > 0 means run expectancy increased.`}
+        detail={`Conference RE reference from the full 2026 NEWMAC Sidearm PBP corpus. The tree uses NEWMAC-wide run expectancy, while the counterfactual below grades Babson's actual 0-2 balls with that conference model.`}
       />
 
       {/* RE288 baseline */}
@@ -1436,9 +1480,13 @@ function ReModelSection({ reModel }: { reModel: OhTwoReModelData }) {
       </div>
 
       <p className="mb-5 text-xs leading-6 text-muted">
-        Built from <strong className="text-foreground">{tree.totalObserved}</strong> observed 0-2 pitches in Sidearm play-by-play.
+        Built from <strong className="text-foreground">{tree.totalObserved}</strong> observed 0-2 pitches across NEWMAC Sidearm play-by-play.
         Most common states:{" "}
         {tree.stateMix.map((state) => `${state.baseState}/${state.outs} (${state.n})`).join(" · ")}
+      </p>
+
+      <p className="mb-5 text-xs leading-6 text-muted">
+        Branch cards below use their own NEWMAC observed sample counts. Small branches, especially contact from 0-2, should be treated as directional rather than definitive.
       </p>
 
       {/* Branch cards */}
@@ -1456,11 +1504,18 @@ function ReModelSection({ reModel }: { reModel: OhTwoReModelData }) {
             <h3 className="text-base font-bold text-foreground">Counterfactual — Balls to Strikeouts</h3>
           </div>
           <p className="text-xs leading-6 text-muted mb-4">
-            {counterfactual.totalBalls} balls were observed on 0-2 pitches in the PBP corpus.{" "}
-            Each ball converted to a K would save approximately{" "}
+            Babson threw <strong className="text-foreground">{counterfactual.totalBalls} balls</strong> on 0-2 pitches. Using the
+            NEWMAC reference matrix to grade those Babson states, each ball converted to a K would save approximately{" "}
             <strong className="text-foreground">{fmtRe(counterfactual.valuePerConversion)} expected runs</strong>{" "}
-            at those real game states.
+            at those same game states.
           </p>
+          {counterfactual.referenceDeltaOnBabsonStates !== null && (
+            <p className="mb-4 text-[11px] leading-5 text-muted">
+              Under the NEWMAC reference, Babson&apos;s observed 0-2 ball states average{" "}
+              <strong className="text-foreground">{fmtReDelta(counterfactual.referenceDeltaOnBabsonStates)} RE</strong>{" "}
+              when the pitch misses to `1-2`.
+            </p>
+          )}
           <div className="grid gap-3 sm:grid-cols-3">
             {counterfactual.scenarios.map((s) => (
               <div key={s.conversionPct} className="rounded-[18px] border border-border bg-surface p-4">
