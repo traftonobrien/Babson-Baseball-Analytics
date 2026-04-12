@@ -6,6 +6,7 @@ import {
   isValidCount,
   isValidOuts,
   aggregateHalfInnings,
+  buildOhTwoCountProgressionSummary,
   buildRe24Cells,
   buildRe288Cells,
   ALL_BASE_STATES,
@@ -367,6 +368,217 @@ describe("buildRe288Cells", () => {
         }
       }
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildOhTwoCountProgressionSummary
+// ---------------------------------------------------------------------------
+
+describe("buildOhTwoCountProgressionSummary", () => {
+  it("weights 0-2 values across the actual base/out states in the corpus", () => {
+    const plays = [
+      makePlay({
+        rawPlay: {
+          inning: 1,
+          halfInning: "top",
+          playIndex: 0,
+          playText: "Batter A struck out swinging",
+          dedupKey: "1-top-0",
+        },
+        outsBefore: 0,
+        outsAfter: 1,
+        baseStateBefore: { first: false, second: false, third: false },
+        countSnapshots: [
+          {
+            pitchNumber: 1,
+            pitchCode: "S",
+            countBefore: { balls: 0, strikes: 0, label: "0-0" },
+            countAfter: { balls: 0, strikes: 1, label: "0-1" },
+          },
+          {
+            pitchNumber: 2,
+            pitchCode: "S",
+            countBefore: { balls: 0, strikes: 1, label: "0-1" },
+            countAfter: { balls: 0, strikes: 2, label: "0-2" },
+          },
+          {
+            pitchNumber: 3,
+            pitchCode: "K",
+            countBefore: { balls: 0, strikes: 2, label: "0-2" },
+            countAfter: { balls: 0, strikes: 2, label: "0-2" },
+          },
+        ],
+      }),
+      makePlay({
+        rawPlay: {
+          inning: 1,
+          halfInning: "top",
+          playIndex: 1,
+          playText: "Batter B walked",
+          dedupKey: "1-top-1",
+        },
+        outsBefore: 1,
+        outsAfter: 1,
+        baseStateBefore: { first: true, second: true, third: true },
+        baseStateAfter: { first: true, second: true, third: true },
+        countSnapshots: [
+          {
+            pitchNumber: 1,
+            pitchCode: "S",
+            countBefore: { balls: 0, strikes: 0, label: "0-0" },
+            countAfter: { balls: 0, strikes: 1, label: "0-1" },
+          },
+          {
+            pitchNumber: 2,
+            pitchCode: "S",
+            countBefore: { balls: 0, strikes: 1, label: "0-1" },
+            countAfter: { balls: 0, strikes: 2, label: "0-2" },
+          },
+          {
+            pitchNumber: 3,
+            pitchCode: "B",
+            countBefore: { balls: 0, strikes: 2, label: "0-2" },
+            countAfter: { balls: 1, strikes: 2, label: "1-2" },
+          },
+        ],
+      }),
+      makePlay({
+        rawPlay: {
+          inning: 1,
+          halfInning: "top",
+          playIndex: 2,
+          playText: "Batter C lined into double play",
+          dedupKey: "1-top-2",
+        },
+        outsBefore: 2,
+        outsAfter: 3,
+        baseStateBefore: { first: true, second: false, third: false },
+        baseStateAfter: { first: false, second: false, third: false },
+        countSnapshots: [
+          {
+            pitchNumber: 1,
+            pitchCode: "S",
+            countBefore: { balls: 0, strikes: 0, label: "0-0" },
+            countAfter: { balls: 0, strikes: 1, label: "0-1" },
+          },
+          {
+            pitchNumber: 2,
+            pitchCode: "S",
+            countBefore: { balls: 0, strikes: 1, label: "0-1" },
+            countAfter: { balls: 0, strikes: 2, label: "0-2" },
+          },
+          {
+            pitchNumber: 3,
+            pitchCode: "X",
+            countBefore: { balls: 0, strikes: 2, label: "0-2" },
+            countAfter: { balls: 0, strikes: 2, label: "0-2" },
+          },
+        ],
+      }),
+    ];
+
+    const halfInning = makeHalfInning(plays);
+    const re24Map = new Map([
+      ["000-1", { n: 10, sumRe: 2, sumOutOccurred: 5 }],
+      ["111-2", { n: 10, sumRe: 11, sumOutOccurred: 3 }],
+    ]);
+    const re288Map = new Map([
+      ["0-2|000|0", { n: 10, sumRe: 4, sumOutOccurred: 6 }],
+      ["0-2|111|1", { n: 10, sumRe: 16, sumOutOccurred: 8 }],
+      ["0-2|100|2", { n: 10, sumRe: 2, sumOutOccurred: 4 }],
+      ["1-2|000|0", { n: 10, sumRe: 6, sumOutOccurred: 5 }],
+      ["1-2|111|1", { n: 10, sumRe: 14, sumOutOccurred: 7 }],
+      ["1-2|100|2", { n: 10, sumRe: 3, sumOutOccurred: 2 }],
+    ]);
+
+    const summary = buildOhTwoCountProgressionSummary(
+      [halfInning],
+      re24Map,
+      re288Map,
+    );
+
+    expect(summary).not.toBeNull();
+    expect(summary?.totalObserved).toBe(3);
+    expect(summary?.baselineRe).toBeCloseTo((0.4 + 1.6 + 0.2) / 3);
+    expect(summary?.baselineOutProb).toBeCloseTo((0.6 + 0.8 + 0.4) / 3);
+    expect(summary?.stateMix.map((state) => `${state.baseState}/${state.outs}`)).toEqual([
+      "000/0",
+      "111/1",
+      "100/2",
+    ]);
+
+    const strikeout = summary?.branches.find((branch) => branch.branch === "strikeout");
+    const ball = summary?.branches.find((branch) => branch.branch === "ball");
+    const inPlay = summary?.branches.find((branch) => branch.branch === "inPlay");
+
+    expect(strikeout?.n).toBe(1);
+    expect(strikeout?.preRe).toBeCloseTo(0.4);
+    expect(strikeout?.postRe).toBeCloseTo(0.2);
+
+    expect(ball?.preRe).toBeCloseTo(1.6);
+    expect(ball?.postRe).toBeCloseTo(1.4);
+    expect(ball?.postOutProb).toBeCloseTo(0.7);
+    expect(ball?.n).toBe(1);
+    expect(inPlay?.preRe).toBeCloseTo(0.2);
+    expect(inPlay?.postRe).toBe(0);
+    expect(inPlay?.n).toBe(1);
+
+    expect(summary?.counterfactual.totalBalls).toBe(1);
+    expect(summary?.counterfactual.valuePerConversion).toBeCloseTo(1.4 - 1.1);
+  });
+
+  it("treats last-recorded 0-2 foul strings with no terminal pitch as implicit contact", () => {
+    const play = makePlay({
+      rawPlay: {
+        inning: 1,
+        halfInning: "top",
+        playIndex: 0,
+        playText: "Batter A singled to left field (0-2 KFF).",
+        dedupKey: "1-top-0",
+      },
+      outsBefore: 1,
+      outsAfter: 1,
+      baseStateBefore: { first: true, second: true, third: false },
+      baseStateAfter: { first: true, second: false, third: true },
+      terminalPitchRecorded: false,
+      countBeforeTerminalPitch: { balls: 0, strikes: 2, label: "0-2" },
+      countSnapshots: [
+        {
+          pitchNumber: 1,
+          pitchCode: "K",
+          countBefore: { balls: 0, strikes: 0, label: "0-0" },
+          countAfter: { balls: 0, strikes: 1, label: "0-1" },
+        },
+        {
+          pitchNumber: 2,
+          pitchCode: "F",
+          countBefore: { balls: 0, strikes: 1, label: "0-1" },
+          countAfter: { balls: 0, strikes: 2, label: "0-2" },
+        },
+        {
+          pitchNumber: 3,
+          pitchCode: "F",
+          countBefore: { balls: 0, strikes: 2, label: "0-2" },
+          countAfter: { balls: 0, strikes: 2, label: "0-2" },
+        },
+      ],
+    });
+
+    const halfInning = makeHalfInning([play]);
+    const re24Map = new Map([["101-1", { n: 10, sumRe: 5, sumOutOccurred: 2 }]]);
+    const re288Map = new Map([["0-2|110|1", { n: 10, sumRe: 9, sumOutOccurred: 4 }]]);
+
+    const summary = buildOhTwoCountProgressionSummary(
+      [halfInning],
+      re24Map,
+      re288Map,
+    );
+
+    const inPlay = summary?.branches.find((branch) => branch.branch === "inPlay");
+    expect(inPlay?.n).toBe(1);
+    expect(inPlay?.preRe).toBeCloseTo(0.9);
+    expect(inPlay?.postRe).toBeCloseTo(0.5);
   });
 });
 

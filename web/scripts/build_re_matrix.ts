@@ -62,7 +62,7 @@ async function main() {
 
   // 3. Aggregate and compute matrix cells
   console.log("\n[3/4] Aggregating observations and computing cells...");
-  const { re24, re288, obsRe24, obsRe288 } = buildMatrixFromCorpus(
+  const { re24, re288, obsRe24, obsRe288, countProgression } = buildMatrixFromCorpus(
     corpus,
     MIN_OBSERVATIONS,
   );
@@ -90,6 +90,7 @@ async function main() {
     minObservations: MIN_OBSERVATIONS,
     re24,
     re288,
+    countProgression,
   };
 
   mkdirSync(OUTPUT_DIR, { recursive: true });

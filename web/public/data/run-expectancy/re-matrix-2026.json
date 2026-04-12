@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-12T17:00:21.620Z",
+  "generatedAt": "2026-04-12T17:24:03.544Z",
   "season": 2026,
   "totalObservationsRe24": 1221,
   "totalObservationsRe288": 3148,
@@ -2455,5 +2455,110 @@
       "meanRe": null,
       "outProb": null
     }
-  ]
+  ],
+  "countProgression": {
+    "ohTwo": {
+      "count": "0-2",
+      "totalObserved": 153,
+      "baselineRe": 0.22875816993464043,
+      "baselineOutProb": 0.771241830065359,
+      "stateMix": [
+        {
+          "baseState": "000",
+          "outs": 0,
+          "n": 39,
+          "share": 0.2549019607843137
+        },
+        {
+          "baseState": "000",
+          "outs": 1,
+          "n": 25,
+          "share": 0.16339869281045752
+        },
+        {
+          "baseState": "000",
+          "outs": 2,
+          "n": 18,
+          "share": 0.11764705882352941
+        },
+        {
+          "baseState": "100",
+          "outs": 2,
+          "n": 13,
+          "share": 0.08496732026143791
+        },
+        {
+          "baseState": "010",
+          "outs": 2,
+          "n": 12,
+          "share": 0.0784313725490196
+        },
+        {
+          "baseState": "100",
+          "outs": 0,
+          "n": 9,
+          "share": 0.058823529411764705
+        }
+      ],
+      "branches": [
+        {
+          "branch": "strikeout",
+          "label": "Strikeout",
+          "nextStateLabel": "Next PA after strikeout",
+          "n": 34,
+          "preRe": 0.2868715434891906,
+          "postRe": 0.1827915982251188,
+          "reDelta": -0.10407994526407177,
+          "preOutProb": 0.7807629462041229,
+          "postOutProb": null,
+          "outProbDelta": null
+        },
+        {
+          "branch": "ball",
+          "label": "Ball (→ 1-2)",
+          "nextStateLabel": "Count 1-2, same bases/outs",
+          "n": 95,
+          "preRe": 0.2209001349527665,
+          "postRe": 0.22125911962194153,
+          "reDelta": 0.0003589846691750276,
+          "preOutProb": 0.7650854700854699,
+          "postOutProb": 0.7794537297292062,
+          "outProbDelta": 0.014368259643736336
+        },
+        {
+          "branch": "inPlay",
+          "label": "In Play (actual outcomes)",
+          "nextStateLabel": "Actual contact outcomes from 0-2",
+          "n": 6,
+          "preRe": 0.13045584045584044,
+          "postRe": 0.23141409373209743,
+          "reDelta": 0.10095825327625699,
+          "preOutProb": 0.7668091168091168,
+          "postOutProb": null,
+          "outProbDelta": null
+        }
+      ],
+      "counterfactual": {
+        "totalBalls": 95,
+        "valuePerConversion": 0.0702984948952873,
+        "scenarios": [
+          {
+            "conversionPct": 25,
+            "ballsConverted": 24,
+            "runsImprovement": 1.6871638774868953
+          },
+          {
+            "conversionPct": 50,
+            "ballsConverted": 48,
+            "runsImprovement": 3.3743277549737907
+          },
+          {
+            "conversionPct": 75,
+            "ballsConverted": 71,
+            "runsImprovement": 4.991193137565399
+          }
+        ]
+      }
+    }
+  }
 }

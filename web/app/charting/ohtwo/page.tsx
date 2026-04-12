@@ -1386,7 +1386,7 @@ function ReBranchCard({ b }: { b: OhTwoReBranch }) {
   );
 }
 
-function ReModelSection({ reModel, totalBalls }: { reModel: OhTwoReModelData; totalBalls: number }) {
+function ReModelSection({ reModel }: { reModel: OhTwoReModelData }) {
   if (!reModel.available) {
     return (
       <section className="rounded-[28px] border border-border bg-surface p-5 shadow-sm sm:p-7">
@@ -1413,7 +1413,7 @@ function ReModelSection({ reModel, totalBalls }: { reModel: OhTwoReModelData; to
       <SectionHeader
         icon={Sigma}
         title="Run Expectancy Model"
-        detail={`Count-progression RE tree for 0-2 pitches using the 2026 Babson PBP corpus. Reference state: bases empty, ${tree.referenceOuts} out${tree.referenceOuts !== 1 ? "s" : ""}. RE delta < 0 means the pitcher helped; > 0 means run expectancy increased.`}
+        detail={`State-weighted RE tree for all observed 0-2 pitches in the 2026 Babson PBP corpus. Values are aggregated across the actual base/out situations from every mapped game; RE delta < 0 means the pitcher helped, > 0 means run expectancy increased.`}
       />
 
       {/* RE288 baseline */}
@@ -1435,6 +1435,12 @@ function ReModelSection({ reModel, totalBalls }: { reModel: OhTwoReModelData; to
         )}
       </div>
 
+      <p className="mb-5 text-xs leading-6 text-muted">
+        Built from <strong className="text-foreground">{tree.totalObserved}</strong> observed 0-2 pitches in Sidearm play-by-play.
+        Most common states:{" "}
+        {tree.stateMix.map((state) => `${state.baseState}/${state.outs} (${state.n})`).join(" · ")}
+      </p>
+
       {/* Branch cards */}
       <div className="grid gap-4 md:grid-cols-3">
         {tree.branches.map((b) => (
@@ -1450,10 +1456,10 @@ function ReModelSection({ reModel, totalBalls }: { reModel: OhTwoReModelData; to
             <h3 className="text-base font-bold text-foreground">Counterfactual — Balls to Strikeouts</h3>
           </div>
           <p className="text-xs leading-6 text-muted mb-4">
-            {totalBalls} balls were thrown on the 0-2 fastball.{" "}
+            {counterfactual.totalBalls} balls were observed on 0-2 pitches in the PBP corpus.{" "}
             Each ball converted to a K would save approximately{" "}
             <strong className="text-foreground">{fmtRe(counterfactual.valuePerConversion)} expected runs</strong>{" "}
-            at the reference state.
+            at those real game states.
           </p>
           <div className="grid gap-3 sm:grid-cols-3">
             {counterfactual.scenarios.map((s) => (
@@ -1486,7 +1492,7 @@ function ReModelSection({ reModel, totalBalls }: { reModel: OhTwoReModelData; to
 export default async function OhTwoPage() {
   const report = await loadChartingOhTwoReport();
   const { summary, execution, nextPitch, paOutcomes, pitchResults, velocity, byPitcher, byOpponent, inningDistribution, events, locationCounts } = report;
-  const reModel = loadOhTwoReModel(pitchResults.ball);
+  const reModel = loadOhTwoReModel();
 
   return (
     <>
@@ -1705,7 +1711,7 @@ export default async function OhTwoPage() {
         {/* ------------------------------------------------------------------ */}
         {/* Run Expectancy Model */}
         {/* ------------------------------------------------------------------ */}
-        <ReModelSection reModel={reModel} totalBalls={pitchResults.ball} />
+        <ReModelSection reModel={reModel} />
 
         {/* ------------------------------------------------------------------ */}
         {/* Event Feed */}

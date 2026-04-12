@@ -179,6 +179,47 @@ export interface RE288Cell extends RE24Cell {
   outProb: number | null;
 }
 
+export interface CountProgressionBranchSummary {
+  branch: "strikeout" | "ball" | "inPlay";
+  label: string;
+  nextStateLabel: string;
+  /** Branch sample count when the branch is observed directly in PBP. */
+  n: number;
+  preRe: number | null;
+  postRe: number | null;
+  reDelta: number | null;
+  preOutProb: number | null;
+  postOutProb: number | null;
+  outProbDelta: number | null;
+}
+
+export interface CountProgressionScenarioSummary {
+  conversionPct: number;
+  ballsConverted: number;
+  runsImprovement: number | null;
+}
+
+export interface CountProgressionStateMixEntry {
+  baseState: BaseStateCode;
+  outs: OutsCount;
+  n: number;
+  share: number;
+}
+
+export interface CountProgressionSummary {
+  count: CountLabel;
+  totalObserved: number;
+  baselineRe: number | null;
+  baselineOutProb: number | null;
+  stateMix: CountProgressionStateMixEntry[];
+  branches: CountProgressionBranchSummary[];
+  counterfactual: {
+    totalBalls: number;
+    valuePerConversion: number | null;
+    scenarios: CountProgressionScenarioSummary[];
+  };
+}
+
 /** The full serialized matrix file written by `npm run re:rebuild`. */
 export interface ReMatrixFile {
   generatedAt: string;
@@ -188,6 +229,9 @@ export interface ReMatrixFile {
   minObservations: number;
   re24: RE24Cell[];
   re288: RE288Cell[];
+  countProgression?: {
+    ohTwo: CountProgressionSummary | null;
+  };
 }
 
 // ---------------------------------------------------------------------------

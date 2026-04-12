@@ -1,11 +1,11 @@
 /**
- * 0-2 Fastball Run Expectancy Dashboard — Phase 24
+ * 0-2 Run Expectancy Dashboard — Phase 24
  *
- * Reads the static RE matrix (if it exists) and computes RE-model values for
- * the /charting/ohtwo coaching dashboard:
- *   - Count-progression RE tree: K / ball / in-play branches after 0-2
- *   - Out-probability delta for each branch
- *   - Counterfactual scenarios: "X% of balls become Ks → Y runs saved"
+ * Reads the static RE matrix (if it exists) and extracts the PBP-driven
+ * season summary used by the /charting/ohtwo coaching dashboard:
+ *   - State-weighted 0-2 RE tree across all mapped 2026 PBP games
+ *   - Out-probability deltas where the post-state is still in-count
+ *   - Counterfactual scenarios using real 0-2 ball counts from PBP
  *
  * All reads are wrapped in try/catch so the dashboard degrades gracefully
  * when the matrix file has not been generated yet.
@@ -14,14 +14,9 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type {
-  BaseStateCode,
-  CountLabel,
-  OutsCount,
-  RE288Cell,
-  RE24Cell,
+  CountProgressionSummary,
   ReMatrixFile,
 } from "./types";
-import { buildMatrixLookups, lookupRe288, lookupRe24 } from "./deltaRe";
 
 // ---------------------------------------------------------------------------
 // Static file paths
@@ -58,13 +53,12 @@ export interface OhTwoReBranch {
 }
 
 export interface OhTwoReTree {
-  /** The reference base state used for the tree computation */
-  referenceBaseState: BaseStateCode;
-  referenceOuts: OutsCount;
-  /** RE288 at (0-2, referenceBaseState, referenceOuts) */
+  count: "0-2";
+  totalObserved: number;
   baselineRe: number | null;
   baselineOutProb: number | null;
   branches: OhTwoReBranch[];
+  stateMix: CountProgressionSummary["stateMix"];
 }
 
 // ---------------------------------------------------------------------------
@@ -82,16 +76,12 @@ export interface OhTwoCounterfactualScenario {
 }
 
 export interface OhTwoCounterfactual {
-  /** Number of ball outcomes in the charting data */
+  /** Number of 0-2 balls observed in the PBP corpus */
   totalBalls: number;
-  /** delta_re_K (strikeout branch, reference state) */
+  /** RE delta for the strikeout branch */
   deltaReK: number | null;
-  /** delta_re_ball (ball branch, 1-2 count reference) */
+  /** RE delta for the ball branch */
   deltaReBall: number | null;
-  /**
-   * Run value saved per converted ball = delta_re_ball - delta_re_K
-   * Positive means each K converted from a ball saves this many expected runs.
-   */
   valuePerConversion: number | null;
   scenarios: OhTwoCounterfactualScenario[];
 }
@@ -121,147 +111,43 @@ function loadMatrixSafe(): ReMatrixFile | null {
 }
 
 // ---------------------------------------------------------------------------
-// RE tree builder
+// Summary adapter
 // ---------------------------------------------------------------------------
 
-const PRESET_COUNTERFACTUAL_PCTS = [25, 50, 75] as const;
-
-function buildReTree(
-  re24: Map<string, RE24Cell>,
-  re288: Map<string, RE288Cell>,
-): OhTwoReTree {
-  // Use bases empty, 0 outs as the reference state — most common lead-off PA shape
-  const refBs: BaseStateCode = "000";
-  const refOuts: OutsCount = 0;
-
-  const baselineRe = lookupRe288(re288, "0-2", refBs, refOuts);
-  const baselineOutProb =
-    re288.get(`0-2|${refBs}|${refOuts}`)?.outProb ?? null;
-
-  // K branch: outs+1, same bases, PA over → use RE24
-  const kPostRe = lookupRe24(re24, refBs, (refOuts + 1) as OutsCount);
-  const kReDelta =
-    kPostRe !== null && baselineRe !== null ? kPostRe - baselineRe : null;
-  const kOutProb =
-    re288.get(`0-2|${refBs}|${(refOuts + 1) as OutsCount}`)?.outProb ?? null;
-  const kOutProbDelta =
-    kOutProb !== null && baselineOutProb !== null
-      ? kOutProb - baselineOutProb
-      : null;
-
-  // Ball branch: count goes to 1-2, same bases, same outs → use RE288("1-2")
-  const ballPostRe = lookupRe288(re288, "1-2", refBs, refOuts);
-  const ballReDelta =
-    ballPostRe !== null && baselineRe !== null
-      ? ballPostRe - baselineRe
-      : null;
-  const ballOutProb = re288.get(`1-2|${refBs}|${refOuts}`)?.outProb ?? null;
-  const ballOutProbDelta =
-    ballOutProb !== null && baselineOutProb !== null
-      ? ballOutProb - baselineOutProb
-      : null;
-
-  // In-play branch: mixed outcome — use RE24 at same outs (avg across possible results)
-  // A ball in play that doesn't result in an out leaves outs unchanged.
-  // We show RE24(bases, outs) as the approximate continuation value.
-  const inPlayPostRe = lookupRe24(re24, refBs, refOuts);
-  const inPlayReDelta =
-    inPlayPostRe !== null && baselineRe !== null
-      ? inPlayPostRe - baselineRe
-      : null;
-
-  const branches: OhTwoReBranch[] = [
-    {
-      branch: "strikeout",
-      label: "Strikeout",
-      nextStateLabel: `Outs +1 (${refOuts + 1} out${refOuts + 1 !== 1 ? "s" : ""})`,
-      preRe: baselineRe,
-      postRe: kPostRe,
-      reDelta: kReDelta,
-      preOutProb: baselineOutProb,
-      postOutProb: kOutProb,
-      outProbDelta: kOutProbDelta,
-      limitedSample: kPostRe === null || baselineRe === null,
-    },
-    {
-      branch: "ball",
-      label: "Ball (→ 1-2)",
-      nextStateLabel: "Count 1-2, same bases/outs",
-      preRe: baselineRe,
-      postRe: ballPostRe,
-      reDelta: ballReDelta,
-      preOutProb: baselineOutProb,
-      postOutProb: ballOutProb,
-      outProbDelta: ballOutProbDelta,
-      limitedSample: ballPostRe === null || baselineRe === null,
-    },
-    {
-      branch: "inPlay",
-      label: "In Play (average)",
-      nextStateLabel: "Ball in play — mixed outcomes",
-      preRe: baselineRe,
-      postRe: inPlayPostRe,
-      reDelta: inPlayReDelta,
-      preOutProb: baselineOutProb,
-      postOutProb: null,
-      outProbDelta: null,
-      limitedSample: inPlayPostRe === null || baselineRe === null,
-    },
-  ];
-
+function adaptTree(summary: CountProgressionSummary): OhTwoReTree {
   return {
-    referenceBaseState: refBs,
-    referenceOuts: refOuts,
-    baselineRe,
-    baselineOutProb,
-    branches,
+    count: "0-2",
+    totalObserved: summary.totalObserved,
+    baselineRe: summary.baselineRe,
+    baselineOutProb: summary.baselineOutProb,
+    stateMix: summary.stateMix,
+    branches: summary.branches.map((branch) => ({
+      branch: branch.branch,
+      label: branch.label,
+      nextStateLabel: branch.nextStateLabel,
+      preRe: branch.preRe,
+      postRe: branch.postRe,
+      reDelta: branch.reDelta,
+      preOutProb: branch.preOutProb,
+      postOutProb: branch.postOutProb,
+      outProbDelta: branch.outProbDelta,
+      limitedSample: branch.n < 5 || branch.preRe === null || branch.postRe === null,
+    })),
   };
 }
 
-// ---------------------------------------------------------------------------
-// Counterfactual builder
-// ---------------------------------------------------------------------------
-
-function buildCounterfactual(
-  tree: OhTwoReTree,
-  totalBalls: number,
-): OhTwoCounterfactual {
-  const kBranch = tree.branches.find((b) => b.branch === "strikeout");
-  const ballBranch = tree.branches.find((b) => b.branch === "ball");
-
-  const deltaReK = kBranch?.reDelta ?? null;
-  const deltaReBall = ballBranch?.reDelta ?? null;
-
-  // Per-conversion value: how much run expectancy is improved by converting one
-  // ball to a strikeout. Using reference state (bases empty, 0 outs).
-  const valuePerConversion =
-    deltaReK !== null && deltaReBall !== null
-      ? deltaReBall - deltaReK // ball adds runs, K reduces — positive = saves runs
-      : null;
-
-  const limitedSample = kBranch?.limitedSample || ballBranch?.limitedSample || false;
-
-  const scenarios: OhTwoCounterfactualScenario[] = PRESET_COUNTERFACTUAL_PCTS.map(
-    (pct) => {
-      const ballsConverted = Math.round((pct / 100) * totalBalls);
-      return {
-        conversionPct: pct,
-        ballsConverted,
-        runsImprovement:
-          valuePerConversion !== null
-            ? valuePerConversion * ballsConverted
-            : null,
-        limitedSample,
-      };
-    },
-  );
-
+function adaptCounterfactual(summary: CountProgressionSummary): OhTwoCounterfactual {
+  const kBranch = summary.branches.find((branch) => branch.branch === "strikeout");
+  const ballBranch = summary.branches.find((branch) => branch.branch === "ball");
   return {
-    totalBalls,
-    deltaReK,
-    deltaReBall,
-    valuePerConversion,
-    scenarios,
+    totalBalls: summary.counterfactual.totalBalls,
+    deltaReK: kBranch?.reDelta ?? null,
+    deltaReBall: ballBranch?.reDelta ?? null,
+    valuePerConversion: summary.counterfactual.valuePerConversion,
+    scenarios: summary.counterfactual.scenarios.map((scenario) => ({
+      ...scenario,
+      limitedSample: summary.counterfactual.totalBalls < 5,
+    })),
   };
 }
 
@@ -272,17 +158,17 @@ function buildCounterfactual(
 /**
  * Loads the RE matrix and computes dashboard data for the 0-2 report.
  *
- * @param totalBalls - Number of ball outcomes in the charting data (from pitchResults.ball).
  */
-export function loadOhTwoReModel(totalBalls: number): OhTwoReModelData {
+export function loadOhTwoReModel(): OhTwoReModelData {
   const matrix = loadMatrixSafe();
-  if (!matrix) {
+  const summary = matrix?.countProgression?.ohTwo;
+
+  if (!matrix || !summary) {
     return { available: false, tree: null, counterfactual: null };
   }
 
-  const { re24, re288 } = buildMatrixLookups(matrix);
-  const tree = buildReTree(re24, re288);
-  const counterfactual = buildCounterfactual(tree, totalBalls);
+  const tree = adaptTree(summary);
+  const counterfactual = adaptCounterfactual(summary);
 
   return { available: true, tree, counterfactual };
 }

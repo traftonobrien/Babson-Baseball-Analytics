@@ -7,10 +7,13 @@
 
 import type {
   BaseStateCode,
+  CountProgressionBranchSummary,
+  CountProgressionSummary,
   CountLabel,
   MatrixCellAccumulator,
   OutsCount,
   ParsedPbpHalfInning,
+  ParsedPbpPlay,
   RE24Cell,
   RE288Cell,
   SeasonRunExpectancyCorpus,
@@ -49,6 +52,12 @@ export const ALL_COUNTS: readonly CountLabel[] = [
   "3-1",
   "3-2",
 ] as const;
+
+const BALL_PITCH_CODES = new Set(["B", "I", "P"]);
+const STRIKE_PITCH_CODES = new Set(["K", "S", "C", "T", "L", "M", "Q"]);
+const FOUL_PITCH_CODES = new Set(["F"]);
+const IN_PLAY_PITCH_CODES = new Set(["X"]);
+const PRESET_COUNTERFACTUAL_PCTS = [25, 50, 75] as const;
 
 // ---------------------------------------------------------------------------
 // Key helpers (exported for tests)
@@ -116,6 +125,11 @@ export interface AggregationResult {
   skippedIgnored: number;
   skippedNoCount: number;
   skippedInvalidOuts: number;
+}
+
+interface PitchStateObservation {
+  baseState: BaseStateCode;
+  outs: OutsCount;
 }
 
 /**
@@ -225,6 +239,331 @@ export function aggregateHalfInnings(
   };
 }
 
+function meanFromAccumulator(
+  map: Map<string, MatrixCellAccumulator>,
+  key: string,
+): number | null {
+  const acc = map.get(key);
+  return acc && acc.n > 0 ? acc.sumRe / acc.n : null;
+}
+
+function outProbFromAccumulator(
+  map: Map<string, MatrixCellAccumulator>,
+  key: string,
+): number | null {
+  const acc = map.get(key);
+  return acc && acc.n > 0 ? acc.sumOutOccurred / acc.n : null;
+}
+
+function stateObservationFromPlay(play: ParsedPbpPlay): PitchStateObservation | null {
+  if (!isValidOuts(play.outsBefore)) {
+    return null;
+  }
+
+  return {
+    baseState: baseStateCode(
+      play.baseStateBefore.first,
+      play.baseStateBefore.second,
+      play.baseStateBefore.third,
+    ),
+    outs: play.outsBefore as OutsCount,
+  };
+}
+
+function strikeoutPostReForState(
+  re24Map: Map<string, MatrixCellAccumulator>,
+  state: PitchStateObservation,
+): number | null {
+  if (state.outs >= 2) {
+    return 0;
+  }
+
+  return meanFromAccumulator(
+    re24Map,
+    re24Key(state.baseState, (state.outs + 1) as OutsCount),
+  );
+}
+
+function classifyOhTwoPitchOutcome(
+  play: ParsedPbpPlay,
+  snapshotIndex: number,
+): "ball" | "strikeout" | "inPlay" | "foul" | "other" {
+  const snapshot = play.countSnapshots[snapshotIndex];
+  const pitchCode = snapshot?.pitchCode.toUpperCase();
+  const isLastPitch = snapshotIndex === play.countSnapshots.length - 1;
+
+  if (!pitchCode) {
+    return "other";
+  }
+
+  if (BALL_PITCH_CODES.has(pitchCode)) {
+    return "ball";
+  }
+
+  if (
+    isLastPitch &&
+    !play.terminalPitchRecorded &&
+    play.countBeforeTerminalPitch?.label === "0-2" &&
+    !/\b(struck out|walked|intentional walk|hit by pitch)\b/i.test(
+      play.rawPlay.playText,
+    )
+  ) {
+    return "inPlay";
+  }
+
+  if (FOUL_PITCH_CODES.has(pitchCode)) {
+    return "foul";
+  }
+
+  if (IN_PLAY_PITCH_CODES.has(pitchCode)) {
+    return "inPlay";
+  }
+
+  if (
+    isLastPitch &&
+    STRIKE_PITCH_CODES.has(pitchCode) &&
+    /\bstruck out\b/i.test(play.rawPlay.playText)
+  ) {
+    return "strikeout";
+  }
+
+  return "other";
+}
+
+function weightedAverage(
+  observations: PitchStateObservation[],
+  valueForState: (state: PitchStateObservation) => number | null,
+): number | null {
+  let sum = 0;
+  let count = 0;
+
+  for (const observation of observations) {
+    const value = valueForState(observation);
+    if (value === null) {
+      continue;
+    }
+    sum += value;
+    count++;
+  }
+
+  return count > 0 ? sum / count : null;
+}
+
+function buildStateMix(
+  observations: PitchStateObservation[],
+): CountProgressionSummary["stateMix"] {
+  const totals = new Map<string, number>();
+
+  for (const observation of observations) {
+    const key = `${observation.baseState}|${observation.outs}`;
+    totals.set(key, (totals.get(key) ?? 0) + 1);
+  }
+
+  return [...totals.entries()]
+    .map(([key, n]) => {
+      const [baseState, outs] = key.split("|");
+      return {
+        baseState: baseState as BaseStateCode,
+        outs: Number.parseInt(outs ?? "0", 10) as OutsCount,
+        n,
+        share: observations.length > 0 ? n / observations.length : 0,
+      };
+    })
+    .sort((left, right) => right.n - left.n)
+    .slice(0, 6);
+}
+
+export function buildOhTwoCountProgressionSummary(
+  halfInnings: ParsedPbpHalfInning[],
+  re24Map: Map<string, MatrixCellAccumulator>,
+  re288Map: Map<string, MatrixCellAccumulator>,
+): CountProgressionSummary | null {
+  const allOhTwoStates: PitchStateObservation[] = [];
+  const ballStates: PitchStateObservation[] = [];
+  const strikeoutStates: PitchStateObservation[] = [];
+  const inPlayStates: PitchStateObservation[] = [];
+  const inPlayPostRes: number[] = [];
+  let inPlayCount = 0;
+
+  for (const halfInning of halfInnings) {
+    const plays = halfInning.plays.filter((play) => !play.ignored);
+
+    for (const play of plays) {
+      const state = stateObservationFromPlay(play);
+      if (!state) {
+        continue;
+      }
+
+      for (const [snapshotIndex, snapshot] of play.countSnapshots.entries()) {
+        if (snapshot.countBefore.label !== "0-2") {
+          continue;
+        }
+
+        allOhTwoStates.push(state);
+
+        const outcome = classifyOhTwoPitchOutcome(play, snapshotIndex);
+        if (outcome === "ball") {
+          ballStates.push(state);
+        } else if (outcome === "strikeout") {
+          strikeoutStates.push(state);
+        } else if (outcome === "inPlay") {
+          inPlayStates.push(state);
+          const postRe =
+            play.outsAfter >= 3
+              ? 0
+              : meanFromAccumulator(
+                  re24Map,
+                  re24Key(
+                    baseStateCode(
+                      play.baseStateAfter.first,
+                      play.baseStateAfter.second,
+                      play.baseStateAfter.third,
+                    ),
+                    play.outsAfter as OutsCount,
+                  ),
+                );
+          if (postRe !== null) {
+            inPlayPostRes.push(postRe);
+          }
+          inPlayCount++;
+        }
+      }
+    }
+  }
+
+  if (allOhTwoStates.length === 0) {
+    return null;
+  }
+
+  const baselineRe = weightedAverage(allOhTwoStates, (state) =>
+    meanFromAccumulator(re288Map, re288Key("0-2", state.baseState, state.outs)),
+  );
+  const baselineOutProb = weightedAverage(allOhTwoStates, (state) =>
+    outProbFromAccumulator(re288Map, re288Key("0-2", state.baseState, state.outs)),
+  );
+
+  const branchPreRe = (states: PitchStateObservation[]) =>
+    weightedAverage(states, (state) =>
+      meanFromAccumulator(re288Map, re288Key("0-2", state.baseState, state.outs)),
+    );
+  const branchPreOutProb = (states: PitchStateObservation[]) =>
+    weightedAverage(states, (state) =>
+      outProbFromAccumulator(re288Map, re288Key("0-2", state.baseState, state.outs)),
+    );
+
+  const strikeoutPreRe = branchPreRe(strikeoutStates);
+  const strikeoutPreOutProb = branchPreOutProb(strikeoutStates);
+  const strikeoutPostRe = weightedAverage(strikeoutStates, (state) =>
+    strikeoutPostReForState(re24Map, state),
+  );
+  const ballPreRe = branchPreRe(ballStates);
+  const ballPreOutProb = branchPreOutProb(ballStates);
+  const ballPostRe = weightedAverage(ballStates, (state) =>
+    meanFromAccumulator(re288Map, re288Key("1-2", state.baseState, state.outs)),
+  );
+  const ballPostOutProb = weightedAverage(ballStates, (state) =>
+    outProbFromAccumulator(re288Map, re288Key("1-2", state.baseState, state.outs)),
+  );
+  const inPlayPreRe = branchPreRe(inPlayStates);
+  const inPlayPreOutProb = branchPreOutProb(inPlayStates);
+  const inPlayPostRe =
+    inPlayPostRes.length > 0
+      ? inPlayPostRes.reduce((sum, value) => sum + value, 0) / inPlayPostRes.length
+      : null;
+
+  const makeBranch = (
+    branch: CountProgressionBranchSummary["branch"],
+    label: string,
+    nextStateLabel: string,
+    n: number,
+    preRe: number | null,
+    postRe: number | null,
+    preOutProb: number | null,
+    postOutProb: number | null,
+  ): CountProgressionBranchSummary => ({
+    branch,
+    label,
+    nextStateLabel,
+    n,
+    preRe,
+    postRe,
+    reDelta:
+      preRe !== null && postRe !== null ? postRe - preRe : null,
+    preOutProb,
+    postOutProb,
+    outProbDelta:
+      preOutProb !== null && postOutProb !== null
+        ? postOutProb - preOutProb
+        : null,
+  });
+
+  const counterfactualBallPostRe = weightedAverage(ballStates, (state) =>
+    meanFromAccumulator(re288Map, re288Key("1-2", state.baseState, state.outs)),
+  );
+  const counterfactualKPostRe = weightedAverage(ballStates, (state) =>
+    strikeoutPostReForState(re24Map, state),
+  );
+  const valuePerConversion =
+    counterfactualBallPostRe !== null && counterfactualKPostRe !== null
+      ? counterfactualBallPostRe - counterfactualKPostRe
+      : null;
+
+  return {
+    count: "0-2",
+    totalObserved: allOhTwoStates.length,
+    baselineRe,
+    baselineOutProb,
+    stateMix: buildStateMix(allOhTwoStates),
+    branches: [
+      makeBranch(
+        "strikeout",
+        "Strikeout",
+        "Next PA after strikeout",
+        strikeoutStates.length,
+        strikeoutPreRe,
+        strikeoutPostRe,
+        strikeoutPreOutProb,
+        null,
+      ),
+      makeBranch(
+        "ball",
+        "Ball (→ 1-2)",
+        "Count 1-2, same bases/outs",
+        ballStates.length,
+        ballPreRe,
+        ballPostRe,
+        ballPreOutProb,
+        ballPostOutProb,
+      ),
+      makeBranch(
+        "inPlay",
+        "In Play (actual outcomes)",
+        "Actual contact outcomes from 0-2",
+        inPlayCount,
+        inPlayPreRe,
+        inPlayPostRe,
+        inPlayPreOutProb,
+        null,
+      ),
+    ],
+    counterfactual: {
+      totalBalls: ballStates.length,
+      valuePerConversion,
+      scenarios: PRESET_COUNTERFACTUAL_PCTS.map((conversionPct) => {
+        const ballsConverted = Math.round((conversionPct / 100) * ballStates.length);
+        return {
+          conversionPct,
+          ballsConverted,
+          runsImprovement:
+            valuePerConversion !== null
+              ? valuePerConversion * ballsConverted
+              : null,
+        };
+      }),
+    },
+  };
+}
+
 /**
  * Builds the full 24-cell RE24 array (8 base states × 3 out values).
  * Cells with n < minObs get meanRe = null.
@@ -287,6 +626,9 @@ export function buildMatrixFromCorpus(
   re288: RE288Cell[];
   obsRe24: number;
   obsRe288: number;
+  countProgression: {
+    ohTwo: CountProgressionSummary | null;
+  };
 } {
   const usableHalfInnings = corpus.games
     .filter((g) => g.parsedGame !== null)
@@ -298,5 +640,12 @@ export function buildMatrixFromCorpus(
     re288: buildRe288Cells(agg.re288Map, minObs),
     obsRe24: agg.obsRe24,
     obsRe288: agg.obsRe288,
+    countProgression: {
+      ohTwo: buildOhTwoCountProgressionSummary(
+        usableHalfInnings,
+        agg.re24Map,
+        agg.re288Map,
+      ),
+    },
   };
 }
