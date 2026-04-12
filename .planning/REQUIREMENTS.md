@@ -10,13 +10,13 @@
 
 ### PBP Parser — Extended Game State Machine
 
-- [ ] **PBP-01**: The PBP parser captures ALL plate appearances from a Sidearm box score — both teams, all PA outcomes including walks, strikeouts, HBP, and balls in play (not just Babson BIP events)
-- [ ] **PBP-02**: The parser reconstructs base state (which of 8 combinations of 1B/2B/3B are occupied) sequentially across each half-inning by processing semicolon-separated sub-events within each play line (e.g., "doubled; Cushner advanced to third; Grace scored")
-- [ ] **PBP-03**: The parser tracks outs per half-inning (0–2) and resets base state + outs on half-inning boundaries
-- [ ] **PBP-04**: The parser walks the pitch sequence string (e.g., `BKFB`) letter by letter to derive the count state at each pitch step — enabling per-pitch (count, base_state, outs) snapshots without Supabase
-- [ ] **PBP-05**: Deduplication uses `(inning, half_inning, play_text)` as the key — not plain `play_text` — so identical play descriptions in different innings are not silently dropped
-- [ ] **PBP-06**: Each half-inning's parsed run total is validated against the box score `r` column; innings that fail validation are excluded from matrix computation and logged, not silently included
-- [ ] **PBP-07**: A `re_game_map.json` file maps Sidearm gameIds to internal game metadata (date, opponent, home/away, doubleheader suffix) and is maintained alongside the scraper for disambiguation
+- [x] **PBP-01**: The PBP parser captures ALL plate appearances from a Sidearm box score — both teams, all PA outcomes including walks, strikeouts, HBP, and balls in play (not just Babson BIP events)
+- [x] **PBP-02**: The parser reconstructs base state (which of 8 combinations of 1B/2B/3B are occupied) sequentially across each half-inning by processing semicolon-separated sub-events within each play line (e.g., "doubled; Cushner advanced to third; Grace scored")
+- [x] **PBP-03**: The parser tracks outs per half-inning (0–2) and resets base state + outs on half-inning boundaries
+- [x] **PBP-04**: The parser walks the pitch sequence string (e.g., `BKFB`) letter by letter to derive the count state at each pitch step — enabling per-pitch (count, base_state, outs) snapshots without Supabase
+- [x] **PBP-05**: Deduplication uses `(inning, half_inning, play_text)` as the key — not plain `play_text` — so identical play descriptions in different innings are not silently dropped
+- [x] **PBP-06**: Each half-inning's parsed run total is validated against the box score `r` column; innings that fail validation are excluded from matrix computation and logged, not silently included
+- [x] **PBP-07**: A `re_game_map.json` file maps Sidearm gameIds to internal game metadata (date, opponent, home/away, doubleheader suffix) and is maintained alongside the scraper for disambiguation
 
 ### RE Matrix Builder
 
@@ -76,13 +76,13 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PBP-01 | Phase 21 | Pending |
-| PBP-02 | Phase 21 | Pending |
-| PBP-03 | Phase 21 | Pending |
-| PBP-04 | Phase 21 | Pending |
-| PBP-05 | Phase 21 | Pending |
-| PBP-06 | Phase 21 | Pending |
-| PBP-07 | Phase 21 | Pending |
+| PBP-01 | Phase 21 | Complete |
+| PBP-02 | Phase 21 | Complete |
+| PBP-03 | Phase 21 | Complete |
+| PBP-04 | Phase 21 | Complete |
+| PBP-05 | Phase 21 | Complete |
+| PBP-06 | Phase 21 | Complete |
+| PBP-07 | Phase 21 | Complete |
 | MAT-01 | Phase 22 | Pending |
 | MAT-02 | Phase 22 | Pending |
 | MAT-03 | Phase 22 | Pending |

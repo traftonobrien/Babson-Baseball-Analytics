@@ -97,15 +97,15 @@ describe("classifyZone", () => {
   });
 
   it("maps lines correctly", () => {
-    expect(classifyZone("doubled down the left-field line")).toBe("lf_line");
-    expect(classifyZone("doubled down the right-field line")).toBe("rf_line");
+    expect(classifyZone("doubled down the left-field line")).toBe("lf");
+    expect(classifyZone("doubled down the right-field line")).toBe("rf");
   });
 
   it("falls back to infield position when no direction text", () => {
     expect(classifyZone("grounded out to ss")).toBe("lcf");
-    expect(classifyZone("grounded out to 3b")).toBe("lf_line");
+    expect(classifyZone("grounded out to 3b")).toBe("lf");
     expect(classifyZone("grounded out to 2b")).toBe("rcf");
-    expect(classifyZone("grounded out to 1b")).toBe("rf_line");
+    expect(classifyZone("grounded out to 1b")).toBe("rf");
     expect(classifyZone("grounded out to p")).toBe("cf");
   });
 

@@ -23,7 +23,7 @@ import {
  * Fetches the boxscore HTML and extracts the play-by-play text blocks.
  * Returns an array of play description strings for Babson batting halves.
  */
-async function fetchPlayByPlayHtml(url: string): Promise<string> {
+export async function fetchPlayByPlayHtml(url: string): Promise<string> {
   const response = await fetch(url, {
     headers: {
       "User-Agent": "BabsonAnalytics/1.0 (internal tool)",
@@ -43,20 +43,25 @@ async function fetchPlayByPlayHtml(url: string): Promise<string> {
  * text itself is raw text content inside the same `<td>`. The HTML uses
  * `\r\n` line endings, so we normalize those first.
  */
-function extractPlayLines(html: string): string[] {
+export function extractPlayLines(
+  html: string,
+  options?: { dedupe?: boolean },
+): string[] {
   // Normalize line endings
   const normalized = html.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 
   // Isolate the PBP section. The page contains "play-by-play" both as
   // nav links (early) and as the actual data section (later). The data
   // section starts at the <h3>Play By Play</h3> heading. Use the LAST
-  // "composite-stats" as the end boundary.
+  // "composite-stats" as the end boundary. If a subsection/table HTML
+  // is passed in directly, operate on that chunk instead.
   const pbpStart = normalized.indexOf("Play By Play</h3>");
-  if (pbpStart === -1) return [];
   const pbpEnd = normalized.lastIndexOf("composite-stats");
-  const pbpHtml = pbpEnd > pbpStart
-    ? normalized.substring(pbpStart, pbpEnd)
-    : normalized.substring(pbpStart, pbpStart + 200000);
+  const pbpHtml = pbpStart === -1
+    ? normalized
+    : pbpEnd > pbpStart
+      ? normalized.substring(pbpStart, pbpEnd)
+      : normalized.substring(pbpStart, pbpStart + 200000);
 
   const plays: string[] = [];
 
@@ -71,7 +76,11 @@ function extractPlayLines(html: string): string[] {
     }
   }
 
-  // Deduplicate — the HTML often repeats plays in desktop/mobile views
+  if (options?.dedupe === false) {
+    return plays;
+  }
+
+  // Deduplicate — the full page often repeats plays in desktop/mobile views
   return [...new Set(plays)];
 }
 

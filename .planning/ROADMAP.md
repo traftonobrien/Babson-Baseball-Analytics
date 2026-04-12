@@ -473,3 +473,93 @@ Plans:
 - [ ] 17.5-02-PLAN.md — RLS policies on all five charting tables + withTeam session-variable helper
 - [ ] 17.5-03-PLAN.md — Supabase Storage bucket setup + publish_to_storage.sh script (Wave 1, parallel with 01)
 - [ ] 17.5-04-PLAN.md — Web app read-side: buildDataPaths → Supabase Storage URLs + end-to-end verification
+
+---
+
+## Milestone v4.0: Run Expectancy Intelligence
+
+- [x] **Phase 21: PBP Parser Foundation** - Build the extended Sidearm PBP parser that captures all PA events with sequential base-state and outs reconstruction
+- [x] **Phase 22: RE Matrix Builder** - Build the RE24 and RE288 matrices plus Out Probability matrix from the PBP corpus and write them as refreshable static JSON
+- [x] **Phase 23: Delta-RE and PA Join** - Compute per-pitch run values by joining charted 0-2 fastball PAs to the RE matrix using game-base-state context
+- [x] **Phase 24: 0-2 Dashboard Integration** - Surface run value cost, counterfactual simulator, count-progression RE tree, and out probability delta on /charting/ohtwo
+
+---
+
+## Milestone v4.0 Phase Details
+
+### Phase 21: PBP Parser Foundation
+**Goal**: Coaches can trust that every plate appearance from every Sidearm box score is parsed into a correctly sequenced (count, base_state, outs) record — the foundational corpus for all RE computation.
+**Depends on**: Nothing (new standalone TypeScript scraper, no dependency on prior charting phases)
+**Requirements**: PBP-01, PBP-02, PBP-03, PBP-04, PBP-05, PBP-06, PBP-07
+**Success Criteria** (what must be TRUE):
+  1. Running the parser against a full season of Sidearm box scores produces a PA record for every plate appearance from both teams, with no missing walks, strikeouts, HBP, or balls in play.
+  2. Each PA record carries a correct base_state (one of 8 combinations) derived from sequential sub-event parsing — a "doubled; runner advanced; runner scored" line produces the right resulting state.
+  3. Half-inning run totals computed from the parsed PA stream match the box score `r` column; innings that fail are excluded and logged, not silently included.
+  4. Duplicate play descriptions in different innings are preserved as distinct records (deduplication key is `inning + half_inning + play_text`, not plain `play_text`).
+  5. A `re_game_map.json` file exists mapping every scraped Sidearm gameId to date, opponent, home/away flag, and doubleheader suffix.
+**Plans**: 3 plans
+
+Plans:
+- [x] 21-01: Build the core PBP scraper — fetch all Sidearm box score URLs for the current season, parse play-by-play HTML into raw play lines per half-inning
+- [x] 21-02: Build the base-state machine — walk each half-inning play-by-play sequentially, reconstruct outs + base state from sub-events, validate inning run totals against box score `r` column
+- [x] 21-03: Build count-state extraction + re_game_map — walk pitch sequence strings letter-by-letter for per-pitch (count, base_state, outs) snapshots; write re_game_map.json; add unit tests covering validation, deduplication, and count progression edge cases
+
+### Phase 22: RE Matrix Builder
+**Goal**: A single `npm run re:rebuild` command produces two matrix files — an RE24 and RE288 run expectancy matrix plus an Out Probability matrix — written to static JSON and ready to be consumed by the delta-RE join in Phase 23.
+**Depends on**: Phase 21
+**Requirements**: MAT-01, MAT-02, MAT-03, MAT-04, MAT-05
+**Success Criteria** (what must be TRUE):
+  1. `npm run re:rebuild` completes without error and writes `web/public/data/run-expectancy/re-matrix-2026.json` to disk.
+  2. Every matrix cell with n >= 5 observations contains a numeric mean expected-runs value; cells with n < 5 are stored as `null`.
+  3. The RE288 matrix covers all 288 cells (12 counts × 8 base states × 3 out states); the RE24 matrix covers all 24 cells (8 base states × 3 out states).
+  4. The Out Probability matrix is included in the same JSON file with the same 288-cell structure and the same null-below-5 rule.
+**Plans**: TBD
+
+Plans:
+- [x] 22-01: Build `web/scripts/build_re_matrix.ts` scaffolding — define TypeScript matrix cell types, load PBP corpus from Phase 21 output, aggregate raw observation counts per (count, base_state, outs) cell
+- [x] 22-02: Compute mean RE values and out probabilities per cell; apply n < 5 null rule; write RE24 + RE288 + OutProb matrices to `web/public/data/run-expectancy/re-matrix-2026.json`
+- [x] 22-03: Wire `npm run re:rebuild` in `web/package.json`; add unit tests for matrix cell aggregation, null threshold, and a known hand-verified cell value
+
+### Phase 23: Delta-RE and PA Join
+**Goal**: Each logged 0-2 fastball PA in Supabase charting data has a computed delta-RE value — the system has matched at least 80% of qualifying PAs to a base-state context from the Sidearm PBP corpus.
+**Depends on**: Phase 22
+**Requirements**: RV-01, RV-02, RV-03, RV-04
+**Success Criteria** (what must be TRUE):
+  1. A `game-base-states-2026.json` index file exists, keyed by `(gameDate, opponent, inning, halfInning, paOrder)`, providing base state and outs for each PA.
+  2. For a charted 0-2 fastball PA that can be matched, `delta_re = RE(post_state) - RE(pre_state) + runs_scored` produces a numeric value with the correct sign for hand-verified K, ball, walk, single, and ground-out test cases.
+  3. At least 80% of charted 0-2 fastball PAs from games with available Sidearm PBP are matched to a base-state context.
+  4. Unmatched PAs are flagged and excluded from aggregate run value totals rather than silently counted as zero.
+**Plans**: TBD
+
+Plans:
+- [x] 23-01: Build `game-base-states-2026.json` index — for each game in re_game_map.json, emit a PA-keyed lookup of (base_state, outs, runs_scored) from the Phase 21 PBP corpus; write to `web/public/data/run-expectancy/`
+- [x] 23-02: Build the delta-RE join — load charted 0-2 fastball PAs from Supabase, resolve each to a base-state context via the game-base-states index, look up pre/post RE values from the RE288 matrix, compute delta_re per PA
+- [x] 23-03: Validate match rate (target >= 80%), document sign convention with hand-verified test cases, add unit tests for K/ball/walk/single/out delta-RE computations
+
+### Phase 24: 0-2 Dashboard Integration
+**Goal**: The `/charting/ohtwo` page quantifies the run-value and out-probability impact of Babson's 0-2 fastball strategy — coaches can see the aggregate cost, explore counterfactuals, and understand count-progression consequences using the RE model.
+**Depends on**: Phase 23
+**Requirements**: DASH-01, DASH-02, DASH-03, DASH-04, DASH-05
+**Success Criteria** (what must be TRUE):
+  1. The dashboard displays a total run value figure — the sum of delta-RE across all matched 0-2 fastball PAs expressed as "X expected runs given up / saved."
+  2. A counterfactual slider or input lets a coach ask "if Y% of those balls had been strikeouts, run value changes by Z" — the computation updates live.
+  3. A count-progression RE tree shows the expected runs at each branch after a 0-2 pitch: K outcome, ball (→ 1-2) outcome, and in-play outcome — using RE288 values from the matrix.
+  4. Each 0-2 pitch outcome also shows its out probability delta (from the Out Probability matrix) so coaches see both run-value and out-probability consequences side by side.
+  5. Any matrix cell driving a displayed value with n < 5 shows a "limited sample" indicator instead of a bare number.
+**Plans**: TBD
+
+Plans:
+- [x] 24-01: Wire run value totals into `/charting/ohtwo` — load delta-RE values from the PA join, compute aggregate sum, render the "X runs given up/saved" headline metric alongside existing execution stats
+- [x] 24-02: Build the counterfactual simulator UI — input/slider for "Y% of balls become strikeouts," live delta-RE recomputation using `(Y% × n_balls) × (delta_RE_K - delta_RE_ball)`, rendered as a scenario card
+- [x] 24-03: Build count-progression RE tree and out probability delta panels — render RE288 branch values for K/ball/in-play after 0-2, add out probability delta column, apply "limited sample" indicator for n < 5 cells
+
+---
+
+## Milestone v4.0 Progress
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 21. PBP Parser Foundation | 3/3 | Complete | 2026-04-11 |
+| 22. RE Matrix Builder | 3/3 | Complete | 2026-04-11 |
+| 23. Delta-RE and PA Join | 3/3 | Complete | 2026-04-11 |
+| 24. 0-2 Dashboard Integration | 3/3 | Complete | 2026-04-11 |

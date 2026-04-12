@@ -17,7 +17,9 @@
     "load:stuff-plus": "npx tsx scripts/load_stuff_plus.ts",
     "generate:canonical": "python3 ../scripts/generate_canonical_players_ts.py",
     "fetch:roster": "python3 ../scripts/fetch_babson_roster.py",
-    "generate:charting-roster": "python3 ../scripts/generate_charting_roster.py"
+    "generate:charting-roster": "python3 ../scripts/generate_charting_roster.py",
+    "re:rebuild": "npx tsx scripts/build_re_matrix.ts",
+    "re:base-states": "npx tsx scripts/build_game_base_states.ts"
   },
   "dependencies": {
     "@vercel/analytics": "^1.6.1",

@@ -9,6 +9,7 @@ import {
   Gauge,
   PanelBottomClose,
   Radar,
+  Sigma,
   Target,
   TrendingUp,
   Users,
@@ -18,6 +19,8 @@ import { OhTwoPrintButton } from "./OhTwoPrintButton";
 import { ChartingZoneHeatmap } from "@/app/charting/_components/ChartingZoneHeatmap";
 import { TEAM_NAME } from "@/lib/teamConfig";
 import { loadChartingOhTwoReport } from "@/lib/charting/ohtwo";
+import { loadOhTwoReModel } from "@/lib/runExpectancy/ohTwoDashboard";
+import type { OhTwoReModelData, OhTwoReBranch } from "@/lib/runExpectancy/ohTwoDashboard";
 import type {
   OhTwoReport,
   OhTwoPaOutcomes,
@@ -1305,12 +1308,185 @@ function PrintLayout({ report }: { report: OhTwoReport }) {
 }
 
 // ---------------------------------------------------------------------------
+// RE Model section (Phase 24)
+// ---------------------------------------------------------------------------
+
+function fmtRe(value: number | null): string {
+  if (value === null) return "—";
+  return value.toFixed(3);
+}
+
+function fmtReDelta(value: number | null): string {
+  if (value === null) return "—";
+  const sign = value >= 0 ? "+" : "";
+  return `${sign}${value.toFixed(3)}`;
+}
+
+function fmtOutProb(value: number | null): string {
+  if (value === null) return "—";
+  return `${(value * 100).toFixed(1)}%`;
+}
+
+function branchBgClass(branch: OhTwoReBranch["branch"]): string {
+  if (branch === "strikeout") return "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800";
+  if (branch === "ball") return "bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-800";
+  return "bg-surface border-border";
+}
+
+function deltaBadgeClass(delta: number | null): string {
+  if (delta === null) return "text-muted";
+  if (delta < 0) return "text-emerald-600 dark:text-emerald-400";
+  if (delta > 0) return "text-red-500 dark:text-red-400";
+  return "text-muted";
+}
+
+function ReBranchCard({ b }: { b: OhTwoReBranch }) {
+  return (
+    <div className={`rounded-[22px] border p-5 ${branchBgClass(b.branch)}`}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">{b.label}</p>
+          <p className="mt-0.5 text-xs text-muted">{b.nextStateLabel}</p>
+        </div>
+        {b.limitedSample && (
+          <span className="shrink-0 rounded-full bg-yellow-100 px-2 py-0.5 text-[10px] font-semibold text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+            Limited sample
+          </span>
+        )}
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">Pre RE</p>
+          <p className="mt-1 text-base font-bold text-foreground">{fmtRe(b.preRe)}</p>
+        </div>
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">Post RE</p>
+          <p className="mt-1 text-base font-bold text-foreground">{fmtRe(b.postRe)}</p>
+        </div>
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">RE Delta</p>
+          <p className={`mt-1 text-base font-black ${deltaBadgeClass(b.reDelta)}`}>
+            {fmtReDelta(b.reDelta)}
+          </p>
+        </div>
+        {b.outProbDelta !== null && (
+          <div className="col-span-2 sm:col-span-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">Out Probability Delta</p>
+            <p className={`mt-1 text-sm font-bold ${deltaBadgeClass(-b.outProbDelta)}`}>
+              {fmtOutProb(b.postOutProb)} vs {fmtOutProb(b.preOutProb)}{" "}
+              <span className="font-normal text-muted">
+                ({fmtReDelta(b.outProbDelta !== null ? b.outProbDelta * 100 : null)} pp)
+              </span>
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ReModelSection({ reModel, totalBalls }: { reModel: OhTwoReModelData; totalBalls: number }) {
+  if (!reModel.available) {
+    return (
+      <section className="rounded-[28px] border border-border bg-surface p-5 shadow-sm sm:p-7">
+        <div className="flex items-center gap-2 mb-4">
+          <Sigma className="h-5 w-5 text-[var(--brand-primary)]" aria-hidden />
+          <h2 className="text-xl font-bold tracking-tight text-foreground">Run Expectancy Model</h2>
+        </div>
+        <div className="rounded-[22px] border border-dashed border-border bg-background p-6 text-center">
+          <p className="text-sm font-semibold text-foreground">RE matrix not generated yet</p>
+          <p className="mt-2 text-xs leading-6 text-muted">
+            Run <code className="rounded bg-surface px-1.5 py-0.5 text-[11px] font-mono">npm --prefix web run re:rebuild</code> to build the
+            2026 run expectancy matrix from the Sidearm PBP corpus, then restart the server.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  const { tree, counterfactual } = reModel;
+  if (!tree || !counterfactual) return null;
+
+  return (
+    <section className="rounded-[28px] border border-border bg-surface p-5 shadow-sm sm:p-7">
+      <SectionHeader
+        icon={Sigma}
+        title="Run Expectancy Model"
+        detail={`Count-progression RE tree for 0-2 pitches using the 2026 Babson PBP corpus. Reference state: bases empty, ${tree.referenceOuts} out${tree.referenceOuts !== 1 ? "s" : ""}. RE delta < 0 means the pitcher helped; > 0 means run expectancy increased.`}
+      />
+
+      {/* RE288 baseline */}
+      <div className="mb-5 inline-flex items-center gap-3 rounded-[18px] border border-border bg-background px-4 py-3">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">0-2 Baseline RE</p>
+          <p className="mt-1 text-lg font-black text-foreground">
+            {fmtRe(tree.baselineRe)}
+            {tree.baselineRe === null && (
+              <span className="ml-2 text-xs font-normal text-yellow-600 dark:text-yellow-400">(limited sample)</span>
+            )}
+          </p>
+        </div>
+        {tree.baselineOutProb !== null && (
+          <div className="border-l border-border pl-4">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">Out Prob</p>
+            <p className="mt-1 text-lg font-black text-foreground">{fmtOutProb(tree.baselineOutProb)}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Branch cards */}
+      <div className="grid gap-4 md:grid-cols-3">
+        {tree.branches.map((b) => (
+          <ReBranchCard key={b.branch} b={b} />
+        ))}
+      </div>
+
+      {/* Counterfactual */}
+      {counterfactual.valuePerConversion !== null && (
+        <div className="mt-6 rounded-[24px] border border-border bg-background p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="h-4 w-4 text-[var(--brand-primary)]" aria-hidden />
+            <h3 className="text-base font-bold text-foreground">Counterfactual — Balls to Strikeouts</h3>
+          </div>
+          <p className="text-xs leading-6 text-muted mb-4">
+            {totalBalls} balls were thrown on the 0-2 fastball.{" "}
+            Each ball converted to a K would save approximately{" "}
+            <strong className="text-foreground">{fmtRe(counterfactual.valuePerConversion)} expected runs</strong>{" "}
+            at the reference state.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {counterfactual.scenarios.map((s) => (
+              <div key={s.conversionPct} className="rounded-[18px] border border-border bg-surface p-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+                  {s.conversionPct}% converted
+                </p>
+                <p className="mt-1 text-sm text-muted">{s.ballsConverted} pitch{s.ballsConverted !== 1 ? "es" : ""}</p>
+                <p className={`mt-2 text-xl font-black ${s.runsImprovement !== null && s.runsImprovement > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"}`}>
+                  {s.runsImprovement !== null
+                    ? `−${s.runsImprovement.toFixed(2)} RE`
+                    : "—"}
+                </p>
+                {s.limitedSample && (
+                  <p className="mt-1 text-[10px] text-yellow-600 dark:text-yellow-400">Limited sample</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
 export default async function OhTwoPage() {
   const report = await loadChartingOhTwoReport();
   const { summary, execution, nextPitch, paOutcomes, pitchResults, velocity, byPitcher, byOpponent, inningDistribution, events, locationCounts } = report;
+  const reModel = loadOhTwoReModel(pitchResults.ball);
 
   return (
     <>
@@ -1525,6 +1701,11 @@ export default async function OhTwoPage() {
           <OpponentPanel opponents={byOpponent} />
           <InningPanel innings={inningDistribution} />
         </section>
+
+        {/* ------------------------------------------------------------------ */}
+        {/* Run Expectancy Model */}
+        {/* ------------------------------------------------------------------ */}
+        <ReModelSection reModel={reModel} totalBalls={pitchResults.ball} />
 
         {/* ------------------------------------------------------------------ */}
         {/* Event Feed */}

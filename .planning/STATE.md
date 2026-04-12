@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Run Expectancy Intelligence
-status: planning
-stopped_at: Milestone v4.0 roadmap created — Phase 21 ready to plan
-last_updated: "2026-04-11T00:00:00.000Z"
+status: executing
+stopped_at: Milestone v4.0 complete — all 4 phases (21-24), 12 plans done
+last_updated: "2026-04-11T02:00:00.000Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 4
   total_plans: 12
-  completed_plans: 0
-  percent: 0
+  completed_plans: 12
+  percent: 100
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 
 ## Current Position
 
-**Phase:** 21 — PBP Parser Foundation
-**Plan:** Not started
-**Status:** Roadmap complete, ready to plan Phase 21
+**Phase:** Complete — Milestone v4.0 fully done
+**Plan:** All 12 plans across phases 21-24 complete
+**Status:** Milestone v4.0 Run Expectancy Intelligence shipped
 **Last Activity:** 2026-04-11
 
-Progress: [░░░░░░░░░░] 0% (v4.0)
+Progress: [██░░░░░░░░] 17% (v4.0)
 
 ## Performance Metrics
 
@@ -51,6 +51,25 @@ Progress: [░░░░░░░░░░] 0% (v4.0)
 - Delta-RE sign convention: `RE(post) - RE(pre) + runs_scored`; positive = pitcher hurt, negative = pitcher helped (to be hand-verified in Phase 23-03)
 - Match rate gate: Phase 23 is complete only when >= 80% of charted 0-2 fastball PAs from games with Sidearm PBP are matched
 - `npm run re:rebuild` is the single command to re-scrape all games and regenerate both matrix files
+
+### Key Decisions — Phase 21 Planning
+
+- Reuse `discoverGameUrls()` plus exported `fetchPlayByPlayHtml()` / `extractPlayLines()` from `web/lib/spraychart/scraper.ts`; do not create a second Sidearm discovery stack
+- Keep `web/scripts/scrape_spray_charts.ts` unchanged; Phase 21 touches `web/lib/spraychart/scraper.ts` only to export the two reusable helpers
+- Build the new parser under `web/lib/runExpectancy/` with typed raw-row, parsed-PA, validation-report, and count-snapshot contracts
+- Semicolon-separated clauses inside one Sidearm row are processed sequentially as runner/base-state mutations within the same PA
+- Half-inning run-total validation against the box score `r` column is a hard gate; failed innings are excluded and surfaced explicitly
+- `web/public/data/run-expectancy/re_game_map.json` must map Sidearm `gameId` to `{ date, opponent, homeAway, suffix }`, preserving doubleheader identity for later charting joins
+- Phase 21 completion requires an executable season gate proving at least 15 of the approximately 19 known 2026 games pass validation before Phase 22 begins
+
+### Key Decisions — Phase 21 Execution
+
+- Parse the real Sidearm play-by-play markup by half-inning table (`table.sidearm-table.play-by-play` + caption) instead of flattening the full Play By Play section immediately
+- Deduplicate duplicated desktop/mobile half-innings by `inning + half + playLines`, not by plain play text
+- Keep `extractPlayLines()` backward-compatible for spray charts while adding an opt-out dedupe mode for the RE parser's isolated table parsing
+- Track occupied bases by runner name so semicolon sub-events can move or score the correct runner instead of only flipping anonymous occupancy bits
+- Emit explicit `usableHalfInnings` vs `failedHalfInnings` from the parsed game output so failed run-total validation is impossible to ignore downstream
+- Scope the season-validation gate to the 19 mapped `re_game_map.json` games and treat a game as phase-ready when at least 75% of its half-innings validate; failed half-innings remain excluded from downstream matrix computation
 
 ### Key Decisions Entering v3.0
 
