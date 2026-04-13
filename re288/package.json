@@ -1,0 +1,23 @@
+{
+  "name": "re288",
+  "version": "1.0.0",
+  "description": "Run Expectancy (RE288) Data Pipeline",
+  "main": "src/scraper.ts",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build:index": "ts-node-esm scripts/build_sidearm_game_index.ts",
+    "build:index:newmac": "ts-node-esm scripts/build_sidearm_game_index.ts --conference newmac --season 2026",
+    "build:pbp": "ts-node-esm scripts/build_pbp_corpus.ts",
+    "build:pbp:newmac": "ts-node-esm scripts/build_pbp_corpus.ts --conference newmac --season 2026",
+    "build:pbp:nescac": "ts-node-esm scripts/build_pbp_corpus.ts --conference nescac --season 2026",
+    "build:pbp:liberty-league": "ts-node-esm scripts/build_pbp_corpus.ts --conference liberty-league --season 2026"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x.x",
+    "ts-node": "^10.x.x",
+    "typescript": "^5.x.x",
+    "vitest": "^1.x.x"
+  }
+}

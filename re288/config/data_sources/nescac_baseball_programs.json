@@ -1,0 +1,102 @@
+[
+  {
+    "id": "amherst",
+    "school": "Amherst College",
+    "nickname": "Mammoths",
+    "aliases": ["Amherst", "Amherst College"],
+    "conference": "NESCAC",
+    "provider": "sidearm",
+    "baseUrl": "https://athletics.amherst.edu",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "bates",
+    "school": "Bates College",
+    "nickname": "Bobcats",
+    "aliases": ["Bates", "Bates College"],
+    "conference": "NESCAC",
+    "provider": "sidearm",
+    "baseUrl": "https://gobatesbobcats.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "bowdoin",
+    "school": "Bowdoin College",
+    "nickname": "Polar Bears",
+    "aliases": ["Bowdoin", "Bowdoin College"],
+    "conference": "NESCAC",
+    "provider": "sidearm",
+    "baseUrl": "https://athletics.bowdoin.edu",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "colby",
+    "school": "Colby College",
+    "nickname": "Mules",
+    "aliases": ["Colby", "Colby College"],
+    "conference": "NESCAC",
+    "provider": "sidearm",
+    "baseUrl": "https://colbyathletics.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "hamilton",
+    "school": "Hamilton College",
+    "nickname": "Continentals",
+    "aliases": ["Hamilton", "Hamilton College"],
+    "conference": "NESCAC",
+    "provider": "sidearm",
+    "baseUrl": "https://athletics.hamilton.edu",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "middlebury",
+    "school": "Middlebury College",
+    "nickname": "Panthers",
+    "aliases": ["Middlebury", "Middlebury College"],
+    "conference": "NESCAC",
+    "provider": "sidearm",
+    "baseUrl": "https://athletics.middlebury.edu",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "trinity-ct",
+    "school": "Trinity College (Conn.)",
+    "nickname": "Bantams",
+    "aliases": ["Trinity", "Trinity College", "Trinity College (Conn.)", "Trinity (Conn.)"],
+    "conference": "NESCAC",
+    "provider": "sidearm",
+    "baseUrl": "https://bantamsports.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "tufts",
+    "school": "Tufts University",
+    "nickname": "Jumbos",
+    "aliases": ["Tufts", "Tufts University"],
+    "conference": "NESCAC",
+    "provider": "sidearm",
+    "baseUrl": "https://gotuftsjumbos.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "wesleyan",
+    "school": "Wesleyan University",
+    "nickname": "Cardinals",
+    "aliases": ["Wesleyan", "Wesleyan University"],
+    "conference": "NESCAC",
+    "provider": "sidearm",
+    "baseUrl": "https://athletics.wesleyan.edu",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "williams",
+    "school": "Williams College",
+    "nickname": "Ephs",
+    "aliases": ["Williams", "Williams College"],
+    "conference": "NESCAC",
+    "provider": "sidearm",
+    "baseUrl": "https://ephsports.williams.edu",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  }
+]

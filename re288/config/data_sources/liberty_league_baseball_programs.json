@@ -1,0 +1,112 @@
+[
+  {
+    "id": "bard",
+    "school": "Bard College",
+    "nickname": "Raptors",
+    "aliases": ["Bard", "Bard College"],
+    "conference": "Liberty League",
+    "provider": "sidearm",
+    "baseUrl": "https://bardathletics.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "clarkson",
+    "school": "Clarkson University",
+    "nickname": "Golden Knights",
+    "aliases": ["Clarkson", "Clarkson University"],
+    "conference": "Liberty League",
+    "provider": "sidearm",
+    "baseUrl": "https://clarksonathletics.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "hobart",
+    "school": "Hobart College",
+    "nickname": "Statesmen",
+    "aliases": ["Hobart", "Hobart College"],
+    "conference": "Liberty League",
+    "provider": "sidearm",
+    "baseUrl": "https://hwsathletics.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "ithaca",
+    "school": "Ithaca College",
+    "nickname": "Bombers",
+    "aliases": ["Ithaca", "Ithaca College"],
+    "conference": "Liberty League",
+    "provider": "sidearm",
+    "baseUrl": "https://athletics.ithaca.edu",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "rensselaer",
+    "school": "Rensselaer Polytechnic Institute",
+    "nickname": "Engineers",
+    "aliases": ["RPI", "Rensselaer", "Rensselaer Polytechnic Institute"],
+    "conference": "Liberty League",
+    "provider": "sidearm",
+    "baseUrl": "https://rpiathletics.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "rit",
+    "school": "Rochester Institute of Technology",
+    "nickname": "Tigers",
+    "aliases": ["RIT", "Rochester Institute of Technology"],
+    "conference": "Liberty League",
+    "provider": "sidearm",
+    "baseUrl": "https://ritathletics.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "rochester",
+    "school": "University of Rochester",
+    "nickname": "Yellowjackets",
+    "aliases": ["Rochester", "University of Rochester"],
+    "conference": "Liberty League",
+    "provider": "sidearm",
+    "baseUrl": "https://uofrathletics.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "skidmore",
+    "school": "Skidmore College",
+    "nickname": "Thoroughbreds",
+    "aliases": ["Skidmore", "Skidmore College"],
+    "conference": "Liberty League",
+    "provider": "sidearm",
+    "baseUrl": "https://skidmoreathletics.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "st-lawrence",
+    "school": "St. Lawrence University",
+    "nickname": "Saints",
+    "aliases": ["St. Lawrence", "St. Lawrence University", "Saint Lawrence", "Saint Lawrence University"],
+    "conference": "Liberty League",
+    "provider": "sidearm",
+    "baseUrl": "https://saintsathletics.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "union",
+    "school": "Union College",
+    "nickname": "Garnet Chargers",
+    "aliases": ["Union", "Union College"],
+    "conference": "Liberty League",
+    "provider": "sidearm",
+    "baseUrl": "https://unionathletics.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  },
+  {
+    "id": "vassar",
+    "school": "Vassar College",
+    "nickname": "Brewers",
+    "aliases": ["Vassar", "Vassar College"],
+    "conference": "Liberty League",
+    "provider": "sidearm",
+    "baseUrl": "https://www.vassarathletics.com",
+    "schedulePathTemplate": "/sports/baseball/schedule/{season}"
+  }
+]
