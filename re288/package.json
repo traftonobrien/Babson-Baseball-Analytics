@@ -4,15 +4,24 @@
   "description": "Run Expectancy (RE288) Data Pipeline",
   "main": "src/scraper.ts",
   "type": "module",
+  "bin": {
+    "re288": "./bin/re288.mjs"
+  },
   "scripts": {
+    "re288": "node ./bin/re288.mjs",
+    "manifest:validate:starter-pack": "node ./bin/re288.mjs manifest validate --file manifests/starter-pack-2026.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "build:index": "ts-node-esm scripts/build_sidearm_game_index.ts",
     "build:index:newmac": "ts-node-esm scripts/build_sidearm_game_index.ts --conference newmac --season 2026",
+    "build:index:nescac": "ts-node-esm scripts/build_sidearm_game_index.ts --conference nescac --season 2026",
+    "build:index:liberty-league": "ts-node-esm scripts/build_sidearm_game_index.ts --conference liberty-league --season 2026",
     "build:pbp": "ts-node-esm scripts/build_pbp_corpus.ts",
     "build:pbp:newmac": "ts-node-esm scripts/build_pbp_corpus.ts --conference newmac --season 2026",
     "build:pbp:nescac": "ts-node-esm scripts/build_pbp_corpus.ts --conference nescac --season 2026",
-    "build:pbp:liberty-league": "ts-node-esm scripts/build_pbp_corpus.ts --conference liberty-league --season 2026"
+    "build:pbp:liberty-league": "ts-node-esm scripts/build_pbp_corpus.ts --conference liberty-league --season 2026",
+    "build:pool:starter-pack": "node ./bin/re288.mjs pool build --manifest manifests/starter-pack-2026.json",
+    "build:master:starter-pack": "node ./bin/re288.mjs master update --manifest manifests/starter-pack-2026.json"
   },
   "devDependencies": {
     "@types/node": "^20.x.x",

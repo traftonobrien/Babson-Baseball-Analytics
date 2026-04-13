@@ -49,11 +49,29 @@ From `/Users/traftonobrien/Desktop/pitch-tracker/re288`:
 
 ```bash
 npm run build:index:newmac
-npm run build:index -- --conference nescac --season 2026
-npm run build:index -- --conference liberty-league --season 2026
+npm run build:index:nescac
+npm run build:index:liberty-league
 npm run build:pbp:newmac
 npm run build:pbp:nescac
 npm run build:pbp:liberty-league
+npm run build:pool:starter-pack
+```
+
+Starter-pack manifest:
+
+- JSON: `/Users/traftonobrien/Desktop/pitch-tracker/re288/manifests/starter-pack-2026.json`
+- Pool id: `starter-pack`
+- Conferences:
+  - `newmac`
+  - `nescac`
+  - `liberty-league`
+
+Native CLI equivalents:
+
+```bash
+node ./bin/re288.mjs manifest validate --file manifests/starter-pack-2026.json
+node ./bin/re288.mjs pool build --manifest manifests/starter-pack-2026.json
+node ./bin/re288.mjs master update --manifest manifests/starter-pack-2026.json
 ```
 
 ## Expansion Pattern

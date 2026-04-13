@@ -17,9 +17,10 @@ This document tracks the expansion of the Run Expectancy (RE288) corpus beyond t
 - [x] NEWMAC (Completed)
 - [x] NESCAC (registry + runnable canonical index)
 - [x] Liberty League (registry + runnable canonical index)
+- [x] Starter-pack manifest (`newmac + nescac + liberty-league`)
 
 ### Phase 2: Active Expansion
-- [ ] **Next Conference: TBD** (starter pack now ready; next work is pooled ingest or another Sidearm-heavy league)
+- [ ] **Next Conference: TBD** (starter pack and pooled corpus now ready; next work is standalone RE matrix or another Sidearm-heavy league)
 
 ---
 
@@ -27,6 +28,7 @@ This document tracks the expansion of the Run Expectancy (RE288) corpus beyond t
 - [x] NEWMAC (reference registry + canonical game index backbone established)
 - [x] NESCAC (2026 index + PBP corpus build locally)
 - [x] Liberty League (2026 index + PBP corpus build locally)
+- [x] Starter pack pooled index + pooled PBP corpus (`starter-pack-2026`)
 
 ## Roadmap / Target Conferences
 *Note: Targets are selected based on Sidearm Sports prevalence and NCAA Division III/II relevance.*

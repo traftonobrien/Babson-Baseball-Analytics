@@ -15,7 +15,7 @@ The RE288 scraper is responsible for extracting play-by-play (PBP) data and sche
   - `build_sidearm_game_index.ts`: executable index builder that writes static JSON artifacts.
 
 ## Architectural Goal: The Canonical Game Index
-The current scraper-based deduplication is fragile. The active goal is now a real `Registry -> Scraper -> Canonical Game Index -> RE Matrix` flow.
+The current scraper-based deduplication is fragile. The active goal is now a real `Registry -> Scraper -> Canonical Game Index -> PBP Corpus -> RE Matrix` flow.
 
 1. **Registry:** A list of known conferences and their local program registries.
 2. **Scraper:** Pulls raw data.
@@ -25,7 +25,15 @@ The current scraper-based deduplication is fragile. The active goal is now a rea
    - grouping mirrored host pages by matchup-day + stable game ordinal (`g1`, `g2`, ...)
    - assigning a canonical game id
    - preserving all source URLs/programs on the same game record
-4. **RE Matrix:** Consumes the indexed games to generate expectancy values.
+4. **PBP Corpus:** Consumes the indexed games, fetches deterministic PBP HTML, and writes conference or pooled artifacts.
+5. **RE Matrix:** Consumes the corpus to generate expectancy values.
+
+The GitHub-friendly subproject structure is now:
+- `config/data_sources/` for conference registries
+- `manifests/` for operator input packs
+- `src/` for reusable pipeline code
+- `bin/` for the native CLI entrypoint
+- `data/` for deterministic generated artifacts
 
 ## Current Backbone
 - `src/scraper.ts`: Sidearm registry + schedule/PBP scraping
@@ -35,8 +43,14 @@ The current scraper-based deduplication is fragile. The active goal is now a rea
 - `src/pbpParser.ts`: raw Sidearm half-inning / play table extraction
 - `src/pbpFetch.ts`: deterministic fetch + provenance + corpus assembly
 - `scripts/build_pbp_corpus.ts`: standalone PBP corpus builder
+- `src/manifest.ts`: manifest validation and registry/inline conference resolution
+- `src/pool.ts`: pooled canonical index and PBP corpus assembly
+- `src/cli.ts`: native `re288` command surface
+- `bin/re288.mjs`: executable wrapper
 - `data/sidearm-game-index-newmac-2026.json`: canonical game index output
 - `data/pbp-corpus-newmac-2026.json`: raw parsed PBP corpus output
+- `data/sidearm-game-index-starter-pack-2026.json`: pooled canonical index output
+- `data/pbp-corpus-starter-pack-2026.json`: pooled PBP corpus output
 
 ## Current Output Contract
 Each generated index contains:
@@ -91,15 +105,22 @@ From `/Users/traftonobrien/Desktop/pitch-tracker/re288`:
 
 ```bash
 npm test
+npm run manifest:validate:starter-pack
 npm run build:index:newmac
+npm run build:index:nescac
+npm run build:index:liberty-league
 npm run build:pbp:newmac
+npm run build:pbp:nescac
+npm run build:pbp:liberty-league
+npm run build:pool:starter-pack
 ```
 
-Or generic:
+Native CLI equivalents:
 
 ```bash
-npm run build:index -- --conference newmac --season 2026
-npm run build:pbp -- --conference newmac --season 2026
+node ./bin/re288.mjs manifest validate --file manifests/starter-pack-2026.json
+node ./bin/re288.mjs pool build --manifest manifests/starter-pack-2026.json
+node ./bin/re288.mjs master update --manifest manifests/starter-pack-2026.json
 ```
 
 ## Development Rules

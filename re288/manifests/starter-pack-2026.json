@@ -1,0 +1,9 @@
+{
+  "season": 2026,
+  "poolId": "starter-pack",
+  "conferences": [
+    { "id": "newmac" },
+    { "id": "nescac" },
+    { "id": "liberty-league" }
+  ]
+}

@@ -37,22 +37,42 @@ These pieces are already working:
   - `/Users/traftonobrien/Desktop/pitch-tracker/re288/src/pbpParser.ts`
   - `/Users/traftonobrien/Desktop/pitch-tracker/re288/src/pbpFetch.ts`
   - `/Users/traftonobrien/Desktop/pitch-tracker/re288/scripts/build_pbp_corpus.ts`
+- native manifest-driven CLI:
+  - `/Users/traftonobrien/Desktop/pitch-tracker/re288/src/cli.ts`
+  - `/Users/traftonobrien/Desktop/pitch-tracker/re288/src/manifest.ts`
+  - `/Users/traftonobrien/Desktop/pitch-tracker/re288/src/pool.ts`
+  - `/Users/traftonobrien/Desktop/pitch-tracker/re288/bin/re288.mjs`
+- starter-pack manifest:
+  - `/Users/traftonobrien/Desktop/pitch-tracker/re288/manifests/starter-pack-2026.json`
 - generated conference indexes:
   - `/Users/traftonobrien/Desktop/pitch-tracker/re288/data/sidearm-game-index-newmac-2026.json`
   - `/Users/traftonobrien/Desktop/pitch-tracker/re288/data/sidearm-game-index-nescac-2026.json`
   - `/Users/traftonobrien/Desktop/pitch-tracker/re288/data/sidearm-game-index-liberty-league-2026.json`
+- pooled starter-pack artifacts:
+  - `/Users/traftonobrien/Desktop/pitch-tracker/re288/data/sidearm-game-index-starter-pack-2026.json`
+  - `/Users/traftonobrien/Desktop/pitch-tracker/re288/data/pbp-corpus-starter-pack-2026.json`
 
 ## Current Verified Commands
 Run these from `/Users/traftonobrien/Desktop/pitch-tracker/re288`:
 
 ```bash
 npm test
+npm run manifest:validate:starter-pack
 npm run build:index:newmac
-npm run build:index -- --conference nescac --season 2026
-npm run build:index -- --conference liberty-league --season 2026
+npm run build:index:nescac
+npm run build:index:liberty-league
 npm run build:pbp:newmac
 npm run build:pbp:nescac
 npm run build:pbp:liberty-league
+npm run build:pool:starter-pack
+```
+
+Native CLI equivalents:
+
+```bash
+node ./bin/re288.mjs manifest validate --file manifests/starter-pack-2026.json
+node ./bin/re288.mjs pool build --manifest manifests/starter-pack-2026.json
+node ./bin/re288.mjs master update --manifest manifests/starter-pack-2026.json
 ```
 
 ## What To Do Next
@@ -85,18 +105,16 @@ Acceptance already met:
 - tests cover real-ish raw PBP parsing and fetch selection behavior
 
 ### 3. Build Multi-Conference Pooling
-Once conference corpora work:
-- allow pooled ingest across `newmac`, `nescac`, and `liberty-league`
-- combine canonical indexes without losing conference identity
-- preserve per-conference counts in output metadata
+This layer now exists for the starter pack.
 
-Suggested output:
-- `data/sidearm-game-index-pooled-2026.json`
-- or pooled PBP corpus metadata inside the corpus artifact
+Current pooled outputs:
+- `data/sidearm-game-index-starter-pack-2026.json`
+- `data/pbp-corpus-starter-pack-2026.json`
 
-Acceptance:
-- pooled build can report contributing conferences and total games
-- conference identity remains queryable
+Acceptance already met:
+- pooled build reports contributing conferences and total games
+- conference identity remains queryable in metadata
+- manifest-driven pooling works without one-off scripts
 
 ### 4. Build Standalone RE Matrix Generation
 Only after pooled PBP ingest is working:
@@ -176,7 +194,7 @@ Default these choices without stopping:
 The immediate next execution target is:
 
 1. finish/verify the full three-conference PBP starter pack
-2. build pooled ingest across `newmac + nescac + liberty-league`
-3. then start standalone RE matrix generation from the pooled corpus
+2. verify `master update` for `manifests/starter-pack-2026.json`
+3. start standalone RE matrix generation from the pooled corpus
 
 If no other instruction is given, start there.

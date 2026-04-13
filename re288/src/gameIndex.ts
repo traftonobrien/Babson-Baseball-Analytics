@@ -130,6 +130,21 @@ export async function buildConferenceCanonicalGameIndex(
   season: number,
 ): Promise<CanonicalGameIndex> {
   const conference = getSidearmConferenceDefinition(conferenceId);
+  return buildCanonicalGameIndexForConference({
+    id: conference.id,
+    name: conference.name,
+    programs: conference.programs,
+  }, season);
+}
+
+export async function buildCanonicalGameIndexForConference(
+  conference: {
+    id: string;
+    name: string;
+    programs: SidearmBaseballProgram[];
+  },
+  season: number,
+): Promise<CanonicalGameIndex> {
   const programs: SidearmBaseballProgram[] = conference.programs;
   const games: SidearmScheduleGame[] = [];
 
