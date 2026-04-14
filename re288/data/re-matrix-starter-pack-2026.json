@@ -1,0 +1,156 @@
+{
+  "generatedAt": "2026-04-14T15:09:03.442Z",
+  "conferenceIds": [],
+  "season": 2026,
+  "totalGames": 646,
+  "usableGames": 483,
+  "usableHalfInnings": 8444,
+  "failedHalfInnings": 2009,
+  "totalObservations": 38239,
+  "cells": [
+    {
+      "baseState": "000",
+      "outs": 0,
+      "n": 8967,
+      "avgRunsToEnd": 0.37
+    },
+    {
+      "baseState": "000",
+      "outs": 1,
+      "n": 6033,
+      "avgRunsToEnd": 0.194
+    },
+    {
+      "baseState": "000",
+      "outs": 2,
+      "n": 3824,
+      "avgRunsToEnd": 0.073
+    },
+    {
+      "baseState": "100",
+      "outs": 0,
+      "n": 2787,
+      "avgRunsToEnd": 0.604
+    },
+    {
+      "baseState": "100",
+      "outs": 1,
+      "n": 3110,
+      "avgRunsToEnd": 0.348
+    },
+    {
+      "baseState": "100",
+      "outs": 2,
+      "n": 2511,
+      "avgRunsToEnd": 0.164
+    },
+    {
+      "baseState": "010",
+      "outs": 0,
+      "n": 885,
+      "avgRunsToEnd": 0.969
+    },
+    {
+      "baseState": "010",
+      "outs": 1,
+      "n": 1588,
+      "avgRunsToEnd": 0.503
+    },
+    {
+      "baseState": "010",
+      "outs": 2,
+      "n": 1469,
+      "avgRunsToEnd": 0.252
+    },
+    {
+      "baseState": "001",
+      "outs": 0,
+      "n": 227,
+      "avgRunsToEnd": 1.132
+    },
+    {
+      "baseState": "001",
+      "outs": 1,
+      "n": 539,
+      "avgRunsToEnd": 0.928
+    },
+    {
+      "baseState": "001",
+      "outs": 2,
+      "n": 621,
+      "avgRunsToEnd": 0.378
+    },
+    {
+      "baseState": "110",
+      "outs": 0,
+      "n": 567,
+      "avgRunsToEnd": 0.887
+    },
+    {
+      "baseState": "110",
+      "outs": 1,
+      "n": 948,
+      "avgRunsToEnd": 0.518
+    },
+    {
+      "baseState": "110",
+      "outs": 2,
+      "n": 828,
+      "avgRunsToEnd": 0.237
+    },
+    {
+      "baseState": "101",
+      "outs": 0,
+      "n": 303,
+      "avgRunsToEnd": 1.304
+    },
+    {
+      "baseState": "101",
+      "outs": 1,
+      "n": 692,
+      "avgRunsToEnd": 0.675
+    },
+    {
+      "baseState": "101",
+      "outs": 2,
+      "n": 792,
+      "avgRunsToEnd": 0.317
+    },
+    {
+      "baseState": "011",
+      "outs": 0,
+      "n": 110,
+      "avgRunsToEnd": 1.027
+    },
+    {
+      "baseState": "011",
+      "outs": 1,
+      "n": 339,
+      "avgRunsToEnd": 0.755
+    },
+    {
+      "baseState": "011",
+      "outs": 2,
+      "n": 346,
+      "avgRunsToEnd": 0.439
+    },
+    {
+      "baseState": "111",
+      "outs": 0,
+      "n": 119,
+      "avgRunsToEnd": 1.059
+    },
+    {
+      "baseState": "111",
+      "outs": 1,
+      "n": 295,
+      "avgRunsToEnd": 0.725
+    },
+    {
+      "baseState": "111",
+      "outs": 2,
+      "n": 339,
+      "avgRunsToEnd": 0.437
+    }
+  ]
+}

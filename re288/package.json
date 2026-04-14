@@ -21,7 +21,9 @@
     "build:pbp:nescac": "ts-node-esm scripts/build_pbp_corpus.ts --conference nescac --season 2026",
     "build:pbp:liberty-league": "ts-node-esm scripts/build_pbp_corpus.ts --conference liberty-league --season 2026",
     "build:pool:starter-pack": "node ./bin/re288.mjs pool build --manifest manifests/starter-pack-2026.json",
-    "build:master:starter-pack": "node ./bin/re288.mjs master update --manifest manifests/starter-pack-2026.json"
+    "build:master:starter-pack": "node ./bin/re288.mjs master update --manifest manifests/starter-pack-2026.json",
+    "build:re_matrix": "ts-node-esm scripts/build_re_matrix.ts",
+    "build:re_matrix:starter-pack": "ts-node-esm scripts/build_re_matrix.ts --corpus data/pbp-corpus-starter-pack-2026.json --out data/re-matrix-starter-pack-2026.json"
   },
   "devDependencies": {
     "@types/node": "^20.x.x",
