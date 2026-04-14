@@ -25392,51 +25392,11 @@
     }
   },
   "Salve Regina": {
-    "Dominic Carollo": {
-      "bats": "R",
-      "throws": "R"
-    },
-    "Luis Ortiz": {
-      "bats": "R",
-      "throws": "R"
-    },
-    "Joe DeRienzo": {
-      "bats": "R",
-      "throws": "R"
-    },
-    "Brady Shea": {
-      "bats": "L",
-      "throws": "L"
-    },
-    "James Tobin": {
-      "bats": "R",
-      "throws": "R"
-    },
-    "Nolan Romanowski": {
-      "bats": "R",
-      "throws": "R"
-    },
-    "Kyle Carozza": {
-      "bats": "R",
-      "throws": "R"
-    },
-    "Sean Mulligan": {
-      "bats": "R",
-      "throws": "R"
-    },
     "Hunter Alten": {
       "bats": "R",
       "throws": "R"
     },
-    "James Keating": {
-      "bats": "R",
-      "throws": "R"
-    },
-    "Connor Toriello": {
-      "bats": "L",
-      "throws": "L"
-    },
-    "Liam Scholl": {
+    "James Anastasopoulos": {
       "bats": "R",
       "throws": "R"
     },
@@ -25444,11 +25404,115 @@
       "bats": "R",
       "throws": "R"
     },
-    "Ethan Santerre": {
+    "Isaac Cabral": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Dominic Carollo": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Kyle Carozza": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Dylan Cimini": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Joe DeRienzo": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Shea Donovan": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Elliot Hamilton": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Brady Hargraves": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Jake Harring": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Brady Inman": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "James Keating": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "LJ Keevan": {
       "bats": "L",
       "throws": "L"
     },
+    "Chase Kilareski": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Colin LaRosa": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Peter Lawrence": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Hayden Lee": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Phil Lombardi": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Michael Merchant": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Matthew Moreno": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Sean Mulligan": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Matthew Nardone": {
+      "bats": "R",
+      "throws": "R"
+    },
     "Jakob Oliver": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Evan O'Rourke": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Luis Ortiz Ramirez": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Danny Rogers": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Nolan Romanowski": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Nate Ruehs": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Nick Russo": {
       "bats": "R",
       "throws": "R"
     },
@@ -25456,13 +25520,77 @@
       "bats": "L",
       "throws": "L"
     },
-    "Isaac Cabral": {
+    "Andrew Salbinski": {
       "bats": "R",
       "throws": "R"
     },
-    "LJ Keevan": {
+    "Ethan Santerre": {
       "bats": "L",
       "throws": "L"
+    },
+    "Andrew Schmit": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Liam Scholl": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Grady Schopps": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Brady Shea": {
+      "bats": "L",
+      "throws": "L"
+    },
+    "Robert Sikorski": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Keegan Smith": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Brady Smolinski": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Matt Stokes": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Alex Thompson": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "James Tobin": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Connor Toriello": {
+      "bats": "L",
+      "throws": "L"
+    },
+    "Luke Ward": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Luke Weisenberg": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Tommy Whitlock": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Shane Williams": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Byron Woodman": {
+      "bats": "R",
+      "throws": "R"
     }
   },
   "Schreiner": {
