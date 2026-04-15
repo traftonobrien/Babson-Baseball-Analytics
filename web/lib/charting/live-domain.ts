@@ -345,6 +345,10 @@ export function detailTextForPAResult(result: PAResultType): string {
       return "Double play";
     case "FC":
       return "Fielder's choice";
+    case "CS":
+      return "Caught stealing";
+    case "PO":
+      return "Pickoff";
     default:
       if (isFlyOut(result)) {
         return `Fly out to ${positionLabelFromTrailingDigit(result) ?? result}`;
@@ -515,7 +519,10 @@ export function deriveChartingLiveState(
 
     state.balls = 0;
     state.strikes = 0;
-    state.batterSlot = (pa.lineupSlot % 9) + 1;
+    // CS/PO are baserunner outs — they don't consume a batting turn
+    if (pa.resultCode !== "CS" && pa.resultCode !== "PO") {
+      state.batterSlot = (pa.lineupSlot % 9) + 1;
+    }
     state.openPAId = null;
     state.closureState = "none";
     state.lastPitchResult = null;

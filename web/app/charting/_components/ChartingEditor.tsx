@@ -20,6 +20,7 @@ import {
   nextPASeedFromInitialCount,
   paResultOutsRecorded,
   pitchingSideForMatchup,
+  recordBaserunnerOutInSnapshot,
   recordPitchInSnapshot,
   switchPitcherInSnapshot,
   syncHitterToSnapshot,
@@ -1128,45 +1129,31 @@ export function ChartingEditor({
   ) => {
     if (liveState.openPAId) return; // don't allow during a live PA
     const label = kind === "pickoff" ? "Pickoff out" : "Caught stealing";
+    // Record the CS/PO as a zero-pitch PA so it persists to the database
+    const nextSnapshot = recordBaserunnerOutInSnapshot(
+      snapshot,
+      field,
+      kind,
+      gameStateOverride,
+    );
+    if (nextSnapshot === snapshot) return; // guard failed (no active segment, etc.)
+
+    // Clear the runner from the base UI
+    const nextBaserunnerDraft = normalizeBaserunnerState({ ...baserunnerDraft, [field]: null });
+
+    // Derive next outs from the updated snapshot to decide status message / inning flip
     const newOuts = liveState.outs + 1;
     if (newOuts >= 3) {
-      // 3rd out — flip the inning and clear all bases
-      const nextIsTopInning = !liveState.isTopInning;
-      const nextInning = liveState.isTopInning ? liveState.inning : liveState.inning + 1;
-      const nextOverride = createGameStateOverride(snapshot, {
-        inning: nextInning,
-        isTopInning: nextIsTopInning,
-        outs: 0,
-        batterSlot: deriveNextLineupSlot(
-          snapshot,
-          battingSideForMatchup(snapshot.game, nextIsTopInning),
-          gameStateOverride,
-        ),
-      });
-      startTransition(() => {
-        setBaserunnerDraft(emptyBaserunnerState());
-        setGameStateOverride(nextOverride);
-        syncMatchupInputs(snapshot, nextOverride);
-        setStatusMessage(`${label} — inning over`);
-        setErrorMessage(null);
-      });
+      startTransition(() => setBaserunnerDraft(emptyBaserunnerState()));
     } else {
-      const nextOverride = createGameStateOverride(snapshot, {
-        inning: liveState.inning,
-        isTopInning: liveState.isTopInning,
-        outs: newOuts,
-        batterSlot: liveState.batterSlot,
-      });
-      startTransition(() => {
-        setBaserunnerDraft((current) =>
-          normalizeBaserunnerState({ ...current, [field]: null }),
-        );
-        setGameStateOverride(nextOverride);
-        syncMatchupInputs(snapshot, nextOverride);
-        setStatusMessage(`${label} — ${newOuts} out${newOuts !== 1 ? "s" : ""}`);
-        setErrorMessage(null);
-      });
+      startTransition(() => setBaserunnerDraft(nextBaserunnerDraft));
     }
+
+    applyOptimisticSnapshot(
+      nextSnapshot,
+      gameStateOverride,
+      newOuts >= 3 ? `${label} — inning over` : `${label} — ${newOuts} out${newOuts !== 1 ? "s" : ""}`,
+    );
   };
   const handleUndo = () => {
     const nextSnapshot = undoSnapshotAction(snapshot);

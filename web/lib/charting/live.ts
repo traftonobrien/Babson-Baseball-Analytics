@@ -14,6 +14,7 @@ export {
   DOUBLE_PLAY_OPTIONS,
   ERROR_OPTIONS,
   FIELDERS_CHOICE_OPTIONS,
+  BASERUNNER_OUT_OPTIONS,
   PA_RESULT_OPTIONS,
   type PAResultType,
 } from "./live-constants";
@@ -54,6 +55,7 @@ export {
 
 export {
   recordPitchInSnapshot,
+  recordBaserunnerOutInSnapshot,
   switchPitcherInSnapshot,
   closeCurrentPlateAppearance,
   undoSnapshotAction,

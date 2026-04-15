@@ -91,6 +91,8 @@ export const FIELDERS_CHOICE_OPTIONS = [
   "FC 6-5",
 ] as const;
 
+export const BASERUNNER_OUT_OPTIONS = ["CS", "PO"] as const;
+
 export const PA_RESULT_OPTIONS = [
   "K",
   "BB",
@@ -104,6 +106,7 @@ export const PA_RESULT_OPTIONS = [
   ...DOUBLE_PLAY_OPTIONS,
   ...ERROR_OPTIONS,
   ...FIELDERS_CHOICE_OPTIONS,
+  ...BASERUNNER_OUT_OPTIONS,
 ] as const;
 
 export type PAResultType = (typeof PA_RESULT_OPTIONS)[number];

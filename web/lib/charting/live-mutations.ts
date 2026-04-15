@@ -1,5 +1,6 @@
 import { nextSegmentOrder } from "./domain";
 import type {
+  ChartingBaserunnerState,
   ChartingGameSnapshot,
   ChartingInitialCount,
   ChartingLineupEntry,
@@ -268,6 +269,59 @@ export function closeCurrentPlateAppearance(
   return nextSnapshot;
 }
 
+/**
+ * Records a caught stealing (CS) or pickoff (PO) as a zero-pitch plate
+ * appearance so the out is persisted to the database.  The runner is cleared
+ * from `field` and the out count is driven by `paResultOutsRecorded`.
+ *
+ * Returns the same snapshot (reference-equal) if there is an open PA or no
+ * active pitcher segment.
+ */
+export function recordBaserunnerOutInSnapshot(
+  snapshot: ChartingGameSnapshot,
+  field: keyof ChartingBaserunnerState,
+  kind: "pickoff" | "cs",
+  gameStateOverride?: GameStateOverride | null,
+): ChartingGameSnapshot {
+  const liveState = deriveChartingLiveState(
+    snapshot.segments,
+    snapshot.plateAppearances,
+    snapshot.pitches,
+    gameStateOverride,
+  );
+
+  if (liveState.openPAId) return snapshot;
+
+  const activeSegment = snapshot.segments.at(-1) ?? null;
+  if (!activeSegment) return snapshot;
+
+  const resultCode: PAResultType = kind === "cs" ? "CS" : "PO";
+  const battingSide = battingSideForMatchup(snapshot.game, liveState.isTopInning);
+
+  const nextSnapshot = cloneSnapshot(snapshot);
+
+  nextSnapshot.plateAppearances.push({
+    id: crypto.randomUUID(),
+    gameId: nextSnapshot.game.id,
+    segmentId: activeSegment.id,
+    paOrder: nextPAOrder(nextSnapshot.plateAppearances),
+    inning: liveState.inning,
+    isTopInning: liveState.isTopInning,
+    hitterName: "-",
+    hitterHand: null,
+    lineupSlot: liveState.batterSlot,
+    teamSide: battingSide,
+    resultCode,
+    initialCount: "0-0",
+    buntContext: false,
+    runnerOnFirst: null,
+    runnerOnSecond: null,
+    runnerOnThird: null,
+  });
+
+  return nextSnapshot;
+}
+
 export function undoSnapshotAction(
   snapshot: ChartingGameSnapshot,
 ): ChartingGameSnapshot {
@@ -286,6 +340,12 @@ export function undoSnapshotAction(
   }
 
   if (lastPA.resultCode) {
+    // CS/PO are zero-pitch records — remove entirely in one undo step
+    const pitchesForLastPA = nextSnapshot.pitches.filter((p) => p.paId === lastPA.id);
+    if ((lastPA.resultCode === "CS" || lastPA.resultCode === "PO") && pitchesForLastPA.length === 0) {
+      removePlateAppearanceAndOrphanSegment(nextSnapshot, lastPA.id);
+      return nextSnapshot;
+    }
     lastPA.resultCode = null;
     return nextSnapshot;
   }
