@@ -9,7 +9,9 @@ import {
   deriveNextLineupSlot,
   deriveChartingLiveState,
   derivePAPitchProgress,
+  paResultFamily,
   recordPitchInSnapshot,
+  removePlateAppearanceFromSnapshot,
   undoSnapshotAction,
   updatePlateAppearanceContextInSnapshot,
   updatePlateAppearanceDetailsInSnapshot,
@@ -47,6 +49,14 @@ const baseSnapshot: ChartingGameSnapshot = {
   plateAppearances: [],
   pitches: [],
 };
+
+describe("paResultFamily", () => {
+  it("treats sacrifice results as outs and single+error as a hit", () => {
+    expect(paResultFamily("SAC")).toBe("out");
+    expect(paResultFamily("SF")).toBe("out");
+    expect(paResultFamily("1B+E")).toBe("hit");
+  });
+});
 
 describe("derivePAPitchProgress", () => {
   it("promotes strike three to closure", () => {
@@ -116,6 +126,19 @@ describe("derivePAPitchProgress", () => {
 });
 
 describe("snapshot mutations", () => {
+  it("removes a past plate appearance and its pitches", () => {
+    const targetId = fixtureGameSnapshot.plateAppearances[0]?.id;
+    expect(targetId).toBeDefined();
+    const pitchesBefore = fixtureGameSnapshot.pitches.filter(
+      (p) => p.paId === targetId,
+    ).length;
+    expect(pitchesBefore).toBeGreaterThan(0);
+    const removed = removePlateAppearanceFromSnapshot(fixtureGameSnapshot, targetId!);
+    expect(removed.plateAppearances).toHaveLength(fixtureGameSnapshot.plateAppearances.length - 1);
+    expect(removed.pitches.every((p) => p.paId !== targetId)).toBe(true);
+    expect(removePlateAppearanceFromSnapshot(removed, "missing-id")).toBe(removed);
+  });
+
   it("counts totals and inning pitches for the selected pitcher", () => {
     expect(countPitcherPitches(fixtureGameSnapshot, "DJames1")).toBe(7);
     expect(countPitcherPitches(fixtureGameSnapshot, "CBurrows1")).toBe(1);
@@ -210,6 +233,38 @@ describe("snapshot mutations", () => {
     expect(snapshot.plateAppearances[0]?.resultCode).toBe("BB");
     expect(afterClose.batterSlot).toBe(2);
     expect(afterClose.openPAId).toBeNull();
+  });
+
+  it("closes an intentional walk anytime during the at-bat (coach signal, not four balls)", () => {
+    let snapshot = baseSnapshot;
+    snapshot = recordPitchInSnapshot(snapshot, {
+      pitchType: "Fastball",
+      pitchResult: "called_strike",
+      locationCell: 12,
+      velocity: null,
+      pitcher: { playerId: "DJames1", name: "D. James" },
+      hitterName: "Lead Off",
+      lineupSlot: 1,
+    });
+
+    const mid = deriveChartingLiveState(
+      snapshot.segments,
+      snapshot.plateAppearances,
+      snapshot.pitches,
+    );
+    expect(mid.closureState).toBe("none");
+    expect(mid.openPAId).not.toBeNull();
+
+    snapshot = closeCurrentPlateAppearance(snapshot, "IBB");
+    expect(snapshot.plateAppearances[0]?.resultCode).toBe("IBB");
+
+    const after = deriveChartingLiveState(
+      snapshot.segments,
+      snapshot.plateAppearances,
+      snapshot.pitches,
+    );
+    expect(after.openPAId).toBeNull();
+    expect(after.batterSlot).toBe(2);
   });
 
   it("rolls from the top half to the bottom half after three outs", () => {

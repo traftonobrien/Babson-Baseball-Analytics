@@ -51,8 +51,8 @@ interface ChartingEditorWorkspaceProps {
   onPitchVelocityCommit: (pitchId: string, rawValue: string) => void;
   onClearVelocityDraft: (pitchId: string) => void;
   onIntentionalWalkClose: () => void;
-  /** Ball four logged — IBB can close the PA and show the same selected check as other pitch results. */
-  isWalkClosure: boolean;
+  /** Open PA with a live count (any time in the AB) or ball-four walk closure — IBB applies and can show the check. */
+  ibbIntentValid: boolean;
 }
 
 export const ChartingEditorWorkspace = ({
@@ -81,15 +81,15 @@ export const ChartingEditorWorkspace = ({
   onPitchVelocityCommit,
   onClearVelocityDraft,
   onIntentionalWalkClose,
-  isWalkClosure,
+  ibbIntentValid,
 }: ChartingEditorWorkspaceProps) => {
   const [ibbIntentSelected, setIbbIntentSelected] = useState(false);
 
   useEffect(() => {
-    if (!isWalkClosure) {
+    if (!ibbIntentValid) {
       setIbbIntentSelected(false);
     }
-  }, [isWalkClosure]);
+  }, [ibbIntentValid]);
 
   const handlePitchResultPick = (result: PitchResult) => {
     setIbbIntentSelected(false);
@@ -194,12 +194,12 @@ export const ChartingEditorWorkspace = ({
                         className="relative z-[2] min-w-0 w-full px-2 py-3"
                         title="IBB"
                         subtitle=""
-                        active={ibbIntentSelected && isWalkClosure}
+                        active={ibbIntentSelected && ibbIntentValid}
                         tone="amber"
-                        titleAttr="Intentional walk — use after ball four to close the plate appearance"
+                        titleAttr="Intentional walk — coach can signal anytime during the at-bat"
                         onClick={(event) => {
                           event.stopPropagation();
-                          if (isWalkClosure) {
+                          if (ibbIntentValid) {
                             setIbbIntentSelected(true);
                           }
                           onIntentionalWalkClose();

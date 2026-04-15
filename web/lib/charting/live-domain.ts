@@ -10,6 +10,9 @@ import type {
 } from "./types";
 import {
   HIT_OPTIONS,
+  HIT_ERROR_OPTIONS,
+  SAC_OPTIONS,
+  SPECIAL_PLAY_OPTIONS,
   FLY_OUT_OPTIONS,
   LINE_OUT_OPTIONS,
   POP_OUT_OPTIONS,
@@ -264,12 +267,14 @@ export function availablePAResultsForClosure(
     case "strikeout":
       return ["K"];
     case "walk":
-      return ["BB"];
+      return ["BB", "IBB"];
     case "hit_by_pitch":
       return ["HBP"];
     case "in_play":
       return [
         ...HIT_OPTIONS,
+        ...HIT_ERROR_OPTIONS,
+        ...SAC_OPTIONS,
         ...FLY_OUT_OPTIONS,
         ...LINE_OUT_OPTIONS,
         ...POP_OUT_OPTIONS,
@@ -278,10 +283,28 @@ export function availablePAResultsForClosure(
         ...DOUBLE_PLAY_OPTIONS,
         ...ERROR_OPTIONS,
         ...FIELDERS_CHOICE_OPTIONS,
+        ...SPECIAL_PLAY_OPTIONS,
       ];
     default:
       return [];
   }
+}
+
+/** Whether {@link closeCurrentPlateAppearance} may apply `result` for the current live state. */
+export function canClosePlateAppearanceWithResult(
+  liveState: ChartingLiveState,
+  result: PAResultType,
+): boolean {
+  if (availablePAResultsForClosure(liveState.closureState).includes(result)) {
+    return true;
+  }
+  // Intentional walk: coach can signal anytime the count is still "live" (no terminal pitch
+  // closure pending). Does not require four balls to be charted first.
+  return (
+    result === "IBB" &&
+    liveState.openPAId !== null &&
+    liveState.closureState === "none"
+  );
 }
 
 export function guidanceTextForClosure(
@@ -296,7 +319,7 @@ export function guidanceTextForClosure(
     case "strikeout":
       return "Strike three logged. Close the PA with K.";
     case "walk":
-      return "Ball four logged. Close the PA with BB.";
+      return "Ball four logged. Close the PA with BB or IBB.";
     case "hit_by_pitch":
       return "Hit by pitch logged. Close the PA with HBP.";
     case "in_play":
@@ -308,8 +331,14 @@ export function guidanceTextForClosure(
 
 export function paResultFamily(result: PAResultType): PAResultFamily {
   if (result === "K") return "strikeout";
-  if (result === "BB" || result === "HBP") return "freePass";
-  if ((HIT_OPTIONS as readonly string[]).includes(result)) return "hit";
+  if (result === "BB" || result === "HBP" || result === "IBB") return "freePass";
+  if (
+    (HIT_OPTIONS as readonly string[]).includes(result) ||
+    (HIT_ERROR_OPTIONS as readonly string[]).includes(result)
+  ) {
+    return "hit";
+  }
+  if ((SAC_OPTIONS as readonly string[]).includes(result)) return "out";
   if (
     (ERROR_OPTIONS as readonly string[]).includes(result) ||
     (FIELDERS_CHOICE_OPTIONS as readonly string[]).includes(result)
@@ -333,6 +362,10 @@ export function detailTextForPAResult(result: PAResultType): string {
       return "Walk";
     case "HBP":
       return "Hit by pitch";
+    case "IBB":
+      return "Intentional walk";
+    case "ITD":
+      return "Interference (throwdown)";
     case "1B":
       return "Single";
     case "2B":
@@ -341,6 +374,12 @@ export function detailTextForPAResult(result: PAResultType): string {
       return "Triple";
     case "HR":
       return "Home run";
+    case "1B+E":
+      return "Single + error";
+    case "SAC":
+      return "Sacrifice bunt";
+    case "SF":
+      return "Sacrifice fly";
     case "DP":
       return "Double play";
     case "FC":
@@ -349,6 +388,8 @@ export function detailTextForPAResult(result: PAResultType): string {
       return "Caught stealing";
     case "PO":
       return "Pickoff";
+    case "3-1":
+      return "Ground out, 3-1 (1B to pitcher)";
     default:
       if (isFlyOut(result)) {
         return `Fly out to ${positionLabelFromTrailingDigit(result) ?? result}`;
@@ -387,8 +428,9 @@ export function closeoutResultGroups(
   const available = new Set(availableResults);
   const groups: PAResultGroup[] = [];
 
-  addGroup(groups, "Direct Result", ["K", "BB", "HBP"], available);
-  addGroup(groups, "Hits", HIT_OPTIONS, available);
+  addGroup(groups, "Direct Result", ["K", "BB", "HBP", "IBB"], available);
+  addGroup(groups, "Hits", [...HIT_OPTIONS, ...HIT_ERROR_OPTIONS], available);
+  addGroup(groups, "Sacrifice", SAC_OPTIONS, available);
   addGroup(groups, "Fly Outs", FLY_OUT_OPTIONS, available);
   addGroup(groups, "Line Outs", LINE_OUT_OPTIONS, available);
   addGroup(groups, "Pop Outs", POP_OUT_OPTIONS, available);
@@ -397,6 +439,7 @@ export function closeoutResultGroups(
   addGroup(groups, "Double Plays", DOUBLE_PLAY_OPTIONS, available);
   addGroup(groups, "Errors", ERROR_OPTIONS, available);
   addGroup(groups, "Fielder's Choice", FIELDERS_CHOICE_OPTIONS, available);
+  addGroup(groups, "Special", SPECIAL_PLAY_OPTIONS, available);
 
   return groups;
 }

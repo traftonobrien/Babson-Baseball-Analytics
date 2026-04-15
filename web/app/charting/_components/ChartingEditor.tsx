@@ -1371,7 +1371,10 @@ export function ChartingEditor({
           expandedPAs={expandedPAs}
           velocityDrafts={velocityDrafts}
           onIntentionalWalkClose={() => handleClosePlateAppearance("IBB")}
-          isWalkClosure={needsPAClosure && liveState.closureState === "walk"}
+          ibbIntentValid={
+            (needsPAClosure && liveState.closureState === "walk") ||
+            (liveState.openPAId !== null && liveState.closureState === "none")
+          }
           onLocationSelect={setSelectedLocation}
           onShowArsenal={() => setShowHistory(false)}
           onShowHistory={() => {

@@ -18,7 +18,7 @@ import {
   type RecordPitchInput,
   type UpdatePlateAppearanceContextInput,
   type UpdatePlateAppearanceDetailsInput,
-  availablePAResultsForClosure,
+  canClosePlateAppearanceWithResult,
   battingSideForMatchup,
   clamp,
   deriveChartingLiveState,
@@ -253,7 +253,7 @@ export function closeCurrentPlateAppearance(
     gameStateOverride,
   );
 
-  if (!availablePAResultsForClosure(liveState.closureState).includes(result)) {
+  if (!canClosePlateAppearanceWithResult(liveState, result)) {
     return snapshot;
   }
 
@@ -764,6 +764,24 @@ function removePlateAppearanceAndOrphanSegment(
       (segment) => segment.id !== plateAppearance.segmentId,
     );
   }
+}
+
+/** Remove a plate appearance and its pitches (anywhere in history), orphaning empty segments. */
+export function removePlateAppearanceFromSnapshot(
+  snapshot: ChartingGameSnapshot,
+  plateAppearanceId: string,
+): ChartingGameSnapshot {
+  if (!snapshot.plateAppearances.some((pa) => pa.id === plateAppearanceId)) {
+    return snapshot;
+  }
+
+  const nextSnapshot = cloneSnapshot(snapshot);
+  nextSnapshot.pitches = nextSnapshot.pitches.filter(
+    (pitch) => pitch.paId !== plateAppearanceId,
+  );
+  removePlateAppearanceAndOrphanSegment(nextSnapshot, plateAppearanceId);
+  reconcileSnapshotSegments(nextSnapshot);
+  return nextSnapshot;
 }
 
 function normalizePitchResultForBunt(
