@@ -29,6 +29,7 @@ import {
   updatePlateAppearanceContextInSnapshot,
   updatePlateAppearanceDetailsInSnapshot,
   updateSnapshotRevision,
+  removePlateAppearanceFromSnapshot,
   type GameStateOverride,
   type PAResultType,
 } from "@/lib/charting/live";
@@ -109,7 +110,13 @@ function autoAdvanceBaserunners(
   if (result === "HR") {
     return { runnerOnFirst: null, runnerOnSecond: null, runnerOnThird: null };
   }
-  if (result === "BB" || result === "HBP" || result === "1B") {
+  if (
+    result === "BB" ||
+    result === "IBB" ||
+    result === "HBP" ||
+    result === "1B" ||
+    result === "1B+E"
+  ) {
     // Force-advance chain: 1B→2B, 2B→3B, 3B scores (cleared)
     const next = { ...current };
     if (next.runnerOnFirst) {
@@ -1258,6 +1265,31 @@ export function ChartingEditor({
       return next;
     });
   };
+  const handleRemovePAFromHistory = (paId: string) => {
+    const nextSnapshot = removePlateAppearanceFromSnapshot(snapshot, paId);
+    if (nextSnapshot === snapshot) {
+      return;
+    }
+    setExpandedPAs((current) => {
+      const next = new Set(current);
+      next.delete(paId);
+      return next;
+    });
+    setHistoryEditDraft((current) => (current?.paId === paId ? null : current));
+    applyOptimisticSnapshot(nextSnapshot, gameStateOverride, "At-bat removed");
+  };
+  const handleBalk = () => {
+    const r1 = baserunnerDraft.runnerOnFirst;
+    const r2 = baserunnerDraft.runnerOnSecond;
+    commitBaserunnerDraft(
+      {
+        runnerOnFirst: null,
+        runnerOnSecond: r1 ? "runner" : null,
+        runnerOnThird: r2 ? "runner" : null,
+      },
+      "Balk — all runners advance one base",
+    );
+  };
   return (
     <div
       className="fixed inset-0 flex flex-col overflow-hidden bg-background text-foreground [background-image:radial-gradient(circle_at_top_left,rgba(var(--brand-primary-rgb),0.14),transparent_24%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.82),transparent_32%)] dark:text-zinc-100 dark:[background-image:radial-gradient(circle_at_top_left,rgba(var(--brand-primary-rgb),0.18),transparent_24%),radial-gradient(circle_at_top_right,rgba(63,63,70,0.26),transparent_32%)]"
@@ -1321,6 +1353,7 @@ export function ChartingEditor({
             onOverrideChange={handleOverrideChange}
             onCommitBaserunnerDraft={commitBaserunnerDraft}
             onBaserunnerOut={handleBaserunnerOut}
+            onBalk={handleBalk}
             onCountPresetChange={setCountPreset}
             canSwitchPitcher={!currentPitcherLocked}
             onSwitchPitcher={handleSwitchPitcher}
@@ -1337,6 +1370,8 @@ export function ChartingEditor({
           recentPAGroups={recentPAGroups}
           expandedPAs={expandedPAs}
           velocityDrafts={velocityDrafts}
+          onIntentionalWalkClose={() => handleClosePlateAppearance("IBB")}
+          isWalkClosure={needsPAClosure && liveState.closureState === "walk"}
           onLocationSelect={setSelectedLocation}
           onShowArsenal={() => setShowHistory(false)}
           onShowHistory={() => {
@@ -1349,6 +1384,8 @@ export function ChartingEditor({
           onPAHalfChange={handlePAHalfChange}
           onPAInningChange={handlePAInningChange}
           onOpenHistoryEdit={handleOpenHistoryEdit}
+          openPAId={liveState.openPAId}
+          onRemovePAFromHistory={handleRemovePAFromHistory}
           onVelocityDraftChange={handleVelocityDraftChange}
           onPitchVelocityCommit={handlePitchVelocityCommit}
           onClearVelocityDraft={clearVelocityDraft}

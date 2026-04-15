@@ -1,4 +1,7 @@
-import { ChevronDown, ChevronRight, PencilLine } from "lucide-react";
+"use client";
+
+import { useEffect, useState } from "react";
+import { ChevronDown, ChevronRight, PencilLine, Trash2 } from "lucide-react";
 
 import { INNING_OPTIONS } from "./constants";
 import { formatBaserunnerSummary } from "./history";
@@ -42,9 +45,14 @@ interface ChartingEditorWorkspaceProps {
   onPAHalfChange: (plateAppearanceId: string, isTopInning: boolean) => void;
   onPAInningChange: (plateAppearanceId: string, inning: number) => void;
   onOpenHistoryEdit: (group: RecentPAGroup) => void;
+  openPAId: string | null;
+  onRemovePAFromHistory: (paId: string) => void;
   onVelocityDraftChange: (pitchId: string, value: string) => void;
   onPitchVelocityCommit: (pitchId: string, rawValue: string) => void;
   onClearVelocityDraft: (pitchId: string) => void;
+  onIntentionalWalkClose: () => void;
+  /** Ball four logged — IBB can close the PA and show the same selected check as other pitch results. */
+  isWalkClosure: boolean;
 }
 
 export const ChartingEditorWorkspace = ({
@@ -67,10 +75,27 @@ export const ChartingEditorWorkspace = ({
   onPAHalfChange,
   onPAInningChange,
   onOpenHistoryEdit,
+  openPAId,
+  onRemovePAFromHistory,
   onVelocityDraftChange,
   onPitchVelocityCommit,
   onClearVelocityDraft,
+  onIntentionalWalkClose,
+  isWalkClosure,
 }: ChartingEditorWorkspaceProps) => {
+  const [ibbIntentSelected, setIbbIntentSelected] = useState(false);
+
+  useEffect(() => {
+    if (!isWalkClosure) {
+      setIbbIntentSelected(false);
+    }
+  }, [isWalkClosure]);
+
+  const handlePitchResultPick = (result: PitchResult) => {
+    setIbbIntentSelected(false);
+    onPitchResultChange(result);
+  };
+
   const toggleShellClass = `${EDITOR_PANEL_MUTED_CLASS} flex shrink-0 items-center p-1`;
   const toggleButtonClass = (active: boolean) =>
     `flex-1 rounded-[1rem] py-2.5 text-xs font-bold uppercase tracking-[0.16em] transition-all ${
@@ -148,17 +173,50 @@ export const ChartingEditorWorkspace = ({
 
             <SurfacePanel className="flex h-0 min-h-0 flex-1 flex-col p-3">
               <SectionHeading eyebrow="Action" title="Pitch Result" body="" />
-              <div className="mt-2 grid min-h-0 flex-1 auto-rows-min grid-cols-3 gap-2 overflow-y-auto pr-1">
-                {availablePitchResults.map((result) => (
-                  <SelectionButton
-                    key={result}
-                    title={pitchResultLabel(result, effectiveBuntMode)}
-                    subtitle=""
-                    active={selectedPitchResult === result}
-                    tone={pitchResultTone(result)}
-                    onClick={() => onPitchResultChange(result)}
-                  />
-                ))}
+              <div
+                className="mt-2 grid min-h-0 flex-1 auto-rows-min grid-cols-3 gap-2 overflow-y-auto pr-4 [scrollbar-gutter:stable] sm:pr-5"
+              >
+                {availablePitchResults.map((result) =>
+                  result === "hit_by_pitch" ? (
+                    <div
+                      key="hbp-ibb"
+                      className="grid min-w-0 grid-cols-2 gap-1.5"
+                    >
+                      <SelectionButton
+                        className="relative z-0 min-w-0 w-full px-2 py-3"
+                        title={pitchResultLabel("hit_by_pitch", effectiveBuntMode)}
+                        subtitle=""
+                        active={selectedPitchResult === "hit_by_pitch"}
+                        tone={pitchResultTone("hit_by_pitch")}
+                        onClick={() => handlePitchResultPick("hit_by_pitch")}
+                      />
+                      <SelectionButton
+                        className="relative z-[2] min-w-0 w-full px-2 py-3"
+                        title="IBB"
+                        subtitle=""
+                        active={ibbIntentSelected && isWalkClosure}
+                        tone="amber"
+                        titleAttr="Intentional walk — use after ball four to close the plate appearance"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          if (isWalkClosure) {
+                            setIbbIntentSelected(true);
+                          }
+                          onIntentionalWalkClose();
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <SelectionButton
+                      key={result}
+                      title={pitchResultLabel(result, effectiveBuntMode)}
+                      subtitle=""
+                      active={selectedPitchResult === result}
+                      tone={pitchResultTone(result)}
+                      onClick={() => handlePitchResultPick(result)}
+                    />
+                  ),
+                )}
               </div>
             </SurfacePanel>
           </div>
@@ -263,14 +321,40 @@ export const ChartingEditorWorkspace = ({
                             </div>
                           </button>
 
-                          <button
-                            type="button"
-                            onClick={() => onOpenHistoryEdit(group)}
-                            className={`${EDITOR_ICON_BUTTON_CLASS} h-10 w-10 shrink-0`}
-                            aria-label={`Edit ${group.hitterName} at-bat`}
-                          >
-                            <PencilLine className="h-4 w-4" />
-                          </button>
+                          <div className="flex shrink-0 items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (
+                                  typeof window !== "undefined" &&
+                                  !window.confirm(
+                                    "Remove this at-bat and its pitches from the chart?",
+                                  )
+                                ) {
+                                  return;
+                                }
+                                onRemovePAFromHistory(group.paId);
+                              }}
+                              disabled={group.paId === openPAId}
+                              className={`${EDITOR_ICON_BUTTON_CLASS} h-10 w-10 disabled:cursor-not-allowed disabled:opacity-40`}
+                              aria-label={`Remove ${group.hitterName} at-bat`}
+                              title={
+                                group.paId === openPAId
+                                  ? "Cannot remove the active at-bat"
+                                  : "Remove this at-bat"
+                              }
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onOpenHistoryEdit(group)}
+                              className={`${EDITOR_ICON_BUTTON_CLASS} h-10 w-10 shrink-0`}
+                              aria-label={`Edit ${group.hitterName} at-bat`}
+                            >
+                              <PencilLine className="h-4 w-4" />
+                            </button>
+                          </div>
                         </div>
                         {isExpanded ? (
                           <div className="border-t border-border/70 bg-background/60 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950/50">

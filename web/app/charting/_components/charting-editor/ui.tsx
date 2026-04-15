@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { MouseEventHandler, ReactNode } from "react";
 
 import { CheckCircle2, PencilLine, Timer } from "lucide-react";
 
@@ -185,7 +185,10 @@ interface SelectionButtonProps {
   subtitle: string;
   active: boolean;
   tone: SelectionTone;
-  onClick: () => void;
+  onClick: MouseEventHandler<HTMLButtonElement>;
+  className?: string;
+  disabled?: boolean;
+  titleAttr?: string;
 }
 
 export const SelectionButton = ({
@@ -194,15 +197,24 @@ export const SelectionButton = ({
   active,
   tone,
   onClick,
+  className = "",
+  disabled = false,
+  titleAttr,
 }: SelectionButtonProps) => {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-xl border px-4 py-4 text-left transition-all ${selectionToneClass(
+      disabled={disabled}
+      title={titleAttr}
+      className={`rounded-xl border px-4 py-4 text-left transition-all duration-150 ${selectionToneClass(
         tone,
         active,
-      )}`}
+      )} ${
+        disabled
+          ? "cursor-not-allowed opacity-45 hover:border-border hover:bg-surface dark:hover:border-zinc-800 dark:hover:bg-zinc-950/80"
+          : "enabled:active:scale-[0.985] enabled:active:brightness-[0.96] dark:enabled:active:brightness-[0.92]"
+      } ${className}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
