@@ -1,25 +1,30 @@
 "use client";
 import { startTransition, useEffect, useId, useRef, useState } from "react";
 import { AnimatePresence } from "framer-motion";
+// Import charting live modules directly (not the live.ts barrel) so Turbopack does not
+// merge/re-evaluate live-domain across the client/RSC boundary.
+import { GAME_PITCH_RESULTS, type PAResultType } from "@/lib/charting/live-constants";
 import {
   availablePAResultsForClosure,
   baserunnerStateFromPlateAppearance,
   battingSideForMatchup,
-  closeCurrentPlateAppearance,
   closeoutResultGroups,
-  countPitcherInningPitches,
-  countPitcherPitches,
   createGameStateOverride,
   deriveChartingLiveState,
   deriveNextLineupSlot,
   detailTextForPAResult,
   guidanceTextForClosure,
-  GAME_PITCH_RESULTS,
   emptyBaserunnerState,
   normalizeBaserunnerState,
   nextPASeedFromInitialCount,
   paResultOutsRecorded,
   pitchingSideForMatchup,
+  type GameStateOverride,
+} from "@/lib/charting/live-domain";
+import {
+  closeCurrentPlateAppearance,
+  countPitcherInningPitches,
+  countPitcherPitches,
   recordBaserunnerOutInSnapshot,
   recordPitchInSnapshot,
   switchPitcherInSnapshot,
@@ -30,9 +35,7 @@ import {
   updatePlateAppearanceDetailsInSnapshot,
   updateSnapshotRevision,
   removePlateAppearanceFromSnapshot,
-  type GameStateOverride,
-  type PAResultType,
-} from "@/lib/charting/live";
+} from "@/lib/charting/live-mutations";
 import { PITCH_TYPES } from "@/lib/charting/domain";
 import type {
   ChartingBaserunnerState,
