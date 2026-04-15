@@ -27,7 +27,7 @@ import {
   legacyChartingPlateAppearances,
   mapLegacyPlateAppearanceRow,
 } from "./plateAppearanceStorage";
-import { resolvePlateAppearanceInitialCount } from "./live-domain";
+import { resolvePlateAppearanceInitialCount } from "./plateAppearanceInitialCount";
 
 function normalizeVenueSide(
   value: string | null | undefined,

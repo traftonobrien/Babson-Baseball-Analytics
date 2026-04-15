@@ -24,6 +24,12 @@ import {
   PA_RESULT_OPTIONS,
   type PAResultType,
 } from "./live-constants";
+import {
+  inferInitialCountFromPitches,
+  resolvePlateAppearanceInitialCount,
+} from "./plateAppearanceInitialCount";
+
+export { inferInitialCountFromPitches, resolvePlateAppearanceInitialCount };
 
 export type PAClosureState =
   | "none"
@@ -138,35 +144,6 @@ export function nextPASeedFromInitialCount(
     default:
       return { balls: 0, strikes: 0, buntMode: false };
   }
-}
-
-export function inferInitialCountFromPitches(
-  pitches: ChartingPitch[],
-  buntContext = false,
-): ChartingInitialCount {
-  if (buntContext) {
-    return "Bunt";
-  }
-
-  const firstPitch = sortByPitchOrder(pitches)[0];
-  if (firstPitch?.ballsBefore === 2 && firstPitch.strikesBefore === 1) {
-    return "2-1";
-  }
-
-  return "0-0";
-}
-
-export function resolvePlateAppearanceInitialCount(
-  plateAppearance: Pick<
-    ChartingPlateAppearance,
-    "initialCount" | "buntContext"
-  >,
-  pitches: ChartingPitch[],
-): ChartingInitialCount {
-  return (
-    plateAppearance.initialCount ??
-    inferInitialCountFromPitches(pitches, plateAppearance.buntContext)
-  );
 }
 
 // ---------------------------------------------------------------------------

@@ -27,7 +27,7 @@ import {
     buildPitcherOverviewModels,
 } from "@/lib/charting/sessionOverview";
 import { loadChartingGameSnapshot } from "@/lib/charting/snapshot";
-import { resolvePlateAppearanceInitialCount } from "@/lib/charting/live-domain";
+import { resolvePlateAppearanceInitialCount } from "@/lib/charting/plateAppearanceInitialCount";
 
 export const revalidate = 0; // Always fetch fresh data
 

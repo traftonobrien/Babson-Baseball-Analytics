@@ -1,4 +1,4 @@
-import { resolvePlateAppearanceInitialCount } from "@/lib/charting/live-domain";
+import { resolvePlateAppearanceInitialCount } from "@/lib/charting/plateAppearanceInitialCount";
 import type {
   ChartingGameSnapshot,
   ChartingInitialCount,
