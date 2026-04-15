@@ -1,6 +1,6 @@
 import type { ChartingGame, ChartingGameSnapshot, ChartingPitch } from "./types";
 import { PLAYER_ID_BY_ALIAS } from "../canonicalPlayersData";
-import { resolvePlateAppearanceInitialCount } from "./live";
+import { resolvePlateAppearanceInitialCount } from "./live-domain";
 
 /**
  * Simplified charting CSV — 14 essential pitch-level columns.
