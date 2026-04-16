@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { LeaderboardPageFrame } from "@/app/components/leaderboards/LeaderboardChrome";
-import { ChartingEditor } from "@/app/charting/_components/ChartingEditor";
+import { ChartingEditorEntry } from "./ChartingEditorEntry";
 import { buildBootstrapPitchers } from "@/lib/charting/bootstrapPitchers";
 import { buildBootstrapRosterPlayers } from "@/lib/charting/bootstrapRoster";
 import {
@@ -35,7 +35,7 @@ export default async function ChartingGameEditorPage({
 
   return (
     <LeaderboardPageFrame maxWidth="max-w-[96rem]">
-      <ChartingEditor
+      <ChartingEditorEntry
         initialSnapshot={snapshot}
         pitchers={pitchers}
         rosterPlayers={rosterPlayers}

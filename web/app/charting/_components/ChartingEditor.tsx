@@ -211,7 +211,7 @@ function resolvePitcherHand(
   );
 }
 
-interface ChartingEditorProps {
+export interface ChartingEditorProps {
   initialSnapshot: ChartingGameSnapshot;
   pitchers: ChartingBootstrapPitcher[];
   rosterPlayers: ChartingBootstrapRosterPlayer[];
