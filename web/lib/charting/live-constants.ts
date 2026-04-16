@@ -11,6 +11,10 @@ export const GAME_PITCH_RESULTS = [
 ] as const satisfies readonly PitchResult[];
 
 export const HIT_OPTIONS = ["1B", "2B", "3B", "HR"] as const;
+/** Hit variants (single + error, etc.) — same “hit” family as `HIT_OPTIONS` for lineup advancement. */
+export const HIT_ERROR_OPTIONS = ["1B+E"] as const;
+/** Sacrifice outs — one out, no hit credited to batter. */
+export const SAC_OPTIONS = ["SAC", "SF"] as const;
 export const FLY_OUT_OPTIONS = [
   "F1",
   "F2",
@@ -44,7 +48,8 @@ export const POP_OUT_OPTIONS = [
   "P8",
   "P9",
 ] as const;
-export const GROUND_OUT_OPTIONS = ["1-3", "2-3", "4-3", "5-3", "6-3"] as const;
+/** Scorebook ground outs; `3-1` = first baseman to pitcher (not a 3-1 count). */
+export const GROUND_OUT_OPTIONS = ["1-3", "2-3", "3-1", "4-3", "5-3", "6-3"] as const;
 export const UNASSISTED_OUT_OPTIONS = [
   "1U",
   "2U",
@@ -91,13 +96,19 @@ export const FIELDERS_CHOICE_OPTIONS = [
   "FC 6-5",
 ] as const;
 
+/** Catcher / throwdown interference scored as one out (charter shorthand). */
+export const SPECIAL_PLAY_OPTIONS = ["ITD"] as const;
+
 export const BASERUNNER_OUT_OPTIONS = ["CS", "PO"] as const;
 
 export const PA_RESULT_OPTIONS = [
   "K",
   "BB",
   "HBP",
+  "IBB",
   ...HIT_OPTIONS,
+  ...HIT_ERROR_OPTIONS,
+  ...SAC_OPTIONS,
   ...FLY_OUT_OPTIONS,
   ...LINE_OUT_OPTIONS,
   ...POP_OUT_OPTIONS,
@@ -106,6 +117,7 @@ export const PA_RESULT_OPTIONS = [
   ...DOUBLE_PLAY_OPTIONS,
   ...ERROR_OPTIONS,
   ...FIELDERS_CHOICE_OPTIONS,
+  ...SPECIAL_PLAY_OPTIONS,
   ...BASERUNNER_OUT_OPTIONS,
 ] as const;
 

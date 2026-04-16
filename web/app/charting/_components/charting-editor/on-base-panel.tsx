@@ -26,13 +26,16 @@ interface OnBasePanelProps {
     successNote: string,
   ) => void;
   onBaserunnerOut: (field: keyof ChartingBaserunnerState, kind: "pickoff" | "cs") => void;
+  onBalk: () => void;
 }
 
 export const OnBasePanel = ({
   baserunnerDraft,
   onCommitBaserunnerDraft,
   onBaserunnerOut,
+  onBalk,
 }: OnBasePanelProps) => {
+  void onBalk;
   const [scoredPickMode, setScoredPickMode] = useState(false);
   const [outPickMode, setOutPickMode] = useState<OutPickMode>(null);
 
