@@ -52,7 +52,7 @@ ncaa_close_session <- function() {
 #'   url       - the requested URL
 #'   attempts  - number of attempts made
 #'   error     - error message or NULL
-ncaa_fetch_page <- function(url, max_wait_seconds = 8L, max_retries = 2L) {
+ncaa_fetch_page <- function(url, max_wait_seconds = 8L, max_retries = 4L) {
   `%||%` <- function(x, y) if (is.null(x)) y else x
 
   last_result <- NULL
@@ -128,8 +128,14 @@ ncaa_fetch_page <- function(url, max_wait_seconds = 8L, max_retries = 2L) {
     })
 
     last_result <- result
-    if (result$status %in% c("success", "access_denied")) break
-    if (attempt < max_retries) Sys.sleep(2)
+    # Retry access_denied and transient parse failures with backoff.
+    # NCAA intermittently rate-limits individual team pages; a fresh
+    # session + delay often clears the challenge page.
+    if (result$status == "success") break
+    if (attempt < max_retries) {
+      try(ncaa_close_session(), silent = TRUE)
+      Sys.sleep(2 + (attempt * 2))
+    }
   }
 
   last_result
