@@ -563,3 +563,131 @@ Plans:
 | 22. RE Matrix Builder | 3/3 | Complete | 2026-04-11 |
 | 23. Delta-RE and PA Join | 3/3 | Complete | 2026-04-11 |
 | 24. 0-2 Dashboard Integration | 3/3 | Complete | 2026-04-11 |
+
+---
+
+## Milestone v5.0: Command Tracker v2 — Automated Pitch Detection and Glove Tracking
+
+- [ ] **Phase 25: Calibration and Ground Truth** - Measure glove area timeseries, leg lift timing, and T-frame tolerance on existing footage to establish empirical thresholds
+- [ ] **Phase 26: Pitch Onset Detector** - Build src/detect_pitches.py — MediaPipe Pose-based pitch window detector that auto-generates pitch windows from full inning video
+- [ ] **Phase 27: Automated Glove Tracking** - Build src/track_glove_v2.py — SAM3 text-prompted glove tracker with ByteTrack persistence and SAMURAI fast-motion stabilization
+- [ ] **Phase 28: T/A State Machine** - Build src/detect_ta_frames.py — glove state machine that outputs T/A frames with confidence per pitch
+- [ ] **Phase 29: Verification UX** - Build src/verify_pitches.py — proposal-confirm interface replacing the full-inning scrubber
+- [ ] **Phase 30: Charting Integration** - Build src/match_pitches_to_charting.py — aligns detected pitches to charting PA sequence and pre-fills pitch type
+
+---
+
+## Milestone v5.0 Phase Details
+
+### Phase 25: Calibration and Ground Truth
+**Goal**: Empirical constants are documented for all downstream phases — glove area ratios, leg lift timing window, and T-frame precision tolerance are measured on existing processed footage before any new code is built.
+**Depends on**: Nothing (uses existing processed outings as inputs)
+**Requirements**: CALIB-01, CALIB-02, CALIB-03
+**Success Criteria** (what must be TRUE):
+  1. Glove open/closed area ratio and drop magnitude are documented per catcher from at least 20 ground-truthed pitches from existing processed outings.
+  2. Leg lift peak-to-release frame window width is documented for the current camera FPS across Babson pitchers in both windup and stretch mechanics.
+  3. T-frame precision tolerance is quantified — miss vector degradation is measured at ±3, ±5, and ±10 frame offsets and the acceptable threshold is committed as a constant.
+  4. All calibration constants (area thresholds, window widths, tolerance bounds) are committed to a config file (e.g., `config/ct2_calibration.yaml`) consumed by phases 26–30.
+**Plans**: TBD
+
+Plans:
+- [ ] 25-01: Run SAM3 on 20+ ground-truthed pitches from existing outings; plot and document glove area timeseries per catcher (open plateau, drop magnitude, closed floor)
+- [ ] 25-02: Manually mark leg lift peak and release on 10+ known pitches; measure peak-to-release frame interval at current FPS; document windup vs. stretch differences
+- [ ] 25-03: Re-process 10 pitches with T offset at ±3, ±5, ±10 frames; measure miss vector delta; commit accepted tolerance and all constants to config
+
+### Phase 26: Pitch Onset Detector
+**Goal**: An operator can run `python src/detect_pitches.py` on a full inning video and receive a `pitch_windows.json` file listing every pitch's frame window — no human scrubbing required.
+**Depends on**: Phase 25 (leg lift timing constants from calibration)
+**Requirements**: DETECT-01, DETECT-02, DETECT-03, DETECT-04, DETECT-05
+**Success Criteria** (what must be TRUE):
+  1. Running `detect_pitches.py` on an inning video produces `pitch_windows.json` with frame_start, frame_end, and confidence per detected pitch.
+  2. Pitch recall is at least 90% on the 5-inning ground-truth validation set — no more than 1 in 10 actual pitches is missed.
+  3. False positive rate is at most 10% on the same validation set — no more than 1 in 10 detected windows contains no pitch.
+  4. Both windup and stretch mechanics are detected correctly without any additional flags or configuration.
+  5. Optical flow fallback activates automatically and produces reasonable pitch windows when MediaPipe Pose confidence falls below threshold.
+**Plans**: TBD
+
+Plans:
+- [ ] 26-01: Build MediaPipe Pose pitcher ROI detector — load video, apply pose on pitcher region, detect leg lift peak event, emit candidate pitch window per detection
+- [ ] 26-02: Add optical flow fallback and pitch_windows.json output contract; integrate calibration constants from Phase 25 config
+- [ ] 26-03: Build 5-inning ground-truth validation set; measure recall and false positive rate; tune threshold until gate passes
+
+### Phase 27: Automated Glove Tracking
+**Goal**: An operator can run `python src/track_glove_v2.py` on an inning video and receive a per-frame glove centroid and mask area timeseries — no human click on the glove is required at any point.
+**Depends on**: Phase 25 (glove area constants from calibration)
+**Requirements**: TRACK-01, TRACK-02, TRACK-03, TRACK-04
+**Success Criteria** (what must be TRUE):
+  1. `track_glove_v2.py` accepts a video path, runs without any human click or bounding box input, and produces per-frame centroid (x, y) and mask area as a timeseries JSON artifact.
+  2. The SAM3 text prompt "catcher's glove" correctly segments the catcher's glove (not the pitcher's mitt) in at least 95% of sampled frames on test footage.
+  3. The ByteTrack glove ID remains stable across at least 10-frame occlusions — ID resets do not occur when the pitcher's body briefly crosses in front of the catcher.
+  4. SAMURAI reduces mask area noise during reception frames compared to SAM3 propagation alone — the area signal is measurably smoother around the A-frame region on at least one test pitch.
+  5. The timeseries artifact is written to disk as JSON and is consumable by the Phase 28 T/A state machine without additional preprocessing.
+**Plans**: TBD
+
+Plans:
+- [ ] 27-01: Install SAM3 and ByteTrack; build text-prompted glove initialization using "catcher's glove" prompt; emit per-frame centroid and mask area
+- [ ] 27-02: Wire ByteTrack on top of SAM3 output for persistent glove ID; add SAMURAI for fast-motion reception frames; write timeseries JSON
+- [ ] 27-03: Validate on test footage — measure segmentation accuracy, ID stability across 10-frame occlusions, and SAMURAI noise reduction at A-frame region
+
+### Phase 28: T/A State Machine
+**Goal**: An operator can run `python src/detect_ta_frames.py` on a processed inning and receive `ta_frames.json` — the auto-detected T and A frame numbers with confidence scores for every pitch window.
+**Depends on**: Phase 26 (pitch_windows.json), Phase 27 (glove timeseries), Phase 25 (area thresholds)
+**Requirements**: AUTO-01, AUTO-02, AUTO-03, AUTO-04, AUTO-05
+**Success Criteria** (what must be TRUE):
+  1. `detect_ta_frames.py` runs on a processed inning and outputs `ta_frames.json` with T frame, A frame, and confidence per pitch.
+  2. Auto-detected T is within ±3 frames of human-marked T in at least 85% of pitches on the ground-truth validation set.
+  3. Auto-detected A is within ±3 frames of human-marked A in at least 85% of pitches on the same validation set.
+  4. Each T/A entry includes a numeric confidence score derived from plateau stability (for T) and drop sharpness (for A).
+  5. Pitches where confidence falls below the configured threshold are flagged in `ta_frames.json` with `low_confidence: true` so Phase 29 can route them to the full scrubber.
+**Plans**: TBD
+
+Plans:
+- [ ] 28-01: Build plateau detection algorithm for T — identify last stable-area frame within pitch window where glove is open; compute confidence from plateau width and variance
+- [ ] 28-02: Build area-drop event detector for A — identify first frame where mask area drops sharply below calibrated threshold; compute confidence from drop slope
+- [ ] 28-03: Wire both detectors into detect_ta_frames.py CLI; validate ±3-frame accuracy on ground-truth set; tune thresholds until 85% gate passes
+
+### Phase 29: Verification UX
+**Goal**: An operator can run `python src/verify_pitches.py` and review every auto-detected pitch in under 20 seconds per pitch — confirming or nudging T/A with arrow keys and selecting pitch type with number keys.
+**Depends on**: Phase 28 (ta_frames.json)
+**Requirements**: VERIFY-01, VERIFY-02, VERIFY-03, VERIFY-04, VERIFY-05
+**Success Criteria** (what must be TRUE):
+  1. `verify_pitches.py` runs end-to-end on `ta_frames.json` and produces `pitch_log.json` in the format already consumed by `batch_process.py` — no schema changes downstream.
+  2. The strip view renders correctly for both T and A frames: the operator sees ±3 frames around each proposed frame with the current proposal highlighted.
+  3. Arrow keys shift the T or A proposal ±1 frame; Enter confirms the current proposal; number keys 1–9 assign pitch type from the pitcher's arsenal.
+  4. Pitches flagged `low_confidence: true` in `ta_frames.json` automatically open the full scrubber view instead of the strip view.
+  5. Average wall-clock time per pitch is measured on a test inning and confirmed to be at most 20 seconds.
+**Plans**: TBD
+
+Plans:
+- [ ] 29-01: Build strip view renderer — display ±3 frame window around T and A proposals; highlight current proposal frame
+- [ ] 29-02: Wire keyboard controls — arrow keys nudge proposal, Enter confirms, number keys set pitch type; low_confidence pitches fall back to full scrubber
+- [ ] 29-03: Write pitch_log.json in batch_process-compatible format; measure per-pitch wall time on a test inning; confirm ≤20 sec gate
+
+### Phase 30: Charting Integration
+**Goal**: When a game has charting data, pitch type is pre-filled automatically and the operator only resolves exceptions — the full pipeline completes in under 20 minutes for a 9-inning game.
+**Depends on**: Phase 29 (verify_pitches.py baseline)
+**Requirements**: CHART-01, CHART-02, CHART-03, CHART-04
+**Success Criteria** (what must be TRUE):
+  1. `match_pitches_to_charting.py` aligns auto-detected pitch windows to the charting PA sequence by inning and pitch order, and writes an enriched `ta_frames.json` with pitch_type pre-filled for each matched window.
+  2. `verify_pitches.py` displays the charting-derived pitch type as a pre-filled default with a confirm prompt — the operator presses Enter to accept or a number key to override.
+  3. When detected and charted pitch counts differ, the operator sees an exception list showing which windows are unmatched and can resolve them manually before proceeding.
+  4. The full pipeline — detect → track → T/A state machine → verify → batch_process — completes in under 20 minutes on a standard 9-inning game.
+**Plans**: TBD
+
+Plans:
+- [ ] 30-01: Build match_pitches_to_charting.py — load charting game data via existing DB/API, align pitch windows to PA sequence by inning + order, write enriched ta_frames.json with pitch_type field
+- [ ] 30-02: Update verify_pitches.py to display charting-derived pitch type as pre-fill; wire exception UX for count mismatches
+- [ ] 30-03: Run full pipeline end-to-end on a real 9-inning game; measure total wall time; confirm <20-minute gate
+
+---
+
+## Milestone v5.0 Progress
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 25. Calibration and Ground Truth | 0/3 | Not started | - |
+| 26. Pitch Onset Detector | 0/3 | Not started | - |
+| 27. Automated Glove Tracking | 0/3 | Not started | - |
+| 28. T/A State Machine | 0/3 | Not started | - |
+| 29. Verification UX | 0/3 | Not started | - |
+| 30. Charting Integration | 0/3 | Not started | - |
