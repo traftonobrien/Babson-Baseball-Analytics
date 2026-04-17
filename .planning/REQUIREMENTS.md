@@ -1,63 +1,79 @@
-# Requirements: Run Expectancy Intelligence
+# Requirements: Command Tracker v2
 
-**Defined:** 2026-04-11
-**Milestone:** v4.0
-**Core Value:** Babson coaching staff can quantify the run-value and out-probability cost of every 0-2 fastball decision using a live, self-updating run expectancy model built entirely from their own game data.
-
----
-
-## v4.0 Requirements
-
-### PBP Parser — Extended Game State Machine
-
-- [x] **PBP-01**: The PBP parser captures ALL plate appearances from a Sidearm box score — both teams, all PA outcomes including walks, strikeouts, HBP, and balls in play (not just Babson BIP events)
-- [x] **PBP-02**: The parser reconstructs base state (which of 8 combinations of 1B/2B/3B are occupied) sequentially across each half-inning by processing semicolon-separated sub-events within each play line (e.g., "doubled; Cushner advanced to third; Grace scored")
-- [x] **PBP-03**: The parser tracks outs per half-inning (0–2) and resets base state + outs on half-inning boundaries
-- [x] **PBP-04**: The parser walks the pitch sequence string (e.g., `BKFB`) letter by letter to derive the count state at each pitch step — enabling per-pitch (count, base_state, outs) snapshots without Supabase
-- [x] **PBP-05**: Deduplication uses `(inning, half_inning, play_text)` as the key — not plain `play_text` — so identical play descriptions in different innings are not silently dropped
-- [x] **PBP-06**: Each half-inning's parsed run total is validated against the box score `r` column; innings that fail validation are excluded from matrix computation and logged, not silently included
-- [x] **PBP-07**: A `re_game_map.json` file maps Sidearm gameIds to internal game metadata (date, opponent, home/away, doubleheader suffix) and is maintained alongside the scraper for disambiguation
-
-### RE Matrix Builder
-
-- [ ] **MAT-01**: A TypeScript build script (`web/scripts/build_re_matrix.ts`) scrapes all Sidearm box scores for the current season and computes both an RE24 matrix (8 base states × 3 out states = 24 cells) and an RE288 matrix (12 counts × 8 base states × 3 out states = 288 cells)
-- [ ] **MAT-02**: Each matrix cell stores both the mean expected runs value AND the observation count `n`; cells with n < 5 are stored as `null` rather than a point estimate
-- [ ] **MAT-03**: The matrices are written to `web/public/data/run-expectancy/re-matrix-2026.json` following the existing static JSON pipeline pattern
-- [ ] **MAT-04**: A separate Out Probability matrix (same 288-cell structure) stores the probability of recording an out on any pitch in that state, derived from the same PBP corpus
-- [ ] **MAT-05**: Running `npm run re:rebuild` re-scrapes all games and regenerates both matrix files; the command is defined in `web/package.json`
-
-### Delta-RE + PA Join
-
-- [ ] **RV-01**: For each logged 0-2 fastball PA in Supabase charting data, the system looks up the pre-pitch RE value from the RE288 matrix using `(count_before, base_state, outs)` and the post-pitch RE value using the outcome state
-- [ ] **RV-02**: A `game-base-states-2026.json` index is built by the re:rebuild script, keyed by `(gameDate, opponent, inning, halfInning, paOrder)`, providing base state and outs context for each charted PA
-- [ ] **RV-03**: Delta-RE per PA is computed as: `RE(post_state) - RE(pre_state) + runs_scored_on_play`; sign convention is documented with hand-verified test cases for K, ball, walk, single, and out outcomes
-- [ ] **RV-04**: At least 80% of charted 0-2 fastball PAs from games with available Sidearm PBP are matched to a base-state context before the dashboard integration is considered complete
-
-### 0-2 Dashboard Integration
-
-- [ ] **DASH-01**: The `/charting/ohtwo` page displays the aggregate run value cost or save of the 0-2 fastball strategy — the sum of delta-RE across all qualifying pitches expressed as "X expected runs given up / saved"
-- [ ] **DASH-02**: The dashboard includes a counterfactual simulator: given that Y% of the logged 0-2 balls had instead been strikeouts, the run value change is displayed (computed as: `(Y% × n_balls) × (delta_RE_K − delta_RE_ball)`)
-- [ ] **DASH-03**: The dashboard displays a count-progression RE tree showing the expected runs at each branch after a 0-2 pitch: K outcome, ball (→ 1-2) outcome, and in-play outcome — using RE288 values
-- [ ] **DASH-04**: Alongside run value, the dashboard shows out probability delta: how each 0-2 pitch outcome changed the probability of recording an out, derived from the Out Probability matrix
-- [ ] **DASH-05**: Cells with insufficient sample (n < 5) display a "limited sample" indicator rather than a numeric value on the dashboard
+**Defined:** 2026-04-17
+**Milestone:** v5.0 — Automated Pitch Detection and Glove Tracking
+**Core Value:** One operator can process a full game of command data in 15–20 minutes instead of 1–2 hours, with the computer finding and selecting frames and the human only verifying proposals.
 
 ---
 
-## v4.x Requirements (deferred)
+## v5.0 Requirements
 
-### RE Leaderboard Extension
+### Calibration
 
-- **EXT-01**: Per-pitcher RE summary across all charted appearances — who gives up the most run value above/below expectation?
-- **EXT-02**: RE matrix visible as a standalone reference page (`/charting/run-expectancy`) for coaching review
+Pre-work phase. Empirical measurements on existing processed footage that set thresholds for all downstream phases. No new user-facing behavior — outputs are documented constants and calibration artifacts.
 
-### Automated Refresh
+- [ ] **CALIB-01**: Engineer measures glove mask area timeseries for 20+ ground-truthed pitches from existing outings and documents the open/closed area ratio and drop magnitude per catcher
+- [ ] **CALIB-02**: Engineer measures leg lift peak-to-release frame interval for Babson pitchers at current camera FPS and documents the window width to use
+- [ ] **CALIB-03**: Engineer validates T-frame precision tolerance by re-processing pitches with T shifted ±3, ±5, ±10 frames and measuring miss vector degradation
 
-- **OPS-01**: GitHub Actions nightly re:rebuild after each game day (parallel to NCAA stats sync)
-- **OPS-02**: Incremental scrape mode — only fetch box scores for games added since last run
+### Pitch Detection
 
-### D3-Wide Baseline Comparison
+Automatic detection of when pitches occur in full inning video. Replaces the scrubbing step in `mark_pitches.py`.
 
-- **D3-01**: Side-by-side comparison of Babson RE24 vs. D3-wide baseline once sufficient cross-team data is accessible
+- [ ] **DETECT-01**: System detects pitch onset windows from a full inning video file using MediaPipe Pose on the pitcher ROI
+- [ ] **DETECT-02**: System writes `pitch_windows.json` containing frame_start, frame_end, and confidence score for each detected pitch
+- [ ] **DETECT-03**: System achieves ≥90% pitch recall and ≤10% false positive rate on a 5-inning validation set (ground-truthed manually)
+- [ ] **DETECT-04**: System correctly detects pitches from both windup and stretch mechanics without additional configuration
+- [ ] **DETECT-05**: System falls back to optical flow magnitude spike detection when MediaPipe Pose is unreliable (low visibility, occlusion)
+
+### Glove Tracking
+
+Automated glove segmentation and tracking across the full inning. Replaces `interactive_select()` in `track_glove.py` and the manual glove-click step in `batch_process.py`.
+
+- [ ] **TRACK-01**: System initializes glove tracking using SAM3 text prompt ("catcher's glove") without any human click or bounding box input
+- [ ] **TRACK-02**: ByteTrack assigns a persistent glove object ID that survives brief occlusions (pitcher body crossing, frame boundary)
+- [ ] **TRACK-03**: SAMURAI motion-aware memory stabilizes glove mask during fast-motion reception frames where SAM3 alone degrades
+- [ ] **TRACK-04**: System writes per-frame glove centroid (x, y) and mask area to a timeseries artifact covering the full inning
+
+### Automated T/A Detection
+
+State machine that identifies target frame (T) and arrival frame (A) within each pitch window from the glove timeseries. Replaces the human-operated frame-marking step.
+
+- [ ] **AUTO-01**: System automatically selects T frame as the last stable-plateau frame within the pitch window where glove area is large (open/set position)
+- [ ] **AUTO-02**: System automatically selects A frame as the first frame within the pitch window where glove area drops sharply below threshold (closure = reception)
+- [ ] **AUTO-03**: Auto-detected T is within ±3 frames of human-marked T in ≥85% of pitches on validation set
+- [ ] **AUTO-04**: Auto-detected A is within ±3 frames of human-marked A in ≥85% of pitches on validation set
+- [ ] **AUTO-05**: Each auto-detected T/A pair includes a confidence score; pitches below threshold are flagged for full-scrubber fallback
+
+### Verification UX
+
+Streamlined human review interface. Replaces the full-inning scrubber in `mark_pitches.py` with a proposal-confirm flow.
+
+- [ ] **VERIFY-01**: Operator sees a strip view of ±3 frames around auto-detected T and ±3 frames around auto-detected A for each pitch
+- [ ] **VERIFY-02**: Operator confirms or nudges T/A boundary with a single keypress (arrow keys to shift ±1 frame, Enter to confirm)
+- [ ] **VERIFY-03**: Operator selects pitch type from arsenal via number keys 1–9 (same key mapping as current `mark_pitches.py`)
+- [ ] **VERIFY-04**: Pitches flagged as low-confidence automatically open the full scrubber view for manual T/A selection
+- [ ] **VERIFY-05**: Average operator time per pitch in the verification pass is ≤20 seconds
+
+### Charting Integration
+
+Automatic matching of detected pitch clips to charting game data to pre-fill pitch type and eliminate re-entry.
+
+- [ ] **CHART-01**: System aligns auto-detected pitch windows to charting PA sequence by inning and order when a charting game record exists
+- [ ] **CHART-02**: Pitch type is pre-filled from charting data and shown to operator for confirmation when detected pitch count matches charted pitch count
+- [ ] **CHART-03**: When detected and charted pitch counts differ, system surfaces an exception UX showing which windows are unmatched for manual resolution
+- [ ] **CHART-04**: Full pipeline (detect → track → T/A → verify → output) completes in under 20 minutes for a standard 9-inning game
+
+---
+
+## v6.0 Requirements (Deferred)
+
+### VLM Ambiguity Resolution
+
+- **VLM-01**: System sends low-confidence T/A candidate frames to a VLM (Gemini or Claude) for automated resolution without human input
+- **VLM-02**: VLM resolution is correct in ≥80% of ambiguous cases on validation set
+- **VLM-03**: API cost per game stays under $0.50 at typical ambiguous-pitch volume
+- **VLM-04**: VLM resolver only activates for pitches below a configurable confidence threshold (cost control)
 
 ---
 
@@ -65,10 +81,12 @@
 
 | Feature | Reason |
 |---------|--------|
-| Win Expectancy (WE) | D3 corpus too sparse for reliable WE curves; defer until multi-season data exists |
-| Live in-game RE updates | Requires real-time base-state feed; charting system is post-game oriented |
-| Opponent-specific RE matrices per team | Sample size per opponent is too small; use aggregate opponent matrix only |
-| Supabase as RE matrix storage | Static JSON is faster, zero latency, consistent with all other derived data in this repo |
+| Ball flight tracking | Eliminated — miss metric is glove centroid at T vs. glove centroid at A; ball trajectory not needed |
+| Pitch type classification by computer | Human does this in 5 sec from clip; charting integration makes it moot |
+| Full automation with zero human verification | Verification step is valuable for data quality; target fast verification, not zero |
+| Changing miss calculation or CSV schema | `batch_process.py` outputs are downstream consumers; schema change is a separate breaking milestone |
+| Multi-camera or tracking camera support | Single fixed center-field camera only |
+| Real-time (live game) processing | Offline post-game processing only in v5.0 |
 
 ---
 
@@ -76,33 +94,38 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PBP-01 | Phase 21 | Complete |
-| PBP-02 | Phase 21 | Complete |
-| PBP-03 | Phase 21 | Complete |
-| PBP-04 | Phase 21 | Complete |
-| PBP-05 | Phase 21 | Complete |
-| PBP-06 | Phase 21 | Complete |
-| PBP-07 | Phase 21 | Complete |
-| MAT-01 | Phase 22 | Pending |
-| MAT-02 | Phase 22 | Pending |
-| MAT-03 | Phase 22 | Pending |
-| MAT-04 | Phase 22 | Pending |
-| MAT-05 | Phase 22 | Pending |
-| RV-01 | Phase 23 | Pending |
-| RV-02 | Phase 23 | Pending |
-| RV-03 | Phase 23 | Pending |
-| RV-04 | Phase 23 | Pending |
-| DASH-01 | Phase 24 | Pending |
-| DASH-02 | Phase 24 | Pending |
-| DASH-03 | Phase 24 | Pending |
-| DASH-04 | Phase 24 | Pending |
-| DASH-05 | Phase 24 | Pending |
+| CALIB-01 | Phase 25 | Pending |
+| CALIB-02 | Phase 25 | Pending |
+| CALIB-03 | Phase 25 | Pending |
+| DETECT-01 | Phase 26 | Pending |
+| DETECT-02 | Phase 26 | Pending |
+| DETECT-03 | Phase 26 | Pending |
+| DETECT-04 | Phase 26 | Pending |
+| DETECT-05 | Phase 26 | Pending |
+| TRACK-01 | Phase 27 | Pending |
+| TRACK-02 | Phase 27 | Pending |
+| TRACK-03 | Phase 27 | Pending |
+| TRACK-04 | Phase 27 | Pending |
+| AUTO-01 | Phase 28 | Pending |
+| AUTO-02 | Phase 28 | Pending |
+| AUTO-03 | Phase 28 | Pending |
+| AUTO-04 | Phase 28 | Pending |
+| AUTO-05 | Phase 28 | Pending |
+| VERIFY-01 | Phase 29 | Pending |
+| VERIFY-02 | Phase 29 | Pending |
+| VERIFY-03 | Phase 29 | Pending |
+| VERIFY-04 | Phase 29 | Pending |
+| VERIFY-05 | Phase 29 | Pending |
+| CHART-01 | Phase 30 | Pending |
+| CHART-02 | Phase 30 | Pending |
+| CHART-03 | Phase 30 | Pending |
+| CHART-04 | Phase 30 | Pending |
 
 **Coverage:**
-- v4.0 requirements: 21 total
-- Mapped to phases: 21
+- v5.0 requirements: 24 total
+- Mapped to phases: 24
 - Unmapped: 0 ✓
 
 ---
-*Requirements defined: 2026-04-11*
-*Last updated: 2026-04-11 after initial milestone scoping*
+*Requirements defined: 2026-04-17*
+*Last updated: 2026-04-17 — initial definition for milestone v5.0*
