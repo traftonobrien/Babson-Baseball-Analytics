@@ -97,25 +97,52 @@ Phases 14–17 complete. Phases 17.5, 18, 19, 20 remain planned but deferred whi
 
 ---
 
-## Current Milestone: v4.0 Run Expectancy Intelligence
+## Prior Milestone: v4.0 Run Expectancy Intelligence (phases 21–24, complete 2026-04-12)
 
-**Goal:** Build a RE288 run expectancy matrix from Sidearm play-by-play data and integrate it into the 0-2 fastball coaching dashboard to quantify the run-value cost and counterfactual impact of Babson's 0-2 fastball strategy.
-
-**Target features:**
-- Extended PBP parser: parse ALL plays from Sidearm box scores (both teams), reconstruct base state and outs sequentially
-- RE288 matrix builder: 12 counts × 8 base states × 3 out states, stored as refreshable JSON, separate matrices for Babson-as-offense and opponent-as-offense
-- Run value calculator: delta-RE per PA outcome, aggregated over all charted 0-2 fastballs
-- 0-2 dashboard integration: total run value cost of strategy, counterfactual simulator ("if X% became strikeouts"), count-progression RE tree (0-2 → ball vs 0-2 → K vs 0-2 → in-play)
-
-### Active (v4.0)
-
-- [ ] RE-01: Sidearm PBP extended parser captures all PA events with sequential base-state + outs reconstruction
-- [ ] RE-02: RE288 matrices built and stored as refreshable JSON (Babson offense, opponent offense)
-- [ ] RE-03: Run value (delta-RE) calculated for each logged 0-2 fastball PA
-- [ ] RE-04: 0-2 dashboard shows total run value cost/save of the strategy
-- [ ] RE-05: 0-2 dashboard shows counterfactual: "if X% of balls became strikeouts, run value changes by Y"
-- [ ] RE-06: 0-2 dashboard shows count-progression RE tree (0-2 → K / ball / in-play consequences)
-- [ ] RE-07: RE matrices are refreshable via a script as new games are played
+**Goal:** Build a RE288 run expectancy matrix from Sidearm play-by-play data and integrate it into the 0-2 fastball coaching dashboard. All 4 phases shipped.
 
 ---
-*Last updated: 2026-04-11 after starting milestone v4.0 Run Expectancy Intelligence*
+
+## Current Milestone: v5.0 Command Tracker v2 — Automated Pitch Detection and Glove Tracking
+
+**Goal:** Reduce per-game command tracking time from 1–2 hours to 15–20 minutes by automating pitch onset detection and glove T/A frame selection, shifting the human role from finding frames to verifying proposals.
+
+**Target features:**
+- Calibration pre-work: measure glove area timeseries, leg lift timing, and T-frame tolerance on existing footage
+- Pitch onset detector: MediaPipe Pose on pitcher ROI auto-generates pitch windows from full inning video
+- Automated glove tracking: SAM3 text-prompted initialization replaces manual glove click; ByteTrack + SAMURAI for robust propagation
+- Automated T/A detection: glove state machine detects target-set frame and reception-closure frame within each window
+- Streamlined verification UX: strip view with single-keypress confirm/nudge replaces full-inning scrubber
+- Charting integration: auto-match detected pitches to charting PA sequence, pre-fill pitch type
+
+### Active (v5.0)
+
+- [ ] CALIB-01: Glove area timeseries measured on 20+ existing ground-truthed pitches (open vs closed ratios documented)
+- [ ] CALIB-02: Leg lift peak-to-release frame interval measured for Babson pitchers at current FPS
+- [ ] CALIB-03: T-frame precision tolerance validated (max acceptable frame offset for correct miss vector)
+- [ ] DETECT-01: System detects pitch onset windows from full inning video using MediaPipe Pose on pitcher ROI
+- [ ] DETECT-02: System outputs pitch_windows.json with frame_start, frame_end, confidence per pitch
+- [ ] DETECT-03: System achieves ≥90% pitch recall with ≤10% false positive rate on validation set
+- [ ] DETECT-04: System handles both windup and stretch mechanics without false negatives
+- [ ] DETECT-05: Optical flow fallback detects pitches when pose estimation is unreliable
+- [ ] TRACK-01: SAM3 text prompt ("catcher's glove") initializes glove tracking without human click
+- [ ] TRACK-02: ByteTrack maintains persistent glove ID across frames through occlusion
+- [ ] TRACK-03: SAMURAI stabilizes glove mask during fast-motion reception frames
+- [ ] TRACK-04: System outputs per-frame glove centroid and mask area timeseries for full inning
+- [ ] AUTO-01: System automatically detects T frame (glove open, plateau stable) within each pitch window
+- [ ] AUTO-02: System automatically detects A frame (glove closure event) within each pitch window
+- [ ] AUTO-03: Auto-detected T is within ±3 frames of human-marked T in ≥85% of pitches
+- [ ] AUTO-04: Auto-detected A is within ±3 frames of human-marked A in ≥85% of pitches
+- [ ] AUTO-05: Each T/A detection includes a confidence score used to route low-confidence pitches to fallback
+- [ ] VERIFY-01: Operator sees strip view (±3 frames) around auto-detected T and A per pitch
+- [ ] VERIFY-02: Operator confirms or nudges T/A with single keypress
+- [ ] VERIFY-03: Operator selects pitch type from arsenal via number keys (same as current)
+- [ ] VERIFY-04: Low-confidence pitches fall back to full scrubber view automatically
+- [ ] VERIFY-05: Average verification time ≤20 sec per pitch
+- [ ] CHART-01: System matches auto-detected pitch clips to charting PA sequence by inning order
+- [ ] CHART-02: Pitch type pre-filled from charting data when detected count matches charted count
+- [ ] CHART-03: System surfaces exception UX when detected and charted pitch counts differ
+- [ ] CHART-04: Full pipeline completes in <20 min for a standard 9-inning game
+
+---
+*Last updated: 2026-04-17 after starting milestone v5.0 Command Tracker v2*
