@@ -1,0 +1,3 @@
+image_file,source_clip,player_id,date_id,pitch_number,frame_number,frame_role,label_status,notes
+CBurrows1_2026_03_01_pitch012_f0010.jpg,outings/CBurrows1/2026_03_01/clips/pitch_012.mp4,CBurrows1,2026_03_01,12,10,T,labeled,
+CBurrows1_2026_03_01_pitch012_f0056.jpg,outings/CBurrows1/2026_03_01/clips/pitch_012.mp4,CBurrows1,2026_03_01,12,56,A,labeled,

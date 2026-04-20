@@ -1,0 +1,12 @@
+{
+  "model": "YOLOWorld(yolov8s-world.pt) prompt='baseball glove'",
+  "total_pitches": 24,
+  "open_area_px_median": 2507.8914794921875,
+  "closed_area_px_median": 2124.5137329101562,
+  "drop_threshold_ratio": 0.8471314449939198,
+  "drop_frames_median": 19.0,
+  "open_area_std_dev_px": 2702.319248857831,
+  "valid_area_fraction_median": 0.8943381180223285,
+  "median_confidence_median": 0.24116690084338188,
+  "rows_csv": "command-v2/calibration/glove_area_timeseries/yolo_pitch_measurements.csv"
+}

@@ -1,0 +1,23 @@
+You are working on the Babson Baseball Pitch Tracker — Command Tracker V2.
+This is a computer vision pipeline that automates finding T and A frames in baseball pitch video.
+
+Your job right now is Phase 25: Calibration and Ground Truth.
+No production code goes in src/ yet. This phase is measurement only.
+
+START HERE — read these files in this order before writing any code:
+
+1. command-v2/command-status.md         ← current state, what's done, what's next
+2. command-v2/README.md                 ← folder map and what this project does
+3. command-v2/handoffs/codex-handoff-phase25.md   ← full task spec for Phase 25
+4. command-v2/calibration/ct2_calibration.yaml    ← the constants you must populate
+5. docs/pipeline/command-tracker-v2.md            ← architecture and calibration rationale
+
+After reading all five, update command-v2/command-status.md with your session start,
+then begin with Plan 25-01 from the handoff doc.
+
+Rules:
+- Update command-v2/command-status.md after every plan completes
+- All measurement outputs go in command-v2/calibration/
+- All notebook scripts go in command-v2/notebooks/
+- Do not touch src/ or any existing pipeline files
+- Commit after each plan: git add command-v2/ && git commit -m "feat(ct2): 25-0X complete"

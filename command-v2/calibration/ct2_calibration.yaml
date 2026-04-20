@@ -1,0 +1,62 @@
+# Command Tracker V2 — Calibration Constants
+# Populated by Phase 25. Consumed by phases 26–30.
+# Do not hardcode any of these values in src/ scripts — read from here.
+#
+# Status: PLACEHOLDER — values not yet measured
+# Last updated: (Phase 25 execution date)
+
+glove:
+  # YOLO-derived glove area in pixels² when glove is at open/target position
+  # Measured: median across 20+ ground-truthed T frames
+  open_area_px: 2507.8915
+
+  # YOLO-derived glove area in pixels² after glove closes at reception
+  # Measured: median across 20+ ground-truthed A frames
+  closed_area_px: 2124.5137
+
+  # Fraction of open_area_px that triggers closure detection
+  # e.g. 0.65 means: area drops to 65% of open → A frame candidate
+  drop_threshold_ratio: 0.8471
+
+  # Typical number of frames for area to transition from open to closed
+  # Used to smooth the area signal before drop detection
+  drop_frames: 19
+
+  # Standard deviation of open area across catchers/lighting
+  # High value = threshold needs per-outing normalization
+  open_area_std_dev_px: 2702.3192
+
+pose:
+  # Camera frame rate — verified from video metadata
+  camera_fps: null
+
+  # Median frames from leg lift peak to release (windup mechanics)
+  leg_lift_to_release_frames_windup: null
+
+  # Median frames from leg lift peak to release (stretch mechanics)
+  leg_lift_to_release_frames_stretch: null
+
+  # Frame window padding added around pitch onset window
+  # pitch_start = leg_lift_peak - window_pre_frames
+  # pitch_end = leg_lift_peak + leg_lift_to_release + window_post_frames
+  window_pre_frames: null
+  window_post_frames: null
+
+ta_tolerance:
+  # Max T-frame offset (frames) before miss vector degrades meaningfully
+  # "Meaningfully" = median miss delta > 5px across the validation set
+  # This is the precision target for auto-detected T in Phase 27
+  acceptable_offset_frames: null
+
+  # Miss vector delta (px) at each tested offset — for documentation
+  delta_at_3_frames_px: null
+  delta_at_5_frames_px: null
+  delta_at_10_frames_px: null
+
+yolo:
+  # Checkpoint used for glove detection/segmentation in calibration
+  model_path: yolov8s-world.pt
+
+  # Confidence threshold below which YOLO detection is considered unreliable
+  # Pitches below this go to VLM resolver (Phase 29)
+  min_confidence: 0.2
