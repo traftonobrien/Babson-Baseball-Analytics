@@ -15464,15 +15464,31 @@
     }
   },
   "JWU (Providence)": {
-    "Max Randazzo": {
+    "Elijah Wells": {
       "bats": "R",
       "throws": "R"
     },
-    "Evan LaMothe": {
+    "Yedan Diaz": {
       "bats": "R",
       "throws": "R"
     },
-    "Colin Nockels": {
+    "Jeff Valdez Jimenez": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Jeremy Auren": {
+      "bats": "L",
+      "throws": "R"
+    },
+    "Ryan Ducey": {
+      "bats": "L",
+      "throws": "R"
+    },
+    "Jack Obert": {
+      "bats": "L",
+      "throws": "R"
+    },
+    "Diego Taveras": {
       "bats": "R",
       "throws": "R"
     },
@@ -15480,35 +15496,35 @@
       "bats": "R",
       "throws": "R"
     },
-    "Daniel Heisler": {
+    "Evan LaMothe": {
       "bats": "R",
       "throws": "R"
-    },
-    "Brett Nickerson": {
-      "bats": "R",
-      "throws": "R"
-    },
-    "Joaquin Cardoso": {
-      "bats": "R",
-      "throws": "R"
-    },
-    "Dylan Young": {
-      "bats": "L",
-      "throws": "L"
     },
     "Nick Calenda": {
       "bats": "R",
       "throws": "R"
     },
-    "Braylen Beard": {
+    "Carlo Acquisto": {
       "bats": "R",
       "throws": "R"
     },
-    "Michael Cobb": {
+    "Kiefer McGrath": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Max Person": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Nevin Belanger": {
       "bats": "L",
       "throws": "L"
     },
-    "Jake Scharlet": {
+    "Gianni Melendez": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Sam Schoenberg": {
       "bats": "R",
       "throws": "R"
     },
@@ -15516,9 +15532,77 @@
       "bats": "R",
       "throws": "R"
     },
-    "Nevin Belanger": {
+    "Jack Dwyer": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Joaquin Cardoso": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Corey Magill": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Brett Nickerson": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Michael Cobb": {
+      "bats": "S",
+      "throws": "L"
+    },
+    "Brayden Beard": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Nathan Roderiques": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Daniel Heisler": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Max Randazzo": {
+      "bats": "R",
+      "throws": "L"
+    },
+    "Jake Scharlat": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Dimitri Staphos": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Bryce Larco": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Chris Rosales": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Dylan Young": {
       "bats": "L",
       "throws": "L"
+    },
+    "Dereck Then": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Justin Hernandez": {
+      "bats": "L",
+      "throws": "L"
+    },
+    "Henry Melanson": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Colin Nockels": {
+      "bats": "R",
+      "throws": "R"
     }
   },
   "JWU Charlotte": {
@@ -16738,35 +16822,35 @@
     }
   },
   "Lasell": {
-    "Chase Supan": {
-      "bats": "R",
-      "throws": "R"
-    },
     "Ty Lohsen": {
       "bats": "R",
       "throws": "R"
     },
-    "Joshua Cavas": {
+    "Declan Silva": {
       "bats": "R",
       "throws": "R"
     },
-    "Benjamin Conlon": {
+    "Tyler McDonald": {
+      "bats": "L",
+      "throws": "R"
+    },
+    "Jonah Nielsen": {
       "bats": "R",
       "throws": "R"
     },
-    "Shea Caton": {
+    "Nick Nigro": {
       "bats": "R",
       "throws": "R"
     },
-    "Will McPherson": {
+    "Bobby Long": {
       "bats": "R",
       "throws": "R"
     },
-    "Jeremy Angeles": {
+    "Chase Curran": {
       "bats": "R",
       "throws": "R"
     },
-    "Jeremy Wacker": {
+    "Robert Leyva": {
       "bats": "R",
       "throws": "R"
     },
@@ -16774,15 +16858,11 @@
       "bats": "L",
       "throws": "R"
     },
-    "Tommy Flanagan": {
-      "bats": "R",
+    "Tim Callahan": {
+      "bats": "L",
       "throws": "R"
     },
-    "Derrick Dellea": {
-      "bats": "R",
-      "throws": "R"
-    },
-    "Adam Marsh": {
+    "Braelen Silva": {
       "bats": "R",
       "throws": "R"
     },
@@ -16790,27 +16870,119 @@
       "bats": "R",
       "throws": "R"
     },
-    "Michael Webber": {
-      "bats": "R",
-      "throws": "R"
-    },
-    "Braelen Silva": {
-      "bats": "R",
-      "throws": "R"
-    },
     "Connor Freitas": {
       "bats": "R",
       "throws": "R"
     },
-    "Lucas Stogner": {
+    "Andrew Hosford": {
       "bats": "R",
+      "throws": "R"
+    },
+    "Derrick Dellea": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Hayden Nunley": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Tyus Friedman": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Nicholas Groussis": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Andrew Yen": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Calvin Sanft": {
+      "bats": "L",
+      "throws": "L"
+    },
+    "Adam Marsh": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Jeremy Wacker": {
+      "bats": "L",
+      "throws": "L"
+    },
+    "Matthew Williams": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Tommy Flanagan": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Will McPherson": {
+      "bats": "L",
+      "throws": "R"
+    },
+    "Sawyer DiMatteo": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "James Hereford": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Callahan Bullens": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Benjamin Conlon": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Michael Webber": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Ashmer Pedraza": {
+      "bats": "L",
+      "throws": "R"
+    },
+    "Chase Supan": {
+      "bats": "L",
+      "throws": "L"
+    },
+    "Shea Caton": {
+      "bats": "L",
+      "throws": "L"
+    },
+    "Jeremy Angeles": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Joshua Cavas": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Lucas Stogner": {
+      "bats": "L",
+      "throws": "L"
+    },
+    "Tyler Holt": {
+      "bats": "L",
       "throws": "R"
     },
     "Bryce Isquith": {
       "bats": "R",
       "throws": "R"
     },
-    "Andrew Yen": {
+    "Korey DeBeer": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Tyler Conners": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Alexander Munz": {
       "bats": "R",
       "throws": "R"
     }
@@ -20218,7 +20390,7 @@
       "bats": "R",
       "throws": "R"
     },
-    "Lex Castañeda": {
+    "Lex Casta\u00f1eda": {
       "bats": "L",
       "throws": "R"
     },
@@ -20604,7 +20776,7 @@
       "bats": "L",
       "throws": "L"
     },
-    "Isaias Nuño": {
+    "Isaias Nu\u00f1o": {
       "bats": "R",
       "throws": "R"
     },
@@ -24668,7 +24840,7 @@
       "bats": "R",
       "throws": "R"
     },
-    "Na’eem Bornsetin-Brown": {
+    "Na\u2019eem Bornsetin-Brown": {
       "bats": "R",
       "throws": "R"
     },
