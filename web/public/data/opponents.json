@@ -8454,10 +8454,6 @@
       "bats": "R",
       "throws": "R"
     },
-    "Chris Takita": {
-      "bats": "R",
-      "throws": "R"
-    },
     "Luke Costello": {
       "bats": "R",
       "throws": "R"
@@ -8483,8 +8479,8 @@
       "throws": "R"
     },
     "Andrew Reder": {
-      "bats": "R",
-      "throws": "R"
+      "bats": "L",
+      "throws": "L"
     },
     "Michael Salzillo": {
       "bats": "R",
@@ -8551,6 +8547,22 @@
       "throws": "R"
     },
     "Andrew Mello": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Christopher Takita": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Tommy Schopps": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Will Passarelli": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Otto McLaughlin": {
       "bats": "R",
       "throws": "R"
     }
