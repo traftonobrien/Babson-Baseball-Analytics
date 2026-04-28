@@ -26630,7 +26630,19 @@
     }
   },
   "Springfield": {
-    "Brock Goodwin": {
+    "Chris Balchius": {
+      "bats": "L",
+      "throws": "R"
+    },
+    "Nicholas Lloyd": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Ryan Duffy": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Nate Kelleher-Mochak": {
       "bats": "L",
       "throws": "L"
     },
@@ -26638,35 +26650,23 @@
       "bats": "R",
       "throws": "R"
     },
-    "Josh Mayo": {
+    "Jack Dunaisky": {
       "bats": "R",
       "throws": "R"
     },
-    "Adam Crocker": {
-      "bats": "R",
-      "throws": "L"
-    },
-    "Jack Richburg": {
+    "Tyler Casey": {
       "bats": "R",
       "throws": "R"
     },
-    "Steve Cifarelli": {
+    "Dan Surette": {
       "bats": "R",
       "throws": "R"
     },
-    "Aaron Little": {
+    "Dan Demirjian": {
       "bats": "L",
       "throws": "R"
     },
-    "Ryan Delaney": {
-      "bats": "R",
-      "throws": "R"
-    },
-    "Ethan Gray": {
-      "bats": "L",
-      "throws": "L"
-    },
-    "Ryan Baker": {
+    "Thomas Tantillo": {
       "bats": "R",
       "throws": "R"
     },
@@ -26674,27 +26674,115 @@
       "bats": "R",
       "throws": "R"
     },
+    "David Jurewicz Jr.": {
+      "bats": "L",
+      "throws": "L"
+    },
+    "Brock Goodwin": {
+      "bats": "L",
+      "throws": "L"
+    },
+    "Aaron Little": {
+      "bats": "L",
+      "throws": "R"
+    },
+    "Brady Fellows": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Steve Cifarelli": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Aiden Palen": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Brady Holzhauer": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Jack Richburg": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Dan Vidal": {
+      "bats": "R",
+      "throws": "R"
+    },
     "Liam Skribiski-Banack": {
       "bats": "R",
       "throws": "R"
     },
-    "Nathan Kelleher-Mochak": {
+    "Nate Garafalo": {
       "bats": "L",
-      "throws": "L"
+      "throws": "R"
     },
-    "Kyle Vitro": {
-      "bats": "L",
-      "throws": "L"
-    },
-    "Brady Search": {
+    "Jacob Wagner": {
       "bats": "R",
       "throws": "R"
+    },
+    "Adam Crocker": {
+      "bats": "R",
+      "throws": "L"
+    },
+    "Kyle Mitchell": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Ryan Delaney": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Michael Lepere": {
+      "bats": "L",
+      "throws": "L"
+    },
+    "Ethan Gray": {
+      "bats": "L",
+      "throws": "L"
     },
     "Liam Hodson": {
       "bats": "R",
       "throws": "R"
     },
+    "Ryan Baker": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Anthony Boniello": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Kyle Vitro": {
+      "bats": "L",
+      "throws": "L"
+    },
+    "Sam Gilgenbach": {
+      "bats": "L",
+      "throws": "L"
+    },
+    "Kyle Gordon": {
+      "bats": "L",
+      "throws": "R"
+    },
+    "Josh Mayo": {
+      "bats": "R",
+      "throws": "R"
+    },
     "Jake Gombotz": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Brady Search": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Brady Quirion": {
+      "bats": "R",
+      "throws": "R"
+    },
+    "Luke Barone": {
       "bats": "R",
       "throws": "R"
     }
