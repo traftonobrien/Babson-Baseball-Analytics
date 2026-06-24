@@ -32,7 +32,6 @@ import { FALL_SESSION_LABELS } from "@/lib/charting/fallSessionTypes";
 import type { FallWorkloadStressLevel } from "@/lib/fall/workload";
 import { deriveFallHitterStatsForPlayer, type FallHitterAggregate } from "@/lib/charting/fallHitterAggregation";
 import { formatHitterAvg } from "@/lib/fall/hitterStatsFmt";
-import { getNotesForPlayer, type PlayerNoteRecord } from "@/lib/fall/playerNotes";
 
 export const runtime = "nodejs";
 
@@ -458,7 +457,7 @@ export default async function AccountPortalPage() {
   const rosterPlayer =
     buildBootstrapRosterPlayers().find((player) => player.playerId === account.playerId) ??
     null;
-  const [fallOutings, chartingWorkloads, hitterStats, coachNotes] = await Promise.all([
+  const [fallOutings, chartingWorkloads, hitterStats] = await Promise.all([
     listFallPitcherOutingsForAccount(account).catch(() => []),
     listFallChartingSessionWorkloadsForPitcher(
       account.playerName ?? rosterPlayer?.name ?? "",
@@ -466,9 +465,6 @@ export default async function AccountPortalPage() {
     account.playerId
       ? deriveFallHitterStatsForPlayer(account.playerId).catch(() => null)
       : Promise.resolve(null),
-    account.playerId
-      ? getNotesForPlayer(account.playerId).catch(() => [] as PlayerNoteRecord[])
-      : Promise.resolve([] as PlayerNoteRecord[]),
   ]);
   const latestChartingWorkload = chartingWorkloads[0] ?? null;
   const latestOuting = fallOutings[0] ?? null;
@@ -586,28 +582,7 @@ export default async function AccountPortalPage() {
           </div>
         </div>
 
-        {/* Coach notes */}
-        {coachNotes.length > 0 && (
-          <section className="mt-6">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted mb-3">
-              Coach Notes
-            </div>
-            <div className="space-y-3">
-              {coachNotes.map((n) => (
-                <div key={n.id} className="rounded-2xl border border-border bg-surface p-4">
-                  <p className="text-sm leading-relaxed text-foreground">{n.note}</p>
-                  <p className="mt-2 text-[11px] text-muted">
-                    {new Date(n.createdAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+
       </div>
     </LeaderboardPageFrame>
   );
