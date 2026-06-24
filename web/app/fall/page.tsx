@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ClipboardList, Plus, Users, TrendingUp } from "lucide-react";
+import { ClipboardList, Plus, Users, TrendingUp } from "lucide-react";
 import { LeaderboardPageFrame } from "@/app/components/leaderboards/LeaderboardChrome";
 import {
   listAllFallPitcherOutingsForTeam,
@@ -7,6 +7,9 @@ import {
   type FallPitcherRosterEntry,
 } from "@/lib/fall/pitcherOutings";
 import { deriveFallHitterStats } from "@/lib/charting/fallHitterAggregation";
+import { deriveAvailability } from "@/lib/fall/availability";
+import { FallAvailabilityBoard } from "./_components/FallAvailabilityBoard";
+import { FallCalendar } from "./_components/FallCalendar";
 
 export const runtime = "nodejs";
 
@@ -27,6 +30,14 @@ function fmt2(n: number | null): string {
 }
 function fmtPct(n: number | null): string {
   return n !== null ? n.toFixed(1) + "%" : "—";
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+      {children}
+    </div>
+  );
 }
 
 function PitcherStatsRow({ entry }: { entry: FallPitcherRosterEntry }) {
@@ -61,37 +72,9 @@ function PitcherStatsRow({ entry }: { entry: FallPitcherRosterEntry }) {
   );
 }
 
-function HubCard({
-  href,
-  icon: Icon,
-  title,
-  detail,
-}: {
-  href: string;
-  icon: typeof ClipboardList;
-  title: string;
-  detail: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface px-5 py-4 transition-smooth hover:border-[var(--brand-primary-border)] hover:bg-surface-muted"
-    >
-      <span className="flex min-w-0 items-center gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface-muted text-muted">
-          <Icon className="h-4 w-4" />
-        </span>
-        <span className="min-w-0">
-          <span className="block text-sm font-bold text-foreground">{title}</span>
-          <span className="mt-1 block text-xs leading-5 text-muted">{detail}</span>
-        </span>
-      </span>
-      <ArrowRight className="h-4 w-4 shrink-0 text-muted" />
-    </Link>
-  );
-}
-
 export default async function FallHubPage() {
+  const today = new Date().toISOString().slice(0, 10);
+
   const [{ allOutings, byPlayer }, allHitters] = await Promise.all([
     listAllFallPitcherOutingsForTeam().catch(() => ({ allOutings: [], byPlayer: [] })),
     deriveFallHitterStats().catch(() => []),
@@ -103,6 +86,7 @@ export default async function FallHubPage() {
     .slice(0, 5);
 
   const teamSeason = aggregateFallPitcherOutings(allOutings);
+  const availability = deriveAvailability(allOutings, today);
 
   return (
     <LeaderboardPageFrame variant="light" maxWidth="max-w-5xl">
@@ -114,10 +98,10 @@ export default async function FallHubPage() {
               Babson Baseball
             </div>
             <h1 className="mt-4 text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-              Fall 2025 Hub
+              Fall Hub
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-7 text-muted">
-              One stop for fall intersquad data — pitcher outings, hitter stats, and workload tracking.
+              Pitcher arm status, throw calendar, stats, and quick access.
             </p>
           </div>
           <Link
@@ -129,9 +113,26 @@ export default async function FallHubPage() {
           </Link>
         </div>
 
+        {/* Availability board */}
+        <section className="mt-8">
+          <div className="flex items-center justify-between gap-4 mb-3">
+            <SectionLabel>Arm Status — {today}</SectionLabel>
+            <span className="text-[10px] text-muted">Hover status badge for detail</span>
+          </div>
+          <FallAvailabilityBoard players={availability} />
+        </section>
+
+        {/* Throw calendar */}
+        <section className="mt-8">
+          <div className="mb-3">
+            <SectionLabel>Throw Calendar</SectionLabel>
+          </div>
+          <FallCalendar outings={allOutings} today={today} />
+        </section>
+
         {/* Team totals bar */}
         {allOutings.length > 0 && (
-          <div className="mt-6 grid grid-cols-4 gap-2 rounded-2xl border border-border bg-surface p-4 sm:grid-cols-8">
+          <div className="mt-8 grid grid-cols-4 gap-2 rounded-2xl border border-border bg-surface p-4 sm:grid-cols-8">
             {[
               ["Players", String(byPlayer.length)],
               ["Outings", String(teamSeason.outingCount)],
@@ -153,9 +154,7 @@ export default async function FallHubPage() {
         {/* Pitcher stats table */}
         <section className="mt-8">
           <div className="flex items-center justify-between gap-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
-              Pitcher Stats
-            </div>
+            <SectionLabel>Pitcher Stats</SectionLabel>
             <Link href="/fall/outings" className="text-xs font-semibold text-muted underline underline-offset-2 hover:text-foreground">
               All outings →
             </Link>
@@ -180,9 +179,7 @@ export default async function FallHubPage() {
         {/* Hitter stats preview */}
         <section className="mt-8">
           <div className="flex items-center justify-between gap-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
-              Hitter Stats — Top OPS
-            </div>
+            <SectionLabel>Hitter Stats — Top OPS</SectionLabel>
             <Link href="/fall/hitters" className="text-xs font-semibold text-muted underline underline-offset-2 hover:text-foreground">
               Full leaderboard →
             </Link>
@@ -219,34 +216,33 @@ export default async function FallHubPage() {
 
         {/* Quick links */}
         <section className="mt-8">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
-            Quick Access
-          </div>
+          <SectionLabel>Quick Access</SectionLabel>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <HubCard
-              href="/fall/outing/new"
-              icon={Plus}
-              title="Log Pitcher Outing"
-              detail="Enter workbook-style pitch, result, FPS, and summary rows."
-            />
-            <HubCard
-              href="/fall/outings"
-              icon={ClipboardList}
-              title="All Outings"
-              detail="Browse every logged outing across all pitchers."
-            />
-            <HubCard
-              href="/fall/hitters"
-              icon={TrendingUp}
-              title="Hitter Stats"
-              detail="Full fall hitting leaderboard sorted by OPS."
-            />
-            <HubCard
-              href="/account"
-              icon={Users}
-              title="My Portal"
-              detail="Personalized view — outing history and player links for your account."
-            />
+            {[
+              { href: "/fall/outing/new", icon: Plus, title: "Log Pitcher Outing", detail: "Enter pitch, result, FPS, and summary rows." },
+              { href: "/fall/outings", icon: ClipboardList, title: "All Outings", detail: "Browse every logged outing across all pitchers." },
+              { href: "/fall/hitters", icon: TrendingUp, title: "Hitter Stats", detail: "Full fall hitting leaderboard sorted by OPS." },
+              { href: "/account", icon: Users, title: "My Portal", detail: "Personalized view — outing history and player links." },
+            ].map(({ href, icon: Icon, title, detail }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface px-5 py-4 transition-smooth hover:border-[var(--brand-primary-border)] hover:bg-surface-muted"
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface-muted text-muted">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-bold text-foreground">{title}</span>
+                    <span className="mt-1 block text-xs leading-5 text-muted">{detail}</span>
+                  </span>
+                </span>
+                <svg className="h-4 w-4 shrink-0 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            ))}
           </div>
         </section>
       </div>

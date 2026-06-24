@@ -141,6 +141,18 @@ export const fallHitterStats = pgTable(
 );
 
 /**
+ * Coach notes per player. Written by coach/admin, visible to player in their portal.
+ */
+export const playerNotes = pgTable("player_notes", {
+  id: text("id").primaryKey(),
+  playerId: text("player_id").notNull(),
+  playerName: text("player_name").notNull(),
+  authorEmail: text("author_email").notNull(),
+  note: text("note").notNull(),
+  createdAt: text("created_at").notNull(),
+});
+
+/**
  * Aggregated season averages per pitch (from stuff_plus_pitcher_arsenal.csv)
  */
 export const stuffPlusArsenal = pgTable(
