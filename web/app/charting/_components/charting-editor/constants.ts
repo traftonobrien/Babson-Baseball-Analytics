@@ -4,6 +4,7 @@ import {
   FIELDERS_CHOICE_OPTIONS,
   FLY_OUT_OPTIONS,
   GROUND_OUT_OPTIONS,
+  HIT_ERROR_OPTIONS,
   HIT_OPTIONS,
   LINE_OUT_OPTIONS,
   POP_OUT_OPTIONS,
@@ -70,9 +71,13 @@ export const OUT_TYPE_CHOICES: { type: InPlayOutType; label: string }[] = [
   { type: "fc", label: "Fielder's Choice" },
 ];
 
-export const HIT_LABELS: Record<(typeof HIT_OPTIONS)[number], string> = {
+export const HIT_LABELS: Record<
+  (typeof HIT_OPTIONS)[number] | (typeof HIT_ERROR_OPTIONS)[number],
+  string
+> = {
   "1B": "Single",
   "2B": "Double",
   "3B": "Triple",
   HR: "Home Run",
+  "1B+E": "Single + error",
 };

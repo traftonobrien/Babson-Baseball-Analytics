@@ -4,6 +4,9 @@ import { chartingDb as db } from "@/db";
 import { chartingGames } from "@/db/schema";
 import { CHARTING_GATE_CHAIN, requireRequestGates } from "@/lib/auth";
 import { logApiError } from "@/lib/server/logger";
+import { FALL_SESSION_TYPES } from "@/lib/charting/fallSessionTypes";
+
+const ALL_VALID_SESSION_TYPES = new Set<string>(["game", "live_ab", ...FALL_SESSION_TYPES]);
 
 const FIELD_LIMITS: Record<string, number> = {
   opponent: 100,
@@ -98,7 +101,10 @@ export async function POST(request: NextRequest) {
       opponentTeamLabel?: string | null;
     };
 
-    if (!opponent?.trim()) {
+    const isFallSession = sessionType?.startsWith("fall_") ?? false;
+
+    // opponent required for game/live_ab, optional for fall sessions
+    if (!isFallSession && !opponent?.trim()) {
       return NextResponse.json(
         { error: "opponent is required" },
         { status: 400 }
@@ -114,6 +120,11 @@ export async function POST(request: NextRequest) {
     const lengthError = validateFieldLengths(body as Record<string, unknown>);
     if (lengthError) return lengthError;
 
+    const resolvedSessionType = ALL_VALID_SESSION_TYPES.has(sessionType ?? "")
+      ? (sessionType as string)
+      : "live_ab";
+    const resolvedOpponent = opponent?.trim() || (isFallSession ? "Fall Practice" : "");
+
     const now = new Date().toISOString();
     const id = crypto.randomUUID();
 
@@ -121,19 +132,19 @@ export async function POST(request: NextRequest) {
       .insert(chartingGames)
       .values({
         id,
-        opponent: opponent.trim(),
+        opponent: resolvedOpponent,
         gameDate: gameDate.trim(),
         status: "draft",
         revision: 1,
-        sessionType: sessionType === "game" ? "game" : "live_ab",
+        sessionType: resolvedSessionType,
         babsonVenueSide: babsonVenueSide === "away" ? "away" : "home",
         babsonStartingPitcher: babsonStartingPitcher?.trim() || null,
         opponentStartingPitcher: opponentStartingPitcher?.trim() || null,
         ourTeamLabel:
-          sessionType === "game" ? (ourTeamLabel?.trim() || "Babson") : null,
+          resolvedSessionType === "game" ? (ourTeamLabel?.trim() || "Babson") : null,
         opponentTeamLabel:
-          sessionType === "game"
-            ? (opponentTeamLabel?.trim() || opponent.trim())
+          resolvedSessionType === "game"
+            ? (opponentTeamLabel?.trim() || resolvedOpponent)
             : null,
         charter: body.charter ?? null,
         weather: body.weather ?? null,

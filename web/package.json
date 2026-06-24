@@ -21,7 +21,8 @@
     "re:rebuild": "npx tsx scripts/build_re_matrix.ts",
     "re:base-states": "npx tsx scripts/build_game_base_states.ts",
     "re:rebuild:newmac": "npx tsx scripts/build_newmac_re_matrix.ts",
-    "re:compare:ohtwo-ball": "npx tsx scripts/build_ohtwo_ball_comparison.ts"
+    "re:compare:ohtwo-ball": "npx tsx scripts/build_ohtwo_ball_comparison.ts",
+    "fall:ingest-hitter-stats": "npx tsx scripts/ingest-fall-hitter-stats.ts"
   },
   "dependencies": {
     "@vercel/analytics": "^1.6.1",

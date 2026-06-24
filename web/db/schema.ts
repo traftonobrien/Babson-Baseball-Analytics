@@ -6,6 +6,7 @@ import {
   real,
   text,
   timestamp,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -21,6 +22,122 @@ export const loginRateLimits = pgTable(
     windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
   },
   (t) => [primaryKey({ columns: [t.ip, t.gateId] })],
+);
+
+// ---------------------------------------------------------------------------
+// Account / personalization tables
+// ---------------------------------------------------------------------------
+
+/**
+ * One row per Babson-authenticated site account.
+ *
+ * This table is for personalization and edit permissions, not broad site
+ * visibility. Players can still browse the internal site after the normal gate;
+ * playerId drives "My Portal" defaults and own-outing submissions.
+ */
+export const playerAccounts = pgTable(
+  "player_accounts",
+  {
+    id: text("id").primaryKey(),
+    email: text("email").notNull(),
+    playerId: text("player_id"),
+    playerName: text("player_name"),
+    /** player | coach | admin */
+    role: text("role").notNull().default("player"),
+    /** approved | pending | rejected */
+    status: text("status").notNull().default("approved"),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+    lastLoginAt: text("last_login_at"),
+  },
+  (t) => [uniqueIndex("player_accounts_email_idx").on(t.email)],
+);
+
+/**
+ * One-time email confirmation links for passwordless player accounts.
+ *
+ * Tokens are stored as hashes so a database read does not expose active login
+ * links. Consuming a valid token creates the signed account-session cookie.
+ */
+export const accountEmailVerifications = pgTable(
+  "account_email_verifications",
+  {
+    id: text("id").primaryKey(),
+    email: text("email").notNull(),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: text("expires_at").notNull(),
+    consumedAt: text("consumed_at"),
+    createdAt: text("created_at").notNull(),
+  },
+  (t) => [uniqueIndex("account_email_verifications_token_hash_idx").on(t.tokenHash)],
+);
+
+// ---------------------------------------------------------------------------
+// Fall intersquad tools
+// ---------------------------------------------------------------------------
+
+/**
+ * Pitcher-submitted or coach-entered fall outing logs.
+ *
+ * The first version intentionally mirrors the fall pitching workbook: one
+ * outing row with totals plus pitch/result/FPS sequences captured as text.
+ * Later phases can derive workload/stress and split pitch-level detail if the
+ * workflow needs more granularity.
+ */
+export const fallPitcherOutings = pgTable("fall_pitcher_outings", {
+  id: text("id").primaryKey(),
+  teamId: text("team_id").notNull().default("babson"),
+  accountEmail: text("account_email").notNull(),
+  playerId: text("player_id").notNull(),
+  playerName: text("player_name").notNull(),
+  /** bullpen | live_ab | intersquad | scrimmage | game | other */
+  outingType: text("outing_type").notNull(),
+  /** ISO date yyyy-mm-dd */
+  outingDate: text("outing_date").notNull(),
+  innings: real("innings"),
+  earnedRuns: integer("earned_runs").notNull().default(0),
+  strikeouts: integer("strikeouts").notNull().default(0),
+  walks: integer("walks").notNull().default(0),
+  hits: integer("hits").notNull().default(0),
+  pitchTokens: text("pitch_tokens").notNull().default(""),
+  resultTokens: text("result_tokens").notNull().default(""),
+  fpsTokens: text("fps_tokens").notNull().default(""),
+  notes: text("notes"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+/**
+ * Aggregated fall hitting stats per player, ingested from the fall workbook.
+ * One row per (team_id, player_name). player_id may be null for walk-ons not
+ * yet in the canonical player registry.
+ */
+export const fallHitterStats = pgTable(
+  "fall_hitter_stats",
+  {
+    id: text("id").primaryKey(),
+    teamId: text("team_id").notNull().default("babson"),
+    playerName: text("player_name").notNull(),
+    playerId: text("player_id"),
+    pa: integer("pa").notNull().default(0),
+    ab: integer("ab").notNull().default(0),
+    hits: integer("hits").notNull().default(0),
+    singles: integer("singles").notNull().default(0),
+    doubles: integer("doubles").notNull().default(0),
+    triples: integer("triples").notNull().default(0),
+    hr: integer("hr").notNull().default(0),
+    bb: integer("bb").notNull().default(0),
+    hbp: integer("hbp").notNull().default(0),
+    k: integer("k").notNull().default(0),
+    avg: real("avg"),
+    obp: real("obp"),
+    slg: real("slg"),
+    ops: real("ops"),
+    woba: real("woba"),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (t) => [uniqueIndex("fall_hitter_stats_team_player_idx").on(t.teamId, t.playerName)],
 );
 
 /**

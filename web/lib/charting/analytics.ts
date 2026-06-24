@@ -152,10 +152,12 @@ function isStrikeout(resultCode: string | null): boolean {
 function wobaWeightForResult(resultCode: string | null): number {
   switch (resultCode) {
     case "BB":
+    case "IBB":
       return 0.69;
     case "HBP":
       return 0.72;
     case "1B":
+    case "1B+E":
       return 0.89;
     case "2B":
       return 1.27;
@@ -163,6 +165,8 @@ function wobaWeightForResult(resultCode: string | null): number {
       return 1.62;
     case "HR":
       return 2.1;
+    case "SF":
+      return 0.76;
     default:
       return 0;
   }
@@ -171,16 +175,22 @@ function wobaWeightForResult(resultCode: string | null): number {
 function computeClosedPaBattingLine(
   pas: Array<ChartingPlateAppearance & { resultCode: string }>
 ) {
-  const walkCount = pas.filter((pa) => pa.resultCode === "BB").length;
+  const walkCount = pas.filter(
+    (pa) => pa.resultCode === "BB" || pa.resultCode === "IBB",
+  ).length;
   const hbpCount = pas.filter((pa) => pa.resultCode === "HBP").length;
-  const singles = pas.filter((pa) => pa.resultCode === "1B").length;
+  const sacCount = pas.filter((pa) => pa.resultCode === "SAC").length;
+  const sfCount = pas.filter((pa) => pa.resultCode === "SF").length;
+  const singles = pas.filter(
+    (pa) => pa.resultCode === "1B" || pa.resultCode === "1B+E",
+  ).length;
   const doubles = pas.filter((pa) => pa.resultCode === "2B").length;
   const triples = pas.filter((pa) => pa.resultCode === "3B").length;
   const homeRuns = pas.filter((pa) => pa.resultCode === "HR").length;
 
   const hits = singles + doubles + triples + homeRuns;
   const totalBases = singles + 2 * doubles + 3 * triples + 4 * homeRuns;
-  const atBats = pas.length - walkCount - hbpCount;
+  const atBats = pas.length - walkCount - hbpCount - sacCount - sfCount;
   const avg = atBats > 0 ? hits / atBats : null;
   const obp = pas.length > 0 ? (hits + walkCount + hbpCount) / pas.length : null;
   const slg = atBats > 0 ? totalBases / atBats : null;
@@ -394,16 +404,22 @@ export function computeSegmentStats_pure(
   const strikeoutCount = closedPas.filter((pa) =>
     isStrikeout(pa.resultCode)
   ).length;
-  const walkCount = closedPas.filter((pa) => pa.resultCode === "BB").length;
+  const walkCount = closedPas.filter(
+    (pa) => pa.resultCode === "BB" || pa.resultCode === "IBB",
+  ).length;
   const hbpCount = closedPas.filter((pa) => pa.resultCode === "HBP").length;
 
-  const singles = closedPas.filter((pa) => pa.resultCode === "1B").length;
+  const sacCount = closedPas.filter((pa) => pa.resultCode === "SAC").length;
+  const sfCount = closedPas.filter((pa) => pa.resultCode === "SF").length;
+  const singles = closedPas.filter(
+    (pa) => pa.resultCode === "1B" || pa.resultCode === "1B+E",
+  ).length;
   const doubles = closedPas.filter((pa) => pa.resultCode === "2B").length;
   const triples = closedPas.filter((pa) => pa.resultCode === "3B").length;
   const homeRuns = closedPas.filter((pa) => pa.resultCode === "HR").length;
 
   const hits = singles + doubles + triples + homeRuns;
-  const atBats = closedPas.length - walkCount - hbpCount;
+  const atBats = closedPas.length - walkCount - hbpCount - sacCount - sfCount;
   const baa = atBats > 0 ? hits / atBats : null;
 
   // WHIP Calculation: (Walks + Hits) / Innings Pitched
@@ -411,10 +427,8 @@ export function computeSegmentStats_pure(
   // which has access to the full inning span for the outing.
   const whip = (walkCount + hits);
 
-  // BABIP Calculation: (H - HR) / (AB - K - HR + SF)
-  // Re-deriving in-play at bats. We don't currently track SF distinctively in charting, 
-  // so (AB - K - HR) is the closest approximation with current data structure.
-  const babipDenominator = atBats - strikeoutCount - homeRuns;
+  // BABIP: (H - HR) / (AB - K - HR + SF) — SF is not an AB but counts in the BABIP denominator.
+  const babipDenominator = atBats - strikeoutCount - homeRuns + sfCount;
   const babip = babipDenominator > 0 ? (hits - homeRuns) / babipDenominator : null;
 
   const pitchMix = emptyPitchMix();
@@ -432,7 +446,7 @@ export function computeSegmentStats_pure(
   );
 
   const rispPas = closedPas.filter(hasRisp);
-  const HIT_CODES_RISP = new Set(["1B", "2B", "3B", "HR"]);
+  const HIT_CODES_RISP = new Set(["1B", "1B+E", "2B", "3B", "HR"]);
   const strandedRispPas = rispPas.filter(
     (pa) => !HIT_CODES_RISP.has(pa.resultCode) && pa.resultCode !== "BB" && pa.resultCode !== "HBP"
   );
@@ -710,10 +724,9 @@ export function computeHitterStats_pure(
   );
   const woba = wobaDenominator > 0 ? wobaNumerator / wobaDenominator : null;
 
-  // BABIP Calculation: (H - HR) / (AB - K - HR + SF)
-  // Re-deriving in-play at bats. We don't currently track SF distinctively in charting, 
-  // so (AB - K - HR) is the closest approximation with current data structure.
-  const babipDenominator = battingLine.atBats - strikeoutCount - battingLine.homeRuns;
+  const sfCountForBabip = closedPas.filter((pa) => pa.resultCode === "SF").length;
+  const babipDenominator =
+    battingLine.atBats - strikeoutCount - battingLine.homeRuns + sfCountForBabip;
   const babip =
     babipDenominator > 0
       ? (battingLine.hits - battingLine.homeRuns) / babipDenominator

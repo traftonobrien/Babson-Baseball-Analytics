@@ -39,6 +39,10 @@ export const AUTH_GATES = {
 const PUBLIC_PREFIXES = [
   AUTH_GATES.site.loginPath,
   AUTH_GATES.site.apiLoginPath,
+  "/account/login",
+  "/account/pending",
+  "/api/account/request-link",
+  "/api/account/confirm",
   "/api/logout",
   "/players",
   LEGACY_CHARTING_LOGIN_PATH,

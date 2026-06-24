@@ -1,7 +1,11 @@
 import { motion } from "framer-motion";
 import { ChevronLeft, X } from "lucide-react";
 
-import { HIT_OPTIONS, type PAResultType } from "@/lib/charting/live";
+import {
+  HIT_ERROR_OPTIONS,
+  HIT_OPTIONS,
+  type PAResultType,
+} from "@/lib/charting/live";
 
 import {
   HIT_LABELS,
@@ -83,8 +87,12 @@ export const ChartingEditorInPlayModal = ({
                   Ball in Play
                 </h2>
                 <p className="mt-0.5 text-xs text-zinc-500">
-                  {step === "hit_or_out" ? "Hit, out, or reached base?" : null}
-                  {step === "hit_type" ? "Single, double, triple, or home run?" : null}
+                  {step === "hit_or_out"
+                    ? "Hit, sacrifice, out, or reached base?"
+                    : null}
+                  {step === "hit_type"
+                    ? "Hit type (including single + error)?"
+                    : null}
                   {step === "out_type" ? "What kind of out?" : null}
                   {step === "out_scoring" && outType
                     ? `Select ${OUT_TYPE_LABELS[outType]}`
@@ -147,6 +155,20 @@ const InPlayWizardContent = ({
         </button>
         <button
           type="button"
+          onClick={() => onSelect("SAC")}
+          className={WIZARD_BTN}
+        >
+          Sac bunt
+        </button>
+        <button
+          type="button"
+          onClick={() => onSelect("SF")}
+          className={WIZARD_BTN}
+        >
+          Sac fly
+        </button>
+        <button
+          type="button"
           onClick={() => onStepChange("out_type")}
           className={WIZARD_BTN}
         >
@@ -180,6 +202,16 @@ const InPlayWizardContent = ({
     return (
       <div className="flex flex-wrap gap-2">
         {HIT_OPTIONS.map((result) => (
+          <button
+            key={result}
+            type="button"
+            onClick={() => onSelect(result)}
+            className={WIZARD_BTN}
+          >
+            {HIT_LABELS[result]}
+          </button>
+        ))}
+        {HIT_ERROR_OPTIONS.map((result) => (
           <button
             key={result}
             type="button"

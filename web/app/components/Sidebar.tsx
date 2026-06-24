@@ -11,15 +11,18 @@ import {
   ClipboardList,
   Eye,
   Film,
-  Upload,
+  Leaf,
   Sparkles,
   Target,
   Trophy,
   Users,
+  UserRound,
   type LucideIcon,
   LayoutDashboard,
   Menu,
-  X
+  X,
+  ShieldCheck,
+  Settings,
 } from "lucide-react";
 import { TEAM_NAME } from "@/lib/teamConfig";
 import SiteAppearanceToggle from "./SiteAppearanceToggle";
@@ -64,6 +67,20 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { name: "Dashboard", url: "/", icon: LayoutDashboard, match: (pathname) => pathname === "/", section: "primary" },
+  {
+    name: "My Portal",
+    url: "/account",
+    icon: UserRound,
+    match: (pathname) => pathname === "/account" || pathname.startsWith("/account/"),
+    section: "primary",
+  },
+  {
+    name: "Fall Hub",
+    url: "/fall",
+    icon: Leaf,
+    match: (pathname) => pathname === "/fall" || pathname.startsWith("/fall/"),
+    section: "primary",
+  },
   { name: "Players", url: "/players", icon: Users, section: "primary" },
   {
     name: "Statistics",
@@ -154,9 +171,24 @@ function shouldHideSidebar(pathname: string | null): boolean {
   );
 }
 
+interface AccountInfo {
+  email: string;
+  playerName: string | null;
+  role: string;
+}
+
 export default function Sidebar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // undefined = loading, null = not logged in
+  const [account, setAccount] = useState<AccountInfo | null | undefined>(undefined);
+
+  useEffect(() => {
+    fetch("/api/account/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { account?: AccountInfo | null } | null) => setAccount(data?.account ?? null))
+      .catch(() => setAccount(null));
+  }, []);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -178,6 +210,18 @@ export default function Sidebar() {
     return null;
   }
 
+  const isAdmin = account?.role === "admin";
+
+  const navLinkClass = (isActive: boolean) =>
+    isActive
+      ? "flex items-center gap-3 rounded-full bg-[var(--brand-primary-soft)] px-3 py-2.5 text-[13px] font-bold text-[var(--brand-primary-subtle-text)] transition-colors dark:border dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-[var(--brand-primary-spotlight)] dark:shadow-[0_10px_28px_rgba(0,0,0,0.35)]"
+      : "group flex items-center gap-3 rounded-full px-3 py-2.5 text-[13px] font-semibold text-slate-500 transition-colors hover:bg-background hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-900/80 dark:hover:text-zinc-100";
+
+  const navIconClass = (isActive: boolean) =>
+    isActive
+      ? "h-5 w-5 text-[var(--brand-primary-subtle-text)] dark:text-[var(--brand-primary-spotlight)]"
+      : "h-5 w-5 text-slate-400 transition-colors group-hover:text-slate-500 dark:text-zinc-500 dark:group-hover:text-zinc-400";
+
   const renderNavLinks = () => (
     <nav className="flex flex-1 flex-col gap-1.5 overflow-y-auto px-4 py-3">
       <div className="mt-4 px-3 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-400 dark:text-zinc-500">
@@ -195,31 +239,109 @@ export default function Sidebar() {
             {startsNewSection && (
               <div className="my-2 h-px w-full bg-slate-100 dark:bg-zinc-800" />
             )}
-            <Link
-              href={item.url}
-              className={
-                isActive
-                  ? "flex items-center gap-3 rounded-full bg-[var(--brand-primary-soft)] px-3 py-2.5 text-[13px] font-bold text-[var(--brand-primary-subtle-text)] transition-colors dark:border dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-[var(--brand-primary-spotlight)] dark:shadow-[0_10px_28px_rgba(0,0,0,0.35)]"
-                  : "group flex items-center gap-3 rounded-full px-3 py-2.5 text-[13px] font-semibold text-slate-500 transition-colors hover:bg-background hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-900/80 dark:hover:text-zinc-100"
-              }
-            >
-              <Icon
-                className={
-                  isActive
-                    ? "h-5 w-5 text-[var(--brand-primary-subtle-text)] dark:text-[var(--brand-primary-spotlight)]"
-                    : "h-5 w-5 text-slate-400 transition-colors group-hover:text-slate-500 dark:text-zinc-500 dark:group-hover:text-zinc-400"
-                }
-              />
+            <Link href={item.url} className={navLinkClass(isActive)}>
+              <Icon className={navIconClass(isActive)} />
               {item.name}
             </Link>
           </div>
         );
       })}
+
+      {/* Admin section — coach/admin role only */}
+      {isAdmin && (
+        <>
+          <div className="my-2 h-px w-full bg-slate-100 dark:bg-zinc-800" />
+          <div className="px-3 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-400 dark:text-zinc-500">
+            Admin
+          </div>
+          <Link
+            href="/admin/accounts"
+            className={navLinkClass(pathname?.startsWith("/admin/") ?? false)}
+          >
+            <ShieldCheck className={navIconClass(pathname?.startsWith("/admin/") ?? false)} />
+            Accounts
+          </Link>
+        </>
+      )}
     </nav>
   );
 
+  // Bottom-left account widget — replaces Start Session button
+  const AccountFooterWidget = () => {
+    if (account === undefined) {
+      return <div className="h-11 animate-pulse rounded-2xl bg-slate-100 dark:bg-zinc-800" />;
+    }
+    if (!account) {
+      return (
+        <Link
+          href="/account/login"
+          className="flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-surface px-4 py-2.5 text-[13px] font-bold text-slate-700 transition-colors hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+        >
+          <UserRound className="h-4 w-4" />
+          Log In
+        </Link>
+      );
+    }
+    const initials = account.playerName
+      ? account.playerName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+      : account.email[0]?.toUpperCase() ?? "?";
+    return (
+      <Link
+        href="/account"
+        className="flex items-center gap-3 rounded-2xl border border-slate-100 px-3 py-2.5 transition-colors hover:bg-slate-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+      >
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand-primary)] text-[11px] font-black text-white">
+          {initials}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[13px] font-bold text-slate-900 dark:text-zinc-100">
+            {account.playerName ?? account.email}
+          </div>
+          <div className="text-[11px] text-slate-500 dark:text-zinc-400">Settings</div>
+        </div>
+        <Settings className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
+      </Link>
+    );
+  };
+
+  // Profile / login button — shared between desktop + mobile
+  const ProfileChip = ({ compact = false }: { compact?: boolean }) => {
+    if (account === undefined) {
+      // loading skeleton
+      return <div className="h-8 w-8 animate-pulse rounded-full bg-slate-100 dark:bg-zinc-800" />;
+    }
+    if (!account) {
+      return (
+        <Link
+          href="/account/login"
+          className={
+            compact
+              ? "flex h-8 items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-2.5 text-[11px] font-bold text-slate-600 transition-colors hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+              : "flex h-8 items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-3 text-[12px] font-bold text-slate-600 transition-colors hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+          }
+        >
+          <UserRound className="h-3.5 w-3.5 shrink-0" />
+          Log in
+        </Link>
+      );
+    }
+    const initials = account.playerName
+      ? account.playerName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+      : account.email[0]?.toUpperCase() ?? "?";
+    return (
+      <Link
+        href="/account"
+        title={account.playerName ?? account.email}
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand-primary)] text-[11px] font-black text-white shadow-[0_2px_8px_rgba(var(--brand-primary-rgb),0.35)] transition-opacity hover:opacity-80"
+      >
+        {initials}
+      </Link>
+    );
+  };
+
   return (
     <>
+      {/* Mobile top bar */}
       <div className="font-display sticky top-0 z-40 flex w-full shrink-0 items-center justify-between border-b border-slate-100 bg-surface px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950 print:hidden xl:hidden">
         <Link href="/" className="flex items-center gap-3">
           <div>
@@ -240,6 +362,7 @@ export default function Sidebar() {
       </div>
 
       <aside className="font-display hidden h-screen w-[240px] shrink-0 border-r border-slate-100 bg-surface dark:border-zinc-800 dark:bg-zinc-950 print:hidden xl:sticky xl:top-0 xl:flex xl:flex-col">
+        {/* Desktop header */}
         <div className="px-6 pb-4 pt-6">
           <Link href="/" className="flex items-center gap-3">
             <div>
@@ -259,13 +382,7 @@ export default function Sidebar() {
           <div className="mb-3">
             <SiteAppearanceToggle />
           </div>
-          <Link
-            href="/charting/new"
-            className="flex items-center justify-center gap-2 rounded-full bg-[var(--brand-primary)] px-4 py-2.5 text-[13px] font-bold text-white shadow-[0_12px_28px_rgba(var(--brand-primary-rgb),0.18)] transition-all duration-300 hover:bg-[var(--brand-primary-hover)]"
-          >
-            <Upload className="h-4 w-4" />
-            Start Session
-          </Link>
+          <AccountFooterWidget />
         </div>
       </aside>
 
@@ -306,14 +423,7 @@ export default function Sidebar() {
                 <div className="mb-3">
                   <SiteAppearanceToggle />
                 </div>
-                <Link
-                  href="/charting/new"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 rounded-full bg-[var(--brand-primary)] px-4 py-2.5 text-[13px] font-bold text-white shadow-[0_12px_28px_rgba(var(--brand-primary-rgb),0.18)] transition-all duration-300 hover:bg-[var(--brand-primary-hover)]"
-                >
-                  <Upload className="h-4 w-4" />
-                  Start Session
-                </Link>
+                <AccountFooterWidget />
               </div>
             </motion.div>
           </>

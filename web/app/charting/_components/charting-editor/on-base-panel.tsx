@@ -175,6 +175,16 @@ export const OnBasePanel = ({
             </button>
           </div>
         )}
+        {!anyPickMode ? (
+          <button
+            type="button"
+            disabled={!hasRunner}
+            onClick={onBalk}
+            className="h-9 w-full rounded-xl border border-sky-200 bg-sky-50 text-[10px] font-bold uppercase tracking-[0.14em] text-sky-800 transition-all hover:bg-sky-100 disabled:cursor-not-allowed disabled:border-border disabled:bg-background disabled:text-muted dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-200 dark:hover:bg-sky-500/20 dark:disabled:border-zinc-800 dark:disabled:bg-zinc-900/40 dark:disabled:text-zinc-600"
+          >
+            Balk — advance all
+          </button>
+        ) : null}
       </div>
     </div>
   );
